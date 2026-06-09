@@ -1,0 +1,62 @@
+---
+title: "Analisis Estadistico con Julia"
+author: "RJ2XCL"
+date: today
+format:
+  html:
+    self-contained: true
+    theme: none
+    minimal: true
+---
+
+## Capacidades de Julia en RJ2XCL
+
+Julia es el motor matematico y de machine learning de RJ2XCL.
+
+### Algebra Lineal
+
+Julia incluye `LinearAlgebra` en la biblioteca estandar:
+
+- Determinantes, eigenvalores, SVD
+- Factorizaciones LU, QR, Cholesky
+- Normas y condicionamiento
+
+### Optimizacion (JuMP.jl)
+
+Programacion lineal, entera y no lineal:
+
+| Problema | Paquete | Ejemplo |
+|----------|---------|---------|
+| LP | JuMP + HiGHS | Maximizar beneficio con restricciones |
+| MIP | JuMP + HiGHS | Asignacion de recursos |
+| NLP | JuMP + Ipopt | Optimizacion no lineal |
+
+### Ecuaciones Diferenciales
+
+`DifferentialEquations.jl` resuelve ODEs, SDEs, DAEs:
+
+- Modelos epidemiologicos (SIR)
+- Dinamica de poblaciones
+- Sistemas caoticos (Lorenz)
+
+### Machine Learning
+
+| Tarea | Paquete |
+|-------|---------|
+| PCA | MultivariateStats.jl |
+| Clustering | Clustering.jl |
+| Redes neuronales | Flux.jl |
+| Bayesiano | Turing.jl |
+
+### Integracion con Excel
+
+```
+=RJ2XCL.PLUTO.DATA(rango, "datos")   → Envia datos a Julia
+=RJ2XCL.NOTEBOOK.OPEN("excel_data")  → Abre notebook con datos
+```
+
+El usuario puede ejecutar cualquier analisis de Julia sobre datos de Excel
+sin salir de la aplicacion.
+
+---
+*RJ2XCL v2.0 — Universidad de Costa Rica*

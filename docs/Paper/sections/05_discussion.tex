@@ -1,0 +1,144 @@
+%% Discussion — \neven{} Paper
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Comparison with Existing Solutions}
+
+Table~\ref{tab:comparison} provides a systematic comparison of \neven{} with existing tools that integrate programming languages with Excel.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Feature comparison of Excel integration tools. \neven{} is the only solution offering three languages with process isolation, security sandboxing, and interactive visualization.}
+\label{tab:comparison}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Feature} & \textbf{\neven{}} & \textbf{PyXLL} & \textbf{xlwings} & \textbf{RExcel} & \textbf{Python in Excel} \\
+\midrule
+Languages supported & R, Julia, Python & Python & Python & R & Python \\
+Process isolation & \checkmark & -- & -- & -- & \checkmark\textsuperscript{a} \\
+Security sandbox & \checkmark & -- & -- & -- & \checkmark\textsuperscript{a} \\
+Interactive viz. & \checkmark & -- & Partial & -- & Partial \\
+Reactive notebooks & \checkmark & -- & -- & -- & -- \\
+Reproducible reports & \checkmark & -- & -- & -- & -- \\
+Native Ribbon & \checkmark & -- & -- & -- & \checkmark \\
+Automated tests & 357 & N/A & N/A & N/A & N/A \\
+Open source & GPL v3 & Commercial & Partial\textsuperscript{b} & GPL & Proprietary \\
+Local execution & \checkmark & \checkmark & \checkmark & \checkmark & --\textsuperscript{c} \\
+\addlinespace
+Price (annual)\textsuperscript{e} & Free & \$495 & \$490 (PRO) & Free & Included\textsuperscript{d} \\
+\bottomrule
+\multicolumn{6}{@{}l}{\footnotesize \textsuperscript{a}Cloud-based isolation. \textsuperscript{b}Open core model. \textsuperscript{c}Cloud execution only.} \\
+\multicolumn{6}{@{}l}{\footnotesize \textsuperscript{d}Requires Microsoft 365 subscription. \textsuperscript{e}Prices as of May 2026; subject to change.}
+\end{tabular}%
+}
+\end{table}
+
+\subsubsection{PyXLL}
+
+PyXLL \citep{PyXLL2023} is a mature commercial product that embeds Python within the Excel process via the XLL interface. While it provides excellent Python integration with low latency (in-process execution), it supports only Python, lacks security sandboxing (arbitrary code execution is unrestricted), and does not provide interactive visualization capabilities. Its commercial license limits adoption in academic settings.
+
+\subsubsection{xlwings}
+
+xlwings \citep{xlwings2023} connects Python to Excel via COM automation, operating as a separate process. It offers a Python-centric workflow where Excel serves as a data source rather than the primary interface. The PRO version adds features such as embedded code in Excel files. However, it supports only Python, provides no security layer, and requires users to write Python code.
+
+\subsubsection{RExcel}
+
+RExcel \citep{Baier2011} was an early effort to integrate R with Excel, developed as part of the statconnDCOM project. It used DCOM for inter-process communication and provided R function access from Excel. However, the project has not been maintained since approximately 2015, supports only R~3.x, and lacks security features, interactive visualization, or automated testing.
+
+\subsubsection{Python in Excel (Microsoft)}
+
+Microsoft's Python in Excel \citep{MicrosoftPython2023} represents the most significant recent development in this space. It executes Python code in Azure cloud containers, providing strong isolation and security. However, it supports only Python (no R or Julia), requires an internet connection, processes data in Microsoft's cloud (raising data sovereignty concerns for regulated industries), and offers limited visualization compared to \neven{}'s WebView2-based approach with Plotly, D3.js, and Leaflet.
+
+\subsubsection{BERT (Basic Excel R Toolkit)}
+
+BERT \citep{BERT2018} is the direct predecessor of \neven{}. Developed by Structured Data LLC (2017--2018), it demonstrated the feasibility of R integration in Excel via process isolation and Named Pipes. However, BERT supported only R~3.4.x and Julia~0.6.x (never fully functional), had no security sandboxing, no automated tests, no interactive visualization, and has been unmaintained since 2018. \neven{} modernizes this architecture for current language versions while adding 13 significant innovations (Section~\ref{sec:introduction}).
+
+\subsection{Software Quality Metrics}
+
+Table~\ref{tab:quality} summarizes the software quality characteristics of \neven{} as measured by automated testing and static analysis.
+
+\begin{table}[htbp]
+\centering
+\caption{Software quality metrics for \neven{} v2.0.}
+\label{tab:quality}
+\begin{tabular}{@{}llr@{}}
+\toprule
+\textbf{Category} & \textbf{Metric} & \textbf{Value} \\
+\midrule
+\multirow{5}{*}{Testing} & Total automated tests & 357 \\
+ & Sandbox tests (R + Julia + Python) & 154 \\
+ & Property-based tests (rapidcheck) & 24 \\
+ & Type conversion and RAII tests & 34 \\
+ & End-to-end and integration tests & 12 \\
+\addlinespace
+\multirow{3}{*}{Code quality} & Language & C++17 \\
+ & Build system & CMake 3.15+ \\
+ & CI/CD & GitHub Actions \\
+\addlinespace
+\multirow{4}{*}{Security} & Blocked patterns per language & 30+ \\
+ & Bypass prevention mechanisms & 5 \\
+ & Input sanitization (allowlist) & All CreateProcess paths \\
+ & IPC frame validation & All Protobuf messages \\
+\addlinespace
+\multirow{2}{*}{Documentation} & User-facing chapters & 12 \\
+ & Documented functions (with examples) & 95 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All 357 tests pass consistently in the CI/CD pipeline with a 100\% pass rate. Tests execute without requiring Excel, R, or Julia installations through a \texttt{MockExcelBridge} that simulates the Excel SDK API, enabling automated testing in headless environments.
+
+\subsubsection{Security Audit and Remediation}
+
+A comprehensive static analysis audit identified 36 findings across the codebase (8~critical, 7~high, 5~medium, 14~low, 2~informational). All 36 findings were systematically remediated through a structured process:
+
+\begin{itemize}
+    \item \textbf{Input sanitization:} A centralized \texttt{InputSanitizer} module validates all file paths and command-line arguments against a character allowlist before any \texttt{CreateProcess} call, eliminating OS command injection vectors.
+    \item \textbf{Sandbox hardening:} The \texttt{SandboxVerifier} was extended with 15 additional blocked patterns per language, context-aware detection (e.g., \texttt{readLines(pipe(...))} in R, \texttt{open(\`...\`)} in Julia), and unified enforcement across all execution paths (Excel cells, REPL, and AutoLoader).
+    \item \textbf{IPC validation:} A \texttt{MessageValidator} validates Protobuf frame structure (length prefix bounds, buffer completeness) before deserialization, preventing buffer overflow from malformed messages.
+    \item \textbf{RAII pipe handles:} A \texttt{SafePipeHandle} wrapper combines handle validity checking and I/O operations under a single critical section, eliminating TOCTOU race conditions.
+    \item \textbf{Build hardening:} MSVC security flags (\texttt{/GS}, \texttt{/guard:cf}, \texttt{/DYNAMICBASE}, \texttt{/NXCOMPAT}, \texttt{/CETCOMPAT}) are applied globally to all compilation targets.
+    \item \textbf{Electron elimination:} The legacy Electron-based REPL console (carrying 50+ CVEs from Electron~1.8.2) was completely removed and replaced by an in-process WebView2-based REPL, eliminating 9 security findings simultaneously.
+\end{itemize}
+
+Nine correctness properties were formalized and validated via property-based testing using rapidcheck~\citep{rapidcheck2023}, providing evidence that security invariants hold across randomized inputs (100+ iterations per property).
+
+\subsection{Architecture Trade-offs}
+
+The process-isolated architecture introduces inherent trade-offs that merit discussion:
+
+\paragraph{Latency vs.\ Safety.} Inter-process communication via Named Pipes adds approximately 2--5~ms of overhead per function call compared to in-process execution (as used by PyXLL). For interactive use where individual function calls take 100~ms or more in computation time, this overhead is negligible. For bulk operations requiring thousands of rapid calls, the overhead becomes measurable. We consider this an acceptable trade-off given the safety guarantees: a crash in R, Julia, or Python never terminates Excel.
+
+\paragraph{Memory vs.\ Startup Time.} The Julia sysimage (\textasciitilde415~MB) eliminates cold-start latency but increases disk usage and memory footprint. Without the sysimage, Julia's first function call would require 30--60 seconds of JIT compilation. With the sysimage, first-call latency is under one second. For users who do not require Julia, the runtime is optional and \neven{} operates with R alone.
+
+\paragraph{Pattern-based Sandbox vs.\ OS-level Isolation.} The security sandbox operates at the string-analysis level rather than using OS-level isolation mechanisms (e.g., Windows AppContainer, Linux seccomp). This provides protection against accidental misuse and common attack vectors but cannot guarantee security against a determined adversary with knowledge of the pattern-matching implementation. We consider this appropriate for the target use case (academic and corporate analysts) while acknowledging that high-security environments would benefit from additional OS-level sandboxing (Section~\ref{sec:limitations}).
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+We identify the following limitations of the current implementation:
+
+\begin{enumerate}
+    \item \textbf{Platform restriction:} \neven{} requires Windows 10 or later due to its dependence on Named Pipes, COM automation, WebView2, and the XLL interface. macOS and Linux users cannot use the system. This reflects the reality that the XLL add-in API is Windows-exclusive, and no cross-platform equivalent exists with comparable integration depth.
+
+    \item \textbf{Runtime dependencies:} Users must install R, Julia, and/or Python separately. While the \neven{} installer detects missing runtimes and guides users to official download pages, this adds friction compared to self-contained solutions. The system degrades gracefully: if only R is installed, all R functions work; Julia and Python functions simply return informative error messages.
+
+    \item \textbf{Sandbox limitations:} The pattern-based sandbox provides robust protection through five bypass-prevention mechanisms, input sanitization, and unified enforcement across all execution paths. However, it operates at the string-analysis level rather than using OS-level isolation (AppContainer). A sufficiently motivated attacker with knowledge of the pattern-matching implementation could theoretically construct evasion sequences not covered by the current pattern set. OS-level sandboxing is planned as future work for high-security deployments.
+
+    \item \textbf{No formal user study:} While the system has been validated technically against established benchmarks, we have not yet conducted a formal usability study with target users (e.g., econometrics students or business analysts). Such a study would provide empirical evidence for the claimed usability benefits.
+
+    \item \textbf{Testing without live Excel:} All automated tests use a mock Excel bridge rather than testing within a running Excel instance. While this enables CI/CD automation, it means that certain integration scenarios (e.g., concurrent formula recalculation, large workbook interactions) are validated only through manual testing.
+
+    \item \textbf{Single-developer maintenance:} As an academic project, \neven{} currently depends on a single developer for maintenance and evolution. The open-source release under GPL~v3 is intended to enable community contributions, but long-term sustainability requires building an active contributor base.
+\end{enumerate}
+
+\subsection{Threats to Validity}
+
+\paragraph{Internal validity.} The econometric validation (Section~\ref{subsec:econometric}) compares \neven{} outputs against published textbook results and direct R execution. Since \neven{} delegates computation to R, the statistical correctness depends entirely on R's implementation of the underlying algorithms. Our contribution is demonstrating that the IPC layer introduces no numerical degradation, not validating R's statistical algorithms themselves.
+
+\paragraph{External validity.} The enterprise case study (Section~\ref{subsec:enterprise}) represents a constructed scenario rather than a deployment in a production environment. While the technical capabilities demonstrated are real and functional, the claimed workflow improvements have not been measured in a controlled field study.
+
+\paragraph{Construct validity.} Performance characteristics may vary across hardware configurations, particularly for I/O-bound operations (pipe communication) and memory-bound operations (large matrix serialization). The 2--5~ms IPC overhead reported in Section~\ref{subsec:ipc} was measured on a single workstation (Intel Core i7-12700K, 32~GB RAM) and should be considered representative rather than definitive.

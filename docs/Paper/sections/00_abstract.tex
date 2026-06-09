@@ -1,0 +1,11 @@
+%% Abstract — \neven{} Paper
+%% Revised: emphasis on polyglot unification, not function counts
+
+Microsoft Excel remains the world's most widely deployed analytical tool, yet its native computational capabilities are fundamentally limited for rigorous scientific purposes. Meanwhile, the scientific computing ecosystem offers extraordinary power distributed across disparate platforms: R for statistics, Julia for numerical computation, Python for machine learning, Quarto for reproducible publishing, and JavaScript for interactive visualization. Individually, these environments are \textbf{capable} % Sugerencia: mayor precisión que "sufficient".
+of transforming entire disciplines, yet they remain inaccessible to the vast majority of Excel's 750 million users due to the \textbf{formidable} programming expertise barrier.
+
+We present \neven{}, an open-source infrastructure that seamlessly embeds R, Python, Julia, Quarto, and JavaScript into a single unified platform accessible directly through Excel formulas. This architecture enables non-programmers to invoke advanced econometric models, solve differential equations, train machine learning algorithms, and generate publication-quality reports without leaving the spreadsheet environment. \neven{} democratizes the combined power of five computational ecosystems for end-users.
+
+Beyond integration, \neven{} introduces a unified multi-format viewer capable of rendering interactive Plotly charts, }D3 visualizations, drag-and-drop pivot tables, geographic maps, Markdown documents with \LaTeX{} mathematics, PDF files, and Pluto.jl reactive notebooks. A process-isolated architecture utilizing Named Pipes and Protocol Buffers ensures fault tolerance, while a security sandbox with over 30 blocked patterns per language guarantees safe execution. 
+
+Statistical outputs have been validated against the established econometric benchmarks of \citet{Wooldridge2016}, confirming numerical correctness across regression, panel data, and time-series implementations. The system is released under the GNU General Public License v3, \textbf{enabling} community-driven expansion through shared functions in any supported language.

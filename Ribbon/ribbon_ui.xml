@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="RibbonLoaded" loadImage="GetImage">
+  <ribbon startFromScratch="false">
+    <tabs>
+      <tab id="TabNEVEN" label="NEVEN">
+
+        <!-- Grupo 1: Motores -->
+        <group id="grpEngines" label="Motores">
+          <button id="btnConsoleR" label="Consola R" size="normal" onAction="ShowRTerminal"
+                  image="r_logo"
+                  supertip="Abrir la terminal interactiva REPL de R"/>
+          <button id="btnConsoleJulia" label="Consola Julia" size="normal" onAction="ShowJuliaTerminal"
+                  image="julia_logo"
+                  supertip="Abrir la terminal interactiva REPL de Julia"/>
+          <button id="btnInstallPkgR" label="Instalar Paquete R" size="normal" onAction="OnInstallPkgR"
+                  image="r_logo"
+                  supertip="Instalar un paquete de R desde CRAN"/>
+          <button id="btnInstallPkgJulia" label="Instalar Paquete Julia" size="normal" onAction="OnInstallPkgJulia"
+                  image="julia_logo"
+                  supertip="Instalar un paquete de Julia desde el registro oficial"/>
+          <button id="btnListPkgR" label="Paquetes R" size="normal" onAction="OnListPkgR"
+                  image="r_logo"
+                  supertip="Listar los paquetes R instalados"/>
+          <button id="btnListPkgJulia" label="Paquetes Julia" size="normal" onAction="OnListPkgJulia"
+                  image="julia_logo"
+                  supertip="Listar los paquetes Julia instalados"/>
+          <button id="btnRefresh" label="Actualizar" size="normal" onAction="OnRefreshFunctions"
+                  imageMso="Refresh"
+                  supertip="Re-registrar todas las funciones R y Julia en Excel"/>
+        </group>
+
+        <!-- Grupo 2: Visualizacion -->
+        <group id="grpViewer" label="Visualizacion">
+          <button id="btnViewHTML" label="Abrir HTML" size="normal" onAction="OnViewDialog"
+                  imageMso="ChartInsert"
+                  supertip="Seleccionar un archivo HTML para visualizar en WebView2"/>
+          <button id="btnEditor" label="Presentaciones" size="normal" onAction="OnEditor"
+                  imageMso="SlideShowFromBeginning"
+                  supertip="Abrir el editor de presentaciones Impress.js"/>
+          <button id="btnViewerList" label="Listar Visores" size="normal" onAction="OnViewerList"
+                  imageMso="ViewsGallery"
+                  supertip="Mostrar los identificadores de todos los visores WebView2 activos"/>
+          <button id="btnCloseViewers" label="Cerrar Visores" size="normal" onAction="OnCloseViewers"
+                  imageMso="WindowCloseAllDocuments"
+                  supertip="Cerrar todas las ventanas de visor WebView2 activas"/>
+        </group>
+
+        <!-- Grupo 3: Pluto.jl -->
+        <group id="grpPluto" label="Pluto.jl">
+          <button id="btnPlutoStart" label="Iniciar Pluto" size="normal" onAction="OnPlutoStart"
+                  imageMso="BlogHomePage"
+                  supertip="Iniciar el servidor de notebooks Pluto.jl"/>
+          <button id="btnNotebooks" label="Notebooks" size="normal" onAction="OnNotebookDialog"
+                  imageMso="FileDocumentManagement"
+                  supertip="Ver la lista de notebooks Pluto disponibles"/>
+          <button id="btnPlutoStop" label="Detener Pluto" size="normal" onAction="OnPlutoStop"
+                  imageMso="RecordStop"
+                  supertip="Detener el servidor Pluto.jl"/>
+        </group>
+
+        <!-- Grupo 4: Quarto -->
+        <group id="grpQuarto" label="Quarto">
+          <button id="btnQuarto" label="Renderizar QMD" size="normal" onAction="OnQuartoDialog"
+                  image="quarto_logo"
+                  supertip="Seleccionar y renderizar un documento Quarto (.qmd) a HTML en WebView2"/>
+        </group>
+
+        <!-- Grupo 5: Configuracion -->
+        <group id="grpConfig" label="Configuracion">
+          <button id="btnDocs" label="Documentacion" size="normal" onAction="OnOpenDocs"
+                  imageMso="Help"
+                  supertip="Abrir la documentacion completa de NEVEN en el visor WebView2"/>
+          <button id="btnScriptsDir" label="Carpeta Scripts" size="normal" onAction="OnOpenScriptsDir"
+                  imageMso="FileOpen"
+                  supertip="Abrir la carpeta de scripts del usuario en el Explorador"/>
+          <button id="btnConfig" label="Config JSON" size="normal" onAction="OnOpenConfig"
+                  imageMso="ControlProperties"
+                  supertip="Abrir neven-config.json en el editor predeterminado"/>
+          <button id="btnAbout" label="Acerca de" size="normal" onAction="OnAbout"
+                  image="neven_logo"
+                  supertip="NEVEN v2.0 — Open Source. Construyendo comunidad para un mundo mas igualitario."/>
+        </group>
+
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

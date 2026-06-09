@@ -1,0 +1,54 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish, es-tabla]{babel}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{amsmath}
+
+\geometry{margin=1in}
+
+\title{Comentarios\_Supervisor: Validación mediante el Modelo NASA HL-20\\ \large Infraestructura RJ2XCL para Simulación de Reentrada Atmosférica}
+\author{Supervisor Académico de Tesis}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{tcolorbox}[colframe=black!80!blue, title=Punto de Inflexión Doctoral]
+Se identifica el modelo de simulación de vuelo del \textbf{NASA HL-20} (implementado en Julia mediante el ecosistema \textit{SciML}) como el caso de estudio para la validación de la herramienta. Esto eleva la tesis de la "Democratización del Análisis" a la \textbf{"Democratización de la Alta Ingeniería Espacial"}.
+\end{tcolorbox}
+
+\section{Justificación del Modelo NASA HL-20}
+
+\subsection{Complejidad Matemática y Numérica}
+\begin{itemize}
+    \item \textbf{El Modelo:} El HL-20 es un vehículo de reentrada que requiere la resolución de \textit{Ecuaciones Diferenciales Ordinarias (ODEs)} de alta rigurosidad y sistemas de control no lineales. 
+    \item \textbf{El Desafío:} Ejecutar este modelo de la NASA desde Excel mediante \textbf{RJ2XCL} exige que su arquitectura C++ soporte la transferencia de estados de alta frecuencia sin pérdida de precisión en el punto flotante (IEEE 754).
+\end{itemize}
+
+\subsection{Validación de Rigor Científico}
+\begin{itemize}
+    \item \textbf{Benchmark:} La NASA reporta aceleraciones de hasta 15,000x en sus simulaciones usando Julia. 
+    \item \textbf{Hipótesis de Tesis:} Su trabajo demostrará que un ingeniero puede realizar un análisis de sensibilidad de una trayectoria de reentrada de la NASA usando las herramientas de optimización de Excel (Solver/Goal Seek) como interfaz de control para el kernel de Julia.
+\end{itemize}
+
+\section{Preguntas Críticas para el Sínodo}
+\begin{enumerate}
+    \item ¿Cómo asegura la Capa 2 de RJ2XCL la sincronización de tiempos entre el motor de simulación en tiempo real de Julia y la interfaz asíncrona de Excel?.
+    \item En la replicación del HL-20, ¿qué métricas de error residual se considerarán aceptables para declarar que el "puente" es numéricamente transparente?.
+    \item ¿De qué manera la democratización del modelo HL-20 contribuye a la "Alfabetización Matemática" de profesionales en aerodinámica que no son programadores expertos?.
+\end{enumerate}
+
+\section{Referencias de Validación (NASA/Julia)}
+\begin{itemize}
+    \item Gray, B., et al. (2020). \textit{Julia Language 1.1 Ephemeris Reader and Gravitational Modeling Program}. NASA Technical Reports Server (NTRS).
+    \item Rackauckas, C. (2024). \textit{Accelerating NASA Launch Services simulations with SciML}. Julia Lab, MIT.
+    \item NASA. (2021). \textit{Modern Numerical Programming with Julia for Astrodynamic Trajectory Design}. 
+\end{itemize}
+
+\section{Conclusión del Supervisor}
+Al proponer el caso del **NASA HL-20**, usted ha transformado su tesis en un documento de referencia internacional. Está probando que su "forma de pensamiento" es capaz de llevar la complejidad de un transbordador espacial a la simplicidad de una celda de Excel, sin perder ni un solo decimal de precisión en el camino.
+
+\end{document}

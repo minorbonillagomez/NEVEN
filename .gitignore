@@ -1,0 +1,110 @@
+# ═══════════════════════════════════════════════════════════════
+# NEVEN .gitignore — Open Source Polyglot Infrastructure for Excel
+# ═══════════════════════════════════════════════════════════════
+
+# ─── Build artifacts ──────────────────────────────────────────
+Build/
+Dist/
+*.obj
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.iobj
+*.ipdb
+*.pch
+*.ncb
+*.suo
+*.user
+*.sdf
+*.opensdf
+*.aps
+*.manifest
+
+# ─── Compiled binaries (should be in GitHub Releases, not repo) ──
+*.exe
+*.dll
+*.xll
+*.zip
+
+# ─── IDE and editor files ────────────────────────────────────
+.vs/
+.vscode/
+.idea/
+.agent/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Node.js ─────────────────────────────────────────────────
+node_modules/
+yarn-error.log
+package-lock.json
+
+# ─── Python ──────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+.venv/
+
+# ─── R ───────────────────────────────────────────────────────
+BERTModule_*.gz
+.Rhistory
+.Rdata
+.RData
+
+# ─── LaTeX build artifacts ───────────────────────────────────
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.bbl
+*.blg
+*.spl
+*.nav
+*.snm
+*.vrb
+
+# ─── Security — never commit these ──────────────────────────
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+neven-config.json
+crashes/
+
+# ─── Temporary/generated files ───────────────────────────────
+build_err.txt
+build_output.txt
+cmake_stderr.txt
+cmake_stdout.txt
+build_core.txt
+*.tmp
+*.bak
+
+# ─── Large generated files (use GitHub Releases) ─────────────
+docs/Paper/neven-arxiv-submission.zip
+docs/Paper/main.pdf
+docs/Paper/figures/*.pdf
+docs/Paper/sections/*.pdf
+docs/Latex/*.pdf
+
+# ─── Generated documentation (rebuild with Doxygen) ──────────
+docs/api/
+
+# ─── ControlJulia binary import library ──────────────────────
+# Keep .def and rebuild script, exclude generated binaries
+ControlJulia/lib/*.lib
+ControlJulia/lib/*.exp

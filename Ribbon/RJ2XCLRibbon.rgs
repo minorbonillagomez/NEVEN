@@ -1,0 +1,53 @@
+HKCU
+{
+	Software
+	{
+		Classes
+		{
+			NEVENRibbon.Connect.1 = s 'NEVEN Ribbon Menu Class'
+			{
+				CLSID = s '{1451f06e-b530-4289-8d1f-7ea4a79f7732}'
+			}
+			NEVENRibbon.Connect = s 'NEVEN Ribbon Menu Class'
+			{
+				CLSID = s '{1451f06e-b530-4289-8d1f-7ea4a79f7732}'
+				CurVer = s 'NEVENRibbon.Connect.1'
+			}
+			NoRemove CLSID
+			{
+				ForceRemove '{1451f06e-b530-4289-8d1f-7ea4a79f7732}' = s 'NEVEN Ribbon Menu Class'
+				{
+					ProgID = s 'NEVENRibbon.Connect.1'
+					VersionIndependentProgID = s 'NEVENRibbon.Connect'
+					ForceRemove 'Programmable'
+					InprocServer32 = s '%MODULE%'
+					{
+						val ThreadingModel = s 'Apartment'
+					}
+					'TypeLib' = s '{443a0014-c3f3-4ced-a258-f170aff12659}'
+					'Version' = s '2.0'
+				}
+			}
+		}
+		Microsoft
+		{
+			Office
+			{
+				Excel
+				{
+					NoRemove Addins
+					{
+						ForceRemove NEVENRibbon.Connect
+						{
+							val Description = s 'NEVEN Ribbon Menu Class'	
+							val FriendlyName = s 'NEVEN Ribbon Menu'
+							val LoadBehavior = d 3
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+

@@ -1,0 +1,11 @@
+% Placeholder directory for figures.
+% Required figures:
+%   - architecture_diagram.pdf  (System architecture 4-layer diagram)
+%   - dashboard_screenshot.pdf  (Interactive dashboard WebView2 screenshot)
+%
+% To compile without figures, comment out \includegraphics lines in:
+%   - sections/architecture.tex (Figure 1)
+%   - sections/case_industrial.tex (Figure 2)
+%
+% Or create placeholder PDFs:
+%   pdflatex -jobname=architecture_diagram "\documentclass{article}\usepackage{tikz}\begin{document}\begin{tikzpicture}\draw(0,0)rectangle(12,8);\node at(6,4){Architecture Diagram Placeholder};\end{tikzpicture}\end{document}"

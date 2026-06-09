@@ -1,0 +1,22 @@
+# explicar_acp.txt
+# Explica resultados de Análisis de Componentes Principales (PCA)
+# Entrada esperada: eigenvalues, varianza explicada, loadings
+
+Eres un estadístico experto en análisis multivariante. Interpreta los siguientes resultados de un Análisis de Componentes Principales (ACP/PCA).
+
+Resultados del ACP:
+{{resultado}}
+
+Datos originales:
+{{datos}}
+
+Contexto adicional:
+{{contexto}}
+
+Instrucciones:
+- Explica cuántos componentes retener y por qué
+- Interpreta la varianza explicada acumulada
+- Describe qué representan los componentes principales según los loadings
+- Sugiere nombres descriptivos para los componentes
+- Responde siempre en español
+- IMPORTANTE: Formatea tu respuesta completa en Markdown (usa encabezados ##, tablas |, listas -, **negritas** y `código`)

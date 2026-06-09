@@ -1,0 +1,127 @@
+%% Dashboard Screenshot Placeholder — NEVEN Paper
+%% This creates a stylized representation of the dashboard layout
+%% Compile standalone: pdflatex dashboard_screenshot.tex
+
+\documentclass[border=5pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, fit, backgrounds, calc}
+
+\definecolor{darkbg}{RGB}{30,30,30}
+\definecolor{tabactive}{RGB}{160,229,21}
+\definecolor{tabinactive}{RGB}{80,80,80}
+\definecolor{chartblue}{RGB}{65,135,245}
+\definecolor{chartred}{RGB}{235,87,87}
+\definecolor{chartgreen}{RGB}{39,174,96}
+\definecolor{excelgreen}{RGB}{33,115,70}
+
+\begin{document}
+\begin{tikzpicture}[
+    every node/.style={font=\sffamily\small},
+]
+
+%% Excel Window (Left Half)
+\fill[excelgreen!10] (0,0) rectangle (7.5, 9);
+\draw[excelgreen!60, thick] (0,0) rectangle (7.5, 9);
+
+% Title bar
+\fill[excelgreen!80] (0, 8.5) rectangle (7.5, 9);
+\node[white, font=\sffamily\footnotesize\bfseries] at (3.75, 8.75) {Microsoft Excel — NEVEN};
+
+% Ribbon area
+\fill[gray!10] (0, 7.8) rectangle (7.5, 8.5);
+\node[font=\sffamily\tiny, gray] at (1.2, 8.15) {NEVEN};
+\node[font=\sffamily\tiny, gray] at (2.5, 8.15) {Consola};
+\node[font=\sffamily\tiny, gray] at (3.8, 8.15) {Diccionario};
+\node[font=\sffamily\tiny, gray] at (5.2, 8.15) {Documentaci\'{o}n};
+
+% Formula bar
+\fill[white] (0, 7.3) rectangle (7.5, 7.8);
+\node[font=\ttfamily\tiny, anchor=west] at (0.2, 7.55) {=R.Dashboard(A1:D100, 1)};
+
+% Spreadsheet grid
+\foreach \y in {0.5, 1.2, 1.9, 2.6, 3.3, 4.0, 4.7, 5.4, 6.1, 6.8} {
+    \draw[gray!30] (0, \y) -- (7.5, \y);
+}
+\foreach \x in {1.5, 3.0, 4.5, 6.0} {
+    \draw[gray!30] (\x, 0) -- (\x, 7.3);
+}
+
+% Column headers
+\node[font=\sffamily\tiny, gray] at (0.75, 7.05) {A};
+\node[font=\sffamily\tiny, gray] at (2.25, 7.05) {B};
+\node[font=\sffamily\tiny, gray] at (3.75, 7.05) {C};
+\node[font=\sffamily\tiny, gray] at (5.25, 7.05) {D};
+\node[font=\sffamily\tiny, gray] at (6.75, 7.05) {E};
+
+% Sample data
+\node[font=\ttfamily\tiny] at (0.75, 6.5) {ID};
+\node[font=\ttfamily\tiny] at (2.25, 6.5) {Ventas};
+\node[font=\ttfamily\tiny] at (3.75, 6.5) {Costos};
+\node[font=\ttfamily\tiny] at (5.25, 6.5) {Region};
+
+\node[font=\ttfamily\tiny] at (0.75, 5.8) {1};
+\node[font=\ttfamily\tiny] at (2.25, 5.8) {45200};
+\node[font=\ttfamily\tiny] at (3.75, 5.8) {32100};
+\node[font=\ttfamily\tiny] at (5.25, 5.8) {Norte};
+
+\node[font=\ttfamily\tiny] at (0.75, 5.1) {2};
+\node[font=\ttfamily\tiny] at (2.25, 5.1) {38900};
+\node[font=\ttfamily\tiny] at (3.75, 5.1) {28400};
+\node[font=\ttfamily\tiny] at (5.25, 5.1) {Sur};
+
+%% Viewer Window (Right Half)
+\fill[darkbg] (7.8, 0) rectangle (15.5, 9);
+\draw[gray!40, thick] (7.8, 0) rectangle (15.5, 9);
+
+% Title bar
+\fill[darkbg!80] (7.8, 8.5) rectangle (15.5, 9);
+\node[white, font=\sffamily\footnotesize\bfseries] at (11.65, 8.75) {NEVEN - Dashboard};
+
+% Tabs
+\fill[tabactive!20] (8, 8) rectangle (9.5, 8.4);
+\node[tabactive, font=\sffamily\tiny\bfseries] at (8.75, 8.2) {Pivot};
+\fill[tabinactive!20] (9.6, 8) rectangle (11, 8.4);
+\node[white!60, font=\sffamily\tiny] at (10.3, 8.2) {Scatter};
+\fill[tabinactive!20] (11.1, 8) rectangle (12.3, 8.4);
+\node[white!60, font=\sffamily\tiny] at (11.7, 8.2) {Bars};
+\fill[tabinactive!20] (12.4, 8) rectangle (13.6, 8.4);
+\node[white!60, font=\sffamily\tiny] at (13, 8.2) {Heatmap};
+\fill[tabinactive!20] (13.7, 8) rectangle (15, 8.4);
+\node[white!60, font=\sffamily\tiny] at (14.35, 8.2) {D3};
+
+% Chart area (stylized bar chart)
+\fill[chartblue!80] (8.5, 1) rectangle (9.3, 5.5);
+\fill[chartred!80] (9.6, 1) rectangle (10.4, 4.2);
+\fill[chartgreen!80] (10.7, 1) rectangle (11.5, 6.3);
+\fill[chartblue!80] (11.8, 1) rectangle (12.6, 3.8);
+\fill[chartred!80] (12.9, 1) rectangle (13.7, 5.0);
+\fill[chartgreen!80] (14.0, 1) rectangle (14.8, 4.5);
+
+% Axis labels
+\node[white!60, font=\sffamily\tiny] at (8.9, 0.6) {Q1};
+\node[white!60, font=\sffamily\tiny] at (10.0, 0.6) {Q2};
+\node[white!60, font=\sffamily\tiny] at (11.1, 0.6) {Q3};
+\node[white!60, font=\sffamily\tiny] at (12.2, 0.6) {Q4};
+\node[white!60, font=\sffamily\tiny] at (13.3, 0.6) {Q5};
+\node[white!60, font=\sffamily\tiny] at (14.4, 0.6) {Q6};
+
+% Legend
+\fill[chartblue!80] (9, 7.3) rectangle (9.4, 7.5);
+\node[white!80, font=\sffamily\tiny, anchor=west] at (9.5, 7.4) {Ventas};
+\fill[chartred!80] (11, 7.3) rectangle (11.4, 7.5);
+\node[white!80, font=\sffamily\tiny, anchor=west] at (11.5, 7.4) {Costos};
+\fill[chartgreen!80] (13, 7.3) rectangle (13.4, 7.5);
+\node[white!80, font=\sffamily\tiny, anchor=west] at (13.5, 7.4) {Margen};
+
+% Save button (bottom-right)
+\fill[darkbg!60, rounded corners=11pt] (14.5, 0.3) circle (0.4);
+\node[tabactive, font=\sffamily\normalsize] at (14.5, 0.3) {\tiny 💾};
+
+%% Divider line
+\draw[gray!60, very thick] (7.65, 0) -- (7.65, 9);
+
+%% Labels
+\node[font=\sffamily\tiny\itshape, gray, rotate=90] at (7.65, 4.5) {Snap Layout};
+
+\end{tikzpicture}
+\end{document}

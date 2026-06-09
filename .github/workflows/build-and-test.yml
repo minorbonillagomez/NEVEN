@@ -1,0 +1,85 @@
+name: NEVEN Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+env:
+  BUILD_DIR: build
+
+jobs:
+  # --- Unit Tests (no R/Julia needed) ---
+  unit-tests:
+    name: Unit Tests (${{ matrix.config }})
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        config: [Release]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Configure CMake
+      run: cmake -S . -B ${{ env.BUILD_DIR }} -A x64 -DBUILD_TESTS=ON -DSKIP_LANGUAGE_TARGETS=ON
+
+    - name: Build Core + Tests
+      run: |
+        cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.config }} --target NEVEN_Core --parallel
+        cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.config }} --target rj2xcl_tests --parallel
+        cmake --build ${{ env.BUILD_DIR }} --config ${{ matrix.config }} --target mock_engine_backend --parallel
+
+    - name: Run Unit Tests
+      working-directory: ${{ env.BUILD_DIR }}
+      run: |
+        ctest --output-on-failure -C ${{ matrix.config }} --timeout 60
+
+    - name: Test Results Summary
+      if: always()
+      run: |
+        echo "::notice::NEVEN unit tests completed for ${{ matrix.config }}"
+
+  # --- Full Build (requires R -- runs on main only) ---
+  full-build:
+    name: Full Build (Release)
+    runs-on: windows-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: unit-tests
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Install R
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: '4.4.1'
+
+    - name: Configure CMake
+      run: |
+        $R_HOME = (Get-Command R).Source | Split-Path | Split-Path
+        cmake -S . -B ${{ env.BUILD_DIR }} -A x64 -DR_HOME="$R_HOME"
+
+    - name: Build All
+      run: cmake --build ${{ env.BUILD_DIR }} --config Release --parallel
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: NEVEN-${{ github.sha }}
+        path: |
+          ${{ env.BUILD_DIR }}/RJ2XCL/Release/NEVEN64.dll
+          ${{ env.BUILD_DIR }}/Ribbon/Release/NEVENRibbon.dll
+          ${{ env.BUILD_DIR }}/ControlR/Release/ControlR.exe
+        retention-days: 30

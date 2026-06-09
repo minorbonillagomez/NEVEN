@@ -1,0 +1,141 @@
+%% Unified Viewer, Extensibility, and Reproducible Publishing — NEVEN Paper
+
+\section{Unified Viewer, Extensibility, and Reproducible Publishing}
+\label{sec:viewer_extensibility}
+
+The architectural foundation described in Section~\ref{sec:architecture} enables three capabilities that distinguish \neven{} from prior Excel integration tools: a unified multi-format viewer, a file-based extensibility model, and a reproducible publishing pipeline. Together, these transform Excel from a static spreadsheet into an interactive analytical workbench.
+
+\subsection{The Unified Viewer}
+
+The WebView2-based viewer transcends the role of a simple HTML display. It functions as a \emph{unified document and visualization engine} capable of rendering diverse content types within the Excel workflow. All content is accessed through a single function: \texttt{=NEVEN.v(content\_or\_path)}.
+
+\paragraph{A New Analytical Dimension.}
+Traditionally, Excel users who wished to interact with their data through advanced visualization---force-directed network graphs, geographic heatmaps, hierarchical treemaps, or drag-and-drop pivot exploration---had no option but to export their data to specialized tools (Tableau, Power~BI, Python+matplotlib, R+Shiny) and learn those tools' interfaces and programming models. The WebView2 viewer eliminates this barrier entirely. By embedding a full Chromium rendering engine within the Excel workflow, \neven{} brings the most sophisticated web-based visualization libraries---D3.js, Plotly, Leaflet, rpivotTable---directly to the user's data without requiring a single line of JavaScript, Python, or R code.
+
+The conceptual shift is significant: the user does not ``send data to a visualization tool''---instead, the visualization comes to the user's data. A financial analyst writes \texttt{=NEVEN.v(R.Dashboard(A1:E500, 1))} and immediately interacts with a six-tab dashboard containing pivot tables, scatter plots, treemaps, Sankey diagrams, sunburst charts, and force-directed graphs---all computed from the same Excel range, all interactive (zoom, filter, hover, drag), all updating when the underlying data changes. This transforms Excel from a static grid into a dynamic analytical workbench where the sophistication of the visualization is decoupled from the expertise of the user.
+
+Table~\ref{tab:viewer_formats} summarizes the supported content types and their rendering mechanisms.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Content types supported by the \neven{} unified viewer. A single function (\texttt{=NEVEN.v()}) routes content to the appropriate renderer based on automatic type detection.}
+\label{tab:viewer_formats}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llp{5.5cm}@{}}
+\toprule
+\textbf{Content Type} & \textbf{Renderer} & \textbf{Capabilities} \\
+\midrule
+Interactive charts (Plotly) & Plotly.js & Zoom, pan, hover tooltips, axis selection, PNG/PDF export \\
+\addlinespace
+D3.js visualizations & D3.js v7 & Treemap, Sankey, Sunburst, Force-directed graphs \\
+\addlinespace
+Pivot tables & rpivotTable & Drag-and-drop aggregation, heatmaps, bar charts \\
+\addlinespace
+Geographic maps & Leaflet.js & Markers, heatmaps, proportional circles, CartoDB tiles \\
+\addlinespace
+Markdown documents & marked.js + KaTeX & Headers, tables, code blocks, LaTeX math rendering \\
+\addlinespace
+PDF documents & WebView2 native & Full PDF rendering with zoom, search, page navigation \\
+\addlinespace
+Word documents & Pandoc $\to$ HTML & Headings, tables, images, formatted text \\
+\addlinespace
+Plain text files & Monospace \texttt{<pre>} & Dark theme, whitespace preservation \\
+\addlinespace
+Pluto.jl notebooks & HTTP (localhost) & Reactive Julia notebooks with live data from Excel \\
+\addlinespace
+Quarto reports & Quarto CLI $\to$ HTML & Publication-quality documents with embedded code \\
+\addlinespace
+HTML files & Direct navigation & Any self-contained HTML (presentations, dashboards) \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\paragraph{Snap Layout: Side-by-Side Workflow.}
+When the viewer opens, \neven{} automatically positions Excel on the left half of the screen and the viewer on the right half, using the Windows \texttt{SetWindowPos} API with work-area detection to respect the taskbar. This eliminates manual window arrangement and provides an optimal data-visualization workflow: the user modifies data in Excel (left) and immediately sees the updated visualization (right). The UX innovation is subtle but transformative---it removes the friction that discourages analysts from iterating on visualizations.
+
+\paragraph{Interactive Exploration.}
+The viewer is not a static display. Users manipulate pivot tables by dragging fields between rows, columns, and aggregation areas (rpivotTable); explore charts interactively with zoom, pan, hover tooltips, and axis selection (Plotly); navigate geographic data with map zoom, layer toggling, and popup information (Leaflet); and save results via a floating button that exports the current view as HTML, PNG, or PDF for inclusion in presentations and reports.
+
+\subsection{User Extensibility}
+\label{subsec:extensibility}
+
+A distinguishing design principle of \neven{} is that the system's functionality is not fixed at compile time. Users extend the platform by placing script files in a designated directory within their user profile:\\ 
+
+{\texttt{Documents\textbackslash NEVEN\textbackslash functions\textbackslash}}\\
+
+At startup, \neven{} scans this directory and loads all \texttt{.R}, \texttt{.jl}, and \texttt{.py} files into their respective runtimes, as described in Algorithm~\ref{alg:init}. Each function defined in these files is automatically registered as a native Excel formula.
+
+The naming convention makes the source language immediately visible to the user:
+\begin{itemize}
+    \item \texttt{=R.function()} : R functions (statistical modeling, visualization)
+    \item \texttt{=J.function()} : Julia functions (numerical computing, optimization)
+    \item \texttt{=P.function()} : Python functions (machine learning, data science)
+\end{itemize}
+
+\paragraph{Defining Custom Functions.}
+The extension model requires no boilerplate. Algorithm~\ref{alg:user_r} illustrates the pattern for R; Julia and Python follow the same convention with their respective syntax.
+
+\begin{algorithm}[htbp]
+\SetAlgoLined
+\KwInput{User places \texttt{my\_analysis.R} in the functions directory}
+\KwOutput{Formula \texttt{=R.MiModelo(...)} available in Excel}
+\BlankLine
+\textbf{define} \texttt{MiModelo}($datos$, $parametro \leftarrow 0.05$)\;
+\Indp
+    $resultado \leftarrow$ \texttt{t.test}($datos$, conf.level $= 1 - parametro$)\;
+    \Return \texttt{data.frame}(statistic, p.value, conf.low, conf.high)\;
+\Indm
+\BlankLine
+\textbf{set} \texttt{attr}(MiModelo, ``description'') $\leftarrow$ ``Custom t-test with configurable alpha''\;
+\textbf{set} \texttt{attr}(MiModelo, ``category'') $\leftarrow$ ``My Functions''\;
+\caption{User-Defined R Function (automatically exposed as \texttt{=R.MiModelo(...)})}
+\label{alg:user_r}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+\SetAlgoLined
+\KwInput{User places \texttt{monte\_carlo.jl} in the functions directory}
+\KwOutput{Formula \texttt{=J.MonteCarlo(...)} available in Excel}
+\BlankLine
+\textbf{define} \texttt{MonteCarlo}($data$, $n\_sims \leftarrow 10000$)\;
+\Indp
+    $results \leftarrow$ \texttt{zeros}($n\_sims$)\;
+    \For{$i \leftarrow 1$ \KwTo $n\_sims$}{
+        $sample \leftarrow$ \texttt{rand}($data$, \texttt{length}($data$))\;
+        $results[i] \leftarrow$ \texttt{mean}($sample$)\;
+    }
+    \Return \texttt{DataFrame}(mean, std, ci\_low, ci\_high)\;
+\Indm
+\caption{User-Defined Julia Function (automatically exposed as \texttt{=J.MonteCarlo(...)})}
+\label{alg:user_jl}
+\end{algorithm}
+
+Upon restarting Excel, these functions become available in the formula bar. The \texttt{description} and \texttt{category} attributes populate the Excel function wizard, providing discoverability without requiring documentation external to the code.
+
+\paragraph{Extensibility as Community Model.}
+This model means that \neven{}'s initial catalog of 160+ functions represents a \emph{starting point}, not a ceiling. Domain-specific teams can build specialized function libraries---actuarial models, pharmacokinetic simulations, supply chain optimizers---and distribute them as simple script files that any Excel user can install by copying to a folder. The \texttt{=R.function(...)}, \texttt{=J.function(...)}, and \texttt{=P.function(...)} convention ensures that users always know which language engine powers each formula.
+
+\subsection{Reactive Notebooks with Pluto.jl}
+
+\neven{} integrates Pluto.jl \citep{Pluto2023} reactive notebooks through a data pipeline that transfers Excel ranges to Julia via TSV files. The function \texttt{=NEVEN.pluto.data(range, "name")} serializes the selected Excel range to a tab-separated file in a shared directory, which Pluto.jl reads reactively. When the user updates the Excel range and re-executes the formula, the notebook automatically recomputes all dependent cells.
+
+This creates a unique workflow where Excel serves as the data source and Pluto provides the computational narrative. Fifteen pre-loaded notebooks covering principal component analysis, linear algebra, optimization, clustering, and differential equations are included with the distribution. Users can create additional notebooks that reference Excel data, enabling exploratory analysis that combines the familiarity of spreadsheets with the expressiveness of reactive programming.
+
+\subsection{Reproducible Publishing with Quarto}
+\label{subsec:quarto}
+
+\neven{} integrates Quarto \citep{Quarto2023}---the next-generation scientific publishing system from Posit---for generating publication-quality reports directly from Excel. The function \texttt{=NEVEN.q("report.qmd")} invokes the Quarto CLI via \texttt{CreateProcess} to render a \texttt{.qmd} document to HTML, which is then displayed in the WebView2 viewer.
+
+This enables a complete reproducible research workflow:
+\begin{enumerate}
+    \item \textbf{Data preparation} in Excel (cleaning, transformation, validation).
+    \item \textbf{Statistical analysis} via \neven{} formulas (\texttt{=R.MR\_Lineal(...)}, etc.).
+    \item \textbf{Report generation} via Quarto, embedding R/Julia/Python code chunks that reference the same data.
+    \item \textbf{Publication} as HTML, PDF, or Word---suitable for journal submission, regulatory filing, or executive presentation.
+\end{enumerate}
+
+Quarto documents support cross-references, citations (via BibTeX), mathematical notation (LaTeX), and multi-language code chunks---making them ideal for documenting complex analytical workflows that combine Excel data with R/Julia/Python computations. The rendered output appears in the \neven{} viewer with full interactivity (clickable links, embedded visualizations, table of contents navigation).
+
+This integration positions \neven{} not merely as a computation tool but as a complete \emph{analytical publishing platform}: from raw data in Excel to peer-reviewed publication, without leaving the spreadsheet environment.

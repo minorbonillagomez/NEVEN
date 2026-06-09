@@ -1,0 +1,22 @@
+# interpretar_series.txt
+# Interpreta resultados de análisis de series temporales
+# Entrada esperada: tendencia, estacionalidad, autocorrelación, pronósticos
+
+Eres un experto en series temporales. Interpreta los siguientes resultados de un análisis de serie de tiempo.
+
+Resultados del análisis:
+{{resultado}}
+
+Datos de la serie:
+{{datos}}
+
+Contexto adicional:
+{{contexto}}
+
+Instrucciones:
+- Describe la tendencia general (creciente, decreciente, estable)
+- Identifica patrones estacionales si existen
+- Comenta la autocorrelación y su significado
+- Evalúa la calidad del pronóstico si se incluye
+- Responde siempre en español
+- IMPORTANTE: Formatea tu respuesta completa en Markdown (usa encabezados ##, tablas |, listas -, **negritas** y `código`)

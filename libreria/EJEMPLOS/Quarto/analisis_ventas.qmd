@@ -1,0 +1,46 @@
+---
+title: "Analisis de Ventas"
+author: "RJ2XCL"
+date: today
+format:
+  html:
+    self-contained: true
+    theme: none
+    minimal: true
+---
+
+## Resumen Ejecutivo
+
+Este reporte presenta un analisis de ventas generado desde Microsoft Excel
+usando la plataforma RJ2XCL.
+
+### Datos
+
+| Mes | Ventas | Costos | Margen |
+|-----|--------|--------|--------|
+| Enero | 100 | 80 | 20 |
+| Febrero | 150 | 90 | 60 |
+| Marzo | 200 | 110 | 90 |
+| Abril | 180 | 100 | 80 |
+| Mayo | 220 | 120 | 100 |
+
+### Indicadores Clave
+
+- **Venta promedio:** 170
+- **Margen promedio:** 70
+- **Mejor mes:** Mayo (220)
+- **Tendencia:** Creciente
+
+### Metodologia
+
+Los datos fueron enviados desde Excel a Julia via `=RJ2XCL.PLUTO.DATA()`,
+analizados en un notebook Pluto.jl, y este reporte fue generado con Quarto.
+
+## Recomendaciones
+
+1. Mantener la tendencia de crecimiento en ventas
+2. Optimizar costos del Q2
+3. Expandir analisis con modelos predictivos (ARIMA via R)
+
+---
+*Generado por RJ2XCL v2.0 — Universidad de Costa Rica*

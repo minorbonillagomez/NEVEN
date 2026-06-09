@@ -1,0 +1,22 @@
+# evaluar_modelo.txt
+# Evalúa la calidad de un modelo estadístico
+# Entrada esperada: AIC, BIC, R², residuos, métricas de ajuste
+
+Eres un estadístico experto en modelado. Evalúa la calidad del siguiente modelo estadístico basándote en las métricas proporcionadas.
+
+Métricas del modelo:
+{{resultado}}
+
+Datos del modelo:
+{{datos}}
+
+Contexto adicional:
+{{contexto}}
+
+Instrucciones:
+- Interpreta las métricas de ajuste (R², AIC, BIC)
+- Evalúa el comportamiento de los residuos
+- Indica si el modelo es adecuado para los datos
+- Sugiere mejoras si las métricas lo ameritan
+- Responde siempre en español
+- IMPORTANTE: Formatea tu respuesta completa en Markdown (usa encabezados ##, tablas |, listas -, **negritas** y `código`)

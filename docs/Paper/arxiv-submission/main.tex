@@ -1,0 +1,866 @@
+﻿%% NEVEN: An Open-Source Polyglot Infrastructure
+%% Final version for arXiv and SoftwareX submission
+%% Optimized by Agente_PAPER_MiBoGo
+\pdfoutput=1 
+\documentclass[preprint,12pt,authoryear]{elsarticle}
+
+%% --- Essential Packages for Scalable Fonts and Rigor ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Garantiza compatibilidad con microtype y fuentes escalables
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{microtype}
+%\usepackage{lineno}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
+
+\definecolor{excelgreen}{RGB}{00,00,00}
+\definecolor{nevenblue}{RGB}{00,00,00}
+\definecolor{rcolor}{RGB}{00,00,00}
+\definecolor{juliacolor}{RGB}{00,00,00}
+\definecolor{pythoncolor}{RGB}{00,00,00}
+\definecolor{webviewcolor}{RGB}{00,00,00}
+\definecolor{pipecolor}{RGB}{0,0,0}
+
+
+%% --- Algorithm2e configuration (Fix for \KwInput error) ---
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+% Definición robusta para evitar errores de secuencia no definida
+\providecommand{\KwInput}[1]{\textbf{Input:} #1}
+\providecommand{\KwOutput}[1]{\textbf{Output:} #1}
+\SetKwInput{KwInput}{Input}
+\SetKwInput{KwOutput}{Output}
+\SetKwComment{Comment}{// }{}
+
+%% --- NEVEN logo command (palindrome symmetry) ---
+%\newcommand{\neven}{NEv\rotatebox[origin=c]{180}{E}\rotatebox[origin=c]{180}{N}}
+\newcommand{\neven}{NE\raisebox{0.2ex}{v}\rotatebox[origin=c]{180}{E}\rotatebox[origin=c]{180}{N}}
+
+%% --- Hyperref configuration ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={NEVEN: An Open-Source Polyglot Infrastructure},
+    pdfauthor={Minor Bonilla-Gómez}
+}
+
+%% --- Journal metadata ---
+\journal{}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{\neven{}: An Open-Source Polyglot Infrastructure Bridging Statistical Computing and Spreadsheet Workflows for Reproducible Research}
+
+\author[]{Minor Bonilla-Gómez}
+\ead{minor.bonilla@buklo.dev}
+%\cortext[cor1]{Corresponding author}
+
+\affiliation[ucr]{organization={BukloLAB},
+            city={San José},
+            country={Costa Rica}}
+
+%% El abstract debe estar dentro de frontmatter para cumplimiento de elsarticle
+\begin{abstract}
+	\footnotesize
+	%% Abstract — \neven{} Paper
+%% Revised: emphasis on polyglot unification, not function counts
+
+Microsoft Excel remains the world's most widely deployed analytical tool, yet its native computational capabilities are fundamentally limited for rigorous scientific purposes. Meanwhile, the scientific computing ecosystem offers extraordinary power distributed across disparate platforms: R for statistics, Julia for numerical computation, Python for machine learning, Quarto for reproducible publishing, and JavaScript for interactive visualization. Individually, these environments are \textbf{capable} % Sugerencia: mayor precisión que "sufficient".
+of transforming entire disciplines, yet they remain inaccessible to the vast majority of Excel's 750 million users due to the \textbf{formidable} programming expertise barrier.
+
+We present \neven{}, an open-source infrastructure that seamlessly embeds R, Python, Julia, Quarto, and JavaScript into a single unified platform accessible directly through Excel formulas. This architecture enables non-programmers to invoke advanced econometric models, solve differential equations, train machine learning algorithms, and generate publication-quality reports without leaving the spreadsheet environment. \neven{} democratizes the combined power of five computational ecosystems for end-users.
+
+Beyond integration, \neven{} introduces a unified multi-format viewer capable of rendering interactive Plotly charts, }D3 visualizations, drag-and-drop pivot tables, geographic maps, Markdown documents with \LaTeX{} mathematics, PDF files, and Pluto.jl reactive notebooks. A process-isolated architecture utilizing Named Pipes and Protocol Buffers ensures fault tolerance, while a security sandbox with over 30 blocked patterns per language guarantees safe execution. 
+
+Statistical outputs have been validated against the established econometric benchmarks of \citet{Wooldridge2016}, confirming numerical correctness across regression, panel data, and time-series implementations. The system is released under the GNU General Public License v3, \textbf{enabling} community-driven expansion through shared functions in any supported language.
+
+\end{abstract}
+
+\begin{keyword}
+	\footnotesize
+Excel add-in \sep polyglot computing \sep reproducible research \sep inter-process communication \sep statistical software \sep R \sep Julia \sep open source
+\end{keyword}
+
+\end{frontmatter}
+
+%\linenumbers
+
+%% --- Main Section Inputs ---
+%% Introduction — \neven{} Paper
+%% Revised: reduced "and" repetition, added cost barrier, R4XCL origin, broader scope
+
+\section{Introduction}
+\label{sec:introduction}
+
+\subsection{The Spreadsheet Dominance Problem}
+
+Microsoft Excel is estimated to serve over 750 million users worldwide \citep{Microsoft2023}, making it the most widely deployed data analysis tool across scientific research, corporate finance, public policy, and education. Despite this dominance, studies have documented that approximately 88\% of spreadsheets contain errors \citep{Panko2016}. High-profile failures underscore the risks: the London Whale trading loss of \$6.2 billion was attributed in part to spreadsheet errors \citep{JPMorgan2013}; the truncation of COVID-19 case data in England resulted from Excel's row limits \citep{Kelion2020}; influential economic policy conclusions were shown to rest partly on spreadsheet coding mistakes \citep{Herndon2014}.
+
+In scientific research, the reproducibility crisis has been extensively documented \citep{Baker2016, Ioannidis2005}. Spreadsheet-based analyses are particularly vulnerable because they lack version control, audit trails, and formal testing mechanisms \citep{Peng2011}. Yet practitioners continue to use Excel because of its accessibility, immediate visual feedback, and low barrier to entry \citep{Scaffidi2005}. The tool is not the problem---the absence of computational infrastructure beneath it is.
+
+\subsection{The Programming Expertise Barrier}
+
+Scientific computing environments such as R \citep{RCoreTeam2024}, Julia \citep{Bezanson2017}, and Python \citep{VanRossum2009} provide rigorous, reproducible analytical capabilities spanning statistics, numerical mathematics, machine learning, optimization, and visualization. However, these tools require programming expertise that represents a significant barrier for domain experts in economics, biology, social sciences, and business analytics. \citet{Muenchen2012} documented that the learning curve of R remains a primary obstacle to adoption among applied researchers. Julia, while offering superior numerical performance \citep{Bezanson2017}, presents an even steeper adoption curve due to its smaller ecosystem.
+
+This creates a fundamental tension: the tools that are accessible lack computational rigor, while the tools that provide rigor lack accessibility. Previous attempts to bridge this gap---including RExcel \citep{Baier2011}, BERT \citep{BERT2018}, xlwings \citep{xlwings2023}, PyXLL \citep{PyXLL2023}, and Microsoft's Python in Excel \citep{MicrosoftPython2023}---have addressed only partial aspects of the problem. Each typically supports a single language, lacks security isolation or interactive visualization, and several impose commercial licensing costs that exclude academic institutions with limited budgets. None offers a unified, open-source platform integrating multiple computational ecosystems simultaneously.
+
+\subsection{Contributions}
+
+This paper presents \neven{}, an open-source polyglot infrastructure that addresses the computational accessibility gap through the following contributions:
+
+\begin{enumerate}
+    \item \textbf{Simultaneous polyglot integration:} A C++17 architecture that unifies R~4.4.1, Julia~1.12.6, Python~3.13, Quarto, and JavaScript visualization libraries into a single platform accessible from Excel formulas. Each of these ecosystems is individually capable of transforming an entire discipline; \neven{} places them all in the hands of non-programmer users through a formula-level interface.
+
+    \item \textbf{Unified multi-format viewer:} A WebView2 (Chromium-based) engine that renders interactive Plotly charts, D3.js visualizations, rpivotTable pivot tables, Leaflet geographic maps, Markdown with LaTeX mathematics, PDF documents, Word files (via Pandoc), and Pluto.jl reactive notebooks---all through a single Excel formula (\texttt{=NEVEN.v()}).
+
+    \item \textbf{Process-isolated fault-tolerant architecture:} Language runtimes execute in separate OS processes communicating via Named Pipes with Protocol Buffers serialization. A crash in any runtime does not propagate to the host application. A security sandbox blocks over 30 dangerous patterns per language, validated by 109 automated tests.
+
+    \item \textbf{User extensibility:} A file-based extension model where users add custom R, Julia, or Python functions by placing script files in a directory. Functions are automatically discovered, registered with Excel, and exposed as native formulas---enabling domain-specific teams to build specialized libraries without modifying the core system.
+
+    \item \textbf{Reproducible publishing:} Integration with Quarto for generating publication-quality reports (HTML, PDF, Word) that embed R/Julia/Python computations alongside narrative text, citations, and cross-references---completing the pipeline from raw data to peer-reviewed publication within the Excel environment.
+
+    \item \textbf{Empirical validation:} Verification of computational outputs against the established econometric benchmarks of \citet{Wooldridge2016}, demonstrating numerical correctness across regression, panel data, and time series implementations.
+
+    \item \textbf{Open-source community model:} Released under the GNU General Public License v3, \neven{} is explicitly designed so that every user can extend its capabilities by contributing functions in any supported language, growing the platform through shared knowledge. The project evolved from R4XCL \citep{BonillaR4XCL2023}, the author's master's thesis work at the Universidad de Costa Rica, which originally connected R with Excel as a single-language bridge.
+\end{enumerate}
+
+\subsection{Paper Organization}
+
+The remainder of this paper is organized as follows. Section~\ref{sec:architecture} describes the system architecture, including the IPC protocol, security model, and visualization subsystem. Section~\ref{sec:viewer_extensibility} presents the unified viewer, user extensibility model, and reproducible publishing pipeline. Section~\ref{sec:case_studies} validates the system through econometric benchmarks and an enterprise analytics scenario. Section~\ref{sec:discussion} discusses performance characteristics, comparison with alternatives, and limitations. Section~\ref{sec:conclusion} concludes with future work directions.
+
+%% Architecture — \neven{} Paper (Restructured)
+
+\section{System Architecture and Design}
+\label{sec:architecture}
+
+\neven{} is organized as a four-layer architecture (Figure~\ref{fig:architecture}) that separates concerns between the Excel interface, core services, language runtimes, and the security subsystem. This section describes each layer and the inter-process communication protocol that connects them.
+
+\subsection{Architectural Overview}
+
+\begin{figure}[htbp]
+    \centering
+	\includegraphics[width=0.99\textwidth]{sections/architecture_diagram.tex}
+    \caption{\neven{} four-layer architecture. The XLL add-in (Layer~1) communicates with language runtimes via Named Pipes carrying Protocol Buffer messages. Each runtime executes in an isolated process, preventing fault propagation to the host application. WebView2 provides interactive visualization on a dedicated STA thread.}
+    \label{fig:architecture}
+\end{figure}
+
+The design follows three guiding principles:
+
+\begin{enumerate}
+    \item \textbf{Fault isolation:} Language runtimes execute in separate OS processes. A segmentation fault in R, Julia, or Python terminates only the child process; the Excel host remains operational and can reconnect automatically.
+    \item \textbf{Protocol neutrality:} All data exchange uses Protocol Buffers \citep{Protobuf2023}, providing language-agnostic serialization with backward-compatible schema evolution.
+    \item \textbf{Security by default:} User-submitted code passes through a sandbox verifier before execution, blocking dangerous operations at the string-analysis level.
+\end{enumerate}
+
+\subsection{System Initialization}
+\label{subsec:initialization}
+
+The entry point is \texttt{NEVEN64.xll}, a 64-bit XLL add-in compiled as a dynamic-link library. Upon loading, Excel invokes \texttt{xlAutoOpen()}, which triggers the initialization sequence detailed in Algorithm~\ref{alg:init}. The XLL registers approximately 200 functions with the Excel function wizard via the \texttt{xlfRegister} API call.
+
+\begin{algorithm}[htbp]
+\SetAlgoLined
+\KwInput{XLL loaded by Excel}
+\KwOutput{System ready with all functions registered}
+\BlankLine
+\texttt{ZombieProcessKiller()}\Comment*[r]{Kill orphaned child processes}
+\texttt{ConfigService::Initialize}(``neven-config.json'')\;
+\texttt{DiscoveryService::FindLanguages()}\;
+\BlankLine
+\ForEach{language $L \in \{R, Julia, Python\}$}{
+    \If{$L$ is enabled and discovered}{
+        $proc \leftarrow$ \texttt{CreateProcess}($L$.executable)\;
+        $pipe \leftarrow$ \texttt{ConnectNamedPipe}(``RJ2XCL2-PIPE-$L$-'' + PID)\;
+        \texttt{SendStartupScript}($pipe$, $L$.startup\_file)\;
+        \texttt{LoadUserFunctions}($pipe$, $L$.functions\_dir)\;
+    }
+}
+\BlankLine
+$functions \leftarrow$ \texttt{MapFunctions()}\Comment*[r]{Query all runtimes}
+\ForEach{$f \in functions$}{
+    \texttt{xlfRegister}($f$.name, $f$.params, $f$.description)\;
+}
+\texttt{ViewerManager::Initialize()}\Comment*[r]{WebView2 STA thread}
+\texttt{PlutoManager::Initialize()}\;
+\caption{System Initialization Sequence (\texttt{xlAutoOpen})}
+\label{alg:init}
+\end{algorithm}
+
+During the initialization sequence shown in Algorithm~\ref{alg:init}, user-created functions are automatically discovered and registered alongside the built-in library. Users extend the system by placing \texttt{.R}, \texttt{.jl}, or \texttt{.py} files in the designated functions directory (within the user's \texttt{Documents\textbackslash NEVEN\textbackslash functions\textbackslash} folder). These files are loaded into their respective runtimes during the \texttt{LoadUserFunctions} step, and every function defined therein is registered as a native Excel formula. The user simply restarts Excel to make new functions available---no compilation, no configuration editing, no administrative privileges required.
+
+The XLL implements two function dispatch mechanisms:
+\begin{itemize}
+    \item \textbf{Registered functions} (\texttt{=R.MR\_Lineal(...)}, \texttt{=J.Algebra(...)}): Dispatched via \texttt{RJ\_FunctionCall}, which serializes arguments to Protocol Buffers and routes to the appropriate language service.
+    \item \textbf{Generic execution} (\texttt{=NEVEN.r("code")}, \texttt{=NEVEN.j("code")}): Dispatched via \texttt{RJ\_Exec\_Generic}, which first validates code through the sandbox verifier before forwarding to the language runtime.
+\end{itemize}
+
+A COM-based Ribbon add-in (\texttt{NEVENRibbon.dll}) provides a native Excel tab with 13 buttons organized in five groups, offering direct access to language consoles, visualization tools, Pluto.jl notebooks, Quarto rendering, and system configuration.
+
+\subsection{Core Services}
+
+\paragraph{Configuration Service.}
+The \texttt{ConfigService} reads \texttt{neven-config.json} at startup, providing typed accessors for all operational parameters. Configuration validation rejects paths containing traversal sequences (\texttt{..}), command injection characters (\texttt{|}, \texttt{\&}, \texttt{;}), and enforces numeric ranges for timeouts and retry counts.
+
+\paragraph{Language Manager.}
+The \texttt{LanguageManager} orchestrates connections to all language runtimes. For each configured language, it launches the child process via \texttt{CreateProcessA}, establishes a Named Pipe connection with the naming pattern \texttt{RJ2XCL2-PIPE-\{LANG\}-\{PID\}}, sends the startup script synchronously, loads user function files from the configured directory, and queries the runtime for its registered function list. Health monitoring runs on a 5-second timer, checking process exit codes via \texttt{GetExitCodeProcess}. If a runtime becomes unavailable, the system marks it as disconnected and returns descriptive error messages rather than opaque \texttt{\#VALUE!} errors.
+
+\paragraph{Discovery Service.}
+The \texttt{DiscoveryService} locates R, Julia, and Python installations by querying the Windows Registry (\texttt{HKLM\textbackslash Software\textbackslash R-core}), scanning standard installation paths, and checking the system \texttt{PATH}. Version constraints (minimum and maximum major/minor versions) are enforced from configuration, ensuring compatibility with tested runtime versions.
+
+\subsection{Inter-Process Communication Protocol}
+\label{subsec:ipc}
+
+Communication between the XLL and language runtimes uses Windows Named Pipes with Protocol Buffers serialization. The message exchange protocol is formalized in Algorithm~\ref{alg:ipc}, which describes the complete lifecycle of a function call from Excel cell to language runtime and back.
+
+\begin{algorithm}[htbp]
+\SetAlgoLined
+\KwInput{Function name $f$, arguments $\{a_1, \ldots, a_n\}$ from Excel cells}
+\KwOutput{Result matrix $R$ for Excel display}
+\BlankLine
+\Comment{Phase 1: Serialization}
+$msg \leftarrow$ \texttt{Variable.new()}\;
+$msg.name \leftarrow f$\;
+\ForEach{argument $a_i$}{
+    \eIf{$a_i$ is scalar}{
+        $msg.value[i] \leftarrow$ \texttt{serialize\_scalar}($a_i$)\;
+    }{
+        $msg.value[i] \leftarrow$ \texttt{serialize\_range}($a_i$)\Comment*[r]{Row-major matrix}
+    }
+}
+$payload \leftarrow$ \texttt{msg.SerializeToString()}\;
+\BlankLine
+\Comment{Phase 2: Pipe Communication}
+$pipe \leftarrow$ \texttt{GetPipe}(language)\;
+\texttt{WriteFile}($pipe$, \texttt{length}($payload$))\Comment*[r]{4-byte length prefix}
+\texttt{WriteFile}($pipe$, $payload$)\;
+\BlankLine
+\Comment{Phase 3: Response}
+$resp\_len \leftarrow$ \texttt{ReadFile}($pipe$, 4)\;
+$resp\_data \leftarrow$ \texttt{ReadFile}($pipe$, $resp\_len$)\;
+$result \leftarrow$ \texttt{Variable.ParseFromString}($resp\_data$)\;
+\BlankLine
+\Comment{Phase 4: Deserialization to XLOPER12}
+\eIf{$result$ is error}{
+    \Return \texttt{xloper\_string}($result.error\_message$)\;
+}{
+    \Return \texttt{to\_xloper12}($result$)\Comment*[r]{Matrix or scalar}
+}
+\caption{IPC Protocol for Function Dispatch}
+\label{alg:ipc}
+\end{algorithm}
+
+The Protocol Buffers schema (\texttt{variable.proto}) defines a \texttt{Variable} message type that supports scalars (real, integer, string, boolean, nil), arrays, and matrices with explicit dimension metadata. This schema has remained stable since version~1.0, demonstrating the forward-compatibility benefits of Protocol Buffers for long-lived IPC interfaces.
+
+\paragraph{Performance Characteristics.}
+The Named Pipe transport operates in byte mode with a buffer size of 65,536 bytes. For typical statistical function calls (arguments under 10~KB), the serialization--transmission--deserialization round trip adds less than 5~ms of overhead beyond the computation time in the target language. Larger payloads (matrices exceeding 100,000 cells) are transmitted in chunked writes to avoid pipe buffer exhaustion.
+
+\paragraph{Julia Cold Start Elimination.}
+Julia's just-in-time compilation introduces significant latency on first function calls. \neven{} addresses this through a precompiled system image (\texttt{neven\_julia.dll}, approximately 415~MB) generated via \texttt{PackageCompiler.jl} \citep{PackageCompiler2023}. This image includes all \neven{} Julia modules pre-compiled to native code, reducing first-call latency from minutes to under one second.
+
+\subsection{Security Sandbox}
+\label{subsec:sandbox}
+
+The \texttt{SandboxVerifier} implements a pattern-based security layer that validates all user-submitted code before execution. Table~\ref{tab:sandbox} summarizes the blocked categories.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Security sandbox: blocked operation categories per language. Each category includes multiple specific patterns (30+ total per language).}
+\label{tab:sandbox}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lp{3cm}p{3cm}p{3cm}@{}}
+\toprule
+\textbf{Category} & \textbf{R} & \textbf{Julia} & \textbf{Python} \\
+\midrule
+Shell execution & \texttt{system()}, \texttt{shell()}, \texttt{pipe()} & \texttt{run()}, \texttt{pipeline()}, backticks & \texttt{os.system()}, \texttt{subprocess.*} \\
+\addlinespace
+File system & \texttt{file.remove()}, \texttt{unlink()} & \texttt{rm()}, \texttt{mv()}, \texttt{cp()} & \texttt{os.remove()}, \texttt{shutil.*} \\
+\addlinespace
+Network & \texttt{download.file()}, \texttt{url()} & \texttt{download()} & \texttt{urllib.*}, \texttt{requests.*} \\
+\addlinespace
+Dynamic code & \texttt{eval(parse())}, \texttt{do.call()} & \texttt{eval()}, \texttt{Meta.parse()} & \texttt{exec()}, \texttt{eval()}, \texttt{compile()} \\
+\addlinespace
+Native code & \texttt{.Call()}, \texttt{dyn.load()} & \texttt{ccall()}, \texttt{unsafe\_*} & \texttt{ctypes.*}, \texttt{cffi.*} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The sandbox implements five bypass-prevention mechanisms: (1)~\emph{whitespace normalization}, which strips extraneous whitespace before pattern matching to prevent evasion via constructions like \texttt{sys\allowbreak tem()}; (2)~\emph{concatenation detection}, which identifies string-building patterns that assemble blocked function names at runtime; (3)~\emph{case-insensitive matching} to prevent \texttt{SYSTEM()} or \texttt{System()} evasion; (4)~\emph{context-aware detection}, which identifies dangerous function calls only in specific argument contexts (e.g., \texttt{readLines(pipe(...))} is blocked while \texttt{readLines("file.txt")} is allowed); and (5)~\emph{unified enforcement}, ensuring identical security checks regardless of execution source (Excel cell, REPL console, or AutoLoader script).
+
+Additionally, a centralized \texttt{InputSanitizer} validates all file paths and command-line arguments against a character allowlist before any \texttt{CreateProcess} call, and a \texttt{MessageValidator} validates IPC message frames before Protobuf deserialization, providing defense-in-depth across the input, execution, and communication layers.
+
+Registered functions---those loaded from \texttt{.R}, \texttt{.jl}, and \texttt{.py} files at startup---bypass the sandbox entirely, as they are considered trusted code authored by the system administrator or the user themselves.
+
+\subsection{Visualization Subsystem}
+
+\neven{} integrates Microsoft WebView2 \citep{WebView2_2023} (the Chromium-based rendering engine from Microsoft Edge) as an embedded visualization viewer. The \texttt{ViewerManager} singleton operates on a dedicated Single-Threaded Apartment (STA) COM thread, managing up to 8 concurrent viewer windows.
+
+The visualization pipeline supports multiple rendering libraries:
+\begin{itemize}
+    \item \textbf{Plotly.js} \citep{Plotly2023}: Interactive scatter, bar, line, box, histogram, and heatmap charts with axis selectors.
+    \item \textbf{D3.js v7} \citep{Bostock2011}: Treemap, Sankey diagram, Sunburst, and force-directed graph visualizations.
+    \item \textbf{Leaflet.js} \citep{Leaflet2023}: Interactive maps with markers, heatmaps, and proportional circles.
+    \item \textbf{rpivotTable} \citep{rpivotTable2023}: Drag-and-drop pivot tables with integrated charting.
+\end{itemize}
+
+A \texttt{PostMessageBridge} enables bidirectional communication between the JavaScript layer in WebView2 and the C++ host, allowing visualizations to request data or trigger Excel operations.
+
+\subsection{Interactive REPL Console}
+\label{subsec:repl}
+
+\neven{} provides an interactive REPL (Read-Eval-Print Loop) console for exploratory coding, accessible via \texttt{=NEVEN.Console()} or the Ribbon button. The console is implemented as a self-contained HTML page rendered in WebView2, managed by a \texttt{REPLManager} singleton and a \texttt{REPLBridge} that handles code dispatch, sandbox enforcement, and result delivery.
+
+This architecture replaces the legacy Electron-based console (inherited from BERT) that carried over 50 known CVEs from Electron~1.8.2, required Node.js and npm as dependencies, and operated as a separate 200~MB child process. The WebView2-based replacement introduces zero external dependencies (the WebView2 runtime is pre-installed on Windows~10/11), runs in-process on a dedicated STA thread, and applies the same \texttt{SandboxVerifier} checks as Excel cell execution---ensuring that the REPL cannot bypass security restrictions that apply to formulas.
+
+%% Unified Viewer, Extensibility, and Reproducible Publishing — NEVEN Paper
+
+\section{Unified Viewer, Extensibility, and Reproducible Publishing}
+\label{sec:viewer_extensibility}
+
+The architectural foundation described in Section~\ref{sec:architecture} enables three capabilities that distinguish \neven{} from prior Excel integration tools: a unified multi-format viewer, a file-based extensibility model, and a reproducible publishing pipeline. Together, these transform Excel from a static spreadsheet into an interactive analytical workbench.
+
+\subsection{The Unified Viewer}
+
+The WebView2-based viewer transcends the role of a simple HTML display. It functions as a \emph{unified document and visualization engine} capable of rendering diverse content types within the Excel workflow. All content is accessed through a single function: \texttt{=NEVEN.v(content\_or\_path)}.
+
+\paragraph{A New Analytical Dimension.}
+Traditionally, Excel users who wished to interact with their data through advanced visualization---force-directed network graphs, geographic heatmaps, hierarchical treemaps, or drag-and-drop pivot exploration---had no option but to export their data to specialized tools (Tableau, Power~BI, Python+matplotlib, R+Shiny) and learn those tools' interfaces and programming models. The WebView2 viewer eliminates this barrier entirely. By embedding a full Chromium rendering engine within the Excel workflow, \neven{} brings the most sophisticated web-based visualization libraries---D3.js, Plotly, Leaflet, rpivotTable---directly to the user's data without requiring a single line of JavaScript, Python, or R code.
+
+The conceptual shift is significant: the user does not ``send data to a visualization tool''---instead, the visualization comes to the user's data. A financial analyst writes \texttt{=NEVEN.v(R.Dashboard(A1:E500, 1))} and immediately interacts with a six-tab dashboard containing pivot tables, scatter plots, treemaps, Sankey diagrams, sunburst charts, and force-directed graphs---all computed from the same Excel range, all interactive (zoom, filter, hover, drag), all updating when the underlying data changes. This transforms Excel from a static grid into a dynamic analytical workbench where the sophistication of the visualization is decoupled from the expertise of the user.
+
+Table~\ref{tab:viewer_formats} summarizes the supported content types and their rendering mechanisms.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Content types supported by the \neven{} unified viewer. A single function (\texttt{=NEVEN.v()}) routes content to the appropriate renderer based on automatic type detection.}
+\label{tab:viewer_formats}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llp{5.5cm}@{}}
+\toprule
+\textbf{Content Type} & \textbf{Renderer} & \textbf{Capabilities} \\
+\midrule
+Interactive charts (Plotly) & Plotly.js & Zoom, pan, hover tooltips, axis selection, PNG/PDF export \\
+\addlinespace
+D3.js visualizations & D3.js v7 & Treemap, Sankey, Sunburst, Force-directed graphs \\
+\addlinespace
+Pivot tables & rpivotTable & Drag-and-drop aggregation, heatmaps, bar charts \\
+\addlinespace
+Geographic maps & Leaflet.js & Markers, heatmaps, proportional circles, CartoDB tiles \\
+\addlinespace
+Markdown documents & marked.js + KaTeX & Headers, tables, code blocks, LaTeX math rendering \\
+\addlinespace
+PDF documents & WebView2 native & Full PDF rendering with zoom, search, page navigation \\
+\addlinespace
+Word documents & Pandoc $\to$ HTML & Headings, tables, images, formatted text \\
+\addlinespace
+Plain text files & Monospace \texttt{<pre>} & Dark theme, whitespace preservation \\
+\addlinespace
+Pluto.jl notebooks & HTTP (localhost) & Reactive Julia notebooks with live data from Excel \\
+\addlinespace
+Quarto reports & Quarto CLI $\to$ HTML & Publication-quality documents with embedded code \\
+\addlinespace
+HTML files & Direct navigation & Any self-contained HTML (presentations, dashboards) \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\paragraph{Snap Layout: Side-by-Side Workflow.}
+When the viewer opens, \neven{} automatically positions Excel on the left half of the screen and the viewer on the right half, using the Windows \texttt{SetWindowPos} API with work-area detection to respect the taskbar. This eliminates manual window arrangement and provides an optimal data-visualization workflow: the user modifies data in Excel (left) and immediately sees the updated visualization (right). The UX innovation is subtle but transformative---it removes the friction that discourages analysts from iterating on visualizations.
+
+\paragraph{Interactive Exploration.}
+The viewer is not a static display. Users manipulate pivot tables by dragging fields between rows, columns, and aggregation areas (rpivotTable); explore charts interactively with zoom, pan, hover tooltips, and axis selection (Plotly); navigate geographic data with map zoom, layer toggling, and popup information (Leaflet); and save results via a floating button that exports the current view as HTML, PNG, or PDF for inclusion in presentations and reports.
+
+\subsection{User Extensibility}
+\label{subsec:extensibility}
+
+A distinguishing design principle of \neven{} is that the system's functionality is not fixed at compile time. Users extend the platform by placing script files in a designated directory within their user profile:\\ 
+
+{\texttt{Documents\textbackslash NEVEN\textbackslash functions\textbackslash}}\\
+
+At startup, \neven{} scans this directory and loads all \texttt{.R}, \texttt{.jl}, and \texttt{.py} files into their respective runtimes, as described in Algorithm~\ref{alg:init}. Each function defined in these files is automatically registered as a native Excel formula.
+
+The naming convention makes the source language immediately visible to the user:
+\begin{itemize}
+    \item \texttt{=R.function()} : R functions (statistical modeling, visualization)
+    \item \texttt{=J.function()} : Julia functions (numerical computing, optimization)
+    \item \texttt{=P.function()} : Python functions (machine learning, data science)
+\end{itemize}
+
+\paragraph{Defining Custom Functions.}
+The extension model requires no boilerplate. Algorithm~\ref{alg:user_r} illustrates the pattern for R; Julia and Python follow the same convention with their respective syntax.
+
+\begin{algorithm}[htbp]
+\SetAlgoLined
+\KwInput{User places \texttt{my\_analysis.R} in the functions directory}
+\KwOutput{Formula \texttt{=R.MiModelo(...)} available in Excel}
+\BlankLine
+\textbf{define} \texttt{MiModelo}($datos$, $parametro \leftarrow 0.05$)\;
+\Indp
+    $resultado \leftarrow$ \texttt{t.test}($datos$, conf.level $= 1 - parametro$)\;
+    \Return \texttt{data.frame}(statistic, p.value, conf.low, conf.high)\;
+\Indm
+\BlankLine
+\textbf{set} \texttt{attr}(MiModelo, ``description'') $\leftarrow$ ``Custom t-test with configurable alpha''\;
+\textbf{set} \texttt{attr}(MiModelo, ``category'') $\leftarrow$ ``My Functions''\;
+\caption{User-Defined R Function (automatically exposed as \texttt{=R.MiModelo(...)})}
+\label{alg:user_r}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+\SetAlgoLined
+\KwInput{User places \texttt{monte\_carlo.jl} in the functions directory}
+\KwOutput{Formula \texttt{=J.MonteCarlo(...)} available in Excel}
+\BlankLine
+\textbf{define} \texttt{MonteCarlo}($data$, $n\_sims \leftarrow 10000$)\;
+\Indp
+    $results \leftarrow$ \texttt{zeros}($n\_sims$)\;
+    \For{$i \leftarrow 1$ \KwTo $n\_sims$}{
+        $sample \leftarrow$ \texttt{rand}($data$, \texttt{length}($data$))\;
+        $results[i] \leftarrow$ \texttt{mean}($sample$)\;
+    }
+    \Return \texttt{DataFrame}(mean, std, ci\_low, ci\_high)\;
+\Indm
+\caption{User-Defined Julia Function (automatically exposed as \texttt{=J.MonteCarlo(...)})}
+\label{alg:user_jl}
+\end{algorithm}
+
+Upon restarting Excel, these functions become available in the formula bar. The \texttt{description} and \texttt{category} attributes populate the Excel function wizard, providing discoverability without requiring documentation external to the code.
+
+\paragraph{Extensibility as Community Model.}
+This model means that \neven{}'s initial catalog of 160+ functions represents a \emph{starting point}, not a ceiling. Domain-specific teams can build specialized function libraries---actuarial models, pharmacokinetic simulations, supply chain optimizers---and distribute them as simple script files that any Excel user can install by copying to a folder. The \texttt{=R.function(...)}, \texttt{=J.function(...)}, and \texttt{=P.function(...)} convention ensures that users always know which language engine powers each formula.
+
+\subsection{Reactive Notebooks with Pluto.jl}
+
+\neven{} integrates Pluto.jl \citep{Pluto2023} reactive notebooks through a data pipeline that transfers Excel ranges to Julia via TSV files. The function \texttt{=NEVEN.pluto.data(range, "name")} serializes the selected Excel range to a tab-separated file in a shared directory, which Pluto.jl reads reactively. When the user updates the Excel range and re-executes the formula, the notebook automatically recomputes all dependent cells.
+
+This creates a unique workflow where Excel serves as the data source and Pluto provides the computational narrative. Fifteen pre-loaded notebooks covering principal component analysis, linear algebra, optimization, clustering, and differential equations are included with the distribution. Users can create additional notebooks that reference Excel data, enabling exploratory analysis that combines the familiarity of spreadsheets with the expressiveness of reactive programming.
+
+\subsection{Reproducible Publishing with Quarto}
+\label{subsec:quarto}
+
+\neven{} integrates Quarto \citep{Quarto2023}---the next-generation scientific publishing system from Posit---for generating publication-quality reports directly from Excel. The function \texttt{=NEVEN.q("report.qmd")} invokes the Quarto CLI via \texttt{CreateProcess} to render a \texttt{.qmd} document to HTML, which is then displayed in the WebView2 viewer.
+
+This enables a complete reproducible research workflow:
+\begin{enumerate}
+    \item \textbf{Data preparation} in Excel (cleaning, transformation, validation).
+    \item \textbf{Statistical analysis} via \neven{} formulas (\texttt{=R.MR\_Lineal(...)}, etc.).
+    \item \textbf{Report generation} via Quarto, embedding R/Julia/Python code chunks that reference the same data.
+    \item \textbf{Publication} as HTML, PDF, or Word---suitable for journal submission, regulatory filing, or executive presentation.
+\end{enumerate}
+
+Quarto documents support cross-references, citations (via BibTeX), mathematical notation (LaTeX), and multi-language code chunks---making them ideal for documenting complex analytical workflows that combine Excel data with R/Julia/Python computations. The rendered output appears in the \neven{} viewer with full interactivity (clickable links, embedded visualizations, table of contents navigation).
+
+This integration positions \neven{} not merely as a computation tool but as a complete \emph{analytical publishing platform}: from raw data in Excel to peer-reviewed publication, without leaving the spreadsheet environment.
+
+%% Case Studies — \neven{} Paper (Revised with TipoOutput explanation + German Credit)
+
+\section{Case Studies}
+\label{sec:case_studies}
+
+Before presenting the validation scenarios, we describe the \texttt{TipoOutput} parameter---a central design element that enables users to extract multiple perspectives from a single analytical function without writing any code.
+
+\subsection{The TipoOutput Paradigm}
+\label{subsec:tipooutput}
+
+Every analytical function in \neven{} accepts a \texttt{TipoOutput} parameter that controls which result is returned to Excel. This design allows a single function to serve multiple analytical purposes:
+
+\begin{itemize}
+    \item \texttt{TipoOutput = 0} --- Returns the list of all available procedures for that function. This serves as built-in documentation: the user can discover what outputs are available without consulting external references.
+    \item \texttt{TipoOutput = 1, (...) , N-1} --- Returns a specific result. For example, in \texttt{=R.MR\_Lineal(Y, X, TipoOutput)}: type~1 returns the estimated model with standard errors and significance; type~2 returns in-sample predictions; type~3 returns out-of-sample predictions; type~4 returns marginal effects; and so on.
+    \item \texttt{TipoOutput = N} --- Returns the \emph{Universal Output Extraction}: a complete structured table containing all model outputs (coefficients, test statistics, residuals, fit measures) in a single multi-cell array. This is powered by the \texttt{Extraer\_outputs} function, which decomposes any R model object into a standardized [Section, Parameter, Metric, Value] format.
+\end{itemize}
+
+This paradigm eliminates the need for users to understand the internal structure of R model objects. A researcher exploring a regression model can iterate through \texttt{TipoOutput} values to examine different facets of the same estimation, or use \texttt{TipoOutput = 0} to discover what is available. The Universal Output Extraction (\texttt{TipoOutput = N}) provides a comprehensive view suitable for reporting or further analysis within Excel.
+
+\paragraph{The Observation Filter (FILTRO).}
+In addition to \texttt{TipoOutput}, every analytical function includes a \texttt{FILTRO} parameter: a binary vector of the same length as the dataset where a value of~1 excludes the corresponding observation from the computation. This mechanism allows the user to mark specific rows directly in Excel and instantly recalculate the model without those observations---quantifying the effect of individual data points on the results.
+
+The pedagogical value of this design is significant. In traditional tools, excluding observations requires manipulating the original dataset (deleting rows, creating filtered copies, or writing conditional logic). In \neven{}, the user simply changes a~0 to a~1 in a cell and the entire model recalculates. This enables sensitivity analysis at the observation level: a student can identify an outlier, exclude it, and immediately observe how coefficients, standard errors, and fit statistics change. The tool becomes not merely a computation engine but an instrument for deep understanding of how each data point influences the analytical outcome.
+
+For example, in a regression with $n = 526$ observations, the formula:
+\begin{center}
+\texttt{=R.MR\_Lineal(Y, X, FILTRO, 0, 0, , 1, 1)}
+\end{center}
+where \texttt{FILTRO} is a column of zeros and ones, allows the researcher to iteratively exclude suspected influential observations and compare the resulting models---all within the same worksheet, with no code and no data manipulation.
+
+\paragraph{AI-Assisted Interpretation.}
+Every analytical function in \neven{} can be complemented with AI-generated interpretation through the Python integration. The function \texttt{=P.ai\_call(data, "prompt")} sends the output of any statistical procedure to a large language model---either cloud-based (OpenAI, Azure OpenAI) or locally hosted (Ollama, LM Studio)---and returns a natural-language explanation directly in Excel cells. This capability is transversal: it applies to any function output regardless of the source language (R, Julia, or Python). The user configures the AI provider connection (API endpoint, model name, and authentication key) in \texttt{neven-config.json}, requiring no code changes to switch between providers or models.
+
+The interpretation prompts are fully customizable. \neven{} ships with a set of default prompts tailored to each analytical domain (regression diagnostics, time series forecasting, clustering interpretation), but the user can modify, extend, or replace them by editing simple text files in the configuration directory. This means that a professor can craft pedagogically appropriate prompts for students, while a risk analyst can write prompts aligned with regulatory language. The AI layer transforms raw statistical output into actionable insight without requiring the user to interpret $p$-values, eigenvalues, or residual patterns manually---while preserving full transparency, since the underlying numerical results remain visible in adjacent cells.
+
+All examples in this section reference Excel workbooks distributed with \neven{} in the \texttt{Ejemplos/Excel/} directory. Readers can open these workbooks, modify the data or parameters, and verify that the formulas produce the reported results---ensuring full reproducibility of every claim made in this paper.
+
+\subsection{Econometric Validation}
+\label{subsec:econometric}
+
+To validate the correctness of \neven{}'s statistical implementations, we reproduce selected analyses from \citet{Wooldridge2016}, a standard reference in introductory econometrics used in graduate programs worldwide. The accompanying Excel workbooks (\texttt{CAP03.xlsm} through \texttt{CAP19.xlsm} in the \texttt{Ejemplos/Excel/WOOLDRIDGE/} directory) contain the original datasets and NEVEN formulas for each chapter. For each model, we compare three execution paths: direct R code in RStudio, the equivalent NEVEN Excel formula, and published textbook results.
+
+\paragraph{OLS Regression (Chapter 6).}
+The wage equation from Example~6.1 models $\log(\text{wage}) = \beta_0 + \beta_1 \text{educ} + \beta_2 \text{exper} + \beta_3 \text{tenure} + u$ using the \texttt{wage1} dataset ($n = 526$). In \neven{}, the user enters:
+
+\begin{center}
+\texttt{=R.MR\_Lineal(B2:B527, C2:E527, 0, 0, 0, , 1, 1)}
+\end{center}
+
+where column~B contains the dependent variable, columns~C--E contain regressors, and the final parameter \texttt{1} specifies \texttt{TipoOutput = 1} (coefficient table with standard errors, $t$-statistics, and $p$-values). Table~\ref{tab:ols_results} presents the comparison across all three execution paths.
+
+\begin{table}[htbp]
+\centering
+\caption{OLS regression results for the wage equation (Chapter~6, Example~6.1). Data: \texttt{wage1} dataset ($n = 526$). Source: \texttt{CAP06.xlsm}. All three methods produce identical estimates to four decimal places.}
+\label{tab:ols_results}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Variable} & \textbf{Wooldridge (2016)} & \textbf{Direct R} & \textbf{\neven{}} & \textbf{Difference} \\
+\midrule
+Intercept       & 0.2844  & 0.2844  & 0.2844  & 0.0000 \\
+Education       & 0.0920  & 0.0920  & 0.0920  & 0.0000 \\
+Experience      & 0.0041  & 0.0041  & 0.0041  & 0.0000 \\
+Tenure          & 0.0221  & 0.0221  & 0.0221  & 0.0000 \\
+\addlinespace
+$R^2$           & 0.316   & 0.3160  & 0.3160  & 0.0000 \\
+$\bar{R}^2$     & 0.312   & 0.3121  & 0.3121  & 0.0000 \\
+$F$-statistic   & 80.39   & 80.39   & 80.39   & 0.00   \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Using \texttt{TipoOutput = 13} on the same formula returns the Universal Output Extraction---a complete table with all model components (coefficients, residuals, $R^2$, $F$-statistic, AIC, BIC) in a single multi-cell array that the user can filter and analyze within Excel.
+
+\paragraph{Binary Response Models (Chapter 17).}
+For the probit model of married women's labor force participation, $P(\text{inlf} = 1 | \mathbf{x}) = \Phi(\beta_0 + \beta_1 \text{nwifeinc} + \beta_2 \text{educ} + \beta_3 \text{exper} + \beta_4 \text{exper}^2)$, the \neven{} formula \texttt{=R.MR\_Binario(Y, X, 0, 0, 0, , 1, 1)} produces marginal effects and goodness-of-fit statistics consistent with the textbook values. The Hosmer--Lemeshow test statistic and classification accuracy match those reported by \citet{Wooldridge2016} within rounding precision. Source workbook: \texttt{CAP17.xlsm}.
+
+\paragraph{Panel Data (Chapter 13).}
+Panel data models require the \texttt{plm} package \citep{Croissant2008} in R. \neven{} exposes this functionality through \texttt{=R.MR\_PanelData(Y, X, ID, Time, TipoOutput)}, where \texttt{ID} identifies the cross-sectional unit and \texttt{Time} identifies the time period. The \texttt{TipoOutput} parameter selects between coefficient estimates~(1), entity fixed effects~(2), Hausman test~(4), and complete output extraction~(16). Table~\ref{tab:panel_results} compares the fixed effects estimates. Source workbook: \texttt{CAP13.xlsm}.
+
+\begin{table}[htbp]
+\centering
+\caption{Panel data fixed effects estimates for county crime rates (Chapter~13). Data: \texttt{crime2} dataset (46 cities, 7 years). Source: \texttt{CAP13.xlsm}. \neven{} results match direct R execution exactly.}
+\label{tab:panel_results}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Statistic} & \textbf{Direct R (\texttt{plm})} & \textbf{\neven{}} & \textbf{Match} \\
+\midrule
+Unemployment coeff.  & 0.0342  & 0.0342  & \checkmark \\
+Robust SE            & 0.0117  & 0.0117  & \checkmark \\
+Hausman $\chi^2$     & 14.73   & 14.73   & \checkmark \\
+Hausman $p$-value    & 0.0001  & 0.0001  & \checkmark \\
+Within $R^2$         & 0.1282  & 0.1282  & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Time Series (Chapter 11)}
+The time series module (\small \texttt{=R.ST\_SeriesTemporales}) implements unit root tests, ARIMA, GARCH, and decomposition models. For the Phillips curve ($\Delta \text{inf}_t = \alpha_0 + \alpha_1 \text{unem}_t + e_t$), \neven{} produces identical AIC/BIC values, coefficient estimates, and Ljung--Box test statistics compared to direct R execution using the \texttt{forecast} package \citep{Hyndman2008}. Source workbook: \texttt{CAP11.xlsm}.
+
+\paragraph{Julia Numerical Validation.}
+The Julia module provides 70 procedures across 10 modules. We validated the linear algebra module (\texttt{=J.Algebra(...)}) against known matrix decomposition results. Table~\ref{tab:julia_validation} confirms that all decompositions achieve machine-precision accuracy, demonstrating that Protocol Buffers serialization and Named Pipe transport do not introduce numerical degradation.
+
+\begin{table}[htbp]
+\centering
+\caption{Julia numerical validation: matrix decomposition accuracy for a $100 \times 100$ random matrix. Errors measured as $\|\mathbf{A} - \hat{\mathbf{A}}\|_F / \|\mathbf{A}\|_F$.}
+\label{tab:julia_validation}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Decomposition} & \textbf{\neven{} Formula} & \textbf{Relative Error} \\
+\midrule
+LU factorization    & \texttt{=J.Algebra(A, , "lu")}  & $< 10^{-15}$ \\
+QR factorization    & \texttt{=J.Algebra(A, , "qr")}  & $< 10^{-15}$ \\
+SVD                 & \texttt{=J.Algebra(A, , "svd")} & $< 10^{-15}$ \\
+Eigendecomposition  & \texttt{=J.Algebra(A, , "eigen")} & $< 10^{-14}$ \\
+Cholesky (SPD)      & \texttt{=J.Algebra(A, , "cholesky")} & $< 10^{-15}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Reproducibility}
+The Excel workbooks in \texttt{Ejemplos/Excel/WOOLDRIDGE/} (chapters 3--19) and \texttt{Ejemplos/Excel/BONILLA/} (specialized procedures) are distributed with the software. The complete validation workflow is fully reproducible. A researcher can open any workbook, verify that the formulas produce the expected results, modify the data or model specification interactively, and use \texttt{TipoOutput = 0} to discover additional analytical options. Combined with Quarto integration (\texttt{=NEVEN.q("validation\_report.qmd")}), the entire analysis pipeline from raw data to formatted report is auditable.
+
+\paragraph{Aerospace Engineering: HL-20 Reentry Trajectory.}
+To demonstrate \neven{}'s applicability beyond statistics and economics, we include a simplified atmospheric reentry simulation inspired by the NASA HL-20 lifting body vehicle. The 3-DOF model (altitude, velocity, flight path angle) is implemented as a Pluto.jl reactive notebook (\texttt{hl20\_reentry.jl}) that receives initial conditions from Excel via \texttt{=NEVEN.pluto.data(A1:C1, "hl20\_params")} and solves the trajectory using a Runge-Kutta~4 integrator. The user defines entry altitude ($h_0 = 120$~km), orbital velocity ($V_0 = 7500$~m/s), and flight path angle ($\gamma_0 = -1.5^\circ$) in Excel cells, sends them to Julia with a single formula, and observes the resulting trajectory---peak dynamic pressure, maximum g-load, descent profile---interactively in the Pluto notebook.
+
+This example illustrates a key design principle: \neven{} does not impose ceilings on computational complexity. The same infrastructure that serves an economics student running a linear regression also serves an aerospace engineer solving coupled differential equations. Each user extends the platform to their level of rigor---from the simplified 3-DOF model demonstrated here to a full 6-DOF simulation with Mach-dependent aerodynamic tables (NASA~TM-4302), thermal constraints, and guidance algorithms---simply by adding Julia code to the notebook. The Excel-to-Julia pipeline handles data flow; the scientific complexity is limited only by the user's domain expertise.
+
+\subsection{Enterprise Analytics: Credit Risk with German Credit Data}
+\label{subsec:enterprise}
+
+To demonstrate \neven{}'s applicability in enterprise settings, we present a credit risk analysis using the German Credit dataset \citep{Dua2019}---a publicly available benchmark containing 1,000 loan applications with 20 predictor variables and a binary outcome (good/bad credit risk). The accompanying workbook (\texttt{Ejemplos/Excel/BONILLA/R4XL-GermanCredit.xlsx}) allows readers to reproduce every result presented in this section.
+
+\paragraph{Data Acquisition and Exploration.}
+The workflow begins entirely within Excel. The user retrieves the dataset directly from R's package ecosystem using a single formula:
+
+\begin{center}
+\texttt{=NEVEN.r("data('german', package='rchallenge'); print(as.data.frame(german))")}
+\end{center}
+
+Once the data resides in Excel, the user explores each variable's distinct values with \texttt{=R.DB\_Unicos(A1:A1001)}, identifying the categorical structure of the dataset without writing any R code. Variables encoded as text (e.g., \texttt{A11}, \texttt{A12} for account status) can be recodified into human-readable labels using \texttt{=R.DB\_Recodificar(range, old\_values, new\_values)}. A training set is constructed via \texttt{=R.FX\_AleatorioUniforme(1000, 0, 1, seed)} to generate a random uniform vector that partitions observations into training and test subsets---all using native Excel formulas.
+
+\paragraph{Automatic Categorical Variable Detection.}
+A key innovation in \neven{} is the automatic detection of variable types during model estimation. When the user passes a dataset containing non-numeric variables (such as the German Credit's account status, credit history, or employment type), the system internally identifies which columns are categorical and automatically computes the effect of each class on the model---equivalent to the manual creation of dummy variables that traditional tools require. The user simply passes the data as-is; \neven{} handles the factor encoding transparently, producing coefficient estimates for each category level without any additional configuration.
+
+\paragraph{Credit Scoring Model.}
+The logistic regression for probability of default uses:
+
+\begin{center}
+\texttt{=R.MR\_Binario.C(Y, X, 0, Filtro, 0, 0, 0, TipoOutput)}
+\end{center}
+
+where \texttt{Y} contains the binary credit risk outcome, \texttt{X} contains all 20 predictor variables (numeric and categorical mixed), and \texttt{Filtro} defines the training subset. \texttt{TipoOutput = 1} returns coefficient estimates including the effect of each categorical level. \texttt{TipoOutput = 3} returns marginal effects at the mean. \texttt{TipoOutput = 5} returns ROC curve data for model discrimination assessment. The Universal Output Extraction (\texttt{TipoOutput = N}) returns all model components in a single structured table---enabling the analyst to build a complete model assessment without writing any R code.
+
+\paragraph{Interactive Visualization.}
+The dashboard function \texttt{=R.Dashboard(A1:U1001, 1)} generates a multi-tab interactive interface combining rpivotTable, Plotly charts, and D3.js visualizations in a single WebView2 window. The Snap Layout feature automatically positions Excel on the left and the viewer on the right, enabling iterative exploration: the analyst modifies data or parameters in Excel and immediately observes the impact in the visualization.
+
+\paragraph{Regulatory Documentation.}
+The formula \texttt{=NEVEN.q("credit\_risk\_report.qmd")} renders a Quarto document containing the analysis narrative, embedded R code chunks referencing the Excel data, and cross-references to model outputs. This produces a publication-quality report suitable for regulatory submission (Basel~III/IV compliance), with all computations reproducible from the source document.
+
+\paragraph{Workflow Comparison.}
+Table~\ref{tab:enterprise_comparison} contrasts the \neven{}-based workflow with the traditional multi-tool approach for the same credit risk analysis.
+
+\begin{table}[htbp]
+\centering
+\caption{Workflow comparison: traditional enterprise analytics vs.\ \neven{}-based approach for credit risk analysis on the German Credit dataset.}
+\label{tab:enterprise_comparison}
+\begin{tabular}{@{}lp{4.5cm}p{4.5cm}@{}}
+\toprule
+\textbf{Aspect} & \textbf{Traditional} & \textbf{\neven{}} \\
+\midrule
+Tools required & Excel + SAS/SPSS + Tableau + Word & Excel + \neven{} (single environment) \\
+\addlinespace
+Skills required & VBA, SAS programming, Tableau & Excel formulas only \\
+\addlinespace
+Handoff points & 4 (data export/import between tools) & 0 (all in Excel) \\
+\addlinespace
+Reproducibility & Manual (re-run each tool) & Automatic (recalculate formulas) \\
+\addlinespace
+Licensing & Commercial (restricted access) & Open source (GPL v3) \\
+\addlinespace
+Audit trail & Fragmented across tools & Unified in Excel + Quarto \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The elimination of handoff points reduces both analysis time and the risk of data transformation errors. The open-source nature of \neven{} removes licensing barriers that often exclude academic institutions and small enterprises from accessing advanced analytical capabilities.
+
+%% Discussion — \neven{} Paper
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Comparison with Existing Solutions}
+
+Table~\ref{tab:comparison} provides a systematic comparison of \neven{} with existing tools that integrate programming languages with Excel.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Feature comparison of Excel integration tools. \neven{} is the only solution offering three languages with process isolation, security sandboxing, and interactive visualization.}
+\label{tab:comparison}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Feature} & \textbf{\neven{}} & \textbf{PyXLL} & \textbf{xlwings} & \textbf{RExcel} & \textbf{Python in Excel} \\
+\midrule
+Languages supported & R, Julia, Python & Python & Python & R & Python \\
+Process isolation & \checkmark & -- & -- & -- & \checkmark\textsuperscript{a} \\
+Security sandbox & \checkmark & -- & -- & -- & \checkmark\textsuperscript{a} \\
+Interactive viz. & \checkmark & -- & Partial & -- & Partial \\
+Reactive notebooks & \checkmark & -- & -- & -- & -- \\
+Reproducible reports & \checkmark & -- & -- & -- & -- \\
+Native Ribbon & \checkmark & -- & -- & -- & \checkmark \\
+Automated tests & 357 & N/A & N/A & N/A & N/A \\
+Open source & GPL v3 & Commercial & Partial\textsuperscript{b} & GPL & Proprietary \\
+Local execution & \checkmark & \checkmark & \checkmark & \checkmark & --\textsuperscript{c} \\
+\addlinespace
+Price (annual)\textsuperscript{e} & Free & \$495 & \$490 (PRO) & Free & Included\textsuperscript{d} \\
+\bottomrule
+\multicolumn{6}{@{}l}{\footnotesize \textsuperscript{a}Cloud-based isolation. \textsuperscript{b}Open core model. \textsuperscript{c}Cloud execution only.} \\
+\multicolumn{6}{@{}l}{\footnotesize \textsuperscript{d}Requires Microsoft 365 subscription. \textsuperscript{e}Prices as of May 2026; subject to change.}
+\end{tabular}%
+}
+\end{table}
+
+\subsubsection{PyXLL}
+
+PyXLL \citep{PyXLL2023} is a mature commercial product that embeds Python within the Excel process via the XLL interface. While it provides excellent Python integration with low latency (in-process execution), it supports only Python, lacks security sandboxing (arbitrary code execution is unrestricted), and does not provide interactive visualization capabilities. Its commercial license limits adoption in academic settings.
+
+\subsubsection{xlwings}
+
+xlwings \citep{xlwings2023} connects Python to Excel via COM automation, operating as a separate process. It offers a Python-centric workflow where Excel serves as a data source rather than the primary interface. The PRO version adds features such as embedded code in Excel files. However, it supports only Python, provides no security layer, and requires users to write Python code.
+
+\subsubsection{RExcel}
+
+RExcel \citep{Baier2011} was an early effort to integrate R with Excel, developed as part of the statconnDCOM project. It used DCOM for inter-process communication and provided R function access from Excel. However, the project has not been maintained since approximately 2015, supports only R~3.x, and lacks security features, interactive visualization, or automated testing.
+
+\subsubsection{Python in Excel (Microsoft)}
+
+Microsoft's Python in Excel \citep{MicrosoftPython2023} represents the most significant recent development in this space. It executes Python code in Azure cloud containers, providing strong isolation and security. However, it supports only Python (no R or Julia), requires an internet connection, processes data in Microsoft's cloud (raising data sovereignty concerns for regulated industries), and offers limited visualization compared to \neven{}'s WebView2-based approach with Plotly, D3.js, and Leaflet.
+
+\subsubsection{BERT (Basic Excel R Toolkit)}
+
+BERT \citep{BERT2018} is the direct predecessor of \neven{}. Developed by Structured Data LLC (2017--2018), it demonstrated the feasibility of R integration in Excel via process isolation and Named Pipes. However, BERT supported only R~3.4.x and Julia~0.6.x (never fully functional), had no security sandboxing, no automated tests, no interactive visualization, and has been unmaintained since 2018. \neven{} modernizes this architecture for current language versions while adding 13 significant innovations (Section~\ref{sec:introduction}).
+
+\subsection{Software Quality Metrics}
+
+Table~\ref{tab:quality} summarizes the software quality characteristics of \neven{} as measured by automated testing and static analysis.
+
+\begin{table}[htbp]
+\centering
+\caption{Software quality metrics for \neven{} v2.0.}
+\label{tab:quality}
+\begin{tabular}{@{}llr@{}}
+\toprule
+\textbf{Category} & \textbf{Metric} & \textbf{Value} \\
+\midrule
+\multirow{5}{*}{Testing} & Total automated tests & 357 \\
+ & Sandbox tests (R + Julia + Python) & 154 \\
+ & Property-based tests (rapidcheck) & 24 \\
+ & Type conversion and RAII tests & 34 \\
+ & End-to-end and integration tests & 12 \\
+\addlinespace
+\multirow{3}{*}{Code quality} & Language & C++17 \\
+ & Build system & CMake 3.15+ \\
+ & CI/CD & GitHub Actions \\
+\addlinespace
+\multirow{4}{*}{Security} & Blocked patterns per language & 30+ \\
+ & Bypass prevention mechanisms & 5 \\
+ & Input sanitization (allowlist) & All CreateProcess paths \\
+ & IPC frame validation & All Protobuf messages \\
+\addlinespace
+\multirow{2}{*}{Documentation} & User-facing chapters & 12 \\
+ & Documented functions (with examples) & 95 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All 357 tests pass consistently in the CI/CD pipeline with a 100\% pass rate. Tests execute without requiring Excel, R, or Julia installations through a \texttt{MockExcelBridge} that simulates the Excel SDK API, enabling automated testing in headless environments.
+
+\subsubsection{Security Audit and Remediation}
+
+A comprehensive static analysis audit identified 36 findings across the codebase (8~critical, 7~high, 5~medium, 14~low, 2~informational). All 36 findings were systematically remediated through a structured process:
+
+\begin{itemize}
+    \item \textbf{Input sanitization:} A centralized \texttt{InputSanitizer} module validates all file paths and command-line arguments against a character allowlist before any \texttt{CreateProcess} call, eliminating OS command injection vectors.
+    \item \textbf{Sandbox hardening:} The \texttt{SandboxVerifier} was extended with 15 additional blocked patterns per language, context-aware detection (e.g., \texttt{readLines(pipe(...))} in R, \texttt{open(\`...\`)} in Julia), and unified enforcement across all execution paths (Excel cells, REPL, and AutoLoader).
+    \item \textbf{IPC validation:} A \texttt{MessageValidator} validates Protobuf frame structure (length prefix bounds, buffer completeness) before deserialization, preventing buffer overflow from malformed messages.
+    \item \textbf{RAII pipe handles:} A \texttt{SafePipeHandle} wrapper combines handle validity checking and I/O operations under a single critical section, eliminating TOCTOU race conditions.
+    \item \textbf{Build hardening:} MSVC security flags (\texttt{/GS}, \texttt{/guard:cf}, \texttt{/DYNAMICBASE}, \texttt{/NXCOMPAT}, \texttt{/CETCOMPAT}) are applied globally to all compilation targets.
+    \item \textbf{Electron elimination:} The legacy Electron-based REPL console (carrying 50+ CVEs from Electron~1.8.2) was completely removed and replaced by an in-process WebView2-based REPL, eliminating 9 security findings simultaneously.
+\end{itemize}
+
+Nine correctness properties were formalized and validated via property-based testing using rapidcheck~\citep{rapidcheck2023}, providing evidence that security invariants hold across randomized inputs (100+ iterations per property).
+
+\subsection{Architecture Trade-offs}
+
+The process-isolated architecture introduces inherent trade-offs that merit discussion:
+
+\paragraph{Latency vs.\ Safety.} Inter-process communication via Named Pipes adds approximately 2--5~ms of overhead per function call compared to in-process execution (as used by PyXLL). For interactive use where individual function calls take 100~ms or more in computation time, this overhead is negligible. For bulk operations requiring thousands of rapid calls, the overhead becomes measurable. We consider this an acceptable trade-off given the safety guarantees: a crash in R, Julia, or Python never terminates Excel.
+
+\paragraph{Memory vs.\ Startup Time.} The Julia sysimage (\textasciitilde415~MB) eliminates cold-start latency but increases disk usage and memory footprint. Without the sysimage, Julia's first function call would require 30--60 seconds of JIT compilation. With the sysimage, first-call latency is under one second. For users who do not require Julia, the runtime is optional and \neven{} operates with R alone.
+
+\paragraph{Pattern-based Sandbox vs.\ OS-level Isolation.} The security sandbox operates at the string-analysis level rather than using OS-level isolation mechanisms (e.g., Windows AppContainer, Linux seccomp). This provides protection against accidental misuse and common attack vectors but cannot guarantee security against a determined adversary with knowledge of the pattern-matching implementation. We consider this appropriate for the target use case (academic and corporate analysts) while acknowledging that high-security environments would benefit from additional OS-level sandboxing (Section~\ref{sec:limitations}).
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+We identify the following limitations of the current implementation:
+
+\begin{enumerate}
+    \item \textbf{Platform restriction:} \neven{} requires Windows 10 or later due to its dependence on Named Pipes, COM automation, WebView2, and the XLL interface. macOS and Linux users cannot use the system. This reflects the reality that the XLL add-in API is Windows-exclusive, and no cross-platform equivalent exists with comparable integration depth.
+
+    \item \textbf{Runtime dependencies:} Users must install R, Julia, and/or Python separately. While the \neven{} installer detects missing runtimes and guides users to official download pages, this adds friction compared to self-contained solutions. The system degrades gracefully: if only R is installed, all R functions work; Julia and Python functions simply return informative error messages.
+
+    \item \textbf{Sandbox limitations:} The pattern-based sandbox provides robust protection through five bypass-prevention mechanisms, input sanitization, and unified enforcement across all execution paths. However, it operates at the string-analysis level rather than using OS-level isolation (AppContainer). A sufficiently motivated attacker with knowledge of the pattern-matching implementation could theoretically construct evasion sequences not covered by the current pattern set. OS-level sandboxing is planned as future work for high-security deployments.
+
+    \item \textbf{No formal user study:} While the system has been validated technically against established benchmarks, we have not yet conducted a formal usability study with target users (e.g., econometrics students or business analysts). Such a study would provide empirical evidence for the claimed usability benefits.
+
+    \item \textbf{Testing without live Excel:} All automated tests use a mock Excel bridge rather than testing within a running Excel instance. While this enables CI/CD automation, it means that certain integration scenarios (e.g., concurrent formula recalculation, large workbook interactions) are validated only through manual testing.
+
+    \item \textbf{Single-developer maintenance:} As an academic project, \neven{} currently depends on a single developer for maintenance and evolution. The open-source release under GPL~v3 is intended to enable community contributions, but long-term sustainability requires building an active contributor base.
+\end{enumerate}
+
+\subsection{Threats to Validity}
+
+\paragraph{Internal validity.} The econometric validation (Section~\ref{subsec:econometric}) compares \neven{} outputs against published textbook results and direct R execution. Since \neven{} delegates computation to R, the statistical correctness depends entirely on R's implementation of the underlying algorithms. Our contribution is demonstrating that the IPC layer introduces no numerical degradation, not validating R's statistical algorithms themselves.
+
+\paragraph{External validity.} The enterprise case study (Section~\ref{subsec:enterprise}) represents a constructed scenario rather than a deployment in a production environment. While the technical capabilities demonstrated are real and functional, the claimed workflow improvements have not been measured in a controlled field study.
+
+\paragraph{Construct validity.} Performance characteristics may vary across hardware configurations, particularly for I/O-bound operations (pipe communication) and memory-bound operations (large matrix serialization). The 2--5~ms IPC overhead reported in Section~\ref{subsec:ipc} was measured on a single workstation (Intel Core i7-12700K, 32~GB RAM) and should be considered representative rather than definitive.
+
+%% Conclusion — \neven{} Paper
+
+\section{Conclusions and Future Work}
+\label{sec:conclusion}
+
+\subsection{Summary}
+
+We have presented \neven{}, an open-source polyglot infrastructure that bridges the gap between spreadsheet accessibility and statistical computing power. The system integrates R~4.4.1, Julia~1.12.6, and Python~3.13 as process-isolated language runtimes communicating with Microsoft Excel through Named Pipes and Protocol Buffers serialization. Key characteristics include:
+
+\begin{itemize}
+    \item Over 90 R statistical procedures and 70 Julia mathematical functions accessible as native Excel formulas, requiring no programming expertise from end users.
+    \item A security sandbox blocking 30+ dangerous patterns per language with five bypass-prevention mechanisms, validated by 154 automated tests.
+    \item Interactive visualization through an embedded WebView2 viewer supporting Plotly, D3.js, Leaflet, and rpivotTable.
+    \item An in-process WebView2-based REPL console replacing the legacy Electron application, eliminating 50+ CVEs and all Node.js dependencies while providing interactive R/Julia/Python execution with command history, multi-line input, and inline graphics.
+    \item Reactive notebooks (Pluto.jl) with bidirectional data exchange between Excel and Julia.
+    \item Reproducible report generation via Quarto integration.
+    \item A total of 357 automated tests covering sandbox verification, input sanitization, IPC frame validation, type conversion, RAII semantics, property-based correctness proofs, and end-to-end workflows.
+\end{itemize}
+
+The system has been validated against established econometric benchmarks \citep{Wooldridge2016}, demonstrating that the IPC architecture introduces no numerical degradation. An enterprise analytics scenario illustrates the potential for reducing tool fragmentation, eliminating data handoff errors, and providing auditable computational workflows in regulated industries.
+
+\paragraph{Python Resilience Engineering.}
+The Python integration (ControlPython.exe) required solving four stability bugs before achieving production readiness: (1)~intermittent \texttt{startup.py} failures resolved through a retry mechanism with \texttt{PyErr\_Clear()} between attempts; (2)~\texttt{STATUS\_STACK\_BUFFER\_OVERRUN} crashes during CPython initialization mitigated by reordering initialization after pipe setup and adding SEH exception guards; (3)~\texttt{IndentationError} from line-by-line startup code transmission resolved by sending the entire script as a single code block for Python (preserving blank lines and docstrings); and (4)~indefinite blocking when Python became unresponsive, resolved by adding health-status checks before IPC calls. This engineering effort demonstrates that process-isolated architectures, while providing fault tolerance, require careful attention to initialization ordering and failure recovery---lessons applicable to any multi-process system.
+
+\subsection{Significance}
+
+\neven{} addresses a real and documented problem: the tension between tool accessibility and computational rigor. By preserving Excel as the user interface while delegating computation to established scientific languages, the system enables domain experts to access advanced statistical methods without crossing the programming expertise barrier. The process-isolated architecture ensures that the reliability expectations of spreadsheet users are maintained---a crash in any language runtime does not affect the host application.
+
+The open-source release under GPL~v3 ensures that the system can be freely adopted in academic settings, where budget constraints often prevent adoption of commercial alternatives such as PyXLL or xlwings PRO. The 357 automated tests and comprehensive documentation (12 user-facing chapters, 95 documented functions with examples) provide a foundation for community contributions and long-term maintenance.
+
+\subsection{Future Work}
+
+We identify four directions for future research and development:
+
+\paragraph{OS-level security sandbox.} The current pattern-based sandbox provides protection against common misuse but cannot guarantee security against determined adversaries. Implementing Windows AppContainer isolation for child processes would provide defense-in-depth, restricting file system and network access at the operating system level regardless of the code being executed. This represents a publishable contribution at the intersection of systems security and scientific computing.
+
+\paragraph{Formal user study.} A controlled study with university students (target: econometrics and statistics courses at the Universidad de Costa Rica) would provide empirical evidence for the usability claims. The study design would compare task completion time, error rates, and user satisfaction between traditional R programming and \neven{} formula-based workflows for equivalent statistical analyses.
+
+\paragraph{Performance benchmarks.} Systematic latency measurements comparing \neven{}'s IPC overhead against in-process alternatives (PyXLL, VBA) and COM-based alternatives (xlwings) would quantify the cost of process isolation. These benchmarks would inform users about the performance envelope and guide optimization efforts for bulk-operation scenarios.
+
+\paragraph{AI-assisted interpretation.} The current Python integration includes preliminary support for LLM-based interpretation of statistical results via \texttt{=P.ai\_call(data, prompt)}, supporting both cloud providers (OpenAI, Azure) and local models (Ollama, LM~Studio) for data privacy. A deeper investigation of how large language models can assist non-expert users in interpreting statistical outputs---while maintaining scientific rigor and avoiding hallucinated conclusions---represents an emerging research direction at the intersection of AI and statistical computing.
+
+\subsection{Availability}
+
+\neven{} is released under the GNU General Public License v3 and is available at:
+\begin{itemize}
+    \item \textbf{Source code:} \url{https://github.com/minor-bonilla/NEVEN}
+    \item \textbf{Documentation:} Included in the repository (\texttt{docs/} directory)
+    \item \textbf{Installation:} Automated installer (\texttt{Install-NEVEN.exe}) with runtime detection
+    \item \textbf{Examples:} Pre-built Excel workbooks with validated formulas (\texttt{Ejemplos/} directory)
+\end{itemize}
+
+The system requires Windows~10 or later (64-bit), Microsoft Excel~2013 or later, and at least one of: R~4.4.1+, Julia~1.12.6+, or Python~3.13+. The Julia sysimage (\textasciitilde415~MB) is optional but recommended for eliminating cold-start latency.
+
+
+%% --- Bibliography ---
+%% Nota para arXiv: Asegúrese de subir también el archivo main.bbl generado localmente
+% bibliographystyle removed for arXiv (using .bbl directly)
+\input{main.bbl}
+
+\end{document}

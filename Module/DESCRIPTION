@@ -1,0 +1,10 @@
+Package: RJ2XCLModule
+Type: Package
+Title: Utilities for RJ2XCL
+Version: 2.0.14
+Date: 2018-02-18
+Author: Duncan Werner
+Maintainer: Duncan Werner <dwerner@riskamp.com>
+Description: Utilities for RJ2XCL
+License: GPL (>= 3)
+RoxygenNote: 6.0.1

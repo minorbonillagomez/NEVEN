@@ -1,0 +1,24 @@
+---
+title: "Reporte de Prueba — RJ2XCL"
+author: "RJ2XCL v2.0"
+date: today
+format:
+  html:
+    self-contained: true
+    theme: none
+    minimal: true
+---
+
+## Datos de Ejemplo
+
+| Producto | Precio | Cantidad | Total |
+|----------|--------|----------|-------|
+| Laptop   | 800    | 5        | 4000  |
+| Mouse    | 25     | 50       | 1250  |
+| Teclado  | 45     | 30       | 1350  |
+| Monitor  | 350    | 10       | 3500  |
+| Cable    | 10     | 100      | 1000  |
+
+## Conclusion
+
+Este reporte fue generado automaticamente por **RJ2XCL** usando Quarto.
