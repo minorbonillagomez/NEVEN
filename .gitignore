@@ -104,6 +104,13 @@ docs/Latex/*.pdf
 # ─── Generated documentation (rebuild with Doxygen) ──────────
 docs/api/
 
+# ─── Private/local docs not for GitHub ───────────────────────
+iconos/
+docs/Paper/
+docs/Contexto/SESION_2026-04-13.md
+docs/Contexto/SESION_2026-04-15.md
+docs/Contexto/Explicacion_NEVEN_v2.md
+
 # ─── ControlJulia binary import library ──────────────────────
 # Keep .def and rebuild script, exclude generated binaries
 ControlJulia/lib/*.lib
