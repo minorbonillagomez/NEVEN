@@ -39,6 +39,27 @@ $script:LogFile     = $null
 $script:HasWarnings = $false
 $script:StartTime   = Get-Date
 
+# ─── Ensure console stays open on error ───
+trap {
+    Write-Host ''
+    Write-Host "  UNEXPECTED ERROR: $_" -ForegroundColor Red
+    Write-Host ''
+    Read-Host '  Press Enter to close'
+}
+
+function Exit-Installer {
+    param([int]$Code = 0)
+    if (-not $Silent) {
+        Write-Host ''
+        if ($Code -eq 0) {
+            Read-Host '  Installation complete. Press Enter to close'
+        } else {
+            Read-Host '  Press Enter to close'
+        }
+    }
+    exit $Code
+}
+
 # ============================================================
 #  Logging
 # ============================================================
@@ -458,7 +479,7 @@ function Get-UserChoices {
         $answer = Read-Host '  Continue without R? R-based functions will not work. (y/n) [y]'
         if ($answer -eq 'n') {
             Write-Host '  Installation aborted by user.' -ForegroundColor Red
-            exit 0
+            Exit-Installer 0
         }
         $choices.ContinueWithoutR = $true
         Write-Log 'User chose to continue without R' -Level WARN
@@ -479,7 +500,7 @@ function Get-UserChoices {
         $answer = Read-Host '  Existing installation found. Update/reinstall? (y/n) [y]'
         if ($answer -eq 'n') {
             Write-Host '  Installation aborted by user.' -ForegroundColor Red
-            exit 0
+            Exit-Installer 0
         }
         $choices.IsUpdate = $true
     }
@@ -1384,23 +1405,24 @@ Write-Host '  Phase 1: Pre-flight checks...' -ForegroundColor White
 
 if (-not (Test-WindowsVersion)) {
     Write-Host '  ERROR: This installer requires Windows 10 or later (64-bit).' -ForegroundColor Red
-    exit 1
+    Exit-Installer 1
 }
 if (-not (Test-PowerShellVersion)) {
     Write-Host '  ERROR: This installer requires PowerShell 5.1 or later.' -ForegroundColor Red
-    exit 1
+    Exit-Installer 1
 }
 
 # Validate Dist directory
 if (-not (Test-Path $DistDir)) {
     Write-Host "  ERROR: Distribution directory not found: $DistDir" -ForegroundColor Red
     Write-Host '  Ensure the Dist/ folder is present alongside this script.' -ForegroundColor Red
-    exit 1
+    Write-Host "  (Searched at: $DistDir)" -ForegroundColor DarkGray
+    Exit-Installer 1
 }
 $distXll = Join-Path $DistDir 'NEVEN64.xll'
 if (-not (Test-Path $distXll)) {
     Write-Host "  ERROR: NEVEN64.xll not found in $DistDir" -ForegroundColor Red
-    exit 1
+    Exit-Installer 1
 }
 
 $rInfo        = Find-R
@@ -1445,7 +1467,7 @@ if (-not $deployOk) {
     Write-Log 'Critical file deployment failed - aborting' -Level ERROR
     Write-Host '  ERROR: Failed to deploy critical files. See install.log.' -ForegroundColor Red
     Close-LogFile
-    exit 1
+    Exit-Installer 1
 }
 
 # Patch config with detected paths
@@ -1650,4 +1672,4 @@ Close-LogFile
 
 Write-Host "  Log file: $logPath" -ForegroundColor Gray
 Write-Host ''
-exit 0
+Exit-Installer 0
