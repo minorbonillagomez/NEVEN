@@ -202,27 +202,48 @@ function Find-Julia {
     param()
     $result = [PSCustomObject]@{ Found = $false; Path = ''; Version = ''; Adequate = $false }
 
-    # 1. PATH
+    # 1. PATH (refresh environment first)
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
     $cmd = Get-Command 'julia.exe' -ErrorAction SilentlyContinue
     if ($cmd) {
         $result.Found = $true
         $binDir = Split-Path $cmd.Source -Parent
-        $result.Path = Split-Path $binDir -Parent
+        # Handle both "Julia-1.12.6/bin" and "Julia/bin" structures
+        $parent = Split-Path $binDir -Parent
+        if ((Split-Path $parent -Leaf) -eq 'bin') { $parent = Split-Path $parent -Parent }
+        $result.Path = $parent
     }
 
-    # 2. Filesystem
+    # 2. Filesystem - check multiple known locations
     if (-not $result.Found) {
-        $basePath = Join-Path $env:LOCALAPPDATA 'Programs'
-        if (Test-Path $basePath) {
-            $candidates = Get-ChildItem (Join-Path $basePath 'Julia-*') -Directory -ErrorAction SilentlyContinue |
+        $searchPaths = @(
+            (Join-Path $env:LOCALAPPDATA 'Programs'),
+            (Join-Path $env:LOCALAPPDATA 'Programs\Julia'),
+            'C:\Julia',
+            (Join-Path $env:ProgramFiles 'Julia'),
+            (Join-Path ${env:ProgramFiles(x86)} 'Julia')
+        )
+        foreach ($basePath in $searchPaths) {
+            if (-not (Test-Path $basePath)) { continue }
+            # Check direct bin/julia.exe (modern installer: Julia/bin/julia.exe)
+            $directBin = Join-Path $basePath 'bin\julia.exe'
+            if (Test-Path $directBin) {
+                $result.Found = $true
+                $result.Path  = $basePath
+                break
+            }
+            # Check versioned folders (legacy: Julia-1.12.6/bin/julia.exe)
+            $candidates = Get-ChildItem (Join-Path $basePath 'Julia*') -Directory -ErrorAction SilentlyContinue |
                           Sort-Object Name -Descending
             foreach ($dir in $candidates) {
-                if (Test-Path (Join-Path $dir.FullName 'bin\julia.exe')) {
+                $juliaExe = Join-Path $dir.FullName 'bin\julia.exe'
+                if (Test-Path $juliaExe) {
                     $result.Found = $true
                     $result.Path  = $dir.FullName
                     break
                 }
             }
+            if ($result.Found) { break }
         }
     }
 
@@ -354,76 +375,114 @@ function Find-ExistingInstall {
 
 function Show-PreflightSummary {
     param(
-        [PSCustomObject]$RInfo,
-        [PSCustomObject]$JuliaInfo,
-        [PSCustomObject]$PythonInfo,
+        [ref]$RInfoRef,
+        [ref]$JuliaInfoRef,
+        [ref]$PythonInfoRef,
         [string[]]$ExcelVersions,
         [PSCustomObject]$ExistingInstall
     )
+
+    $RInfo = $RInfoRef.Value
+    $JuliaInfo = $JuliaInfoRef.Value
+    $PythonInfo = $PythonInfoRef.Value
+
     Write-Host ''
     Write-Host '  ============================================' -ForegroundColor Cyan
     Write-Host '   NEVEN Installer - Pre-flight Summary' -ForegroundColor Cyan
     Write-Host '  ============================================' -ForegroundColor Cyan
     Write-Host ''
 
-    # R
+    # --- R ---
     if ($RInfo.Found -and $RInfo.Adequate) {
         Write-Host "   [OK] R $($RInfo.Version)  $($RInfo.Path)" -ForegroundColor Green
-    } elseif ($RInfo.Found) {
-        Write-Host "   [!!] R $($RInfo.Version) (version too old, need >= 4.4.1)  $($RInfo.Path)" -ForegroundColor Yellow
+    } else {
+        if ($RInfo.Found) {
+            Write-Host "   [!!] R $($RInfo.Version) (need >= 4.4.1)  $($RInfo.Path)" -ForegroundColor Yellow
+        } else {
+            Write-Host '   [XX] R not found (REQUIRED for R functions)' -ForegroundColor Red
+        }
         Write-Host '        Download: https://cran.r-project.org/bin/windows/base/' -ForegroundColor Yellow
         if (-not $Silent) {
-            $open = Read-Host '        Open download page in browser? (y/n) [n]'
+            $open = Read-Host '        Open download page? (y/n) [n]'
             if ($open -eq 'y') { Start-Process 'https://cran.r-project.org/bin/windows/base/' }
-        }
-    } else {
-        Write-Host '   [XX] R not found (REQUIRED for R functions)' -ForegroundColor Red
-        Write-Host '        Download: https://cran.r-project.org/bin/windows/base/' -ForegroundColor Red
-        if (-not $Silent) {
-            $open = Read-Host '        Open download page in browser? (y/n) [n]'
-            if ($open -eq 'y') { Start-Process 'https://cran.r-project.org/bin/windows/base/' }
+            Write-Host ''
+            $done = Read-Host '        Have you finished installing R? (y/n) [n]'
+            if ($done -eq 'y') {
+                Write-Host '        Re-detecting R...' -ForegroundColor Cyan
+                $RInfoRef.Value = Find-R
+                $RInfo = $RInfoRef.Value
+                if ($RInfo.Found -and $RInfo.Adequate) {
+                    Write-Host "   [OK] R $($RInfo.Version) detected at $($RInfo.Path)" -ForegroundColor Green
+                } elseif ($RInfo.Found) {
+                    Write-Host "   [!!] R $($RInfo.Version) detected but version is below 4.4.1" -ForegroundColor Yellow
+                } else {
+                    Write-Host '   [XX] R still not detected. You can install it later.' -ForegroundColor Yellow
+                }
+            }
         }
     }
 
-    # Julia
+    # --- Julia ---
     if ($JuliaInfo.Found -and $JuliaInfo.Adequate) {
         Write-Host "   [OK] Julia $($JuliaInfo.Version)  $($JuliaInfo.Path)" -ForegroundColor Green
-    } elseif ($JuliaInfo.Found) {
-        Write-Host "   [!!] Julia $($JuliaInfo.Version) (version too old, need >= 1.12.6)  $($JuliaInfo.Path)" -ForegroundColor Yellow
-        Write-Host '        Download: https://julialang.org/downloads/' -ForegroundColor Yellow
-        if (-not $Silent) {
-            $open = Read-Host '        Open download page in browser? (y/n) [n]'
-            if ($open -eq 'y') { Start-Process 'https://julialang.org/downloads/' }
-        }
     } else {
-        Write-Host '   [!!] Julia not found (optional)' -ForegroundColor Yellow
+        if ($JuliaInfo.Found) {
+            Write-Host "   [!!] Julia $($JuliaInfo.Version) (need >= 1.12.6)  $($JuliaInfo.Path)" -ForegroundColor Yellow
+        } else {
+            Write-Host '   [!!] Julia not found (optional - math/ML functions)' -ForegroundColor Yellow
+        }
         Write-Host '        Download: https://julialang.org/downloads/' -ForegroundColor Yellow
         if (-not $Silent) {
-            $open = Read-Host '        Open download page in browser? (y/n) [n]'
+            $open = Read-Host '        Open download page? (y/n) [n]'
             if ($open -eq 'y') { Start-Process 'https://julialang.org/downloads/' }
+            Write-Host ''
+            $done = Read-Host '        Have you finished installing Julia? (y/n) [n]'
+            if ($done -eq 'y') {
+                Write-Host '        Re-detecting Julia...' -ForegroundColor Cyan
+                $JuliaInfoRef.Value = Find-Julia
+                $JuliaInfo = $JuliaInfoRef.Value
+                if ($JuliaInfo.Found -and $JuliaInfo.Adequate) {
+                    Write-Host "   [OK] Julia $($JuliaInfo.Version) detected at $($JuliaInfo.Path)" -ForegroundColor Green
+                } elseif ($JuliaInfo.Found) {
+                    Write-Host "   [!!] Julia $($JuliaInfo.Version) detected but version is below 1.12.6" -ForegroundColor Yellow
+                } else {
+                    Write-Host '   [!!] Julia still not detected. You can install it later.' -ForegroundColor Yellow
+                }
+            }
         }
     }
 
-    # Python
+    # --- Python ---
     if ($PythonInfo.Found -and $PythonInfo.Adequate) {
         Write-Host "   [OK] Python $($PythonInfo.Version)  $($PythonInfo.Path)" -ForegroundColor Green
-    } elseif ($PythonInfo.Found) {
-        Write-Host "   [!!] Python $($PythonInfo.Version) (version too old, need >= 3.10)  $($PythonInfo.Path)" -ForegroundColor Yellow
-        Write-Host '        Download: https://www.python.org/downloads/' -ForegroundColor Yellow
-        if (-not $Silent) {
-            $open = Read-Host '        Open download page in browser? (y/n) [n]'
-            if ($open -eq 'y') { Start-Process 'https://www.python.org/downloads/' }
-        }
     } else {
-        Write-Host '   [!!] Python not found (optional)' -ForegroundColor Yellow
+        if ($PythonInfo.Found) {
+            Write-Host "   [!!] Python $($PythonInfo.Version) (need >= 3.10)  $($PythonInfo.Path)" -ForegroundColor Yellow
+        } else {
+            Write-Host '   [!!] Python not found (optional - AI functions)' -ForegroundColor Yellow
+        }
         Write-Host '        Download: https://www.python.org/downloads/' -ForegroundColor Yellow
         if (-not $Silent) {
-            $open = Read-Host '        Open download page in browser? (y/n) [n]'
+            $open = Read-Host '        Open download page? (y/n) [n]'
             if ($open -eq 'y') { Start-Process 'https://www.python.org/downloads/' }
+            Write-Host ''
+            $done = Read-Host '        Have you finished installing Python? (y/n) [n]'
+            if ($done -eq 'y') {
+                Write-Host '        Re-detecting Python...' -ForegroundColor Cyan
+                $PythonInfoRef.Value = Find-Python
+                $PythonInfo = $PythonInfoRef.Value
+                if ($PythonInfo.Found -and $PythonInfo.Adequate) {
+                    Write-Host "   [OK] Python $($PythonInfo.Version) detected at $($PythonInfo.Path)" -ForegroundColor Green
+                } elseif ($PythonInfo.Found) {
+                    Write-Host "   [!!] Python $($PythonInfo.Version) detected but version is below 3.10" -ForegroundColor Yellow
+                } else {
+                    Write-Host '   [!!] Python still not detected. You can install it later.' -ForegroundColor Yellow
+                }
+            }
         }
     }
 
-    # Excel
+    # --- Excel ---
     if ($ExcelVersions.Count -gt 0) {
         $verStr = $ExcelVersions -join ', '
         Write-Host "   [OK] Excel detected (versions: $verStr)" -ForegroundColor Green
@@ -431,7 +490,7 @@ function Show-PreflightSummary {
         Write-Host '   [!!] Excel not detected - XLL registration will be skipped' -ForegroundColor Yellow
     }
 
-    # Existing install
+    # --- Existing install ---
     if ($ExistingInstall.Found) {
         Write-Host "   [!!] Existing NEVEN installation at $($ExistingInstall.Path)" -ForegroundColor Yellow
     }
@@ -1431,7 +1490,7 @@ $pythonInfo   = Find-Python
 $excelVers    = Find-ExcelVersions
 $existingInst = Find-ExistingInstall -TargetPath $InstallDir
 
-Show-PreflightSummary -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo `
+Show-PreflightSummary -RInfoRef ([ref]$rInfo) -JuliaInfoRef ([ref]$juliaInfo) -PythonInfoRef ([ref]$pythonInfo) `
                       -ExcelVersions $excelVers -ExistingInstall $existingInst
 
 # --- Phase 2: User Choices ---
