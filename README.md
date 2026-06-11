@@ -4,18 +4,20 @@ All the documentation needed is included in docs. You will find documentation fr
 
 You are more than welcome to explore all the available material. I must admit that, as a Costa Rican, Spanish is my native language and my personal preference. As a result, you will find many documents written in Spanish. However, I don't see this as a barrier; nowadays, even the most basic AI model can instantly translate documentation into your preferred language.
 
-I truly hope **NEVEN** becomes a valuable and useful tool for your professional career!
+I truly hope **NE<v>ƎИ** becomes a valuable and useful tool for your professional career!
+
+P.S. **NE<v>ƎИ** was co-created using KIRO, thanks to promotional credits provided by Amazon Web Services (AWS).
 
 Best regards, 
 
 Minor Bonilla-Gomez
 (known as: <)
 
-# Let's start: NEVEN — Open Source Polyglot Infrastructure for Excel
+# Let's start: NE<v>ƎИ — Open Source Polyglot Infrastructure for Excel
 
 [![Build](https://img.shields.io/badge/build-CMake_3.15+-blue)](CMakeLists.txt) [![Tests](https://img.shields.io/badge/tests-228_passing-brightgreen)]() [![License](https://img.shields.io/badge/license-GPL_v3-green)](LICENSE) [![C++](https://img.shields.io/badge/C++-17-orange)](CMakeLists.txt) [![Quality](https://img.shields.io/badge/quality-8.9%2F10-brightgreen)]()
 
-> **NEVEN** transforms Microsoft Excel into an auditable data science environment by integrating **R**, **Julia**, and **Python** as embedded scripting engines. Execute statistical models, machine learning, and interactive visualizations directly from Excel cells — with full transparency and reproducibility.
+> **NE<v>ƎИ** transforms Microsoft Excel into an auditable data science environment by integrating **R**, **Julia**, and **Python** as embedded scripting engines. Execute statistical models, machine learning, and interactive visualizations directly from Excel cells — with full transparency and reproducibility.
 
 > Creo fielmente en un mundo más igualitario en el que todos podamos colaborar. NEVEN es una invitación a construir comunidad, a compartir conocimiento sin barreras, y a inspirar a otros a crear un mundo donde la humanidad avance junta, no dividida.
 
@@ -201,7 +203,7 @@ See [docs/ANTES_DE_INICIAR.md](docs/ANTES_DE_INICIAR.md) for the first-use guide
 
 ## Security
 
-NEVEN includes a comprehensive sandbox for `=NEVEN.r()` and `=NEVEN.j()` cells:
+NE<v>ƎИ includes a comprehensive sandbox for `=NEVEN.r()` and `=NEVEN.j()` cells:
 
 - **Shell execution**: `system()`, `shell()`, `run()`, backtick literals → BLOCKED
 - **File manipulation**: `file.remove()`, `unlink()`, `rm()` → BLOCKED
