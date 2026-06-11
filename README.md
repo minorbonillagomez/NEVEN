@@ -6,7 +6,7 @@ You are more than welcome to explore all the available material. I must admit th
 
 I truly hope **NEvƎИ** becomes a valuable and useful tool for your professional career!
 
-P.S. **NEvƎИ** was co-created using KIRO, thanks to promotional credits provided by Amazon Web Services (AWS).
+P.S. **NEvƎИ** was co-created using Kiro with Claude Opus 4.6, thanks to promotional credits provided by Amazon Web Services **AWS**.
 
 Best regards, 
 
@@ -74,18 +74,18 @@ Use in Excel: `=R.MiSuma(A1, B1)` — appears in Function Wizard with descriptio
 
 ```
 ┌───────────────────────────────────────────┐
-│           Microsoft Excel                  │
+│           Microsoft Excel                 │
 │  ┌─────────────────────────────────────┐  │
-│  │          NEVEN64.xll                 │  │
-│  │  • Registers R./J./P. functions      │  │
-│  │  • Sandbox validates code            │  │
-│  │  • Converts Excel ↔ Protobuf         │  │
-│  │  • WebView2 viewer management        │  │
+│  │          NEVEN64.xll                │  │
+│  │  • Registers R./J./P. functions     │  │
+│  │  • Sandbox validates code           │  │
+│  │  • Converts Excel ↔ Protobuf        │  │
+│  │  • WebView2 viewer management       │  │
 │  └────────────────┬────────────────────┘  │
 └───────────────────┼───────────────────────┘
                     │ Named Pipes + Protobuf
-          ┌─────────┼─────────┐
-     ┌────┴────┐  ┌─┴──────┐  ┌────┴─────┐
+          ┌─────────┼───────────────┐
+     ┌────┴────┐  ┌─┴──────┐   ┌────┴─────┐
      │ControlR │  │Control  │  │Control   │
      │  .exe   │  │Julia.exe│  │Python.exe│
      │ R 4.4.1 │  │Jl 1.12.6│  │Py 3.10+  │
