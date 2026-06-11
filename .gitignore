@@ -115,3 +115,6 @@ docs/Contexto/Explicacion_NEVEN_v2.md
 # Keep .def and rebuild script, exclude generated binaries
 ControlJulia/lib/*.lib
 ControlJulia/lib/*.exp
+
+# Sub-project with its own repo
+CreadorPresentaciones/
