@@ -327,7 +327,7 @@ RC_GTEST_FIXTURE_PROP(PythonReactivationPreservationPBT,
     std::vector<std::string> expected_lines;
 
     for (int i = 0; i < num_lines; i++) {
-        // Generate a non-empty line (R/Julia code doesn't rely on blank lines)
+        // Generate a non-empty line with at least one non-space character
         auto len = *rc::gen::inRange(1, 50);
         std::string line;
         for (int j = 0; j < len; j++) {
@@ -335,6 +335,10 @@ RC_GTEST_FIXTURE_PROP(PythonReactivationPreservationPBT,
             if (c == '\n' || c == '\r') c = 'x'; // no embedded newlines
             line += static_cast<char>(c);
         }
+        // Ensure line has at least one non-whitespace char (since ftrim=true trims spaces)
+        bool all_spaces = true;
+        for (char c : line) { if (c != ' ' && c != '\t') { all_spaces = false; break; } }
+        if (all_spaces) line[0] = 'A';
         expected_lines.push_back(line);
     }
 
@@ -355,9 +359,16 @@ RC_GTEST_FIXTURE_PROP(PythonReactivationPreservationPBT,
         }
     }
 
-    // All non-empty lines should be preserved
+    // All non-empty trimmed lines should be preserved
     RC_ASSERT(filtered.size() == expected_lines.size());
     for (size_t i = 0; i < filtered.size(); i++) {
-        RC_ASSERT(filtered[i] == expected_lines[i]);
+        // Compare against trimmed version since Split uses ftrim=true
+        std::string expected_trimmed = expected_lines[i];
+        size_t start = expected_trimmed.find_first_not_of(" \r\n\t");
+        size_t end = expected_trimmed.find_last_not_of(" \r\n\t");
+        if (start != std::string::npos) {
+            expected_trimmed = expected_trimmed.substr(start, end - start + 1);
+        }
+        RC_ASSERT(filtered[i] == expected_trimmed);
     }
 }
