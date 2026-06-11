@@ -1,4 +1,17 @@
-# NEVEN — Open Source Polyglot Infrastructure for Excel
+# A few words before start!
+
+All the documentation needed is included in docs. You will find documentation from architecture of the software, for those interested in All the documentation you need is included in the docs folder. There, you will find everything from the software architecture (for those interested in modifying the code) to user-oriented guides (libreria/EJEMPLOS/EXCEL). We have also included practical Excel files featuring examples from Wooldridge's Introductory Econometrics 6th edition (libreria/EJEMPLOS/EXCEL/WOOLDRIDGE), alongside other advanced data analysis techniques (libreria/EJEMPLOS/EXCEL/BONILLA).
+
+You are more than welcome to explore all the available material. I must admit that, as a Costa Rican, Spanish is my native language and my personal preference. As a result, you will find many documents written in Spanish. However, I don't see this as a barrier; nowadays, even the most basic AI model can instantly translate documentation into your preferred language.
+
+I truly hope **NEVEN** becomes a valuable and useful tool for your professional career!
+
+Best regards, 
+
+Minor Bonilla-Gomez
+(known as: <)
+
+# Let's start: NEVEN — Open Source Polyglot Infrastructure for Excel
 
 [![Build](https://img.shields.io/badge/build-CMake_3.15+-blue)](CMakeLists.txt) [![Tests](https://img.shields.io/badge/tests-228_passing-brightgreen)]() [![License](https://img.shields.io/badge/license-GPL_v3-green)](LICENSE) [![C++](https://img.shields.io/badge/C++-17-orange)](CMakeLists.txt) [![Quality](https://img.shields.io/badge/quality-8.9%2F10-brightgreen)]()
 
