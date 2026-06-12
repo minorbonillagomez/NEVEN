@@ -1473,6 +1473,7 @@ function New-Uninstaller {
 function Update-NEVENConfig {
     param(
         [Parameter(Mandatory)][string]$ConfigPath,
+        [Parameter(Mandatory)][string]$InstallDir,
         [PSCustomObject]$RInfo,
         [PSCustomObject]$JuliaInfo,
         [PSCustomObject]$PythonInfo
@@ -1483,6 +1484,15 @@ function Update-NEVENConfig {
     }
     try {
         $json = Get-Content -Path $ConfigPath -Raw -Encoding UTF8
+
+        # Patch install directory paths (in case user chose a custom path)
+        $escapedInstallDir = $InstallDir -replace '\\', '\\\\'
+        $json = $json -replace 'C:\\\\NEVEN\\\\functions', "$escapedInstallDir\\\\functions"
+        $json = $json -replace 'C:\\\\NEVEN\\\\graphics', "$escapedInstallDir\\\\graphics"
+        $json = $json -replace 'C:\\\\NEVEN\\\\prompts', "$escapedInstallDir\\\\prompts"
+        $json = $json -replace 'C:\\\\NEVEN\\\\neven\\.log', "$escapedInstallDir\\\\neven.log"
+
+        # Patch language runtime paths
         if ($RInfo.Found) {
             $escapedPath = $RInfo.Path -replace '\\', '\\\\'
             $json = $json -replace '("R"\s*:\s*\{[^}]*"home"\s*:\s*)"[^"]*"', ('$1"' + $escapedPath + '"')
@@ -1496,7 +1506,7 @@ function Update-NEVENConfig {
             $json = $json -replace '("Python"\s*:\s*\{[^}]*"home"\s*:\s*)"[^"]*"', ('$1"' + $escapedPath + '"')
         }
         Set-Content -Path $ConfigPath -Value $json -Encoding UTF8 -NoNewline
-        Write-Log 'Patched neven-config.json with detected runtime paths'
+        Write-Log 'Patched neven-config.json with install dir and runtime paths'
     } catch {
         Write-Log "Failed to patch neven-config.json: $_" -Level WARN
         $script:HasWarnings = $true
@@ -1586,7 +1596,7 @@ if (-not $deployOk) {
 
 # Patch config with detected paths
 $configPath = Join-Path $choices.InstallDir 'neven-config.json'
-Update-NEVENConfig -ConfigPath $configPath -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo
+Update-NEVENConfig -ConfigPath $configPath -InstallDir $choices.InstallDir -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo
 
 # --- Phase 4: Registration ---
 Write-Host ''
@@ -1614,6 +1624,64 @@ Initialize-UserDirectories
 $examplesDir  = Join-Path $choices.InstallDir 'examples'
 $functionsDir = Join-Path $choices.InstallDir 'functions'
 Copy-ExampleFiles -SourceExamplesDir $examplesDir -TargetFunctionsDir $functionsDir
+
+# Deploy R/Julia/Python library functions to C:\NEVEN\functions\
+$srcLibreria = Join-Path $PSScriptRoot 'libreria'
+if (Test-Path $srcLibreria) {
+    Write-Host '  Deploying function libraries...' -ForegroundColor White
+    # R functions
+    $srcR = Join-Path $srcLibreria 'R'
+    if (Test-Path $srcR) {
+        $rFiles = Get-ChildItem $srcR -Filter '*.R' -File -ErrorAction SilentlyContinue
+        foreach ($f in $rFiles) {
+            Copy-Item $f.FullName (Join-Path $functionsDir $f.Name) -Force -ErrorAction SilentlyContinue
+        }
+        Write-Log "Deployed $($rFiles.Count) R library files to functions/"
+        Write-Host "   [OK] $($rFiles.Count) R functions deployed" -ForegroundColor Green
+    }
+    # Julia functions
+    $srcJl = Join-Path $srcLibreria 'JULIA'
+    if (Test-Path $srcJl) {
+        $jlFiles = Get-ChildItem $srcJl -Filter '*.jl' -File -ErrorAction SilentlyContinue
+        foreach ($f in $jlFiles) {
+            Copy-Item $f.FullName (Join-Path $functionsDir $f.Name) -Force -ErrorAction SilentlyContinue
+        }
+        Write-Log "Deployed $($jlFiles.Count) Julia library files to functions/"
+        Write-Host "   [OK] $($jlFiles.Count) Julia functions deployed" -ForegroundColor Green
+    }
+    # Python functions
+    $srcPy = Join-Path $srcLibreria 'PYTHON'
+    if (Test-Path $srcPy) {
+        $pyFiles = Get-ChildItem $srcPy -Filter '*.py' -File -ErrorAction SilentlyContinue
+        foreach ($f in $pyFiles) {
+            Copy-Item $f.FullName (Join-Path $functionsDir $f.Name) -Force -ErrorAction SilentlyContinue
+        }
+        Write-Log "Deployed $($pyFiles.Count) Python library files to functions/"
+        Write-Host "   [OK] $($pyFiles.Count) Python functions deployed" -ForegroundColor Green
+    }
+} else {
+    Write-Log 'libreria/ not found alongside installer - skipping function deployment' -Level WARN
+}
+
+# Deploy examples
+$srcEjemplos = Join-Path $PSScriptRoot 'ejemplos'
+if (Test-Path $srcEjemplos) {
+    if (-not (Test-Path $examplesDir)) { New-Item -Path $examplesDir -ItemType Directory -Force | Out-Null }
+    Copy-Item "$srcEjemplos\*" $examplesDir -Recurse -Force -ErrorAction SilentlyContinue
+    $exCount = (Get-ChildItem $examplesDir -Recurse -File).Count
+    Write-Log "Deployed $exCount example files"
+    Write-Host "   [OK] $exCount examples deployed" -ForegroundColor Green
+}
+
+# Deploy startup scripts
+$srcStartup = Join-Path $PSScriptRoot 'startup'
+$dstStartup = Join-Path $choices.InstallDir 'startup'
+if (Test-Path $srcStartup) {
+    if (-not (Test-Path $dstStartup)) { New-Item -Path $dstStartup -ItemType Directory -Force | Out-Null }
+    Copy-Item "$srcStartup\*" $dstStartup -Force -ErrorAction SilentlyContinue
+    Write-Log 'Deployed startup scripts'
+    Write-Host '   [OK] Startup scripts deployed' -ForegroundColor Green
+}
 
 # Copy default AI prompt templates (preserve user modifications)
 $srcPromptsDir = Join-Path $PSScriptRoot 'prompts'
@@ -1783,6 +1851,13 @@ Show-InstallationResult -VerificationResult $verification -TargetDir $choices.In
 
 # Generate uninstaller
 New-Uninstaller -TargetDir $choices.InstallDir -ExcelVersions $excelVers
+
+# Copy Uninstall-NEVEN.cmd alongside the generated .ps1
+$uninstallCmd = Join-Path $PSScriptRoot 'Uninstall-NEVEN.cmd'
+if (Test-Path $uninstallCmd) {
+    Copy-Item $uninstallCmd (Join-Path $choices.InstallDir 'Uninstall-NEVEN.cmd') -Force
+    Write-Log 'Copied Uninstall-NEVEN.cmd to install directory'
+}
 
 # Close log
 Close-LogFile
