@@ -842,6 +842,59 @@ function Unregister-RibbonCOM {
     }
 }
 
+function Register-TrustedLocation {
+    [OutputType([void])]
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string[]]$ExcelVersions
+    )
+
+    foreach ($ver in $ExcelVersions) {
+        $trustedBase = "HKCU:\Software\Microsoft\Office\$ver\Excel\Security\Trusted Locations"
+        if (-not (Test-Path $trustedBase)) {
+            Write-Log "Trusted Locations key not found for Excel $ver - skipping" -Level WARN
+            continue
+        }
+
+        # Check if NEVEN is already a trusted location
+        $existing = Get-ChildItem $trustedBase -ErrorAction SilentlyContinue
+        $alreadyTrusted = $false
+        foreach ($loc in $existing) {
+            $locPath = (Get-ItemProperty -Path $loc.PSPath -Name 'Path' -ErrorAction SilentlyContinue).Path
+            if ($locPath -and $locPath.TrimEnd('\') -eq $Path.TrimEnd('\')) {
+                $alreadyTrusted = $true
+                Write-Log "Trusted Location already exists for $Path in Excel $ver"
+                break
+            }
+        }
+
+        if (-not $alreadyTrusted) {
+            # Find next available slot (Location0, Location1, ...)
+            $maxIdx = -1
+            foreach ($loc in $existing) {
+                if ($loc.PSChildName -match 'Location(\d+)') {
+                    $idx = [int]$Matches[1]
+                    if ($idx -gt $maxIdx) { $maxIdx = $idx }
+                }
+            }
+            $newIdx = $maxIdx + 1
+            $newKey = Join-Path $trustedBase "Location$newIdx"
+
+            try {
+                New-Item -Path $newKey -Force | Out-Null
+                Set-ItemProperty -Path $newKey -Name 'Path' -Value "$Path\" -Type String
+                Set-ItemProperty -Path $newKey -Name 'AllowSubFolders' -Value 1 -Type DWord
+                Set-ItemProperty -Path $newKey -Name 'Description' -Value 'NEVEN Add-in' -Type String
+                Write-Log "Added Trusted Location: $Path (Excel $ver, Location$newIdx)"
+                Write-Host "   [OK] Trusted Location added: $Path" -ForegroundColor Green
+            } catch {
+                Write-Log "Failed to add Trusted Location: $_" -Level WARN
+                $script:HasWarnings = $true
+            }
+        }
+    }
+}
+
 function New-QuartoJunction {
     [OutputType([bool])]
     param()
@@ -904,12 +957,14 @@ function New-QuartoJunction {
 function Initialize-UserDirectories {
     [OutputType([void])]
     param()
-    $nevenUserDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'NEVEN'
+    # Use C:\NEVEN\ directly to avoid OneDrive redirection of Documents
+    $nevenUserDir = $choices.InstallDir
     $functionsDir = Join-Path $nevenUserDir 'functions'
     $graphicsDir  = Join-Path $nevenUserDir 'graphics'
     $promptsDir   = Join-Path $nevenUserDir 'prompts'
+    $notebooksDir = Join-Path $nevenUserDir 'notebooks'
 
-    foreach ($dir in @($functionsDir, $graphicsDir, $promptsDir)) {
+    foreach ($dir in @($functionsDir, $graphicsDir, $promptsDir, $notebooksDir)) {
         if (Test-Path $dir) {
             Write-Log "Directory already present: $dir"
         } else {
@@ -1203,7 +1258,7 @@ function Test-Installation {
     $results += [PSCustomObject]@{ Check = 'XLL registered in Excel'; Passed = $xllReg }
 
     # 5. User functions directory exists
-    $funcDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'NEVEN\functions'
+    $funcDir = Join-Path $TargetDir 'functions'
     $funcOk = Test-Path $funcDir
     $results += [PSCustomObject]@{ Check = 'User functions directory exists'; Passed = $funcOk }
 
@@ -1546,6 +1601,9 @@ if ($excelVers.Count -gt 0) {
 $ribbonDll = Join-Path $choices.InstallDir 'NEVENRibbon.dll'
 Register-RibbonCOM -DllPath $ribbonDll
 
+# Add C:\NEVEN as Office Trusted Location
+Register-TrustedLocation -Path $choices.InstallDir -ExcelVersions $excelVers
+
 New-QuartoJunction
 
 # --- Phase 5: User Setup ---
@@ -1554,12 +1612,12 @@ Write-Host '  Phase 5: User setup...' -ForegroundColor White
 Initialize-UserDirectories
 
 $examplesDir  = Join-Path $choices.InstallDir 'examples'
-$functionsDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'NEVEN\functions'
+$functionsDir = Join-Path $choices.InstallDir 'functions'
 Copy-ExampleFiles -SourceExamplesDir $examplesDir -TargetFunctionsDir $functionsDir
 
 # Copy default AI prompt templates (preserve user modifications)
 $srcPromptsDir = Join-Path $PSScriptRoot 'prompts'
-$dstPromptsDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'NEVEN\prompts'
+$dstPromptsDir = Join-Path $choices.InstallDir 'prompts'
 if (Test-Path $srcPromptsDir) {
     $promptFiles = Get-ChildItem -Path $srcPromptsDir -Filter '*.txt' -File -ErrorAction SilentlyContinue
     foreach ($pf in $promptFiles) {
@@ -1627,14 +1685,14 @@ $docsSource = Join-Path $PSScriptRoot '..\docs'
 if (-not (Test-Path $docsSource)) { $docsSource = Join-Path $choices.InstallDir 'docs' }
 $docsScript = Join-Path $PSScriptRoot 'Deploy-UserDocs.ps1'
 if (Test-Path $docsScript) {
-    & $docsScript -SourceDir $docsSource -TargetDir (Join-Path $env:USERPROFILE 'Documents\NEVEN\docs')
+    & $docsScript -SourceDir $docsSource -TargetDir (Join-Path $choices.InstallDir 'docs')
 } else {
     Write-Log 'Deploy-UserDocs.ps1 not found - skipping docs deployment' -Level WARN
 }
 
 # Deploy notebooks to Documents\NEVEN\notebooks\
 $nbSource = Join-Path $choices.InstallDir 'notebooks'
-$nbTarget = Join-Path $env:USERPROFILE 'Documents\NEVEN\notebooks'
+$nbTarget = Join-Path $choices.InstallDir 'notebooks'
 if (Test-Path $nbSource) {
     if (-not (Test-Path $nbTarget)) { New-Item -ItemType Directory -Path $nbTarget -Force | Out-Null }
     Copy-Item "$nbSource\*" $nbTarget -Force -Recurse -ErrorAction SilentlyContinue
