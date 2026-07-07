@@ -101,6 +101,29 @@ if (Test-Path $ribbonKey) {
     $removed += 'Ribbon registry key'
 }
 
+# 3b. Clear Trusted Locations for NEVEN
+foreach ($ver in $ExcelVersions) {
+    $trustedBase = "HKCU:\Software\Microsoft\Office\$ver\Excel\Security\Trusted Locations"
+    if (Test-Path $trustedBase) {
+        Get-ChildItem $trustedBase -ErrorAction SilentlyContinue | ForEach-Object {
+            $locPath = (Get-ItemProperty -Path $_.PSPath -Name 'Path' -ErrorAction SilentlyContinue).Path
+            if ($locPath -and $locPath -match 'NEVEN') {
+                Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
+                $removed += "Trusted Location ($locPath)"
+            }
+        }
+    }
+}
+
+# 3c. Clear DisabledItems (in case Excel blocked the XLL)
+foreach ($ver in $ExcelVersions) {
+    $resiliencyKey = "HKCU:\Software\Microsoft\Office\$ver\Excel\Resiliency\DisabledItems"
+    if (Test-Path $resiliencyKey) {
+        Remove-Item $resiliencyKey -Force -ErrorAction SilentlyContinue
+        $removed += "Excel DisabledItems (version $ver)"
+    }
+}
+
 # 4. User scripts — prompt before deleting
 $userNevenDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'NEVEN'
 if (Test-Path $userNevenDir) {

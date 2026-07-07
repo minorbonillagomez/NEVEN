@@ -1483,30 +1483,35 @@ function Update-NEVENConfig {
         return
     }
     try {
-        $json = Get-Content -Path $ConfigPath -Raw -Encoding UTF8
+        $config = Get-Content -Path $ConfigPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
-        # Patch install directory paths (in case user chose a custom path)
-        $escapedInstallDir = $InstallDir -replace '\\', '\\\\'
-        $json = $json -replace 'C:\\\\NEVEN\\\\functions', "$escapedInstallDir\\\\functions"
-        $json = $json -replace 'C:\\\\NEVEN\\\\graphics', "$escapedInstallDir\\\\graphics"
-        $json = $json -replace 'C:\\\\NEVEN\\\\prompts', "$escapedInstallDir\\\\prompts"
-        $json = $json -replace 'C:\\\\NEVEN\\\\neven\\.log', "$escapedInstallDir\\\\neven.log"
+        # Patch install directory paths
+        $config.NEVEN.functionsDirectory = Join-Path $InstallDir 'functions'
+        $config.NEVEN.graphicsDirectory  = Join-Path $InstallDir 'graphics'
+        $config.NEVEN.logFile            = Join-Path $InstallDir 'neven.log'
+        if ($config.AI) {
+            $config.AI.promptsDirectory  = Join-Path $InstallDir 'prompts'
+        }
 
         # Patch language runtime paths
-        if ($RInfo.Found) {
-            $escapedPath = $RInfo.Path -replace '\\', '\\\\'
-            $json = $json -replace '("R"\s*:\s*\{[^}]*"home"\s*:\s*)"[^"]*"', ('$1"' + $escapedPath + '"')
+        if ($RInfo.Found -and $RInfo.Path) {
+            $config.NEVEN.R.home = $RInfo.Path
+            Write-Log "Config: R home = $($RInfo.Path)"
         }
-        if ($JuliaInfo.Found) {
-            $escapedPath = $JuliaInfo.Path -replace '\\', '\\\\'
-            $json = $json -replace '("Julia"\s*:\s*\{[^}]*"home"\s*:\s*)"[^"]*"', ('$1"' + $escapedPath + '"')
+        if ($JuliaInfo.Found -and $JuliaInfo.Path) {
+            $config.NEVEN.Julia.home = $JuliaInfo.Path
+            Write-Log "Config: Julia home = $($JuliaInfo.Path)"
         }
-        if ($PythonInfo.Found) {
-            $escapedPath = $PythonInfo.Path -replace '\\', '\\\\'
-            $json = $json -replace '("Python"\s*:\s*\{[^}]*"home"\s*:\s*)"[^"]*"', ('$1"' + $escapedPath + '"')
+        if ($PythonInfo.Found -and $PythonInfo.Path) {
+            $config.NEVEN.Python.home = $PythonInfo.Path
+            Write-Log "Config: Python home = $($PythonInfo.Path)"
         }
-        Set-Content -Path $ConfigPath -Value $json -Encoding UTF8 -NoNewline
+
+        # Write back as properly formatted JSON (UTF8 without BOM for C++ json11 parser)
+        $jsonStr = $config | ConvertTo-Json -Depth 5
+        [System.IO.File]::WriteAllText($ConfigPath, $jsonStr, (New-Object System.Text.UTF8Encoding $false))
         Write-Log 'Patched neven-config.json with install dir and runtime paths'
+        Write-Host '   [OK] Configuration patched with detected paths' -ForegroundColor Green
     } catch {
         Write-Log "Failed to patch neven-config.json: $_" -Level WARN
         $script:HasWarnings = $true
@@ -1601,6 +1606,17 @@ Update-NEVENConfig -ConfigPath $configPath -InstallDir $choices.InstallDir -RInf
 # --- Phase 4: Registration ---
 Write-Host ''
 Write-Host '  Phase 4: Registering components...' -ForegroundColor White
+
+# Clear any disabled items from previous failed loads
+foreach ($ver in @('15.0','16.0')) {
+    $resiliencyKey = "HKCU:\Software\Microsoft\Office\$ver\Excel\Resiliency\DisabledItems"
+    if (Test-Path $resiliencyKey) {
+        Remove-Item $resiliencyKey -Force -ErrorAction SilentlyContinue
+        Write-Log "Cleared Excel DisabledItems for version $ver"
+        Write-Host '   [OK] Cleared previously disabled add-ins' -ForegroundColor Green
+    }
+}
+
 $xllPath = Join-Path $choices.InstallDir 'NEVEN64.xll'
 if ($excelVers.Count -gt 0) {
     Register-XLL -XllPath $xllPath -ExcelVersions $excelVers
