@@ -23,7 +23,18 @@
 #include "Constants.h"
 #include "IPC/MessageValidator.h"
 
+// ─── Version-independent Python linking ────────────────────────────────────
+// ControlPython.exe links against python3.lib (the Stable ABI import library),
+// which creates a dependency on python3.dll — a universal forwarder present in
+// ALL Python 3.x installations. python3.dll internally loads the correct
+// version-specific python3XX.dll (python313.dll, python315.dll, etc.).
+//
+// This means the exe works with ANY Python >= 3.10 without recompilation.
+// The parent process (NEVEN.dll) prepends Python's home directory to PATH
+// before launching ControlPython.exe, ensuring python3.dll can be found.
+
 #include <Python.h>
+#include "python_compat.h"
 
 std::string language_tag;
 

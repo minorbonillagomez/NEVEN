@@ -79,12 +79,23 @@ target_compile_definitions(ControlPython PRIVATE
     _CRT_SECURE_NO_WARNINGS
 )
 
-# Link directories for Python stable ABI library
+# Link directories for Python library
 if(PYTHON_LIB_DIR)
     target_link_directories(ControlPython PRIVATE "${PYTHON_LIB_DIR}")
 endif()
 
 # Link dependencies
+# We link against python3.lib (the "Stable ABI" import library). This creates
+# a runtime dependency on python3.dll — a universal forwarder DLL that exists
+# in ALL Python 3.x installations and internally loads the correct python3XX.dll.
+#
+# This means ControlPython.exe works with ANY Python >= 3.10 without recompilation.
+#
+# NOTE: We do NOT define Py_LIMITED_API because we use the full C API.
+# The key is that python3.lib exports all the functions we need (confirmed via dumpbin).
+# The only code change required is replacing PyList_SET_ITEM/PyTuple_SET_ITEM macros
+# (which access internal struct members) with PyList_SetItem/PyTuple_SetItem functions.
+
 target_link_libraries(ControlPython
     PRIVATE
     PB
@@ -94,6 +105,15 @@ target_link_libraries(ControlPython
     advapi32
     python3
 )
+
+# Prevent the linker from pulling in python3XX.lib automatically.
+# This ensures the exe ONLY depends on python3.dll (universal forwarder).
+# We glob for any python3XX.lib pattern and exclude them all.
+file(GLOB _PYTHON_VERSIONED_LIBS_NAMES "${PYTHON_LIB_DIR}/python3??.lib")
+foreach(_lib ${_PYTHON_VERSIONED_LIBS_NAMES})
+    get_filename_component(_libname "${_lib}" NAME_WE)
+    target_link_options(ControlPython PRIVATE "/NODEFAULTLIB:${_libname}.lib")
+endforeach()
 
 # Stack guard fix: 2MB stack to provide headroom for CPython initialization
 target_link_options(ControlPython PRIVATE /STACK:2097152)

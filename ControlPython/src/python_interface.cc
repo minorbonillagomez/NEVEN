@@ -25,6 +25,7 @@
 #include "string_utilities.h"
 
 #include <Python.h>
+#include "python_compat.h"
 
 // ─── Global state ────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ static PyObject* VariableToPyObject(const RJ2XCLBuffers::Variable& variable) {
         PyObject* list = PyList_New(len);
         for (int i = 0; i < len; i++) {
           PyObject* item = VariableToPyObject(arr.data(i));
-          PyList_SET_ITEM(list, i, item); // steals reference
+          PyList_SetItem(list, i, item); // steals reference
         }
         return list;
       }
@@ -78,9 +79,9 @@ static PyObject* VariableToPyObject(const RJ2XCLBuffers::Variable& variable) {
           for (int c = 0; c < ncols; c++) {
             int idx = r + nrows * c; // column-major storage
             PyObject* item = VariableToPyObject(arr.data(idx));
-            PyList_SET_ITEM(row, c, item);
+            PyList_SetItem(row, c, item);
           }
-          PyList_SET_ITEM(outer, r, row);
+          PyList_SetItem(outer, r, row);
         }
         return outer;
       }
@@ -207,7 +208,7 @@ void PythonInit(const std::string& config_path) {
 
   // Retry loop: execute startup.py with up to kMaxStartupRetries attempts
   for (int attempt = 1; attempt <= kMaxStartupRetries; attempt++) {
-    int rc = PyRun_SimpleString(startup_code.c_str());
+    int rc = neven_PyRun_SimpleString(startup_code.c_str());
     if (rc == 0) {
       CHILD_LOG("startup.py executed successfully (attempt %d/%d)", attempt, kMaxStartupRetries);
       return; // Success
@@ -247,7 +248,7 @@ void PythonExec(RJ2XCLBuffers::CallResponse& response, const RJ2XCLBuffers::Call
     return;
   }
 
-  int rc = PyRun_SimpleString(code.c_str());
+  int rc = neven_PyRun_SimpleString(code.c_str());
   if (rc != 0) {
     PyErr_Clear();
     auto err = response.mutable_result()->mutable_err();
@@ -289,7 +290,7 @@ void PythonCall(RJ2XCLBuffers::CallResponse& response, const RJ2XCLBuffers::Call
   PyObject* args = PyTuple_New(arg_count);
   for (int i = 0; i < arg_count; i++) {
     PyObject* arg = VariableToPyObject(call.function_call().arguments(i));
-    PyTuple_SET_ITEM(args, i, arg); // steals reference
+    PyTuple_SetItem(args, i, arg); // steals reference
   }
 
   // Call the function
@@ -316,7 +317,7 @@ int PythonShellExec(const std::string& command, std::string& shell_buffer) {
 
   // Check for incomplete input (multi-line)
   // Use compile() to check if the code is complete
-  PyObject* code_obj = Py_CompileString(full_code.c_str(), "<shell>", Py_single_input);
+  PyObject* code_obj = neven_Py_CompileString(full_code.c_str(), "<shell>", Py_single_input);
   if (!code_obj) {
     // Check if it's a syntax error (incomplete) or a real error
     if (PyErr_ExceptionMatches(PyExc_SyntaxError)) {
@@ -351,7 +352,7 @@ int PythonShellExec(const std::string& command, std::string& shell_buffer) {
   }
 
   // Execute the complete code
-  int rc = PyRun_SimpleString(full_code.c_str());
+  int rc = neven_PyRun_SimpleString(full_code.c_str());
   if (rc != 0) {
     PyErr_Clear();
   }
@@ -414,7 +415,7 @@ bool ReadSourceFile(const std::string& file, bool notify) {
       CHILD_LOG_ERR("Failed to read file: %s", file.c_str());
       return false;
     }
-    int rc = PyRun_SimpleString(file_result.value().c_str());
+    int rc = neven_PyRun_SimpleString(file_result.value().c_str());
     if (rc != 0) {
       PyErr_Clear();
       CHILD_LOG_ERR("Error executing file: %s", file.c_str());
