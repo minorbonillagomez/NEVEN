@@ -125,6 +125,8 @@ namespace rj2xcl {
             char env_path[MAX_PATH];
             if (GetEnvironmentVariableA(env_name, env_path, MAX_PATH) > 0) {
                 std::string home(env_path);
+                // Exclude Microsoft Store stub (WindowsApps) — no python3.dll
+                if (home.find("WindowsApps") != std::string::npos) continue;
                 if (ValidatePythonHome(home)) {
                     LanguageInstallation inst;
                     inst.name = "Python";

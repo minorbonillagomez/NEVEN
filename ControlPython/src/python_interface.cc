@@ -248,6 +248,38 @@ void PythonExec(RJ2XCLBuffers::CallResponse& response, const RJ2XCLBuffers::Call
     return;
   }
 
+  // Strategy: Try as expression first (Py_eval_input) to capture the result value.
+  // If that fails (e.g., statements like "x = 5"), fall back to file execution mode.
+  PyObject* main_module = PyImport_AddModule("__main__");
+  if (!main_module) {
+    PyErr_Clear();
+    response.mutable_result()->set_boolean(true);
+    return;
+  }
+  PyObject* main_dict = PyModule_GetDict(main_module);
+
+  // First try: evaluate as expression (captures return value)
+  PyObject* code_obj = (Py_CompileString)(code.c_str(), "<expr>", Py_eval_input);
+  if (code_obj) {
+    PyObject* result = PyEval_EvalCode(code_obj, main_dict, main_dict);
+    Py_DECREF(code_obj);
+    if (result) {
+      if (result == Py_None) {
+        response.mutable_result()->set_nil(true);
+      } else {
+        PyObjectToVariable(response.mutable_result(), result);
+      }
+      Py_DECREF(result);
+      return;
+    }
+    // eval failed at runtime — fall through to report error
+    PyErr_Clear();
+  } else {
+    // Compile as expression failed (syntax error) — this is a statement, not an expression
+    PyErr_Clear();
+  }
+
+  // Second try: execute as statements (assignments, imports, multi-line code)
   int rc = neven_PyRun_SimpleString(code.c_str());
   if (rc != 0) {
     PyErr_Clear();

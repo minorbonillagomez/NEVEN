@@ -10,6 +10,8 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
+#include <io.h>
+#include <fcntl.h>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -41,9 +43,32 @@ bool ChildProcessLog::Initialize(const std::string& process_name) {
 
     log_path_ = std::string(temp_path) + "control" + process_name + ".log";
 
-    errno_t err = fopen_s(&log_file_, log_path_.c_str(), "w");
-    if (err != 0 || !log_file_) {
+    // Open with shared read access so the log can be read while the process runs
+    HANDLE hFile = CreateFileA(
+        log_path_.c_str(),
+        GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_DELETE,  // allow others to read/delete
+        NULL,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+    
+    if (hFile == INVALID_HANDLE_VALUE) {
         log_file_ = nullptr;
+        return false;
+    }
+
+    // Convert Win32 HANDLE to C FILE* for fprintf/vfprintf usage
+    int fd = _open_osfhandle((intptr_t)hFile, 0);
+    if (fd == -1) {
+        CloseHandle(hFile);
+        log_file_ = nullptr;
+        return false;
+    }
+
+    log_file_ = _fdopen(fd, "w");
+    if (!log_file_) {
+        _close(fd); // also closes hFile
         return false;
     }
 

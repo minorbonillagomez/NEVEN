@@ -440,8 +440,9 @@ void RJ2XCL_Engine::Init() {
       }
     }
 
-    // Re-enable file watch for hot-reload (AFTER zombie cleanup to avoid killing freshly launched processes)
-    file_watch_service_->WatchDirectory(functions_directory, true);
+    // NOTE: file_watch_service_->WatchDirectory() is deferred to AFTER
+    // ConnectLanguages() below, to prevent the watcher from triggering
+    // premature connections that get killed by zombie cleanup.
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -506,6 +507,13 @@ void RJ2XCL_Engine::Init() {
   // ═══════════════════════════════════════════════════════════════════
   MapFunctions();
   RegisterFunctions();
+
+  // Enable file watcher for hot-reload AFTER all engines are connected and
+  // functions loaded. This prevents the watcher from triggering premature
+  // connections that would be killed by zombie cleanup.
+  if (file_watch_service_ && functions_directory.length()) {
+    file_watch_service_->WatchDirectory(functions_directory, true);
+  }
 
   // Console launch (non-blocking)
   bool start_console = false;

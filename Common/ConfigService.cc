@@ -31,8 +31,9 @@ namespace rj2xcl {
             RJ2XCL_LOG_WARN("NEVEN home directory not found");
         }
 
-        // 3. Set environment variable
+        // 3. Set environment variables for child processes
         SetEnvironmentVariableA("NEVEN_HOME", home_directory_.c_str());
+        SetEnvironmentVariableA("RJ2XCL_HOME", home_directory_.c_str());
 
         // 4. Load main config
         auto result = ReadJsonFile("neven-config.json");
