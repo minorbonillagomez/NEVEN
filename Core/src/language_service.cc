@@ -46,6 +46,7 @@ LanguageService::LanguageService(CallbackInfo &callback_info, COMObjectMap &obje
   , buffer_(rj2xcl::Constants::kPipeBufferSize)    // H5: initialize dynamic buffer
 {
   memset(&io_, 0, sizeof(io_));
+  memset(&process_info_, 0, sizeof(process_info_));
 
   // we're now receiving the json descriptor instead of the object, but we still
   // want to construct the object. the json descriptor may have multiple versions
@@ -527,6 +528,24 @@ void LanguageService::Shutdown() {
 
     connected_ = false;
     pipe_handle_.reset();
+  }
+
+  // Force-kill the child process if it didn't exit gracefully.
+  // This prevents zombie processes when Excel closes.
+  if (process_info_.hProcess) {
+    DWORD exit_code = 0;
+    if (GetExitCodeProcess(process_info_.hProcess, &exit_code) && exit_code == STILL_ACTIVE) {
+      // Give the process 2 seconds to exit gracefully after the shutdown command
+      DWORD wait_result = WaitForSingleObject(process_info_.hProcess, 2000);
+      if (wait_result == WAIT_TIMEOUT) {
+        TerminateProcess(process_info_.hProcess, 0);
+        RJ2XCL_LOG_WARN("Force-terminated %s (did not exit within 2s)", language_descriptor_.name_.c_str());
+      }
+    }
+    CloseHandle(process_info_.hProcess);
+    CloseHandle(process_info_.hThread);
+    process_info_.hProcess = NULL;
+    process_info_.hThread = NULL;
   }
 }
 
