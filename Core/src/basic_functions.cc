@@ -978,10 +978,10 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PresentationBuild(
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_About() {
     thread_local XLOPER12 rslt;
     std::string about =
-        "NEVEN v2.0 — Open Source Polyglot Infrastructure for Excel\n"
-        "Autor: Minor Bonilla G.\n"
-        "Licencia: GPL v3 — Software libre para todos\n"
-        "R: Estadistica | Julia: Matematica/ML | WebView2: Visualizacion\n"
+        "NEVEN v2.0 - Open Source Polyglot Infrastructure for Excel\n"
+        "Autor: Minor Bonilla Gomez\n"
+        "Licencia: GPL v3 - Software libre para todos\n"
+        "R: Estadistica | Julia: Matematica/ML | Python: Computo | WebView2: Visualizacion\n"
         "Construido con la conviccion de que el conocimiento\n"
         "debe ser accesible, colaborativo y libre.";
     Convert::StringToXLOPER(&rslt, about, false);

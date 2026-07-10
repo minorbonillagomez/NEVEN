@@ -230,6 +230,19 @@ void RegisterFunctions() {
 
     auto language_service = rj2xcl::LanguageManager::Instance().GetLanguageService(entry->language_key_);
 
+    // Skip internal/system functions that should not be visible to users
+    const std::string& fname = entry->name_;
+    if (fname.find("R4XCL_INT") != std::string::npos ||   // Internal R helper functions
+        fname == "BERT.graphics.device" ||                 // Legacy graphics device setup
+        fname == "NEVEN.last.plot" ||                      // Internal plot path accessor
+        fname == "Extraer_outputs" ||                      // Internal output extraction engine
+        fname == "AD_plot_rolcor_estim_heatmap" ||         // Internal helper for NonParRolCor
+        fname.find(".neven_") == 0 ||                      // Internal helpers prefixed with .neven_
+        fname.find("_neven_") == 0) {                      // Internal helpers prefixed with _neven_
+      index++;
+      continue;
+    }
+
     std::stringstream ss;
 
     ss.clear();
