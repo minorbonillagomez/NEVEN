@@ -28,7 +28,11 @@
 param([switch]$Silent)
 
 $ErrorActionPreference = 'Continue'
-$NEVENHome = $PSScriptRoot
+
+# The installation directory is always C:\NEVEN (hardcoded during install).
+# Do NOT use $PSScriptRoot — that points to wherever the uninstaller was run from
+# (e.g., the extracted ZIP folder), not where NEVEN was actually installed.
+$NEVENHome = 'C:\NEVEN'
 
 # Auto-detect Excel versions if not embedded by installer
 $ExcelVersions = @()
@@ -161,13 +165,29 @@ if (Test-Path $shortcutPath) {
     $removed += 'Desktop shortcut'
 }
 
-# 7. Remove NEVEN_Home directory
-# Since this script runs from inside NEVEN_Home, we spawn a cleanup process
+# 7. Kill any remaining child processes before directory removal
+$childProcesses = @('ControlR', 'ControlJulia', 'ControlPython', 'msedgewebview2')
+foreach ($proc in $childProcesses) {
+    Stop-Process -Name $proc -Force -ErrorAction SilentlyContinue
+}
+
+# 8. Remove NEVEN_Home directory
+# Since this script may run from inside NEVEN_Home, we spawn a cleanup process
 $tempScript = Join-Path $env:TEMP 'neven-cleanup.ps1'
 $cleanupCode = @"
-Start-Sleep -Seconds 2
-if (Test-Path '$NEVENHome') {
-    Remove-Item -Path '$NEVENHome' -Recurse -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 3
+`$maxRetries = 5
+for (`$i = 0; `$i -lt `$maxRetries; `$i++) {
+    if (Test-Path '$NEVENHome') {
+        try {
+            Remove-Item -Path '$NEVENHome' -Recurse -Force -ErrorAction Stop
+            break
+        } catch {
+            Start-Sleep -Seconds 2
+        }
+    } else {
+        break
+    }
 }
 Remove-Item -Path '$tempScript' -Force -ErrorAction SilentlyContinue
 "@

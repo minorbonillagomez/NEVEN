@@ -408,7 +408,8 @@ void ListScriptFunctions(RJ2XCLBuffers::CallResponse& response, const RJ2XCLBuff
 
   if (!func || !PyCallable_Check(func)) {
     CHILD_LOG_WARN("list_functions() not defined in __main__");
-    response.mutable_result()->set_nil(true);
+    // Return empty function list (not nil) so the XLL sees kFunctionList
+    response.mutable_function_list();
     return;
   }
 
@@ -416,12 +417,63 @@ void ListScriptFunctions(RJ2XCLBuffers::CallResponse& response, const RJ2XCLBuff
   if (!result) {
     PyErr_Clear();
     CHILD_LOG_ERR("list_functions() raised an exception");
-    response.mutable_result()->set_nil(true);
+    response.mutable_function_list();
     return;
   }
 
-  // Convert result to Variable
-  PyObjectToVariable(response.mutable_result(), result);
+  // Convert Python list of dicts to Protobuf FunctionList
+  // Expected format: [{"name": "func", "description": "...", "category": "...", "arguments": [{"name":"x", "description":"..."}]}]
+  auto* fn_list = response.mutable_function_list();
+
+  if (PyList_Check(result)) {
+    Py_ssize_t count = PyList_Size(result);
+    for (Py_ssize_t i = 0; i < count; i++) {
+      PyObject* entry = PyList_GetItem(result, i); // borrowed ref
+      if (!entry || !PyDict_Check(entry)) continue;
+
+      auto* descriptor = fn_list->add_functions();
+
+      // Function name
+      PyObject* py_name = PyDict_GetItemString(entry, "name");
+      if (py_name && PyUnicode_Check(py_name)) {
+        descriptor->mutable_function()->set_name(PyUnicode_AsUTF8(py_name));
+      }
+
+      // Description
+      PyObject* py_desc = PyDict_GetItemString(entry, "description");
+      if (py_desc && PyUnicode_Check(py_desc)) {
+        descriptor->mutable_function()->set_description(PyUnicode_AsUTF8(py_desc));
+      }
+
+      // Category
+      PyObject* py_cat = PyDict_GetItemString(entry, "category");
+      if (py_cat && PyUnicode_Check(py_cat)) {
+        descriptor->set_category(PyUnicode_AsUTF8(py_cat));
+      }
+
+      // Arguments
+      PyObject* py_args = PyDict_GetItemString(entry, "arguments");
+      if (py_args && PyList_Check(py_args)) {
+        Py_ssize_t arg_count = PyList_Size(py_args);
+        for (Py_ssize_t j = 0; j < arg_count; j++) {
+          PyObject* arg_entry = PyList_GetItem(py_args, j); // borrowed ref
+          if (!arg_entry || !PyDict_Check(arg_entry)) continue;
+
+          auto* arg = descriptor->add_arguments();
+          PyObject* arg_name = PyDict_GetItemString(arg_entry, "name");
+          if (arg_name && PyUnicode_Check(arg_name)) {
+            arg->set_name(PyUnicode_AsUTF8(arg_name));
+          }
+          PyObject* arg_desc = PyDict_GetItemString(arg_entry, "description");
+          if (arg_desc && PyUnicode_Check(arg_desc)) {
+            arg->set_description(PyUnicode_AsUTF8(arg_desc));
+          }
+        }
+      }
+    }
+  }
+
+  CHILD_LOG("list_functions returned %d functions", fn_list->functions_size());
   Py_DECREF(result);
 }
 

@@ -63,13 +63,17 @@ namespace rj2xcl {
         // 1. Check environment variable JULIA_HOME
         char env_path[MAX_PATH];
         if (GetEnvironmentVariableA("JULIA_HOME", env_path, MAX_PATH) > 0) {
-            LanguageInstallation inst;
-            inst.name = "Julia";
-            inst.version = "Unknown (Env)";
-            inst.home_path = env_path;
-            inst.is_64bit = true; // Assume 64-bit for modern Julia
-            inst.priority = 100; // High priority for explicit env var
-            results.push_back(inst);
+            std::string home(env_path);
+            // Exclude Microsoft Store stub (WindowsApps)
+            if (home.find("WindowsApps") == std::string::npos) {
+                LanguageInstallation inst;
+                inst.name = "Julia";
+                inst.version = "Unknown (Env)";
+                inst.home_path = home;
+                inst.is_64bit = true; // Assume 64-bit for modern Julia
+                inst.priority = 100; // High priority for explicit env var
+                results.push_back(inst);
+            }
         }
 
         // 2. Heuristic: Check LocalAppData\Programs\Julia (common installer path)

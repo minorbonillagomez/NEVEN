@@ -206,12 +206,15 @@ function Find-Julia {
     $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
     $cmd = Get-Command 'julia.exe' -ErrorAction SilentlyContinue
     if ($cmd) {
-        $result.Found = $true
         $binDir = Split-Path $cmd.Source -Parent
-        # Handle both "Julia-1.12.6/bin" and "Julia/bin" structures
-        $parent = Split-Path $binDir -Parent
-        if ((Split-Path $parent -Leaf) -eq 'bin') { $parent = Split-Path $parent -Parent }
-        $result.Path = $parent
+        # Exclude WindowsApps stub — it's a placeholder that doesn't contain Julia
+        if ($binDir -notmatch 'WindowsApps') {
+            $result.Found = $true
+            # Handle both "Julia-1.12.6/bin" and "Julia/bin" structures
+            $parent = Split-Path $binDir -Parent
+            if ((Split-Path $parent -Leaf) -eq 'bin') { $parent = Split-Path $parent -Parent }
+            $result.Path = $parent
+        }
     }
 
     # 2. Filesystem - check multiple known locations
@@ -273,11 +276,15 @@ function Find-Python {
     param()
     $result = [PSCustomObject]@{ Found = $false; Path = ''; Version = ''; Adequate = $false }
 
-    # 1. PATH
+    # 1. PATH (skip Microsoft Store stub which doesn't have python3.dll)
     $cmd = Get-Command 'python.exe' -ErrorAction SilentlyContinue
     if ($cmd) {
-        $result.Found = $true
-        $result.Path  = Split-Path $cmd.Source -Parent
+        $pyDir = Split-Path $cmd.Source -Parent
+        # Exclude WindowsApps stub — it's a placeholder that doesn't contain python3.dll
+        if ($pyDir -notmatch 'WindowsApps') {
+            $result.Found = $true
+            $result.Path  = $pyDir
+        }
     }
 
     # 2. Registry

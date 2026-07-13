@@ -15,15 +15,18 @@ if %errorlevel% neq 0 (
     exit /b 0
 )
 
-:: Set working directory to script location
-cd /d "%~dp0"
+:: Save NEVEN directory before changing away from it
+set "NEVEN_DIR=%~dp0"
+
+:: Change working directory AWAY from NEVEN so it can be deleted
+cd /d "%TEMP%"
 
 :: Run the PowerShell uninstaller
-if exist "%~dp0Uninstall-NEVEN.ps1" (
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Uninstall-NEVEN.ps1"
+if exist "%NEVEN_DIR%Uninstall-NEVEN.ps1" (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%NEVEN_DIR%Uninstall-NEVEN.ps1"
 ) else (
     echo   ERROR: Uninstall-NEVEN.ps1 not found.
-    echo   Expected at: %~dp0Uninstall-NEVEN.ps1
+    echo   Expected at: %NEVEN_DIR%Uninstall-NEVEN.ps1
 )
 
 echo.

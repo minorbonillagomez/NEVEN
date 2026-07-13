@@ -238,7 +238,8 @@ void RegisterFunctions() {
         fname == "Extraer_outputs" ||                      // Internal output extraction engine
         fname == "AD_plot_rolcor_estim_heatmap" ||         // Internal helper for NonParRolCor
         fname.find(".neven_") == 0 ||                      // Internal helpers prefixed with .neven_
-        fname.find("_neven_") == 0) {                      // Internal helpers prefixed with _neven_
+        fname.find("_neven_") == 0 ||                      // Internal helpers prefixed with _neven_
+        fname[0] == '_') {                                 // Any function starting with _ is internal
       index++;
       continue;
     }
