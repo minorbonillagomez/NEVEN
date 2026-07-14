@@ -13,7 +13,13 @@ function ReadScriptFile(path::String, notify::Bool=false)
         println("Loading script file: $path")
     end
     try
-        Base.include(Main, path)
+        # Read file content and strip UTF-8 BOM if present (Windows Notepad adds BOM)
+        raw = read(path, String)
+        if startswith(raw, "\xef\xbb\xbf")
+            raw = raw[4:end]  # Strip 3-byte BOM
+        end
+        # Evaluate in Main scope (equivalent to Base.include but BOM-safe)
+        Base.include_string(Main, raw, path)
         return true
     catch e
         @error "Error loading $path" exception=(e, catch_backtrace())

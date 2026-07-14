@@ -1595,6 +1595,25 @@ else                   { Write-Log 'Julia not found' -Level WARN }
 if ($pythonInfo.Found) { Write-Log "Python $($pythonInfo.Version) at $($pythonInfo.Path)" }
 else                   { Write-Log 'Python not found' -Level WARN }
 
+# Ensure pip is available (required for =P.instalar() to work)
+if ($pythonInfo.Found -and $pythonInfo.Path) {
+    $pythonExe = Join-Path $pythonInfo.Path 'python.exe'
+    $pipCheck = & $pythonExe -m pip --version 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host '  Installing pip (required for package management)...' -ForegroundColor Yellow
+        & $pythonExe -m ensurepip --upgrade 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Log 'pip installed successfully via ensurepip'
+            Write-Host '  [OK] pip installed' -ForegroundColor Green
+        } else {
+            Write-Log 'Failed to install pip via ensurepip' -Level WARN
+            Write-Host '  [!!] Could not install pip automatically. Run: python -m ensurepip --upgrade' -ForegroundColor Yellow
+        }
+    } else {
+        Write-Log "pip already available: $($pipCheck.ToString().Trim())"
+    }
+}
+
 # --- Phase 3: File Deployment ---
 Write-Host ''
 Write-Host '  Phase 3: Deploying files...' -ForegroundColor White
