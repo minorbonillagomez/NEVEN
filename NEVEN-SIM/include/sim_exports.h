@@ -24,7 +24,7 @@ extern "C" {
     __declspec(dllexport) LPXLOPER12 __stdcall SIM_Workspace(void);
     __declspec(dllexport) LPXLOPER12 __stdcall SIM_Fit(LPXLOPER12 pxRange, LPXLOPER12 pxDist);
     __declspec(dllexport) LPXLOPER12 __stdcall SIM_Run(LPXLOPER12 pxIterations);
-    __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 pxRange, LPXLOPER12 pxModel, LPXLOPER12 pxIterations);
+    __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 pxRange, LPXLOPER12 pxModel, LPXLOPER12 pxIterations, LPXLOPER12 pxReport);
     __declspec(dllexport) LPXLOPER12 __stdcall SIM_Datos(LPXLOPER12 pxN);
     __declspec(dllexport) LPXLOPER12 __stdcall SIM_Exportar(void);
     __declspec(dllexport) LPXLOPER12 __stdcall SIM_Percentile(LPXLOPER12 pxP);

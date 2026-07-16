@@ -70,6 +70,16 @@ void PostMessageBridge::OnWebMessageReceived(
     } else if (action == "save-request") {
         HandleSaveRequest(viewer_id);
 
+    } else if (action == "sim-command") {
+        // NEVEN-SIM specific commands — write to command queue file
+        std::string queue_path = "C:\\NEVEN\\data\\sim_command.json";
+        std::ofstream out(queue_path, std::ios::trunc);
+        if (out.is_open()) {
+            out << json_message;
+            out.close();
+            RJ2XCL_LOG_INFO("PostMessageBridge: sim-command queued");
+        }
+
     } else {
         RJ2XCL_LOG_WARN("PostMessageBridge: unrecognized action '%s' from %s",
                          action.c_str(), viewer_id.c_str());
@@ -82,7 +92,16 @@ const char* PostMessageBridge::GetBridgeScript() {
             sendToExcel: function(data) {
                 window.chrome.webview.postMessage(JSON.stringify(data));
             },
-            version: '2.0'
+            writeCell: function(sheet, cell, value) {
+                this.sendToExcel({action: 'write-cell', sheet: sheet, cell: cell, value: value});
+            },
+            notify: function(message) {
+                this.sendToExcel({action: 'notify', message: message});
+            },
+            simCommand: function(type, params) {
+                this.sendToExcel({action: 'sim-command', type: type, params: params || {}});
+            },
+            version: '2.1'
         };
         window.rj2xcl = window.neven;
     )";
@@ -91,9 +110,25 @@ const char* PostMessageBridge::GetBridgeScript() {
 void PostMessageBridge::HandleWriteCell(const std::string& sheet, const std::string& cell,
                                          const std::string& value, LPDISPATCH application_dispatch)
 {
-    // Write-cell requires COM automation marshalling which is complex from the STA thread.
-    // For now, log the request. Full implementation requires AtlUnmarshalPtr on the UI thread.
+    // Write-cell from WebView2 (STA thread) to Excel cell.
+    // Since we're on the STA thread (not Excel's main thread), we cannot use
+    // Excel12/COM directly. Instead, we write the request to a shared file
+    // that can be read by a polling function or picked up on the next calc cycle.
+    
     RJ2XCL_LOG_INFO("PostMessageBridge: write-cell %s!%s = %s", sheet.c_str(), cell.c_str(), value.c_str());
+
+    // Write to a message queue file that Excel functions can read
+    std::string queue_path = "C:\\NEVEN\\data\\bridge_queue.json";
+    std::string json = "{\"action\":\"write-cell\",\"sheet\":\"" + sheet + 
+                       "\",\"cell\":\"" + cell + 
+                       "\",\"value\":\"" + value + "\"}";
+    
+    // Append to queue file (creates if not exists)
+    std::ofstream out(queue_path, std::ios::trunc);
+    if (out.is_open()) {
+        out << json;
+        out.close();
+    }
 }
 
 void PostMessageBridge::HandleNotify(const std::string& message, LPDISPATCH application_dispatch)

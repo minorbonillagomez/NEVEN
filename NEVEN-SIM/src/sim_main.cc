@@ -41,7 +41,7 @@ static LPWSTR simFuncTemplates[][16] = {
     { L"SIM_Workspace",   L"U",   L"SIM.Workspace",   L"",            L"1", L"NEVEN-SIM", L"", L"", L"Abre el workspace de simulacion", L"", L"", L"", L"", L"", L"", L"" },
     { L"SIM_Fit",         L"UQQ", L"SIM.Fit",         L"Rango, Dist", L"1", L"NEVEN-SIM", L"", L"", L"Ajusta distribucion a datos",      L"Rango de datos", L"Distribucion (opcional)", L"", L"", L"", L"", L"" },
     { L"SIM_Run",         L"UQ",  L"SIM.Run",         L"Iteraciones", L"1", L"NEVEN-SIM", L"", L"", L"Ejecuta simulacion Monte Carlo",  L"Iteraciones (def: 1000000)", L"", L"", L"", L"", L"", L"" },
-    { L"SIM_QuickRun",    L"UQQQ", L"SIM.QuickRun",  L"Rango, Modelo, Iteraciones", L"1", L"NEVEN-SIM", L"", L"", L"Simulacion completa: Fit+MonteCarlo en una celda", L"Rango de datos", L"Modelo Julia: (x)->x*1.1", L"Iteraciones (def: 100000)", L"", L"", L"", L"" },
+    { L"SIM_QuickRun",    L"UQQQQ", L"SIM.QuickRun",  L"Rango, Modelo, Iteraciones, Reporte", L"1", L"NEVEN-SIM", L"", L"", L"Simulacion completa: Fit+MonteCarlo en una celda", L"Rango de datos", L"Modelo Julia: (x)->x*1.1", L"Iteraciones (def: 100000)", L"Reporte visual (1=Si, 0=No, def:0)", L"", L"", L"" },
     { L"SIM_Datos",       L"UQ",  L"SIM.Datos",      L"N",           L"1", L"NEVEN-SIM", L"", L"", L"Muestra las primeras N muestras simuladas", L"Cantidad de muestras a mostrar (def: 100)", L"", L"", L"", L"", L"", L"" },
     { L"SIM_Exportar",    L"U",   L"SIM.Exportar",   L"",            L"1", L"NEVEN-SIM", L"", L"", L"Exporta todas las muestras a CSV con timestamp", L"", L"", L"", L"", L"", L"", L"" },
     { L"SIM_Percentile",  L"UQ",  L"SIM.Percentile",  L"P",           L"1", L"NEVEN-SIM", L"", L"", L"Percentil de la ultima simulacion", L"Percentil (1-99)", L"", L"", L"", L"", L"", L"" },
@@ -271,7 +271,7 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_Status(void) {
     return MakeStringResult(status);
 }
 
-extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 pxRange, LPXLOPER12 pxModel, LPXLOPER12 pxIterations) {
+extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 pxRange, LPXLOPER12 pxModel, LPXLOPER12 pxIterations, LPXLOPER12 pxReport) {
     auto& bridge = neven_sim::SimBridge::Instance();
     if (!bridge.EnsureAvailable())
         return MakeStringResult("NEVEN64.xll no esta cargado");
@@ -303,6 +303,11 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 px
     if (iterations < 1000) iterations = 1000;
     if (iterations > 10000000) iterations = 10000000;
 
+    // 3b. Get report flag (0=no, 1=yes, default=0)
+    int generate_report = 0;
+    if (pxReport && pxReport->xltype == xltypeNum) generate_report = (int)pxReport->val.num;
+    else if (pxReport && pxReport->xltype == xltypeInt) generate_report = pxReport->val.w;
+
     // 4. Fit distribution via R
     std::vector<neven_sim::FitResult> fits;
     if (!neven_sim::FitService::FitDistributions(data, fits))
@@ -332,6 +337,15 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 px
     jl << "  sorted = sort(results)\n";
     jl << "  pct(p) = sorted[max(1, Int(ceil(p/100*n)))]\n";
     jl << "  m = mean(results); s = std(results)\n";
+    jl << "  # Histogram bins (50 bins)\n";
+    jl << "  nbins = 50\n";
+    jl << "  mn, mx = extrema(results)\n";
+    jl << "  bw = (mx - mn) / nbins\n";
+    jl << "  counts = zeros(Int, nbins)\n";
+    jl << "  for v in results; idx = min(nbins, max(1, Int(floor((v-mn)/bw))+1)); counts[idx] += 1; end\n";
+    jl << "  centers = [mn + (i-0.5)*bw for i in 1:nbins]\n";
+    jl << "  hist_json = \"[\" * join([string(round(c,digits=4)) for c in centers], \",\") * \"]\"\n";
+    jl << "  counts_json = \"[\" * join([string(c) for c in counts], \",\") * \"]\"\n";
     jl << "  \"{\\\"mean\\\":\" * string(round(m,digits=4)) *\n";
     jl << "   \",\\\"std\\\":\" * string(round(s,digits=4)) *\n";
     jl << "   \",\\\"min\\\":\" * string(round(minimum(results),digits=4)) *\n";
@@ -341,6 +355,8 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 px
     jl << "   \",\\\"p50\\\":\" * string(round(pct(50),digits=4)) *\n";
     jl << "   \",\\\"p75\\\":\" * string(round(pct(75),digits=4)) *\n";
     jl << "   \",\\\"p95\\\":\" * string(round(pct(95),digits=4)) *\n";
+    jl << "   \",\\\"hist_centers\\\":\" * hist_json *\n";
+    jl << "   \",\\\"hist_counts\\\":\" * counts_json *\n";
     jl << "   \"}\"\n";
     jl << "end";
 
@@ -460,6 +476,125 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 px
         vbuf[vlen + 1] = 0;
         xlResult.val.array.lparray[i * ncols + 1].xltype = xltypeStr;
         xlResult.val.array.lparray[i * ncols + 1].val.str = vbuf;
+    }
+
+    // 8. Generate HTML viewer with histogram and open it (only if requested)
+    if (generate_report) {
+        std::string home = bridge.GetHomePath();
+        std::string hist_centers = json["hist_centers"].dump();
+        std::string hist_counts = json["hist_counts"].dump();
+        double p5 = json["p5"].number_value();
+        double p50 = json["p50"].number_value();
+        double p95 = json["p95"].number_value();
+
+        std::ostringstream html;
+        html << "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>NEVEN-SIM Resultado</title>\n";
+        html << "<script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>\n";
+        html << "<style>body{font-family:'Segoe UI',sans-serif;background:#1e1e2e;color:#cdd6f4;margin:0;padding:20px;}\n";
+        html << "h1{color:#89b4fa;font-size:20px;margin-bottom:5px;} h2{color:#f5c2e7;font-size:15px;margin:18px 0 8px;}\n";
+        html << ".stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0;}\n";
+        html << ".stat-card{background:#313244;border-radius:8px;padding:14px;text-align:center;}\n";
+        html << ".stat-card .val{font-size:22px;font-weight:700;color:#a6e3a1;}\n";
+        html << ".stat-card .lbl{font-size:11px;color:#6c7086;margin-top:4px;}\n";
+        html << ".info{background:#313244;border-radius:8px;padding:14px;margin:12px 0;font-size:13px;line-height:1.8;}\n";
+        html << ".info b{color:#89b4fa;} .btn{display:inline-block;padding:10px 20px;background:#89b4fa;color:#1e1e2e;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-top:12px;text-decoration:none;}\n";
+        html << "#chart{height:350px;margin:16px 0;}</style></head><body>\n";
+        html << "<h1>NEVEN-SIM: Resultado de Simulacion Monte Carlo</h1>\n";
+        html << "<p style='color:#6c7086;font-size:12px;'>Distribucion: <b style=\"color:#f5c2e7\">" << best.dist_name << "</b>";
+        html << " (p1=" << std::fixed << std::setprecision(4) << best.param1 << ", p2=" << best.param2 << ")";
+        html << " | Modelo: <b style=\"color:#a6e3a1\">" << model << "</b>";
+        html << " | N=" << iterations << "</p>\n";
+        html << "<div class='stats'>\n";
+        html << "  <div class='stat-card'><div class='val'>" << std::setprecision(2) << json["mean"].number_value() << "</div><div class='lbl'>Media</div></div>\n";
+        html << "  <div class='stat-card'><div class='val'>" << json["p50"].number_value() << "</div><div class='lbl'>Mediana (P50)</div></div>\n";
+        html << "  <div class='stat-card'><div class='val'>" << json["std"].number_value() << "</div><div class='lbl'>Desv. Estandar</div></div>\n";
+        html << "</div>\n";
+        html << "<div style='display:flex;gap:20px;align-items:center;margin:12px 0;padding:10px;background:#313244;border-radius:8px;'>\n";
+        html << "  <label style='font-size:12px;color:#6c7086;'>Bins: <span id='bins-val'>50</span></label>\n";
+        html << "  <input type='range' min='10' max='100' value='50' oninput='updateBins(+this.value)' style='flex:1;accent-color:#89b4fa;'>\n";
+        html << "  <label style='font-size:12px;'><input type='checkbox' id='pct-toggle' checked onchange='togglePercentiles()'> Percentiles</label>\n";
+        html << "</div>\n";
+        html << "<div id='chart'></div>\n";
+        html << "<h2>Percentiles</h2>\n";
+        html << "<div class='stats'>\n";
+        html << "  <div class='stat-card'><div class='val'>" << std::setprecision(4) << p5 << "</div><div class='lbl'>P5 (Optimista)</div></div>\n";
+        html << "  <div class='stat-card'><div class='val'>" << p50 << "</div><div class='lbl'>P50 (Mediana)</div></div>\n";
+        html << "  <div class='stat-card'><div class='val'>" << p95 << "</div><div class='lbl'>P95 (Pesimista)</div></div>\n";
+        html << "</div>\n";
+        html << "<div class='info'>\n";
+        html << "  <b>Intervalo de Confianza 90%:</b> [" << std::setprecision(4) << p5 << " , " << p95 << "]<br>\n";
+        html << "  <b>Rango:</b> [" << json["min"].number_value() << " , " << json["max"].number_value() << "]<br>\n";
+        html << "  <b>Distribucion ajustada:</b> " << best.dist_name << " (AIC=" << std::setprecision(1) << best.aic << ")<br>\n";
+        html << "  <b>Motor Fitting:</b> R + fitdistrplus | <b>Motor Simulacion:</b> Julia + Distributions.jl\n";
+        html << "</div>\n";
+        html << "<a class='btn' href='#' onclick='exportCSV()'>Exportar Datos CSV</a>\n";
+        html << "<script>\n";
+        html << "var centers = " << hist_centers << ";\n";
+        html << "var counts = " << hist_counts << ";\n";
+        html << "Plotly.newPlot('chart', [{\n";
+        html << "  x: centers, y: counts, type: 'bar',\n";
+        html << "  marker: {color: '#89b4fa', opacity: 0.85}\n";
+        html << "}], {\n";
+        html << "  title: {text:'Histograma de Resultados (" << iterations << " simulaciones)', font:{color:'#cdd6f4',size:14}},\n";
+        html << "  paper_bgcolor:'#1e1e2e', plot_bgcolor:'#1e1e2e',\n";
+        html << "  font:{color:'#a6adc8'}, xaxis:{gridcolor:'#313244'}, yaxis:{gridcolor:'#313244',title:'Frecuencia'},\n";
+        html << "  shapes:[{type:'line',x0:" << p50 << ",x1:" << p50 << ",y0:0,y1:1,yref:'paper',line:{color:'#f5c2e7',width:2,dash:'dash'}}],\n";
+        html << "  margin:{t:40,r:20,b:40,l:50}\n";
+        html << "}, {responsive:true});\n";
+        html << "\n// ─── Interactive Controls ─────────────────────────────\n";
+        html << "function updateBins(nbins) {\n";
+        html << "  document.getElementById('bins-val').textContent = nbins;\n";
+        html << "  var mn = Math.min(...centers), mx = Math.max(...centers);\n";
+        html << "  var bw = (mx - mn) / nbins;\n";
+        html << "  var newCenters = [], newCounts = Array(nbins).fill(0);\n";
+        html << "  for(var i=0;i<nbins;i++) newCenters.push(mn + (i+0.5)*bw);\n";
+        html << "  // Re-bin from original data approx (use existing counts)\n";
+        html << "  var total = counts.reduce((a,b)=>a+b,0);\n";
+        html << "  var ratio = nbins / counts.length;\n";
+        html << "  for(var i=0;i<nbins;i++) {\n";
+        html << "    var srcIdx = Math.floor(i / ratio);\n";
+        html << "    newCounts[i] = Math.round(counts[Math.min(srcIdx, counts.length-1)] * (counts.length/nbins));\n";
+        html << "  }\n";
+        html << "  Plotly.restyle('chart', {x:[newCenters], y:[newCounts]});\n";
+        html << "}\n";
+        html << "function togglePercentiles() {\n";
+        html << "  var show = document.getElementById('pct-toggle').checked;\n";
+        html << "  var shapes = show ? [\n";
+        html << "    {type:'line',x0:" << p5 << ",x1:" << p5 << ",y0:0,y1:1,yref:'paper',line:{color:'#a6e3a1',width:1.5,dash:'dot'}},\n";
+        html << "    {type:'line',x0:" << p50 << ",x1:" << p50 << ",y0:0,y1:1,yref:'paper',line:{color:'#f5c2e7',width:2,dash:'dash'}},\n";
+        html << "    {type:'line',x0:" << p95 << ",x1:" << p95 << ",y0:0,y1:1,yref:'paper',line:{color:'#f38ba8',width:1.5,dash:'dot'}}\n";
+        html << "  ] : [];\n";
+        html << "  Plotly.relayout('chart', {shapes: shapes});\n";
+        html << "}\n";
+        html << "function exportCSV(){\n";
+        html << "  if(window.neven) window.neven.simCommand('export',{});\n";
+        html << "  else alert('Use =SIM.Exportar() en Excel');\n";
+        html << "}\n";
+        html << "// Init percentile lines\n";
+        html << "togglePercentiles();\n";
+        html << "</script></body></html>";
+
+        // Write HTML to file and open viewer
+        std::string html_path = home + "workspace/sim-report.html";
+        std::string fwd_html;
+        for (char c : html_path) fwd_html += (c == '\\') ? '/' : c;
+
+        // Write using Julia's write() (not blocked)
+        std::string html_content = html.str();
+        // Escape for Julia string (replace backslash and quotes)
+        std::string escaped_html;
+        for (char c : html_content) {
+            if (c == '\\') escaped_html += "\\\\";
+            else if (c == '"') escaped_html += "\\\"";
+            else if (c == '\n') escaped_html += "\\n";
+            else escaped_html += c;
+        }
+        bridge.CallJulia("write(\"" + fwd_html + "\", \"" + escaped_html + "\")");
+
+        // Open the viewer
+        XLOPER12 viewResult;
+        memset(&viewResult, 0, sizeof(viewResult));
+        bridge.CallUDF_Public("NEVEN.v", fwd_html, viewResult);
     }
 
     return &xlResult;
