@@ -1,0 +1,38 @@
+{
+    "NEVEN-SIM": {
+        "version": "1.0.0",
+        "description": "Monte Carlo Simulation Module for NEVEN",
+
+        "simulation": {
+            "defaultIterations": 1000000,
+            "maxIterations": 10000000,
+            "minIterations": 1000,
+            "defaultSeed": 42,
+            "timeoutSeconds": 60
+        },
+
+        "fitting": {
+            "minDataPoints": 10,
+            "candidateDistributions": ["norm", "lnorm", "gamma", "weibull", "exp", "unif", "beta"],
+            "requiredRPackages": ["fitdistrplus", "MASS"],
+            "optionalRPackages": ["jsonlite"]
+        },
+
+        "sensitivity": {
+            "method": "spearman",
+            "minIterationsForSensitivity": 1000
+        },
+
+        "workspace": {
+            "htmlFile": "workspace/sim-workspace.html",
+            "plotlyVersion": "2.32.0",
+            "theme": "dark"
+        },
+
+        "julia": {
+            "requiredPackages": ["Distributions"],
+            "optionalPackages": ["Copulas"],
+            "moduleFile": "libreria/JULIA/NEVENSim.jl"
+        }
+    }
+}

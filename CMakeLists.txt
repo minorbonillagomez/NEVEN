@@ -106,6 +106,13 @@ endif()
 enable_testing()
 add_subdirectory(tests)
 
+# NEVEN-SIM: Modular Monte Carlo Simulation Module (separate XLL)
+option(BUILD_NEVEN_SIM "Build NEVEN-SIM simulation module" OFF)
+
+if(BUILD_NEVEN_SIM)
+    add_subdirectory(NEVEN-SIM)
+endif()
+
 # Console (Electron REPL) was removed in the security remediation.
 # The WebView2-based REPL (REPLManager + REPLBridge) is the replacement.
 # See: Common/REPLManager.cc, Common/IPC/REPLBridge.cc

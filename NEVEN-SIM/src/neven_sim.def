@@ -1,0 +1,33 @@
+;
+; NEVEN-SIM Module Definition File
+;
+; Exports required by the Excel XLL interface.
+; NEVEN-SIM is a separate add-in that loads alongside NEVEN64.xll.
+;
+
+LIBRARY
+
+EXPORTS
+
+;-------------------------------------------------------
+; Excel Interface Functions (required for any XLL)
+;
+
+xlAutoOpen
+xlAutoFree12
+xlAutoClose
+xlAddInManagerInfo12
+
+;-------------------------------------------------------
+; SIM worksheet functions
+;
+
+SIM_Workspace
+SIM_Fit
+SIM_Run
+SIM_QuickRun
+SIM_Datos
+SIM_Exportar
+SIM_Percentile
+SIM_Sensitivity
+SIM_Status
