@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>NEVEN-SIM — Demo Reactivo (estilo Pluto)</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1e1e2e; color: #cdd6f4; padding: 24px; }
+        h1 { color: #89b4fa; font-size: 20px; margin-bottom: 6px; }
+        .subtitle { color: #6c7086; font-size: 12px; margin-bottom: 20px; }
+        .panel { display: grid; grid-template-columns: 300px 1fr; gap: 16px; height: calc(100vh - 100px); }
+        .controls { background: #181825; border-radius: 10px; padding: 16px; overflow-y: auto; }
+        .controls h2 { color: #f5c2e7; font-size: 13px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .control-group { margin-bottom: 16px; }
+        .control-group label { display: block; font-size: 12px; color: #a6adc8; margin-bottom: 4px; }
+        .control-group .row { display: flex; align-items: center; gap: 8px; }
+        .control-group input[type="range"] { flex: 1; accent-color: #89b4fa; }
+        .control-group .val { font-family: 'Cascadia Code', monospace; color: #a6e3a1; font-size: 13px; min-width: 50px; text-align: right; }
+        .control-group select { width: 100%; background: #1e1e2e; border: 1px solid #45475a; border-radius: 6px; color: #cdd6f4; padding: 6px; }
+        .chart-area { display: flex; flex-direction: column; gap: 12px; }
+        .chart { background: #181825; border-radius: 10px; flex: 1; min-height: 250px; }
+        .stats-bar { background: #313244; border-radius: 8px; padding: 12px; display: flex; gap: 20px; justify-content: center; }
+        .stat { text-align: center; }
+        .stat .val { font-size: 18px; font-weight: 700; color: #a6e3a1; }
+        .stat .lbl { font-size: 10px; color: #6c7086; margin-top: 2px; }
+        .info { font-size: 11px; color: #6c7086; margin-top: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>NEVEN-SIM — Simulacion Reactiva</h1>
+    <p class="subtitle">Los sliders recalculan la simulacion en tiempo real (100% JavaScript — sin roundtrip a Julia)</p>
+
+    <div class="panel">
+        <div class="controls">
+            <h2>Parametros</h2>
+
+            <div class="control-group">
+                <label>Distribucion</label>
+                <select id="sel-dist" onchange="recalculate()">
+                    <option value="normal" selected>Normal</option>
+                    <option value="lognormal">LogNormal</option>
+                    <option value="uniform">Uniforme</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Media (mu)</label>
+                <div class="row">
+                    <input type="range" id="sl-mu" min="-10" max="30" value="10" step="0.5" oninput="recalculate()">
+                    <span class="val" id="v-mu">10.0</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Desv. Estandar (sigma)</label>
+                <div class="row">
+                    <input type="range" id="sl-sigma" min="0.1" max="10" value="2" step="0.1" oninput="recalculate()">
+                    <span class="val" id="v-sigma">2.0</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Iteraciones</label>
+                <div class="row">
+                    <input type="range" id="sl-n" min="1000" max="200000" value="50000" step="1000" oninput="recalculate()">
+                    <span class="val" id="v-n">50000</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Modelo: f(x) =</label>
+                <div class="row">
+                    <select id="sel-model" onchange="recalculate()">
+                        <option value="x" selected>x (identidad)</option>
+                        <option value="x*1.1">x * 1.1 (+10%)</option>
+                        <option value="x*1.5">x * 1.5 (+50%)</option>
+                        <option value="x*x">x² (cuadratico)</option>
+                        <option value="Math.max(x-5,0)">max(x-5, 0) (opcion)</option>
+                        <option value="Math.log(Math.abs(x)+1)">log(|x|+1)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Bins del histograma</label>
+                <div class="row">
+                    <input type="range" id="sl-bins" min="10" max="100" value="40" step="5" oninput="recalculate()">
+                    <span class="val" id="v-bins">40</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-area">
+            <div class="stats-bar">
+                <div class="stat"><div class="val" id="st-mean">—</div><div class="lbl">Media</div></div>
+                <div class="stat"><div class="val" id="st-std">—</div><div class="lbl">Desv.Std</div></div>
+                <div class="stat"><div class="val" id="st-p5">—</div><div class="lbl">P5</div></div>
+                <div class="stat"><div class="val" id="st-p50">—</div><div class="lbl">Mediana</div></div>
+                <div class="stat"><div class="val" id="st-p95">—</div><div class="lbl">P95</div></div>
+            </div>
+            <div class="chart" id="chart-hist"></div>
+        </div>
+    </div>
+
+    <p class="info">Reactividad 100% en JavaScript — simula hasta 200,000 muestras en <50ms</p>
+
+    <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // Monte Carlo Simulation — Pure JavaScript (no Julia roundtrip)
+    // ═══════════════════════════════════════════════════════════════════
+
+    // Box-Muller transform for Normal distribution
+    function randNormal(mu, sigma) {
+        let u1 = Math.random(), u2 = Math.random();
+        let z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        return mu + sigma * z;
+    }
+
+    // LogNormal
+    function randLogNormal(mu, sigma) {
+        return Math.exp(randNormal(mu, sigma));
+    }
+
+    // Uniform
+    function randUniform(a, b) {
+        return a + Math.random() * (b - a);
+    }
+
+    function generateSamples(dist, mu, sigma, n) {
+        let samples = new Float64Array(n);
+        for (let i = 0; i < n; i++) {
+            if (dist === 'normal') samples[i] = randNormal(mu, sigma);
+            else if (dist === 'lognormal') samples[i] = randLogNormal(mu, sigma);
+            else if (dist === 'uniform') samples[i] = randUniform(mu - sigma*1.73, mu + sigma*1.73);
+        }
+        return samples;
+    }
+
+    function applyModel(samples, modelStr) {
+        let results = new Float64Array(samples.length);
+        let fn = new Function('x', 'return ' + modelStr);
+        for (let i = 0; i < samples.length; i++) {
+            results[i] = fn(samples[i]);
+        }
+        return results;
+    }
+
+    function computeStats(results) {
+        let sorted = Float64Array.from(results).sort();
+        let n = sorted.length;
+        let sum = 0, sum2 = 0;
+        for (let i = 0; i < n; i++) { sum += sorted[i]; sum2 += sorted[i]*sorted[i]; }
+        let mean = sum / n;
+        let std = Math.sqrt(sum2/n - mean*mean);
+        let pct = p => sorted[Math.max(0, Math.ceil(p/100*n)-1)];
+        return { mean, std, min: sorted[0], max: sorted[n-1], p5: pct(5), p25: pct(25), p50: pct(50), p75: pct(75), p95: pct(95) };
+    }
+
+    function histogram(results, nbins) {
+        let mn = results[0], mx = results[0];
+        for (let i = 1; i < results.length; i++) {
+            if (results[i] < mn) mn = results[i];
+            if (results[i] > mx) mx = results[i];
+        }
+        let bw = (mx - mn) / nbins || 1;
+        let counts = new Array(nbins).fill(0);
+        let centers = [];
+        for (let i = 0; i < nbins; i++) centers.push(mn + (i+0.5)*bw);
+        for (let i = 0; i < results.length; i++) {
+            let idx = Math.min(nbins-1, Math.max(0, Math.floor((results[i]-mn)/bw)));
+            counts[idx]++;
+        }
+        return { centers, counts };
+    }
+
+    // ─── Main Recalculate ────────────────────────────────────────────
+    let plotInitialized = false;
+
+    function recalculate() {
+        let dist = document.getElementById('sel-dist').value;
+        let mu = parseFloat(document.getElementById('sl-mu').value);
+        let sigma = parseFloat(document.getElementById('sl-sigma').value);
+        let n = parseInt(document.getElementById('sl-n').value);
+        let nbins = parseInt(document.getElementById('sl-bins').value);
+        let modelStr = document.getElementById('sel-model').value;
+
+        // Update displays
+        document.getElementById('v-mu').textContent = mu.toFixed(1);
+        document.getElementById('v-sigma').textContent = sigma.toFixed(1);
+        document.getElementById('v-n').textContent = n.toLocaleString();
+        document.getElementById('v-bins').textContent = nbins;
+
+        // Simulate
+        let t0 = performance.now();
+        let samples = generateSamples(dist, mu, sigma, n);
+        let results = applyModel(samples, modelStr);
+        let stats = computeStats(results);
+        let hist = histogram(results, nbins);
+        let elapsed = (performance.now() - t0).toFixed(1);
+
+        // Update stats
+        document.getElementById('st-mean').textContent = stats.mean.toFixed(3);
+        document.getElementById('st-std').textContent = stats.std.toFixed(3);
+        document.getElementById('st-p5').textContent = stats.p5.toFixed(3);
+        document.getElementById('st-p50').textContent = stats.p50.toFixed(3);
+        document.getElementById('st-p95').textContent = stats.p95.toFixed(3);
+
+        // Plot
+        if (!plotInitialized) {
+            Plotly.newPlot('chart-hist', [{
+                x: hist.centers, y: hist.counts, type: 'bar',
+                marker: { color: '#89b4fa', opacity: 0.85 }
+            }], {
+                paper_bgcolor: '#181825', plot_bgcolor: '#181825',
+                font: { color: '#a6adc8' },
+                xaxis: { gridcolor: '#313244' },
+                yaxis: { gridcolor: '#313244', title: 'Frecuencia' },
+                margin: { t: 30, r: 20, b: 40, l: 50 },
+                shapes: [
+                    { type:'line', x0:stats.p5, x1:stats.p5, y0:0, y1:1, yref:'paper', line:{color:'#a6e3a1',width:1,dash:'dot'} },
+                    { type:'line', x0:stats.p50, x1:stats.p50, y0:0, y1:1, yref:'paper', line:{color:'#f5c2e7',width:2,dash:'dash'} },
+                    { type:'line', x0:stats.p95, x1:stats.p95, y0:0, y1:1, yref:'paper', line:{color:'#f38ba8',width:1,dash:'dot'} }
+                ]
+            }, { responsive: true });
+            plotInitialized = true;
+        } else {
+            Plotly.restyle('chart-hist', { x: [hist.centers], y: [hist.counts] });
+            Plotly.relayout('chart-hist', {
+                shapes: [
+                    { type:'line', x0:stats.p5, x1:stats.p5, y0:0, y1:1, yref:'paper', line:{color:'#a6e3a1',width:1,dash:'dot'} },
+                    { type:'line', x0:stats.p50, x1:stats.p50, y0:0, y1:1, yref:'paper', line:{color:'#f5c2e7',width:2,dash:'dash'} },
+                    { type:'line', x0:stats.p95, x1:stats.p95, y0:0, y1:1, yref:'paper', line:{color:'#f38ba8',width:1,dash:'dot'} }
+                ]
+            });
+        }
+
+        document.querySelector('.info').textContent = 
+            `${n.toLocaleString()} muestras | ${dist}(μ=${mu}, σ=${sigma}) | modelo: ${modelStr} | ${elapsed}ms`;
+    }
+
+    // Initial render
+    recalculate();
+    </script>
+</body>
+</html>

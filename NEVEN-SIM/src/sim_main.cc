@@ -13,6 +13,7 @@
 #include <vector>
 #include <cstring>
 #include <iomanip>
+#include <fstream>
 #include "XLCALL.H"
 #include "sim_exports.h"
 #include "sim_bridge.h"
@@ -21,6 +22,7 @@
 #include "sim_excel_helpers.h"
 #include "fit_service.h"
 #include "montecarlo_service.h"
+#include "bridge_poller.h"
 #include "json11/json11.hpp"
 
 // â”€â”€â”€ Global State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -47,6 +49,7 @@ static LPWSTR simFuncTemplates[][16] = {
     { L"SIM_Percentile",  L"UQ",  L"SIM.Percentile",  L"P",           L"1", L"NEVEN-SIM", L"", L"", L"Percentil de la ultima simulacion", L"Percentil (1-99)", L"", L"", L"", L"", L"", L"" },
     { L"SIM_Sensitivity", L"U",   L"SIM.Sensitivity", L"",            L"1", L"NEVEN-SIM", L"", L"", L"Analisis de sensibilidad (Tornado)", L"", L"", L"", L"", L"", L"", L"" },
     { L"SIM_Status",      L"U",   L"SIM.Status",      L"",            L"1", L"NEVEN-SIM", L"", L"", L"Estado del motor de simulacion",  L"", L"", L"", L"", L"", L"", L"" },
+    { L"SIM_Bind",        L"UQ#", L"SIM.Bind",       L"ID",          L"1", L"NEVEN-SIM", L"", L"", L"Vincula celda al Viewer (reactiva a sliders)", L"Identificador del control (ej: A1)", L"", L"", L"", L"", L"", L"" },
     { 0 }
 };
 
@@ -115,6 +118,9 @@ extern "C" __declspec(dllexport) int __stdcall xlAutoOpen(void) {
 
     // Initialize SimBridge â€” resolve home path only (NO xlUDF calls here!)
     neven_sim::SimBridge::Instance().Initialize();
+
+    // Start PostMessage bridge poller (reads JS commands every 250ms)
+    neven_sim::BridgePoller::Start();
 
     // Register SIM.* functions with Excel using Excel12/Excel12v
     XLOPER12 xlDllName;
@@ -478,127 +484,50 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_QuickRun(LPXLOPER12 px
         xlResult.val.array.lparray[i * ncols + 1].val.str = vbuf;
     }
 
-    // 8. Generate HTML viewer with histogram and open it (only if requested)
+    // 8. Generate params JSON + open reactive template (only if requested)
     if (generate_report) {
         std::string home = bridge.GetHomePath();
-        std::string hist_centers = json["hist_centers"].dump();
-        std::string hist_counts = json["hist_counts"].dump();
-        double p5 = json["p5"].number_value();
-        double p50 = json["p50"].number_value();
-        double p95 = json["p95"].number_value();
 
-        std::ostringstream html;
-        html << "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>NEVEN-SIM Resultado</title>\n";
-        html << "<script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>\n";
-        html << "<style>body{font-family:'Segoe UI',sans-serif;background:#1e1e2e;color:#cdd6f4;margin:0;padding:20px;}\n";
-        html << "h1{color:#89b4fa;font-size:20px;margin-bottom:5px;} h2{color:#f5c2e7;font-size:15px;margin:18px 0 8px;}\n";
-        html << ".stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0;}\n";
-        html << ".stat-card{background:#313244;border-radius:8px;padding:14px;text-align:center;}\n";
-        html << ".stat-card .val{font-size:22px;font-weight:700;color:#a6e3a1;}\n";
-        html << ".stat-card .lbl{font-size:11px;color:#6c7086;margin-top:4px;}\n";
-        html << ".info{background:#313244;border-radius:8px;padding:14px;margin:12px 0;font-size:13px;line-height:1.8;}\n";
-        html << ".info b{color:#89b4fa;} .btn{display:inline-block;padding:10px 20px;background:#89b4fa;color:#1e1e2e;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-top:12px;text-decoration:none;}\n";
-        html << "#chart{height:350px;margin:16px 0;}</style></head><body>\n";
-        html << "<h1>NEVEN-SIM: Resultado de Simulacion Monte Carlo</h1>\n";
-        html << "<p style='color:#6c7086;font-size:12px;'>Distribucion: <b style=\"color:#f5c2e7\">" << best.dist_name << "</b>";
-        html << " (p1=" << std::fixed << std::setprecision(4) << best.param1 << ", p2=" << best.param2 << ")";
-        html << " | Modelo: <b style=\"color:#a6e3a1\">" << model << "</b>";
-        html << " | N=" << iterations << "</p>\n";
-        html << "<div class='stats'>\n";
-        html << "  <div class='stat-card'><div class='val'>" << std::setprecision(2) << json["mean"].number_value() << "</div><div class='lbl'>Media</div></div>\n";
-        html << "  <div class='stat-card'><div class='val'>" << json["p50"].number_value() << "</div><div class='lbl'>Mediana (P50)</div></div>\n";
-        html << "  <div class='stat-card'><div class='val'>" << json["std"].number_value() << "</div><div class='lbl'>Desv. Estandar</div></div>\n";
-        html << "</div>\n";
-        html << "<div style='display:flex;gap:20px;align-items:center;margin:12px 0;padding:10px;background:#313244;border-radius:8px;'>\n";
-        html << "  <label style='font-size:12px;color:#6c7086;'>Bins: <span id='bins-val'>50</span></label>\n";
-        html << "  <input type='range' min='10' max='100' value='50' oninput='updateBins(+this.value)' style='flex:1;accent-color:#89b4fa;'>\n";
-        html << "  <label style='font-size:12px;'><input type='checkbox' id='pct-toggle' checked onchange='togglePercentiles()'> Percentiles</label>\n";
-        html << "</div>\n";
-        html << "<div id='chart'></div>\n";
-        html << "<h2>Percentiles</h2>\n";
-        html << "<div class='stats'>\n";
-        html << "  <div class='stat-card'><div class='val'>" << std::setprecision(4) << p5 << "</div><div class='lbl'>P5 (Optimista)</div></div>\n";
-        html << "  <div class='stat-card'><div class='val'>" << p50 << "</div><div class='lbl'>P50 (Mediana)</div></div>\n";
-        html << "  <div class='stat-card'><div class='val'>" << p95 << "</div><div class='lbl'>P95 (Pesimista)</div></div>\n";
-        html << "</div>\n";
-        html << "<div class='info'>\n";
-        html << "  <b>Intervalo de Confianza 90%:</b> [" << std::setprecision(4) << p5 << " , " << p95 << "]<br>\n";
-        html << "  <b>Rango:</b> [" << json["min"].number_value() << " , " << json["max"].number_value() << "]<br>\n";
-        html << "  <b>Distribucion ajustada:</b> " << best.dist_name << " (AIC=" << std::setprecision(1) << best.aic << ")<br>\n";
-        html << "  <b>Motor Fitting:</b> R + fitdistrplus | <b>Motor Simulacion:</b> Julia + Distributions.jl\n";
-        html << "</div>\n";
-        html << "<a class='btn' href='#' onclick='exportCSV()'>Exportar Datos CSV</a>\n";
-        html << "<script>\n";
-        html << "var centers = " << hist_centers << ";\n";
-        html << "var counts = " << hist_counts << ";\n";
-        html << "Plotly.newPlot('chart', [{\n";
-        html << "  x: centers, y: counts, type: 'bar',\n";
-        html << "  marker: {color: '#89b4fa', opacity: 0.85}\n";
-        html << "}], {\n";
-        html << "  title: {text:'Histograma de Resultados (" << iterations << " simulaciones)', font:{color:'#cdd6f4',size:14}},\n";
-        html << "  paper_bgcolor:'#1e1e2e', plot_bgcolor:'#1e1e2e',\n";
-        html << "  font:{color:'#a6adc8'}, xaxis:{gridcolor:'#313244'}, yaxis:{gridcolor:'#313244',title:'Frecuencia'},\n";
-        html << "  shapes:[{type:'line',x0:" << p50 << ",x1:" << p50 << ",y0:0,y1:1,yref:'paper',line:{color:'#f5c2e7',width:2,dash:'dash'}}],\n";
-        html << "  margin:{t:40,r:20,b:40,l:50}\n";
-        html << "}, {responsive:true});\n";
-        html << "\n// ─── Interactive Controls ─────────────────────────────\n";
-        html << "function updateBins(nbins) {\n";
-        html << "  document.getElementById('bins-val').textContent = nbins;\n";
-        html << "  var mn = Math.min(...centers), mx = Math.max(...centers);\n";
-        html << "  var bw = (mx - mn) / nbins;\n";
-        html << "  var newCenters = [], newCounts = Array(nbins).fill(0);\n";
-        html << "  for(var i=0;i<nbins;i++) newCenters.push(mn + (i+0.5)*bw);\n";
-        html << "  // Re-bin from original data approx (use existing counts)\n";
-        html << "  var total = counts.reduce((a,b)=>a+b,0);\n";
-        html << "  var ratio = nbins / counts.length;\n";
-        html << "  for(var i=0;i<nbins;i++) {\n";
-        html << "    var srcIdx = Math.floor(i / ratio);\n";
-        html << "    newCounts[i] = Math.round(counts[Math.min(srcIdx, counts.length-1)] * (counts.length/nbins));\n";
-        html << "  }\n";
-        html << "  Plotly.restyle('chart', {x:[newCenters], y:[newCounts]});\n";
-        html << "}\n";
-        html << "function togglePercentiles() {\n";
-        html << "  var show = document.getElementById('pct-toggle').checked;\n";
-        html << "  var shapes = show ? [\n";
-        html << "    {type:'line',x0:" << p5 << ",x1:" << p5 << ",y0:0,y1:1,yref:'paper',line:{color:'#a6e3a1',width:1.5,dash:'dot'}},\n";
-        html << "    {type:'line',x0:" << p50 << ",x1:" << p50 << ",y0:0,y1:1,yref:'paper',line:{color:'#f5c2e7',width:2,dash:'dash'}},\n";
-        html << "    {type:'line',x0:" << p95 << ",x1:" << p95 << ",y0:0,y1:1,yref:'paper',line:{color:'#f38ba8',width:1.5,dash:'dot'}}\n";
-        html << "  ] : [];\n";
-        html << "  Plotly.relayout('chart', {shapes: shapes});\n";
-        html << "}\n";
-        html << "function exportCSV(){\n";
-        html << "  if(window.neven) window.neven.simCommand('export',{});\n";
-        html << "  else alert('Use =SIM.Exportar() en Excel');\n";
-        html << "}\n";
-        html << "// Init percentile lines\n";
-        html << "togglePercentiles();\n";
-        html << "</script></body></html>";
+        // Build params JSON for the template HTML to read
+        std::ostringstream pj;
+        pj << "{";
+        pj << "\"dist_name\":\"" << best.dist_name << "\",";
+        pj << "\"mu\":" << std::fixed << std::setprecision(6) << best.param1 << ",";
+        pj << "\"sigma\":" << best.param2 << ",";
+        pj << "\"aic\":" << std::setprecision(1) << best.aic << ",";
+        pj << "\"iterations\":" << iterations << ",";
+        pj << "\"model\":\"" << model << "\",";
+        pj << "\"stats\":{";
+        pj << "\"mean\":" << std::setprecision(4) << json["mean"].number_value() << ",";
+        pj << "\"std\":" << json["std"].number_value() << ",";
+        pj << "\"min\":" << json["min"].number_value() << ",";
+        pj << "\"max\":" << json["max"].number_value() << ",";
+        pj << "\"p5\":" << json["p5"].number_value() << ",";
+        pj << "\"p25\":" << json["p25"].number_value() << ",";
+        pj << "\"p50\":" << json["p50"].number_value() << ",";
+        pj << "\"p75\":" << json["p75"].number_value() << ",";
+        pj << "\"p95\":" << json["p95"].number_value();
+        pj << "}}";
 
-        // Write HTML to file and open viewer
-        std::string html_path = home + "workspace/sim-report.html";
-        std::string fwd_html;
-        for (char c : html_path) fwd_html += (c == '\\') ? '/' : c;
+        // Write params JSON via Julia's write() (not blocked)
+        std::string params_path = home + "workspace/sim-report-params.json";
+        std::string fwd_params;
+        for (char c : params_path) fwd_params += (c == '\\') ? '/' : c;
+        bridge.CallJulia("write(\"" + fwd_params + "\", \"" + pj.str() + "\")");
 
-        // Write using Julia's write() (not blocked)
-        std::string html_content = html.str();
-        // Escape for Julia string (replace backslash and quotes)
-        std::string escaped_html;
-        for (char c : html_content) {
-            if (c == '\\') escaped_html += "\\\\";
-            else if (c == '"') escaped_html += "\\\"";
-            else if (c == '\n') escaped_html += "\\n";
-            else escaped_html += c;
-        }
-        bridge.CallJulia("write(\"" + fwd_html + "\", \"" + escaped_html + "\")");
+        // Open the reactive template in the viewer
+        std::string template_path = home + "workspace/sim-report-template.html";
+        std::string fwd_template;
+        for (char c : template_path) fwd_template += (c == '\\') ? '/' : c;
 
-        // Open the viewer
         XLOPER12 viewResult;
         memset(&viewResult, 0, sizeof(viewResult));
-        bridge.CallUDF_Public("NEVEN.v", fwd_html, viewResult);
+        bridge.CallUDF_Public("NEVEN.v", fwd_template, viewResult);
     }
 
     return &xlResult;
 }
+
 
 extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_Datos(LPXLOPER12 pxN) {
     auto& bridge = neven_sim::SimBridge::Instance();
@@ -611,7 +540,6 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_Datos(LPXLOPER12 pxN) 
     if (n < 1) n = 1;
     if (n > 10000) n = 10000;
 
-    // Ask Julia to return results as comma-separated string
     std::ostringstream jl;
     jl << "isdefined(Main,:_sim_results) ? join(_sim_results[1:min(" << n << ",length(_sim_results))], \",\") : \"[ERROR] No hay simulacion activa\"";
 
@@ -619,18 +547,14 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_Datos(LPXLOPER12 pxN) 
     if (result.find("[ERROR]") == 0)
         return MakeStringResult(result);
 
-    // Parse comma-separated doubles into array
     std::vector<double> values;
     std::istringstream stream(result);
     std::string token;
     while (std::getline(stream, token, ',')) {
         try { values.push_back(std::stod(token)); } catch (...) {}
     }
+    if (values.empty()) return MakeStringResult("Sin datos");
 
-    if (values.empty())
-        return MakeStringResult("Sin datos");
-
-    // Build Excel array (Nx1)
     int nrows = (int)values.size();
     static XLOPER12 xlResult;
     xlResult.xltype = xltypeMulti | xlbitDLLFree;
@@ -674,3 +598,52 @@ extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_Exportar(void) {
     return MakeStringResult(result);
 }
 
+
+extern "C" __declspec(dllexport) LPXLOPER12 __stdcall SIM_Bind(LPXLOPER12 pxID) {
+    // SIM.Bind("A1") — volatile function that reads the latest value
+    // written by the Viewer's PostMessage bridge for this cell ID.
+    // The JS writes to C:\NEVEN\data\bridge_queue.json and this function reads it.
+    
+    // Get the cell ID (e.g., "A1")
+    std::string cell_id = "A1";
+    if (pxID && pxID->xltype == xltypeStr && pxID->val.str) {
+        int len = pxID->val.str[0];
+        if (len > 0) {
+            std::wstring ws(pxID->val.str + 1, len);
+            cell_id.resize(len);
+            for (int i = 0; i < len; i++) cell_id[i] = (char)ws[i];
+        }
+    }
+
+    // Read the bridge queue file
+    static const char* QUEUE_PATH = "C:\\NEVEN\\data\\bridge_queue.json";
+    
+    DWORD attrs = GetFileAttributesA(QUEUE_PATH);
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        return MakeNumResult(0.0);  // No pending value — return 0
+    }
+
+    std::ifstream file(QUEUE_PATH);
+    if (!file.is_open()) return MakeNumResult(0.0);
+
+    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    if (content.empty()) return MakeNumResult(0.0);
+
+    // Parse JSON
+    std::string err;
+    json11::Json cmd = json11::Json::parse(content, err);
+    if (!err.empty() || !cmd.is_object()) return MakeNumResult(0.0);
+
+    // Check if this command is for our cell
+    std::string target_cell = cmd["cell"].string_value();
+    if (target_cell != cell_id) return MakeNumResult(0.0);  // Not for us
+
+    // Return the value
+    if (cmd["value"].is_number()) {
+        return MakeNumResult(cmd["value"].number_value());
+    } else {
+        return MakeStringResult(cmd["value"].string_value());
+    }
+}

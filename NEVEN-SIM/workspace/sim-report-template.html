@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>NEVEN-SIM — Simulacion + Explorador Reactivo</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',sans-serif;background:#1e1e2e;color:#cdd6f4;padding:16px;overflow-x:hidden}
+        h1{color:#89b4fa;font-size:18px;margin-bottom:3px}
+        .sub{color:#6c7086;font-size:11px;margin-bottom:12px}
+        .grid{display:grid;grid-template-columns:260px 1fr 240px;gap:12px;height:calc(100vh - 80px)}
+        .panel{background:#181825;border-radius:8px;padding:14px;overflow-y:auto}
+        .panel h2{color:#f5c2e7;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:10px 0 6px}
+        .cg{margin-bottom:10px}
+        .cg label{display:block;font-size:10px;color:#6c7086;margin-bottom:2px}
+        .cg .row{display:flex;align-items:center;gap:6px}
+        .cg input[type="range"]{flex:1;accent-color:#89b4fa;height:4px}
+        .cg .v{font-family:'Cascadia Code',monospace;color:#a6e3a1;font-size:11px;min-width:44px;text-align:right}
+        .cg select{width:100%;background:#1e1e2e;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;padding:4px;font-size:11px}
+        .center{display:flex;flex-direction:column;gap:8px}
+        .sbar{background:#313244;border-radius:6px;padding:8px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+        .st{text-align:center;min-width:65px}
+        .st .sv{font-size:15px;font-weight:700;color:#a6e3a1}
+        .st .sl{font-size:9px;color:#6c7086}
+        #chart{flex:1;min-height:250px}
+        .ibar{font-size:10px;color:#45475a;text-align:center;padding:4px}
+        .btn{padding:5px 12px;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;background:#89b4fa;color:#1e1e2e}
+        .btn:hover{background:#b4d0fb}
+        .btn-sm{padding:3px 8px;font-size:10px}
+        .btn-green{background:#a6e3a1}
+        .btn-red{background:#f38ba8}
+        .sep{border-top:1px solid #313244;margin:8px 0}
+        .scenario{background:#313244;border-radius:6px;padding:8px;margin-bottom:6px;font-size:10px;position:relative}
+        .scenario .name{color:#f5c2e7;font-weight:600;margin-bottom:3px}
+        .scenario .vals{color:#a6adc8;line-height:1.6}
+        .scenario .del{position:absolute;top:4px;right:6px;cursor:pointer;color:#f38ba8;font-size:12px}
+        .real-box{background:#1e1e2e;border:1px solid #45475a;border-radius:6px;padding:8px;font-size:11px;line-height:1.7;margin-bottom:8px}
+        .real-box b{color:#a6e3a1}
+        .compare-toggle{display:flex;gap:6px;align-items:center;margin:6px 0}
+        .compare-toggle label{font-size:10px;color:#6c7086}
+        .compare-toggle input{accent-color:#f5c2e7}
+    </style>
+</head>
+<body>
+<h1>NEVEN-SIM</h1>
+<p class="sub" id="header-info">Explorador de Simulacion Monte Carlo</p>
+
+<div class="grid">
+    <!-- LEFT: Controls -->
+    <div class="panel">
+        <h2>Parametros de Simulacion</h2>
+
+        <div class="cg"><label>Distribucion</label>
+            <select id="sel-dist" onchange="simulate()">
+                <option value="normal">Normal</option>
+                <option value="lognormal">LogNormal</option>
+                <option value="uniform">Uniforme</option>
+                <option value="gamma">Gamma</option>
+                <option value="weibull">Weibull</option>
+                <option value="beta">Beta</option>
+                <option value="exponential">Exponencial</option>
+            </select>
+        </div>
+        <div class="cg"><label>Param 1 (mu/shape): <span class="v" id="v-p1">10</span></label>
+            <div class="row"><input type="range" id="sl-p1" min="-10" max="40" value="10" step="0.1" oninput="simulate()"></div>
+        </div>
+        <div class="cg"><label>Param 2 (sigma/scale): <span class="v" id="v-p2">2</span></label>
+            <div class="row"><input type="range" id="sl-p2" min="0.01" max="15" value="2" step="0.05" oninput="simulate()"></div>
+        </div>
+        <div class="cg"><label>Iteraciones: <span class="v" id="v-n">50000</span></label>
+            <div class="row"><input type="range" id="sl-n" min="5000" max="200000" value="50000" step="5000" oninput="simulate()"></div>
+        </div>
+        <div class="cg"><label>Modelo f(x)</label>
+            <select id="sel-model" onchange="simulate()">
+                <option value="x">x (identidad)</option>
+                <option value="x*1.1">x * 1.1 (+10%)</option>
+                <option value="x*1.5">x * 1.5 (+50%)</option>
+                <option value="x*0.7">x * 0.7 (-30%)</option>
+                <option value="x*x">x^2</option>
+                <option value="Math.sqrt(Math.abs(x))">sqrt(|x|)</option>
+                <option value="Math.max(x-5,0)">max(x-5, 0)</option>
+                <option value="Math.log(Math.abs(x)+1)">log(|x|+1)</option>
+            </select>
+        </div>
+        <div class="cg"><label>Bins: <span class="v" id="v-bins">50</span></label>
+            <div class="row"><input type="range" id="sl-bins" min="10" max="100" value="50" step="5" oninput="simulate()"></div>
+        </div>
+
+        <div class="sep"></div>
+        <div class="compare-toggle">
+            <input type="checkbox" id="chk-compare" onchange="simulate()">
+            <label>Comparar con escenario guardado</label>
+        </div>
+
+        <div class="sep"></div>
+        <button class="btn btn-green" onclick="saveScenario()" style="width:100%">Guardar Escenario Actual</button>
+    </div>
+
+    <!-- CENTER: Chart -->
+    <div class="center">
+        <div class="sbar">
+            <div class="st"><div class="sv" id="s-mean">—</div><div class="sl">Media</div></div>
+            <div class="st"><div class="sv" id="s-std">—</div><div class="sl">Desv.Std</div></div>
+            <div class="st"><div class="sv" id="s-p5">—</div><div class="sl">P5</div></div>
+            <div class="st"><div class="sv" id="s-p50">—</div><div class="sl">P50</div></div>
+            <div class="st"><div class="sv" id="s-p95">—</div><div class="sl">P95</div></div>
+        </div>
+        <div id="chart"></div>
+        <div class="ibar" id="info-bar">—</div>
+    </div>
+
+    <!-- RIGHT: Scenarios -->
+    <div class="panel">
+        <h2>Resultado Real (R+Julia)</h2>
+        <div class="real-box" id="real-stats">
+            <p style="color:#45475a">Ejecute =SIM.QuickRun(...,1)</p>
+        </div>
+
+        <h2>Escenarios Guardados</h2>
+        <div id="scenarios-list">
+            <p style="color:#45475a;font-size:10px">Guarde escenarios para comparar</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// NEVEN-SIM: Reactive Monte Carlo Explorer
+// ═══════════════════════════════════════════════════════════════════════
+
+var REAL_PARAMS = null;
+var savedScenarios = [];
+var compareScenario = null;
+
+// ─── Distribution Generators ─────────────────────────────────────────
+function randNormal(mu,s){let u=Math.random(),v=Math.random();return mu+s*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function randGamma(shape,scale){if(shape<1){return randGamma(shape+1,scale)*Math.pow(Math.random(),1/shape)}let d=shape-1/3,c=1/Math.sqrt(9*d);while(true){let x,v;do{x=randNormal(0,1);v=1+c*x}while(v<=0);v=v*v*v;let u=Math.random();if(u<1-0.0331*(x*x)*(x*x))return d*v*scale;if(Math.log(u)<0.5*x*x+d*(1-v+Math.log(v)))return d*v*scale}}
+function randWeibull(shape,scale){return scale*Math.pow(-Math.log(Math.random()),1/shape)}
+function randBeta(a,b){let x=randGamma(a,1),y=randGamma(b,1);return x/(x+y)}
+function randExp(rate){return -Math.log(Math.random())/rate}
+function randLogNormal(mu,s){return Math.exp(randNormal(mu,s))}
+function randUniform(a,b){return a+Math.random()*(b-a)}
+
+function sample(dist,p1,p2){
+    switch(dist){
+        case 'normal': return randNormal(p1,p2);
+        case 'lognormal': return randLogNormal(p1,p2);
+        case 'uniform': return randUniform(p1,p2);
+        case 'gamma': return randGamma(Math.max(0.1,p1),Math.max(0.01,p2));
+        case 'weibull': return randWeibull(Math.max(0.1,p1),Math.max(0.01,p2));
+        case 'beta': return randBeta(Math.max(0.1,p1),Math.max(0.1,p2));
+        case 'exponential': return randExp(Math.max(0.01,p1));
+        default: return randNormal(p1,p2);
+    }
+}
+
+// ─── Simulation ──────────────────────────────────────────────────────
+function runSim(dist,p1,p2,n,modelStr){
+    var fn=new Function('x','return '+modelStr);
+    var results=new Float64Array(n);
+    for(var i=0;i<n;i++) results[i]=fn(sample(dist,p1,p2));
+    var sorted=Float64Array.from(results).sort();
+    var sum=0,sum2=0;
+    for(var i=0;i<n;i++){sum+=sorted[i];sum2+=sorted[i]*sorted[i]}
+    var mean=sum/n,std=Math.sqrt(Math.max(0,sum2/n-mean*mean));
+    var pct=function(p){return sorted[Math.max(0,Math.ceil(p/100*n)-1)]};
+    return{results,sorted,mean,std,p5:pct(5),p25:pct(25),p50:pct(50),p75:pct(75),p95:pct(95),min:sorted[0],max:sorted[n-1]};
+}
+
+function makeHist(results,nbins){
+    var mn=results[0],mx=results[results.length-1];
+    for(var i=0;i<results.length;i++){if(results[i]<mn)mn=results[i];if(results[i]>mx)mx=results[i]}
+    var bw=(mx-mn)/nbins||1;var centers=[],counts=Array(nbins).fill(0);
+    for(var i=0;i<nbins;i++)centers.push(mn+(i+0.5)*bw);
+    for(var i=0;i<results.length;i++){var idx=Math.min(nbins-1,Math.max(0,Math.floor((results[i]-mn)/bw)));counts[idx]++}
+    return{centers,counts};
+}
+
+// ─── Main ────────────────────────────────────────────────────────────
+function simulate(){
+    var dist=document.getElementById('sel-dist').value;
+    var p1=parseFloat(document.getElementById('sl-p1').value);
+    var p2=parseFloat(document.getElementById('sl-p2').value);
+    var n=parseInt(document.getElementById('sl-n').value);
+    var nbins=parseInt(document.getElementById('sl-bins').value);
+    var modelStr=document.getElementById('sel-model').value;
+    var compare=document.getElementById('chk-compare').checked && compareScenario;
+
+    document.getElementById('v-p1').textContent=p1.toFixed(2);
+    document.getElementById('v-p2').textContent=p2.toFixed(2);
+    document.getElementById('v-n').textContent=n.toLocaleString();
+    document.getElementById('v-bins').textContent=nbins;
+
+    var t0=performance.now();
+    var sim=runSim(dist,p1,p2,n,modelStr);
+    var hist=makeHist(sim.results,nbins);
+    var elapsed=(performance.now()-t0).toFixed(0);
+
+    document.getElementById('s-mean').textContent=sim.mean.toFixed(3);
+    document.getElementById('s-std').textContent=sim.std.toFixed(3);
+    document.getElementById('s-p5').textContent=sim.p5.toFixed(3);
+    document.getElementById('s-p50').textContent=sim.p50.toFixed(3);
+    document.getElementById('s-p95').textContent=sim.p95.toFixed(3);
+
+    var traces=[{x:hist.centers,y:hist.counts,type:'bar',name:'Actual',marker:{color:'#89b4fa',opacity:0.8}}];
+    if(compare){
+        var sim2=runSim(compare.dist,compare.p1,compare.p2,n,compare.model);
+        var hist2=makeHist(sim2.results,nbins);
+        traces.push({x:hist2.centers,y:hist2.counts,type:'bar',name:compare.name,marker:{color:'#f5c2e7',opacity:0.5}});
+    }
+
+    Plotly.react('chart',traces,{
+        barmode:compare?'overlay':'',
+        paper_bgcolor:'#181825',plot_bgcolor:'#181825',font:{color:'#a6adc8',size:10},
+        xaxis:{gridcolor:'#313244'},yaxis:{gridcolor:'#313244',title:'Frecuencia'},
+        legend:{x:0.7,y:0.95,font:{size:10}},
+        shapes:[
+            {type:'line',x0:sim.p5,x1:sim.p5,y0:0,y1:1,yref:'paper',line:{color:'#a6e3a1',width:1,dash:'dot'}},
+            {type:'line',x0:sim.p50,x1:sim.p50,y0:0,y1:1,yref:'paper',line:{color:'#f5c2e7',width:2,dash:'dash'}},
+            {type:'line',x0:sim.p95,x1:sim.p95,y0:0,y1:1,yref:'paper',line:{color:'#f38ba8',width:1,dash:'dot'}}
+        ],
+        margin:{t:10,r:10,b:35,l:45}
+    },{responsive:true});
+
+    document.getElementById('info-bar').textContent=n.toLocaleString()+' muestras | '+dist+'('+p1.toFixed(1)+', '+p2.toFixed(1)+') | f(x)='+modelStr+' | '+elapsed+'ms';
+}
+
+// ─── Scenarios ───────────────────────────────────────────────────────
+function saveScenario(){
+    var s={
+        name:'Escenario '+(savedScenarios.length+1),
+        dist:document.getElementById('sel-dist').value,
+        p1:parseFloat(document.getElementById('sl-p1').value),
+        p2:parseFloat(document.getElementById('sl-p2').value),
+        model:document.getElementById('sel-model').value,
+        mean:document.getElementById('s-mean').textContent,
+        p50:document.getElementById('s-p50').textContent,
+        p95:document.getElementById('s-p95').textContent
+    };
+    savedScenarios.push(s);
+    renderScenarios();
+}
+
+function deleteScenario(i){savedScenarios.splice(i,1);renderScenarios()}
+function useForCompare(i){compareScenario=savedScenarios[i];document.getElementById('chk-compare').checked=true;simulate()}
+
+function renderScenarios(){
+    var el=document.getElementById('scenarios-list');
+    if(!savedScenarios.length){el.innerHTML='<p style="color:#45475a;font-size:10px">Guarde escenarios para comparar</p>';return}
+    el.innerHTML=savedScenarios.map(function(s,i){
+        return '<div class="scenario">'+
+            '<span class="del" onclick="deleteScenario('+i+')">x</span>'+
+            '<div class="name">'+s.name+'</div>'+
+            '<div class="vals">'+s.dist+'('+s.p1+', '+s.p2+')<br>f(x)='+s.model+'<br>Media='+s.mean+' | P50='+s.p50+' | P95='+s.p95+'</div>'+
+            '<button class="btn btn-sm" onclick="useForCompare('+i+')" style="margin-top:4px">Comparar</button>'+
+            '</div>';
+    }).join('');
+}
+
+// ─── Load Real Params ────────────────────────────────────────────────
+(function(){
+    try{
+        var xhr=new XMLHttpRequest();xhr.open('GET','sim-report-params.json',false);xhr.send();
+        if(xhr.status===200)REAL_PARAMS=JSON.parse(xhr.responseText);
+    }catch(e){}
+
+    if(REAL_PARAMS){
+        var dm={norm:'normal',lnorm:'lognormal',gamma:'gamma',weibull:'weibull',exp:'exponential',unif:'uniform',beta:'beta'};
+        document.getElementById('sel-dist').value=dm[REAL_PARAMS.dist_name]||'normal';
+        document.getElementById('sl-p1').value=REAL_PARAMS.mu||10;
+        document.getElementById('sl-p2').value=REAL_PARAMS.sigma||2;
+        document.getElementById('sl-n').value=REAL_PARAMS.iterations||50000;
+        if(REAL_PARAMS.model){
+            var ms=document.getElementById('sel-model');
+            var found=false;
+            for(var i=0;i<ms.options.length;i++){if(ms.options[i].value===REAL_PARAMS.model){ms.selectedIndex=i;found=true;break}}
+            if(!found){var o=document.createElement('option');o.value=REAL_PARAMS.model;o.text=REAL_PARAMS.model;ms.add(o);ms.value=REAL_PARAMS.model}
+        }
+        var rs=REAL_PARAMS.stats;
+        document.getElementById('real-stats').innerHTML=
+            '<b>Dist:</b> '+REAL_PARAMS.dist_name+'<br>'+
+            '<b>P1:</b> '+(REAL_PARAMS.mu||0).toFixed(4)+'<br>'+
+            '<b>P2:</b> '+(REAL_PARAMS.sigma||0).toFixed(4)+'<br>'+
+            '<b>AIC:</b> '+(REAL_PARAMS.aic||0).toFixed(1)+'<br>'+
+            '<b>N:</b> '+(REAL_PARAMS.iterations||0).toLocaleString()+'<br>'+
+            (rs?'<b>Media:</b> '+rs.mean.toFixed(4)+'<br><b>P50:</b> '+rs.p50.toFixed(4)+'<br><b>IC90:</b> ['+rs.p5.toFixed(2)+', '+rs.p95.toFixed(2)+']':'');
+        document.getElementById('header-info').textContent='Ajuste: '+REAL_PARAMS.dist_name+'('+((REAL_PARAMS.mu||0).toFixed(2))+', '+((REAL_PARAMS.sigma||0).toFixed(2))+') | N='+((REAL_PARAMS.iterations||0).toLocaleString());
+    }
+    simulate();
+})();
+</script>
+</body>
+</html>
