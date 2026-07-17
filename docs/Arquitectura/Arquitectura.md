@@ -260,3 +260,87 @@ C:\NEVEN\
 
 *Documento actualizado en junio 2026. Versión 2.0 — Post remediación de seguridad.*
 *NEVEN — Universidad de Costa Rica, Tesis de Maestría.*
+
+
+------------------------------------------------------------------------
+
+## Módulo NEVEN-SIM: Simulación Monte Carlo (Julio 2026)
+
+NEVEN-SIM es un **XLL separado** (`NEVEN-SIM.xll`) que carga junto a NEVEN64.xll y proporciona simulación estocástica, análisis de riesgo y exploración reactiva de escenarios.
+
+### Arquitectura NEVEN-SIM
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                          Microsoft Excel                              │
+│  ┌─────────────────────┐        ┌──────────────────────────────────┐ │
+│  │   NEVEN64.xll       │        │     NEVEN-SIM.xll                │ │
+│  │   (Base)            │◄──────►│     (Simulación)                 │ │
+│  │ • LanguageManager   │ xlUDF  │ • SimBridge (relay a R/Julia)    │ │
+│  │ • ViewerManager     │        │ • SimEngine (orquestador)        │ │
+│  │ • PostMessageBridge │        │ • FitService (→R fitdistrplus)   │ │
+│  └────────┬────────────┘        │ • MonteCarloService (→Julia)     │ │
+│           │                      │ • SensitivityService (Spearman)  │ │
+│           │ Named Pipes          │ • SimViewerManager (WebView2)    │ │
+│           ▼                      │ • BridgePoller (JS↔Excel)        │ │
+│    ControlR / ControlJulia       └──────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Principios de Diseño
+
+| Principio | Implementación |
+|:---|:---|
+| **Modularidad** | XLL separado, no modifica NEVEN64.xll |
+| **Orquestación C++** | El XLL coordina R→Julia pipeline |
+| **Sin recalculation loop** | Julia ejecuta N iteraciones internamente |
+| **Reactividad JS** | Explorador de escenarios 100% en JavaScript |
+| **Lazy detection** | SimBridge detecta NEVEN base en primer uso, no en xlAutoOpen |
+
+### Comunicación Inter-XLL
+
+NEVEN-SIM consume servicios de NEVEN base via `xlUDF`:
+- `SimBridge::CallR(code)` → `xlUDF("NEVEN.r", code)` → ControlR.exe
+- `SimBridge::CallJulia(code)` → `xlUDF("NEVEN.j", code)` → ControlJulia.exe
+- `SimBridge::CallUDF_Public("NEVEN.v", path)` → abre WebView2 viewer
+
+### Funciones Excel (NEVEN-SIM)
+
+| Función | Descripción |
+|:---|:---|
+| `=SIM.Status()` | Estado del módulo y conexión a base |
+| `=SIM.Fit(rango, [dist])` | Ajusta distribución a datos vía R |
+| `=SIM.QuickRun(rango, modelo, N, [reporte])` | Pipeline completo: Fit→MC→Resultados |
+| `=SIM.Datos(N)` | Primeras N muestras simuladas |
+| `=SIM.Exportar()` | Exporta resultados completos a CSV |
+| `=SIM.Workspace()` | Abre explorador interactivo |
+| `=SIM.Percentile(p)` | Percentil de última simulación |
+| `=SIM.Sensitivity()` | Análisis de sensibilidad (Tornado) |
+
+### Explorador Reactivo (WebView2)
+
+El viewer HTML genera simulaciones Monte Carlo **en JavaScript puro** usando:
+- Box-Muller (Normal), transformaciones para Gamma/Weibull/Beta/LogNormal
+- Plotly.js para histogramas interactivos
+- Sliders que recalculan 200,000 muestras en <100ms
+- Comparación de escenarios con histogramas superpuestos
+- Escenarios guardados con parámetros visibles para copiar
+
+### Dependencias
+
+| Componente | Versión | Uso |
+|:---|:---|:---|
+| fitdistrplus (R) | >= 1.1 | Ajuste de distribuciones MLE |
+| Distributions.jl | >= 0.25 | Generación de muestras en Julia |
+| Plotly.js | 2.32.0 | Visualización interactiva |
+| json11 | vendored | Parsing JSON en C++ |
+
+### Build
+
+```bash
+cmake -DBUILD_NEVEN_SIM=ON ...
+cmake --build . --target NEVEN_SIM
+```
+
+Produce: `NEVEN-SIM.xll` (~400KB)
+Tests: `cmake --build . --target NEVEN_SIM_Tests` (69 tests)

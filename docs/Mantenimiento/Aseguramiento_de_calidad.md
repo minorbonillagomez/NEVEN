@@ -148,3 +148,83 @@ tests/
 ---
 
 *Última actualización: Mayo 2026 — Post auditoría de seguridad y remediación completa.*
+
+
+---
+
+## NEVEN-SIM: Simulación Monte Carlo (Julio 2026)
+
+### Tests Automatizados
+
+NEVEN-SIM incluye 69 tests unitarios organizados en 6 suites:
+
+| Suite | Tests | Cobertura |
+|:---|:---|:---|
+| SimBridge | 5 | Detección de NEVEN base, CallR/CallJulia |
+| SimEngine | 13 | State machine, pipeline, callbacks |
+| FitService | 11 | JSON/text parsing, code generation, AIC ranking |
+| MonteCarloService | 15 | Distribution mapping, Julia code gen |
+| SensitivityService | 11 | Spearman parsing, formatting |
+| Integration | 14 | Pipeline end-to-end, Excel helpers |
+
+### Build y Ejecución de Tests
+
+```bash
+# Configurar con NEVEN-SIM habilitado
+cmake -DBUILD_NEVEN_SIM=ON -DSKIP_LANGUAGE_TARGETS=ON -G "Visual Studio 17 2022" -A x64 ..
+
+# Compilar tests
+cmake --build . --target NEVEN_SIM_Tests --config Release
+
+# Ejecutar
+.\Build\NEVEN-SIM\tests\Release\NEVEN_SIM_Tests.exe --gtest_brief=1
+```
+
+### Archivos del Módulo
+
+```
+NEVEN-SIM/
+├── CMakeLists.txt               # Build del XLL
+├── NEVEN-SIM.rc                 # Recursos (version info)
+├── neven-sim-config.json        # Configuración
+├── include/                     # 7 headers
+│   ├── sim_engine.h
+│   ├── sim_bridge.h
+│   ├── fit_service.h
+│   ├── montecarlo_service.h
+│   ├── sensitivity_service.h
+│   ├── sim_viewer.h
+│   ├── sim_exports.h
+│   ├── sim_excel_helpers.h
+│   └── bridge_poller.h
+├── src/                         # 9 implementaciones
+│   ├── sim_main.cc              # xlAutoOpen, funciones Excel
+│   ├── sim_bridge.cc            # Relay a NEVEN base
+│   ├── sim_engine.cc            # Orquestador pipeline
+│   ├── fit_service.cc           # Fitting via R
+│   ├── montecarlo_service.cc    # MC via Julia
+│   ├── sensitivity_service.cc   # Spearman
+│   ├── sim_viewer.cc            # WebView2 workspace
+│   ├── sim_excel_helpers.cc     # Range extraction
+│   ├── bridge_poller.cc         # JS→Excel polling
+│   └── neven_sim.def            # Exports
+├── workspace/                   # HTML viewers
+│   ├── sim-report-template.html # Explorador reactivo
+│   ├── demo-reactive.html       # Demo standalone
+│   └── demo-bridge.html         # Demo PostMessage
+├── libreria/
+│   ├── R/neven_sim_fit.R        # Funciones R
+│   └── JULIA/NEVENSim.jl       # Módulo Julia
+└── tests/                       # 6 archivos de test
+```
+
+### Troubleshooting NEVEN-SIM
+
+| Síntoma | Causa | Solución |
+|:---|:---|:---|
+| Excel crash al cargar XLL | xlUDF llamado durante xlAutoOpen | Verificar que Initialize() NO llama DetectNevenBase() |
+| "BLOCKED: library()" | Security system de NEVEN | Usar `requireNamespace()` + prefijo `fitdistrplus::` |
+| "BLOCKED: open()" | Security system | Usar `write(path, content)` en vez de `open()` |
+| "Julia call failed" | `Main.` bloqueado | Usar `global` en vez de `Main._var` |
+| SIM.Datos retorna menos filas | Límite del pipe (~32KB) | Usar SIM.Exportar() para dataset completo |
+| Viewer no abre | NEVEN64.xll viejo | Recompilar NEVEN_Core con PostMessageBridge actualizado |

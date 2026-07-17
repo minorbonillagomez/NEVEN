@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>NEVEN v2.1 — Documentación</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#1e1e2e;color:#cdd6f4;display:flex;height:100vh}
+.sidebar{width:260px;background:#181825;border-right:1px solid #313244;padding:16px;overflow-y:auto;flex-shrink:0}
+.sidebar h1{color:#89b4fa;font-size:16px;margin-bottom:4px}
+.sidebar .sub{color:#6c7086;font-size:10px;margin-bottom:12px}
+.sidebar input{width:100%;background:#1e1e2e;border:1px solid #45475a;border-radius:4px;color:#cdd6f4;padding:6px 8px;font-size:12px;margin-bottom:10px}
+.sidebar a{display:block;padding:6px 8px;color:#a6adc8;text-decoration:none;font-size:12px;border-radius:4px;margin-bottom:2px}
+.sidebar a:hover,.sidebar a.active{background:#313244;color:#89b4fa}
+.content{flex:1;overflow-y:auto;padding:30px 40px;max-width:900px}
+.content h1{color:#89b4fa;font-size:24px;margin:30px 0 10px;border-bottom:1px solid #313244;padding-bottom:8px}
+.content h2{color:#f5c2e7;font-size:18px;margin:24px 0 8px}
+.content h3{color:#a6e3a1;font-size:15px;margin:18px 0 6px}
+.content p{margin:8px 0;line-height:1.7;font-size:14px}
+.content code{background:#313244;padding:1px 5px;border-radius:3px;font-family:'Cascadia Code',monospace;font-size:12px}
+.content pre{background:#11111b;border:1px solid #313244;border-radius:6px;padding:14px;overflow-x:auto;margin:12px 0}
+.content pre code{background:none;padding:0;font-size:12px;color:#a6e3a1}
+.content table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+.content th{background:#313244;padding:8px 10px;text-align:left;color:#89b4fa;border:1px solid #45475a}
+.content td{padding:6px 10px;border:1px solid #313244}
+.content tr:nth-child(even){background:#181825}
+.content ul,.content ol{margin:8px 0 8px 20px;font-size:14px}
+.content li{margin:4px 0;line-height:1.6}
+.content strong{color:#f5c2e7}
+.content a{color:#89b4fa}
+.content blockquote{border-left:3px solid #89b4fa;padding-left:12px;color:#6c7086;margin:12px 0}
+.content section{display:none}
+.content section.active{display:block}
+.footer{position:fixed;bottom:0;left:260px;right:0;background:#11111b;border-top:1px solid #313244;padding:6px 20px;font-size:10px;color:#45475a;text-align:center}
+</style>
+</head>
+<body>
+<div class="sidebar">
+    <h1>NEVEN v2.1</h1>
+    <div class="sub">Documentación — Julio 2026</div>
+    <input type="text" id="search" placeholder="Buscar capitulo..." oninput="filterTOC()">
+    <div id="toc"></div>
+</div>
+<div class="content" id="content"></div>
+<div class="footer">NEVEN Project — Universidad de Costa Rica — Minor Bonilla Gómez — 2026</div>
+
+<script>
+// Markdown content embedded (loaded from combined file)
+var MD_CONTENT = '';
+var SECTIONS = {};
+
+// Load the combined markdown via XHR (same directory)
+function loadContent() {
+    // Try loading from file
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '__combined.md', false);
+    try {
+        xhr.send();
+        if (xhr.status === 200 || xhr.status === 0) {
+            MD_CONTENT = xhr.responseText;
+        }
+    } catch(e) {}
+
+    if (!MD_CONTENT) {
+        document.getElementById('content').innerHTML = '<h1>Error</h1><p>No se pudo cargar __combined.md. Asegurese de abrir este archivo desde la carpeta docs/</p>';
+        return;
+    }
+
+    // Parse sections
+    var parts = MD_CONTENT.split(/<section id='([^']+)'>/);
+    for (var i = 1; i < parts.length; i += 2) {
+        var id = parts[i];
+        var md = parts[i+1].replace(/<\/section>/, '').trim();
+        SECTIONS[id] = md;
+    }
+
+    // Build TOC
+    var tocHtml = '';
+    var ids = Object.keys(SECTIONS).sort();
+    ids.forEach(function(id) {
+        var firstLine = SECTIONS[id].split('\n').find(function(l){return l.startsWith('# ')}) || id;
+        var title = firstLine.replace(/^# /, '');
+        tocHtml += '<a href="#" data-id="'+id+'" onclick="showSection(\''+id+'\');return false;">'+title+'</a>';
+    });
+    document.getElementById('toc').innerHTML = tocHtml;
+
+    // Show first section
+    if (ids.length > 0) showSection(ids[0]);
+}
+
+function showSection(id) {
+    var md = SECTIONS[id];
+    if (!md) return;
+    document.getElementById('content').innerHTML = '<section class="active">' + marked.parse(md) + '</section>';
+    // Update active link
+    document.querySelectorAll('.sidebar a').forEach(function(a){
+        a.classList.toggle('active', a.dataset.id === id);
+    });
+}
+
+function filterTOC() {
+    var q = document.getElementById('search').value.toLowerCase();
+    document.querySelectorAll('.sidebar a').forEach(function(a){
+        a.style.display = a.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+
+loadContent();
+</script>
+</body>
+</html>

@@ -13,6 +13,7 @@ const sidebars = {
     'mantenimiento',
     'ejemplos',
     'diccionario-funciones',
+    'simulacion-montecarlo',
   ],
 };
 

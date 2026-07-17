@@ -34,6 +34,7 @@ Y obtiene el determinante de la matriz en su celda -- sin escribir una linea de 
 | R4XCL | 2023 | R en Excel via BERT (tesis original) |
 | NEVEN v1.0 | Ene 2026 | Fork de BERT, R 4.4.1 + Julia 1.12.6 |
 | **NEVEN v2.0** | **Abr 2026** | WebView2, Pluto.jl, Quarto, Ribbon COM |
+| **NEVEN v2.1** | **Jul 2026** | Python integrado, NEVEN-SIM (Monte Carlo) |
 
 ## 1.4 Ecosistema completo
 

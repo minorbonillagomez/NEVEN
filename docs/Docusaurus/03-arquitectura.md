@@ -104,3 +104,33 @@ xlAutoOpen()
 | Quarto como CreateProcess | No bloquea el pipe, timeout 60s |
 | `require_secret_for_access=false` | Pluto 0.20 requiere token; localhost es seguro |
 | Junction `C:\Quarto` | Workaround para bug de Sass |
+
+
+## 3.6 NEVEN-SIM: Modulo de Simulacion (XLL separado)
+
+NEVEN-SIM es un add-in XLL independiente que carga junto a NEVEN64.xll. Proporciona simulacion Monte Carlo, fitting de distribuciones y analisis de sensibilidad.
+
+### Comunicacion Inter-XLL
+
+```
+NEVEN-SIM.xll --[xlUDF]--> NEVEN64.xll --[Named Pipe]--> ControlR/Julia
+```
+
+NEVEN-SIM usa `xlUDF` para llamar funciones registradas por NEVEN base (`NEVEN.r`, `NEVEN.j`, `NEVEN.v`). No tiene sus propios procesos hijo.
+
+### Componentes
+
+| Componente | Responsabilidad |
+|:---|:---|
+| `SimBridge` | Relay a R/Julia via xlUDF (lazy detection) |
+| `SimEngine` | Orquestador: Fit → Simulate → Analyze |
+| `FitService` | Genera codigo R (fitdistrplus) |
+| `MonteCarloService` | Genera codigo Julia (Distributions.jl) |
+| `SensitivityService` | Spearman rank correlation |
+| `SimViewerManager` | Genera HTML y abre viewer |
+
+### Explorador Reactivo
+
+El viewer de NEVEN-SIM incluye un simulador Monte Carlo 100% JavaScript que permite explorar escenarios en tiempo real (<100ms para 200K muestras). Soporta 7 distribuciones, comparacion de escenarios y sliders interactivos.
+
+Referencia completa: **Capitulo 12 - Simulacion Monte Carlo**
