@@ -1,84 +1,114 @@
-<?xml version="1.0" encoding="utf-8"?>
-<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="RibbonLoaded" loadImage="GetImage">
-  <ribbon startFromScratch="false">
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+  <ribbon>
     <tabs>
-      <tab id="TabNEVEN" label="NEVEN">
+      <tab id="tabRJ2XCL" label="NEVEN" insertAfterMso="TabHome">
 
-        <!-- Grupo 1: Motores -->
+        <!-- Grupo: Motores de Lenguaje -->
         <group id="grpEngines" label="Motores">
-          <button id="btnConsoleR" label="Consola R" size="normal" onAction="ShowRTerminal"
-                  image="r_logo"
-                  supertip="Abrir la terminal interactiva REPL de R"/>
-          <button id="btnConsoleJulia" label="Consola Julia" size="normal" onAction="ShowJuliaTerminal"
-                  image="julia_logo"
-                  supertip="Abrir la terminal interactiva REPL de Julia"/>
-          <button id="btnInstallPkgR" label="Instalar Paquete R" size="normal" onAction="OnInstallPkgR"
-                  image="r_logo"
-                  supertip="Instalar un paquete de R desde CRAN"/>
-          <button id="btnInstallPkgJulia" label="Instalar Paquete Julia" size="normal" onAction="OnInstallPkgJulia"
-                  image="julia_logo"
-                  supertip="Instalar un paquete de Julia desde el registro oficial"/>
-          <button id="btnListPkgR" label="Paquetes R" size="normal" onAction="OnListPkgR"
-                  image="r_logo"
-                  supertip="Listar los paquetes R instalados"/>
-          <button id="btnListPkgJulia" label="Paquetes Julia" size="normal" onAction="OnListPkgJulia"
-                  image="julia_logo"
-                  supertip="Listar los paquetes Julia instalados"/>
-          <button id="btnRefresh" label="Actualizar" size="normal" onAction="OnRefreshFunctions"
+          <button id="btnReloadFunctions"
+                  label="Actualizar"
+                  size="large"
+                  onAction="OnReloadCommand"
                   imageMso="Refresh"
-                  supertip="Re-registrar todas las funciones R y Julia en Excel"/>
+                  screentip="Recargar funciones de usuario"
+                  supertip="Recarga todos los archivos .R, .jl y .py de C:\NEVEN\functions\ sin reiniciar Excel. Use despues de agregar nuevas funciones." />
+
+          <button id="btnEngineStatus"
+                  label="Estado"
+                  size="large"
+                  onAction="OnEngineStatusCommand"
+                  imageMso="ServerConnection"
+                  screentip="Estado de los motores"
+                  supertip="Muestra el estado de conexion de R, Julia y Python." />
         </group>
 
-        <!-- Grupo 2: Visualizacion -->
-        <group id="grpViewer" label="Visualizacion">
-          <button id="btnViewHTML" label="Abrir HTML" size="normal" onAction="OnViewDialog"
-                  imageMso="ChartInsert"
-                  supertip="Seleccionar un archivo HTML para visualizar en WebView2"/>
-          <button id="btnEditor" label="Presentaciones" size="normal" onAction="OnEditor"
-                  imageMso="SlideShowFromBeginning"
-                  supertip="Abrir el editor de presentaciones Impress.js"/>
-          <button id="btnViewerList" label="Listar Visores" size="normal" onAction="OnViewerList"
-                  imageMso="ViewsGallery"
-                  supertip="Mostrar los identificadores de todos los visores WebView2 activos"/>
-          <button id="btnCloseViewers" label="Cerrar Visores" size="normal" onAction="OnCloseViewers"
-                  imageMso="WindowCloseAllDocuments"
-                  supertip="Cerrar todas las ventanas de visor WebView2 activas"/>
-        </group>
-
-        <!-- Grupo 3: Pluto.jl -->
-        <group id="grpPluto" label="Pluto.jl">
-          <button id="btnPlutoStart" label="Iniciar Pluto" size="normal" onAction="OnPlutoStart"
+        <!-- Grupo: Analisis (nuevos viewers) -->
+        <group id="grpAnalysis" label="Analisis">
+          <button id="btnAIAssistant"
+                  label="AI Assistant"
+                  size="large"
+                  onAction="OnAIAssistantCommand"
                   imageMso="BlogHomePage"
-                  supertip="Iniciar el servidor de notebooks Pluto.jl"/>
-          <button id="btnNotebooks" label="Notebooks" size="normal" onAction="OnNotebookDialog"
+                  screentip="AI Assistant (LM Studio)"
+                  supertip="Abre el asistente de IA conectado a LM Studio local. Resume, traduce, analiza y responde preguntas sobre sus datos." />
+
+          <button id="btnTextAnalysis"
+                  label="Texto"
+                  size="large"
+                  onAction="OnTextAnalysisCommand"
+                  imageMso="ReviewCompareDocuments"
+                  screentip="Analisis de Texto"
+                  supertip="Analiza documentos PDF/TXT: Word Cloud, frecuencia, n-gramas, sentimiento y resumen." />
+
+          <button id="btnSimulation"
+                  label="Simulacion"
+                  size="large"
+                  onAction="OnSimulationCommand"
+                  imageMso="ChartInsert"
+                  screentip="Simulacion Monte Carlo"
+                  supertip="Explorador reactivo de simulaciones Monte Carlo con sliders y comparacion de escenarios." />
+        </group>
+
+        <!-- Grupo: Visor -->
+        <group id="grpViewer" label="Visor">
+          <button id="btnViewerOpen"
+                  label="Abrir Visor"
+                  size="large"
+                  onAction="OnViewerOpenCommand"
+                  imageMso="PictureInsertFromFile"
+                  screentip="Abrir visor HTML"
+                  supertip="Abre un archivo HTML en el visor WebView2 embebido (Plotly, D3, dashboards)." />
+
+          <button id="btnViewerCloseAll"
+                  label="Cerrar Todos"
+                  size="normal"
+                  onAction="OnViewerCloseAllCommand"
+                  imageMso="WindowCloseAllDocuments"
+                  screentip="Cerrar todos los visores" />
+        </group>
+
+        <!-- Grupo: Notebooks y Pluto -->
+        <group id="grpNotebooks" label="Notebooks">
+          <button id="btnPlutoStart"
+                  label="Pluto.jl"
+                  size="large"
+                  onAction="OnPlutoStartCommand"
                   imageMso="FileDocumentManagement"
-                  supertip="Ver la lista de notebooks Pluto disponibles"/>
-          <button id="btnPlutoStop" label="Detener Pluto" size="normal" onAction="OnPlutoStop"
+                  screentip="Iniciar Pluto.jl"
+                  supertip="Inicia el servidor de notebooks reactivos Pluto.jl. Los notebooks se abren en el visor WebView2." />
+
+          <button id="btnNotebookList"
+                  label="Biblioteca"
+                  size="normal"
+                  onAction="OnNotebookListCommand"
+                  imageMso="ViewsGallery"
+                  screentip="Biblioteca de notebooks" />
+
+          <button id="btnPlutoStop"
+                  label="Detener"
+                  size="normal"
+                  onAction="OnPlutoStopCommand"
                   imageMso="RecordStop"
-                  supertip="Detener el servidor Pluto.jl"/>
+                  screentip="Detener Pluto.jl" />
         </group>
 
-        <!-- Grupo 4: Quarto -->
-        <group id="grpQuarto" label="Quarto">
-          <button id="btnQuarto" label="Renderizar QMD" size="normal" onAction="OnQuartoDialog"
-                  image="quarto_logo"
-                  supertip="Seleccionar y renderizar un documento Quarto (.qmd) a HTML en WebView2"/>
-        </group>
-
-        <!-- Grupo 5: Configuracion -->
-        <group id="grpConfig" label="Configuracion">
-          <button id="btnDocs" label="Documentacion" size="normal" onAction="OnOpenDocs"
+        <!-- Grupo: Ayuda -->
+        <group id="grpConfig" label="Ayuda">
+          <button id="btnDocs"
+                  label="Documentacion"
+                  size="large"
+                  onAction="OnDocsCommand"
                   imageMso="Help"
-                  supertip="Abrir la documentacion completa de NEVEN en el visor WebView2"/>
-          <button id="btnScriptsDir" label="Carpeta Scripts" size="normal" onAction="OnOpenScriptsDir"
-                  imageMso="FileOpen"
-                  supertip="Abrir la carpeta de scripts del usuario en el Explorador"/>
-          <button id="btnConfig" label="Config JSON" size="normal" onAction="OnOpenConfig"
-                  imageMso="ControlProperties"
-                  supertip="Abrir neven-config.json en el editor predeterminado"/>
-          <button id="btnAbout" label="Acerca de" size="normal" onAction="OnAbout"
-                  image="neven_logo"
-                  supertip="NEVEN v2.0 — Open Source. Construyendo comunidad para un mundo mas igualitario."/>
+                  screentip="Documentacion NEVEN"
+                  supertip="Abre la documentacion completa de NEVEN (13 capitulos) en el visor." />
+
+          <button id="btnAbout"
+                  label="Acerca de"
+                  size="normal"
+                  onAction="OnAboutCommand"
+                  imageMso="Info"
+                  screentip="Acerca de NEVEN"
+                  supertip="NEVEN v2.1 — Open Source. Construyendo comunidad." />
         </group>
 
       </tab>

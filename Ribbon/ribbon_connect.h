@@ -70,6 +70,21 @@ typedef enum {
   OnListPkgJulia,
   OnOpenDocs,
 
+  // NEVEN v2.1 Ribbon commands
+  OnOpenConsoleCommand,
+  OnReloadCommand,
+  OnEngineStatusCommand,
+  OnAIAssistantCommand,
+  OnTextAnalysisCommand,
+  OnSimulationCommand,
+  OnViewerOpenCommand,
+  OnViewerCloseAllCommand,
+  OnPlutoStartCommand,
+  OnNotebookListCommand,
+  OnPlutoStopCommand,
+  OnDocsCommand,
+  OnAboutCommand,
+
 } DispIds;
 
 // CConnect
@@ -163,6 +178,20 @@ public:
       else if (!wcscmp(rgszNames[0], L"OnListPkgR")) disp_id = DispIds::OnListPkgR;
       else if (!wcscmp(rgszNames[0], L"OnListPkgJulia")) disp_id = DispIds::OnListPkgJulia;
       else if (!wcscmp(rgszNames[0], L"OnOpenDocs")) disp_id = DispIds::OnOpenDocs;
+      // NEVEN v2.1 Ribbon action callbacks
+      else if (!wcscmp(rgszNames[0], L"OnOpenConsoleCommand")) disp_id = DispIds::OnOpenConsoleCommand;
+      else if (!wcscmp(rgszNames[0], L"OnReloadCommand")) disp_id = DispIds::OnReloadCommand;
+      else if (!wcscmp(rgszNames[0], L"OnEngineStatusCommand")) disp_id = DispIds::OnEngineStatusCommand;
+      else if (!wcscmp(rgszNames[0], L"OnAIAssistantCommand")) disp_id = DispIds::OnAIAssistantCommand;
+      else if (!wcscmp(rgszNames[0], L"OnTextAnalysisCommand")) disp_id = DispIds::OnTextAnalysisCommand;
+      else if (!wcscmp(rgszNames[0], L"OnSimulationCommand")) disp_id = DispIds::OnSimulationCommand;
+      else if (!wcscmp(rgszNames[0], L"OnViewerOpenCommand")) disp_id = DispIds::OnViewerOpenCommand;
+      else if (!wcscmp(rgszNames[0], L"OnViewerCloseAllCommand")) disp_id = DispIds::OnViewerCloseAllCommand;
+      else if (!wcscmp(rgszNames[0], L"OnPlutoStartCommand")) disp_id = DispIds::OnPlutoStartCommand;
+      else if (!wcscmp(rgszNames[0], L"OnNotebookListCommand")) disp_id = DispIds::OnNotebookListCommand;
+      else if (!wcscmp(rgszNames[0], L"OnPlutoStopCommand")) disp_id = DispIds::OnPlutoStopCommand;
+      else if (!wcscmp(rgszNames[0], L"OnDocsCommand")) disp_id = DispIds::OnDocsCommand;
+      else if (!wcscmp(rgszNames[0], L"OnAboutCommand")) disp_id = DispIds::OnAboutCommand;
     }
 
     if (disp_id > 0)
@@ -555,6 +584,165 @@ public:
       }
       return S_OK;
     }
+
+    // ─── NEVEN v2.1 Ribbon commands ───
+    case DispIds::OnOpenConsoleCommand:
+    {
+      // Open NEVEN REPL console
+      return RunXllFunction(L"RJ_Console");
+    }
+
+    case DispIds::OnReloadCommand:
+    {
+      // Reload all function files for R, Julia, and Python
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+          CComVariant result;
+
+          // 1. Reload R functions
+          CComVariant rCmd(L"NEVEN.r");
+          CComVariant rCode("tryCatch({ files <- list.files('C:/NEVEN/functions', pattern='\\\\.R$', full.names=TRUE); for(f in files) source(f, local=FALSE); paste0(length(files), ' archivos R recargados') }, error=function(e) paste0('Error R: ', e$message))");
+          pApp->_Run2(rCmd, rCode, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+
+          // 2. Reload Julia functions
+          CComVariant jCmd(L"NEVEN.j");
+          CComVariant jCode("try; files = filter(f -> endswith(f, \".jl\"), readdir(raw\"C:\\NEVEN\\functions\", join=true)); for f in files; include(f); end; string(length(files), \" archivos Julia recargados\"); catch e; string(\"Error Julia: \", e); end");
+          pApp->_Run2(jCmd, jCode, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+
+          // 3. Reload Python functions
+          CComVariant pCmd(L"NEVEN.P");
+          CComVariant pCode("import glob, importlib, sys, os; files = glob.glob('C:/NEVEN/functions/*.py'); [exec(open(f, encoding='utf-8').read()) for f in files]; f'{len(files)} archivos Python recargados'");
+          pApp->_Run2(pCmd, pCode, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+
+          // 4. Re-register dynamic functions
+          CComVariant updateCmd(L"RJ_UpdateFunctions");
+          pApp->_Run2(updateCmd, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+
+          MessageBoxA(NULL, "Funciones recargadas para R, Julia y Python.\nNuevas funciones disponibles sin reiniciar Excel.",
+                      "NEVEN - Actualizar", MB_OK | MB_ICONINFORMATION);
+      }
+      return S_OK;
+    }
+
+    case DispIds::OnEngineStatusCommand:
+    {
+      // Show engine connection status
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          CComVariant cmd(L"NEVEN.status");
+          CComVariant result;
+          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+          pApp->_Run2(cmd, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+          if (result.vt == VT_BSTR) {
+              char buf[2048];
+              WideCharToMultiByte(CP_UTF8, 0, result.bstrVal, -1, buf, sizeof(buf), NULL, NULL);
+              MessageBoxA(NULL, buf, "NEVEN - Estado de Motores", MB_OK | MB_ICONINFORMATION);
+          }
+      }
+      return S_OK;
+    }
+
+    case DispIds::OnAIAssistantCommand:
+    {
+      // Open AI Assistant HTML in WebView2 viewer
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          CComVariant runCmd(L"NEVEN.v");
+          CComVariant docPath("C:/NEVEN/workspace/ai-assistant.html");
+          CComVariant result;
+          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+          pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+      }
+      return S_OK;
+    }
+
+    case DispIds::OnTextAnalysisCommand:
+    {
+      // Open Text Analysis HTML in WebView2 viewer
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          CComVariant runCmd(L"NEVEN.v");
+          CComVariant docPath("C:/NEVEN/workspace/text-analysis.html");
+          CComVariant result;
+          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+          pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+      }
+      return S_OK;
+    }
+
+    case DispIds::OnSimulationCommand:
+    {
+      // Open Monte Carlo Simulation HTML in WebView2 viewer
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          CComVariant runCmd(L"NEVEN.v");
+          CComVariant docPath("C:/NEVEN/workspace/sim-report-template.html");
+          CComVariant result;
+          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+          pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+      }
+      return S_OK;
+    }
+
+    case DispIds::OnViewerOpenCommand:
+      return RunXllFunction(L"NEVEN.v.dialog");
+
+    case DispIds::OnViewerCloseAllCommand:
+      return RunXllFunction(L"NEVEN.v.closeall");
+
+    case DispIds::OnPlutoStartCommand:
+      return RunXllFunction(L"NEVEN.cmd.pluto.start");
+
+    case DispIds::OnNotebookListCommand:
+      return RunXllFunction(L"NEVEN.notebook.dialog");
+
+    case DispIds::OnPlutoStopCommand:
+      return RunXllFunction(L"NEVEN.cmd.pluto.stop");
+
+    case DispIds::OnDocsCommand:
+    {
+      // Open NEVEN documentation in WebView2 viewer
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          CComVariant runCmd(L"NEVEN.v");
+          CComVariant docPath("C:/NEVEN/neven-docs.html");
+          CComVariant result;
+          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+          pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+      }
+      return S_OK;
+    }
+
+    case DispIds::OnAboutCommand:
+      return RunXllFunction(L"NEVEN.about.dialog");
 
     }
 
