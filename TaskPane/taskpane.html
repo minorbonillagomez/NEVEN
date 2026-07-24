@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEVEN Studio</title>
+  <link rel="stylesheet" href="taskpane.css">
+  <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>NEVEN Studio</h1>
+    <span class="version">v3.0</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="data-studio">Data Studio</div>
+    <div class="tab" data-tab="viewers">Viewers</div>
+    <div class="tab" data-tab="sql">SQL</div>
+  </div>
+
+  <!-- Tab: Data Studio -->
+  <div class="tab-content active" id="data-studio">
+    <div class="card">
+      <div class="card-title">Datos</div>
+      <div class="controls">
+        <input type="text" id="csv-path" placeholder="C:/ruta/archivo.csv" style="flex:1;min-width:180px">
+        <button class="btn btn-primary" id="btn-load">Cargar</button>
+        <button class="btn btn-secondary" id="btn-analyze">Analizar</button>
+      </div>
+      <div id="data-info" class="msg-info">Ingrese ruta del archivo y presione Cargar</div>
+      <div id="preview-area"></div>
+    </div>
+
+    <div class="card" id="stats-card" style="display:none">
+      <div class="card-title">Estadísticas</div>
+      <div id="stats-table"></div>
+    </div>
+
+    <div class="card" id="groupby-card" style="display:none">
+      <div class="card-title">GROUP BY</div>
+      <div class="controls">
+        <label>Agrupar:</label><select id="grp-col"></select>
+        <label>Métrica:</label><select id="grp-metric">
+          <option value="SUM">Suma</option>
+          <option value="AVG">Media</option>
+          <option value="COUNT">Count</option>
+          <option value="MIN">Min</option>
+          <option value="MAX">Max</option>
+          <option value="MEDIAN">Mediana</option>
+        </select>
+        <label>Sobre:</label><select id="grp-val"></select>
+      </div>
+      <div class="chart-container" id="grp-chart"></div>
+      <div id="grp-table"></div>
+    </div>
+  </div>
+
+  <!-- Tab: Viewers -->
+  <div class="tab-content" id="viewers">
+    <div class="viewer-nav">
+      <button class="btn btn-secondary" data-viewer="dashboard.html">Dashboard</button>
+      <button class="btn btn-secondary" data-viewer="geo-report.html">GeoData</button>
+      <button class="btn btn-secondary" data-viewer="timeline.html">Timeline</button>
+      <button class="btn btn-secondary" data-viewer="network.html">Red</button>
+      <button class="btn btn-secondary" data-viewer="ml-report.html">ML Report</button>
+      <button class="btn btn-secondary" data-viewer="data-studio.html">Data Studio</button>
+    </div>
+    <iframe class="viewer-iframe" id="viewer-frame" src="about:blank"></iframe>
+  </div>
+
+  <!-- Tab: SQL -->
+  <div class="tab-content" id="sql">
+    <div class="card">
+      <div class="card-title">Consulta SQL (tabla: dataset)</div>
+      <textarea class="sql-editor" id="sql-input" placeholder="SELECT * FROM dataset LIMIT 100&#10;&#10;Ctrl+Enter para ejecutar"></textarea>
+      <div class="controls" style="margin-top:6px">
+        <button class="btn btn-primary" id="btn-sql-run">Ejecutar</button>
+        <button class="btn btn-secondary" id="btn-sql-export">Exportar a Hoja</button>
+        <span id="sql-status"></span>
+      </div>
+    </div>
+    <div id="sql-error" class="msg-error" style="display:none"></div>
+    <div class="card" id="sql-results-card" style="display:none">
+      <div class="card-title" id="sql-results-title">Resultados</div>
+      <div id="sql-results"></div>
+      <div class="controls" id="sql-pagination" style="display:none;margin-top:6px">
+        <button class="btn btn-secondary" id="btn-sql-prev">← Anterior</button>
+        <span id="sql-page-info"></span>
+        <button class="btn btn-secondary" id="btn-sql-next">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>Rango: <span class="range" id="status-range">—</span></span>
+    <span class="toggle">
+      <input type="checkbox" id="auto-load"> <label for="auto-load">Auto-load</label>
+    </span>
+    <span id="status-server">●</span>
+  </div>
+
+  <script src="taskpane.js"></script>
+</body>
+</html>

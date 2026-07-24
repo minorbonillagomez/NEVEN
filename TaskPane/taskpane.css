@@ -1,0 +1,232 @@
+/* NEVEN Studio — Task Pane Styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #242424;
+  --bg-card: rgba(40, 40, 40, 0.85);
+  --accent: #a8e600;
+  --accent-dim: rgba(168, 230, 0, 0.15);
+  --text-primary: #e0e0e0;
+  --text-secondary: #888;
+  --text-muted: #555;
+  --border: rgba(168, 230, 0, 0.12);
+  --error: #ff4444;
+  --success: #4caf50;
+  --radius: 6px;
+}
+
+body {
+  font-family: 'Segoe UI', -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 12px;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ──────────────────────────────────────────────────── */
+.header {
+  background: var(--bg-secondary);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header h1 {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.header .version {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 8px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--accent); }
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ─── Tab Content ─────────────────────────────────────────────── */
+.tab-content {
+  display: none;
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+}
+.tab-content.active { display: block; }
+
+/* ─── Status Bar ──────────────────────────────────────────────── */
+.status-bar {
+  background: var(--bg-secondary);
+  padding: 4px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+.status-bar .range { color: var(--accent); font-weight: 600; }
+.status-bar .toggle { display: flex; align-items: center; gap: 4px; }
+.status-bar .toggle input { accent-color: var(--accent); }
+
+/* ─── Cards & Panels ──────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.card-title {
+  color: var(--accent);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+.btn-primary:hover { background: #8bc34a; }
+.btn-secondary {
+  background: #333;
+  color: var(--text-primary);
+  border: 1px solid #555;
+}
+.btn-secondary:hover { background: #444; }
+
+/* ─── Tables ──────────────────────────────────────────────────── */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(8px, 1.5vw, 11px);
+}
+table.data-table th {
+  background: var(--bg-secondary);
+  color: var(--accent);
+  padding: 5px 6px;
+  text-align: right;
+  border-bottom: 1px solid #333;
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+}
+table.data-table th:first-child { text-align: left; }
+table.data-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #2a2a2a;
+  text-align: right;
+  white-space: nowrap;
+}
+table.data-table td:first-child { text-align: left; color: var(--accent); font-weight: 600; }
+table.data-table tr:hover td { background: var(--accent-dim); }
+
+/* ─── Controls ────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.controls label {
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 600;
+}
+.controls select, .controls input[type="text"] {
+  background: #333;
+  color: var(--text-primary);
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+/* ─── SQL Editor ──────────────────────────────────────────────── */
+.sql-editor {
+  width: 100%;
+  min-height: 80px;
+  background: #111;
+  color: var(--accent);
+  border: 1px solid #333;
+  border-radius: var(--radius);
+  padding: 8px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+  resize: vertical;
+}
+.sql-editor:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+/* ─── Chart Container ─────────────────────────────────────────── */
+.chart-container { height: 180px; margin: 8px 0; }
+
+/* ─── Messages ────────────────────────────────────────────────── */
+.msg-info { color: var(--text-secondary); padding: 12px; text-align: center; }
+.msg-error { color: var(--error); padding: 8px; font-size: 10px; background: rgba(255,68,68,0.1); border-radius: 4px; }
+.msg-success { color: var(--success); padding: 8px; font-size: 10px; }
+
+/* ─── Spinner ─────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid var(--text-muted);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Viewers Tab ─────────────────────────────────────────────── */
+.viewer-nav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.viewer-nav .btn { font-size: 9px; padding: 5px 10px; }
+.viewer-iframe {
+  width: 100%;
+  height: calc(100vh - 160px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+}
