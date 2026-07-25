@@ -27,20 +27,50 @@ def main():
     config.setdefault("queryTimeoutSec", 30)
     config.setdefault("maxPayloadMB", 50)
 
-    result = start_server(config)
-    if result is None:
-        print("FATAL: Server failed to start")
+    # Run server on MAIN thread (not daemon)
+    from neven_http_server import _config, NEVENHandler, _rate_limiter
+    from http.server import HTTPServer
+    import ssl as ssl_mod
+
+    global _server_port
+    _config.update(config)
+
+    ports = [config.get("port", 5555), config.get("fallbackPort", 5556)]
+    server = None
+    for port in ports:
+        try:
+            server = HTTPServer(('127.0.0.1', port), NEVENHandler)
+            print(f"[NEVEN HTTP] Bound to 127.0.0.1:{port}")
+            break
+        except OSError as e:
+            print(f"[NEVEN HTTP] Port {port} unavailable: {e}")
+
+    if server is None:
+        print("FATAL: Cannot bind")
         sys.exit(1)
 
-    print(f"NEVEN HTTP Server running on port {result[1]}")
-    print("Open: http://localhost:{}/taskpane.html".format(result[1]))
-    print("Press Ctrl+C to stop")
+    # HTTPS if certs available
+    cert_path = config.get("certPath", "")
+    key_path = config.get("keyPath", "")
+    if cert_path and key_path and os.path.isfile(cert_path) and os.path.isfile(key_path):
+        try:
+            ctx = ssl_mod.SSLContext(ssl_mod.PROTOCOL_TLS_SERVER)
+            ctx.load_cert_chain(certfile=cert_path, keyfile=key_path)
+            server.socket = ctx.wrap_socket(server.socket, server_side=True)
+            print(f"[NEVEN HTTP] HTTPS enabled")
+        except Exception as e:
+            print(f"[NEVEN HTTP] HTTPS failed: {e} — HTTP only")
+    else:
+        print("[NEVEN HTTP] Running HTTP (no cert)")
+
+    print(f"NEVEN HTTP Server on port {port}")
+    print(f"Open: http://localhost:{port}/taskpane.html")
 
     try:
-        while True:
-            time.sleep(1)
+        server.serve_forever()
     except KeyboardInterrupt:
-        print("\nShutting down...")
+        print("\nStopping...")
+        server.shutdown()
 
 if __name__ == "__main__":
     main()
