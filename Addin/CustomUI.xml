@@ -100,6 +100,17 @@
                   screentip="Detener Pluto.jl" />
         </group>
 
+        <!-- Grupo: NEVEN Studio (Task Pane v3.0) -->
+        <group id="grpStudio" label="Studio">
+          <button id="btnTaskPane"
+                  label="NEVEN Studio"
+                  size="large"
+                  onAction="OnTaskPaneCommand"
+                  imageMso="ViewCode"
+                  screentip="NEVEN Studio (Task Pane)"
+                  supertip="Abre el panel interactivo con DuckDB, GROUP BY, SQL y visualizaciones embebidas." />
+        </group>
+
         <!-- Grupo: Ayuda -->
         <group id="grpConfig" label="Ayuda">
           <button id="btnDocs"

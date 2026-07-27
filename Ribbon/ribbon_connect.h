@@ -85,6 +85,9 @@ typedef enum {
   OnDocsCommand,
   OnAboutCommand,
 
+  // NEVEN v3.0 Task Pane
+  OnTaskPaneCommand,
+
 } DispIds;
 
 // CConnect
@@ -192,6 +195,7 @@ public:
       else if (!wcscmp(rgszNames[0], L"OnPlutoStopCommand")) disp_id = DispIds::OnPlutoStopCommand;
       else if (!wcscmp(rgszNames[0], L"OnDocsCommand")) disp_id = DispIds::OnDocsCommand;
       else if (!wcscmp(rgszNames[0], L"OnAboutCommand")) disp_id = DispIds::OnAboutCommand;
+      else if (!wcscmp(rgszNames[0], L"OnTaskPaneCommand")) disp_id = DispIds::OnTaskPaneCommand;
     }
 
     if (disp_id > 0)
@@ -743,6 +747,23 @@ public:
 
     case DispIds::OnAboutCommand:
       return RunXllFunction(L"NEVEN.about.dialog");
+
+    case DispIds::OnTaskPaneCommand:
+    {
+      // Open NEVEN Studio Task Pane in WebView2 viewer
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          CComVariant runCmd(L"NEVEN.v");
+          CComVariant docPath("http://localhost:5555/taskpane.html");
+          CComVariant result;
+          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+          pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+      }
+      return S_OK;
+    }
 
     }
 
