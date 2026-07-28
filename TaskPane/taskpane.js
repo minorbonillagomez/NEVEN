@@ -5,7 +5,7 @@
 const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:5555' : window.location.origin;
 const CHUNK_SIZE = 50000;
 
-let loadedData = null;      // { columns: [], types: {}, rows: [] }
+let loadedData = null;      // { columns: [], types: {}, rows: [] } — SINGLE dataset, always the latest
 let currentSqlPage = 1;
 let lastSqlQuery = '';
 
@@ -39,6 +39,10 @@ function initializeApp(hasOfficeJs) {
   document.getElementById('btn-sql-export').addEventListener('click', exportSQLToSheet);
   document.getElementById('btn-sql-prev').addEventListener('click', () => navigateSQL(-1));
   document.getElementById('btn-sql-next').addEventListener('click', () => navigateSQL(1));
+  document.getElementById('btn-bridge-read').addEventListener('click', loadBridgeData);
+
+  // Viewer buttons
+  document.getElementById('btn-load-viewer').addEventListener('click', loadActiveViewerFromBridge);
 
   // SQL: Ctrl+Enter shortcut
   document.getElementById('sql-input').addEventListener('keydown', (e) => {
@@ -50,10 +54,10 @@ function initializeApp(hasOfficeJs) {
     document.getElementById(id).addEventListener('change', executeGroupBy);
   });
 
-  // Viewer buttons
+  // Viewer buttons (existing HTML viewers)
   document.querySelectorAll('[data-viewer]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.getElementById('viewer-frame').src = API_BASE + '/viewers/' + btn.dataset.viewer;
+      window.open(API_BASE + '/viewers/' + btn.dataset.viewer, '_blank');
     });
   });
 
@@ -77,6 +81,36 @@ function initializeApp(hasOfficeJs) {
 function switchTab(tabId) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('active', t.id === tabId));
+}
+
+// ─── Reset State (clear previous data on new load) ───────────────────────────
+
+function resetState() {
+  loadedData = null;
+  lastSqlQuery = '';
+  currentSqlPage = 1;
+
+  // Clear UI
+  document.getElementById('preview-area').innerHTML = '';
+  document.getElementById('stats-card').style.display = 'none';
+  document.getElementById('stats-table').innerHTML = '';
+  document.getElementById('groupby-card').style.display = 'none';
+  document.getElementById('grp-chart').innerHTML = '';
+  document.getElementById('grp-table').innerHTML = '';
+  document.getElementById('sql-results-card').style.display = 'none';
+  document.getElementById('sql-results').innerHTML = '';
+  document.getElementById('sql-error').style.display = 'none';
+  document.getElementById('viz-chart').style.display = 'none';
+  document.getElementById('viz-chart').innerHTML = '';
+  document.getElementById('viz-table').innerHTML = '';
+
+  // Reset viewers detection
+  document.getElementById('viewers-detect-msg').textContent = 'Cargue datos primero';
+  document.getElementById('viewer-nav-ct').style.display = 'none';
+  document.getElementById('viewer-nav-st').style.display = 'none';
+  document.getElementById('viewer-nav-gs').style.display = 'none';
+  document.getElementById('viewer-nav-rel').style.display = 'none';
+  document.getElementById('viewer-nav-existing').style.display = 'none';
 }
 
 // ─── Server Health ───────────────────────────────────────────────────────────
@@ -106,6 +140,7 @@ function loadCSVPrompt() {
 
 async function loadCSVFile(path) {
   const info = document.getElementById('data-info');
+  resetState();
   info.innerHTML = '<span class="spinner"></span> Cargando con DuckDB...';
   try {
     const result = await apiCall('/api/load_file', { path: path });
@@ -113,6 +148,7 @@ async function loadCSVFile(path) {
     loadedData = { columns: result.columns, types: result.types, rows: [] };
     populateGroupByControls(result.columns, result.types);
     document.getElementById('groupby-card').style.display = 'block';
+    updateViewersTab();
   } catch (e) {
     info.innerHTML = `<span class="msg-error">${e.message}</span>`;
   }
@@ -404,5 +440,598 @@ async function exportSQLToSheet() {
     });
   } catch (e) {
     document.getElementById('sql-status').innerHTML = `<span class="msg-error">Export error: ${e.message}</span>`;
+  }
+}
+
+// ─── NEVEN Bridge (Excel <-> TaskPane without Office.js) ─────────────────────
+
+let _bridgePolling = null;
+
+/**
+ * Read data from the bridge buffer (data pushed by Excel).
+ * @param {string} key - Buffer key name (default: "default")
+ * @returns {Promise<object|null>} The data or null
+ */
+async function bridgeRead(key) {
+  key = key || 'default';
+  try {
+    const resp = await fetch(API_BASE + '/api/bridge/pull?key=' + encodeURIComponent(key));
+    const result = await resp.json();
+    if (result.status === 'ok' && result.data) {
+      return result.data;
+    }
+    return null;
+  } catch (e) {
+    console.error('Bridge read error:', e);
+    return null;
+  }
+}
+
+/**
+ * Write data to the bridge buffer (for Excel to read via =P.Receive()).
+ * @param {*} data - Any JSON-serializable data
+ * @param {string} key - Buffer key name (default: "result")
+ */
+async function bridgeWrite(key, data) {
+  key = key || 'result';
+  try {
+    await apiCall('/api/bridge/write', { key: key, data: data });
+    return true;
+  } catch (e) {
+    console.error('Bridge write error:', e);
+    return false;
+  }
+}
+
+/**
+ * Get list of available bridge keys.
+ * @returns {Promise<string[]>}
+ */
+async function bridgeStatus() {
+  try {
+    const resp = await fetch(API_BASE + '/api/bridge/status');
+    const result = await resp.json();
+    return result.keys || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+/**
+ * Start polling the bridge for data from Excel.
+ * When data arrives, calls the callback with {columns, rows, timestamp}.
+ * @param {string} key - Key to poll
+ * @param {function} callback - Called with data when available
+ * @param {number} intervalMs - Poll interval (default 2000ms)
+ */
+function bridgeStartPolling(key, callback, intervalMs) {
+  intervalMs = intervalMs || 2000;
+  let lastTimestamp = 0;
+
+  if (_bridgePolling) clearInterval(_bridgePolling);
+
+  _bridgePolling = setInterval(async function() {
+    const data = await bridgeRead(key);
+    if (data && data.timestamp && data.timestamp > lastTimestamp) {
+      lastTimestamp = data.timestamp;
+      callback(data);
+    }
+  }, intervalMs);
+}
+
+/**
+ * Stop polling the bridge.
+ */
+function bridgeStopPolling() {
+  if (_bridgePolling) {
+    clearInterval(_bridgePolling);
+    _bridgePolling = null;
+  }
+}
+
+/**
+ * Load data from bridge into the TaskPane (same as loading CSV).
+ * Called when Excel pushes data via =P.Send().
+ */
+async function loadFromBridge(key) {
+  key = key || 'default';
+  const info = document.getElementById('data-info');
+  resetState();
+  info.innerHTML = '<span class="spinner"></span> Leyendo datos del bridge...';
+
+  const data = await bridgeRead(key);
+  if (!data || !data.columns) {
+    info.textContent = 'No hay datos en el bridge (key: ' + key + ')';
+    return;
+  }
+
+  const columns = data.columns;
+  const rows = data.rows || [];
+
+  // Detect types
+  const types = {};
+  columns.forEach(function(h, i) {
+    var sample = rows.slice(0, 100).map(function(r) { return r[i]; });
+    var numCount = sample.filter(function(v) { return typeof v === 'number' || !isNaN(parseFloat(v)); }).length;
+    types[h] = numCount > sample.length * 0.7 ? 'numeric' : 'text';
+  });
+
+  loadedData = { columns: columns, types: types, rows: rows };
+
+  // Show preview
+  showPreview(columns, rows.slice(0, 20));
+  info.textContent = rows.length.toLocaleString() + ' filas x ' + columns.length + ' cols (desde Excel)';
+
+  // Populate GROUP BY
+  populateGroupByControls(columns, types);
+  document.getElementById('groupby-card').style.display = 'block';
+
+  // Also load into DuckDB for SQL
+  try {
+    await apiCall('/api/load', { columns: columns, types: types, data: rows });
+  } catch (e) {
+    console.warn('Failed to load bridge data into DuckDB:', e);
+  }
+
+  // Update Viewers tab
+  updateViewersTab();
+}
+
+/**
+ * Send current analysis results back to Excel via bridge.
+ * Excel reads with =P.Receive("result")
+ */
+async function sendToExcel(data, key) {
+  key = key || 'result';
+  const success = await bridgeWrite(key, data);
+  if (success) {
+    document.getElementById('data-info').innerHTML =
+      '<span class="msg-success">Datos enviados a Excel (key: ' + key + '). Use =P.Receive("' + key + '") para leer.</span>';
+  }
+}
+
+
+// ─── Data Type Detection & Viewers ───────────────────────────────────────────
+
+/**
+ * Detect the data family based on column names and content.
+ * Returns: 'CT', 'ST', 'GS', 'REL', or 'unknown'
+ */
+function detectDataFamily(columns, types, rows) {
+  var colsLower = columns.map(function(c) { return c.toLowerCase(); });
+
+  // GS: has lat/lon columns
+  var hasLat = colsLower.some(function(c) { return c.match(/^(lat|latitude|latitud)$/); });
+  var hasLon = colsLower.some(function(c) { return c.match(/^(lon|lng|long|longitude|longitud)$/); });
+  if (hasLat && hasLon) return 'GS';
+
+  // REL: has origin/destination or source/target columns
+  var hasSource = colsLower.some(function(c) { return c.match(/^(source|origen|from|de|nodo_a|source_id)$/); });
+  var hasTarget = colsLower.some(function(c) { return c.match(/^(target|destino|to|a|nodo_b|target_id)$/); });
+  if (hasSource && hasTarget) return 'REL';
+
+  // ST: has a time/date column
+  var hasTime = colsLower.some(function(c) { return c.match(/^(fecha|date|time|periodo|year|mes|month|dia|day|timestamp|t)$/); });
+  if (hasTime) return 'ST';
+
+  // Default: CT (cross-sectional)
+  return 'CT';
+}
+
+/**
+ * Update the Viewers tab based on detected data family.
+ */
+function updateViewersTab() {
+  if (!loadedData || !loadedData.columns) return;
+
+  var family = detectDataFamily(loadedData.columns, loadedData.types, loadedData.rows);
+  var msg = document.getElementById('viewers-detect-msg');
+
+  var labels = { 'CT': 'Corte Transversal', 'ST': 'Serie de Tiempo', 'GS': 'Geoespacial', 'REL': 'Relaciones' };
+  msg.innerHTML = '<span style="color:var(--accent);font-weight:700">' + (labels[family] || family) + '</span> detectado (' + loadedData.columns.length + ' columnas)';
+
+  // Show/hide nav groups
+  document.getElementById('viewer-nav-ct').style.display = (family === 'CT') ? 'flex' : 'none';
+  document.getElementById('viewer-nav-st').style.display = (family === 'ST') ? 'flex' : 'none';
+  document.getElementById('viewer-nav-gs').style.display = (family === 'GS') ? 'flex' : 'none';
+  document.getElementById('viewer-nav-rel').style.display = (family === 'REL') ? 'flex' : 'none';
+  document.getElementById('viewer-nav-existing').style.display = 'flex';
+
+  loadedData._family = family;
+}
+
+/**
+ * Render a visualization based on type.
+ */
+function renderViz(vizType) {
+  if (!loadedData || !loadedData.columns) { alert('Cargue datos primero'); return; }
+
+  var chartEl = document.getElementById('viz-chart');
+  chartEl.style.display = 'block';
+
+  var cols = loadedData.columns;
+  var types = loadedData.types;
+  var rows = loadedData.rows;
+
+  if (vizType === 'ct-bars') renderCTBars(cols, types, rows, chartEl);
+  else if (vizType === 'ct-scatter') renderCTScatter(cols, types, rows, chartEl);
+  else if (vizType === 'ct-heatmap') renderCTHeatmap(cols, types, rows, chartEl);
+  else if (vizType === 'ct-boxplot') renderCTBoxplot(cols, types, rows, chartEl);
+  else if (vizType === 'st-line') renderSTLine(cols, types, rows, chartEl);
+  else if (vizType === 'st-area') renderSTArea(cols, types, rows, chartEl);
+  else if (vizType === 'st-multi') renderSTMulti(cols, types, rows, chartEl);
+  else if (vizType === 'gs-map') renderGSMap(cols, types, rows);
+  else if (vizType === 'gs-cluster') renderGSCluster(cols, types, rows);
+  else if (vizType === 'rel-graph') renderRELGraph(cols, types, rows, chartEl);
+  else if (vizType === 'rel-sankey') renderRELSankey(cols, types, rows, chartEl);
+}
+
+// ─── CT Visualizations ───────────────────────────────────────────────────────
+
+function _getNumericCols(cols, types) {
+  return cols.filter(function(c) { return types[c] === 'numeric'; });
+}
+function _getTextCols(cols, types) {
+  return cols.filter(function(c) { return types[c] === 'text'; });
+}
+function _getColValues(rows, cols, colName) {
+  var idx = cols.indexOf(colName);
+  return rows.map(function(r) { return r[idx]; });
+}
+
+function renderCTBars(cols, types, rows, el) {
+  var numCols = _getNumericCols(cols, types);
+  var textCols = _getTextCols(cols, types);
+  if (numCols.length === 0) { el.innerHTML = '<div class="msg-error">No hay columnas numericas</div>'; return; }
+
+  var catCol = textCols.length > 0 ? textCols[0] : null;
+  var valCol = numCols[0];
+  var x = catCol ? _getColValues(rows, cols, catCol) : rows.map(function(_, i) { return i + 1; });
+  var y = _getColValues(rows, cols, valCol).map(Number);
+
+  Plotly.newPlot(el, [{ x: x, y: y, type: 'bar', marker: { color: 'rgba(168,230,0,0.7)' } }], {
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 10 },
+    xaxis: { title: catCol || 'Index', gridcolor: 'rgba(255,255,255,0.05)' },
+    yaxis: { title: valCol, gridcolor: 'rgba(255,255,255,0.08)' },
+    margin: { t: 10, r: 10, b: 40, l: 50 }
+  }, { responsive: true, displayModeBar: false });
+}
+
+function renderCTScatter(cols, types, rows, el) {
+  var numCols = _getNumericCols(cols, types);
+  if (numCols.length < 2) { el.innerHTML = '<div class="msg-error">Necesita al menos 2 columnas numericas</div>'; return; }
+
+  var x = _getColValues(rows, cols, numCols[0]).map(Number);
+  var y = _getColValues(rows, cols, numCols[1]).map(Number);
+
+  Plotly.newPlot(el, [{ x: x, y: y, mode: 'markers', type: 'scatter',
+    marker: { color: '#a8e600', size: 6, opacity: 0.7 } }], {
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 10 },
+    xaxis: { title: numCols[0], gridcolor: 'rgba(255,255,255,0.05)' },
+    yaxis: { title: numCols[1], gridcolor: 'rgba(255,255,255,0.08)' },
+    margin: { t: 10, r: 10, b: 40, l: 50 }
+  }, { responsive: true, displayModeBar: false });
+}
+
+function renderCTHeatmap(cols, types, rows, el) {
+  var numCols = _getNumericCols(cols, types);
+  if (numCols.length < 2) { el.innerHTML = '<div class="msg-error">Necesita al menos 2 columnas numericas</div>'; return; }
+
+  // Compute correlation matrix
+  var data = numCols.map(function(c) { return _getColValues(rows, cols, c).map(Number); });
+  var n = numCols.length;
+  var corr = [];
+  for (var i = 0; i < n; i++) {
+    corr[i] = [];
+    for (var j = 0; j < n; j++) {
+      corr[i][j] = _pearson(data[i], data[j]);
+    }
+  }
+
+  Plotly.newPlot(el, [{ z: corr, x: numCols, y: numCols, type: 'heatmap',
+    colorscale: [[0,'#1a1a1a'],[0.5,'#444'],[1,'#a8e600']], zmin: -1, zmax: 1 }], {
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 9 },
+    margin: { t: 10, r: 10, b: 80, l: 80 }
+  }, { responsive: true, displayModeBar: false });
+}
+
+function renderCTBoxplot(cols, types, rows, el) {
+  var numCols = _getNumericCols(cols, types);
+  if (numCols.length === 0) { el.innerHTML = '<div class="msg-error">No hay columnas numericas</div>'; return; }
+
+  var traces = numCols.slice(0, 6).map(function(c) {
+    return { y: _getColValues(rows, cols, c).map(Number), type: 'box', name: c,
+      marker: { color: '#a8e600' }, line: { color: '#a8e600' } };
+  });
+
+  Plotly.newPlot(el, traces, {
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 10 },
+    yaxis: { gridcolor: 'rgba(255,255,255,0.08)' },
+    margin: { t: 10, r: 10, b: 30, l: 50 }, showlegend: false
+  }, { responsive: true, displayModeBar: false });
+}
+
+// ─── ST Visualizations ───────────────────────────────────────────────────────
+
+function _getTimeCol(cols) {
+  var patterns = /^(fecha|date|time|periodo|year|mes|month|dia|day|timestamp|t)$/i;
+  return cols.find(function(c) { return c.match(patterns); }) || cols[0];
+}
+
+function renderSTLine(cols, types, rows, el) {
+  var timeCol = _getTimeCol(cols);
+  var numCols = _getNumericCols(cols, types);
+  if (numCols.length === 0) { el.innerHTML = '<div class="msg-error">No hay columnas numericas</div>'; return; }
+
+  var x = _getColValues(rows, cols, timeCol);
+  var traces = [{ x: x, y: _getColValues(rows, cols, numCols[0]).map(Number),
+    type: 'scatter', mode: 'lines', line: { color: '#a8e600', width: 2 }, name: numCols[0] }];
+
+  Plotly.newPlot(el, traces, {
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 10 },
+    xaxis: { title: timeCol, gridcolor: 'rgba(255,255,255,0.05)' },
+    yaxis: { title: numCols[0], gridcolor: 'rgba(255,255,255,0.08)' },
+    margin: { t: 10, r: 10, b: 40, l: 50 }
+  }, { responsive: true, displayModeBar: false });
+}
+
+function renderSTArea(cols, types, rows, el) {
+  var timeCol = _getTimeCol(cols);
+  var numCols = _getNumericCols(cols, types);
+  if (numCols.length === 0) return;
+
+  var x = _getColValues(rows, cols, timeCol);
+  var traces = [{ x: x, y: _getColValues(rows, cols, numCols[0]).map(Number),
+    type: 'scatter', mode: 'lines', fill: 'tozeroy',
+    line: { color: '#a8e600' }, fillcolor: 'rgba(168,230,0,0.2)', name: numCols[0] }];
+
+  Plotly.newPlot(el, traces, {
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 10 },
+    xaxis: { title: timeCol, gridcolor: 'rgba(255,255,255,0.05)' },
+    yaxis: { gridcolor: 'rgba(255,255,255,0.08)' },
+    margin: { t: 10, r: 10, b: 40, l: 50 }
+  }, { responsive: true, displayModeBar: false });
+}
+
+function renderSTMulti(cols, types, rows, el) {
+  var timeCol = _getTimeCol(cols);
+  var numCols = _getNumericCols(cols, types);
+  if (numCols.length === 0) return;
+
+  var x = _getColValues(rows, cols, timeCol);
+  var colors = ['#a8e600', '#ff6b6b', '#4ecdc4', '#ffa502', '#a29bfe', '#fd79a8'];
+  var traces = numCols.slice(0, 6).map(function(c, i) {
+    return { x: x, y: _getColValues(rows, cols, c).map(Number),
+      type: 'scatter', mode: 'lines', name: c, line: { color: colors[i % colors.length], width: 2 } };
+  });
+
+  Plotly.newPlot(el, traces, {
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 10 },
+    xaxis: { title: timeCol, gridcolor: 'rgba(255,255,255,0.05)' },
+    yaxis: { gridcolor: 'rgba(255,255,255,0.08)' },
+    margin: { t: 10, r: 10, b: 40, l: 50 },
+    legend: { font: { color: '#888' } }
+  }, { responsive: true, displayModeBar: false });
+}
+
+// ─── GS Visualizations ───────────────────────────────────────────────────────
+
+function renderGSMap(cols, types, rows) {
+  // Try to load geolive data from bridge
+  bridgeRead('geolive').then(function(data) {
+    if (data && data.points) {
+      _renderGeoPlotly(data);
+    } else {
+      alert('Use =P.GeoLive(lat, lon, datos, encabezados) para enviar datos geoespaciales');
+    }
+  });
+}
+
+function renderGSCluster(cols, types, rows) {
+  bridgeRead('geolive').then(function(data) {
+    if (data && data.points) {
+      _renderGeoPlotly(data, true);
+    } else {
+      alert('Use =P.GeoLive(lat, lon, datos, encabezados) para enviar datos geoespaciales');
+    }
+  });
+}
+
+function _renderGeoPlotly(data, showClusters) {
+  var el = document.getElementById('viz-chart');
+  el.style.display = 'block';
+  el.style.height = '400px';
+
+  var points = data.points;
+  var lats = points.map(function(p) { return p.lat; });
+  var lons = points.map(function(p) { return p.lon; });
+
+  // Build hover text from all data columns
+  var dataCols = data.columns.filter(function(c) { return c !== 'lat' && c !== 'lon'; });
+  var hoverTexts = points.map(function(p) {
+    var parts = [];
+    dataCols.forEach(function(c) {
+      if (p[c] !== undefined) parts.push(c + ': ' + p[c]);
+    });
+    return parts.join('<br>') || ('(' + p.lat.toFixed(4) + ', ' + p.lon.toFixed(4) + ')');
+  });
+
+  // Color by first numeric data column if available
+  var colorValues = null;
+  var colorCol = dataCols.find(function(c) {
+    return points.some(function(p) { return typeof p[c] === 'number'; });
+  });
+  if (colorCol) {
+    colorValues = points.map(function(p) { return typeof p[colorCol] === 'number' ? p[colorCol] : 0; });
+  }
+
+  var trace = {
+    type: 'scattergeo',
+    lat: lats,
+    lon: lons,
+    text: hoverTexts,
+    hoverinfo: 'text',
+    mode: 'markers',
+    marker: {
+      size: 10,
+      color: colorValues || '#a8e600',
+      colorscale: colorValues ? [[0,'#1a1a1a'],[0.5,'#4ecdc4'],[1,'#a8e600']] : undefined,
+      showscale: !!colorValues,
+      opacity: 0.8,
+      line: { color: '#a8e600', width: 1 }
+    }
+  };
+
+  var layout = {
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 10 },
+    geo: {
+      scope: 'world',
+      bgcolor: '#1a1a1a',
+      landcolor: '#2a2a2a',
+      lakecolor: '#1a1a1a',
+      oceancolor: '#1a1a1a',
+      showland: true,
+      showocean: true,
+      showlakes: true,
+      projection: { type: 'natural earth' },
+      center: { lat: data.center_lat, lon: data.center_lon },
+      lonaxis: { range: [data.center_lon - 5, data.center_lon + 5] },
+      lataxis: { range: [data.center_lat - 3, data.center_lat + 3] }
+    },
+    margin: { t: 0, r: 0, b: 0, l: 0 }
+  };
+
+  Plotly.newPlot(el, [trace], layout, { responsive: true, displayModeBar: false });
+}
+
+// ─── REL Visualizations ──────────────────────────────────────────────────────
+
+function renderRELGraph(cols, types, rows, el) {
+  alert('Grafo de relaciones: Use =P.Red() para generar el grafo D3.js');
+}
+
+function renderRELSankey(cols, types, rows, el) {
+  var colsLower = cols.map(function(c) { return c.toLowerCase(); });
+  var srcIdx = colsLower.findIndex(function(c) { return c.match(/^(source|origen|from|de)$/); });
+  var tgtIdx = colsLower.findIndex(function(c) { return c.match(/^(target|destino|to|a)$/); });
+  var valIdx = cols.findIndex(function(c) { return types[c] === 'numeric'; });
+
+  if (srcIdx < 0 || tgtIdx < 0) { el.innerHTML = '<div class="msg-error">Necesita columnas source/target</div>'; return; }
+
+  var labels = [];
+  var labelMap = {};
+  rows.forEach(function(r) {
+    [r[srcIdx], r[tgtIdx]].forEach(function(v) {
+      if (!(v in labelMap)) { labelMap[v] = labels.length; labels.push(String(v)); }
+    });
+  });
+
+  var sources = rows.map(function(r) { return labelMap[r[srcIdx]]; });
+  var targets = rows.map(function(r) { return labelMap[r[tgtIdx]]; });
+  var values = valIdx >= 0 ? rows.map(function(r) { return Number(r[valIdx]) || 1; }) : rows.map(function() { return 1; });
+
+  Plotly.newPlot(el, [{ type: 'sankey', orientation: 'h',
+    node: { label: labels, color: '#a8e600', pad: 15, thickness: 20 },
+    link: { source: sources, target: targets, value: values, color: 'rgba(168,230,0,0.3)' }
+  }], {
+    paper_bgcolor: 'rgba(0,0,0,0)', font: { color: '#888', size: 10 },
+    margin: { t: 10, r: 10, b: 10, l: 10 }
+  }, { responsive: true, displayModeBar: false });
+}
+
+// ─── Utility: Pearson correlation ────────────────────────────────────────────
+
+function _pearson(x, y) {
+  var n = Math.min(x.length, y.length);
+  if (n < 3) return 0;
+  var sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0, valid = 0;
+  for (var i = 0; i < n; i++) {
+    if (isNaN(x[i]) || isNaN(y[i])) continue;
+    sx += x[i]; sy += y[i];
+    sxx += x[i] * x[i]; syy += y[i] * y[i];
+    sxy += x[i] * y[i]; valid++;
+  }
+  if (valid < 3) return 0;
+  var num = valid * sxy - sx * sy;
+  var den = Math.sqrt((valid * sxx - sx * sx) * (valid * syy - sy * sy));
+  return den === 0 ? 0 : Math.round(num / den * 1000) / 1000;
+}
+
+
+// --- Viewer and Bridge functions (clean) ---
+
+function loadViewerHTML(filename) {
+  var el = document.getElementById('viz-chart');
+  el.style.display = 'block';
+  el.innerHTML = '<iframe src="' + API_BASE + '/viewers/' + filename + '?t=' + Date.now() + '" style="width:100%;height:100%;border:none;border-radius:6px;"></iframe>';
+  document.getElementById('viewers-msg').innerHTML = '<span style="color:var(--accent)">' + filename.replace('.html','').replace(/-/g,' ').toUpperCase() + '</span>';
+}
+
+async function loadActiveViewerFromBridge() {
+  var msg = document.getElementById('viewers-msg');
+  msg.innerHTML = '<span class="spinner"></span> Cargando...';
+  try {
+    var resp = await fetch(API_BASE + '/api/bridge/pull?key=active_viewer');
+    var result = await resp.json();
+    if (result.status === 'ok' && result.data && result.data.file) {
+      loadViewerHTML(result.data.file);
+    } else {
+      msg.textContent = 'No hay viewer activo. Ejecute =P.Geodata(), =P.Dashboard(), etc.';
+    }
+  } catch(e) {
+    msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+async function loadBridgeData() {
+  var info = document.getElementById('data-info');
+  resetState();
+  info.innerHTML = '<span class="spinner"></span> Cargando datos del bridge...';
+  try {
+    var resp = await fetch(API_BASE + '/api/bridge/pull?key=geolive');
+    var result = await resp.json();
+    var bridgeData = (result.status === 'ok' && result.data) ? result.data : null;
+    if (!bridgeData || (!bridgeData.points && !bridgeData.columns)) {
+      resp = await fetch(API_BASE + '/api/bridge/pull?key=default');
+      result = await resp.json();
+      bridgeData = (result.status === 'ok' && result.data) ? result.data : null;
+    }
+    if (!bridgeData) {
+      info.textContent = 'No hay datos. Use =P.Send() o =P.GeoLive() en Excel.';
+      return;
+    }
+    var cols, rows;
+    if (bridgeData.points) {
+      cols = bridgeData.columns;
+      rows = bridgeData.points.map(function(p) {
+        return cols.map(function(c) { return p[c] !== undefined ? p[c] : ''; });
+      });
+    } else {
+      cols = bridgeData.columns;
+      rows = bridgeData.rows || [];
+    }
+    var types = {};
+    cols.forEach(function(c, ci) {
+      var sample = rows.slice(0, 50).map(function(r) { return r[ci]; });
+      var numCount = sample.filter(function(v) { return typeof v === 'number' || !isNaN(parseFloat(v)); }).length;
+      types[c] = numCount > sample.length * 0.5 ? 'numeric' : 'text';
+    });
+    loadedData = { columns: cols, types: types, rows: rows };
+    showPreview(cols, rows.slice(0, 20));
+    populateGroupByControls(cols, types);
+    document.getElementById('groupby-card').style.display = 'block';
+    info.textContent = rows.length + ' filas x ' + cols.length + ' cols cargadas desde Excel';
+    await apiCall('/api/load', { columns: cols, types: types, data: rows });
+  } catch(e) {
+    info.textContent = 'Error: ' + e.message;
   }
 }

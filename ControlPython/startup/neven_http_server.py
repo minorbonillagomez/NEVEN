@@ -62,7 +62,7 @@ class RateLimiter:
             return True
 
 
-_rate_limiter = RateLimiter(max_requests=60, window_sec=60)
+_rate_limiter = RateLimiter(max_requests=300, window_sec=60)
 
 
 # ─── DuckDB Engine ────────────────────────────────────────────────────────────
@@ -261,6 +261,28 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_json({"status": "ok", "version": "3.0.0", "port": _server_port})
             return
 
+        # Bridge pull (TaskPane reads data that Excel pushed)
+        if path == 'api/bridge/pull':
+            key = unquote(parsed.query.split('=')[1]) if '=' in (parsed.query or '') else 'default'
+            bridge_dir = os.path.join(os.path.dirname(_config.get("staticDir", "C:\\NEVEN\\taskpane")), "bridge")
+            filepath = os.path.join(bridge_dir, f"{key}.json")
+            if os.path.isfile(filepath):
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                self._send_json({"status": "ok", "key": key, "data": data})
+            else:
+                self._send_json({"status": "empty", "key": key, "data": None})
+            return
+
+        # Bridge status (list all keys in buffer)
+        if path == 'api/bridge/status':
+            bridge_dir = os.path.join(os.path.dirname(_config.get("staticDir", "C:\\NEVEN\\taskpane")), "bridge")
+            keys = []
+            if os.path.isdir(bridge_dir):
+                keys = [f[:-5] for f in os.listdir(bridge_dir) if f.endswith('.json')]
+            self._send_json({"status": "ok", "keys": keys})
+            return
+
         # Serve viewers
         if path.startswith('viewers/'):
             viewers_dir = _config.get("viewersDir", "C:\\NEVEN\\workspace")
@@ -335,6 +357,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_query(body)
         elif path == 'api/load' or path == 'api/load_file':
             self._handle_load(body)
+        elif path == 'api/bridge/push':
+            self._handle_bridge_push(body)
+        elif path == 'api/bridge/write':
+            self._handle_bridge_write(body)
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
 
@@ -427,6 +453,42 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_error_json(str(e), 400)
         except Exception as e:
             self._send_error_json(f"Query error: {e}")
+
+    def _handle_bridge_push(self, body):
+        """Excel pushes data to bridge buffer (Excel → TaskPane) via file."""
+        key = body.get("key", "default")
+        columns = body.get("columns", [])
+        rows = body.get("rows", [])
+        if not columns:
+            self._send_error_json("Missing 'columns'")
+            return
+        bridge_dir = os.path.join(os.path.dirname(_config.get("staticDir", "C:\\NEVEN\\taskpane")), "bridge")
+        os.makedirs(bridge_dir, exist_ok=True)
+        filepath = os.path.join(bridge_dir, f"{key}.json")
+        data = {"columns": columns, "rows": rows, "timestamp": time.time(), "source": "excel"}
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f)
+        self._send_json({"status": "ok", "key": key, "rows_pushed": len(rows)})
+
+    def _handle_bridge_write(self, body):
+        """TaskPane writes data to bridge buffer (TaskPane → Excel) via file."""
+        key = body.get("key", "result")
+        data = body.get("data")
+        if data is None:
+            self._send_error_json("Missing 'data'")
+            return
+        bridge_dir = os.path.join(os.path.dirname(_config.get("staticDir", "C:\\NEVEN\\taskpane")), "bridge")
+        os.makedirs(bridge_dir, exist_ok=True)
+        filepath = os.path.join(bridge_dir, f"{key}.json")
+        payload = {"data": data, "timestamp": time.time(), "source": "taskpane"}
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(payload, f)
+        self._send_json({"status": "ok", "key": key})
+
+
+# ─── Bridge Buffer ────────────────────────────────────────────────────────────
+
+_bridge_buffer = {}
 
 
 # ─── Server Startup ───────────────────────────────────────────────────────────
