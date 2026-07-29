@@ -19,6 +19,20 @@ Param(
 
 $ErrorActionPreference = "Stop"
 
+# --- Activate VS Developer Environment (ensures both C and C++ compilers are on PATH) ---
+$vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+if (Test-Path $vsWhere) {
+    $vsInstallPath = & $vsWhere -latest -property installationPath 2>$null
+    $vcvars = "$vsInstallPath\VC\Auxiliary\Build\vcvars64.bat"
+    if (Test-Path $vcvars) {
+        Write-Host "Activating VS Developer Environment..." -ForegroundColor DarkGray
+        cmd /c "`"$vcvars`" >nul 2>&1 && set" | Where-Object { $_ -match '^[A-Za-z_][A-Za-z0-9_]*=' } | ForEach-Object {
+            $k, $v = $_ -split '=', 2
+            [System.Environment]::SetEnvironmentVariable($k, $v, 'Process')
+        }
+    }
+}
+
 # --- Helpers ---
 function Write-Step { param([string]$msg, [string]$color = "Green")
     Write-Host ""

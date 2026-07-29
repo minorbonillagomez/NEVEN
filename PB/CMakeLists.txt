@@ -1,4 +1,4 @@
-project(PB)
+project(PB LANGUAGES CXX)
 
 add_library(PB STATIC variable.pb.cc)
 

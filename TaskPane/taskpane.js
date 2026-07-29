@@ -9,25 +9,13 @@ let loadedData = null;      // { columns: [], types: {}, rows: [] } — SINGLE d
 let currentSqlPage = 1;
 let lastSqlQuery = '';
 
-// ─── Office.js Initialization ────────────────────────────────────────────────
+// ─── Initialization ──────────────────────────────────────────────────────────
 
-// Try Office.js if available, otherwise initialize standalone
-if (typeof Office !== 'undefined' && Office.onReady) {
-  Office.onReady(function(info) {
-    if (info.host === Office.HostType.Excel) {
-      initializeApp(true);
-    } else {
-      initializeApp(false);
-    }
-  });
-} else {
-  // Standalone mode (browser or WebView2 without Office.js)
-  document.addEventListener('DOMContentLoaded', function() {
-    initializeApp(false);
-  });
-}
+document.addEventListener('DOMContentLoaded', function() {
+  initializeApp();
+});
 
-function initializeApp(hasOfficeJs) {
+function initializeApp() {
   // Tab switching
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -61,16 +49,9 @@ function initializeApp(hasOfficeJs) {
     });
   });
 
-  // Selection change handler (only with Office.js)
-  if (hasOfficeJs) {
-    registerSelectionHandler();
-    document.getElementById('data-info').textContent = 'Seleccione un rango y presione "Cargar"';
-    document.getElementById('btn-load').addEventListener('click', loadDataFromSelection);
-  } else {
-    document.getElementById('data-info').textContent = 'Cargue un archivo CSV/Parquet para analizar (DuckDB)';
-    document.getElementById('btn-load').textContent = 'Cargar CSV';
-    document.getElementById('btn-load').addEventListener('click', loadCSVPrompt);
-  }
+  // CSV load button
+  document.getElementById('btn-load').addEventListener('click', loadCSVPrompt);
+  document.getElementById('data-info').textContent = 'Cargue un archivo CSV/Parquet o use "Leer de Excel"';
 
   // Check server health
   checkServerHealth();

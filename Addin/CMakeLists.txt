@@ -75,12 +75,16 @@ add_custom_command(TARGET NEVEN_XLL POST_BUILD
     COMMENT "Packaging: copying startup scripts to Dist/startup/"
 )
 
-# Copy example files to Dist/examples/
-add_custom_command(TARGET NEVEN_XLL POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/Ejemplos"
-        "${NEVEN_DIST_DIR}/examples"
-    COMMENT "Packaging: copying examples to Dist/examples/"
-)
+# Copy example files to Dist/examples/ (only if the Ejemplos directory exists)
+if(EXISTS "${CMAKE_SOURCE_DIR}/Ejemplos")
+    add_custom_command(TARGET NEVEN_XLL POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/Ejemplos"
+            "${NEVEN_DIST_DIR}/examples"
+        COMMENT "Packaging: copying examples to Dist/examples/"
+    )
+else()
+    message(STATUS "Addin: Ejemplos/ not found — skipping examples copy")
+endif()
 
 message(STATUS "Addin: XLL packaging target configured -> ${NEVEN_DIST_DIR}/")

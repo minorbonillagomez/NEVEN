@@ -34,6 +34,7 @@ include(FetchContent)
 FetchContent_Declare(
   protobuf
   URL "https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protobuf-cpp-3.21.12.zip"
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 set(protobuf_BUILD_TESTS OFF CACHE INTERNAL "")
 set(protobuf_BUILD_EXAMPLES OFF CACHE INTERNAL "")
@@ -68,6 +69,7 @@ FetchContent_MakeAvailable(rapidcheck)
 FetchContent_Declare(
   webview2
   URL "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/1.0.2903.40"
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   DOWNLOAD_NO_EXTRACT FALSE
 )
 FetchContent_MakeAvailable(webview2)

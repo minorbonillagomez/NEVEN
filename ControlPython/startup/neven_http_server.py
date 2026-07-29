@@ -124,12 +124,17 @@ def execute_analyze():
                     COUNT("{col_name}"), MIN("{col_name}"), MAX("{col_name}"),
                     AVG("{col_name}"), MEDIAN("{col_name}"), STDDEV("{col_name}"),
                     PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY "{col_name}"),
-                    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "{col_name}")
+                    PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY "{col_name}"),
+                    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "{col_name}"),
+                    PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY "{col_name}"),
+                    PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY "{col_name}"),
+                    MODE() WITHIN GROUP (ORDER BY "{col_name}")
                     FROM dataset WHERE "{col_name}" IS NOT NULL''').fetchone()
             stat.update({
                 "count": int(r[0] or 0), "min": float(r[1] or 0), "max": float(r[2] or 0),
                 "mean": float(r[3] or 0), "median": float(r[4] or 0), "std": float(r[5] or 0),
-                "q25": float(r[6] or 0), "q75": float(r[7] or 0)
+                "q25": float(r[6] or 0), "q50": float(r[7] or 0), "q75": float(r[8] or 0),
+                "q90": float(r[9] or 0), "q99": float(r[10] or 0), "mode": float(r[11] or 0)
             })
         else:
             with _db_lock:

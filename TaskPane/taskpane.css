@@ -156,7 +156,7 @@ table.data-table td {
   text-align: right;
   white-space: nowrap;
 }
-table.data-table td:first-child { text-align: left; color: var(--accent); font-weight: 600; }
+table.data-table td:first-child { text-align: left; }
 table.data-table tr:hover td { background: var(--accent-dim); }
 
 /* ─── Controls ────────────────────────────────────────────────── */
