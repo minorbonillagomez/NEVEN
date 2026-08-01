@@ -4,7 +4,7 @@
 
 ## 1. System Purpose
 
-NEVEN is a C++17 Excel add-in that enables users to call R and Julia functions directly from Excel cell formulas (e.g., `=NEVEN.r.myFunc(A1)`) and interact with both languages through an embedded WebView2 REPL console.
+NEVEN is a C++17 Excel add-in that enables users to call R, Julia, and Python functions directly from Excel cell formulas (e.g., `=NEVEN.r.myFunc(A1)`), and also operates as **NEVEN Studio Standalone** — a browser-based interface that runs without Microsoft Excel.
 
 The system operates as a **bridge**: it converts data between Excel's native `XLOPER12` structures, Protocol Buffers for IPC, and the native types of each scripting language (`SEXP` for R, `jl_value_t` for Julia).
 
@@ -106,6 +106,70 @@ Handles memory management, type conversion, IPC, and security. Key components:
 
 ---
 
+## 9. NEVEN Studio Standalone (July 2026)
+
+NEVEN Studio is a **second host mode** that replaces the Excel XLL with a Python HTTP server. All three language engines (ControlR.exe, ControlJulia.exe, ControlPython.exe) are reused unchanged.
+
+### Startup Comparison
+
+| | Excel Mode | Studio Mode |
+|---|---|---|
+| Host initiates engines | `NEVEN64.xll` (C++) | `start_studio.py` (Python) |
+| UI | Excel Task Pane | Browser at `http://localhost:5555` |
+| API | Excel C API (XLOPER12) | HTTP REST (JSON) |
+| Data input | Excel cell ranges | CSV/Parquet/JSON via DuckDB |
+| Requires Excel | Yes | No |
+
+### Studio Component Diagram
+
+```
+NEVEN Studio.vbs
+  → pythonw.exe start_studio.py
+    → ControlPython.exe
+      → neven_http_server.py (port 5555)
+        → datalab_handler.py      (Data Lab endpoints)
+        → pipe_client.py          (Named Pipe client)
+          → ControlR.exe   (Named Pipe: neven_r)
+          → ControlJulia.exe (Named Pipe: neven_j)
+    → Browser opens http://localhost:5555
+      → taskpane.html + datalab.js + taskpane.js
+```
+
+### HTTP API Routes
+
+| Method | Route | Handler |
+|--------|-------|---------|
+| GET | `/` | Serve `taskpane.html` |
+| POST | `/api/r` | Execute R code via ControlR |
+| POST | `/api/python` | Execute Python code via ControlPython |
+| POST | `/api/julia` | Execute Julia code via ControlJulia |
+| POST | `/api/load_file` | Load CSV/Parquet/JSON into DuckDB |
+| POST | `/api/query` | SQL query on DuckDB `dataset` table |
+| GET | `/api/datalab/catalog` | Scan `C:\NEVEN\functions\*.json` for catalog |
+| POST | `/api/datalab/run` | Run Studio wrapper via ControlR + r_object_to_slots |
+
+### Data Lab Architecture
+
+The Data Lab tab implements a guided analytics interface:
+
+```
+Browser (datalab.js)
+  ├── GET /api/datalab/catalog → scan *.json sidecars → FunctionCard[]
+  └── POST /api/datalab/run
+        → DataLabHandler.handle_run()
+        → DuckDB: SELECT assigned columns FROM dataset WHERE filter
+        → build R script: data_X <- ...; result <- FunctionId.Studio(data_X, params)
+        → pipe_client.send_code(r_lines) → ControlR.exe
+        → r_object_to_slots(result, tier_map) → Variable(arr)
+        → parse slots → JSON response → UI renders table/html/scalar
+```
+
+**Key abstraction — `r_object_to_slots`:** A startup R function that converts any S3 object into a list of typed slots, enabling a uniform UI representation regardless of the function's native return type.
+
+**Sidecar JSON Convention:** Each analytics function has a companion `.json` metadata file defining variable roles, parameters, and UI behavior. New functions are discovered automatically by scanning `C:\NEVEN\functions\*.json`.
+
+---
+
 ## 4. Data Flow
 
 ```
@@ -197,5 +261,6 @@ Full build command:
 
 ---
 
-*Version: 1.0.0 | Status: Active | Language: English*
+*Version: 1.1.0 | Status: Active | Language: English*
+*Updated: July 2026 — Added Studio Standalone and Data Lab (sections 9)*
 *Consolidated from architectural reports v1–v4*

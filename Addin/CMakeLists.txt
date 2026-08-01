@@ -87,4 +87,12 @@ else()
     message(STATUS "Addin: Ejemplos/ not found — skipping examples copy")
 endif()
 
+# Copy CreadorPresentaciones to Dist/taskpane/presentaciones/
+add_custom_command(TARGET NEVEN_XLL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/CreadorPresentaciones"
+        "${NEVEN_DIST_DIR}/taskpane/presentaciones"
+    COMMENT "Packaging: CreadorPresentaciones -> Dist/taskpane/presentaciones/"
+)
+
 message(STATUS "Addin: XLL packaging target configured -> ${NEVEN_DIST_DIR}/")

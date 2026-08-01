@@ -122,6 +122,27 @@ Al inicio del XLL (`Init()`), NEVEN mata automaticamente procesos huerfanos de s
 
 **Contribucion:** Mejora la fiabilidad del sistema en escenarios reales de uso (crashes, cierres forzosos). Es un patron comun en sistemas multi-proceso pero su implementacion correcta en el contexto de un add-in XLL (donde no se puede bloquear `xlAutoOpen`) requiere ejecucion asincrona via `CreateProcess` sin ventana.
 
+### 2.13 NEVEN Studio Standalone — Desacoplamiento Arquitectónico (Julio 2026)
+
+NEVEN Studio Standalone demuestra que la arquitectura de procesos aislados de NEVEN es verdaderamente desacoplada del host Excel. Solo ~200 líneas de Python nuevas (`start_studio.py`, `neven_http_server.py`, `pipe_client.py`) fueron necesarias para hacer que ControlR.exe, ControlJulia.exe y ControlPython.exe funcionen sin el XLL como iniciador.
+
+**Contribución técnica:**
+- Demuestra que el diseño de Named Pipes + Protobuf es agnóstico al host
+- El servidor HTTP (`neven_http_server.py`) expone la misma funcionalidad de NEVEN via REST API estándar
+- `pipe_client.py` reimplementa el protocolo de comunicación del XLL en Python puro, validando la especificación del protocolo
+
+**Relevancia académica:** Este resultado valida la Hipótesis de Diseño de NEVEN — que la separación entre el host (Excel/navegador) y los motores de lenguaje es correcta. Un sistema bien diseñado debe poder cambiar de host sin cambiar los motores.
+
+### 2.14 Data Lab V1 — Abstracción de Funciones Estadísticas (Julio 2026)
+
+El Data Lab introduce dos abstracciones nuevas con valor académico:
+
+**Sidecar JSON Convention:** Cada función analítica se describe en un archivo `.json` co-ubicado con el código. Esta convención de metadatos permite descubrimiento automático, generación dinámica de UI, y extensibilidad sin código. Es análoga a los "descriptors" en frameworks modernos (OpenAPI, JSON Schema).
+
+**`r_object_to_slots` — Serializador Universal:** Una función R que convierte cualquier objeto S3 nativo en una lista de slots tipificados (`table`, `scalar`, `vector`, `html`), independientemente de la clase del objeto. Resuelve el problema de heterogeneidad de outputs en el ecosistema R: `lm`, `glm`, `kmeans`, `prcomp` tienen estructuras completamente diferentes — `r_object_to_slots` las normaliza en una representación uniforme consumible por la UI.
+
+**Catálogo de 18 funciones:** AD (K-Means, ACP, Clustering Jerárquico), RG (Lineal, Logística, Árbol de Decisión, Datos Panel, Poisson, Series de Tiempo, SVM, Tobit), DS (Wooldridge), TM (Text Mining con Python), UC (3 plantillas extensibles). La familia UC permite a los usuarios agregar sus propias funciones sin modificar el código base.
+
 ---
 
 ## 3. Evaluacion por Dimensiones
@@ -130,7 +151,7 @@ Basada en la auditoria interna documentada en `EVALUACION_OBJETIVA.md`, que regi
 
 | Dimension | Estado original (14 abr) | Estado actual (3 may) | Evidencia |
 |:---|:---:|:---:|:---|
-| Funcionalidad | 7/10 | 10/10 | R + Julia + Python + WebView2 + Pluto + Quarto + Ribbon operativos |
+| Funcionalidad | 7/10 | 10/10 | R + Julia + Python + WebView2 + Pluto + Quarto + Ribbon + Studio Standalone + Data Lab operativos |
 | Calidad de codigo | 4/10 | 9.5/10 | 0 std::cout en produccion, Doxygen completo, RAII, thread_local |
 | Seguridad | 2/10 | 9.5/10 | 36/36 hallazgos remediados, InputSanitizer, MessageValidator, SafePipeHandle, MSVC flags (/GS, /guard:cf, /sdl, /DYNAMICBASE, /NXCOMPAT, /CETCOMPAT) |
 | Mantenibilidad | 3/10 | 9.7/10 | Repositorio reorganizado, TROUBLESHOOTING, paths centralizados |
@@ -348,6 +369,9 @@ La implementacion resuelve problemas reales de ingenieria: resolucion IPv6/IPv4,
 | Extraer_outputs (TipoOutput universal) | ✅ | `Extraer_outputs(modelo)` en startup.r — extrae TODOS los outputs de cualquier modelo R como data.frame [Modelo, Seccion, Parametro, Metrica, Valor]. Integrado en 11 funciones R4XCL como TipoOutput más alto |
 | Viewer Professional (parcial) | ⏳ En progreso | Botón guardar (💾) inyectado, detección de tipo (PDF/TXT/DOCX), hash de contenido para evitar recargas. Auto-refresh revertido (deadlock STA) |
 | Diccionario de Funciones | ✅ | 95 funciones documentadas con ejemplos ejecutables. Accesible desde Ribbon ("Diccionario") y documentación embebida (capítulo 11). Incluye R (~32 funciones), Julia (~52 procedimientos), Python (4 funciones AI) y Sistema (13 funciones) |
+| NEVEN Studio Standalone | ✅ | Sin Excel; doble clic en .vbs; HTTP server Python; mismos motores C++ |
+| Data Lab V1 (18 funciones) | ✅ | Catálogo punto-y-clic; r_object_to_slots; sidecar JSON convention; familia UC extensible |
+| AI Integration (Text Mining) | ✅ | Resumen contextual via LMStudio; WordCloud Plotly; limpieza de PDF layout |
 | Documentación usuario (Docusaurus) | ✅ | 12 capítulos con tabla de contenidos, accesible desde el Ribbon. Incluye instalación, arquitectura, funciones por lenguaje, ejemplos y diccionario completo |
 | Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
 | Benchmarks | ⏳ Pendiente | Datos cuantitativos de rendimiento |
@@ -356,4 +380,4 @@ La implementacion resuelve problemas reales de ingenieria: resolucion IPv6/IPv4,
 
 *Documento interno de orientacion — no para presentar al comite.*
 *NEVEN v2.0 — Universidad de Costa Rica*
-*Ultima actualizacion: 9 de mayo de 2026*
+*Ultima actualizacion: 30 de julio de 2026 (version original: 9 de mayo de 2026)*

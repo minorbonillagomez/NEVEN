@@ -69,7 +69,35 @@ $
 | 5 | Quarto | `=NEVEN.q("C:/NEVEN/quarto/test_report.qmd")` | Reporte |
 | 6 | Ribbon | Pestana NEVEN en cinta | 13 botones |
 
-## 2.5 Estructura de directorios
+## 2.5 NEVEN Studio Standalone
+
+NEVEN Studio Standalone funciona con la misma instalación. No requiere pasos adicionales.
+
+### Abrir el Studio
+
+```
+C:\NEVEN\taskpane\NEVEN Studio.vbs  →  Doble clic
+```
+
+Se abre el navegador del sistema en `http://localhost:5555`.
+
+### Verificación del Studio
+
+| # | Verificación | Acción | Resultado esperado |
+|:---|:---|:---|:---|
+| 1 | Studio abre | Doble clic en VBS | Navegador muestra NEVEN Studio |
+| 2 | Data Lab | Pestaña "Data Lab" | Dropdown de familias activo |
+| 3 | Cargar datos | Data Studio → Cargar CSV | Tabla visible |
+| 4 | Run Script R | Run Script → escribir `1+1` → Ejecutar | `[1] 2` |
+| 5 | Data Lab K-Medias | AD → K-Medias → asignar columnas → Ejecutar | Tabla de centroides |
+
+### Paquetes Python recomendados para Studio
+
+```bash
+pip install duckdb pandas pyarrow pypdf python-docx
+```
+
+## 2.6 Estructura de directorios
 
 ```
 C:\NEVEN\
@@ -85,10 +113,18 @@ C:\NEVEN\
 +-- quarto\                    # Documentos .qmd
 +-- CreadorPresentaciones\     # Editor Impress.js
 +-- crashes\                   # Telemetria local
++-- taskpane\                  # NEVEN Studio Standalone
+|   +-- taskpane.html          # UI web del Studio
+|   +-- taskpane.js            # Lógica UI
+|   +-- datalab.js             # Módulo Data Lab
+|   +-- pipe_client.py         # Cliente Named Pipes
+|   +-- start_studio.py        # Arranque del Studio
+|   \-- NEVEN Studio.vbs       # Lanzador de doble clic
++-- functions\                 # Catálogo Data Lab (18 funciones)
 +-- webview2-data\             # HTML temporales
 ```
 
-## 2.6 Paquetes R recomendados
+## 2.7 Paquetes R recomendados
 
 ```r
 install.packages(c(
@@ -99,7 +135,7 @@ install.packages(c(
 ), repos = "https://cran.r-project.org")
 ```
 
-## 2.7 Paquetes Julia recomendados
+## 2.8 Paquetes Julia recomendados
 
 ```julia
 import Pkg

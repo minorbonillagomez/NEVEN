@@ -36,3 +36,75 @@ ctest -C Debug --output-on-failure
 
 ---
 *Documento generado tras el Sprint 5 de modernización.*
+
+## 5. Agregar Función al Catálogo Data Lab
+
+The Data Lab catalog (NEVEN Studio) uses a "two-file" convention: a Studio wrapper and a sidecar JSON.
+
+### Step 1: Create the Studio wrapper
+
+Create `NEVEN/libreria/R/MyFunction.Studio.R`:
+
+```r
+MyFunction.Studio <- function(data_X, Param1 = 3L) {
+  # Validations
+  if (!is.data.frame(data_X)) stop("'data_X' must be a data.frame.")
+
+  # Analysis
+  resultado <- list(
+    results_table = analyze(data_X, Param1),
+    summary_value = 42.5
+  )
+
+  # ALWAYS return r_object_to_slots()
+  tier_map <- c(results_table = 1L, summary_value = 2L)
+  return(r_object_to_slots(resultado, tier_map = tier_map))
+}
+```
+
+**Rules:**
+- Function name MUST end in `.Studio`
+- Input data MUST be received as `data_X` (and optionally `data_Y`, `data_T`, `data_ID`)
+- MUST call `r_object_to_slots()` as the return value
+- `r_object_to_slots` is already loaded in ControlR startup — do not source it
+
+### Step 2: Create the sidecar JSON
+
+Create `NEVEN/Install/functions/MyFunction.json`:
+
+```json
+{
+  "id": "MyFunction",
+  "family": "AD",
+  "family_label": "Análisis de Datos",
+  "name": "My Analysis",
+  "description": "Brief description.",
+  "languages": ["r"],
+  "function_name": "MyFunction.Studio",
+  "file": "MyFunction.Studio.R",
+  "variable_roles": {
+    "X": { "label": "Input variables", "types": ["numeric"], "multiple": true, "required": true }
+  },
+  "parameters": [
+    { "name": "Param1", "label": "Parameter 1", "type": "integer", "default": 3, "tier": 1 }
+  ]
+}
+```
+
+**Tier values:** `1` = shown by default, `2` = in "Advanced" collapsible section.
+**Parameter types:** `integer`, `boolean`, `select` (with `options` array).
+
+### Step 3: Deploy to production
+
+```powershell
+Copy-Item "NEVEN\libreria\R\MyFunction.Studio.R" "C:\NEVEN\functions\" -Force
+Copy-Item "NEVEN\Install\functions\MyFunction.json" "C:\NEVEN\functions\" -Force
+# Restart NEVEN Studio — catalog updates automatically
+```
+
+### Step 4: Validate
+
+Open NEVEN Studio → Data Lab → select the family → verify the function appears → assign columns → execute → check results render correctly.
+
+---
+*Section added: July 2026*

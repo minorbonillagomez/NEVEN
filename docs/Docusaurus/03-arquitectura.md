@@ -134,3 +134,102 @@ NEVEN-SIM usa `xlUDF` para llamar funciones registradas por NEVEN base (`NEVEN.r
 El viewer de NEVEN-SIM incluye un simulador Monte Carlo 100% JavaScript que permite explorar escenarios en tiempo real (<100ms para 200K muestras). Soporta 7 distribuciones, comparacion de escenarios y sliders interactivos.
 
 Referencia completa: **Capitulo 12 - Simulacion Monte Carlo**
+
+## 3.7 NEVEN Studio Standalone (Julio 2026)
+
+NEVEN Studio es el modo de operación **sin Excel**. Reutiliza los mismos procesos hijo C++ pero los arranca desde Python en lugar del XLL.
+
+### Flujo de arranque
+
+```
+NEVEN Studio.vbs
+  → pythonw.exe start_studio.py
+    → ControlPython.exe (con neven_http_server.py en puerto 5555)
+      → ControlR.exe (Named Pipe)
+      → ControlJulia.exe (Named Pipe)
+  → Navegador → http://localhost:5555 → taskpane.html
+```
+
+### Componentes Studio
+
+| Componente | Tecnología | Rol |
+|:---|:---|:---|
+| `start_studio.py` | Python | Lanza ControlPython, configura config |
+| `neven_http_server.py` | Python BaseHTTPRequestHandler | Servidor HTTP rutas API |
+| `taskpane.html` | HTML5 | UI con tabs: Data Lab, Run Script, Data Studio |
+| `taskpane.js` | JavaScript | Lógica UI, bridge Excel |
+| `datalab.js` | JavaScript | Módulo Data Lab completo |
+| `pipe_client.py` | Python | Cliente Named Pipes (mismos que XLL) |
+| `NEVEN Studio.vbs` | VBScript | Lanzador sin consola visible |
+
+### Rutas API
+
+| Ruta | Descripción |
+|:---|:---|
+| `GET /api/datalab/catalog` | Catálogo Data Lab (sidecar JSONs) |
+| `POST /api/datalab/run` | Ejecuta Studio wrapper via ControlR |
+| `POST /api/r` | Ejecuta código R arbitrario |
+| `POST /api/python` | Ejecuta código Python |
+| `POST /api/load_file` | Carga CSV/Parquet/JSON en DuckDB |
+| `POST /api/query` | Consulta SQL en DuckDB |
+
+---
+
+## 3.8 Data Lab (Julio 2026)
+
+El Data Lab es la pestaña de NEVEN Studio para análisis estadístico sin código.
+
+### Arquitectura
+
+```
+UI (datalab.js)
+  │
+  ├─ GET /api/datalab/catalog ──> DataLabHandler.handle_catalog()
+  │                                    └─> escanea C:\NEVEN\functions\*.json
+  │
+  └─ POST /api/datalab/run ────> DataLabHandler.handle_run()
+                                      ├─> DuckDB: SELECT columnas FROM dataset
+                                      ├─> build R script
+                                      ├─> Named Pipe → ControlR.exe
+                                      │     └─> wrapper.Studio(data_X, params...)
+                                      │           └─> r_object_to_slots()
+                                      └─> slots → JSON response → UI
+```
+
+### Sidecar JSON Convention
+
+```
+C:\NEVEN\functions\
+├── AD_KMedias.Studio.R       ← implementación R
+├── AD_KMedias.json           ← metadatos (sidecar)
+├── TM_TextAnalysis.Studio.py ← implementación Python
+└── TM_TextAnalysis.json      ← metadatos
+```
+
+### r_object_to_slots Serializer
+
+```
+Objeto R S3 → r_object_to_slots(obj, tier_map) → data.frame
+           ↓
+  Columnas: name | label | type | value | tier
+           ↓
+  Variable(arr) via ControlR → Python → JSON → UI
+```
+
+Tipos de slot: `table` · `scalar` · `vector` · `html` · `unknown`
+
+Tiers: `1` = visible por defecto | `2` = en "Detalles técnicos" (colapsado)
+
+### Catálogo de funciones (18 Studio wrappers)
+
+| Familia | Funciones |
+|:---|:---|
+| **AD** — Análisis de Datos | K-Medias, Componentes Principales, Clustering Jerárquico |
+| **RG** — Regresión | Lineal, Logística, Árbol de Decisión, Datos Panel, Poisson, Series de Tiempo, SVM, Tobit |
+| **DS** — Conjuntos de Datos | Wooldridge (115 datasets de econometría) |
+| **TM** — Text Mining | Análisis PDF/DOCX/TXT con resumen LLM y WordCloud |
+| **UC** — Mis Funciones | 3 plantillas para funciones personalizadas |
+
+### AI Integration
+
+`TM_TextAnalysis.Studio.py` llama a LMStudio via HTTP para generar un resumen contextual del documento analizado. Configurado en `neven-config.json` bajo la clave `"AI"`.

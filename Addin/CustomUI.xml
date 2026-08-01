@@ -109,6 +109,14 @@
                   imageMso="ViewCode"
                   screentip="NEVEN Studio (Task Pane)"
                   supertip="Abre el panel interactivo con DuckDB, GROUP BY, SQL y visualizaciones embebidas." />
+
+          <button id="btnPresentaciones"
+                  label="Presentaciones"
+                  size="large"
+                  onAction="OnPresentacionesCommand"
+                  imageMso="SlideshowFromBeginning"
+                  screentip="Creador de Presentaciones NEVEN"
+                  supertip="Abre el editor visual de presentaciones Impress.js. Crea slides con texto, graficos de Excel, pizarras interactivas y sitios web embebidos. Exporta a HTML standalone." />
         </group>
 
         <!-- Grupo: Ayuda -->

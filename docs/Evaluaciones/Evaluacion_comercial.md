@@ -76,6 +76,10 @@ Ningun competidor ofrece los tres lenguajes juntos con visualizacion interactiva
 
 13. **Zombie Process Killer (fiabilidad de arranque).** Al iniciar, NEVEN mata automaticamente procesos huerfanos de sesiones anteriores (ControlR.exe, ControlJulia.exe, ControlPython.exe) que podrian bloquear los Named Pipes. Esto resuelve el problema de "Excel fue cerrado forzosamente y al reabrir no conecta". El usuario no necesita abrir Task Manager manualmente — NEVEN se auto-repara al arrancar.
 
+14. **NEVEN Studio Standalone (sin Excel).** A partir de julio 2026, NEVEN funciona sin Microsoft Excel instalado. NEVEN Studio Standalone es una interfaz web completa (navegador del sistema, puerto 5555) que expone Data Lab, Run Script y Data Studio. Esto abre un mercado nuevo: usuarios que analizan datos pero no tienen licencia de Excel, o entornos Linux/macOS donde Excel no está disponible via Wine. La misma instalación sirve para ambos modos — el usuario elige según su entorno.
+
+15. **Data Lab — Análisis Estadístico sin Código.** La pestaña Data Lab de NEVEN Studio expone 18 funciones estadísticas (K-Means, PCA, 8 regresiones, Text Mining, Wooldridge, etc.) mediante una interfaz de selección de columnas y parámetros. El usuario no escribe código: selecciona función → asigna columnas → configura parámetros → clic "Ejecutar". Los resultados aparecen como tablas, gráficos interactivos Plotly y escalares. Adicionalmente, cualquier usuario puede agregar sus propias funciones al catálogo con solo dos archivos (`.Studio.R` + `.json`), sin modificar el producto base.
+
 ---
 
 ## 4. Debilidades Comerciales
@@ -173,6 +177,8 @@ El primer mercado objetivo deberia ser: **profesores de econometria en universid
 | Tarea | Prioridad | Esfuerzo |
 |:---|:---|:---|
 | Instalador MSI con deteccion de R/Julia/Python | Completado | `Install-NEVEN.exe` (78 KB) — 6 fases automatizadas |
+| NEVEN Studio Standalone | Completado | Sin Excel; doble clic en .vbs; navegador en localhost:5555 |
+| Data Lab V1 (18 funciones punto-y-clic) | Completado | Catálogo extensible; familia UC para funciones propias |
 | Archivo Excel de ejemplo que se abre al instalar | Critica | 2 dias |
 | Guia de inicio rapido (PDF, 5 paginas, con capturas) | Critica | 3 dias |
 | Video demo de 3 minutos | Alta | 1 dia |
@@ -310,4 +316,4 @@ El nucleo tecnico esta. La pregunta no es "¿funciona?" — funciona. La pregunt
 
 *Documento interno de orientacion comercial.*
 *NEVEN v2.0 — Universidad de Costa Rica*
-*9 de mayo de 2026*
+*Actualizado: 30 de julio de 2026 (versión original: 9 de mayo de 2026)*

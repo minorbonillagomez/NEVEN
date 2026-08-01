@@ -120,3 +120,63 @@ Recargar con el boton **Actualizar** del Ribbon o `=RJ_UpdateFunctions()`.
 | thread_local XLOPER12 | `basic_functions.cc` | Corrupcion en recalculo paralelo |
 | Startup wait=true | `language_service.cc` | Pipe se desincroniza |
 | CharacterMode=LinkDLL | `rinterface_win.cc` | ControlR crashea sin consola |
+
+## 9.6 NEVEN Studio — despliegue de cambios
+
+Los archivos del Studio son Python/HTML — no requieren recompilar C++. Basta con:
+
+```powershell
+# 1. Detener ControlPython
+Get-Process | Where-Object { $_.Name -match "ControlPython" } | Stop-Process -Force
+
+# 2. Copiar archivos actualizados
+$src = "f:\ANTIGRAVITY\2026\NEVEN\NEVEN"
+Copy-Item "$src\ControlPython\startup\neven_http_server.py" "C:\NEVEN\startup\" -Force
+Copy-Item "$src\ControlPython\startup\datalab_handler.py"  "C:\NEVEN\startup\" -Force
+Copy-Item "$src\TaskPane\taskpane.html"                     "C:\NEVEN\taskpane\" -Force
+Copy-Item "$src\TaskPane\datalab.js"                        "C:\NEVEN\taskpane\" -Force
+
+# 3. Reiniciar: doble clic en "NEVEN Studio.vbs"
+```
+
+## 9.7 Data Lab — agregar función al catálogo
+
+Para agregar una función al catálogo Data Lab se necesitan dos archivos:
+
+**1. Wrapper R** (en `NEVEN/libreria/R/` y luego copiar a `C:\NEVEN\functions\`):
+
+```r
+MiFuncion.Studio <- function(data_X, K = 3L) {
+  resultado <- list(tabla = mi_analisis(data_X))
+  tier_map  <- c(tabla = 1L)
+  return(r_object_to_slots(resultado, tier_map = tier_map))
+}
+```
+
+**2. Sidecar JSON** (en `NEVEN/Install/functions/` y copiar a `C:\NEVEN\functions\`):
+
+```json
+{
+  "id": "MiFuncion", "family": "UC", "family_label": "Mis Funciones",
+  "name": "Mi Función", "description": "Descripción breve.",
+  "languages": ["r"], "function_name": "MiFuncion.Studio", "file": "MiFuncion.Studio.R",
+  "variable_roles": { "X": { "label": "Variables", "types": ["numeric"], "multiple": true, "required": true } },
+  "parameters": [ { "name": "K", "label": "K clusters", "type": "integer", "default": 3, "tier": 1 } ]
+}
+```
+
+Reiniciar NEVEN Studio — el catálogo se actualiza automáticamente al llamar `GET /api/datalab/catalog`.
+
+> **Nota:** Cambios a `r_object_to_slots.R` requieren reiniciar `ControlR.exe` para tener efecto.
+
+## 9.8 Solución de problemas — Studio y Data Lab
+
+| Problema | Solución |
+|:---|:---|
+| Studio no abre | `tasklist \| findstr ControlPython` — verificar que el proceso existe |
+| Data Lab muestra "no disponible" (503) | `datalab_handler.py` no encontrado en `C:\NEVEN\startup\` |
+| Catálogo vacío | Verificar JSONs en `C:\NEVEN\functions\` y revisar `warnings` en la respuesta del catálogo |
+| Función retorna slots vacíos | `r_object_to_slots.R` no cargado — verificar `startup.r` |
+| Error 400 en filtro WHERE | SQL inválido — el mensaje de error DuckDB aparece en Results Panel |
+| Resumen IA ausente | LMStudio apagado o `AI.enabled=false` en `neven-config.json` |
+| Puerto 5555 ocupado | Cambiar puerto en `start_studio.py` |

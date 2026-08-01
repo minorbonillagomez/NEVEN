@@ -58,6 +58,8 @@ Test Code
 | `callback_behavior_tests.cc` | Callback routing behavior | 4 | ⚠️ Medium |
 | `type_conversion_tests.cc` | XLOPER12 <--> Protobuf conversions | 5 | ⚠️ Medium |
 
+> **Current total: 357 tests, 100% pass rate** (as of May 2026). The modules below represent open contribution opportunities, with particular priority on Data Lab Python components.
+
 ### Modules WITHOUT tests (contribution opportunities)
 
 | Module | File | Why it matters |
@@ -67,6 +69,10 @@ Test Code
 | `language_service` | `language_service.cc` (23KB) | IPC and pipe management |
 | `com_object_map` | `com_object_map.cc` (21KB) | COM automation layer |
 | `AutoLoader` | `AutoLoader.cc` | Script sourcing — untested filesystem interaction |
+| `datalab_handler.py` | `ControlPython/startup/datalab_handler.py` | Data Lab catalog scan and run — **priority for task 15** |
+| `neven_http_server.py` | `ControlPython/startup/neven_http_server.py` | HTTP routing for Studio — integration tests needed |
+| `TM_TextAnalysis.Studio.py` | `Install/functions/TM_TextAnalysis.Studio.py` | Text Mining with LLM integration |
+| Studio wrapper functions | `libreria/R/*.Studio.R` (18 files) | R Studio wrappers (AD, RG, DS, TM, UC families) — **priority for task 15** |
 | `WindowManager` | `WindowManager.cc` | Console window lifecycle |
 
 ---
@@ -131,4 +137,5 @@ Tests run automatically on every push and PR via GitHub Actions. See `.github/wo
 
 ---
 
-*Version: 1.0.0 | Status: Active*
+*Version: 1.1.0 | Status: Active | Updated: July 2026*
+*Task 15 (Studio wrapper tests) is the highest-priority open testing work.*

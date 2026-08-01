@@ -88,6 +88,9 @@ typedef enum {
   // NEVEN v3.0 Task Pane
   OnTaskPaneCommand,
 
+  // NEVEN v3.0 Presentaciones
+  OnPresentacionesCommand,
+
 } DispIds;
 
 // CConnect
@@ -196,6 +199,7 @@ public:
       else if (!wcscmp(rgszNames[0], L"OnDocsCommand")) disp_id = DispIds::OnDocsCommand;
       else if (!wcscmp(rgszNames[0], L"OnAboutCommand")) disp_id = DispIds::OnAboutCommand;
       else if (!wcscmp(rgszNames[0], L"OnTaskPaneCommand")) disp_id = DispIds::OnTaskPaneCommand;
+      else if (!wcscmp(rgszNames[0], L"OnPresentacionesCommand")) disp_id = DispIds::OnPresentacionesCommand;
     }
 
     if (disp_id > 0)
@@ -750,11 +754,29 @@ public:
 
     case DispIds::OnTaskPaneCommand:
     {
-      // Open NEVEN Studio Task Pane in WebView2 viewer
+      // Open NEVEN Studio Task Pane via local HTML file in WebView2 viewer.
+      // taskpane.html connects to the HTTP server at localhost:5555 once open.
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
           CComVariant runCmd(L"NEVEN.v");
-          CComVariant docPath("http://localhost:5555/taskpane.html");
+          CComVariant docPath("C:/NEVEN/taskpane/taskpane.html");
+          CComVariant result;
+          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
+          pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, missing,
+                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
+      }
+      return S_OK;
+    }
+
+    case DispIds::OnPresentacionesCommand:
+    {
+      // Open Presentation Creator (CreadorPresentaciones) in WebView2 viewer
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          CComVariant runCmd(L"NEVEN.v");
+          CComVariant docPath("C:/NEVEN/taskpane/presentaciones/index.html");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
           pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,

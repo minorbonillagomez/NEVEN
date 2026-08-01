@@ -14,6 +14,7 @@ const sidebars = {
     'ejemplos',
     'diccionario-funciones',
     'simulacion-montecarlo',
+    'neven-studio',
   ],
 };
 

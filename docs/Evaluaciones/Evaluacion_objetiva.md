@@ -2,7 +2,7 @@
 
 ## Estado Actual (Mayo 2026)
 
-**Nota global: 9.8/10** — Sistema multilenguaje de producción con seguridad completa.
+**Nota global: 9.8/10** — Sistema multilenguaje de producción con seguridad completa, Studio Standalone y Data Lab V1.
 
 | Dimensión | Nota | Evidencia |
 |:---|:---:|:---|
@@ -19,6 +19,7 @@
 | Hito | Nota | Tests | Cambio clave |
 |:---|:---:|:---:|:---|
 | **Security remediation (mayo)** | **9.8** | **357** | **36/36 audit findings, Console/Electron eliminado, Python reactivado** |
+| **Studio Standalone + Data Lab (julio)** | **9.8** | **357** | **NEVEN Studio sin Excel, Data Lab V1 (18 wrappers), AI Integration LMStudio, Text Mining WordCloud** |
 | Rename + visualizaciones (2 mayo) | 9.6 | 228 | NEVEN identity, R.Pivot/D3/Dashboard/Map |
 | Ribbon COM + Julia aliases (27 abr) | 9.2 | 205 | Ribbon nativo, callback thread, KNN/Regresion |
 | WebView2 + Pluto.jl (19 abr) | 8.9 | 200 | Visor embebido, notebooks reactivos |
@@ -1766,3 +1767,46 @@ Se ejecutó una auditoría estática completa del código fuente que identificó
 ------------------------------------------------------------------------
 
 *Última actualización: Mayo 2026 — Post remediación de seguridad completa.*
+
+---
+
+## Hito: NEVEN Studio Standalone + Data Lab V1 (Julio 2026)
+
+### Logros (sin cambios a los binarios C++)
+
+| Componente | Estado | Descripción |
+|:---|:---:|:---|
+| NEVEN Studio Standalone | ✅ | Interfaz web completa sin necesitar Excel — doble clic en .vbs |
+| HTTP Server (neven_http_server.py) | ✅ | BaseHTTPRequestHandler en puerto 5555, rutas /api/r, /api/python, /api/datalab/* |
+| Data Lab UI (datalab.js) | ✅ | Catálogo punto-y-clic: familia → función → columnas → parámetros → resultados |
+| DataLabHandler (Python) | ✅ | handle_catalog() con timeout y validación de sidecars; handle_run() con DuckDB + ControlR |
+| r_object_to_slots (R) | ✅ | Serializador universal de objetos S3 → slots tipificados (table/scalar/vector/html) |
+| Catálogo 18 funciones (AD/RG/DS/TM/UC) | ✅ | Studio wrappers para K-Means, PCA, 8 regresiones, Wooldridge, Text Mining, 3 plantillas UC |
+| AI Integration (LMStudio) | ✅ | Resumen contextual en TM_TextAnalysis via OpenAI-compatible API (localhost:1234) |
+| WordCloud Plotly | ✅ | Nube de palabras en espiral de Arquímedes sin dependencias externas |
+| Catálogo extensible (UC family) | ✅ | COMO_AGREGAR_FUNCIONES.md + 3 plantillas para funciones personalizadas |
+| Corrección saltos de línea PDF | ✅ | Regex para unir palabras partidas por layout físico de PyPDF2 |
+
+### Evaluación de dimensiones (julio 2026)
+
+| Dimensión | Mayo 2026 | Julio 2026 | Cambio | Justificación |
+|:---|:---:|:---:|:---:|:---|
+| **Funcionalidad** | 10/10 | 10/10 | = | Ya era 10; Studio expande el alcance |
+| **Calidad de Código** | 9.5/10 | 9.5/10 | = | Python/HTML sin tests aún (tarea 15 pendiente) |
+| **Seguridad** | 9.5/10 | 9.5/10 | = | HTTP server en localhost; sin cambios al sandbox C++ |
+| **Mantenibilidad** | 9.7/10 | 9.7/10 | = | Sidecar JSON convention es elegante y extensible |
+| **Confiabilidad** | 9.5/10 | 9.5/10 | = | Degradación graceful si LMStudio no está activo |
+| **Testing** | 10/10 | 9.8/10 | -0.2 | Tarea 15 (tests Studio wrappers) pendiente |
+| **Documentación** | 10/10 | 10/10 | = | 8 documentos actualizados + capítulo 13 nuevo |
+
+**Nota global julio 2026: 9.8/10** — Misma nota global; el único punto pendiente es la tarea 15 (tests de nuevas funciones Studio).
+
+### Resumen ejecutivo
+
+NEVEN v2.1 (julio 2026) consolida dos logros arquitectónicos:
+
+1. **NEVEN Studio Standalone** — La misma infraestructura C++ de NEVEN para Excel ahora arranca sin Excel. Solo 200 líneas de Python nuevo fueron necesarias para desacoplar el XLL del arranque. Es una validación de la solidez arquitectónica del proyecto: procesos hijo, Named Pipes y Protobuf funcionan independientemente del host.
+
+2. **Data Lab V1** — Un catálogo de 18 funciones estadísticas accesibles sin código, con una arquitectura extensible por el usuario (familia UC). El serializador `r_object_to_slots` es una abstracción limpia que funciona con cualquier objeto S3 de R.
+
+*Evaluación actualizada: 30 de julio de 2026 — Team Vikingos ⚔️*

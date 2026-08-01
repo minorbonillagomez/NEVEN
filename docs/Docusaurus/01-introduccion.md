@@ -34,21 +34,27 @@ Y obtiene el determinante de la matriz en su celda -- sin escribir una linea de 
 | R4XCL | 2023 | R en Excel via BERT (tesis original) |
 | NEVEN v1.0 | Ene 2026 | Fork de BERT, R 4.4.1 + Julia 1.12.6 |
 | **NEVEN v2.0** | **Abr 2026** | WebView2, Pluto.jl, Quarto, Ribbon COM |
-| **NEVEN v2.1** | **Jul 2026** | Python integrado, NEVEN-SIM (Monte Carlo) |
+| **NEVEN v2.1** | **Jul 2026** | Python integrado, NEVEN-SIM (Monte Carlo), NEVEN Studio Standalone, Data Lab V1, AI Integration |
 
 ## 1.4 Ecosistema completo
 
 ```
 +-----------------------------------------------------------+
-|                    Microsoft Excel                         |
+|              MODO 1: Microsoft Excel (XLL)                 |
+|  R 4.4.1 · Julia 1.12 · Quarto · Pluto.jl                 |
+|  WebView2 Viewer (Plotly, HTML) · Ribbon COM               |
++-----------------------------------------------------------+
+
++-----------------------------------------------------------+
+|        MODO 2: NEVEN Studio Standalone (sin Excel)         |
 |                                                           |
-|  +----------+  +----------+  +----------+  +--------+    |
-|  | R 4.4.1  |  |Julia 1.12|  | Quarto   |  |Pluto.jl|   |
-|  |Estadist. |  |Matemat.  |  |Reportes  |  |Notebook|   |
-|  +----+-----+  +----+-----+  +----+-----+  +---+----+   |
-|       +--------------+-----------+--------------+         |
-|                    WebView2 Viewer                         |
-|              (Plotly, HTML, Impress.js)                    |
+|  Navegador web (http://localhost:5555)                    |
+|  +-----------+ +----------+ +-----------+ +-----------+  |
+|  | Data Lab  | |Run Script| |Data Studio| |AI / LLM   |  |
+|  |punto-click| |R/Julia/Py| |CSV/Parquet| |LMStudio   |  |
+|  +-----------+ +----------+ +-----------+ +-----------+  |
+|       |               |                                   |
+|  ControlR.exe   ControlPython.exe   ControlJulia.exe      |
 +-----------------------------------------------------------+
 ```
 
@@ -63,5 +69,29 @@ Y obtiene el determinante de la matriz en su celda -- sin escribir una linea de 
 | Reportes Quarto | no | si |
 | Ribbon nativo | no | si |
 | Sandbox de seguridad | no | si |
-| Tests automatizados | 0 | 205 |
-| Score | ~4/10 | **9.2/10** |
+| Tests automatizados | 0 | 357 |
+| Score | ~4/10 | **9.5/10** |
+
+## 1.6 NEVEN Studio Standalone
+
+A partir de julio 2026, NEVEN puede usarse **sin Microsoft Excel**. NEVEN Studio Standalone es una interfaz web que corre en el navegador del sistema y da acceso a todas las capacidades analíticas de NEVEN.
+
+### Modos de uso
+
+| | NEVEN para Excel | NEVEN Studio |
+|:---|:---:|:---:|
+| Requiere Excel | ✅ | ❌ |
+| Funciones como fórmulas (`=R.func()`) | ✅ | ❌ |
+| Data Lab (punto y clic) | ❌ | ✅ |
+| Run Script (R/Julia/Python) | ❌ | ✅ |
+| Carga de archivos CSV/Parquet | ❌ | ✅ |
+| AI / LLM Integration | Parcial | ✅ |
+| Mismos motores R/Julia/Python | ✅ | ✅ |
+
+### Cómo abrir NEVEN Studio
+
+```
+Doble clic en "NEVEN Studio.vbs"
+  → Abre http://localhost:5555 en el navegador
+  → Pestañas: Data Lab | Run Script | Data Studio | AI
+```

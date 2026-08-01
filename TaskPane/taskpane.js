@@ -2,7 +2,9 @@
 // NEVEN Studio — Task Pane JavaScript (Office.js + API Client)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:5555' : window.location.origin;
+const API_BASE = window.location.protocol === 'file:'
+  ? (window._NEVEN_API_BASE || 'http://localhost:5555')
+  : window.location.origin;
 const CHUNK_SIZE = 50000;
 
 let loadedData = null;      // { columns: [], types: {}, rows: [] } — SINGLE dataset, always the latest
@@ -55,6 +57,9 @@ function initializeApp() {
 
   // Check server health
   checkServerHealth();
+
+  // Run Script tab
+  initRunScriptTab();
 }
 
 // ─── Tab Switching ───────────────────────────────────────────────────────────
@@ -62,6 +67,7 @@ function initializeApp() {
 function switchTab(tabId) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('active', t.id === tabId));
+  if (tabId === 'run-script') onRunScriptTabActivated();
 }
 
 // ─── Reset State (clear previous data on new load) ───────────────────────────
@@ -1015,4 +1021,192 @@ async function loadBridgeData() {
   } catch(e) {
     info.textContent = 'Error: ' + e.message;
   }
+}
+
+// ─── Run Script Tab ───────────────────────────────────────────────────────────
+
+// Default code snippets per language
+const SNIPPETS = {
+  r:      '# R\nsummary(dataset)\n',
+  python: '# Python\nprint("hello from NEVEN")\n',
+  julia:  '# Julia\nprintln("hello from NEVEN")\n'
+};
+
+// Wire up all Run Script tab controls
+function initRunScriptTab() {
+  document.getElementById('btn-run-script').addEventListener('click', runScript);
+  document.getElementById('btn-open-rpivot').addEventListener('click', openRPivot);
+
+  // Ctrl+Enter shortcut in script textarea (mirrors SQL tab behavior)
+  document.getElementById('script-input').addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); runScript(); }
+  });
+
+  // Language selector → update textarea with snippet
+  document.getElementById('script-lang').addEventListener('change', e => {
+    document.getElementById('script-input').value = SNIPPETS[e.target.value] || '';
+  });
+
+  // Function search filter
+  document.getElementById('func-search').addEventListener('input', filterFunctions);
+
+  // Pre-populate with the default R snippet
+  document.getElementById('script-input').value = SNIPPETS['r'];
+}
+
+// Called when the Run Script tab becomes active (wired from switchTab)
+async function onRunScriptTabActivated() {
+  await Promise.all([
+    refreshEngineStatus(),
+    loadAvailableFunctions()
+  ]);
+}
+
+// Stub — full implementation in task 10.2
+async function refreshEngineStatus() {
+  // Mark all dots as "checking" while the request is in flight
+  ['r', 'python', 'julia'].forEach(lang => {
+    const dot = document.getElementById(`engine-status-${lang}`);
+    if (dot) dot.className = 'engine-dot checking';
+  });
+  try {
+    const resp = await fetch(API_BASE + '/api/engines');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    ['r', 'python', 'julia'].forEach(lang => {
+      const dot = document.getElementById(`engine-status-${lang}`);
+      if (dot) {
+        dot.className = 'engine-dot ' + (data[lang] ? 'available' : 'unavailable');
+        dot.title = lang.toUpperCase() + ': ' + (data[lang] ? 'running' : 'stopped');
+      }
+    });
+  } catch (err) {
+    // Server unreachable — mark all as unavailable and log for debugging
+    ['r', 'python', 'julia'].forEach(lang => {
+      const dot = document.getElementById(`engine-status-${lang}`);
+      if (dot) {
+        dot.className = 'engine-dot unavailable';
+        dot.title = lang.toUpperCase() + ': server unreachable';
+      }
+    });
+    console.warn('[NEVEN] refreshEngineStatus failed:', err.message);
+  }
+}
+
+// ─── Run Script: Execute ────────────────────────────────────────────────────
+
+async function runScript() {
+  const lang = document.getElementById('script-lang').value;
+  const code = document.getElementById('script-input').value.trim();
+  if (!code) return;
+  setScriptBusy(true);
+  try {
+    const res = await apiCall('/api/' + lang, { code });
+    renderScriptResult(res);
+  } catch (e) {
+    showScriptError(e.message);
+  } finally {
+    setScriptBusy(false);
+  }
+}
+
+function setScriptBusy(busy) {
+  const btn = document.getElementById('btn-run-script');
+  const status = document.getElementById('script-status');
+  btn.disabled = busy;
+  status.textContent = busy ? '⏳' : '';
+}
+
+function showScriptError(msg) {
+  const card = document.getElementById('script-output-card');
+  const errEl = document.getElementById('script-error');
+  // Hide all sub-elements first
+  ['script-iframe', 'script-table', 'script-scalar', 'script-console'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  errEl.textContent = msg;
+  errEl.style.display = '';
+  card.style.display = '';
+}
+
+// ─── Run Script: Render Result ──────────────────────────────────────────────
+
+function renderScriptResult(res) {
+  const card   = document.getElementById('script-output-card');
+  const iframe = document.getElementById('script-iframe');
+  const table  = document.getElementById('script-table');
+  const scalar = document.getElementById('script-scalar');
+  const errEl  = document.getElementById('script-error');
+  const cons   = document.getElementById('script-console');
+
+  // Hide all sub-elements first
+  [iframe, table, scalar, errEl, cons].forEach(el => el.style.display = 'none');
+  card.style.display = '';
+
+  if (res.status === 'error') {
+    errEl.textContent = res.message || 'Unknown error';
+    errEl.style.display = '';
+  } else if (res.type === 'html') {
+    iframe.srcdoc = res.html;
+    iframe.style.display = '';
+  } else if (res.type === 'array') {
+    renderSQLResults(res);   // reuse existing function
+    table.style.display = '';
+  } else {
+    // scalar types: string, integer, real, boolean
+    scalar.textContent = String(res.result ?? '');
+    scalar.style.display = '';
+  }
+
+  if (res.console) {
+    cons.textContent = res.console;
+    cons.style.display = '';
+  }
+}
+
+// ─── Run Script: RPivot, Functions, Filter ──────────────────────────────────
+
+async function openRPivot() {
+  setScriptBusy(true);
+  try {
+    const res = await apiCall('/api/rpivot', {});
+    renderScriptResult(res);
+  } catch (e) {
+    showScriptError(e.message);
+  } finally {
+    setScriptBusy(false);
+  }
+}
+
+async function loadAvailableFunctions() {
+  try {
+    const data = await fetch(API_BASE + '/api/functions').then(r => r.json());
+    const list = document.getElementById('func-list');
+    list.innerHTML = '';
+    const langs = data.languages || {};
+    for (const [lang, fns] of Object.entries(langs)) {
+      if (!fns.length) continue;
+      const section = document.createElement('div');
+      section.dataset.lang = lang;
+      section.innerHTML = `<strong>${lang.toUpperCase()}</strong>`;
+      fns.forEach(fn => {
+        const entry = document.createElement('div');
+        entry.className = 'func-entry';
+        entry.dataset.name = fn.name || '';
+        entry.dataset.desc = fn.description || '';
+        entry.innerHTML = `<code>${fn.name}</code> — <span class="func-desc">${fn.description || ''}</span>`;
+        section.appendChild(entry);
+      });
+      list.appendChild(section);
+    }
+  } catch (_) {}
+}
+
+function filterFunctions() {
+  const q = (document.getElementById('func-search').value || '').toLowerCase();
+  document.querySelectorAll('#func-list .func-entry').forEach(el => {
+    const match = el.dataset.name.toLowerCase().includes(q) ||
+                  el.dataset.desc.toLowerCase().includes(q);
+    el.style.display = match ? '' : 'none';
+  });
 }

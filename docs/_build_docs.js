@@ -25,6 +25,8 @@ const CHAPTERS = [
   { file: 'docusaurus/09-mantenimiento.md',     title: 'Mantenimiento' },
   { file: 'docusaurus/10-ejemplos.md',          title: 'Ejemplos' },
   { file: 'docusaurus/11-diccionario-funciones.md', title: 'Diccionario de Funciones' },
+  { file: 'docusaurus/12-simulacion-montecarlo.md', title: 'Simulacion Monte Carlo' },
+  { file: 'docusaurus/13-neven-studio.md',          title: 'NEVEN Studio' },
 ];
 
 const docsDir = __dirname;

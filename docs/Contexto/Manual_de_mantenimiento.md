@@ -1243,3 +1243,178 @@ Extraer_outputs <- function(modelo) {
 ------------------------------------------------------------------------
 
 *Manual actualizado: 9 de mayo de 2026 — Team Vikingos ⚔️*
+
+------------------------------------------------------------------------
+
+## 15. NEVEN Studio Standalone (Julio 2026)
+
+### Componentes
+
+| Archivo | Ubicación | Función |
+|:---|:---|:---|
+| `NEVEN Studio.vbs` | `C:\NEVEN\taskpane\` | Lanzador de doble clic (sin consola visible) |
+| `start_studio.py` | `C:\NEVEN\taskpane\` | Arranca ControlPython y abre el navegador |
+| `neven_http_server.py` | `C:\NEVEN\startup\` (via ControlPython) | Servidor HTTP en puerto 5555 |
+| `datalab_handler.py` | `C:\NEVEN\startup\` (via ControlPython) | Handlers /api/datalab/catalog y /api/datalab/run |
+| `taskpane.html` | `C:\NEVEN\taskpane\` | UI principal — tabs Data Lab, Run Script, Data Studio |
+| `taskpane.js` | `C:\NEVEN\taskpane\` | Lógica general del Studio |
+| `datalab.js` | `C:\NEVEN\taskpane\` | Módulo Data Lab completo |
+| `pipe_client.py` | `C:\NEVEN\taskpane\` | Cliente Named Pipes (mismo protocolo que el XLL) |
+
+### Arranque del Studio
+
+```
+NEVEN Studio.vbs
+  → wscript.exe inicia pythonw.exe start_studio.py
+    → start_studio.py arranca ControlPython.exe
+    → ControlPython.exe carga neven_http_server.py (puerto 5555)
+    → neven_http_server.py importa datalab_handler.py
+    → start_studio.py abre navegador en http://localhost:5555
+    → taskpane.html se carga en el navegador
+```
+
+### Solución de problemas — Studio
+
+| Problema | Solución |
+|:---|:---|
+| El navegador no abre | Verificar que `ControlPython.exe` está en ejecución: `tasklist \| findstr ControlPython` |
+| "Data Lab no disponible" (503) | `datalab_handler.py` no se importó — verificar que existe en `C:\NEVEN\startup\` |
+| Catálogo vacío en Data Lab | Verificar que `C:\NEVEN\functions\` contiene archivos `.json` válidos |
+| Error al ejecutar función | Verificar que `ControlR.exe` está corriendo y `r_object_to_slots.R` se cargó en startup |
+| LLM no responde | Verificar que LMStudio está corriendo: `Invoke-RestMethod http://localhost:1234/v1/models` |
+| Puerto 5555 ocupado | Cambiar puerto en `start_studio.py` y `NEVEN Studio.vbs` |
+
+### Despliegue de cambios en Studio (sin recompilar C++)
+
+Los archivos del Studio son Python/HTML — no requieren recompilación:
+
+```powershell
+# Detener el Studio (cerrar el navegador + matar ControlPython)
+Get-Process | Where-Object { $_.Name -match "ControlPython" } | Stop-Process -Force
+
+# Copiar archivos actualizados
+$src = "f:\ANTIGRAVITY\2026\NEVEN\NEVEN"
+Copy-Item "$src\ControlPython\startup\neven_http_server.py" "C:\NEVEN\startup\" -Force
+Copy-Item "$src\ControlPython\startup\datalab_handler.py"  "C:\NEVEN\startup\" -Force
+Copy-Item "$src\TaskPane\taskpane.html"                     "C:\NEVEN\taskpane\" -Force
+Copy-Item "$src\TaskPane\taskpane.js"                       "C:\NEVEN\taskpane\" -Force
+Copy-Item "$src\TaskPane\datalab.js"                        "C:\NEVEN\taskpane\" -Force
+
+# Reiniciar: doble clic en NEVEN Studio.vbs
+```
+
+---
+
+## 16. Data Lab — Mantenimiento del Catálogo (Julio 2026)
+
+### Agregar nueva función al catálogo
+
+**Paso 1:** Crear el wrapper R en `NEVEN/libreria/R/`:
+
+```r
+# Nombre: {FAMILIA}_{NombreFuncion}.Studio.R
+MiFuncion.Studio <- function(data_X, Param1 = 3L, Param2 = TRUE) {
+  # Validaciones
+  if (!is.data.frame(data_X)) stop("'data_X' debe ser un data.frame.")
+  data_num <- data_X[, sapply(data_X, is.numeric), drop = FALSE]
+  if (ncol(data_num) == 0) stop("No hay columnas numéricas.")
+
+  # Análisis
+  resultado <- list(
+    tabla_resultados = mi_analisis(data_num, Param1),
+    valor_escalar    = 42.5,
+    html_grafico     = construir_plotly(data_num)
+  )
+
+  # Serialización (SIEMPRE retornar r_object_to_slots)
+  tier_map <- c(tabla_resultados = 1L, html_grafico = 1L, valor_escalar = 2L)
+  return(r_object_to_slots(resultado, tier_map = tier_map))
+}
+```
+
+**Paso 2:** Crear el sidecar JSON en `NEVEN/Install/functions/`:
+
+```json
+{
+  "id": "MiFuncion",
+  "family": "AD",
+  "family_label": "Análisis de Datos",
+  "name": "Mi Función",
+  "description": "Descripción breve.",
+  "languages": ["r"],
+  "function_name": "MiFuncion.Studio",
+  "file": "MiFuncion.Studio.R",
+  "variable_roles": {
+    "X": { "label": "Variables", "types": ["numeric"], "multiple": true, "required": true }
+  },
+  "parameters": [
+    { "name": "Param1", "label": "Parámetro 1", "type": "integer", "default": 3, "tier": 1 },
+    { "name": "Param2", "label": "Opción avanzada", "type": "boolean", "default": true, "tier": 2 }
+  ]
+}
+```
+
+**Paso 3:** Copiar a producción:
+
+```powershell
+Copy-Item "NEVEN\libreria\R\MiFuncion.Studio.R" "C:\NEVEN\functions\" -Force
+Copy-Item "NEVEN\Install\functions\MiFuncion.json" "C:\NEVEN\functions\" -Force
+# Reiniciar NEVEN Studio — el catálogo se actualiza automáticamente
+```
+
+### Estructura del serializador r_object_to_slots
+
+El serializador `C:\NEVEN\startup\r_object_to_slots.R` se carga en el startup de ControlR.
+
+> **CRÍTICO:** Cualquier cambio a `r_object_to_slots.R` requiere reiniciar ControlR.exe para tener efecto.
+
+Tipos de slots y cómo se detectan:
+
+| Tipo | Condición |
+|:---|:---|
+| `table` | `is.data.frame(val)` o `is.matrix(val)` |
+| `html` | `is.character(val)` con longitud 1 y contiene `<html` (case-insensitive) |
+| `vector` | `is.atomic(val)` y `length(val) > 1` |
+| `scalar` | `is.atomic(val)` y `length(val) == 1` |
+| `unknown` | Todo lo demás |
+
+### Sección AI en neven-config.json
+
+La sección `"AI"` controla la integración con LMStudio para resumen contextual en Text Mining:
+
+```json
+"AI": {
+  "enabled": true,
+  "provider": "lmstudio",
+  "apiKey": "",
+  "model": "nvidia/nemotron-3-nano-4b",
+  "endpoint": "http://localhost:1234/v1/chat/completions",
+  "maxTokens": 1000,
+  "temperature": 0.3,
+  "timeout": 120,
+  "promptsDirectory": "C:\\NEVEN\\prompts"
+}
+```
+
+| Parámetro | Descripción |
+|:---|:---|
+| `enabled` | Si es `false`, el slot de resumen IA no aparece en ningún resultado |
+| `provider` | `lmstudio`, `openai`, `ollama`, `custom` |
+| `model` | Nombre del modelo cargado en LMStudio |
+| `endpoint` | URL del endpoint OpenAI-compatible |
+| `maxTokens` | Tokens máximos de respuesta (modelos nano: máx 800 recomendado) |
+| `timeout` | Timeout HTTP en segundos (modelos locales pueden tardar) |
+
+### Problemas comunes del Data Lab
+
+| Síntoma | Causa probable | Solución |
+|:---|:---|:---|
+| Sidecar JSON no aparece en catálogo | JSON inválido o falta campo requerido | Verificar en `GET /api/datalab/catalog` la lista de `warnings` |
+| Función retorna error "slot vacío" | `r_object_to_slots` no cargado | Verificar que `startup.r` tiene el bloque `source()` de `r_object_to_slots.R` |
+| Filtro WHERE produce error 400 | SQL inválido en filtro | El error DuckDB aparece en el slot de error del Results Panel |
+| Columnas no se muestran | DuckDB sin `dataset` activo | Cargar un archivo en Data Studio primero |
+| Resumen IA no aparece | LMStudio apagado o modelo no cargado | Verificar con `Invoke-RestMethod http://localhost:1234/v1/models` |
+
+---
+
+*Manual actualizado: 30 de julio de 2026 — Team Vikingos ⚔️*

@@ -611,3 +611,116 @@ Para usarlos: `=NEVEN.pluto.start()` → `=NEVEN.notebook.open("nombre")`
 ------------------------------------------------------------------------
 
 *NEVEN v2.0 -- Universidad de Costa Rica -- Tesis de Maestria*
+
+------------------------------------------------------------------------
+
+## 9. NEVEN Studio — Data Lab
+
+Ejemplos para la pestaña **Data Lab** de NEVEN Studio Standalone.
+Requiere datos cargados en Data Studio (CSV/Parquet/JSON) antes de ejecutar.
+
+### 9.1 K-Medias (Familia AD)
+
+Datos numéricos en el `dataset` activo (ej: Iris sin la columna de especie):
+
+| Paso | Acción |
+|:---|:---|
+| 1 | Data Lab → Familia: **Análisis de Datos** |
+| 2 | Seleccionar: **K-Medias** |
+| 3 | Asignar columnas numéricas al rol **X (Variables activas)** |
+| 4 | Parámetros: K=3, Escala=No, Algoritmo=Hartigan-Wong |
+| 5 | Ejecutar análisis |
+
+**Resultados esperados:**
+- `centers` — tabla de centroides por cluster (Tier 1)
+- `cluster_assignments` — asignación de cada fila a un cluster (Tier 1)
+- `within_ss`, `total_ss`, `between_ss` — métricas de cohesión (Tier 2)
+
+### 9.2 Componentes Principales / PCA (Familia AD)
+
+| Paso | Acción |
+|:---|:---|
+| 1 | Data Lab → **Análisis de Datos** → **Componentes Principales** |
+| 2 | Asignar columnas numéricas al rol **X** |
+| 3 | Parámetros: Escala=Sí, N_Componentes=0 (todos) |
+| 4 | Ejecutar |
+
+**Resultados esperados:**
+- Varianza explicada por componente (tabla, Tier 1)
+- Biplot interactivo con individuos y variables (HTML Plotly, Tier 1)
+- Cargas por componente (tabla, Tier 1)
+- Scores de individuos (tabla, Tier 2)
+
+### 9.3 Regresión Lineal (Familia RG)
+
+Datos con variable dependiente Y y variables independientes X:
+
+| Paso | Acción |
+|:---|:---|
+| 1 | Data Lab → **Regresión** → **Regresión Lineal** |
+| 2 | Asignar columna dependiente al rol **Y** |
+| 3 | Asignar columnas independientes al rol **X** |
+| 4 | Parámetros: Escala=No, Constante=Sí |
+| 5 | Ejecutar |
+
+**Resultados esperados:**
+- Tabla de coeficientes con p-values y significancia (Tier 1)
+- Métricas: R², R² ajustado, AIC, BIC, RMSE (Tier 1)
+- Gráfico residuos vs valores ajustados (HTML, Tier 1)
+
+### 9.4 Text Mining con IA (Familia TM)
+
+| Paso | Acción |
+|:---|:---|
+| 1 | Data Lab → **Text Mining** → **Text Analysis** |
+| 2 | En **Ruta del archivo**, escribir la ruta completa del documento |
+| 3 | Ejemplo: `C:\Users\Nombre\Documents\informe.pdf` |
+| 4 | N_Resumen=5 (top 5 oraciones), N_Palabras=25 (frecuencias) |
+| 5 | Ejecutar |
+
+**Resultados esperados (con LMStudio activo):**
+- Estadísticas léxicas (tabla, Tier 1)
+- Análisis de sentimiento (tabla, Tier 1)
+- **Resumen contextual (IA)** — generado por LMStudio (HTML, Tier 1)
+- Resumen extractivo TF-IDF — top 5 oraciones (HTML, Tier 1)
+- Gráfico de frecuencias de palabras (HTML, Tier 1)
+- Nube de palabras Plotly (HTML, Tier 1)
+- Tabla completa de frecuencias (Tier 2)
+
+Formatos soportados: `.pdf` `.docx` `.doc` `.txt`
+
+### 9.5 Dataset Wooldridge (Familia DS)
+
+| Paso | Acción |
+|:---|:---|
+| 1 | Data Lab → **Conjuntos de Datos** → **Datos Wooldridge** |
+| 2 | Parámetro Dataset: seleccionar del dropdown (ej: `wage1`) |
+| 3 | Ejecutar (no requiere dataset cargado previamente) |
+
+**Datasets populares del libro de Wooldridge:**
+- `wage1` — salarios, educación, experiencia
+- `bwght` — peso al nacer, factores maternos
+- `crime1` — tasas de criminalidad
+- `mroz` — participación laboral femenina
+- `gpa1` — GPA universitario
+
+**Resultados:** Datos cargados como tabla + estadísticas descriptivas + metadata.
+
+### 9.6 Función personalizada (Familia UC)
+
+Las funciones UC son plantillas demostrativas. Para crear la tuya:
+
+```
+1. Copiar UC_EjemploBasico.Studio.R → MiFuncion.Studio.R
+2. Editar la función con tu análisis
+3. Crear MiFuncion.json (copiar UC_EjemploBasico.json como base)
+4. Copiar ambos a C:\NEVEN\functions\
+5. Reiniciar NEVEN Studio
+6. Tu función aparece en Data Lab → "Mis Funciones"
+```
+
+Ver: `C:\NEVEN\functions\COMO_AGREGAR_FUNCIONES.md`
+
+------------------------------------------------------------------------
+
+*NEVEN v2.1 -- Universidad de Costa Rica -- Tesis de Maestria*

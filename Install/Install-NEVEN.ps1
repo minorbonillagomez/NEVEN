@@ -958,6 +958,191 @@ function New-QuartoJunction {
 }
 
 # ============================================================
+#  Phase 4b: Task Pane Deployment (NEVEN v3.0)
+# ============================================================
+
+function Install-TaskPane {
+    [OutputType([void])]
+    param(
+        [Parameter(Mandatory)][string]$TargetDir,
+        [Parameter(Mandatory)][string]$SourceDir
+    )
+    Write-Log "Deploying Task Pane files..."
+
+    # Create taskpane directory
+    $taskpaneDir = Join-Path $TargetDir 'taskpane'
+    if (-not (Test-Path $taskpaneDir)) {
+        New-Item -Path $taskpaneDir -ItemType Directory -Force | Out-Null
+    }
+
+    # Copy Task Pane core files from source
+    $taskpaneSource = Join-Path $SourceDir 'taskpane'
+    if (Test-Path $taskpaneSource) {
+        $files = @('taskpane.html', 'taskpane.css', 'taskpane.js', 'start_http_server.py')
+        foreach ($file in $files) {
+            $src = Join-Path $taskpaneSource $file
+            $dst = Join-Path $taskpaneDir $file
+            if (Test-Path $src) {
+                Copy-Item -Path $src -Destination $dst -Force
+                Write-Log "Copied taskpane\$file"
+            }
+        }
+    } else {
+        Write-Log "TaskPane source not found at $taskpaneSource - skipping" -Level WARN
+        return
+    }
+
+    # Copy Presentation Creator (NEVEN Studio → Presentaciones button)
+    $presSource = Join-Path $taskpaneSource 'presentaciones'
+    $presTarget = Join-Path $taskpaneDir 'presentaciones'
+    if (Test-Path $presSource) {
+        if (-not (Test-Path $presTarget)) {
+            New-Item -Path $presTarget -ItemType Directory -Force | Out-Null
+        }
+        Copy-Item -Path (Join-Path $presSource '*') -Destination $presTarget -Recurse -Force
+        Write-Log "Copied taskpane\presentaciones\ (Presentation Creator)"
+    } else {
+        Write-Log "taskpane\presentaciones\ not found in Dist - skipping" -Level WARN
+    }
+
+    # Copy neven_http_server.py to startup
+    $httpServerSrc = Join-Path $SourceDir 'startup\neven_http_server.py'
+    $httpServerDst = Join-Path $TargetDir 'startup\neven_http_server.py'
+    if (Test-Path $httpServerSrc) {
+        Copy-Item -Path $httpServerSrc -Destination $httpServerDst -Force
+        Write-Log "Copied startup\neven_http_server.py"
+    }
+
+    # Copy manifest.xml
+    $manifestSrc = Join-Path $taskpaneSource 'manifest.xml'
+    $manifestDst = Join-Path $TargetDir 'manifest.xml'
+    if (Test-Path $manifestSrc) {
+        Copy-Item -Path $manifestSrc -Destination $manifestDst -Force
+        Write-Log "Copied manifest.xml"
+    }
+
+    # Generate HTTPS certificate
+    Install-TaskPaneCert -TargetDir $TargetDir
+}
+
+function Install-TaskPaneCert {
+    [OutputType([void])]
+    param([Parameter(Mandatory)][string]$TargetDir)
+
+    $certDir = Join-Path $TargetDir 'certs'
+    $certPath = Join-Path $certDir 'localhost.crt'
+    $keyPath  = Join-Path $certDir 'localhost.key'
+
+    # Skip if cert already exists
+    if ((Test-Path $certPath) -and (Test-Path $keyPath)) {
+        Write-Log "HTTPS certificate already exists at $certDir"
+        return
+    }
+
+    Write-Log "Generating self-signed HTTPS certificate for Task Pane..."
+
+    if (-not (Test-Path $certDir)) {
+        New-Item -Path $certDir -ItemType Directory -Force | Out-Null
+    }
+
+    try {
+        $cert = New-SelfSignedCertificate `
+            -DnsName "localhost" `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -NotAfter (Get-Date).AddYears(5) `
+            -FriendlyName "NEVEN Studio localhost" `
+            -KeyUsage DigitalSignature, KeyEncipherment `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1")
+
+        # Export PFX
+        $pfxPassword = ConvertTo-SecureString -String "neven2026" -Force -AsPlainText
+        $pfxPath = Join-Path $certDir 'localhost.pfx'
+        Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password $pfxPassword | Out-Null
+
+        # Export key via .NET
+        $rsaKey = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($cert)
+        $keyBytes = $rsaKey.ExportRSAPrivateKey()
+        $keyPem = "-----BEGIN RSA PRIVATE KEY-----`n"
+        $keyPem += [Convert]::ToBase64String($keyBytes, [System.Base64FormattingOptions]::InsertLineBreaks)
+        $keyPem += "`n-----END RSA PRIVATE KEY-----"
+        [System.IO.File]::WriteAllText($keyPath, $keyPem)
+
+        # Export cert PEM
+        $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+        $certPem = "-----BEGIN CERTIFICATE-----`n"
+        $certPem += [Convert]::ToBase64String($certBytes, [System.Base64FormattingOptions]::InsertLineBreaks)
+        $certPem += "`n-----END CERTIFICATE-----"
+        [System.IO.File]::WriteAllText($certPath, $certPem)
+
+        # Trust the certificate (add to Trusted Root)
+        $store = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "CurrentUser")
+        $store.Open("ReadWrite")
+        $store.Add($cert)
+        $store.Close()
+
+        Write-Log "HTTPS certificate generated and trusted"
+    }
+    catch {
+        Write-Log "Certificate generation failed: $_ - Task Pane will use HTTP" -Level WARN
+        $script:HasWarnings = $true
+    }
+}
+
+function Register-TaskPaneManifest {
+    [OutputType([void])]
+    param([Parameter(Mandatory)][string]$TargetDir)
+
+    # Register manifest via Trusted Catalogs (network share method)
+    $manifestPath = Join-Path $TargetDir 'manifest.xml'
+    if (-not (Test-Path $manifestPath)) {
+        Write-Log "manifest.xml not found - Task Pane sideload registration skipped" -Level WARN
+        return
+    }
+
+    # Method: Use SharedFolder catalog in Excel Trust Center
+    # Create a folder for the manifest catalog
+    $catalogDir = Join-Path $TargetDir 'catalog'
+    if (-not (Test-Path $catalogDir)) {
+        New-Item -Path $catalogDir -ItemType Directory -Force | Out-Null
+    }
+    Copy-Item -Path $manifestPath -Destination (Join-Path $catalogDir 'manifest.xml') -Force
+
+    # Register the catalog in Excel settings (Office 16.0)
+    $regPath = 'HKCU:\Software\Microsoft\Office\16.0\Wef\TrustedCatalogs'
+    try {
+        if (-not (Test-Path $regPath)) {
+            New-Item -Path $regPath -Force | Out-Null
+        }
+        $catalogId = '{NEVEN-STUDIO-CATALOG}'
+        $catalogRegPath = Join-Path $regPath $catalogId
+        if (-not (Test-Path $catalogRegPath)) {
+            New-Item -Path $catalogRegPath -Force | Out-Null
+        }
+        Set-ItemProperty -Path $catalogRegPath -Name 'Url' -Value "\\$env:COMPUTERNAME\NEVEN_Catalog" -Type String
+        Set-ItemProperty -Path $catalogRegPath -Name 'Flags' -Value 1 -Type DWord
+
+        # Share the catalog folder
+        $shareName = 'NEVEN_Catalog'
+        $existingShare = Get-SmbShare -Name $shareName -ErrorAction SilentlyContinue
+        if (-not $existingShare) {
+            try {
+                New-SmbShare -Name $shareName -Path $catalogDir -ReadAccess "$env:USERDOMAIN\$env:USERNAME" -ErrorAction Stop | Out-Null
+                Write-Log "Created network share \\$env:COMPUTERNAME\$shareName"
+            } catch {
+                Write-Log "Could not create SMB share (requires admin): $_ - manual sideload needed" -Level WARN
+                $script:HasWarnings = $true
+            }
+        }
+
+        Write-Log "Task Pane manifest registered in Excel Trusted Catalogs"
+    }
+    catch {
+        Write-Log "Manifest registration failed: $_ - use manual sideload" -Level WARN
+        $script:HasWarnings = $true
+    }
+}
+
+# ============================================================
 #  Phase 5: User Setup
 # ============================================================
 
@@ -1081,12 +1266,27 @@ function Install-RPackages {
         $script:HasWarnings = $true
     }
 
-    # Batch 4: Verification - check all packages loaded correctly
-    $allPkgs = $batch1 + $batch2 + $batch3
+    # Batch 4: Machine Learning and Simulation packages (NEW)
+    $batch4 = @('randomForest','class','gbm','nnet','fitdistrplus','jsonlite')
+    $batch4Str = ($batch4 | ForEach-Object { "'$_'" }) -join ','
+    $batch4Cmd = "install.packages(c($batch4Str), repos='https://cloud.r-project.org', quiet=TRUE)"
+
+    Write-Host '  [4/5] Installing ML and simulation packages...' -ForegroundColor White
+    Write-Log "R batch 4 (ML/SIM): $($batch4.Count) packages"
+    try {
+        & $RscriptPath -e $batch4Cmd 2>&1 | ForEach-Object { Write-Log "  R: $_" }
+        Write-Log 'R batch 4 completed'
+    } catch {
+        Write-Log "R batch 4 failed: $_" -Level ERROR
+        $script:HasWarnings = $true
+    }
+
+    # Batch 5: Verification - check all packages loaded correctly
+    $allPkgs = $batch1 + $batch2 + $batch3 + $batch4
     $allPkgStr = ($allPkgs | ForEach-Object { "'$_'" }) -join ','
     $verifyCmd = "pkgs <- c($allPkgStr); missing <- pkgs[!sapply(pkgs, requireNamespace, quietly=TRUE)]; if(length(missing)>0) cat('MISSING:', paste(missing, collapse=', ')) else cat('ALL_OK')"
 
-    Write-Host '  [4/4] Verifying package installation...' -ForegroundColor White
+    Write-Host '  [5/5] Verifying package installation...' -ForegroundColor White
     Write-Log 'Verifying R packages...'
     try {
         $output = & $RscriptPath -e $verifyCmd 2>&1 | Out-String
@@ -1118,9 +1318,21 @@ function Install-JuliaPackages {
     Write-Log 'Installing Julia packages...'
     Write-Host '  Installing Julia packages...' -ForegroundColor Cyan
 
-    # Julia packages used by J4XCL modules
-    # LinearAlgebra, Statistics, DelimitedFiles, Dates, Random are all stdlib — no install needed
-    # Just verify they load
+    # Julia packages: stdlib (no install) + Distributions for NEVEN-SIM
+    # LinearAlgebra, Statistics, DelimitedFiles, Dates, Random are all stdlib
+    # Distributions.jl is needed for Monte Carlo simulation
+    Write-Host '  Installing Distributions.jl for NEVEN-SIM...' -ForegroundColor White
+    try {
+        $juliaCmd = 'import Pkg; Pkg.add("Distributions"); println("DIST_OK")'
+        $output = & $JuliaExePath -e $juliaCmd 2>&1 | Out-String
+        if ($output -match 'DIST_OK') {
+            Write-Log 'Julia Distributions.jl installed'
+            Write-Host '  [OK] Distributions.jl installed' -ForegroundColor Green
+        }
+    } catch {
+        Write-Log "Julia Distributions install failed: $_" -Level WARN
+        Write-Host '  Distributions.jl failed. Install manually: =J.Instalar("Distributions")' -ForegroundColor Yellow
+    }
     $juliaCmd = 'using LinearAlgebra; using Statistics; using DelimitedFiles; using Dates; using Random; println("JULIA_PKGS_OK")'
 
     Write-Host '  Verifying Julia standard library modules...' -ForegroundColor White
@@ -1153,10 +1365,10 @@ function Install-PythonPackages {
     Write-Log 'Installing Python packages...'
     Write-Host '  Installing Python packages...' -ForegroundColor Cyan
 
-    # Python packages used by NEVEN AI functions
-    $pipPkgs = @('openai')
+    # Python packages used by NEVEN ML and utility functions
+    $pipPkgs = @('scikit-learn','numpy','PyPDF2','python-docx','folium','duckdb')
 
-    Write-Host '  Installing pip packages (openai)...' -ForegroundColor White
+    Write-Host '  Installing pip packages (ML + utilities)...' -ForegroundColor White
     Write-Log "Python packages to install: $($pipPkgs -join ', ')"
     try {
         & $PythonExePath -m pip install --quiet --upgrade $pipPkgs 2>&1 | ForEach-Object { Write-Log "  pip: $_" }
@@ -1169,6 +1381,132 @@ function Install-PythonPackages {
     }
 
     return $true
+}
+
+# ============================================================
+#  LM Studio Detection and Setup
+# ============================================================
+
+function Find-LMStudio {
+    [OutputType([PSCustomObject])]
+    param()
+    $result = [PSCustomObject]@{ Found = $false; Path = ''; Version = '' }
+
+    # Common LM Studio installation paths
+    $candidates = @(
+        (Join-Path $env:LOCALAPPDATA 'LM Studio\LM Studio.exe'),
+        (Join-Path $env:LOCALAPPDATA 'Programs\LM Studio\LM Studio.exe'),
+        (Join-Path $env:ProgramFiles 'LM Studio\LM Studio.exe'),
+        'C:\LM Studio\LM Studio.exe'
+    )
+
+    # Also check user profile (some versions install there)
+    $userLmStudio = Join-Path $env:USERPROFILE '.lmstudio'
+    if (Test-Path $userLmStudio) {
+        # LM Studio data directory exists — app likely installed
+        $result.Path = $userLmStudio
+    }
+
+    foreach ($path in $candidates) {
+        if (Test-Path $path) {
+            $result.Found = $true
+            $result.Path  = Split-Path $path -Parent
+            # Try to get version from file info
+            try {
+                $fileInfo = Get-Item $path
+                $result.Version = $fileInfo.VersionInfo.FileVersion
+                if (-not $result.Version) { $result.Version = 'detected' }
+            } catch {
+                $result.Version = 'detected'
+            }
+            break
+        }
+    }
+
+    # Check Start Menu shortcuts as fallback
+    if (-not $result.Found) {
+        $startMenu = [Environment]::GetFolderPath('StartMenu')
+        $allUsersStart = [Environment]::GetFolderPath('CommonStartMenu')
+        $shortcuts = @(
+            (Join-Path $startMenu 'Programs\LM Studio.lnk'),
+            (Join-Path $allUsersStart 'Programs\LM Studio.lnk')
+        )
+        foreach ($lnk in $shortcuts) {
+            if (Test-Path $lnk) {
+                try {
+                    $shell = New-Object -ComObject WScript.Shell
+                    $shortcut = $shell.CreateShortcut($lnk)
+                    $target = $shortcut.TargetPath
+                    if ($target -and (Test-Path $target)) {
+                        $result.Found = $true
+                        $result.Path  = Split-Path $target -Parent
+                        $result.Version = 'detected'
+                    }
+                } catch { }
+                break
+            }
+        }
+    }
+
+    # Check if LM Studio API is responding (port 1234)
+    if (-not $result.Found) {
+        try {
+            $tcp = New-Object System.Net.Sockets.TcpClient
+            $tcp.Connect('127.0.0.1', 1234)
+            $tcp.Close()
+            $result.Found = $true
+            $result.Path = 'running (API detected on port 1234)'
+            $result.Version = 'active'
+        } catch { }
+    }
+
+    if ($result.Found) {
+        Write-Log "LM Studio found at $($result.Path) (version: $($result.Version))"
+    } else {
+        Write-Log 'LM Studio not found' -Level WARN
+    }
+    return $result
+}
+
+function Show-LMStudioSetup {
+    [OutputType([void])]
+    param(
+        [PSCustomObject]$LMStudioInfo,
+        [switch]$Silent
+    )
+
+    if ($LMStudioInfo.Found) {
+        Write-Host "   [OK] LM Studio $($LMStudioInfo.Version)  $($LMStudioInfo.Path)" -ForegroundColor Green
+        Write-Host '        AI Assistant requires CORS enabled in LM Studio settings.' -ForegroundColor Gray
+    } else {
+        Write-Host '   [!!] LM Studio not found (optional - AI Assistant)' -ForegroundColor Yellow
+        Write-Host '        LM Studio enables the local AI Assistant in NEVEN.' -ForegroundColor Gray
+        Write-Host '        Download: https://lmstudio.ai/download' -ForegroundColor Yellow
+        if (-not $Silent) {
+            $answer = Read-Host '        Download and install LM Studio? (y/n) [n]'
+            if ($answer -eq 'y') {
+                Start-Process 'https://lmstudio.ai/download'
+                Write-Host '        Opening download page...' -ForegroundColor Cyan
+                Write-Host '        After installing, enable CORS in LM Studio:' -ForegroundColor Gray
+                Write-Host '          Settings > Network > Enable CORS' -ForegroundColor Gray
+                Write-Host ''
+                $done = Read-Host '        Have you finished installing LM Studio? (y/n) [n]'
+                if ($done -eq 'y') {
+                    Write-Host '        Re-detecting LM Studio...' -ForegroundColor Cyan
+                    $newInfo = Find-LMStudio
+                    if ($newInfo.Found) {
+                        Write-Host "   [OK] LM Studio detected at $($newInfo.Path)" -ForegroundColor Green
+                        $LMStudioInfo.Found = $newInfo.Found
+                        $LMStudioInfo.Path  = $newInfo.Path
+                        $LMStudioInfo.Version = $newInfo.Version
+                    } else {
+                        Write-Host '   [!!] LM Studio not detected yet. You can install it later.' -ForegroundColor Yellow
+                        Write-Host '        The AI Assistant will work once LM Studio is running.' -ForegroundColor Gray
+                    }
+                }
+            }
+        }
+    }
 }
 
 function New-DesktopShortcut {
@@ -1224,6 +1562,83 @@ function New-DesktopShortcut {
         Write-Log "Desktop shortcut created: $shortcutPath"
     } catch {
         Write-Log "Failed to create desktop shortcut: $_" -Level WARN
+        $script:HasWarnings = $true
+    }
+}
+
+function New-StudioShortcut {
+    <#
+    .SYNOPSIS
+        Creates "NEVEN Studio.lnk" on the Desktop.
+    .DESCRIPTION
+        Points to "NEVEN Studio.vbs" in the install directory.
+        Double-clicking it starts the standalone browser UI without opening Excel.
+        Also copies the .vbs launcher to the install directory if not already present.
+    #>
+    [OutputType([void])]
+    param(
+        [Parameter(Mandatory)][string]$InstallDir
+    )
+
+    $vbsSource = Join-Path $PSScriptRoot 'taskpane\NEVEN Studio.vbs'
+    # Fallback: script may live alongside the VBS in Dist\
+    if (-not (Test-Path $vbsSource)) {
+        $vbsSource = Join-Path $PSScriptRoot 'NEVEN Studio.vbs'
+    }
+    $vbsDest = Join-Path $InstallDir 'NEVEN Studio.vbs'
+
+    # Copy launcher and icon to install dir
+    if (Test-Path $vbsSource) {
+        try {
+            Copy-Item -Path $vbsSource -Destination $vbsDest -Force
+            Write-Log "Copied NEVEN Studio.vbs to $vbsDest"
+        } catch {
+            Write-Log "Failed to copy NEVEN Studio.vbs: $_" -Level WARN
+            $script:HasWarnings = $true
+        }
+    } elseif (-not (Test-Path $vbsDest)) {
+        Write-Log 'NEVEN Studio.vbs not found — Studio shortcut skipped' -Level WARN
+        $script:HasWarnings = $true
+        return
+    }
+
+    # Copy ICO to install dir
+    $icoSource = Join-Path $PSScriptRoot 'NEVEN_studio.ico'
+    if (-not (Test-Path $icoSource)) {
+        $icoSource = Join-Path $PSScriptRoot 'taskpane\NEVEN_studio.ico'
+    }
+    $icoDest = Join-Path $InstallDir 'NEVEN_studio.ico'
+    if (Test-Path $icoSource) {
+        Copy-Item -Path $icoSource -Destination $icoDest -Force -ErrorAction SilentlyContinue
+        Write-Log "Copied NEVEN_studio.ico to $icoDest"
+    }
+
+    # Create Desktop shortcut pointing to the .vbs
+    $desktopPath  = [Environment]::GetFolderPath('Desktop')
+    $shortcutPath = Join-Path $desktopPath 'NEVEN Studio.lnk'
+
+    try {
+        $wshell   = New-Object -ComObject WScript.Shell
+        $shortcut = $wshell.CreateShortcut($shortcutPath)
+        $shortcut.TargetPath       = $vbsDest
+        $shortcut.WorkingDirectory = $InstallDir
+        $shortcut.Description      = 'Abrir NEVEN Studio en el browser (sin Excel)'
+
+        # Icon priority: custom ICO > NEVEN64.xll > wscript.exe
+        if (Test-Path $icoDest) {
+            $shortcut.IconLocation = "$icoDest,0"
+        } elseif (Test-Path (Join-Path $InstallDir 'NEVEN64.xll')) {
+            $shortcut.IconLocation = "$(Join-Path $InstallDir 'NEVEN64.xll'),0"
+        } else {
+            $shortcut.IconLocation = 'C:\Windows\System32\wscript.exe,0'
+        }
+
+        $shortcut.Save()
+        [System.Runtime.InteropServices.Marshal]::ReleaseComObject($wshell) | Out-Null
+        Write-Log "NEVEN Studio shortcut created: $shortcutPath"
+        Write-Host "   Acceso directo 'NEVEN Studio' creado en el escritorio" -ForegroundColor Green
+    } catch {
+        Write-Log "Failed to create NEVEN Studio shortcut: $_" -Level WARN
         $script:HasWarnings = $true
     }
 }
@@ -1431,11 +1846,16 @@ function New-Uninstaller {
     $lines += '    }'
     $lines += '}'
     $lines += ''
-    $lines += '# 6. Desktop shortcut'
+    $lines += '# 6. Desktop shortcuts (Excel and Studio)'
     $lines += '$shortcutPath = Join-Path ([Environment]::GetFolderPath(''Desktop'')) ''NEVEN.lnk'''
     $lines += 'if (Test-Path $shortcutPath) {'
     $lines += '    Remove-Item -Path $shortcutPath -Force -ErrorAction SilentlyContinue'
-    $lines += '    $removed += ''Desktop shortcut'''
+    $lines += '    $removed += ''Desktop shortcut (NEVEN)'''
+    $lines += '}'
+    $lines += '$studioShortcut = Join-Path ([Environment]::GetFolderPath(''Desktop'')) ''NEVEN Studio.lnk'''
+    $lines += 'if (Test-Path $studioShortcut) {'
+    $lines += '    Remove-Item -Path $studioShortcut -Force -ErrorAction SilentlyContinue'
+    $lines += '    $removed += ''Desktop shortcut (NEVEN Studio)'''
     $lines += '}'
     $lines += ''
     $lines += '# 7. Remove NEVEN_Home directory via deferred cleanup'
@@ -1483,7 +1903,8 @@ function Update-NEVENConfig {
         [Parameter(Mandatory)][string]$InstallDir,
         [PSCustomObject]$RInfo,
         [PSCustomObject]$JuliaInfo,
-        [PSCustomObject]$PythonInfo
+        [PSCustomObject]$PythonInfo,
+        [PSCustomObject]$LMStudioInfo
     )
     if (-not (Test-Path $ConfigPath)) {
         Write-Log "Config file not found for patching: $ConfigPath" -Level WARN
@@ -1512,6 +1933,20 @@ function Update-NEVENConfig {
         if ($PythonInfo.Found -and $PythonInfo.Path) {
             $config.NEVEN.Python.home = $PythonInfo.Path
             Write-Log "Config: Python home = $($PythonInfo.Path)"
+        }
+
+        # Patch AI / LM Studio configuration
+        if ($config.AI) {
+            if ($LMStudioInfo -and $LMStudioInfo.Found) {
+                $config.AI.enabled = $true
+                $config.AI.provider = 'lmstudio'
+                $config.AI.endpoint = 'http://localhost:1234/v1/chat/completions'
+                Write-Log "Config: AI enabled (LM Studio detected at $($LMStudioInfo.Path))"
+            } else {
+                # Keep AI section but mark status — user can install later
+                $config.AI.enabled = $true
+                Write-Log 'Config: AI section preserved (LM Studio not detected, user can install later)'
+            }
         }
 
         # Write back as properly formatted JSON (UTF8 without BOM for C++ json11 parser)
@@ -1564,11 +1999,15 @@ if (-not (Test-Path $distXll)) {
 $rInfo        = Find-R
 $juliaInfo    = Find-Julia
 $pythonInfo   = Find-Python
+$lmStudioInfo = Find-LMStudio
 $excelVers    = Find-ExcelVersions
 $existingInst = Find-ExistingInstall -TargetPath $InstallDir
 
 Show-PreflightSummary -RInfoRef ([ref]$rInfo) -JuliaInfoRef ([ref]$juliaInfo) -PythonInfoRef ([ref]$pythonInfo) `
                       -ExcelVersions $excelVers -ExistingInstall $existingInst
+
+# LM Studio (AI Assistant)
+Show-LMStudioSetup -LMStudioInfo $lmStudioInfo -Silent:$Silent
 
 # --- Phase 2: User Choices ---
 Write-Host '  Phase 2: Configuration...' -ForegroundColor White
@@ -1594,6 +2033,8 @@ if ($juliaInfo.Found)  { Write-Log "Julia $($juliaInfo.Version) at $($juliaInfo.
 else                   { Write-Log 'Julia not found' -Level WARN }
 if ($pythonInfo.Found) { Write-Log "Python $($pythonInfo.Version) at $($pythonInfo.Path)" }
 else                   { Write-Log 'Python not found' -Level WARN }
+if ($lmStudioInfo.Found) { Write-Log "LM Studio $($lmStudioInfo.Version) at $($lmStudioInfo.Path)" }
+else                      { Write-Log 'LM Studio not found (AI Assistant optional)' -Level WARN }
 
 # Ensure pip is available (required for =P.instalar() to work)
 if ($pythonInfo.Found -and $pythonInfo.Path) {
@@ -1627,7 +2068,7 @@ if (-not $deployOk) {
 
 # Patch config with detected paths
 $configPath = Join-Path $choices.InstallDir 'neven-config.json'
-Update-NEVENConfig -ConfigPath $configPath -InstallDir $choices.InstallDir -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo
+Update-NEVENConfig -ConfigPath $configPath -InstallDir $choices.InstallDir -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo -LMStudioInfo $lmStudioInfo
 
 # --- Phase 4: Registration ---
 Write-Host ''
@@ -1657,6 +2098,12 @@ Register-RibbonCOM -DllPath $ribbonDll
 Register-TrustedLocation -Path $choices.InstallDir -ExcelVersions $excelVers
 
 New-QuartoJunction
+
+# --- Phase 4b: Task Pane Deployment ---
+Write-Host ''
+Write-Host '  Phase 4b: Deploying Task Pane (NEVEN Studio v3.0)...' -ForegroundColor White
+Install-TaskPane -TargetDir $choices.InstallDir -SourceDir $DistDir
+Register-TaskPaneManifest -TargetDir $choices.InstallDir
 
 # --- Phase 5: User Setup ---
 Write-Host ''
@@ -1787,6 +2234,7 @@ if ($pythonInfo.Found -and $pythonInfo.Adequate) {
 
 if ($choices.CreateShortcut) {
     New-DesktopShortcut -XllPath $xllPath
+    New-StudioShortcut  -InstallDir $choices.InstallDir
 }
 
 # Deploy user documentation to Documents\NEVEN\docs\

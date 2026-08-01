@@ -344,3 +344,155 @@ cmake --build . --target NEVEN_SIM
 
 Produce: `NEVEN-SIM.xll` (~400KB)
 Tests: `cmake --build . --target NEVEN_SIM_Tests` (69 tests)
+
+---
+
+## NEVEN Studio Standalone (Julio 2026)
+
+NEVEN Studio Standalone es el modo de operación de NEVEN **sin Microsoft Excel**. Reutiliza exactamente los mismos procesos hijo C++ (`ControlR.exe`, `ControlPython.exe`, `ControlJulia.exe`) pero los arranca desde un script Python en lugar del XLL.
+
+### Arquitectura Studio Standalone
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                    NEVEN Studio Standalone                            │
+│                                                                       │
+│  NEVEN Studio.vbs                                                    │
+│       │                                                               │
+│       ▼                                                               │
+│  start_studio.py ──────────────────────> ControlPython.exe          │
+│       │                                        │                     │
+│       │                                  neven_http_server.py        │
+│       │                                  (puerto 5555)               │
+│       │                                        │                     │
+│       │                            ┌───────────┴────────────┐       │
+│       │                            │   Named Pipes (IPC)    │       │
+│       │                            │                        │       │
+│       │                      ControlR.exe    ControlJulia.exe        │
+│       │                          │                │                  │
+│       │                       R 4.4.1       Julia 1.12.6             │
+│       │                                                               │
+│       ▼                                                               │
+│  Navegador del sistema                                               │
+│  (Chrome/Edge → http://localhost:5555)                               │
+│  taskpane.html + datalab.js + taskpane.js                            │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Diferencia con modo Excel
+
+| Aspecto | Modo Excel | Modo Studio |
+|:---|:---|:---|
+| Requiere Excel | ✅ Obligatorio | ❌ No necesario |
+| Inicia ControlPython | NEVEN64.xll (C++) | start_studio.py (Python) |
+| UI | Panel lateral Excel | Navegador web |
+| Datos entran via | Celdas de Excel | CSV/Parquet/JSON o Excel Bridge |
+| Resultados van a | Celdas de Excel | Visualización en browser |
+| Binarios C++ | Sin cambios | Sin cambios |
+
+### Componentes nuevos (Python + HTML)
+
+| Archivo | Responsabilidad |
+|:---|:---|
+| `start_studio.py` | Lanza ControlPython.exe, configura puertos |
+| `neven_http_server.py` | Servidor HTTP BaseHTTPRequestHandler, rutas API |
+| `taskpane.html` | UI principal: tabs (Data Studio, Data Lab, Run Script, etc.) |
+| `taskpane.js` | Lógica UI: carga de archivos, ejecución de scripts, bridge Excel |
+| `datalab.js` | Módulo Data Lab: catálogo, asignación de columnas, resultados |
+| `pipe_client.py` | Cliente Named Pipes Python — mismos pipes que usa el XLL |
+| `NEVEN Studio.vbs` | Lanzador: `wscript.exe` → `pythonw.exe start_studio.py` |
+
+### Rutas HTTP
+
+| Método | Ruta | Función |
+|:---|:---|:---|
+| GET | `/` | Sirve `taskpane.html` |
+| POST | `/api/r` | Ejecuta código R en ControlR |
+| POST | `/api/python` | Ejecuta código Python en ControlPython |
+| POST | `/api/julia` | Ejecuta código Julia en ControlJulia |
+| POST | `/api/load_file` | Carga CSV/Parquet/JSON en DuckDB |
+| POST | `/api/query` | Consulta SQL en DuckDB |
+| GET | `/api/datalab/catalog` | Catálogo de funciones Data Lab |
+| POST | `/api/datalab/run` | Ejecuta función Data Lab |
+
+---
+
+## Data Lab (Julio 2026)
+
+El Data Lab es la pestaña de NEVEN Studio que expone funciones analíticas de R y Python mediante una interfaz guiada de punto y clic, sin escribir código.
+
+### Componentes Data Lab
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      Data Lab UI                                │
+│              (datalab.js + taskpane.html)                       │
+│                                                                 │
+│  Familia ▼  │  Función  │  Columnas → Roles  │  Parámetros     │
+│                                                                 │
+│             GET /api/datalab/catalog                            │
+│                    ▼                                            │
+│             DataLabHandler.handle_catalog()                     │
+│             (C:\NEVEN\functions\*.json)                         │
+│                                                                 │
+│             POST /api/datalab/run                               │
+│                    ▼                                            │
+│             DataLabHandler.handle_run()                         │
+│             DuckDB → columnas → R script → ControlR.exe        │
+│                    ▼                                            │
+│             r_object_to_slots() → Slots tipificados             │
+│                    ▼                                            │
+│             Results Panel (table, html, scalar, vector)         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Sidecar JSON Convention
+
+Cada función del catálogo tiene un par de archivos en `C:\NEVEN\functions\`:
+
+```
+AD_KMedias.Studio.R      ← implementación R
+AD_KMedias.json          ← metadatos UI (sidecar)
+```
+
+El sidecar define:
+- `id`, `family`, `family_label`, `name`, `description`
+- `variable_roles` — roles de columnas con tipos y multiplicidad
+- `parameters` — parámetros con tipo, default y tier (1=visible, 2=avanzado)
+- `languages` — lenguajes disponibles (`["r"]`, `["python"]`, etc.)
+
+### Serializer r_object_to_slots
+
+Función R cargada en startup de ControlR que convierte cualquier objeto S3 en slots tipificados:
+
+```
+obj R → r_object_to_slots() → data.frame → ControlR → Variable(arr) → Python → JSON
+```
+
+Tipos de slots: `table`, `scalar`, `vector`, `html`, `unknown`
+Tiers: `1` = expandido por defecto, `2` = en sección "Detalles técnicos"
+
+### Estructura de directorios nuevos en producción
+
+```
+C:\NEVEN\
+├── taskpane\              # NEVEN Studio Standalone
+│   ├── taskpane.html
+│   ├── taskpane.js
+│   ├── taskpane.css
+│   ├── datalab.js
+│   ├── pipe_client.py
+│   ├── neven_http_server.py (+ datalab_handler.py en startup/)
+│   ├── start_studio.py
+│   └── NEVEN Studio.vbs
+└── functions\             # Catálogo Data Lab
+    ├── R4XCL-AD-KMediass.Studio.R
+    ├── R4XCL-AD-KMediass.json
+    ├── TM_TextAnalysis.Studio.py
+    ├── TM_TextAnalysis.json
+    ├── UC_EjemploBasico.Studio.R
+    ├── UC_EjemploBasico.json
+    └── ... (18 funciones total)
+```
+
+*Documento actualizado: 30 de julio de 2026 — Post NEVEN Studio Standalone y Data Lab V1.*

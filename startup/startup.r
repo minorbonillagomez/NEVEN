@@ -121,3 +121,21 @@ Extraer_outputs <- function(objeto, nombre_modelo = NULL, verbose = FALSE) {
    rownames(df_res) <- NULL
    return(df_res[, c("Modelo", "Seccion", "Parametro", "Metrica", "Valor")])
 }
+
+# ── Data Lab: Serializador de slots ─────────────────────────────────────────
+local({
+  sr_path <- tryCatch(
+    file.path(dirname(sys.frame(1)$ofile), "r_object_to_slots.R"),
+    error = function(e) NA_character_
+  )
+  if (is.na(sr_path) || !file.exists(sr_path)) {
+    # Fallback: buscar en el directorio estándar de producción
+    sr_path <- "C:\\NEVEN\\startup\\r_object_to_slots.R"
+  }
+  if (file.exists(sr_path)) {
+    source(sr_path, local = FALSE)
+    cat("NEVEN Data Lab: r_object_to_slots cargado\n")
+  } else {
+    warning("r_object_to_slots.R no encontrado — Data Lab no disponible")
+  }
+})
