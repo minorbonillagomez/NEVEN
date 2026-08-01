@@ -26,6 +26,8 @@ Excel es universal pero estadisticamente limitado. R y Julia son potentes pero r
 | **NEVEN v2.0** | **May 2026** | **Viewer Snap Layout, =NEVEN.status(), fix SetPointers race condition, investigacion xlfRegister** |
 | **NEVEN v2.0** | **May 2026** | **Zombie Process Killer, Extraer_outputs (TipoOutput universal en 11 funciones), Viewer Professional parcial (💾, PDF/TXT/DOCX, hash)** |
 | **NEVEN v2.0** | **May 2026** | **Security remediation: 36/36 hallazgos cerrados, Console/Electron eliminado, ControlPython reactivado, 357 tests, score 6.0→9.4** |
+| **NEVEN v2.1** | **Jul 2026** | **NEVEN Studio Standalone (sin Excel), Data Lab V1 (18 Studio wrappers, punto-y-clic), AI integration LMStudio, Text Mining con WordCloud y resumen LLM, catálogo UC extensible** |
+| **NEVEN v2.1** | **Jul 2026** | **DataLab: GR_Barras (apilado/múltiple Y/ordenar), selector paletas visual, X opcional GR_Lineas/SeriesTiempo, GR_Burbujas color continuo, GR_Scatter eliminado, fixes parse slots, descarga PNG/SVG gráficos** |
 
 ------------------------------------------------------------------------
 
@@ -57,6 +59,10 @@ Excel es universal pero estadisticamente limitado. R y Julia son potentes pero r
 | **Plotly.js** | JavaScript | Explorador de datos con selectores de ejes |
 | **D3.js v7** | JavaScript | Treemap, Sankey, Sunburst, Force Graph |
 | **Leaflet.js** | JavaScript | Mapas interactivos con tiles CartoDB dark |
+| **NEVEN Studio** | Python + HTML | Servidor HTTP standalone (puerto 5555), taskpane web sin Excel |
+| **Data Lab** | Python + JS | Catálogo de funciones punto-y-clic con sidecar JSON convention |
+| **DuckDB** | Python in-memory | Base de datos SQL embebida en Studio para el `dataset` activo |
+| **LMStudio API** | HTTP OpenAI-compatible | Resumen contextual IA en Text Mining (localhost:1234) |
 
 ### Comunicacion
 
@@ -138,6 +144,41 @@ Excel (XLL) <---- TSV file ----> Pluto.jl (proceso separado)
 | `=P.ai_list_prompts()` | Listar prompts disponibles (archivos .txt editables) |
 | `=P.quarto_render(archivo)` | Renderizar documento Quarto via Python |
 
+### Data Lab — Funciones Studio (punto-y-clic, sin código)
+
+Funciones accesibles desde la pestaña Data Lab de NEVEN Studio. Cada función tiene un Sidecar JSON que define su interfaz.
+
+| Familia | ID | Función | Descripción |
+|:---|:---|:---|:---|
+| **AD** | AD_KMedias | K-Medias | Clustering K-Means con 4 algoritmos |
+| **AD** | AD_ACP | Componentes Principales | PCA con biplot interactivo |
+| **AD** | AD_ClusteringJerarquico | Clustering Jerárquico | hclust con dendrograma |
+| **RG** | RG_Lineal | Regresión Lineal | lm() con coeficientes y residuos |
+| **RG** | RG_Logistica | Regresión Logística | glm(binomial) con odds ratios |
+| **RG** | RG_ArbolDecision | Árbol de Decisión | rpart con importancia de variables |
+| **RG** | RG_DatosPanel | Datos Panel | plm con test de Hausman |
+| **RG** | RG_Poisson | Regresión Poisson | glm(poisson) con IRR |
+| **RG** | RG_SeriesTiempo | Series de Tiempo | auto.arima con pronóstico |
+| **RG** | RG_SVM | SVM | e1071::svm clasificación/regresión |
+| **RG** | RG_Tobit | Regresión Tobit | AER::tobit con efectos marginales |
+| **DS** | DS_Wooldridge | Datos Wooldridge | 115 datasets del libro de econometría |
+| **TM** | TM_TextAnalysis | Análisis de Texto | PDF/DOCX/TXT + resumen LLM + WordCloud |
+| **UC** | UC_EjemploBasico | Estadísticas Descriptivas | Plantilla mínima para funciones propias |
+| **UC** | UC_EjemploAvanzado | Correlaciones Y~X | Plantilla completa con gráfico Plotly |
+| **UC** | UC_EjemploFactoMineR | ACP con FactoMineR | Plantilla con librería externa |
+
+> **Funciones GR (Gráficos) — Data Lab (actualizado 31 jul 2026)**
+
+| Familia | ID | Función | Descripción |
+|:---|:---|:---|:---|
+| **GR** | GR_Barras | Gráfico de Barras | Agrupado/apilado, vertical/horizontal (Modo agrupado/apilado, múltiples Y, ordenar, etiquetas) |
+| **GR** | GR_Lineas | Gráfico de Líneas | Líneas por grupo; X opcional (genera índice si no se asigna) |
+| **GR** | GR_SeriesTiempo | Serie de Tiempo | Serie temporal con Plotly; X opcional |
+| **GR** | GR_Histograma | Histograma | Distribución de frecuencias con selector de paleta |
+| **GR** | GR_Correlaciones | Mapa de Correlaciones | Heatmap de correlaciones con selector de paleta |
+| **GR** | GR_EjemploBasico | Scatter Mínimo | Scatter plot básico (reemplaza a GR_Scatter eliminado) |
+| **GR** | GR_EjemploAvanzado | Burbujas | Scatter con tamaño y color; color numérico → colorscale continua; color categórico → trazas por grupo (Burbujas con color continuo/categórico) |
+
 ### Documentacion para el Usuario
 
 | Recurso | Acceso | Contenido |
@@ -165,6 +206,8 @@ Excel (XLL) <---- TSV file ----> Pluto.jl (proceso separado)
 | **2 mayo** | **9.6** | **Rename NEVEN, 5 nuevas visualizaciones, 228 tests, Doxygen completo** |
 | **3 mayo** | **9.6** | **Reorganizacion repositorio: Core/, libreria/, Build/, config limpio** |
 | **Mayo 2026** | **9.4** | **Security remediation: 36/36 hallazgos cerrados, Console/Electron eliminado, ControlPython reactivado, 357 tests** |
+| **Julio 2026** | **9.5** | **NEVEN Studio Standalone, Data Lab V1, AI integration, 18 Studio wrappers, catálogo extensible UC** |
+| **Julio 2026** | **9.5** | **DataLab V2: GR_Barras mejorado, selector paletas visual, fixes datalab_handler, descarga gráficos** |
 
 ### Dimensiones Actuales
 
@@ -270,6 +313,15 @@ C:\NEVEN\
 +-- quarto\                    # Documentos Quarto
 +-- CreadorPresentaciones\     # Editor Impress.js
 +-- crashes\                   # Telemetria local
++-- taskpane\                  # NEVEN Studio Standalone (HTML + JS + Python)
+|   +-- taskpane.html          # UI principal del Studio
+|   +-- taskpane.js            # Lógica general del Studio
+|   +-- datalab.js             # Módulo Data Lab
+|   +-- pipe_client.py         # Cliente de Named Pipes
+|   +-- neven_http_server.py   # Servidor HTTP (puerto 5555)
+|   +-- start_studio.py        # Lanzador del Studio
+|   \-- NEVEN Studio.vbs       # Lanzador de doble clic
++-- functions\                 # Catálogo Data Lab (Studio wrappers + sidecar JSONs)
 \-- webview2-data\             # HTML temporales
 ```
 
@@ -346,12 +398,16 @@ Secciones eliminadas en la reorganizacion de mayo 2026:
 | Viewer Snap Layout | Completado | Excel (izquierda) + Viewer (derecha) automatico con SetWindowPos |
 | `=NEVEN.status()` diagnostico | Completado | Estado de conexion, salud, prefijo y funciones de cada motor |
 | R.Network (grafos de red con vis.js) | Baja | Propuesta |
+| Tab IA en NEVEN Studio | Media | Consolidar funcionalidad AI dispersa en un tab dedicado |
+| Data Lab Python/Julia | Media | Soporte multi-lenguaje en Data Lab (actualmente solo R) |
+| Tests Studio wrappers (tarea 15) | Alta | test_uc_funciones.R, test_ad_funciones.R, test_rg_funciones.R |
+| Selector visual de paletas en Data Lab | Completado | Tipo `"palette"` con swatches en GR_Barras, GR_Lineas, GR_SeriesTiempo, GR_Histograma, GR_Correlaciones, GR_EjemploAvanzado, GR_EjemploBasico |
 | Zombie Process Killer | Completado | `Init()` mata ControlR/Julia/Python huérfanos con `taskkill /F /IM` via `CreateProcess(CREATE_NO_WINDOW)` |
 | Extraer_outputs (TipoOutput universal) | Completado | `Extraer_outputs(modelo)` retorna ALL outputs como data.frame. Integrado en 11 funciones R4XCL |
 | Viewer Professional (parcial) | En progreso | Botón 💾, detección PDF/TXT/DOCX, hash de contenido. Auto-refresh revertido (deadlock STA) |
 
 ------------------------------------------------------------------------
 
-*NEVEN v2.0 -- De 4.3 a 9.4. 357 tests. R + Julia + Python + D3 + Leaflet + Plotly + Snap Layout + Extraer_outputs. Security remediation: 36/36 findings resolved.*
+*NEVEN v2.1 -- De 4.3 a 9.5. 357 tests. Studio Standalone. Data Lab V2. AI Integration. R + Julia + Python + D3 + Leaflet + Plotly + Snap Layout + Extraer_outputs. Security remediation: 36/36 findings resolved.*
 *Repositorio reorganizado: Core/, Common/Security/, Common/IPC/, libreria/R/, libreria/JULIA/, Ejemplos/, Build/*
 *Universidad de Costa Rica -- Team Vikingos -- SKAL!*

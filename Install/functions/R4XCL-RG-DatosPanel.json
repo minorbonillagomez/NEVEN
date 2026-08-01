@@ -1,0 +1,58 @@
+{
+  "id": "RG_DatosPanel",
+  "family": "ST",
+  "family_label": "Series de Tiempo",
+  "name": "Regresion con Datos de Panel",
+  "description": "Estima modelos de regresion con datos de panel (longitudinales): Efectos Fijos (Within), Efectos Aleatorios o Pooled OLS. Requiere identificar la variable de individuo (i) y la variable de tiempo (t). Incluye tabla Stargazer.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Datos_de_panel",
+  "languages": ["r"],
+  "function_name": "RG_DatosPanel.Studio",
+  "file": "R4XCL-RG-DatosPanel.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    },
+    "I": {
+      "label": "Identificador de individuo (i)",
+      "types": ["numeric", "text"],
+      "multiple": false,
+      "required": true
+    },
+    "T": {
+      "label": "Variable de tiempo (t)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "TipoModelo",
+      "label": "Tipo de modelo",
+      "type": "select",
+      "default": 1,
+      "tier": 1,
+      "options": [
+        { "value": 1, "label": "Efectos Fijos (Within)" },
+        { "value": 2, "label": "Efectos Aleatorios" },
+        { "value": 3, "label": "Pooled OLS" }
+      ]
+    },
+    {
+      "name": "Escala",
+      "label": "Escalar variables X",
+      "type": "boolean",
+      "default": false,
+      "tier": 2
+    }
+  ]
+}

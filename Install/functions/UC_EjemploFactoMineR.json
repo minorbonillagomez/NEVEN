@@ -1,0 +1,42 @@
+{
+  "id": "UC_EjemploFactoMineR",
+  "family": "UC",
+  "family_label": "Mis Funciones",
+  "name": "ACP con FactoMineR (Ejemplo Libreria)",
+  "description": "Ejemplo que demuestra como integrar una libreria externa (FactoMineR) en Data Lab. Realiza ACP completo: varianza explicada, coordenadas de variables, contribuciones, cos2 (calidad de representacion) y biplot interactivo con individuos y variables superpuestos.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/An%C3%A1lisis_de_componentes_principales",
+  "languages": ["r"],
+  "function_name": "UC_EjemploFactoMineR.Studio",
+  "file": "UC_EjemploFactoMineR.Studio.R",
+  "variable_roles": {
+    "X": {
+      "label": "Variables activas",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "N_Comp",
+      "label": "Num. componentes (0=todos)",
+      "type": "integer",
+      "default": 0,
+      "tier": 1
+    },
+    {
+      "name": "Escala",
+      "label": "Escalar variables",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    },
+    {
+      "name": "Top_Variables",
+      "label": "Top variables en biplot",
+      "type": "integer",
+      "default": 10,
+      "tier": 2
+    }
+  ]
+}

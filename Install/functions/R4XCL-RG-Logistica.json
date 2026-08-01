@@ -1,0 +1,45 @@
+{
+  "id": "RG_Logistica",
+  "family": "RG",
+  "family_label": "Regresion",
+  "name": "Regresion Logistica",
+  "description": "Modela la probabilidad de un evento binario (0/1) usando los modelos Logit o Probit. Retorna coeficientes, Odds Ratios, metricas de ajuste (McFadden R2, exactitud) y curva de probabilidades.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Regresi%C3%B3n_log%C3%ADstica",
+  "languages": ["r"],
+  "function_name": "RG_Logistica.Studio",
+  "file": "R4XCL-RG-Logistica.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable binaria dependiente (0/1)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "TipoModelo",
+      "label": "Modelo",
+      "type": "select",
+      "default": 1,
+      "tier": 1,
+      "options": [
+        { "value": 1, "label": "Logit" },
+        { "value": 2, "label": "Probit" }
+      ]
+    },
+    {
+      "name": "Escala",
+      "label": "Escalar variables X",
+      "type": "boolean",
+      "default": false,
+      "tier": 1
+    }
+  ]
+}

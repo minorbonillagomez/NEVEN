@@ -1,0 +1,53 @@
+{
+  "id": "UC_EjemploAvanzado",
+  "family": "UC",
+  "family_label": "Mis Funciones",
+  "name": "Ejemplo Avanzado (Correlaciones Y~X)",
+  "description": "Funcion de ejemplo avanzado: calcula correlaciones entre una variable Y y multiples variables X, con grafico de barras interactivo. Muestra el patron completo con roles Y~X, parametros tipo select y grafico plotly.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Coeficiente_de_correlaci%C3%B3n_de_Pearson",
+  "languages": ["r"],
+  "function_name": "UC_EjemploAvanzado.Studio",
+  "file": "UC_EjemploAvanzado.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables a correlacionar (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Metodo",
+      "label": "Metodo de correlacion",
+      "type": "select",
+      "default": 1,
+      "tier": 1,
+      "options": [
+        { "value": 1, "label": "Pearson (lineal)" },
+        { "value": 2, "label": "Spearman (rangos)" },
+        { "value": 3, "label": "Kendall (tau)" }
+      ]
+    },
+    {
+      "name": "MostrarGrafico",
+      "label": "Mostrar grafico",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    },
+    {
+      "name": "Escala",
+      "label": "Escalar variables X",
+      "type": "boolean",
+      "default": false,
+      "tier": 2
+    }
+  ]
+}

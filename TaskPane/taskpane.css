@@ -5,12 +5,12 @@
   --bg-primary: #1a1a1a;
   --bg-secondary: #242424;
   --bg-card: rgba(40, 40, 40, 0.85);
-  --accent: #a8e600;
-  --accent-dim: rgba(168, 230, 0, 0.15);
+  --accent: #d7a538;
+  --accent-dim: rgba(215, 165, 56, 0.15);
   --text-primary: #e0e0e0;
   --text-secondary: #888;
   --text-muted: #555;
-  --border: rgba(168, 230, 0, 0.12);
+  --border: rgba(215, 165, 56, 0.12);
   --error: #ff4444;
   --success: #4caf50;
   --radius: 6px;
@@ -125,7 +125,7 @@ body {
   background: var(--accent);
   color: var(--bg-primary);
 }
-.btn-primary:hover { background: #8bc34a; }
+.btn-primary:hover { background: #c4922a; }
 .btn-secondary {
   background: #333;
   color: var(--text-primary);
@@ -140,11 +140,11 @@ table.data-table {
   font-size: clamp(8px, 1.5vw, 11px);
 }
 table.data-table th {
-  background: var(--bg-secondary);
+  background: #373434;
   color: var(--accent);
   padding: 5px 6px;
   text-align: right;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #444;
   position: sticky;
   top: 0;
   white-space: nowrap;
@@ -152,9 +152,10 @@ table.data-table th {
 table.data-table th:first-child { text-align: left; }
 table.data-table td {
   padding: 4px 6px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid #444;
   text-align: right;
   white-space: nowrap;
+  background: #373434;
 }
 table.data-table td:first-child { text-align: left; }
 table.data-table tr:hover td { background: var(--accent-dim); }
@@ -203,6 +204,13 @@ table.data-table tr:hover td { background: var(--accent-dim); }
 .msg-info { color: var(--text-secondary); padding: 12px; text-align: center; }
 .msg-error { color: var(--error); padding: 8px; font-size: 10px; background: rgba(255,68,68,0.1); border-radius: 4px; }
 .msg-success { color: var(--success); padding: 8px; font-size: 10px; }
+
+/* ─── Engine Dots ─────────────────────────────────────────────── */
+.engine-dot { font-size: 14px; margin: 0 2px; color: #555; }
+.engine-dot.available   { color: var(--success); }
+.engine-dot.unavailable { color: var(--error); }
+.engine-dot.checking    { color: #888; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.4 } }
 
 /* ─── Spinner ─────────────────────────────────────────────────── */
 .spinner {

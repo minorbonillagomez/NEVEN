@@ -271,3 +271,93 @@ taskkill /F /IM msedgewebview2.exe
 Remove-Item -Path "HKCU:\Software\Microsoft\Office\16.0\Excel\Resiliency" -Recurse -ErrorAction SilentlyContinue
 ```
 Espere 3 segundos y abra Excel.
+
+------------------------------------------------------------------------
+
+## NUEVOS (Julio 2026) — NEVEN Studio / DataLab
+
+------------------------------------------------------------------------
+
+## J1. DataLab muestra `raw={"columns":...}` en lugar del gráfico
+
+**Síntoma:** El panel de resultados muestra texto crudo: `raw={"columns": ["name","label","type","value","tier"], "rows": [...]}`.
+
+**Causa:** El servidor no puede parsear la respuesta de ControlR — la función R retorna un data.frame en formato directo pero el parser lo esperaba en formato transpuesto.
+
+**Solución:** Verificar que `C:\NEVEN\startup\datalab_handler.py` es la versión del 31/07/2026 o posterior. La versión correcta contiene la función `_parse_slots_from_variable` con detección de `has_required_cols`. Reiniciar el servidor NEVEN Studio.
+
+------------------------------------------------------------------------
+
+## J2. DataLab retorna "unused arguments (Param = value)" en funciones GR
+
+**Síntoma:** Error: `R: Error in GR_Funcion.Studio(...): unused arguments (Modo = "1", Ordenar = "1")`
+
+**Causas posibles:**
+
+**J2a. ControlR tiene cacheada la versión anterior de la función:**
+- ControlR cachea funciones en el environment `NEVEN`, no en `globalenv()`
+- El `source()` solo actualiza `globalenv()` — la versión vieja en NEVEN persiste
+- **Solución:** Reiniciar ControlR.exe (desde el Task Manager o reiniciando NEVEN Studio)
+
+**J2b. Parámetros de otra función contaminan la llamada:**
+- Si `_dlState.parameters` tiene parámetros de una función anterior (ej: `MostrarPuntos` de BoxPlot)
+- **Solución:** Hacer clic en una función diferente y volver a la función deseada (selectFunction resetea el estado)
+
+**J2c. El archivo .R en producción es la versión antigua:**
+- Verificar: `Select-String -Path "C:\NEVEN\functions\GR_Barras.Studio.R" -Pattern "Modo"`
+- Si no aparece "Modo", el archivo es la versión antigua — copiar la nueva versión
+
+------------------------------------------------------------------------
+
+## J3. NEVEN Studio no arranca (puerto 5555 no disponible)
+
+**Síntoma:** El browser muestra "No se puede acceder a este sitio" en localhost:5555.
+
+**Diagnóstico:**
+```powershell
+netstat -ano | findstr :5555 | findstr LISTENING
+```
+
+Si no hay resultado, el servidor no está corriendo. Si hay resultado, hay un proceso colgado.
+
+**Solución — proceso colgado:**
+```powershell
+# Obtener PID
+netstat -ano | findstr :5555 | findstr LISTENING
+# Matar proceso (reemplazar XXXXX con el PID)
+taskkill /PID XXXXX /F
+# Reiniciar con el .vbs
+```
+
+**Solución — servidor no arranca:**
+- Verificar que Python 3.12+ está instalado
+- Verificar que `C:\NEVEN\taskpane\start_studio.py` existe
+- Limpiar pycache: `Remove-Item "C:\NEVEN\startup\__pycache__\*" -Force`
+
+------------------------------------------------------------------------
+
+## J4. Gráfico de Burbujas renderiza sin puntos visibles
+
+**Síntoma:** El eje del gráfico aparece pero no se ven las burbujas.
+
+**Causa:** El rol Color recibe una columna numérica de alta cardinalidad (ej: salarios). Versiones anteriores creaban un trace por valor único → 20+ traces de 1 punto cada uno, prácticamente invisibles.
+
+**Solución:** La versión del 31/07/2026 detecta automáticamente si Color es numérico y usa colorscale continua de Plotly. Verificar versión del archivo `C:\NEVEN\functions\GR_EjemploAvanzado.Studio.R` — debe contener `color_is_num`.
+
+------------------------------------------------------------------------
+
+## J5. DataLab — el motor R no está disponible
+
+**Síntoma:** Al ejecutar cualquier función en DataLab: "El motor R no está disponible. Verifique que ControlR.exe esté activo."
+
+**Diagnóstico:**
+```powershell
+Invoke-WebRequest -Uri "http://localhost:5555/api/engines" -UseBasicParsing | Select-Object -ExpandProperty Content
+```
+
+Si `"r": false`, ControlR no conectó al pipe. El servidor arranca inmediatamente pero conecta los motores en background.
+
+**Solución:**
+1. Esperar 15-30 segundos después de iniciar el servidor
+2. Verificar que ControlR.exe está corriendo: `Get-Process | Where-Object {$_.Name -like "*ControlR*"}`
+3. Si no está corriendo, el `.vbs` de arranque no lo inició — revisar `neven-config.json` sección `Standalone.controlDir`

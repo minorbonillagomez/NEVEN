@@ -1,0 +1,41 @@
+{
+  "id": "RG_Poisson",
+  "family": "RG",
+  "family_label": "Regresion",
+  "name": "Regresion de Poisson",
+  "description": "Modela variables de conteo usando la distribucion de Poisson con enlace logaritmico. Incluye prueba de sobredispersion y retorna IRR (Incidence Rate Ratios) ademas de los coeficientes estandar.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Regresi%C3%B3n_de_Poisson",
+  "languages": ["r"],
+  "function_name": "RG_Poisson.Studio",
+  "file": "R4XCL-RG-Poisson.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable de conteo (Y >= 0)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Escala",
+      "label": "Escalar variables X",
+      "type": "boolean",
+      "default": false,
+      "tier": 1
+    },
+    {
+      "name": "Constante",
+      "label": "Incluir constante",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    }
+  ]
+}

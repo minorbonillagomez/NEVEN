@@ -1,0 +1,43 @@
+{
+  "id": "TM_TextAnalysis",
+  "family": "TM",
+  "family_label": "Text Mining",
+  "name": "Analisis de Texto (PDF/TXT/DOCX)",
+  "description": "Analiza un documento desde archivo PDF, TXT o DOCX. Escribe la ruta completa del archivo y obtiene: estadisticas lexicas, sentimiento, resumen extractivo automatico y frecuencia de palabras con grafico interactivo. No requiere dataset previo.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Miner%C3%ADa_de_textos",
+  "languages": ["python"],
+  "function_name": "TM_TextAnalysis",
+  "file": "TM_TextAnalysis.Studio.py",
+  "variable_roles": {},
+  "parameters": [
+    {
+      "name": "Ruta_Archivo",
+      "label": "Ruta del documento",
+      "type": "text",
+      "default": "",
+      "placeholder": "C:\\ruta\\al\\archivo.pdf",
+      "tier": 1
+    },
+    {
+      "name": "Max_Paginas",
+      "label": "Max. paginas PDF (0=todas)",
+      "type": "integer",
+      "default": 0,
+      "tier": 1
+    },
+    {
+      "name": "N_Resumen",
+      "label": "Oraciones en resumen",
+      "type": "integer",
+      "default": 5,
+      "tier": 2
+    },
+    {
+      "name": "N_Palabras",
+      "label": "Top palabras frecuentes",
+      "type": "integer",
+      "default": 25,
+      "tier": 2
+    }
+  ]
+}

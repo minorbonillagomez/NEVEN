@@ -1,0 +1,48 @@
+{
+  "id": "RG_SeriesTiempo",
+  "family": "ST",
+  "family_label": "Series de Tiempo",
+  "name": "Analisis de Series de Tiempo",
+  "description": "Analiza una serie temporal univariada o con variables exogenas (Y_t ~ X_t): estadisticas descriptivas, prueba de raiz unitaria Augmented Dickey-Fuller (ADF), funcion de autocorrelacion (ACF/PACF) y grafico interactivo. Si se asignan variables X, estima adicionalmente una regresion dinamica con tabla Stargazer.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Serie_temporal",
+  "languages": ["r"],
+  "function_name": "RG_SeriesTiempo.Studio",
+  "file": "R4XCL-RG-SeriesTiempo.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Serie temporal (Y_t)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables externas X_t (opcional)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": false
+    }
+  },
+  "parameters": [
+    {
+      "name": "Periodicidad",
+      "label": "Periodicidad",
+      "type": "select",
+      "default": 3,
+      "tier": 1,
+      "options": [
+        { "value": 1, "label": "Anual" },
+        { "value": 2, "label": "Trimestral" },
+        { "value": 3, "label": "Mensual" },
+        { "value": 4, "label": "Semanal" },
+        { "value": 5, "label": "Diaria" }
+      ]
+    },
+    {
+      "name": "Rezagos",
+      "label": "Rezagos ACF/PACF",
+      "type": "integer",
+      "default": 12,
+      "tier": 2
+    }
+  ]
+}

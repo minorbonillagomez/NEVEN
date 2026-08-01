@@ -1,0 +1,59 @@
+{
+  "id": "AD_ClusteringJerarquico",
+  "family": "AD",
+  "family_label": "Análisis de Datos",
+  "name": "Clustering Jerárquico",
+  "description": "Agrupa observaciones mediante un algoritmo jerárquico aglomerativo. A diferencia de K-Medias, no requiere especificar K de antemano y produce un dendrograma que revela la estructura de agrupamiento a múltiples niveles.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Clasificaci%C3%B3n_jer%C3%A1rquica",
+  "languages": ["r"],
+  "function_name": "AD_ClusteringJerarquico.Studio",
+  "file": "R4XCL-AD-ClusteringJerarquico.Studio.R",
+  "variable_roles": {
+    "X": {
+      "label": "Variables activas",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "K",
+      "label": "Número de clusters (K)",
+      "type": "integer",
+      "default": 3,
+      "tier": 1
+    },
+    {
+      "name": "Escala",
+      "label": "Escalar variables",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    },
+    {
+      "name": "Metodo",
+      "label": "Método de enlace",
+      "type": "select",
+      "default": 1,
+      "tier": 1,
+      "options": [
+        { "value": 1, "label": "Ward.D2 (recomendado)" },
+        { "value": 2, "label": "Complete" },
+        { "value": 3, "label": "Average" },
+        { "value": 4, "label": "Single" }
+      ]
+    },
+    {
+      "name": "Distancia",
+      "label": "Medida de distancia",
+      "type": "select",
+      "default": 1,
+      "tier": 2,
+      "options": [
+        { "value": 1, "label": "Euclidiana" },
+        { "value": 2, "label": "Manhattan" }
+      ]
+    }
+  ]
+}

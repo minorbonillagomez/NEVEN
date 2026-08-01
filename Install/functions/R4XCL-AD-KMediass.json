@@ -1,0 +1,55 @@
+{
+  "id": "AD_KMedias",
+  "family": "AD",
+  "family_label": "Análisis de Datos",
+  "name": "K-Medias",
+  "description": "Agrupa observaciones en K clusters usando el algoritmo de K-Medias. Permite escalar los datos y seleccionar el algoritmo de actualización de centroides.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/K-medias",
+  "languages": ["r"],
+  "function_name": "AD_KMedias.Studio",
+  "file": "R4XCL-AD-KMediass.Studio.R",
+  "variable_roles": {
+    "X": {
+      "label": "Variables activas",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "K",
+      "label": "Número de clusters (K)",
+      "type": "integer",
+      "default": 3,
+      "tier": 1
+    },
+    {
+      "name": "Escala",
+      "label": "Escalar variables",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    },
+    {
+      "name": "TipoModelo",
+      "label": "Algoritmo",
+      "type": "select",
+      "default": 1,
+      "tier": 1,
+      "options": [
+        { "value": 1, "label": "Hartigan-Wong" },
+        { "value": 2, "label": "Lloyd" },
+        { "value": 3, "label": "Forgy" },
+        { "value": 4, "label": "MacQueen" }
+      ]
+    },
+    {
+      "name": "Semilla",
+      "label": "Semilla aleatoria",
+      "type": "integer",
+      "default": 123456,
+      "tier": 2
+    }
+  ]
+}

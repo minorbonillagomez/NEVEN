@@ -558,3 +558,161 @@ Concepto de un componente tipo "Canvas" embebido en Excel que renderice: - PNG/J
 
 *Team Vikingos ⚔️ — De 4.3 a 9.2. SKÅL!*
 *Documento actualizado: 27 de abril de 2026*
+
+------------------------------------------------------------------------
+
+## ACTUALIZACION MAYOR — 30 de julio de 2026
+
+### Hitos completados desde mayo 2026
+
+#### NEVEN Studio Standalone (julio 2026) 🎉
+
+El hito más significativo desde la integración de WebView2: NEVEN ahora funciona **sin necesitar Microsoft Excel**. NEVEN Studio Standalone es una interfaz web completa que arranca con un doble clic en `NEVEN Studio.vbs` y abre el taskpane en el navegador del sistema.
+
+**Arquitectura del modo Standalone:**
+- `start_studio.py` lanza `ControlPython.exe` directamente (sin XLL)
+- `ControlPython.exe` levanta `neven_http_server.py` en el puerto 5555
+- El taskpane HTML/JS se sirve desde `C:\NEVEN\taskpane\`
+- El navegador del sistema (Chrome/Edge) actúa como UI
+- DuckDB embebido gestiona los datos del `dataset` activo
+
+**Componentes nuevos (todos Python/HTML — sin C++):**
+- `neven_http_server.py` — servidor HTTP BaseHTTPRequestHandler
+- `taskpane.html` / `taskpane.js` / `taskpane.css` — UI completa
+- `datalab.js` — módulo JavaScript para Data Lab
+- `pipe_client.py` — cliente de Named Pipes (reutiliza los mismos pipes de Excel)
+- `start_studio.py` / `start_http_server.py` — arranque del proceso
+- `NEVEN Studio.vbs` — lanzador de doble clic
+
+**La clave de la eficiencia:** `ControlPython.exe` siempre existió — simplemente se reemplazó el iniciador del proceso (del XLL a un script Python). Los motores C++ (ControlR.exe, ControlJulia.exe) se reutilizan exactamente igual.
+
+#### Data Lab V1 (julio 2026)
+
+Nueva pestaña "Data Lab" en NEVEN Studio que expone funciones analíticas de R y Python mediante una interfaz guiada de punto y clic — sin escribir código.
+
+**Flujo de usuario:**
+1. Cargar datos (CSV/Parquet/JSON) o conectar desde Excel via Bridge
+2. Seleccionar familia de funciones (AD, RG, DS, TM, UC)
+3. Asignar columnas del dataset a roles de variables (X, Y, T, ID)
+4. Configurar parámetros con controles dinámicos
+5. Hacer clic en "Ejecutar análisis"
+6. Ver resultados estructurados en slots tipificados
+
+**Infraestructura Data Lab:**
+- `datalab_handler.py` — DataLabHandler con `handle_catalog()` y `handle_run()`
+- `r_object_to_slots.R` — serializador universal de objetos R a slots tipificados
+- `GET /api/datalab/catalog` — descubrimiento automático de funciones desde `C:\NEVEN\functions\*.json`
+- `POST /api/datalab/run` — ejecución de análisis via Named Pipe a ControlR/ControlPython
+- Sidecar JSON convention — cada función tiene un `.json` con metadatos de UI
+
+**Catálogo de funciones (18 Studio wrappers):**
+- **Familia AD** (Análisis de Datos): K-Medias, ACP, Clustering Jerárquico
+- **Familia RG** (Regresión): Lineal, Logística, Árbol de Decisión, Datos Panel, Poisson, Series de Tiempo, SVM, Tobit
+- **Familia DS** (Conjuntos de Datos): Wooldridge (115 datasets del libro de econometría)
+- **Familia TM** (Text Mining): Análisis de texto PDF/DOCX/TXT con Python
+- **Familia UC** (Mis Funciones): 3 ejemplos plantilla para funciones personalizadas
+
+#### AI Integration en Text Mining (julio 2026)
+
+`TM_TextAnalysis.Studio.py` integrado con LMStudio via OpenAI-compatible API:
+
+- Extrae texto del PDF, lo limpia (colapso de saltos de línea mid-oración)
+- Envía primeras 500 palabras al LLM (límite de contexto modelo nano)
+- Resumen LLM aparece como slot "Resumen contextual (IA)" antes del extractivo TF-IDF
+- Prompt bilingüe (instrucciones en inglés, respuesta en español)
+- Degradación graceful: si LMStudio no está corriendo, el slot simplemente no aparece
+- WordCloud via Plotly scatter en espiral de Arquímedes (40 palabras, sin dependencias externas)
+
+Configuración AI en `neven-config.json`:
+```json
+"AI": {
+  "enabled": true,
+  "provider": "lmstudio",
+  "model": "nvidia/nemotron-3-nano-4b",
+  "endpoint": "http://localhost:1234/v1/chat/completions",
+  "maxTokens": 1000,
+  "temperature": 0.3,
+  "timeout": 120
+}
+```
+
+#### Extensibilidad: Funciones Personalizadas (julio 2026)
+
+Cualquier usuario puede agregar sus propias funciones al catálogo Data Lab con solo dos archivos:
+- `MiFuncion.Studio.R` — wrapper que llama `r_object_to_slots(resultado, tier_map)`
+- `MiFuncion.json` — sidecar que describe roles, parámetros y familia
+
+Documentado en `COMO_AGREGAR_FUNCIONES.md` con ejemplos UC completos.
+
+### Estado Actual (30 julio 2026)
+
+| Componente | Estado |
+|:---|:---|
+| R 4.4.1 desde Excel | ✅ ~90 procedimientos |
+| Julia 1.12.6 desde Excel | ✅ ~70 procedimientos + aliases |
+| Python 3.13 desde Excel | ✅ AI, Text Mining |
+| WebView2 / Plotly / D3 / Leaflet | ✅ Visualización interactiva |
+| Pluto.jl Notebooks | ✅ 15 notebooks |
+| Quarto Reportes | ✅ .qmd → HTML |
+| Ribbon COM nativo | ✅ 13+ botones |
+| NEVEN-SIM (Monte Carlo) | ✅ XLL separado |
+| **NEVEN Studio Standalone** | ✅ **Sin Excel requerido** |
+| **Data Lab V1** | ✅ **18 funciones, punto-y-clic** |
+| **AI Integration (LMStudio)** | ✅ **Resumen contextual en Text Mining** |
+| **Catálogo extensible (UC)** | ✅ **Funciones personalizadas** |
+| Tests automatizados | ✅ 357 tests |
+| Score de calidad | **9.4/10** |
+
+**Pendientes:**
+1. Tests para nuevas funciones Studio (tarea 15 del spec neven-data-lab)
+2. Tab "IA" en NEVEN Studio (consolidar funcionalidad AI dispersa)
+3. Soporte multi-lenguaje Python/Julia en Data Lab (actualmente solo R)
+
+---
+
+*Team Vikingos ⚔️ — SKÅL!*
+*Documento actualizado: 30 de julio de 2026*
+
+------------------------------------------------------------------------
+
+## ACTUALIZACIÓN — 31 de julio de 2026
+
+### Hitos completados en sesión 2026-07-31
+
+#### DataLab Bug Fixes (datalab_handler.py)
+- `_parse_slots_from_variable()`: soporte para formato directo de ControlR (1 row por slot)
+- `_build_r_script()`: filtrado de parámetros contra sidecar JSON (evita contaminación entre funciones)
+- `_build_r_script()`: X opcional → `data_X <- data.frame(.idx = seq_len(nrow(data)))`
+- Recarga forzada de funciones R: `rm() + source() + assign()` al env NEVEN
+- `selectFunction()` en datalab.js: limpia resultados y parámetros al cambiar función
+- Botones ⬇ PNG / ⬇ SVG en todos los gráficos Plotly del DataLab
+
+#### GR_Barras — Mejoras
+- Parámetro `Modo`: vertical agrupado / horizontal agrupado / vertical apilado / horizontal apilado
+- Parámetro `MostrarValores`: etiquetas de valor sobre barras
+- Parámetro `Ordenar`: Original / Mayor a menor / Menor a mayor (funciona con y sin grupos)
+- Rol Y acepta múltiples columnas (una traza por columna)
+
+#### GR_EjemploAvanzado (Burbujas)
+- Color numérico: colorscale continua Plotly con colorbar lateral
+- Color categórico: trazas separadas por grupo
+
+#### Selector visual de paletas
+- Nuevo tipo `"palette"` en renderParameterForm de datalab.js
+- Muestra swatches con colores reales de cada paleta (NEVEN, Viridis, Plasma, Set1, Pastel)
+- Aplicado a GR_Barras, GR_Lineas, GR_SeriesTiempo, GR_Histograma, GR_Correlaciones, GR_EjemploAvanzado, GR_EjemploBasico
+
+#### Catálogo
+- GR_Scatter eliminado (redundante con GR_EjemploBasico — Scatter Mínimo)
+- X opcional en GR_Lineas, GR_Barras, GR_SeriesTiempo
+
+### Pendientes actualizados (31 julio 2026)
+
+| Tarea | Prioridad | Estado |
+|:---|:---|:---|
+| Log debug neven_r_debug.log | Baja | Temporal — desactivar en producción |
+| Tests Studio wrappers GR | Alta | Pendiente |
+| Data Lab Python/Julia | Media | Pendiente |
+| Tab IA en NEVEN Studio | Media | Pendiente |
+| PLUTO.READ (Pluto → Excel) | Media | Pendiente |
+| CrashHandler | Media | Pendiente integración estable |

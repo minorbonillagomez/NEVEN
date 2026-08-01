@@ -1,0 +1,41 @@
+{
+  "id": "RG_Lineal",
+  "family": "RG",
+  "family_label": "Regresion",
+  "name": "Regresion Lineal",
+  "description": "Estima la relacion lineal entre una variable dependiente numerica y una o mas variables independientes. Retorna coeficientes, metricas de ajuste (R2, AIC, BIC) y un grafico de residuos.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Regresi%C3%B3n_lineal",
+  "languages": ["r"],
+  "function_name": "RG_Lineal.Studio",
+  "file": "R4XCL-RG-Lineal.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Escala",
+      "label": "Escalar variables X",
+      "type": "boolean",
+      "default": false,
+      "tier": 1
+    },
+    {
+      "name": "Constante",
+      "label": "Incluir constante (intercepto)",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    }
+  ]
+}

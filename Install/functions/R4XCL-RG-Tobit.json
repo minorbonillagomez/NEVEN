@@ -1,0 +1,48 @@
+{
+  "id": "RG_Tobit",
+  "family": "RG",
+  "family_label": "Regresion",
+  "name": "Regresion Tobit",
+  "description": "Modela variables dependientes con censura o truncamiento (ej: gastos >= 0, horas trabajadas). Estima coeficientes latentes y efectos marginales reales usando maxima verosimilitud. Requiere el paquete VGAM.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Modelo_tobit",
+  "languages": ["r"],
+  "function_name": "RG_Tobit.Studio",
+  "file": "R4XCL-RG-Tobit.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable censurada/truncada (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Limite_Inferior",
+      "label": "Limite inferior (-999999 = sin limite)",
+      "type": "integer",
+      "default": 0,
+      "tier": 1
+    },
+    {
+      "name": "Limite_Superior",
+      "label": "Limite superior (999999 = sin limite)",
+      "type": "integer",
+      "default": 999999,
+      "tier": 1
+    },
+    {
+      "name": "Escala",
+      "label": "Escalar variables X",
+      "type": "boolean",
+      "default": false,
+      "tier": 2
+    }
+  ]
+}

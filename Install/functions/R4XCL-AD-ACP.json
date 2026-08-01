@@ -1,0 +1,35 @@
+{
+  "id": "AD_ACP",
+  "family": "AD",
+  "family_label": "Análisis de Datos",
+  "name": "Componentes Principales",
+  "description": "Reduce la dimensionalidad del dataset proyectando las variables en componentes principales ortogonales que maximizan la varianza explicada. Ideal para explorar estructura, eliminar multicolinealidad y visualizar datos multivariados.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/An%C3%A1lisis_de_componentes_principales",
+  "languages": ["r"],
+  "function_name": "AD_ACP.Studio",
+  "file": "R4XCL-AD-ACP.Studio.R",
+  "variable_roles": {
+    "X": {
+      "label": "Variables activas",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Escala",
+      "label": "Escalar variables",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    },
+    {
+      "name": "N_Componentes",
+      "label": "Número de componentes",
+      "type": "integer",
+      "default": 0,
+      "tier": 1
+    }
+  ]
+}

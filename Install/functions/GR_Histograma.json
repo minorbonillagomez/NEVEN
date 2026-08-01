@@ -1,0 +1,46 @@
+{
+  "id": "GR_Histograma",
+  "family": "GR",
+  "family_label": "Gráficos",
+  "name": "Histograma",
+  "description": "Distribución de frecuencias de una variable numérica. Muestra la forma de la distribución, moda y dispersión.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Histograma",
+  "languages": [
+    "r"
+  ],
+  "function_name": "GR_Histograma.Studio",
+  "file": "GR_Histograma.Studio.R",
+  "variable_roles": {
+    "X": {
+      "label": "Variable numérica a distribuir",
+      "types": [
+        "numeric"
+      ],
+      "multiple": false,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Bins",
+      "label": "Número de intervalos (bins)",
+      "type": "integer",
+      "default": 30,
+      "tier": 1
+    },
+    {
+      "name": "MostrarDensidad",
+      "label": "Mostrar curva de densidad",
+      "type": "boolean",
+      "default": false,
+      "tier": 2
+    },
+    {
+      "name": "Paleta",
+      "label": "Paleta de colores",
+      "type": "palette",
+      "default": 1,
+      "tier": 1
+    }
+  ]
+}

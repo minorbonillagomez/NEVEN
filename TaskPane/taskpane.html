@@ -4,9 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEVEN Studio</title>
-  <link rel="stylesheet" href="taskpane.css?v=5">
+  <link rel="stylesheet" href="taskpane.css?v=8">
+  <!-- Auto-detect HTTP vs HTTPS server when opened as local file -->
+  <script>
+    (function() {
+      if (window.location.protocol !== 'file:') return;
+      // Try HTTPS first, fall back to HTTP
+      fetch('https://localhost:5555/health', { mode: 'no-cors' })
+        .then(function() { window._NEVEN_API_BASE = 'https://localhost:5555'; })
+        .catch(function() { window._NEVEN_API_BASE = 'http://localhost:5555'; });
+    })();
+  </script>
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
-
 </head>
 <body>
 
@@ -19,6 +28,9 @@
     <div class="tab active" data-tab="viewers">Viewers</div>
     <div class="tab" data-tab="sql">SQL</div>
     <div class="tab" data-tab="data-studio">Data Studio</div>
+    <div class="tab" data-tab="run-script">Run Script</div>
+    <div class="tab" data-tab="data-lab">Data Lab</div>
+    <div class="tab" data-tab="presentaciones">Presentaciones</div>
   </div>
 
   <!-- Tab: Viewers -->
@@ -84,6 +96,145 @@
     </div>
   </div>
 
+  <!-- Tab: Run Script -->
+  <div class="tab-content" id="run-script">
+    <div class="card">
+      <div class="card-title">Run Script</div>
+      <div class="controls">
+        <label>Language:</label>
+        <select id="script-lang">
+          <option value="r" selected>R</option>
+          <option value="python">Python</option>
+          <option value="julia">Julia</option>
+        </select>
+        <span id="engine-status-r"      class="engine-dot" title="R">●</span>
+        <span id="engine-status-python" class="engine-dot" title="Python">●</span>
+        <span id="engine-status-julia"  class="engine-dot" title="Julia">●</span>
+      </div>
+      <textarea class="sql-editor" id="script-input" style="min-height:120px"></textarea>
+      <div class="controls" style="margin-top:6px">
+        <button class="btn btn-primary"   id="btn-run-script">Execute</button>
+        <button class="btn btn-secondary" id="btn-open-rpivot">Open RPivot</button>
+        <span   id="script-status"></span>
+      </div>
+    </div>
+
+    <!-- Available Functions panel -->
+    <details class="card" id="functions-panel">
+      <summary class="card-title" style="cursor:pointer">Available Functions</summary>
+      <input type="text" id="func-search" placeholder="Search..." style="width:100%;margin:4px 0">
+      <div id="func-list"></div>
+    </details>
+
+    <!-- Output area -->
+    <div class="card" id="script-output-card" style="display:none">
+      <div class="card-title">Output</div>
+      <iframe id="script-iframe"  style="width:100%;height:400px;display:none;border:0"></iframe>
+      <div    id="script-table"   style="display:none"></div>
+      <pre    id="script-scalar"  style="display:none;background:#111;padding:8px;color:#a8e600"></pre>
+      <div    id="script-error"   class="msg-error" style="display:none"></div>
+      <pre    id="script-console" style="display:none;background:#1a1a2e;padding:6px;font-size:10px;color:#888"></pre>
+    </div>
+  </div>
+
+  <!-- Tab: Data Lab -->
+  <div class="tab-content" id="data-lab">
+    <!-- Sin dataset -->
+    <div id="dl-no-dataset" class="msg-info" style="display:none">
+      Cargue datos primero desde la pestaña <strong>Data Studio</strong> o el <strong>Excel Bridge</strong>.
+    </div>
+
+    <!-- Selector de función -->
+    <div id="dl-selector-card" class="card">
+      <div class="card-title">Seleccionar función</div>
+      <div class="controls" style="gap:6px">
+        <select id="dl-family-select" disabled style="min-width:160px">
+          <option value="">— Familia —</option>
+        </select>
+        <span id="dl-catalog-spinner" style="display:none">⏳</span>
+      </div>
+      <div id="dl-catalog-error" style="display:none;margin-top:6px">
+        <span id="dl-catalog-error-msg" class="msg-error"></span>
+        <button class="btn btn-secondary" id="dl-retry-catalog" style="margin-left:6px">Reintentar</button>
+      </div>
+      <div id="dl-function-list" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
+      <!-- Selector de idioma (visible solo si hay múltiples idiomas) -->
+      <div id="dl-language-row" style="display:none;margin-top:6px">
+        <label style="font-size:12px;margin-right:4px">Idioma:</label>
+        <select id="dl-language-select"></select>
+      </div>
+    </div>
+
+    <!-- Panel de columnas -->
+    <div id="dl-column-panel" style="display:none" class="card">
+      <div class="card-title">Asignación de columnas</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px">
+          <div style="font-size:11px;color:#888;margin-bottom:4px">Columnas del dataset</div>
+          <div id="dl-column-list" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+        </div>
+        <div style="flex:2;min-width:200px">
+          <div style="font-size:11px;color:#888;margin-bottom:4px">Roles de variables</div>
+          <div id="dl-role-slots"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario de parámetros -->
+    <div id="dl-param-card" style="display:none" class="card">
+      <div class="card-title">Parámetros</div>
+      <div id="dl-param-tier1"></div>
+      <details id="dl-param-advanced" style="margin-top:6px">
+        <summary style="cursor:pointer;font-size:12px;color:#888">Parámetros avanzados</summary>
+        <div id="dl-param-tier2" style="margin-top:6px"></div>
+      </details>
+    </div>
+
+    <!-- Filtro WHERE -->
+    <div id="dl-filter-card" style="display:none" class="card">
+      <div class="card-title">Filtro WHERE (opcional)</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="color:var(--text-secondary);font-size:10px;white-space:nowrap">WHERE</span>
+        <input type="text" id="dl-filter-input"
+          placeholder="Ej: edad > 18 AND pais = 'CR'"
+          style="flex:1;box-sizing:border-box;
+                 background:var(--bg-secondary);
+                 color:var(--text-primary);
+                 border:1px solid var(--border);
+                 border-radius:4px;
+                 padding:5px 10px;
+                 font-size:11px;
+                 font-family:'Cascadia Code','Consolas',monospace;
+                 outline:none;"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border)'"
+        >
+      </div>
+    </div>
+
+    <!-- Botón Ejecutar -->
+    <div id="dl-run-row" style="display:none;margin-top:8px">
+      <button class="btn btn-primary" id="dl-run-btn" disabled>Ejecutar análisis</button>
+      <span id="dl-run-spinner" style="display:none;margin-left:8px">⏳</span>
+    </div>
+
+    <!-- Panel de resultados -->
+    <div id="dl-results-panel" style="margin-top:8px">
+      <div id="dl-results-error" class="msg-error" style="display:none"></div>
+      <div id="dl-results-content"></div>
+    </div>
+  </div>
+
+  <!-- Tab: Presentaciones -->
+  <div class="tab-content" id="presentaciones" style="padding:0;height:calc(100vh - 80px)">
+    <iframe
+      id="presentaciones-frame"
+      src=""
+      style="width:100%;height:100%;border:none;display:block"
+      allow="clipboard-read; clipboard-write"
+    ></iframe>
+  </div>
+
   <div class="status-bar">
     <span id="status-server">●</span>
   </div>
@@ -98,7 +249,58 @@ document.querySelectorAll('.tab').forEach(function(t){
     document.querySelectorAll('.tab-content').forEach(function(x){x.classList.remove('active')});
     t.classList.add('active');
     document.getElementById(t.dataset.tab).classList.add('active');
+    // Lazy-load del editor de presentaciones al primer clic
+    if (t.dataset.tab === 'presentaciones') {
+      var frame = document.getElementById('presentaciones-frame');
+      if (!frame.src || frame.src === window.location.href) {
+        frame.src = API + '/presentaciones/index.html';
+      }
+    }
   });
+});
+
+// --- Relay postMessage: DataLab → Presentaciones iframe ---
+window.addEventListener('message', function(event) {
+  if (event.origin !== window.location.origin) return;
+  if (!event.data || event.data.type !== 'NEVEN_ADD_SLIDE') return;
+
+  var frame = document.getElementById('presentaciones-frame');
+  if (!frame) return;
+
+  var msg = event.data;
+
+  // Función de toast — confirma sin cambiar de tab
+  function showToast(text) {
+    var t = document.getElementById('neven-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'neven-toast';
+      t.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);' +
+        'background:#373434;color:var(--accent,#d7a538);border:1px solid var(--accent,#d7a538);' +
+        'border-radius:6px;padding:8px 18px;font-size:11px;font-weight:600;z-index:9999;' +
+        'pointer-events:none;transition:opacity 0.3s;opacity:0';
+      document.body.appendChild(t);
+    }
+    t.textContent = text;
+    t.style.opacity = '1';
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function(){ t.style.opacity='0'; }, 2500);
+  }
+
+  // Cargar el iframe de presentaciones en background si no está cargado aún
+  if (!frame.src || frame.src === window.location.href || frame.src === 'about:blank') {
+    frame.src = API + '/presentaciones/index.html';
+    frame.addEventListener('load', function onLoad() {
+      frame.removeEventListener('load', onLoad);
+      setTimeout(function() {
+        frame.contentWindow.postMessage(msg, window.location.origin);
+        showToast('✓ Slide agregado a Presentaciones');
+      }, 300);
+    });
+  } else {
+    frame.contentWindow.postMessage(msg, window.location.origin);
+    showToast('✓ Slide agregado a Presentaciones');
+  }
 });
 
 // --- Cargar CSV ---
@@ -201,7 +403,12 @@ document.getElementById('btn-sql-run').addEventListener('click', function(){
     document.getElementById('sql-status').textContent=d.total_rows+' filas';
     var html='<table class="data-table"><tr>';d.columns.forEach(function(c){html+='<th>'+c+'</th>';});html+='</tr>';
     d.rows.forEach(function(row){html+='<tr>';row.forEach(function(v){html+='<td>'+(v!==null?v:'')+'</td>';});html+='</tr>';});
-    html+='</table>';document.getElementById('sql-results').innerHTML=html;
+    html+='</table>';
+    var sqlResults = document.getElementById('sql-results');
+    sqlResults.innerHTML=html;
+    _addSendToSlideBtn(sqlResults, 'Consulta SQL', function(){
+      return { html: '<html><head><meta charset="UTF-8"><style>body{background:#1a1a1a;color:#e0e0e0;font-family:Segoe UI,sans-serif;font-size:11px;padding:16px;overflow:auto}table{border-collapse:collapse;width:100%}th{background:#373434;color:#d7a538;padding:5px 8px;border-bottom:1px solid #444;position:sticky;top:0}td{padding:4px 8px;border-bottom:1px solid #333;background:#373434}tr:hover td{background:rgba(215,165,56,.1)}</style></head><body>'+html+'</body></html>' };
+    });
   }).catch(function(e){document.getElementById('sql-error').style.display='block';document.getElementById('sql-error').textContent=e;});
 });
 document.getElementById('sql-input').addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();document.getElementById('btn-sql-run').click();}});
@@ -221,19 +428,68 @@ function populateGroupBy(cols,types){
     .then(function(r){return r.json()}).then(function(d){
       if(d.status==='ok'){
         var labels=d.results.map(function(r){return r.group;}),vals=d.results.map(function(r){return r.value;});
-        if(typeof Plotly!=='undefined'){Plotly.newPlot('grp-chart',[{x:labels,y:vals,type:'bar',marker:{color:'rgba(168,230,0,0.7)'}}],{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#888',size:9},margin:{t:8,r:10,b:35,l:50}},{responsive:true,displayModeBar:false});}
+        if(typeof Plotly!=='undefined'){
+          var traces=[{x:labels,y:vals,type:'bar',marker:{color:'rgba(168,230,0,0.7)'}}];
+          var layout={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#888',size:9},margin:{t:8,r:10,b:35,l:50}};
+          Plotly.newPlot('grp-chart',traces,layout,{responsive:true,displayModeBar:false});
+          // Boton Enviar a Slide para el gráfico GROUP BY
+          var grpChartEl = document.getElementById('grp-chart');
+          _addSendToSlideBtn(grpChartEl, gc+' / '+gm+'('+gv+')', function(){
+            return { plotly: {data:traces, layout:Object.assign({},layout,{paper_bgcolor:'#1a1a1a',plot_bgcolor:'#1a1a1a',font:{color:'#e0e0e0'}})} };
+          });
+        }
         var html='<table class="data-table"><tr><th>'+gc+'</th><th>'+gm+'('+gv+')</th></tr>';d.results.forEach(function(r){html+='<tr><td>'+r.group+'</td><td>'+r.value.toFixed(2)+'</td></tr>';});html+='</table>';
-        document.getElementById('grp-table').innerHTML=html;
+        var grpTableEl = document.getElementById('grp-table');
+        grpTableEl.innerHTML=html;
+        // Boton Enviar a Slide para la tabla GROUP BY
+        _addSendToSlideBtn(grpTableEl, 'Tabla '+gc+' / '+gm+'('+gv+')', function(){
+          return { html: '<html><head><meta charset="UTF-8"><style>body{background:#1a1a1a;color:#e0e0e0;font-family:Segoe UI,sans-serif;font-size:11px;padding:16px}table{border-collapse:collapse;width:100%}th{background:#373434;color:#d7a538;padding:5px 8px;border-bottom:1px solid #444}td{padding:4px 8px;border-bottom:1px solid #333;background:#373434}</style></head><body>'+html+'</body></html>' };
+        });
       }
     });
   });
 });
 
+// --- Helper: Enviar contenido a Slide en Presentaciones ---
+function _nevenSendToSlide(title, htmlContent, plotlyFig) {
+  var msg = {
+    type:       'NEVEN_ADD_SLIDE',
+    slideTitle: title,
+    slideHtml:  htmlContent  || null,
+    plotlyData: plotlyFig    || null
+  };
+  window.postMessage(msg, window.location.origin);
+}
+
+// Agrega boton "Enviar a Slide" debajo de un elemento del DOM
+function _addSendToSlideBtn(containerEl, title, getContent) {
+  // Quitar boton anterior si existe
+  var old = containerEl.querySelector('.neven-send-slide-btn');
+  if (old) old.remove();
+  var btn = document.createElement('button');
+  btn.className = 'btn btn-secondary neven-send-slide-btn';
+  btn.style.cssText = 'font-size:10px;margin-top:6px;border-color:var(--accent)';
+  btn.textContent = 'Enviar a Slide';
+  btn.addEventListener('click', function() {
+    var payload = getContent();
+    _nevenSendToSlide(title, payload.html || null, payload.plotly || null);
+    btn.textContent = '✓ Enviado';
+    btn.style.color = 'var(--accent)';
+    setTimeout(function(){ btn.textContent='Enviar a Slide'; btn.style.color=''; }, 2000);
+  });
+  containerEl.appendChild(btn);
+}
+
 // --- Preview ---
 function showPreview(cols,rows){
   var html='<table class="data-table"><tr>';cols.forEach(function(c){html+='<th>'+c+'</th>';});html+='</tr>';
   rows.forEach(function(row){html+='<tr>';row.forEach(function(v){html+='<td>'+(v!==null&&v!==undefined?v:'')+'</td>';});html+='</tr>';});
-  html+='</table>';document.getElementById('preview-area').innerHTML=html;
+  html+='</table>';
+  var area = document.getElementById('preview-area');
+  area.innerHTML = html;
+  _addSendToSlideBtn(area, 'Tabla de datos', function() {
+    return { html: '<html><head><meta charset="UTF-8"><style>body{background:#1a1a1a;color:#e0e0e0;font-family:Segoe UI,sans-serif;font-size:11px;padding:16px}table{border-collapse:collapse;width:100%}th{background:#373434;color:#d7a538;padding:5px 8px;border-bottom:1px solid #444}td{padding:4px 8px;border-bottom:1px solid #333;background:#373434}tr:hover td{background:rgba(215,165,56,.1)}</style></head><body>' + html + '</body></html>' };
+  });
 }
 
 // --- Health ---
@@ -313,8 +569,190 @@ function showStats(result){
     }
   });
   html+='</table>';
-  document.getElementById('preview-area').innerHTML=html;
+  var area = document.getElementById('preview-area');
+  area.innerHTML = html;
+  _addSendToSlideBtn(area, 'Estadísticas descriptivas', function(){
+    return { html: '<html><head><meta charset="UTF-8"><style>body{background:#1a1a1a;color:#e0e0e0;font-family:Segoe UI,sans-serif;font-size:10px;padding:12px;overflow:auto}table{border-collapse:collapse;width:100%}th{background:#373434;color:#d7a538;padding:4px 6px;border-bottom:1px solid #444;white-space:nowrap;position:sticky;top:0}td{padding:3px 6px;border-bottom:1px solid #333;background:#373434;white-space:nowrap;text-align:right}td:first-child,td:nth-child(2){text-align:left}</style></head><body>'+html+'</body></html>' };
+  });
 }
 </script>
+
+<script>
+// ─── Run Script Tab — engine dots + execution ────────────────────────────────
+// (Complementa el script principal inline; no duplica handlers existentes)
+
+const API_BASE_RS = window.location.origin;
+
+// Activar dots al entrar a la pestaña Run Script
+document.querySelectorAll('.tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    if (tab.dataset.tab === 'run-script') {
+      setTimeout(refreshEngineStatusRS, 50);
+    }
+    if (tab.dataset.tab === 'data-lab') {
+      setTimeout(onDataLabTabActivated, 50);
+    }
+  });
+});
+
+async function refreshEngineStatusRS() {
+  ['r','python','julia'].forEach(function(lang) {
+    var dot = document.getElementById('engine-status-' + lang);
+    if (dot) { dot.className = 'engine-dot checking'; dot.title = lang.toUpperCase() + ': checking...'; }
+  });
+  try {
+    var resp = await fetch(API_BASE_RS + '/api/engines');
+    var data = await resp.json();
+    ['r','python','julia'].forEach(function(lang) {
+      var dot = document.getElementById('engine-status-' + lang);
+      if (dot) {
+        dot.className = 'engine-dot ' + (data[lang] ? 'available' : 'unavailable');
+        dot.title = lang.toUpperCase() + ': ' + (data[lang] ? 'running ✓' : 'stopped ✗');
+      }
+    });
+  } catch(err) {
+    ['r','python','julia'].forEach(function(lang) {
+      var dot = document.getElementById('engine-status-' + lang);
+      if (dot) { dot.className = 'engine-dot unavailable'; dot.title = lang.toUpperCase() + ': server error'; }
+    });
+    console.warn('[NEVEN] engine status fetch failed:', err.message);
+  }
+}
+
+// Pre-llenar snippet al cambiar lenguaje
+var _snippets = {
+  r:      '# R\nsummary(iris)\n',
+  python: '# Python\nimport sys\nsys.version\n',
+  julia:  '# Julia\nprintln("NEVEN Julia OK")\n'
+};
+document.getElementById('script-lang').addEventListener('change', function() {
+  var ta = document.getElementById('script-input');
+  ta.value = _snippets[this.value] || '';
+});
+document.getElementById('script-input').value = _snippets['r'];
+
+// Ctrl+Enter en script-input
+document.getElementById('script-input').addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); runScriptRS(); }
+});
+
+// Execute button
+document.getElementById('btn-run-script').addEventListener('click', runScriptRS);
+document.getElementById('btn-open-rpivot').addEventListener('click', openRPivotRS);
+
+// Function search
+document.getElementById('func-search').addEventListener('input', filterFunctionsRS);
+
+async function runScriptRS() {
+  var lang = document.getElementById('script-lang').value;
+  var code = document.getElementById('script-input').value.trim();
+  if (!code) return;
+  var btn = document.getElementById('btn-run-script');
+  var status = document.getElementById('script-status');
+  btn.disabled = true; status.textContent = '⏳';
+  try {
+    var resp = await fetch(API_BASE_RS + '/api/' + lang, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({code: code})
+    });
+    var res = await resp.json();
+    renderScriptResultRS(res);
+  } catch(e) {
+    showScriptErrorRS(e.message);
+  } finally {
+    btn.disabled = false; status.textContent = '';
+  }
+}
+
+function renderScriptResultRS(res) {
+  var card   = document.getElementById('script-output-card');
+  var iframe = document.getElementById('script-iframe');
+  var table  = document.getElementById('script-table');
+  var scalar = document.getElementById('script-scalar');
+  var errEl  = document.getElementById('script-error');
+  var cons   = document.getElementById('script-console');
+  [iframe, table, scalar, errEl, cons].forEach(function(el){ el.style.display = 'none'; });
+  card.style.display = '';
+
+  if (res.status === 'error') {
+    errEl.textContent = res.message || 'Error desconocido';
+    errEl.style.display = '';
+  } else if (res.type === 'html') {
+    iframe.srcdoc = res.html;
+    iframe.style.display = '';
+  } else if (res.type === 'array') {
+    var html = '<table class="data-table"><tr>';
+    (res.columns||[]).forEach(function(c){ html += '<th>' + c + '</th>'; });
+    html += '</tr>';
+    (res.rows||[]).forEach(function(row){
+      html += '<tr>';
+      row.forEach(function(v){ html += '<td>' + (v !== null ? v : 'NULL') + '</td>'; });
+      html += '</tr>';
+    });
+    html += '</table>';
+    table.innerHTML = html;
+    table.style.display = '';
+  } else {
+    scalar.textContent = String(res.result !== undefined ? res.result : '');
+    scalar.style.display = '';
+  }
+  if (res.console) { cons.textContent = res.console; cons.style.display = ''; }
+}
+
+function showScriptErrorRS(msg) {
+  var card = document.getElementById('script-output-card');
+  var errEl = document.getElementById('script-error');
+  ['script-iframe','script-table','script-scalar','script-console'].forEach(function(id){
+    document.getElementById(id).style.display = 'none';
+  });
+  errEl.textContent = msg; errEl.style.display = '';
+  card.style.display = '';
+}
+
+async function openRPivotRS() {
+  var btn = document.getElementById('btn-run-script');
+  var status = document.getElementById('script-status');
+  btn.disabled = true; status.textContent = '⏳';
+  try {
+    var resp = await fetch(API_BASE_RS + '/api/rpivot', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    renderScriptResultRS(await resp.json());
+  } catch(e) { showScriptErrorRS(e.message); }
+  finally { btn.disabled = false; status.textContent = ''; }
+}
+
+async function loadAvailableFunctionsRS() {
+  try {
+    var resp = await fetch(API_BASE_RS + '/api/functions');
+    var data = await resp.json();
+    var list = document.getElementById('func-list');
+    list.innerHTML = '';
+    var langs = data.languages || {};
+    Object.entries(langs).forEach(function([lang, fns]) {
+      if (!fns.length) return;
+      var sec = document.createElement('div');
+      sec.innerHTML = '<strong>' + lang.toUpperCase() + '</strong>';
+      fns.forEach(function(fn) {
+        var entry = document.createElement('div');
+        entry.className = 'func-entry';
+        entry.dataset.name = fn.name || '';
+        entry.dataset.desc = fn.description || '';
+        entry.innerHTML = '<code>' + fn.name + '</code> — ' + (fn.description || '');
+        sec.appendChild(entry);
+      });
+      list.appendChild(sec);
+    });
+  } catch(_) {}
+}
+
+function filterFunctionsRS() {
+  var q = (document.getElementById('func-search').value || '').toLowerCase();
+  document.querySelectorAll('#func-list .func-entry').forEach(function(el) {
+    el.style.display = (el.dataset.name.toLowerCase().includes(q) || el.dataset.desc.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+</script>
+<script src="datalab.js?v=1785523931"></script>
+
 </body>
 </html>

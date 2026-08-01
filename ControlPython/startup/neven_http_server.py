@@ -13,6 +13,12 @@
 #   POST /api/analyze      → Descriptive statistics via DuckDB
 #   POST /api/groupby      → Live GROUP BY aggregation
 #   POST /api/query        → Arbitrary SQL execution (SELECT only)
+#   POST /api/r            → Execute R code via PipeClient (task 6.2)
+#   POST /api/python       → Execute Python code via PipeClient (task 6.2)
+#   POST /api/julia        → Execute Julia code via PipeClient (task 6.2)
+#   POST /api/rpivot       → RPivot table generation via R (task 7.3)
+#   GET  /api/engines      → Pipe-probe each language engine (task 7.1)
+#   GET  /api/functions    → List registered functions per language (task 7.2)
 
 import os
 import sys
@@ -22,6 +28,99 @@ import time
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, unquote
+
+# ─── pipe_client imports (optional — only needed for Script endpoints) ────────
+# pipe_client.py lives in TaskPane/, which is one level up from ControlPython/startup/.
+# We add TaskPane to sys.path lazily so the server can still start without it.
+try:
+    _HERE = os.path.dirname(os.path.abspath(__file__))
+    _TASKPANE = os.path.normpath(os.path.join(_HERE, "..", "..", "TaskPane"))
+    if _TASKPANE not in sys.path and os.path.isdir(_TASKPANE):
+        sys.path.insert(0, _TASKPANE)
+    from pipe_client import (  # type: ignore[import]
+        PipeClientError as _PipeClientError,
+        PipeTimeoutError as _PipeTimeoutError,
+        variable_to_python as _variable_to_python,
+    )
+    _PIPE_CLIENT_AVAILABLE = True
+except ImportError:
+    # In environments without pipe_client (e.g. production before TaskPane is
+    # installed) the Script endpoints return 503 anyway because no factory is
+    # registered, so these stubs are only reached in unit tests that mock
+    # _handle_script directly.
+    class _PipeClientError(Exception):  # type: ignore[no-redef]
+        pass
+
+    class _PipeTimeoutError(_PipeClientError):  # type: ignore[no-redef]
+        pass
+
+    def _variable_to_python(var):  # type: ignore[misc]
+        return None
+
+    _PIPE_CLIENT_AVAILABLE = False
+
+# Data Lab handler (nuevo en Data Lab V1)
+try:
+    from datalab_handler import DataLabHandler as _DataLabHandler  # type: ignore
+    _datalab_handler = _DataLabHandler()
+    _DATALAB_AVAILABLE = True
+except ImportError:
+    _DATALAB_AVAILABLE = False
+
+
+def _is_broken_pipe(exc: Exception, msg: str) -> bool:
+    """Return True when *exc* indicates the Named Pipe connection was lost.
+
+    Req 8.4: triggers the single reconnect attempt inside ``_handle_script``.
+    """
+    if isinstance(exc, OSError):
+        return True
+    lowered = msg.lower()
+    return "pipe closed" in lowered or "broken pipe" in lowered
+
+# ─── Win32 pipe-probe imports (Windows only) ──────────────────────────────────
+try:
+    import win32file  # type: ignore
+    import win32con   # type: ignore
+    import pywintypes  # type: ignore
+    _WIN32_AVAILABLE = True
+except ImportError:
+    win32file = None   # type: ignore
+    win32con = None    # type: ignore
+    pywintypes = None  # type: ignore
+    _WIN32_AVAILABLE = False
+
+
+# ─── Pipe probe helper ────────────────────────────────────────────────────────
+
+def _probe_pipe(pipe_name: str) -> bool:
+    """Return True if the named pipe exists (CreateFile succeeds), False otherwise.
+
+    On non-Windows (or when pywin32 is unavailable) always returns False.
+
+    Args:
+        pipe_name: Full pipe path, e.g. ``\\\\.\\pipe\\neven_r``.
+
+    Returns:
+        True if a CreateFile call on the pipe succeeds; False on any exception
+        or on non-Windows platforms.
+    """
+    if not _WIN32_AVAILABLE:
+        return False
+    try:
+        handle = win32file.CreateFile(
+            pipe_name,
+            win32con.GENERIC_READ | win32con.GENERIC_WRITE,
+            0,           # no sharing
+            None,        # default security
+            win32con.OPEN_EXISTING,
+            0,           # default attributes
+            None,        # no template
+        )
+        win32file.CloseHandle(handle)
+        return True
+    except Exception:
+        return False
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -38,7 +137,13 @@ DEFAULT_CONFIG = {
     "staticDir": "C:\\NEVEN\\taskpane",
     "viewersDir": "C:\\NEVEN\\workspace",
     "queryTimeoutSec": 30,
-    "maxPayloadMB": 50
+    "maxPayloadMB": 50,
+    # pipe_client_factory: dict[str, Callable[[], PipeClient]]
+    # Maps language name ("r", "python", "julia") to a zero-argument callable
+    # that returns a connected PipeClient instance.  Injected by start_studio.py
+    # (task 4.3) or by unit tests.  When absent, all Script endpoints return 503.
+    "pipe_client_factory": {},
+    "functions_dir": r"C:\NEVEN\functions",  # Directorio de sidecar JSONs
 }
 
 
@@ -228,6 +333,24 @@ class NEVENHandler(BaseHTTPRequestHandler):
         """Suppress default stderr logging."""
         pass
 
+    def _get_pipe_client(self, lang: str):
+        """Return a PipeClient for *lang* by calling the injected factory.
+
+        Args:
+            lang: Language key — "r", "python", or "julia".
+
+        Returns:
+            A PipeClient instance produced by the registered factory callable.
+
+        Raises:
+            KeyError: If *lang* has no factory registered in ``pipe_client_factory``.
+                      Callers should map this to an HTTP 503 response.
+        """
+        factory = _config.get("pipe_client_factory", {})
+        if lang not in factory:
+            raise KeyError(f"No pipe_client_factory registered for language: {lang!r}")
+        return factory[lang]()
+
     def _send_json(self, data, status=200):
         body = json.dumps(data).encode('utf-8')
         self.send_response(status)
@@ -266,6 +389,15 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_json({"status": "ok", "version": "3.0.0", "port": _server_port})
             return
 
+        # ── Script engine endpoints (implemented in tasks 7.1 and 7.2) ──────
+        if path == 'api/engines':
+            self._handle_engines()
+            return
+
+        if path == 'api/functions':
+            self._handle_functions()
+            return
+
         # Bridge pull (TaskPane reads data that Excel pushed)
         if path == 'api/bridge/pull':
             key = unquote(parsed.query.split('=')[1]) if '=' in (parsed.query or '') else 'default'
@@ -286,6 +418,15 @@ class NEVENHandler(BaseHTTPRequestHandler):
             if os.path.isdir(bridge_dir):
                 keys = [f[:-5] for f in os.listdir(bridge_dir) if f.endswith('.json')]
             self._send_json({"status": "ok", "keys": keys})
+            return
+
+        # ── Data Lab catalog ──────────────────────────────────────────────────
+        if path == 'api/datalab/catalog':
+            if not _DATALAB_AVAILABLE:
+                self._send_error_json("DataLab no disponible", 503)
+                return
+            result = _datalab_handler.handle_catalog(_config)
+            self._send_json(result)
             return
 
         # Serve viewers
@@ -366,6 +507,22 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_bridge_push(body)
         elif path == 'api/bridge/write':
             self._handle_bridge_write(body)
+        # ── Script execution endpoints (implemented in task 6.2) ─────────────
+        elif path in ('api/r', 'api/python', 'api/julia'):
+            self._handle_script(path.split('/')[1], body)
+        elif path == 'api/rpivot':
+            self._handle_rpivot(body)
+        elif path == 'api/datalab/run':
+            if not _DATALAB_AVAILABLE:
+                self._send_error_json("DataLab no disponible", 503)
+                return
+            result = _datalab_handler.handle_run(
+                body, _config,
+                _get_db(), _db_lock,
+                self._get_pipe_client
+            )
+            status_code = 200 if result.get("status") == "ok" else 400
+            self._send_json(result, status_code)
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
 
@@ -490,6 +647,383 @@ class NEVENHandler(BaseHTTPRequestHandler):
             json.dump(payload, f)
         self._send_json({"status": "ok", "key": key})
 
+    # ── Script endpoint placeholders ─────────────────────────────────────────
+    # Full implementations are added in tasks 6.2, 7.1, 7.2, and 7.3.
+
+    def _handle_script(self, lang: str, body: dict):
+        """POST /api/{r,python,julia} — execute code via PipeClient.
+
+        Validates the request body, retrieves the PipeClient for *lang*,
+        sends the code, converts the Variable result, and returns the
+        appropriate JSON response.
+
+        Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10,
+                      3.11, 3.12, 8.4
+        """
+        # Req 3.2, 3.3 — validate 'code' field
+        code = body.get("code", "")
+        if not isinstance(code, str) or not code.strip():
+            self._send_json(
+                {"status": "error", "message": "Missing 'code' field"},
+                400,
+            )
+            return
+
+        # Req 3.2 — optional timeout_ms
+        timeout_ms = body.get("timeout_ms", 60_000)
+
+        # Req 3.10 — engine not running → 503
+        try:
+            client = self._get_pipe_client(lang)
+        except KeyError:
+            self._send_json(
+                {"status": "error", "message": f"{lang} engine not available"},
+                503,
+            )
+            return
+
+        # Req 3.4 — send code to PipeClient; Req 8.4 — one reconnect on broken pipe
+        lines = code.splitlines()
+        try:
+            try:
+                var = client.send_code(lines, wait=True)
+            except (OSError, _PipeClientError) as exc:
+                # Req 8.4: detect broken pipe — attempt one reconnect
+                msg = str(exc)
+                if _is_broken_pipe(exc, msg):
+                    try:
+                        client.close()
+                        client.connect()
+                        var = client.send_code(lines, wait=True)
+                    except Exception:
+                        self._send_json(
+                            {"status": "error", "message": f"{lang} engine not available"},
+                            503,
+                        )
+                        return
+                else:
+                    raise
+        except _PipeTimeoutError:
+            # Req 3.9 — timeout → 408
+            self._send_json(
+                {"status": "error", "message": "Script execution timed out"},
+                408,
+            )
+            return
+        except _PipeClientError as exc:
+            # Req 3.8 — PipeClientError → 200 with status: error
+            self._send_json(
+                {"status": "error", "message": str(exc)},
+                200,
+            )
+            return
+
+        # Convert Variable → JSON response (via variable_to_python)
+        self._send_script_result(_variable_to_python(var))
+
+    def _send_script_result(self, result):
+        """Dispatch a variable_to_python result to the appropriate JSON response shape.
+
+        Req 3.5 — scalar: {status, type, result, console}
+        Req 3.6 — html:   {status, type, html, title, console}
+        Req 3.7 — array:  {status, type, columns, rows, console}
+        """
+        console = ""  # Variable doesn't carry console separately (task spec note)
+
+        if result is None:
+            self._send_json({
+                "status": "ok",
+                "type": "nil",
+                "result": None,
+                "console": console,
+            })
+        elif isinstance(result, bool):
+            self._send_json({
+                "status": "ok",
+                "type": "boolean",
+                "result": result,
+                "console": console,
+            })
+        elif isinstance(result, int):
+            self._send_json({
+                "status": "ok",
+                "type": "integer",
+                "result": result,
+                "console": console,
+            })
+        elif isinstance(result, float):
+            self._send_json({
+                "status": "ok",
+                "type": "real",
+                "result": result,
+                "console": console,
+            })
+        elif isinstance(result, str):
+            self._send_json({
+                "status": "ok",
+                "type": "string",
+                "result": result,
+                "console": console,
+            })
+        elif isinstance(result, dict) and "html" in result:
+            # Req 3.6 — html_content Variable
+            self._send_json({
+                "status": "ok",
+                "type": "html",
+                "html": result.get("html", ""),
+                "title": result.get("title", ""),
+                "console": console,
+            })
+        elif isinstance(result, dict) and "columns" in result:
+            # Req 3.7 — arr Variable
+            self._send_json({
+                "status": "ok",
+                "type": "array",
+                "columns": result.get("columns", []),
+                "rows": result.get("rows", []),
+                "console": console,
+            })
+        else:
+            # Fallback: treat as string
+            self._send_json({
+                "status": "ok",
+                "type": "string",
+                "result": str(result),
+                "console": console,
+            })
+
+    def _handle_rpivot(self, body: dict):
+        """POST /api/rpivot — generate RPivot HTML via R.
+
+        1. Parse optional ``max_rows`` (default 10,000).
+        2. Probe R engine via ``_probe_pipe``; return 503 if unavailable.
+        3. ``SELECT * FROM dataset LIMIT <max_rows>`` via DuckDB; return 400
+           if the ``dataset`` table is missing.
+        4. Convert rows to a JSON string; build the R code that loads the
+           data, creates an rpivotTable widget, saves it as self-contained
+           HTML, and returns the HTML string.
+        5. Send via ``PipeClient("neven_r").send_code(lines)``; extract the
+           HTML from the returned ``Variable`` via ``variable_to_python``.
+        6. Return ``{"status": "ok", "type": "html", "html": "..."}``.
+
+        Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7
+        """
+        # ── 1. Parse max_rows ────────────────────────────────────────────────
+        max_rows = int(body.get("max_rows", 10_000))
+
+        # ── 2. Probe R engine ────────────────────────────────────────────────
+        r_pipe = r"\\.\pipe\neven_r"
+        if not _probe_pipe(r_pipe):
+            self._send_json(
+                {"status": "error", "message": "R engine not available for RPivot"},
+                503,
+            )
+            return
+
+        # ── 3. Query DuckDB ──────────────────────────────────────────────────
+        try:
+            db = _get_db()
+            with _db_lock:
+                # Verify the table exists first (raises if missing)
+                db.execute("SELECT COUNT(*) FROM dataset")
+                result = db.execute(
+                    f"SELECT * FROM dataset LIMIT {max_rows}"
+                )
+                col_names = [desc[0] for desc in result.description]
+                raw_rows = result.fetchall()
+        except Exception as exc:
+            err_msg = str(exc)
+            # DuckDB raises an error whose message mentions "dataset" when
+            # the table is absent.
+            if "dataset" in err_msg.lower() or "table" in err_msg.lower():
+                self._send_json(
+                    {"status": "error", "message": "No dataset loaded — load data first"},
+                    400,
+                )
+                return
+            self._send_json({"status": "error", "message": f"DuckDB error: {err_msg}"})
+            return
+
+        # ── 4. Build R code ──────────────────────────────────────────────────
+        # Convert rows to a list-of-dicts and serialise as JSON.
+        rows_as_dicts = [
+            {col: (row[i] if row[i] is not None else None)
+             for i, col in enumerate(col_names)}
+            for row in raw_rows
+        ]
+        json_str = json.dumps(rows_as_dicts, default=str)
+        # Escape single backslashes and single quotes for embedding in R code.
+        json_escaped = json_str.replace("\\", "\\\\").replace("'", "\\'")
+
+        r_lines = [
+            "if (!requireNamespace('rpivotTable', quietly=TRUE)) stop('rpivotTable required')",
+            "if (!requireNamespace('htmlwidgets', quietly=TRUE)) stop('htmlwidgets required')",
+            "library(rpivotTable); library(htmlwidgets)",
+            f"data <- jsonlite::fromJSON('{json_escaped}')",
+            "widget <- rpivotTable(data)",
+            "tmp <- tempfile(fileext='.html')",
+            "htmlwidgets::saveWidget(widget, tmp, selfcontained=TRUE)",
+            "readLines(tmp) |> paste(collapse='\\n')",
+        ]
+
+        # ── 5. Send to R engine ──────────────────────────────────────────────
+        try:
+            client = self._get_pipe_client("r")
+        except KeyError:
+            self._send_json(
+                {"status": "error", "message": "R engine not available for RPivot"},
+                503,
+            )
+            return
+
+        try:
+            # Lazily connect if the client supports it
+            if hasattr(client, "connect") and getattr(client, "_handle", None) is None:
+                client.connect()
+            var = client.send_code(r_lines)
+        except Exception as exc:
+            from pipe_client import PipeClientError, PipeTimeoutError  # noqa: PLC0415
+            if isinstance(exc, PipeTimeoutError):
+                self._send_json(
+                    {"status": "error", "message": "Script execution timed out"},
+                    408,
+                )
+                return
+            if isinstance(exc, PipeClientError):
+                err_text = str(exc)
+                if "rpivotTable required" in err_text or "htmlwidgets required" in err_text:
+                    self._send_json(
+                        {"status": "error",
+                         "message": "R packages rpivotTable and htmlwidgets are required"},
+                    )
+                    return
+                self._send_json({"status": "error", "message": err_text})
+                return
+            self._send_json({"status": "error", "message": str(exc)})
+            return
+
+        # ── 6. Extract HTML and return ───────────────────────────────────────
+        try:
+            # Import here to avoid circular issues at module load time.
+            from pipe_client import variable_to_python, PipeClientError  # noqa: PLC0415
+            result_val = variable_to_python(var)
+        except Exception as exc:
+            self._send_json({"status": "error", "message": str(exc)})
+            return
+
+        # variable_to_python returns dict(html=..., title=...) for html_content
+        # and a plain str when R returns a character string directly.
+        if isinstance(result_val, dict) and "html" in result_val:
+            html_content = result_val["html"]
+        elif isinstance(result_val, str):
+            html_content = result_val
+        else:
+            self._send_json(
+                {"status": "error", "message": "Unexpected result type from R engine"}
+            )
+            return
+
+        self._send_json({"status": "ok", "type": "html", "html": html_content})
+
+    def _handle_engines(self):
+        """GET /api/engines — pipe-probe each language engine.
+
+        Probes each language's Named Pipe using :func:`_probe_pipe` and returns
+        a JSON object reflecting real-time availability.
+
+        Returns:
+            JSON ``{"r": bool, "python": bool, "julia": bool}`` where each value
+            is ``True`` iff a CreateFile probe on ``\\\\.\\pipe\\neven_{lang}``
+            succeeded (Requirements 8.1, 8.2).
+        """
+        self._send_json({
+            "r":      _probe_pipe(r"\\.\pipe\neven_r"),
+            "python": _probe_pipe(r"\\.\pipe\neven_python"),
+            "julia":  _probe_pipe(r"\\.\pipe\neven_julia"),
+        })
+
+    def _handle_functions(self):
+        """GET /api/functions — list registered functions per language.
+
+        For each language in {r, python, julia}:
+          - If a PipeClient factory is registered, call
+            ``send_function_call("list-functions", [], target=system)`` on a
+            fresh client, convert the returned Variable via
+            ``variable_to_python``, and build a list of
+            ``{name, description, arguments}`` dicts from the arr result.
+          - If the language has no factory (KeyError) or a
+            ``PipeClientError`` is raised, return ``[]`` for that language.
+
+        Returns
+        -------
+        JSON: ``{"status": "ok", "languages": {"r": [...], "python": [...],
+                 "julia": [...]}}``
+
+        Requirements: 7.3, 7.4
+        """
+        # Import variable_to_python and the target enum at call time so that
+        # the module is importable even when variable_pb2 is not on PYTHONPATH.
+        try:
+            from pipe_client import variable_to_python, PipeClientError  # type: ignore[import]
+            import variable_pb2  # type: ignore[import]
+            _system_target = variable_pb2.CallTarget.Value("system")
+        except ImportError:
+            # If pipe_client / variable_pb2 are not available, return all empty.
+            self._send_json(
+                {"status": "ok", "languages": {"r": [], "python": [], "julia": []}}
+            )
+            return
+
+        languages = {}
+        for lang in ("r", "python", "julia"):
+            try:
+                client = self._get_pipe_client(lang)
+                var = client.send_function_call(
+                    "list-functions",
+                    [],
+                    target=_system_target,
+                )
+                result = variable_to_python(var)
+            except (KeyError, PipeClientError):
+                languages[lang] = []
+                continue
+            except Exception:
+                languages[lang] = []
+                continue
+
+            # Build list of {name, description, arguments} from the arr result.
+            # variable_to_python returns {"columns": [...], "rows": [[...],...]}
+            # for arr variables.
+            func_list = []
+            if isinstance(result, dict) and "columns" in result and "rows" in result:
+                cols = result["columns"]
+                # Locate column indices (case-insensitive, with fallback)
+                col_lower = [c.lower() for c in cols]
+                try:
+                    idx_name = col_lower.index("name")
+                except ValueError:
+                    idx_name = 0
+                try:
+                    idx_desc = col_lower.index("description")
+                except ValueError:
+                    idx_desc = 1 if len(cols) > 1 else 0
+                try:
+                    idx_args = col_lower.index("arguments")
+                except ValueError:
+                    idx_args = 2 if len(cols) > 2 else None
+
+                for row in result["rows"]:
+                    entry = {
+                        "name": row[idx_name] if idx_name < len(row) else "",
+                        "description": row[idx_desc] if idx_desc < len(row) else "",
+                        "arguments": row[idx_args] if (idx_args is not None and idx_args < len(row)) else [],
+                    }
+                    func_list.append(entry)
+
+            languages[lang] = func_list
+
+        self._send_json({"status": "ok", "languages": languages})
+
 
 # ─── Bridge Buffer ────────────────────────────────────────────────────────────
 
@@ -499,7 +1033,17 @@ _bridge_buffer = {}
 # ─── Server Startup ───────────────────────────────────────────────────────────
 
 def start_server(config=None):
-    """Start the HTTP server on a daemon thread. Returns (thread, port) or None."""
+    """Start the HTTP server on a daemon thread. Returns (thread, port) or None.
+
+    Args:
+        config: Optional dict that overrides DEFAULT_CONFIG values.  May include
+                ``pipe_client_factory``: a ``dict[str, Callable[[], PipeClient]]``
+                that maps language names ("r", "python", "julia") to zero-argument
+                callables returning a connected PipeClient.  When provided,
+                NEVENHandler._get_pipe_client() uses these factories instead of
+                raising KeyError, enabling unit tests and start_studio.py to inject
+                real or mock clients without modifying handler code (Req 9.5).
+    """
     global _server_instance, _server_port, _config
 
     if config:
