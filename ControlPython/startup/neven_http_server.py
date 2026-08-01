@@ -254,6 +254,15 @@ def execute_analyze():
 VALID_METRICS = {'SUM', 'AVG', 'COUNT', 'MIN', 'MAX', 'MEDIAN'}
 
 
+def _is_numeric(v):
+    """Return True if string v looks like a number."""
+    try:
+        float(v)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
 def execute_groupby(group_column, value_column, metric):
     """Execute GROUP BY with validated metric on full dataset."""
     metric_upper = metric.upper()
@@ -523,8 +532,142 @@ class NEVENHandler(BaseHTTPRequestHandler):
             )
             status_code = 200 if result.get("status") == "ok" else 400
             self._send_json(result, status_code)
+        elif path == 'api/db_connect':
+            self._handle_db_connect(body)
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
+
+    def _handle_db_connect(self, body):
+        """POST /api/db_connect — conectar a DB externa y cargar query en DuckDB.
+
+        Body: { engine, host, port, database, user, password, query, sqlite_path }
+        Engines: postgresql, mysql, sqlite, sqlserver
+        """
+        engine   = body.get("engine", "").lower().strip()
+        host     = body.get("host", "localhost").strip()
+        database = body.get("database", "").strip()
+        user     = body.get("user", "").strip()
+        password = body.get("password", "")
+        query    = body.get("query", "SELECT 1").strip()
+        sqlite_path = body.get("sqlite_path", "").strip()
+
+        try:
+            port_default = {"postgresql": 5432, "mysql": 3306,
+                            "mariadb": 3306, "sqlserver": 1433}.get(engine, 5432)
+            port = int(body.get("port", port_default))
+        except (TypeError, ValueError):
+            port = 5432
+
+        if not engine:
+            self._send_error_json("Falta el campo 'engine'")
+            return
+        if not query:
+            self._send_error_json("Falta el campo 'query'")
+            return
+
+        # Solo SELECT permitido
+        if not query.strip().upper().startswith(("SELECT", "WITH", "SHOW", "DESCRIBE")):
+            self._send_error_json("Solo se permiten consultas SELECT/WITH")
+            return
+
+        try:
+            conn = None
+
+            if engine == "postgresql":
+                import importlib
+                pg = importlib.import_module("psycopg2")
+                conn = pg.connect(
+                    host=host, port=port, dbname=database,
+                    user=user, password=password,
+                    connect_timeout=10
+                )
+
+            elif engine in ("mysql", "mariadb"):
+                import importlib
+                pymysql = importlib.import_module("pymysql")
+                conn = pymysql.connect(
+                    host=host, port=port, database=database,
+                    user=user, password=password,
+                    connect_timeout=10,
+                    cursorclass=pymysql.cursors.DictCursor
+                )
+
+            elif engine == "sqlite":
+                import sqlite3, os
+                if not sqlite_path or not os.path.isfile(sqlite_path):
+                    self._send_error_json(f"Archivo SQLite no encontrado: {sqlite_path}")
+                    return
+                conn = sqlite3.connect(sqlite_path)
+                conn.row_factory = sqlite3.Row
+
+            elif engine == "sqlserver":
+                import importlib
+                pyodbc = importlib.import_module("pyodbc")
+                cs = (
+                    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+                    f"SERVER={host},{port};DATABASE={database};"
+                    f"UID={user};PWD={password};Timeout=10"
+                )
+                conn = pyodbc.connect(cs)
+
+            else:
+                self._send_error_json(f"Motor '{engine}' no soportado. Use: postgresql, mysql, sqlite, sqlserver")
+                return
+
+            # Ejecutar query
+            cursor = conn.cursor()
+            cursor.execute(query)
+
+            # Obtener columnas
+            if hasattr(cursor, 'description') and cursor.description:
+                col_names = [d[0] for d in cursor.description]
+            else:
+                col_names = []
+
+            raw_rows = cursor.fetchall()
+            conn.close()
+
+            if not col_names:
+                self._send_error_json("La query no retornó columnas")
+                return
+
+            # Convertir a lista de listas
+            rows_as_lists = []
+            for row in raw_rows:
+                try:
+                    rows_as_lists.append([str(v) if v is not None else None for v in row])
+                except Exception:
+                    rows_as_lists.append(list(row))
+
+            # Detectar tipos
+            types = {}
+            for i, col in enumerate(col_names):
+                sample = [rows_as_lists[j][i] for j in range(min(50, len(rows_as_lists)))
+                          if rows_as_lists[j][i] is not None]
+                num_count = sum(1 for v in sample if v is not None and _is_numeric(v))
+                types[col] = "numeric" if sample and num_count > len(sample) * 0.7 else "text"
+
+            # Cargar en DuckDB
+            n = load_data(col_names, types, rows_as_lists)
+
+            self._send_json({
+                "status": "ok",
+                "rows_loaded": n,
+                "columns": col_names,
+                "types": types,
+                "engine": engine,
+                "database": database,
+            })
+
+        except ImportError as e:
+            pkg = str(e).replace("No module named ", "").strip("'")
+            self._send_json({
+                "status": "error",
+                "message": f"Paquete '{pkg}' no instalado. Ejecute: pip install {pkg}",
+                "code": "MISSING_PACKAGE"
+            })
+        except Exception as e:
+            self._send_error_json(f"Error de conexión ({engine}): {e}")
 
     def _handle_load(self, body):
         """Load data into DuckDB — from array or file path."""

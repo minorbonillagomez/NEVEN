@@ -64,11 +64,17 @@
     <div class="card">
       <div class="card-title">Datos</div>
       <div class="controls">
-        <input type="text" id="csv-path" placeholder="C:/ruta/archivo.csv" style="flex:1;min-width:180px">
-        <button class="btn btn-primary" id="btn-load">Cargar CSV</button>
-        <button class="btn btn-secondary" id="btn-bridge-read">Leer de Excel</button>
+        <button class="btn btn-primary" id="btn-load" style="background:#ad945c">📂 Abrir archivo</button>
+        <button class="btn btn-primary" id="btn-bridge-read" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg> Leer de Excel</button>
+        <button class="btn btn-primary" id="btn-db-connect" style="background:#ad945c">🗄 Conectar DB</button>
+        <input type="file" id="file-picker" accept=".csv,.tsv,.json,.parquet" style="display:none">
       </div>
-      <div id="data-info" class="msg-info">Cargue CSV o use "Leer de Excel"</div>
+      <!-- Archivos recientes -->
+      <div id="recent-files-area" style="display:none;margin-top:6px">
+        <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Recientes</div>
+        <div id="recent-files-list" style="display:flex;flex-direction:column;gap:3px"></div>
+      </div>
+      <div id="data-info" class="msg-info" style="margin-top:6px">Abra un archivo CSV, TSV o JSON</div>
     </div>
     <div id="preview-area"></div>
     <div id="pivot-area" style="display:none;margin-top:8px;">
@@ -235,6 +241,123 @@
     ></iframe>
   </div>
 
+  <!-- Modal: Conectar DB -->
+  <div id="modal-db" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);
+       backdrop-filter:blur(3px);z-index:2000;align-items:center;justify-content:center">
+    <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);
+         width:min(480px,96vw);max-height:92vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
+
+      <!-- Header -->
+      <div style="background:var(--bg-card);padding:10px 14px;border-bottom:1px solid var(--border);
+           display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;
+              letter-spacing:0.8px">Conectar a Base de Datos</span>
+        <button id="btn-db-close" style="background:none;border:none;color:var(--text-muted);
+                font-size:18px;cursor:pointer;line-height:1;padding:0 4px">&times;</button>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+
+        <!-- Motor -->
+        <div>
+          <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+                 text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Motor</label>
+          <select id="db-engine" style="width:100%;background:var(--bg-primary);color:var(--text-primary);
+                  border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+            <option value="postgresql">PostgreSQL</option>
+            <option value="mysql">MySQL / MariaDB</option>
+            <option value="sqlite">SQLite (archivo local)</option>
+            <option value="sqlserver">SQL Server</option>
+          </select>
+        </div>
+
+        <!-- SQLite path (solo para SQLite) -->
+        <div id="db-sqlite-row">
+          <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+                 text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Archivo .db</label>
+          <div style="display:flex;gap:6px">
+            <input id="db-sqlite-path" type="text" placeholder="C:/ruta/base.db"
+                   style="flex:1;background:var(--bg-primary);color:var(--text-primary);
+                          border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px;
+                          font-family:Consolas,monospace">
+            <input id="db-sqlite-picker" type="file" accept=".db,.sqlite,.sqlite3" style="display:none">
+            <button id="btn-sqlite-pick" class="btn btn-secondary" style="font-size:10px;white-space:nowrap">
+              Examinar
+            </button>
+          </div>
+        </div>
+
+        <!-- Host / Puerto (oculto para SQLite) -->
+        <div id="db-host-row" style="display:flex;gap:8px">
+          <div style="flex:3">
+            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+                   text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Host</label>
+            <input id="db-host" type="text" value="localhost"
+                   style="width:100%;background:var(--bg-primary);color:var(--text-primary);
+                          border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+          </div>
+          <div style="flex:1">
+            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+                   text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Puerto</label>
+            <input id="db-port" type="number" value="5432"
+                   style="width:100%;background:var(--bg-primary);color:var(--text-primary);
+                          border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+          </div>
+        </div>
+
+        <!-- Base de datos / Usuario / Contraseña (oculto para SQLite) -->
+        <div id="db-creds-row">
+          <div style="margin-bottom:8px">
+            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+                   text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Base de datos</label>
+            <input id="db-database" type="text" placeholder="nombre_db"
+                   style="width:100%;background:var(--bg-primary);color:var(--text-primary);
+                          border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+          </div>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1">
+              <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+                     text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Usuario</label>
+              <input id="db-user" type="text"
+                     style="width:100%;background:var(--bg-primary);color:var(--text-primary);
+                            border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+            </div>
+            <div style="flex:1">
+              <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+                     text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Contraseña</label>
+              <input id="db-password" type="password"
+                     style="width:100%;background:var(--bg-primary);color:var(--text-primary);
+                            border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+            </div>
+          </div>
+        </div>
+
+        <!-- Query -->
+        <div>
+          <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+                 text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Query SQL</label>
+          <textarea id="db-query" rows="4"
+                    style="width:100%;background:#111;color:var(--accent);
+                           border:1px solid #333;border-radius:4px;padding:8px;
+                           font-family:Cascadia Code,Consolas,monospace;font-size:11px;
+                           resize:vertical;box-sizing:border-box"
+                    placeholder="SELECT * FROM tabla LIMIT 1000">SELECT * FROM tabla LIMIT 1000</textarea>
+        </div>
+
+        <!-- Status -->
+        <div id="db-status" style="font-size:10px;min-height:16px"></div>
+      </div>
+
+      <!-- Footer -->
+      <div style="padding:10px 14px;border-top:1px solid var(--border);
+           background:var(--bg-card);display:flex;justify-content:flex-end;gap:8px">
+        <button id="btn-db-cancel" class="btn btn-secondary" style="font-size:10px">Cancelar</button>
+        <button id="btn-db-run" class="btn btn-primary" style="font-size:10px">Conectar y cargar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="status-bar">
     <span id="status-server">●</span>
   </div>
@@ -303,34 +426,262 @@ window.addEventListener('message', function(event) {
   }
 });
 
-// --- Cargar CSV ---
-document.getElementById('btn-load').addEventListener('click', function(){
-  var path = document.getElementById('csv-path').value.trim();
-  if(!path){document.getElementById('data-info').textContent='Ingrese una ruta';return;}
-  document.getElementById('data-info').innerHTML='<span class="spinner"></span> Cargando...';
-  fetch(API+'/api/load_file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:path})})
-  .then(function(r){return r.json()})
-  .then(function(d){
-    if(d.status==='ok'){
-      document.getElementById('data-info').textContent=d.rows_loaded+' filas x '+d.columns.length+' cols cargadas';
-      populateGroupBy(d.columns, d.types);
-      // Auto-analyze and pivot
-      fetch(API+'/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
-      .then(function(r){return r.json()})
-      .then(function(stats){
-        if(stats.status==='ok'){
+// --- Cargar archivo (FileReader — Opcion A) ---
+var _RECENT_KEY = 'neven_recent_files';
+var _MAX_RECENT = 8;
+
+function _getRecentFiles() {
+  try { return JSON.parse(localStorage.getItem(_RECENT_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function _addRecentFile(name, content, rows, cols) {
+  var recent = _getRecentFiles();
+  // Quitar entrada previa con mismo nombre
+  recent = recent.filter(function(r){ return r.name !== name; });
+  recent.unshift({ name: name, rows: rows, cols: cols, ts: Date.now(), content: content });
+  if (recent.length > _MAX_RECENT) recent = recent.slice(0, _MAX_RECENT);
+  try { localStorage.setItem(_RECENT_KEY, JSON.stringify(recent)); } catch(e) {}
+  _renderRecentFiles();
+}
+
+function _renderRecentFiles() {
+  var recent = _getRecentFiles();
+  var area = document.getElementById('recent-files-area');
+  var list = document.getElementById('recent-files-list');
+  if (!area || !list) return;
+  if (recent.length === 0) { area.style.display = 'none'; return; }
+  area.style.display = 'block';
+  list.innerHTML = '';
+  recent.forEach(function(item) {
+    var btn = document.createElement('button');
+    btn.style.cssText = 'display:flex;align-items:center;justify-content:space-between;' +
+      'background:var(--bg-secondary);border:1px solid var(--border);border-radius:4px;' +
+      'padding:4px 8px;cursor:pointer;text-align:left;width:100%;transition:border-color 0.15s;';
+    btn.onmouseover = function(){ btn.style.borderColor='var(--accent)'; };
+    btn.onmouseout  = function(){ btn.style.borderColor='var(--border)'; };
+
+    var nameSpan = document.createElement('span');
+    nameSpan.textContent = item.name;
+    nameSpan.style.cssText = 'font-size:10px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px';
+
+    var metaSpan = document.createElement('span');
+    metaSpan.textContent = item.rows + ' × ' + item.cols;
+    metaSpan.style.cssText = 'font-size:9px;color:var(--text-secondary);margin-left:8px;white-space:nowrap';
+
+    btn.appendChild(nameSpan);
+    btn.appendChild(metaSpan);
+
+    btn.addEventListener('click', function() {
+      _loadFromContent(item.name, item.content);
+    });
+    list.appendChild(btn);
+  });
+}
+
+function _parseCSV(text, delimiter) {
+  delimiter = delimiter || ',';
+  var lines = text.split(/\r?\n/).filter(function(l){ return l.trim(); });
+  if (lines.length < 2) return null;
+  var headers = lines[0].split(delimiter).map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+  var rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    var vals = lines[i].split(delimiter);
+    var row = {};
+    headers.forEach(function(h, j){ row[h] = (vals[j] || '').trim().replace(/^"|"$/g,''); });
+    rows.push(row);
+  }
+  return { headers: headers, rows: rows };
+}
+
+function _loadFromContent(name, content) {
+  var info = document.getElementById('data-info');
+  info.innerHTML = '<span class="spinner"></span> Procesando ' + name + '...';
+
+  var parsed;
+  var lower = name.toLowerCase();
+  try {
+    if (lower.endsWith('.json')) {
+      var arr = JSON.parse(content);
+      if (!Array.isArray(arr) || arr.length === 0) throw new Error('JSON vacío o no es array');
+      parsed = { headers: Object.keys(arr[0]), rows: arr };
+    } else {
+      var delim = lower.endsWith('.tsv') ? '\t' : ',';
+      parsed = _parseCSV(content, delim);
+      if (!parsed) throw new Error('No se pudo parsear el archivo');
+    }
+  } catch(e) {
+    info.innerHTML = '<span class="msg-error">Error: ' + e.message + '</span>';
+    return;
+  }
+
+  var headers = parsed.headers;
+  var rows    = parsed.rows;
+
+  // Detectar tipos
+  var types = {};
+  headers.forEach(function(h) {
+    var sample = rows.slice(0, 50).map(function(r){ return r[h]; });
+    var numCount = sample.filter(function(v){ return v !== '' && !isNaN(parseFloat(v)); }).length;
+    types[h] = numCount > sample.length * 0.7 ? 'numeric' : 'text';
+  });
+
+  // Convertir a array de arrays para /api/load
+  var dataRows = rows.map(function(r){
+    return headers.map(function(h){ return r[h] !== undefined ? r[h] : null; });
+  });
+
+  info.innerHTML = '<span class="spinner"></span> Cargando en DuckDB...';
+
+  fetch(API + '/api/load', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ columns: headers, types: types, data: dataRows })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.status === 'ok') {
+      info.textContent = rows.length + ' filas × ' + headers.length + ' cols — ' + name;
+      _addRecentFile(name, content, rows.length, headers.length);
+      populateGroupBy(headers, types);
+      // Auto-analyze
+      fetch(API + '/api/analyze', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' })
+      .then(function(r){ return r.json(); })
+      .then(function(stats) {
+        if (stats.status === 'ok') {
           showStats(stats);
-          // Prepare pivot button
-          document.getElementById('btn-pivot').style.display='inline-block';
+          document.getElementById('btn-pivot').style.display = 'inline-block';
         }
       });
     } else {
-      document.getElementById('data-info').textContent='Error: '+d.message;
+      info.innerHTML = '<span class="msg-error">Error: ' + d.message + '</span>';
     }
-  }).catch(function(e){document.getElementById('data-info').textContent='Error: '+e;});
+  })
+  .catch(function(e) {
+    info.innerHTML = '<span class="msg-error">Error: ' + e + '</span>';
+  });
+}
+
+document.getElementById('btn-load').addEventListener('click', function() {
+  document.getElementById('file-picker').click();
 });
 
-// --- Pivot button ---
+document.getElementById('file-picker').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    _loadFromContent(file.name, ev.target.result);
+  };
+  reader.readAsText(file, 'UTF-8');
+  e.target.value = ''; // reset para permitir reseleccionar el mismo archivo
+});
+
+// Mostrar recientes al cargar
+_renderRecentFiles();
+
+// --- Conectar DB ---
+(function() {
+  var modal   = document.getElementById('modal-db');
+  var engine  = document.getElementById('db-engine');
+  var sqliteRow = document.getElementById('db-sqlite-row');
+  var hostRow   = document.getElementById('db-host-row');
+  var credsRow  = document.getElementById('db-creds-row');
+  var portEl    = document.getElementById('db-port');
+  var STATUS_PORTS = { postgresql:5432, mysql:3306, mariadb:3306, sqlserver:1433 };
+
+  function _toggleFields() {
+    var isSqlite = engine.value === 'sqlite';
+    sqliteRow.style.display  = isSqlite ? 'block' : 'none';
+    hostRow.style.display    = isSqlite ? 'none'  : 'flex';
+    credsRow.style.display   = isSqlite ? 'none'  : 'block';
+    if (!isSqlite) portEl.value = STATUS_PORTS[engine.value] || 5432;
+  }
+  engine.addEventListener('change', _toggleFields);
+  _toggleFields();
+
+  // Examinar SQLite
+  document.getElementById('btn-sqlite-pick').addEventListener('click', function() {
+    document.getElementById('db-sqlite-picker').click();
+  });
+  document.getElementById('db-sqlite-picker').addEventListener('change', function(e) {
+    var f = e.target.files[0];
+    if (f) document.getElementById('db-sqlite-path').value = f.name;
+  });
+
+  // Abrir/cerrar modal
+  document.getElementById('btn-db-connect').addEventListener('click', function() {
+    modal.style.display = 'flex';
+    document.getElementById('db-status').textContent = '';
+  });
+  function _close() { modal.style.display = 'none'; }
+  document.getElementById('btn-db-close').addEventListener('click', _close);
+  document.getElementById('btn-db-cancel').addEventListener('click', _close);
+  modal.addEventListener('click', function(e){ if(e.target===modal) _close(); });
+
+  // Conectar
+  document.getElementById('btn-db-run').addEventListener('click', function() {
+    var statusEl = document.getElementById('db-status');
+    var btn = document.getElementById('btn-db-run');
+    var eng = engine.value;
+
+    var body = {
+      engine:   eng,
+      host:     document.getElementById('db-host').value.trim(),
+      port:     parseInt(document.getElementById('db-port').value) || 5432,
+      database: document.getElementById('db-database').value.trim(),
+      user:     document.getElementById('db-user').value.trim(),
+      password: document.getElementById('db-password').value,
+      query:    document.getElementById('db-query').value.trim(),
+      sqlite_path: document.getElementById('db-sqlite-path').value.trim()
+    };
+
+    if (!body.query) { statusEl.innerHTML='<span style="color:var(--error)">Escriba una query SQL</span>'; return; }
+    if (eng === 'sqlite' && !body.sqlite_path) {
+      statusEl.innerHTML='<span style="color:var(--error)">Indique la ruta del archivo SQLite</span>'; return;
+    }
+
+    btn.disabled = true;
+    statusEl.innerHTML = '<span class="spinner"></span> Conectando...';
+
+    fetch(API + '/api/db_connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      btn.disabled = false;
+      if (d.status === 'ok') {
+        statusEl.innerHTML = '<span style="color:var(--success)">✓ ' + d.rows_loaded +
+          ' filas × ' + d.columns.length + ' cols cargadas</span>';
+        document.getElementById('data-info').textContent =
+          d.rows_loaded + ' filas × ' + d.columns.length + ' cols — ' +
+          (eng === 'sqlite' ? body.sqlite_path.split(/[\\/]/).pop() : body.database + ' (' + eng + ')');
+        populateGroupBy(d.columns, d.types);
+        fetch(API+'/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
+          .then(function(r){return r.json();})
+          .then(function(stats){
+            if(stats.status==='ok'){
+              showStats(stats);
+              document.getElementById('btn-pivot').style.display='inline-block';
+            }
+          });
+        setTimeout(_close, 1500);
+      } else {
+        var msg = d.message || 'Error desconocido';
+        statusEl.innerHTML = '<span style="color:var(--error)">' + msg + '</span>';
+        if (d.code === 'MISSING_PACKAGE') {
+          statusEl.innerHTML += '<br><span style="font-size:9px;color:#888">Instale el paquete desde Run Script → Python</span>';
+        }
+      }
+    })
+    .catch(function(e) {
+      btn.disabled = false;
+      statusEl.innerHTML = '<span style="color:var(--error)">Error de red: ' + e + '</span>';
+    });
+  });
+})();
 var _pivotLibsLoaded = false;
 
 document.getElementById('btn-pivot').addEventListener('click', function(){
