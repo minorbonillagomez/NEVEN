@@ -18,47 +18,56 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
 
   # ── Sin variable_roles -- el wrapper no recibe data_Y ni data_X ───────────
 
-  # ── Formato coeficientes (sprintf, igual que verificacion) ────────────────
-  # ct = matriz de coeficientes (rownames = nombres, cols = Est/SE/t/p)
+  # ── Formato coeficientes con TAB como separador de columnas ─────────────────
+  # Tab garantiza alineacion correcta independientemente de la fuente.
+  # gsub("[[:cntrl:]]") en la salida de R excluye \t para preservarlos.
   .fmt_ct <- function(ct) {
     vapply(seq_len(nrow(ct)), function(i) {
       sig <- ifelse(ct[i,4] < 0.001, "***",
              ifelse(ct[i,4] < 0.01,  "** ",
              ifelse(ct[i,4] < 0.05,  "*  ",
              ifelse(ct[i,4] < 0.10,  ".  ", "   "))))
-      sprintf("  %-18s  %9.4f  %9.4f  %7.3f  %9.4f %s",
-              rownames(ct)[i], ct[i,1], ct[i,2], ct[i,3], ct[i,4], sig)
+      paste(rownames(ct)[i],
+            sprintf("%9.4f", ct[i,1]),
+            sprintf("%9.4f", ct[i,2]),
+            sprintf("%7.3f",  ct[i,3]),
+            sprintf("%9.4f", ct[i,4]),
+            sig,
+            sep = "\t")
     }, character(1))
   }
 
-  # ── Encabezado de tabla de coeficientes ───────────────────────────────────
+  # ── Encabezado de tabla con tabs ──────────────────────────────────────────
   .hdr <- function() c(
-    sprintf("  %-18s  %9s  %9s  %7s  %9s",
-            "Variable", "Estimate", "Std.Err", "t/z", "p-value"),
+    paste("Variable", "Estimate", "Std.Err", "t/z", "p-value", "Sig", sep = "\t"),
     paste(rep("-", 66), collapse = "")
   )
 
-  # ── Bloque de referencia del libro (mismo formato) ────────────────────────
-  # Cada fila: c(nombre, est, se, t, pstr)
+  # ── Referencia del libro con tabs ─────────────────────────────────────────
   .ref_rows <- function(rows) {
     vapply(rows, function(r) {
-      sprintf("  %-18s  %9s  %9s  %7s  %s", r[1], r[2], r[3], r[4], r[5])
+      paste(r[1], r[2], r[3], r[4], r[5], sep = "\t")
     }, character(1))
   }
 
-  # ── Comparacion coeficientes (formato verificacion original) ──────────────
+  # ── Comparacion coeficientes con tabs ────────────────────────────────────
   .ver <- function(cn, cr, fuente) {
     nms <- intersect(names(cn), names(cr))
     filas <- vapply(nms, function(nm) {
       dif <- abs(cn[[nm]] - cr[[nm]])
-      sprintf("  %-18s  NEVEN = %9.4f  |  Libro = %9.4f  |  dif = %.2e  %s",
-              nm, cn[[nm]], cr[[nm]], dif,
-              ifelse(dif < 0.01, "OK", "REVISAR"))
+      paste(nm,
+            sprintf("%.4f", cn[[nm]]),
+            sprintf("%.4f", cr[[nm]]),
+            sprintf("%.2e", dif),
+            ifelse(dif < 0.01, "OK", "REVISAR"),
+            sep = "\t")
     }, character(1))
     mse <- mean((cn[nms] - cr[nms])^2)
     c(paste0("Verificacion vs. ", fuente), "",
+      paste("Variable", "NEVEN", "Libro", "Diferencia", "Estado", sep = "\t"),
+      paste(rep("-", 66), collapse = ""),
       filas, "",
-      sprintf("  MSE total:  %.2e   %s",
+      sprintf("MSE total:\t%.2e\t%s",
               mse, ifelse(mse < 1e-7, "PARIDAD ESTADISTICA OK", "REVISAR")))
   }
 
@@ -359,12 +368,14 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
 
     ver <- paste(c(
       "Verificacion vs. Wooldridge Cap. 9", "",
-      sprintf("  %-16s  NEVEN = %8.2f  |  Libro = 1281.12  |  %s",
-              "Media:", mean(x_v), ifelse(abs(mean(x_v)-1281.12)<5,"OK","REVISAR")),
-      sprintf("  %-16s  NEVEN = %8.2f  |  Libro = 1037.00  |  %s",
-              "Mediana:", median(x_v), ifelse(abs(median(x_v)-1037)<10,"OK","REVISAR")),
-      sprintf("  %-16s  NEVEN = %8d  |  Libro = ~11      |  %s",
-              "Outliers:", length(outs), ifelse(abs(length(outs)-11)<=2,"OK","REVISAR"))
+      paste("Estadistico", "NEVEN", "Libro", "Estado", sep = "\t"),
+      paste(rep("-", 50), collapse = ""),
+      paste("Media:",   sprintf("%.2f", mean(x_v)), "1281.12",
+            ifelse(abs(mean(x_v)-1281.12)<5,"OK","REVISAR"), sep = "\t"),
+      paste("Mediana:", sprintf("%.2f", median(x_v)), "1037.00",
+            ifelse(abs(median(x_v)-1037)<10,"OK","REVISAR"), sep = "\t"),
+      paste("Outliers:", length(outs), "~11",
+            ifelse(abs(length(outs)-11)<=2,"OK","REVISAR"), sep = "\t")
     ), collapse = "\n")
   }
 

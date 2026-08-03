@@ -1254,7 +1254,7 @@ function buildSlotElement(slot) {
         content.style.cssText = 'background:#1e1e1e;border:1px solid var(--border);' +
           'border-radius:var(--radius);padding:12px 16px;font-family:Consolas,\'Cascadia Code\',monospace;' +
           'font-size:11.5px;color:#d4d4d4;white-space:pre;overflow-x:auto;line-height:1.5;' +
-          'max-height:520px;overflow-y:auto';
+          'max-height:520px;overflow-y:auto;tab-size:16;-moz-tab-size:16';
         content.textContent = displayVal2;
       }
       break;
