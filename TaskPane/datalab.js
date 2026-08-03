@@ -1157,29 +1157,45 @@ function renderResults(slots) {
   // Auto-cargar dataset en DuckDB si hay un slot dataset_*
   // Esto permite que los chips Y/X se pueblen con las columnas del dataset elegido
   var datasetSlot = slots.find(function(s) {
-    return s.name && s.name.indexOf('dataset_') === 0 && Array.isArray(s.value) && s.value.length > 0;
+    return s.name && s.name.indexOf('dataset_') === 0 &&
+           Array.isArray(s.value) && s.value.length > 0 &&
+           s.value[0] && typeof s.value[0] === 'object';
   });
   if (datasetSlot) {
-    var rows = datasetSlot.value;
-    var cols = Object.keys(rows[0]);
-    var types = cols.map(function(c) {
-      var sample = rows.find(function(r) { return r[c] !== null && r[c] !== undefined; });
-      return (sample && typeof sample[c] === 'number') ? 'numeric' : 'text';
-    });
-    var dataForLoad = rows.map(function(r) { return cols.map(function(c) { return r[c] !== undefined ? r[c] : null; }); });
-    fetch(API + '/api/load', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ columns: cols, types: types, data: dataForLoad })
-    }).then(function() {
-      // Dataset cargado -- refrescar columnas disponibles en los chips
-      var info = document.getElementById('data-info');
-      if (info) info.textContent = datasetSlot.name.replace('dataset_', '') + ' cargado (' + rows.length + ' obs, ' + cols.length + ' vars)';
-      // Repoblar los selectores de columnas si hay una funcion activa
-      if (window._dlCurrentCard) {
-        renderColumnPanel(window._dlCurrentCard);
+    try {
+      var rows = datasetSlot.value;
+      var cols = Object.keys(rows[0]);
+      if (cols.length > 0) {
+        var types = cols.map(function(c) {
+          var sample = rows.find(function(r) { return r[c] !== null && r[c] !== undefined; });
+          return (sample && typeof sample[c] === 'number') ? 'numeric' : 'text';
+        });
+        var dataForLoad = rows.map(function(r) {
+          return cols.map(function(c) { return r[c] !== undefined ? r[c] : null; });
+        });
+        fetch(API + '/api/load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ columns: cols, types: types, data: dataForLoad })
+        }).then(function(resp) {
+          if (resp.ok) {
+            var info = document.getElementById('data-info');
+            if (info) {
+              info.textContent = datasetSlot.name.replace('dataset_', '') +
+                ' cargado (' + rows.length + ' obs, ' + cols.length + ' vars)';
+            }
+            // Repoblar columnas si hay funcion activa
+            if (window._dlCurrentCard && typeof renderColumnPanel === 'function') {
+              renderColumnPanel(window._dlCurrentCard);
+            }
+          }
+        }).catch(function(e) {
+          console.warn('[Benchmark] Auto-load DuckDB fallo silenciosamente:', e);
+        });
       }
-    }).catch(function() { /* silencioso -- el usuario puede cargar manualmente */ });
+    } catch(e) {
+      console.warn('[Benchmark] Error en auto-load:', e);
+    }
   }
 
   // Render tier 1 directly

@@ -3,25 +3,12 @@
   "family": "DS",
   "family_label": "Datasets",
   "name": "Wooldridge Benchmark Suite",
-  "description": "Seleccione un ejemplo y ejecute. El dataset del ejemplo se carga automaticamente. Los chips Y y X se pueblan con las columnas del dataset para que pueda replicar el ejemplo o explorar su propia especificacion.",
+  "description": "Seleccione un ejemplo y ejecute. El dataset se carga automaticamente en Data Studio. Luego asigne Y y X en los chips para ver su propio resultado junto al del libro.",
   "wikipedia_url": "https://www.cengage.com/c/introductory-econometrics-a-modern-approach-7e-wooldridge",
   "languages": ["r"],
   "function_name": "DS_Wooldridge_Benchmark.Studio",
   "file": "DS_Wooldridge_Benchmark.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable dependiente (opcional — preseleccionada del ejemplo)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": false
-    },
-    "X": {
-      "label": "Variables independientes (opcional — preseleccionadas del ejemplo)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": false
-    }
-  },
+  "variable_roles": {},
   "parameters": [
     {
       "name": "Caso",
