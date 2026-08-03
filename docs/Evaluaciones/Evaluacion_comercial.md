@@ -153,20 +153,62 @@ Sin estos datos, las decisiones de producto son a ciegas.
 
 ## 5. Modelo de Negocio
 
-### Opciones viables
+> **Nota de revisión (agosto 2026):** Los precios originales fueron calculados cuando NEVEN era exclusivamente un add-in XLL. Con NEVEN Studio Standalone, Data Lab V2 y el Creador de Presentaciones, el producto cambió de categoría — ya no es un add-in de Excel, es una **plataforma de análisis de datos con interfaz propia, independiente de Excel**. Los precios se revisan en consecuencia.
 
-| Modelo | Precio sugerido | Pros | Contras |
+### Comparación de producto antes/después
+
+| Aspecto | NEVEN v1.x (add-in) | NEVEN v2.2 (plataforma) |
+|:---|:---|:---|
+| Requiere Excel | Sí | No (Studio funciona solo) |
+| Interfaz | Celdas de Excel | Browser completo (localhost:5555) |
+| Análisis | Solo via fórmulas | Punto-y-clic (Data Lab) + fórmulas |
+| Visualización | Viewer externo | Integrado en Studio |
+| Presentaciones | No | Creador integrado (datos → slide en 1 clic) |
+| Flujo de trabajo | Fragmentado | End-to-end: datos → análisis → presentación |
+
+Este cambio impacta directamente la segmentación y el precio — el usuario ahora recibe **mucho más valor** sin que el costo de desarrollo haya crecido proporcionalmente.
+
+### Opciones viables (revisadas agosto 2026)
+
+| Modelo | Precio antes | Precio revisado | Justificación del cambio |
 |:---|:---|:---|:---|
-| **Freemium** | Gratis (R basico) + $199/año (Julia + Python + WebView2 + Pluto + AI) | Baja barrera de entrada, upsell natural | Requiere sistema de licencias |
-| **Licencia academica** | Gratis para universidades, $299/año corporativo | Adopcion en universidades → pipeline corporativo | Ingresos lentos al inicio |
-| **Open source + soporte** | Gratis (GPL v3) + $99/hora de soporte | Comunidad, contribuciones, credibilidad | Dificil monetizar sin volumen |
-| **SaaS (futuro)** | $29/mes | Recurrente, sin instalacion | Requiere reescritura para la nube |
+| **Freemium** | Gratis + $199/año | Gratis (Excel básico) + **$299/año** (Studio completo) | Studio + Data Lab + Presentaciones justifican $100 adicionales |
+| **Licencia académica** | Gratis universidades + $299/año corp. | Gratis universidades + **$399/año** corp. | Plataforma completa vs. add-in; comparable con PyXLL ($495/año, solo Python) |
+| **Open source + soporte** | $99/hora | **$120/hora** | Mayor alcance del producto → mayor valor del soporte |
+| **SaaS (futuro)** | $29/mes | **$39/mes** | Con Studio ya existe el frontend web — el paso a SaaS es más corto |
 
-### Recomendacion
+### Nuevo tier recomendado: NEVEN Studio Pro
 
-**Licencia academica** es el camino mas natural dado el origen del proyecto. Liberar como open source con licencia GPL v3 (ya la tiene), construir comunidad en universidades latinoamericanas, y ofrecer licencia comercial para empresas.
+Con la existencia de Studio, el modelo Freemium tiene ahora una separación natural y clara:
 
-El primer mercado objetivo deberia ser: **profesores de econometria en universidades de habla hispana que usan el libro de Wooldridge**. NEVEN ya tiene las funciones validadas contra ese texto.
+| Tier | Qué incluye | Precio |
+|:---|:---|:---|
+| **NEVEN Free** | Add-in XLL (R básico en Excel), sandbox, 30 funciones R | Gratis (GPL v3) |
+| **NEVEN Academic** | Todo Free + Julia + Python + Studio + Data Lab (18 funciones) | Gratis para universidades |
+| **NEVEN Studio** | Todo Academic + Data Lab completo (catálogo extensible) + Presentaciones + Creador de Presentaciones | **$299/año** por usuario |
+| **NEVEN Studio Pro** | Todo Studio + soporte prioritario + acceso a funciones UC personalizadas + actualizaciones garantizadas | **$499/año** por usuario / **$1,499/año** por equipo (5) |
+
+**Por qué estos precios son defensables frente a la competencia:**
+
+| Producto | Precio | Lenguajes | Studio/UI | Presentaciones |
+|:---|:---|:---|:---|:---|
+| PyXLL | $495/año | Solo Python | No | No |
+| xlwings PRO | $490/año | Solo Python | No | No |
+| **NEVEN Studio** | **$299/año** | R + Julia + Python | ✅ Completo | ✅ Integrado |
+| **NEVEN Studio Pro** | **$499/año** | R + Julia + Python | ✅ + soporte | ✅ + personalización |
+
+NEVEN Studio es **más barato que la competencia** y ofrece más. El precio es conservador deliberadamente — el objetivo inicial es adopción, no maximizar margen.
+
+### Recomendacion (actualizada)
+
+La recomendación cambia de "Licencia académica" a **Open Source + NEVEN Studio (8.4 revisado)**:
+
+1. El core XLL permanece GPL v3 — construye comunidad y credibilidad
+2. NEVEN Studio se distribuye con licencia comercial para uso corporativo
+3. Las universidades reciben NEVEN Academic gratuito — generan el pipeline de usuarios corporativos
+4. El Creador de Presentaciones es el diferenciador que PyXLL/xlwings nunca tendrán — es el argumento de ventas más fuerte
+
+El primer mercado objetivo sigue siendo **profesores de econometría en universidades de habla hispana**, pero el pitch cambió: ya no es "R en Excel sin saber R" — ahora es **"análisis estadístico + presentación ejecutiva en un solo flujo, sin código"**.
 
 ---
 
@@ -269,31 +311,39 @@ Una empresa contrata al autor y adquiere el proyecto como parte del paquete. Est
 
 **Desventaja:** Pierdes autonomia. El proyecto puede tomar una direccion diferente a tu vision.
 
-### 8.4 Modelo hibrido: Open Source + Enterprise
+### 8.4 Modelo hibrido: Open Source + Enterprise (revisado agosto 2026)
 
-El modelo mas sostenible a largo plazo:
+1. **Core open source (GPL v3)** — R + Julia + Python básico, sandbox, tests, add-in XLL. Cualquiera puede usarlo gratis.
+2. **NEVEN Studio (licencia comercial)** — Data Lab completo, Creador de Presentaciones, catálogo extensible, soporte.
+3. **NEVEN Studio Pro** — Todo lo anterior + soporte prioritario + actualizaciones garantizadas.
 
-1. **Core open source (GPL v3)** — R + Julia + Python basico, sandbox, tests. Cualquiera puede usarlo gratis
-2. **Enterprise edition (licencia comercial)** — WebView2 viewer, Pluto notebooks, Quarto reportes, Ribbon COM, soporte prioritario
-3. **Precio:** $299/año por usuario, $999/año por equipo (5 usuarios)
+| Tier | Precio |
+|:---|:---|
+| NEVEN Free | Gratis (GPL v3) |
+| NEVEN Academic | Gratis (universidades) |
+| NEVEN Studio | $299/año por usuario |
+| NEVEN Studio Pro | $499/año por usuario / $1,499/año por equipo (5) |
 
 Este modelo funciona porque:
-- La version gratuita genera adopcion y comunidad
-- Las funciones avanzadas (visualizacion, notebooks, reportes) son las que las empresas necesitan y estan dispuestas a pagar
+- La versión gratuita genera adopción y comunidad (igual que antes)
+- Studio es el diferenciador real — un analista que hace presentaciones ejecutivas puede justificar $299/año fácilmente (es menos de $25/mes)
+- La comparación con PyXLL ($495/año, solo Python, sin Studio) hace que NEVEN Studio parezca barato
 - No requiere un equipo grande — un desarrollador puede mantener ambas versiones
 
-### 8.5 Evaluacion honesta de cada ruta
+### 8.5 Evaluacion honesta de cada ruta (revisada agosto 2026)
 
 | Ruta | Probabilidad de exito | Ingreso potencial | Esfuerzo requerido |
 |:---|:---|:---|:---|
-| Venta directa de licencias | Baja (sin equipo comercial) | $10K-$50K/año | Alto — ventas, soporte, marketing |
-| Venta de derechos a distribuidor | Media | $50K-$200K (una vez) | Bajo — negociacion legal |
+| Venta directa de licencias | Baja (sin equipo comercial) | $15K-$80K/año | Alto — ventas, soporte, marketing |
+| Venta de derechos a distribuidor | Media | **$80K-$300K** (una vez) | Bajo — negociacion legal |
 | Microsoft (cualquier forma) | Baja | Variable | Medio — networking, demo, paper |
 | Acqui-hire | Media | Salario + bonus | Bajo — buscar la empresa correcta |
-| Open Source + Enterprise | Media-Alta (largo plazo) | $20K-$100K/año | Medio — comunidad + producto |
-| Licencia academica gratuita + corporativa | Media | $10K-$30K/año | Medio — ventas a empresas |
+| **Open Source + Studio** | **Alta (largo plazo)** | **$30K-$150K/año** | Medio — comunidad + producto |
+| Licencia academica gratuita + corporativa | Media | $15K-$50K/año | Medio — ventas a empresas |
 
-**Recomendacion:** Empezar con **Open Source + Enterprise** (8.4) porque no requiere inversion inicial, genera credibilidad, y deja abiertas todas las demas opciones. Si una empresa se acerca para comprar derechos o hacer acqui-hire, la base open source demuestra traccion y calidad.
+> La valoración de venta de derechos sube porque el producto ya no es un add-in de nicho — es una plataforma de análisis con interfaz propia. Eso vale más en una negociación.
+
+**Recomendacion:** **Open Source + Studio** es ahora la ruta más atractiva. El producto ya tiene el frontend (Studio), el backend (motores R/Julia/Python), el flujo end-to-end (datos → presentación) y documentación completa. Falta solo el sistema de licencias.
 
 ---
 
