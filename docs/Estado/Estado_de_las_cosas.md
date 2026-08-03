@@ -716,3 +716,51 @@ Documentado en `COMO_AGREGAR_FUNCIONES.md` con ejemplos UC completos.
 | Tab IA en NEVEN Studio | Media | Pendiente |
 | PLUTO.READ (Pluto → Excel) | Media | Pendiente |
 | CrashHandler | Media | Pendiente integración estable |
+
+---
+
+## ACTUALIZACIÓN — 2 de agosto de 2026
+
+### Hitos completados en sesión 2026-08-02
+
+#### Creador de Presentaciones — Panel flotante de propiedades en modo Preview
+
+Se implementó un overlay flotante con glassmorphism (backdrop-filter blur) que aparece automáticamente al abrir Preview. El panel muestra las tabs Contenido / Posición / Estilo y actualiza la presentación en tiempo real al cambiar cualquier parámetro. Es arrastrable y minimizable.
+
+#### Creador de Presentaciones — Zoom del contenido embebido
+
+Se reemplazaron los campos `contentWidth`/`contentHeight` por un único campo `contentZoom` (float, 1.0 = original). Usa `transform: scale(N)` en el elemento interno — escala uniformemente fuentes, celdas, bordes y todo el contenido. Los campos de ancho/alto no podían escalar el contenido, solo el contenedor vacío.
+
+#### Creador de Presentaciones — Posición del contenido dentro del slide
+
+Nuevas propiedades `contentOffsetX` / `contentOffsetY` (default 50/50 = centrado). Mueven la tabla, gráfico o iframe dentro del slide sin afectar la posición del slide en Impress.js. El transform combinado es `translate(Xvw, Yvh) scale(zoom)` sin overflow:hidden que recorte.
+
+#### Creador de Presentaciones — Fix: propiedades afectaban todos los slides
+
+`_updateFromPanel()` era monolítica y leía todos los campos del DOM al cambiar cualquier propiedad. Si el DOM tenía valores residuales de otro slide, los sobreescribía. Fix: `_bindProperties` con `propMap` selectivo — cada campo tiene su propia función de escritura que modifica únicamente su propiedad en el slide activo.
+
+#### Creador de Presentaciones — Fix: panel siempre volvía al Slide 1
+
+Los handlers de propiedades llamaban `_renderList()` en cada keystroke, reconstruyendo todo el DOM de la lista y reseteando la selección. Fix: nuevo método `_updateCurrentSlideLabel()` que actualiza solo el label del card activo sin tocar el DOM completo.
+
+#### Creador de Presentaciones — Selector de slide en panel de propiedades
+
+`<select>` en la cabecera del panel derecho con un `<option>` por cada slide. Permite cambiar el slide a editar directamente desde el panel sin ir al canvas. Se mantiene sincronizado con la selección activa en todo momento.
+
+### Tabla de versiones actualizada
+
+| Versión | Fecha | Alcance |
+|:---|:---|:---|
+| NEVEN v2.1 | Jul 2026 | NEVEN Studio, DataLab V2, Creador de Presentaciones integrado |
+| **NEVEN v2.2** | **Ago 2026** | **Creador de Presentaciones V2: zoom de contenido, offset X/Y, preview en tiempo real con overlay glassmorphism, propiedades independientes por slide, selector de slide en panel** |
+
+### Pendientes actualizados (2 agosto 2026)
+
+| Tarea | Prioridad | Estado |
+|:---|:---|:---|
+| Commit y push de sesión 2026-08-02 | Alta | ✅ Completado en esta sesión |
+| Tests Studio wrappers GR | Alta | Pendiente |
+| Data Lab Python/Julia | Media | Pendiente |
+| Tab IA en NEVEN Studio | Media | Pendiente |
+| PLUTO.READ (Pluto → Excel) | Media | Pendiente |
+| Log debug neven_r_debug.log | Baja | Desactivado en producción |

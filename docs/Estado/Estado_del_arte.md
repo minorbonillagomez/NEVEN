@@ -411,3 +411,5 @@ Secciones eliminadas en la reorganizacion de mayo 2026:
 *NEVEN v2.1 -- De 4.3 a 9.5. 357 tests. Studio Standalone. Data Lab V2. AI Integration. R + Julia + Python + D3 + Leaflet + Plotly + Snap Layout + Extraer_outputs. Security remediation: 36/36 findings resolved.*
 *Repositorio reorganizado: Core/, Common/Security/, Common/IPC/, libreria/R/, libreria/JULIA/, Ejemplos/, Build/*
 *Universidad de Costa Rica -- Team Vikingos -- SKAL!*
+
+| **NEVEN v2.2** | **Ago 2026** | **Creador de Presentaciones V2: zoom de contenido (`transform:scale`), offset X/Y del contenido, overlay de propiedades en Preview con glassmorphism, propiedades independientes por slide (propMap selectivo), selector de slide en panel** |

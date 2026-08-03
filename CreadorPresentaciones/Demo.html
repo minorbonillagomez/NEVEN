@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Presentacion</title>
+    <style>
+        body { background: radial-gradient(rgb(236 202 202), rgb(79 108 136)); }
+        .slide-counter { position: fixed; bottom: 20px; right: 20px; font-size: 32px; color: white; background: black; padding: 10px; border-radius: 5px; z-index: 1000; }
+        .step:not(.active):not(:has(iframe)):not(:has(canvas)) { opacity: 0.05; }
+        .blackboard-slide { position: relative; }
+        .blackboard-slide::after { 
+            content: '1-5: colores | +/-: grosor | ↑↓: scroll | Rueda: desplazar | Home/End: inicio/fin'; 
+            position: absolute; 
+            bottom: 10px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 5px; 
+            font-size: 12px; 
+            z-index: 1000;
+        }
+        .step:not(.active) { opacity: 0.2; }
+        .blackboard-container { scrollbar-width: thin; scrollbar-color: #8b4513 #2d5016; }
+        .blackboard-container::-webkit-scrollbar { width: 12px; }
+        .blackboard-container::-webkit-scrollbar-track { background: #2d5016; }
+        .blackboard-container::-webkit-scrollbar-thumb { background: #8b4513; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div id="impress">
+        <div id="bored" class="step slide" data-x="-3410" data-y="-1745" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">Esta presentación</div>
+<div id="step-2" class="step slide" data-x="-405" data-y="-2960" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">Fue creada con la intención de permitir a todos usar herramientas como</div>
+<div id="step-3" class="step slide" data-x="905" data-y="-1590" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">impress.js</div>
+<div id="title" class="step slide" data-x="-1035" data-y="-440" data-scale="4" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">sin necesidad de escribir líneas de código</div>
+<div id="its" class="step slide" data-x="830" data-y="2995" data-rotate="90" data-scale="5" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">permite crear presentaciones profesionales con dinámicas</div>
+<div id="big" class="step slide" data-x="2750" data-y="1045" data-rotate="180" data-scale="6" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">con objetios interactivos</div>
+<div id="tiny" class="step slide" data-x="4295" data-y="-2770" data-z="-3000" data-rotate="300" style="font-family: Arial, sans-serif; font-size: 48px; color: #eeb417;">además de agregar COLORES</div>
+<div id="ing" class="step slide" data-x="3495" data-y="-850" data-rotate="270" data-scale="6" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">Modificar tamaños</div>
+<div id="imagination" class="step slide" data-x="6700" data-y="-300" data-scale="6" style="font-family: Arial, sans-serif; font-size: 120px; color: #000000;">GRANDES</div>
+<div id="source" class="step slide" data-x="6300" data-y="2000" data-rotate="20" data-scale="4" style="font-family: Arial, sans-serif; font-size: 60px; color: #000000;">MEDIANOS</div>
+<div id="one-more-thing" class="step slide" data-x="3485" data-y="2920" data-scale="2" style="font-family: Arial, sans-serif; font-size: 30px; color: #000000;">PEQUEÑOS</div>
+<div id="its-in-3d" class="step slide" data-x="-635" data-y="1240" data-z="-100" data-rotate="-40" data-scale="2" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">Inclur graficos interactivos con datos desde un XCL</div>
+<div id="slide-19" class="step" data-x="2380" data-y="-2995"><canvas id="chart-slide-19" style="width: 800px; height: 600px;"></canvas></div>
+<div id="slide-16" class="step slide" data-x="-4320" data-y="-2975" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">Crear pizarras para escribir en medio de la presentacion</div>
+<div id="blackboard-demo" class="step blackboard-slide" data-x="-3580" data-y="-385" data-scale="2" style="background: #2d5016; padding: 20px; display: flex; align-items: center; justify-content: center;"><div class="blackboard-container" style="width: 85vw; height: 70vh; overflow: auto; border: 4px solid #8b4513; border-radius: 8px; background: #2d5016;"><canvas id="blackboard-blackboard-demo" width="1200" height="2400" style="display: block; cursor: crosshair; background: #2d5016;"></canvas></div></div>
+<div id="slide-17" class="step slide" data-x="-2445" data-y="840" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">Incluir sitios web navegables</div>
+<div id="slide-17" class="step" data-x="-4545" data-y="1530"><iframe src="https://es.wikipedia.org/wiki/Wikipedia:Portada" style="width: 90vw; height: 80vh; border: 2px solid #ddd; border-radius: 10px;" frameborder="0"></iframe></div>
+<div id="overview" class="step" data-x="-3380" data-y="2625" data-scale="10" style="font-family: Arial, sans-serif; font-size: 48px; color: rgb(64, 73, 79);">Agregar imágenes</div>
+<div id="slide-18" class="step" data-x="705" data-y="-120"><img src="file:///C:/Users/Minor%20Bonilla%20G/Desktop/EJEMPLOS/imagen.jpeg" style="width: 80vw; height: 60vh; object-fit: contain;" alt="Slide image"></div>
+<div id="slide-20" class="step slide" data-x="1705" data-y="0" style="font-family: Arial, sans-serif; font-size: 48px; color: #000000;">Con todo gusto!<br>BUKLO</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/gh/impress/impress.js@1.1.0/js/impress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var api = impress();
+        
+        var steps = document.querySelectorAll('.step');
+        var counter = document.createElement('div');
+        counter.className = 'slide-counter';
+        document.body.appendChild(counter);
+
+        function updateCounter() {
+            var activeStep = document.querySelector('.step.active');
+            if (activeStep) {
+                var activeIndex = Array.from(steps).indexOf(activeStep);
+                counter.textContent = (activeIndex + 1) + '/' + steps.length;
+            }
+        }
+
+        document.addEventListener('impress:init', function(event) {
+            setTimeout(updateCounter, 1);
+            setTimeout(initCharts, 1000);
+            setTimeout(initBlackboards, 1500);
+        });
+
+        document.addEventListener('impress:stepenter', function() {
+            updateCounter();
+        });
+        
+        function initCharts() {
+            var chartSlides = [{"id":"slide-19","text":"","x":2380,"y":-2995,"z":0,"rotate":0,"scale":1,"type":"chart","fontFamily":"Arial, sans-serif","fontSize":48,"textColor":"rgb(64, 73, 79)","imageUrl":"","iframeUrl":"","charts":[{"id":"chart-1756429259122","config":{"type":"bar","data":{"labels":[45292,45323,45352,45383,45413,45444,45474,45505,45536,45566,45597,45627,45658,45689,45717,45748,45778,45809,45839,45870],"datasets":[{"label":"Y","data":[23.5,45.2,67.8,34.1,56.7,78.9,41.3,62.5,29.7,48.6,71.2,38.9,59.4,82.1,44.7,65.3,31.8,52.9,76.4,40.6],"backgroundColor":"rgba(255, 99, 132, 0.8)","borderColor":"rgba(255, 99, 132, 1)","borderWidth":1}]},"options":{"responsive":true,"maintainAspectRatio":false,"plugins":{"legend":{"labels":{"color":"white"}},"title":{"display":false,"text":"","color":"white"}},"scales":{"y":{"ticks":{"color":"white"},"grid":{"color":"rgba(255, 255, 255, 0.1)"}},"x":{"ticks":{"color":"white"},"grid":{"color":"rgba(255, 255, 255, 0.1)"}}}}}}],"blackboardData":null}];
+            
+            document.querySelectorAll('canvas[id^="chart-"]').forEach(function(canvas) {
+                if (canvas.dataset.initialized) return;
+                canvas.dataset.initialized = 'true';
+                
+                var slideId = canvas.id.replace('chart-', '');
+                var slideData = chartSlides.find(s => s.id === slideId);
+                
+                var currentDate = new Date();
+                var dateLabels = [];
+                for (var i = 4; i >= 0; i--) {
+                    var date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+                    var monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                    dateLabels.push(monthNames[date.getMonth()] + ' ' + date.getFullYear());
+                }
+                
+                var chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: dateLabels,
+                        datasets: [{
+                            label: 'Ventas Demo',
+                            data: [125, 189, 103, 156, 142],
+                            backgroundColor: 'rgba(194, 211, 149, 0.3)',
+                            borderColor: 'rgba(194, 211, 149, 1)',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false
+                    }
+                };
+                
+                // Use actual chart config if available
+                if (slideData && slideData.charts && slideData.charts.length > 0) {
+                    chartConfig = JSON.parse(JSON.stringify(slideData.charts[0].config));
+                    // Update labels with current dates if needed
+                    if (chartConfig.data && chartConfig.data.labels) {
+                        chartConfig.data.labels = dateLabels;
+                    }
+                }
+                
+                new Chart(canvas, chartConfig);
+            });
+        }
+        
+        function initBlackboards() {
+            var blackboardSlides = [{"id":"blackboard-demo","text":"","x":-3580,"y":-385,"z":0,"rotate":0,"scale":2,"type":"blackboard","fontFamily":"Arial, sans-serif","fontSize":48,"textColor":"rgb(64, 73, 79)","imageUrl":"","iframeUrl":"","charts":[],"blackboardData":null}];
+            var chartSlides = [{"id":"slide-19","text":"","x":2380,"y":-2995,"z":0,"rotate":0,"scale":1,"type":"chart","fontFamily":"Arial, sans-serif","fontSize":48,"textColor":"rgb(64, 73, 79)","imageUrl":"","iframeUrl":"","charts":[{"id":"chart-1756429259122","config":{"type":"bar","data":{"labels":[45292,45323,45352,45383,45413,45444,45474,45505,45536,45566,45597,45627,45658,45689,45717,45748,45778,45809,45839,45870],"datasets":[{"label":"Y","data":[23.5,45.2,67.8,34.1,56.7,78.9,41.3,62.5,29.7,48.6,71.2,38.9,59.4,82.1,44.7,65.3,31.8,52.9,76.4,40.6],"backgroundColor":"rgba(255, 99, 132, 0.8)","borderColor":"rgba(255, 99, 132, 1)","borderWidth":1}]},"options":{"responsive":true,"maintainAspectRatio":false,"plugins":{"legend":{"labels":{"color":"white"}},"title":{"display":false,"text":"","color":"white"}},"scales":{"y":{"ticks":{"color":"white"},"grid":{"color":"rgba(255, 255, 255, 0.1)"}},"x":{"ticks":{"color":"white"},"grid":{"color":"rgba(255, 255, 255, 0.1)"}}}}}}],"blackboardData":null}];
+            
+            blackboardSlides.forEach(function(slide) {
+                var canvas = document.getElementById('blackboard-' + slide.id);
+                if (!canvas) return;
+                
+                var container = canvas.parentElement;
+                var ctx = canvas.getContext('2d');
+                var isDrawing = false;
+                var currentColor = '#ffffff';
+                var currentSize = 4;
+                
+                // Prevent scroll interference with drawing
+                var isDrawingActive = false;
+                
+                // Load existing blackboard data
+                if (slide.blackboardData) {
+                    var img = new Image();
+                    img.onload = function() {
+                        ctx.drawImage(img, 0, 0);
+                    };
+                    img.src = slide.blackboardData;
+                }
+                
+                // Drawing functionality
+                canvas.addEventListener('mousedown', function(e) {
+                    isDrawing = true;
+                    isDrawingActive = true;
+                    var rect = canvas.getBoundingClientRect();
+                    var x = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    var y = (e.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    e.preventDefault();
+                });
+                
+                canvas.addEventListener('mousemove', function(e) {
+                    if (!isDrawing) return;
+                    
+                    var rect = canvas.getBoundingClientRect();
+                    var x = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    var y = (e.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    ctx.lineWidth = currentSize;
+                    ctx.lineCap = 'round';
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = currentColor;
+                    
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    e.preventDefault();
+                });
+                
+                canvas.addEventListener('mouseup', function() {
+                    isDrawing = false;
+                    isDrawingActive = false;
+                    ctx.beginPath();
+                });
+                
+                canvas.addEventListener('mouseout', function() {
+                    isDrawing = false;
+                    isDrawingActive = false;
+                    ctx.beginPath();
+                });
+                
+                // Prevent scroll when drawing
+                container.addEventListener('wheel', function(e) {
+                    if (isDrawingActive) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }, { passive: false });
+                
+                // Auto-scroll when drawing near edges (separate listener)
+                canvas.addEventListener('mousemove', function(e) {
+                    if (!isDrawing) return;
+                    
+                    var containerRect = container.getBoundingClientRect();
+                    var mouseY = e.clientY - containerRect.top;
+                    var scrollThreshold = 50;
+                    
+                    if (mouseY < scrollThreshold && container.scrollTop > 0) {
+                        container.scrollTop -= 5;
+                    } else if (mouseY > containerRect.height - scrollThreshold) {
+                        container.scrollTop += 5;
+                    }
+                });
+                
+                // Keyboard shortcuts for colors and scroll
+                document.addEventListener('keydown', function(e) {
+                    switch(e.key) {
+                        case '1': currentColor = '#ffffff'; break;
+                        case '2': currentColor = '#ffeb3b'; break;
+                        case '3': currentColor = '#f8bbd9'; break;
+                        case '4': currentColor = '#81d4fa'; break;
+                        case '5': currentColor = '#a5d6a7'; break;
+                        case '+': case '=': currentSize = Math.min(20, currentSize + 2); break;
+                        case '-': case '_': currentSize = Math.max(2, currentSize - 2); break;
+                        case 'ArrowUp': container.scrollTop -= 50; e.preventDefault(); break;
+                        case 'ArrowDown': container.scrollTop += 50; e.preventDefault(); break;
+                        case 'Home': container.scrollTop = 0; e.preventDefault(); break;
+                        case 'End': container.scrollTop = container.scrollHeight; e.preventDefault(); break;
+                    }
+                });
+            });
+        }
+        
+        api.init();
+    </script>
+</body>
+</html>

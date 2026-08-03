@@ -290,8 +290,13 @@ def execute_groupby(group_column, value_column, metric):
 
 def execute_query(sql, page=1, page_size=100):
     """Execute SQL with timeout and pagination. SELECT only."""
-    sql_stripped = sql.strip().upper()
-    if not sql_stripped.startswith("SELECT") and not sql_stripped.startswith("WITH"):
+    # Ignorar comentarios -- al validar el tipo de sentencia
+    sql_clean = '\n'.join(
+        line for line in sql.splitlines()
+        if not line.strip().startswith('--')
+    ).strip()
+    sql_stripped = sql_clean.upper()
+    if not sql_stripped.startswith(("SELECT", "WITH", "SHOW", "DESCRIBE")):
         raise ValueError("Only SELECT/WITH statements are allowed")
 
     timeout_sec = _config.get("queryTimeoutSec", 30)
@@ -534,8 +539,43 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_json(result, status_code)
         elif path == 'api/db_connect':
             self._handle_db_connect(body)
+        elif path == 'api/save_script':
+            self._handle_save_script(body)
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
+
+    def _handle_save_script(self, body):
+        """POST /api/save_script — guarda contenido en un archivo del filesystem.
+
+        Body: { path, content }
+        Seguridad: solo permite extensiones de script (.r, .py, .jl, .R).
+        """
+        import os as _os
+        path    = body.get("path", "").strip()
+        content = body.get("content", "")
+
+        if not path:
+            self._send_error_json("Falta el campo 'path'")
+            return
+
+        ext = _os.path.splitext(path)[1].lower()
+        if ext not in (".r", ".py", ".jl", ".R", ".python"):
+            self._send_error_json(f"Extensión '{ext}' no permitida. Use .r, .py o .jl")
+            return
+
+        try:
+            # Crear directorio si no existe
+            dirpath = _os.path.dirname(path)
+            if dirpath:
+                _os.makedirs(dirpath, exist_ok=True)
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
+                f.write(content)
+            self._send_json({"status": "ok", "path": path,
+                             "bytes": len(content.encode("utf-8"))})
+        except PermissionError:
+            self._send_error_json(f"Sin permiso para escribir en: {path}")
+        except Exception as e:
+            self._send_error_json(f"Error al guardar: {e}")
 
     def _handle_db_connect(self, body):
         """POST /api/db_connect — conectar a DB externa y cargar query en DuckDB.

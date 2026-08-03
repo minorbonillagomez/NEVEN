@@ -52,6 +52,13 @@
       <textarea class="sql-editor" id="sql-input" placeholder="SELECT * FROM dataset LIMIT 100"></textarea>
       <div class="controls" style="margin-top:6px">
         <button class="btn btn-primary" id="btn-sql-run">Ejecutar</button>
+        <select id="sql-examples" style="background:var(--bg-secondary);color:var(--text-secondary);
+                border:1px solid #555;border-radius:4px;font-size:10px;padding:4px 6px;cursor:pointer">
+          <option value="">Cargar ejemplo...</option>
+          <option value="duck1">DuckDB — Resumen estadístico</option>
+          <option value="duck2">DuckDB — Análisis agrupado</option>
+          <option value="ext">DB externa — PostgreSQL (guía)</option>
+        </select>
         <span id="sql-status"></span>
       </div>
     </div>
@@ -64,9 +71,9 @@
     <div class="card">
       <div class="card-title">Datos</div>
       <div class="controls">
-        <button class="btn btn-primary" id="btn-load" style="background:#ad945c">📂 Abrir archivo</button>
+        <button class="btn btn-primary" id="btn-load" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Abrir archivo</button>
         <button class="btn btn-primary" id="btn-bridge-read" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg> Leer de Excel</button>
-        <button class="btn btn-primary" id="btn-db-connect" style="background:#ad945c">🗄 Conectar DB</button>
+        <button class="btn btn-primary" id="btn-db-connect" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> Conectar DB</button>
         <input type="file" id="file-picker" accept=".csv,.tsv,.json,.parquet" style="display:none">
       </div>
       <!-- Archivos recientes -->
@@ -105,9 +112,9 @@
   <!-- Tab: Run Script -->
   <div class="tab-content" id="run-script">
     <div class="card">
-      <div class="card-title">Run Script</div>
-      <div class="controls">
-        <label>Language:</label>
+      <!-- Fila 1: lenguaje + dots -->
+      <div class="controls" style="margin-bottom:4px">
+        <label style="font-size:9px;color:var(--text-secondary)">Lenguaje:</label>
         <select id="script-lang">
           <option value="r" selected>R</option>
           <option value="python">Python</option>
@@ -117,11 +124,57 @@
         <span id="engine-status-python" class="engine-dot" title="Python">●</span>
         <span id="engine-status-julia"  class="engine-dot" title="Julia">●</span>
       </div>
-      <textarea class="sql-editor" id="script-input" style="min-height:120px"></textarea>
-      <div class="controls" style="margin-top:6px">
-        <button class="btn btn-primary"   id="btn-run-script">Execute</button>
-        <button class="btn btn-secondary" id="btn-open-rpivot">Open RPivot</button>
-        <span   id="script-status"></span>
+
+      <!-- Nombre del archivo activo -->
+      <div id="script-filename-bar" style="display:none;margin-bottom:4px;
+           padding:3px 8px;background:var(--bg-primary);border-radius:4px;
+           border:1px solid var(--border);display:flex;align-items:center;gap:6px">
+        <span id="script-filename-dot" style="width:8px;height:8px;border-radius:50%;
+              background:#888;flex-shrink:0"></span>
+        <span id="script-filename-text" style="font-size:10px;color:var(--text-secondary);
+              font-family:Consolas,monospace;flex:1;overflow:hidden;text-overflow:ellipsis;
+              white-space:nowrap">sin título</span>
+      </div>
+
+      <!-- Editor -->
+      <textarea class="sql-editor" id="script-input" style="min-height:140px"></textarea>
+
+      <!-- Fila de acciones -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center">
+        <button class="btn btn-primary" id="btn-run-script"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="#1a1a1a" stroke="none"><polygon points="5,3 19,12 5,21"/></svg> Ejecutar</button>
+        <input type="file" id="script-file-picker"
+               accept=".r,.R,.py,.jl" style="display:none">
+        <button class="btn btn-secondary" id="btn-script-open"
+                title="Cargar script desde disco"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Abrir</button>
+        <button class="btn btn-secondary" id="btn-script-save"
+                title="Guardar (Ctrl+S)" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>
+        <button class="btn btn-secondary" id="btn-script-save-as"
+                title="Guardar como…"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Guardar como</button>
+        <button class="btn btn-secondary" id="btn-script-new"
+                title="Nuevo script (limpia el editor)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Nuevo</button>
+        <button class="btn btn-secondary" id="btn-open-rpivot">RPivot</button>
+        <select id="script-examples" title="Cargar ejemplo"
+                style="background:var(--bg-secondary);color:var(--text-secondary);
+                       border:1px solid #555;border-radius:4px;font-size:10px;
+                       padding:4px 6px;cursor:pointer">
+          <option value="">Ejemplos...</option>
+          <optgroup label="R">
+            <option value="r_estadistica">R — Estadística descriptiva</option>
+            <option value="r_regresion">R — Regresión lineal</option>
+            <option value="r_grafico">R — Gráfico con Plotly</option>
+          </optgroup>
+          <optgroup label="Python">
+            <option value="py_datos">Python — Pandas básico</option>
+            <option value="py_ml">Python — Scikit-learn</option>
+            <option value="py_grafico">Python — Matplotlib</option>
+          </optgroup>
+          <optgroup label="Julia">
+            <option value="jl_estadistica">Julia — Estadística</option>
+            <option value="jl_algebra">Julia — Álgebra lineal</option>
+            <option value="jl_grafico">Julia — Gráfico básico</option>
+          </optgroup>
+        </select>
+        <span id="script-status" style="font-size:10px;color:var(--text-secondary)"></span>
       </div>
     </div>
 
@@ -134,12 +187,24 @@
 
     <!-- Output area -->
     <div class="card" id="script-output-card" style="display:none">
-      <div class="card-title">Output</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div class="card-title" style="margin-bottom:0">Output</div>
+        <button onclick="document.getElementById('script-output-card').style.display='none'"
+                style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px"
+                title="Cerrar">×</button>
+      </div>
       <iframe id="script-iframe"  style="width:100%;height:400px;display:none;border:0"></iframe>
       <div    id="script-table"   style="display:none"></div>
-      <pre    id="script-scalar"  style="display:none;background:#111;padding:8px;color:#a8e600"></pre>
+      <pre    id="script-scalar"  style="display:none;background:#111;padding:8px;color:#a8e600;
+              white-space:pre-wrap;word-break:break-word;font-size:11px;border-radius:4px"></pre>
       <div    id="script-error"   class="msg-error" style="display:none"></div>
-      <pre    id="script-console" style="display:none;background:#1a1a2e;padding:6px;font-size:10px;color:#888"></pre>
+      <div style="display:none" id="script-console-wrap">
+        <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;
+                    letter-spacing:0.6px;margin:6px 0 3px">Consola</div>
+        <pre id="script-console" style="background:#1a1a2e;padding:8px;font-size:10px;color:#aaa;
+             white-space:pre-wrap;word-break:break-word;border-radius:4px;
+             max-height:200px;overflow:auto;margin:0"></pre>
+      </div>
     </div>
   </div>
 
@@ -764,6 +829,83 @@ document.getElementById('btn-sql-run').addEventListener('click', function(){
 });
 document.getElementById('sql-input').addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();document.getElementById('btn-sql-run').click();}});
 
+// --- Ejemplos SQL ---
+var _SQL_EXAMPLES = {
+  duck1: [
+    '-- Ejemplo 1: Resumen estadístico del dataset activo',
+    '-- Primero carga un archivo en Data Studio, luego ejecuta esta consulta',
+    '',
+    'SELECT',
+    '  COUNT(*)                        AS total_filas,',
+    '  COUNT(DISTINCT *)               AS filas_unicas,',
+    '  -- Reemplaza "columna_num" con el nombre de tu columna numérica',
+    '  MIN(columna_num)                AS minimo,',
+    '  MAX(columna_num)                AS maximo,',
+    '  ROUND(AVG(columna_num), 2)      AS promedio,',
+    '  ROUND(STDDEV(columna_num), 2)   AS desv_std,',
+    '  PERCENTILE_CONT(0.50)',
+    '    WITHIN GROUP (ORDER BY columna_num) AS mediana',
+    'FROM dataset',
+    'LIMIT 1'
+  ].join('\n'),
+
+  duck2: [
+    '-- Ejemplo 2: Análisis agrupado',
+    '-- Agrupa por una categoría y calcula métricas por grupo',
+    '-- Reemplaza "categoria" y "valor" con tus columnas reales',
+    '',
+    'SELECT',
+    '  categoria,',
+    '  COUNT(*)                    AS n,',
+    '  ROUND(AVG(valor), 2)        AS promedio,',
+    '  ROUND(SUM(valor), 2)        AS total,',
+    '  ROUND(MIN(valor), 2)        AS minimo,',
+    '  ROUND(MAX(valor), 2)        AS maximo',
+    'FROM dataset',
+    'WHERE valor IS NOT NULL',
+    'GROUP BY categoria',
+    'ORDER BY total DESC',
+    'LIMIT 50'
+  ].join('\n'),
+
+  ext: [
+    '-- Ejemplo 3: Conexión a base de datos externa (guía paso a paso)',
+    '--',
+    '-- PASO 1: Ve al tab "Data Studio" y haz clic en "Conectar DB"',
+    '-- PASO 2: Selecciona el motor (PostgreSQL, MySQL, SQLite, SQL Server)',
+    '-- PASO 3: Completa los parámetros de conexión:',
+    '--   Host:     tu-servidor.ejemplo.com',
+    '--   Puerto:   5432  (PostgreSQL) / 3306 (MySQL)',
+    '--   Base:     nombre_de_tu_base',
+    '--   Usuario:  tu_usuario',
+    '--   Password: **********',
+    '--',
+    '-- PASO 4: Escribe tu query. Ejemplo con PostgreSQL:',
+    '',
+    'SELECT',
+    '  id,',
+    '  nombre,',
+    '  fecha_creacion::DATE  AS fecha,',
+    '  monto',
+    'FROM ventas',
+    'WHERE fecha_creacion >= CURRENT_DATE - INTERVAL \'30 days\'',
+    'ORDER BY monto DESC',
+    'LIMIT 100',
+    '',
+    '-- PASO 5: Haz clic en "Conectar y cargar"',
+    '-- Los datos quedarán disponibles aquí como tabla "dataset"',
+    '-- y podrás consultarlos con SQL normal de DuckDB.'
+  ].join('\n')
+};
+
+document.getElementById('sql-examples').addEventListener('change', function() {
+  var key = this.value;
+  if (!key) return;
+  document.getElementById('sql-input').value = _SQL_EXAMPLES[key] || '';
+  this.value = '';  // reset selector
+  document.getElementById('sql-input').focus();
+});
+
 // --- GROUP BY ---
 function populateGroupBy(cols,types){
   var gc=document.getElementById('grp-col'),gv=document.getElementById('grp-val');
@@ -977,16 +1119,465 @@ var _snippets = {
   julia:  '# Julia\nprintln("NEVEN Julia OK")\n'
 };
 document.getElementById('script-lang').addEventListener('change', function() {
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Continuar?')) { this.value = _scriptLang; return; }
+  _scriptLang = this.value;
   var ta = document.getElementById('script-input');
   ta.value = _snippets[this.value] || '';
+  _setScriptFile(null);
 });
 document.getElementById('script-input').value = _snippets['r'];
 
-// Ctrl+Enter en script-input
-document.getElementById('script-input').addEventListener('keydown', function(e) {
-  if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); runScriptRS(); }
+// ── Editor de scripts — estado ────────────────────────────────────
+var _scriptFilePath = null;   // ruta del archivo abierto (o null)
+var _scriptFileName = null;   // nombre visible
+var _scriptDirty    = false;  // cambios sin guardar
+var _scriptLang     = 'r';
+
+function _setScriptFile(path) {
+  _scriptFilePath = path;
+  _scriptFileName = path ? path.split(/[\\/]/).pop() : null;
+  _scriptDirty    = false;
+  _updateScriptBar();
+}
+
+function _markDirty() {
+  _scriptDirty = true;
+  _updateScriptBar();
+}
+
+function _updateScriptBar() {
+  var bar     = document.getElementById('script-filename-bar');
+  var dot     = document.getElementById('script-filename-dot');
+  var text    = document.getElementById('script-filename-text');
+  var saveBtn = document.getElementById('btn-script-save');
+  if (_scriptFileName) {
+    bar.style.display = 'flex';
+    text.textContent  = _scriptFileName;
+    dot.style.background = _scriptDirty ? '#ff6b35' : '#4caf50';
+    saveBtn.style.display = _scriptFilePath ? '' : 'none';
+  } else {
+    bar.style.display = 'none';
+    saveBtn.style.display = 'none';
+  }
+}
+
+// Marcar dirty al escribir
+document.getElementById('script-input').addEventListener('input', function() {
+  if (!_scriptDirty) _markDirty();
 });
 
+// ── Abrir script ──────────────────────────────────────────────────
+document.getElementById('btn-script-open').addEventListener('click', function() {
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Abrir otro archivo?')) return;
+  document.getElementById('script-file-picker').click();
+});
+
+document.getElementById('script-file-picker').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('script-input').value = ev.target.result;
+    _setScriptFile(file.name);   // nombre disponible; path real no accesible en browser
+    // Detectar lenguaje por extension
+    var ext = file.name.split('.').pop().toLowerCase();
+    var langMap = { r: 'r', py: 'python', jl: 'julia' };
+    if (langMap[ext]) {
+      document.getElementById('script-lang').value = langMap[ext];
+      _scriptLang = langMap[ext];
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  e.target.value = '';
+});
+
+// ── Guardar (solo si tenemos path real del servidor) ──────────────
+document.getElementById('btn-script-save').addEventListener('click', _saveScript);
+
+function _saveScript() {
+  if (!_scriptFilePath) { _saveScriptAs(); return; }
+  var content = document.getElementById('script-input').value;
+  fetch(API + '/api/save_script', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: _scriptFilePath, content: content })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d) {
+    if (d.status === 'ok') {
+      _scriptDirty = false;
+      _updateScriptBar();
+      var st = document.getElementById('script-status');
+      st.textContent = '✓ Guardado';
+      st.style.color = 'var(--success)';
+      setTimeout(function(){ st.textContent = ''; }, 2000);
+    } else {
+      alert('Error al guardar: ' + d.message);
+    }
+  })
+  .catch(function(e){ alert('Error: ' + e); });
+}
+
+// ── Guardar como (File System Access API o fallback descarga) ─────
+document.getElementById('btn-script-save-as').addEventListener('click', _saveScriptAs);
+
+async function _saveScriptAs() {
+  var content = document.getElementById('script-input').value;
+  var lang    = document.getElementById('script-lang').value;
+  var extMap  = { r: '.r', python: '.py', julia: '.jl' };
+  var ext     = extMap[lang] || '.r';
+  var suggestedName = (_scriptFileName || 'script') .replace(/\.[^.]+$/, '') + ext;
+
+  // Intentar File System Access API (Edge/Chrome modernos)
+  if (window.showSaveFilePicker) {
+    try {
+      var handle = await window.showSaveFilePicker({
+        suggestedName: suggestedName,
+        types: [{ description: 'Script', accept: { 'text/plain': [ext] } }]
+      });
+      var writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      _scriptFilePath = handle.name;
+      _scriptFileName = handle.name;
+      _scriptDirty    = false;
+      _updateScriptBar();
+      return;
+    } catch(e) {
+      if (e.name === 'AbortError') return; // usuario canceló
+    }
+  }
+
+  // Fallback: descarga
+  var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = suggestedName;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  _scriptDirty = false;
+  _updateScriptBar();
+}
+
+// ── Nuevo script ──────────────────────────────────────────────────
+document.getElementById('btn-script-new').addEventListener('click', function() {
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Crear nuevo script?')) return;
+  var lang = document.getElementById('script-lang').value;
+  document.getElementById('script-input').value = _snippets[lang] || '';
+  _setScriptFile(null);
+});
+
+// ── Ejemplos ──────────────────────────────────────────────────────
+var _EXAMPLES = {
+
+  r_estadistica: { lang: 'r', name: 'ejemplo_estadistica.R', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo R: Estadística descriptiva
+# ══════════════════════════════════════════════
+# Datos de ejemplo: ingresos y gastos de 20 personas
+ingresos <- c(800000,1200000,950000,1800000,2200000,
+              600000,3000000,2000000,880000,1400000,
+              4000000,3200000,750000,1600000,2500000,
+              3500000,1000000,1900000,550000,2800000)
+
+gastos <- c(650000,900000,750000,1200000,1500000,
+            580000,1800000,1400000,700000,1000000,
+            2000000,1900000,680000,1100000,1600000,
+            2100000,820000,1300000,530000,1700000)
+
+# Estadísticas básicas
+cat("=== Ingresos ===\\n")
+cat("Media:   ", mean(ingresos), "\\n")
+cat("Mediana: ", median(ingresos), "\\n")
+cat("Std Dev: ", sd(ingresos), "\\n")
+cat("Rango:   ", range(ingresos), "\\n")
+
+# Correlación
+cat("\\nCorrelación ingreso-gasto:", cor(ingresos, gastos), "\\n")
+
+# Retornar tabla resumen serializable
+data.frame(
+  Variable = c("ingreso", "gasto"),
+  Media    = round(c(mean(ingresos), mean(gastos))),
+  Mediana  = round(c(median(ingresos), median(gastos))),
+  StdDev   = round(c(sd(ingresos), sd(gastos))),
+  Min      = c(min(ingresos), min(gastos)),
+  Max      = c(max(ingresos), max(gastos))
+)
+`},
+
+  r_regresion: { lang: 'r', name: 'ejemplo_regresion.R', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo R: Regresión lineal simple
+# ══════════════════════════════════════════════
+set.seed(42)
+n <- 50
+edad    <- round(runif(n, 22, 60))
+ingreso <- 500000 + edad * 40000 + rnorm(n, 0, 200000)
+
+# Ajustar modelo
+modelo <- lm(ingreso ~ edad)
+
+# Predicción para edad = 35
+pred35 <- round(predict(modelo, newdata = data.frame(edad = 35)))
+
+cat("=== Regresión lineal: ingreso ~ edad ===\\n")
+cat("Intercepto:", round(coef(modelo)[1]), "\\n")
+cat("Pendiente: ", round(coef(modelo)[2]), "por año\\n")
+cat("R²:        ", round(summary(modelo)$r.squared, 4), "\\n")
+cat("Pred. edad=35:", pred35, "\\n")
+
+# Retornar tabla de resultados serializable
+data.frame(
+  Metrica     = c("Intercepto", "Pendiente (por año)", "R²", "RMSE", "Pred. edad=35"),
+  Valor       = c(
+    round(coef(modelo)[1]),
+    round(coef(modelo)[2]),
+    round(summary(modelo)$r.squared, 4),
+    round(summary(modelo)$sigma),
+    pred35
+  )
+)
+`},
+
+  r_grafico: { lang: 'r', name: 'ejemplo_grafico.R', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo R: Gráfico interactivo con Plotly
+# ══════════════════════════════════════════════
+if (!require("jsonlite", quietly=TRUE)) install.packages("jsonlite")
+
+x <- c(1,2,3,4,5,6,7,8,9,10)
+y <- c(2.3, 4.1, 3.8, 6.2, 5.9, 7.4, 8.1, 7.6, 9.3, 10.2)
+
+fig <- list(
+  data = list(list(
+    type = "scatter", mode = "lines+markers",
+    x = x, y = y,
+    line   = list(color = "#d7a538", width = 2),
+    marker = list(color = "#d7a538", size = 8)
+  )),
+  layout = list(
+    paper_bgcolor = "#373434", plot_bgcolor = "#373434",
+    font   = list(color = "#888"),
+    xaxis  = list(title = "Período", color = "#888", gridcolor = "#333"),
+    yaxis  = list(title = "Valor",   color = "#888", gridcolor = "#333"),
+    title  = list(text = "Serie de ejemplo", font = list(color = "#e0e0e0"))
+  )
+)
+
+html <- paste0('<html><body><neven-plotly>',
+               jsonlite::base64_enc(chartr("\\n\\r","  ",
+                 jsonlite::toJSON(fig, auto_unbox=TRUE))),
+               '</neven-plotly></body></html>')
+html
+`},
+
+  py_datos: { lang: 'python', name: 'ejemplo_datos.py', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo Python: Pandas básico
+# ══════════════════════════════════════════════
+
+# Datos de ejemplo
+nombres  = ["Ana","Luis","María","Carlos","Sofía"]
+edades   = [25, 32, 28, 45, 38]
+salarios = [800000, 1200000, 950000, 1800000, 1400000]
+
+n = len(nombres)
+media_edad    = sum(edades)   / n
+media_salario = sum(salarios) / n
+
+print("=== Resumen del dataset ===")
+print(f"Registros: {n}")
+print(f"Edad promedio: {media_edad:.1f} años")
+print(f"Salario promedio: {media_salario:,.0f}")
+
+# Retornar tabla serializable
+[{"nombre": d, "edad": e, "salario": s,
+  "salario_relativo": round(s / media_salario, 2)}
+ for d, e, s in zip(nombres, edades, salarios)]
+`},
+
+  py_ml: { lang: 'python', name: 'ejemplo_ml.py', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo Python: Regresión con scikit-learn
+# ══════════════════════════════════════════════
+try:
+    from sklearn.linear_model import LinearRegression
+
+    experiencia = [[1],[2],[3],[5],[7],[8],[10],[12],[15],[18]]
+    salario     = [500000,600000,700000,900000,1100000,
+                   1200000,1500000,1700000,2000000,2300000]
+
+    modelo = LinearRegression()
+    modelo.fit(experiencia, salario)
+    r2 = modelo.score(experiencia, salario)
+
+    print("=== Regresión Lineal: Experiencia → Salario ===")
+    print(f"Intercepto:  {modelo.intercept_:,.0f}")
+    print(f"Coeficiente: {modelo.coef_[0]:,.0f} por año")
+    print(f"R²:          {r2:.4f}")
+
+    # Predicciones para 5, 10 y 15 años
+    preds = [1, 5, 10, 15, 20]
+    [{"años_exp": x,
+      "salario_pred": round(float(modelo.predict([[x]])[0]))}
+     for x in preds]
+
+except ImportError:
+    print("scikit-learn no instalado. Ejecute: pip install scikit-learn")
+    [{"estado": "scikit-learn no disponible", "solucion": "pip install scikit-learn"}]
+`},
+
+  py_grafico: { lang: 'python', name: 'ejemplo_grafico.py', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo Python: Gráfico con Plotly
+# ══════════════════════════════════════════════
+import json, base64
+
+meses  = ["Ene","Feb","Mar","Abr","May","Jun",
+          "Jul","Ago","Sep","Oct","Nov","Dic"]
+ventas = [120,145,132,168,175,190,185,210,195,220,235,250]
+
+fig = {
+    "data": [{
+        "type": "bar", "x": meses, "y": ventas,
+        "marker": {"color": "#d7a538"}
+    }],
+    "layout": {
+        "paper_bgcolor": "#373434", "plot_bgcolor": "#373434",
+        "font":   {"color": "#888"},
+        "xaxis":  {"color": "#888", "gridcolor": "#333"},
+        "yaxis":  {"title": "Ventas (miles)", "color": "#888", "gridcolor": "#333"},
+        "title":  {"text": "Ventas mensuales", "font": {"color": "#e0e0e0"}}
+    }
+}
+
+fig_json = json.dumps(fig)
+b64      = base64.b64encode(fig_json.encode()).decode()
+html     = f"<html><body><neven-plotly>{b64}</neven-plotly></body></html>"
+html
+`},
+
+  jl_estadistica: { lang: 'julia', name: 'ejemplo_estadistica.jl', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo Julia: Estadística básica
+# ══════════════════════════════════════════════
+
+datos = [23.5, 45.2, 67.8, 34.1, 56.7, 78.3, 89.1, 12.4, 55.6, 43.8,
+         61.2, 72.5, 38.9, 51.3, 66.7, 29.8, 84.2, 47.6, 58.1, 35.4]
+
+println("=== Estadísticas descriptivas ===")
+println("N:       ", length(datos))
+println("Media:   ", round(sum(datos)/length(datos), digits=2))
+println("Mínimo:  ", minimum(datos))
+println("Máximo:  ", maximum(datos))
+
+# Varianza manual
+media = sum(datos) / length(datos)
+varianza = sum((x - media)^2 for x in datos) / (length(datos) - 1)
+println("Std Dev: ", round(sqrt(varianza), digits=2))
+
+# Cuartiles (ordenados)
+ordenados = sort(datos)
+n = length(ordenados)
+println("Mediana: ", n % 2 == 0 ?
+    (ordenados[n÷2] + ordenados[n÷2+1])/2 :
+    ordenados[(n+1)÷2])
+`},
+
+  jl_algebra: { lang: 'julia', name: 'ejemplo_algebra.jl', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo Julia: Álgebra lineal
+# ══════════════════════════════════════════════
+
+# Matriz de ejemplo
+A = [4.0 3.0; 6.0 3.0]
+b = [10.0; 12.0]
+
+println("=== Álgebra Lineal ===")
+println("Matriz A:")
+display(A)
+
+println("\\nVector b: ", b)
+
+# Solución del sistema Ax = b
+x = A \\ b
+println("\\nSolución x = A\\\\b: ", round.(x, digits=4))
+println("Verificación Ax: ", round.(A * x, digits=4))
+
+# Eigenvalores
+vals = eigvals(A)
+println("\\nEigenvalores: ", round.(vals, digits=4))
+
+# Determinante
+println("Determinante: ", round(det(A), digits=4))
+
+# Inversa
+println("\\nInversa A⁻¹:")
+display(round.(inv(A), digits=4))
+`},
+
+  jl_grafico: { lang: 'julia', name: 'ejemplo_grafico.jl', code:
+`# ══════════════════════════════════════════════
+# NEVEN Studio — Ejemplo Julia: Gráfico con Plotly JSON
+# ══════════════════════════════════════════════
+using JSON, Base64
+
+x = collect(0:0.2:2π)
+y_sin = sin.(x)
+y_cos = cos.(x)
+
+fig = Dict(
+    "data" => [
+        Dict("type"=>"scatter","mode"=>"lines",
+             "name"=>"sin(x)","x"=>x,"y"=>y_sin,
+             "line"=>Dict("color"=>"#d7a538","width"=>2)),
+        Dict("type"=>"scatter","mode"=>"lines",
+             "name"=>"cos(x)","x"=>x,"y"=>y_cos,
+             "line"=>Dict("color"=>"#888888","width"=>2))
+    ],
+    "layout" => Dict(
+        "paper_bgcolor"=>"#373434","plot_bgcolor"=>"#373434",
+        "font"=>Dict("color"=>"#888"),
+        "xaxis"=>Dict("title"=>"x","color"=>"#888","gridcolor"=>"#333"),
+        "yaxis"=>Dict("title"=>"y","color"=>"#888","gridcolor"=>"#333"),
+        "title"=>Dict("text"=>"Funciones trigonométricas",
+                      "font"=>Dict("color"=>"#e0e0e0")),
+        "legend"=>Dict("font"=>Dict("color"=>"#888"))
+    )
+)
+
+b64  = base64encode(JSON.json(fig))
+html = "<html><body><neven-plotly>\\$(b64)</neven-plotly></body></html>"
+html
+`}
+};
+
+document.getElementById('script-examples').addEventListener('change', function() {
+  var key = this.value;
+  if (!key) return;
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Cargar ejemplo?')) {
+    this.value = ''; return;
+  }
+  var ex = _EXAMPLES[key];
+  if (!ex) { this.value = ''; return; }
+  document.getElementById('script-lang').value = ex.lang;
+  _scriptLang = ex.lang;
+  document.getElementById('script-input').value = ex.code;
+  _setScriptFile(null);
+  // Marcar con nombre del ejemplo pero sin path de disco
+  _scriptFileName = ex.name;
+  _scriptFilePath = null;
+  _scriptDirty    = false;
+  _updateScriptBar();
+  this.value = '';  // reset selector
+});
+
+// ── Ctrl+S para guardar ───────────────────────────────────────────
+document.getElementById('script-input').addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); _saveScript(); }
+  if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); runScriptRS(); }
+});
 // Execute button
 document.getElementById('btn-run-script').addEventListener('click', runScriptRS);
 document.getElementById('btn-open-rpivot').addEventListener('click', openRPivotRS);
@@ -1001,54 +1592,114 @@ async function runScriptRS() {
   var btn = document.getElementById('btn-run-script');
   var status = document.getElementById('script-status');
   btn.disabled = true; status.textContent = '⏳';
+
+  // Timeout de 120 segundos
+  var controller = new AbortController();
+  var timeoutId  = setTimeout(function(){ controller.abort(); }, 120000);
+
   try {
-    var resp = await fetch(API_BASE_RS + '/api/' + lang, {
-      method: 'POST',
+    var resp = await fetch(window.location.origin + '/api/' + lang, {
+      method:  'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({code: code})
+      body:    JSON.stringify({code: code}),
+      signal:  controller.signal
     });
+    clearTimeout(timeoutId);
     var res = await resp.json();
     renderScriptResultRS(res);
   } catch(e) {
-    showScriptErrorRS(e.message);
+    clearTimeout(timeoutId);
+    if (e.name === 'AbortError') {
+      showScriptErrorRS('Tiempo de espera agotado (120s). El script puede seguir ejecutándose en el motor.');
+    } else {
+      showScriptErrorRS(e.message);
+    }
   } finally {
     btn.disabled = false; status.textContent = '';
   }
 }
 
 function renderScriptResultRS(res) {
-  var card   = document.getElementById('script-output-card');
-  var iframe = document.getElementById('script-iframe');
-  var table  = document.getElementById('script-table');
-  var scalar = document.getElementById('script-scalar');
-  var errEl  = document.getElementById('script-error');
-  var cons   = document.getElementById('script-console');
-  [iframe, table, scalar, errEl, cons].forEach(function(el){ el.style.display = 'none'; });
+  var card     = document.getElementById('script-output-card');
+  var iframe   = document.getElementById('script-iframe');
+  var table    = document.getElementById('script-table');
+  var scalar   = document.getElementById('script-scalar');
+  var errEl    = document.getElementById('script-error');
+  var cons     = document.getElementById('script-console');
+  var consWrap = document.getElementById('script-console-wrap');
+  [iframe, table, scalar, errEl, cons].forEach(function(el){ el.style.display='none'; });
+  if (consWrap) consWrap.style.display = 'none';
   card.style.display = '';
 
   if (res.status === 'error') {
     errEl.textContent = res.message || 'Error desconocido';
     errEl.style.display = '';
-  } else if (res.type === 'html') {
-    iframe.srcdoc = res.html;
-    iframe.style.display = '';
-  } else if (res.type === 'array') {
-    var html = '<table class="data-table"><tr>';
-    (res.columns||[]).forEach(function(c){ html += '<th>' + c + '</th>'; });
-    html += '</tr>';
-    (res.rows||[]).forEach(function(row){
-      html += '<tr>';
-      row.forEach(function(v){ html += '<td>' + (v !== null ? v : 'NULL') + '</td>'; });
-      html += '</tr>';
-    });
-    html += '</table>';
-    table.innerHTML = html;
+    if (res.console && res.console.trim()) {
+      cons.textContent = res.console; cons.style.display = '';
+      if (consWrap) consWrap.style.display = '';
+    }
+    return;
+  }
+
+  // Convertir respuesta del servidor al formato de slot de DataLab
+  var stype = res.type || 'scalar';
+  var sval;
+
+  if (stype === 'array' && res.columns && res.rows) {
+    // ControlR retorna en formato COLUMNAR: rows[i] = todos los valores de la columna i
+    // Transponer a array-of-objects que renderSlotTable entiende
+    stype = 'table';
+    var cols    = res.columns || [];
+    var rawRows = res.rows    || [];
+    var nRows   = rawRows.length > 0 && Array.isArray(rawRows[0]) ? rawRows[0].length : 0;
+    sval = [];
+    for (var ri = 0; ri < nRows; ri++) {
+      var obj = {};
+      cols.forEach(function(c, ci) {
+        obj[c] = (rawRows[ci] && rawRows[ci][ri] !== undefined) ? rawRows[ci][ri] : null;
+      });
+      sval.push(obj);
+    }
+  } else if (stype === 'html') {
+    sval = res.html || res.result || '';
+  } else if (stype === 'string' || stype === 'character') {
+    var strVal = res.result || '';
+    if (strVal.indexOf('<neven-plotly>') !== -1) {
+      stype = 'html'; sval = strVal;
+    } else if (strVal.trim().startsWith('<html')) {
+      stype = 'html'; sval = strVal;
+    } else {
+      stype = 'scalar'; sval = strVal;
+    }
+  } else if (stype === 'nil') {
+    stype = 'scalar'; sval = '(sin valor de retorno)';
+  } else {
+    // integer, real, float, boolean, fallback
+    stype = 'scalar';
+    sval = res.result;
+    if (sval === null || sval === undefined) sval = '(sin valor de retorno)';
+  }
+
+  var slot = { name: 'resultado', label: 'Resultado', type: stype, value: sval, tier: 1 };
+
+  // Reutilizar buildSlotElement de DataLab
+  if (typeof buildSlotElement === 'function') {
+    table.innerHTML = '';
+    var el = buildSlotElement(slot);
+    var h = el.querySelector('h4');
+    if (h) h.style.display = 'none';
+    table.appendChild(el);
     table.style.display = '';
   } else {
-    scalar.textContent = String(res.result !== undefined ? res.result : '');
+    scalar.textContent = typeof sval === 'object'
+      ? JSON.stringify(sval, null, 2) : String(sval || '');
     scalar.style.display = '';
   }
-  if (res.console) { cons.textContent = res.console; cons.style.display = ''; }
+
+  if (res.console && res.console.trim()) {
+    cons.textContent = res.console; cons.style.display = '';
+    if (consWrap) consWrap.style.display = '';
+  }
 }
 
 function showScriptErrorRS(msg) {

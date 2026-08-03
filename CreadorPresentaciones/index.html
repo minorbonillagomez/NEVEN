@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEVEN — Creador de Presentaciones</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Cuando está embebido en iframe desde NEVEN Studio, ocultar el header
+       para no duplicarlo — el padre ya muestra "NEVEN Studio" */
+    html.embedded .header { display: none !important; }
+    html.embedded body    { padding-top: 0 !important; }
+    /* Llenar completamente el iframe */
+    html, body { height: 100%; overflow: hidden; }
+  </style>
+  <script>
+    // Detectar si estamos dentro de un iframe
+    if (window.self !== window.top) {
+      document.documentElement.classList.add('embedded');
+    }
+  </script>
+  <script>
+    // ── Diagnóstico del botón + Slide ─────────────────────────────
+    // Se ejecuta DESPUÉS del DOM — captura errores de inicialización
+    window.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('btn-add-slide');
+      if (!btn) {
+        console.error('[NEVEN] btn-add-slide NO encontrado en el DOM');
+        return;
+      }
+      console.log('[NEVEN] btn-add-slide encontrado OK');
+      // Listener de backup directo — si el de PresentationEditor falla, este funciona
+      btn.addEventListener('click', function() {
+        console.log('[NEVEN] btn-add-slide click recibido, _editor=', typeof window._editor);
+        if (window._editor && typeof window._editor.addSlide === 'function') {
+          try {
+            window._editor.addSlide();
+            console.log('[NEVEN] addSlide() ejecutado, slides=', window._editor.slides.length);
+          } catch(e) {
+            console.error('[NEVEN] addSlide() error:', e);
+          }
+        } else {
+          console.error('[NEVEN] _editor no disponible o addSlide no es función');
+        }
+      }, true); // capture=true para que llegue antes que cualquier stopPropagation
+    });
+  </script>
+</head>
+<body>
+
+  <!-- Header idéntico al de NEVEN Studio -->
+  <div class="header">
+    <h1>NEVEN Studio</h1>
+    <span class="version">Presentaciones</span>
+  </div>
+
+  <!-- Toolbar de acciones -->
+  <div class="toolbar">
+    <div class="toolbar-section">
+      <button class="btn btn-primary" id="btn-add-slide">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Slide
+      </button>
+      <button class="btn btn-secondary" id="btn-preview">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Preview
+      </button>
+      <button class="btn btn-secondary" id="btn-export">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Exportar
+      </button>
+      <!-- Menu ... secundario -->
+      <div style="position:relative;display:inline-block">
+        <button class="btn btn-secondary" id="btn-more-menu"
+                style="padding:5px 8px;letter-spacing:2px" title="Más opciones">···</button>
+        <div id="more-menu-dropdown" style="display:none;position:absolute;top:100%;left:0;
+             margin-top:4px;background:var(--bg-secondary);border:1px solid var(--border);
+             border-radius:var(--radius);z-index:100;min-width:130px;
+             box-shadow:0 4px 12px rgba(0,0,0,0.4)">
+          <button class="btn-secondary" id="btn-load"
+                  style="display:flex;align-items:center;gap:6px;width:100%;padding:7px 10px;
+                         background:none;border:none;cursor:pointer;font-size:10px;color:var(--text-primary);
+                         border-bottom:1px solid var(--border)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Cargar
+          </button>
+          <button id="btn-load-demo"
+                  style="display:flex;align-items:center;gap:6px;width:100%;padding:7px 10px;
+                         background:none;border:none;cursor:pointer;font-size:10px;color:var(--text-primary);
+                         border-bottom:1px solid var(--border)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Ver Ejemplos
+          </button>
+          <button id="btn-clear-slides"
+                  style="display:flex;align-items:center;gap:6px;width:100%;padding:7px 10px;
+                         background:none;border:none;cursor:pointer;font-size:10px;color:var(--error)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="m19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            Limpiar todo
+          </button>
+        </div>
+      </div>
+      <input type="file" id="html-file-input" accept=".html" style="display:none">
+    </div>
+    <div class="toolbar-section">
+      <button class="btn-icon" id="btn-undo" title="Deshacer (Ctrl+Z)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      </button>
+      <button class="btn-icon" id="btn-redo" title="Rehacer (Ctrl+Y)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Layout de tres paneles -->
+  <div class="editor-body">
+
+    <!-- Panel izquierdo: lista de slides -->
+    <aside class="slides-panel" style="position:relative">
+      <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Slides</span>
+        <button id="btn-delete-slide" class="btn-icon" title="Eliminar slide seleccionado"
+                style="padding:2px 4px;font-size:10px" >
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="m19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div>
+      <div class="slides-list" id="slides-list"></div>
+      <!-- Toggle collapse -->
+      <button id="btn-panel-toggle" class="panel-toggle" title="Colapsar panel">&#8249;</button>
+    </aside>
+
+    <!-- Canvas central -->
+    <main class="canvas-area">
+      <div class="canvas" id="canvas">
+        <div class="canvas-placeholder">Selecciona un slide o crea uno nuevo</div>
+      </div>
+    </main>
+
+    <!-- Panel derecho: propiedades con tabs -->
+    <aside class="properties-panel">
+      <!-- Selector de slide activo -->
+      <div style="padding:6px 8px;border-bottom:1px solid var(--border);background:var(--bg-card);display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" style="flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <select id="prop-slide-selector" style="flex:1;background:#282828d9;color:var(--text-primary);border:1px solid var(--border-solid);border-radius:4px;font-size:10px;font-family:inherit;padding:3px 6px;cursor:pointer"></select>
+      </div>
+      <!-- T3: Tab bar -->
+      <div class="prop-tabs">
+        <button class="prop-tab active" data-tab="contenido">Contenido</button>
+        <button class="prop-tab" data-tab="posicion">Posición</button>
+        <button class="prop-tab" data-tab="estilo">Estilo</button>
+      </div>
+
+      <!-- Tab: Contenido -->
+      <div class="prop-tab-content active" id="prop-tab-contenido">
+        <div class="properties-scroll">
+          <div class="card">
+            <div class="property-group">
+              <label>Texto</label>
+              <textarea id="prop-text" placeholder="Contenido del slide"></textarea>
+            </div>
+            <div class="property-group">
+              <label>Tipo de Slide</label>
+              <select id="prop-type">
+                <option value="slide">Texto</option>
+                <option value="title">Título</option>
+                <option value="image">Imagen</option>
+                <option value="iframe">Sitio Web</option>
+                <option value="chart">Gráfico</option>
+                <option value="blackboard">Pizarra</option>
+                <option value="overview">Vista General</option>
+              </select>
+            </div>
+            <div class="property-group" id="grp-image" style="display:none">
+              <label>URL de Imagen</label>
+              <input type="url" id="prop-image-url" placeholder="https://ejemplo.com/imagen.jpg">
+            </div>
+            <div class="property-group" id="grp-iframe" style="display:none">
+              <label>URL del Sitio Web</label>
+              <input type="url" id="prop-iframe-url" placeholder="https://ejemplo.com">
+            </div>
+            <div class="property-group" id="grp-chart" style="display:none">
+              <label>Paleta de colores</label>
+              <select id="prop-palette">
+                <option value="default">Predeterminada</option>
+                <option value="blue">Azules</option>
+                <option value="green">Verdes</option>
+                <option value="warm">Cálidos</option>
+                <option value="cool">Fríos</option>
+                <option value="monochrome">Monocromático</option>
+              </select>
+              <label style="margin-top:6px">Archivo Excel (.xlsx)</label>
+              <input type="file" id="prop-chart-file" accept=".xlsx">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Posición -->
+      <div class="prop-tab-content" id="prop-tab-posicion">
+        <div class="properties-scroll">
+          <div class="card">
+            <!-- Posición del SLIDE en el espacio Impress (navegación entre slides) -->
+            <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;
+                        letter-spacing:0.4px;margin-bottom:4px">Posición del slide</div>
+            <div class="property-row">
+              <div class="property-group">
+                <label>X</label>
+                <input type="number" id="prop-x" value="0">
+              </div>
+              <div class="property-group">
+                <label>Y</label>
+                <input type="number" id="prop-y" value="0">
+              </div>
+            </div>
+            <div class="property-row">
+              <div class="property-group">
+                <label>Z (profundidad)</label>
+                <input type="number" id="prop-z" value="0">
+              </div>
+              <div class="property-group">
+                <label>Rotación (°)</label>
+                <input type="number" id="prop-rotate" value="0" min="0" max="360">
+              </div>
+            </div>
+            <div class="property-group">
+              <label>Escala del slide</label>
+              <input type="number" id="prop-scale" value="1" min="0.1" max="10" step="0.1">
+            </div>
+
+            <!-- Posición del CONTENIDO dentro del slide (tablas, gráficos, iframes) -->
+            <div style="border-top:1px solid var(--border);margin:8px 0 4px">
+              <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;
+                          letter-spacing:0.4px;margin:6px 0 4px">Posición del contenido</div>
+              <div class="property-row">
+                <div class="property-group">
+                  <label>Offset X (%)</label>
+                  <input type="number" id="prop-content-offset-x" value="50" min="0" max="100" step="1" placeholder="50">
+                </div>
+                <div class="property-group">
+                  <label>Offset Y (%)</label>
+                  <input type="number" id="prop-content-offset-y" value="50" min="0" max="100" step="1" placeholder="50">
+                </div>
+              </div>
+              <div style="font-size:8px;color:var(--text-muted);margin-bottom:6px">50/50 = centrado · 0/0 = esquina superior izquierda</div>
+            </div>
+
+            <!-- Zoom del contenido -->
+            <div style="border-top:1px solid var(--border);margin:6px 0;padding-top:6px">
+              <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;
+                          letter-spacing:0.4px;margin-bottom:4px">Zoom del contenido</div>
+              <div class="property-group">
+                <label>Zoom (tablas, gráficos, iframes)</label>
+                <input type="number" id="prop-content-zoom" value="1" min="0.1" max="5" step="0.1" placeholder="1.0">
+              </div>
+              <div style="font-size:8px;color:var(--text-muted)">1 = tamaño original · 1.5 = 50% más grande</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Estilo -->
+      <div class="prop-tab-content" id="prop-tab-estilo">
+        <div class="properties-scroll">
+          <div class="card">
+            <div class="property-group">
+              <label>Fuente</label>
+              <select id="prop-font-family">
+                <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Times New Roman', serif">Times New Roman</option>
+                <option value="'Courier New', monospace">Courier New</option>
+                <option value="'Georgia', serif">Georgia</option>
+                <option value="'Verdana', sans-serif">Verdana</option>
+                <option value="'Impact', sans-serif">Impact</option>
+              </select>
+            </div>
+            <div class="property-row">
+              <div class="property-group">
+                <label>Tamaño (px)</label>
+                <input type="number" id="prop-font-size" value="48" min="8" max="200">
+              </div>
+              <div class="property-group">
+                <label>Color</label>
+                <input type="color" id="prop-text-color" value="#e0e0e0">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Status bar con zoom (T4) y coordenadas (T5) -->
+  <div class="status-bar">
+    <span id="status-slides" class="accent-text">0 slides</span>
+    <span id="status-selected" style="color:var(--text-muted)">—</span>
+    <span id="status-coords" style="color:var(--text-muted);font-family:Consolas,monospace"></span>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button id="btn-zoom-out" class="btn-icon" style="padding:2px 5px;font-size:11px" title="Alejar">−</button>
+      <button id="btn-zoom-reset" style="background:none;border:none;cursor:pointer;
+              font-size:9px;color:var(--text-secondary);min-width:36px;text-align:center;
+              font-family:Consolas,monospace" title="Restablecer zoom">100%</button>
+      <button id="btn-zoom-in" class="btn-icon" style="padding:2px 5px;font-size:11px" title="Acercar">+</button>
+    </div>
+  </div>
+
+  <!-- ── Modal: Vista Previa ── -->
+  <div class="modal" id="modal-preview">
+    <div class="modal-box modal-preview">
+      <div class="modal-header">
+        <h3>Vista Previa</h3>
+        <button class="btn-close" id="btn-close-preview">&times;</button>
+      </div>
+      <div class="modal-body" style="flex:1;padding:0">
+        <iframe id="preview-frame"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Pizarra ── -->
+  <div class="modal" id="modal-blackboard">
+    <div class="modal-box modal-blackboard">
+      <div class="modal-header">
+        <h3>Pizarra Interactiva</h3>
+        <div class="modal-toolbar chalk-tools">
+          <button class="btn-chalk active" data-color="#e0e0e0" title="Tiza blanca">⬜</button>
+          <button class="btn-chalk" data-color="#a8e600" title="Verde NEVEN">🟢</button>
+          <button class="btn-chalk" data-color="#ffeb3b" title="Amarillo">🟡</button>
+          <button class="btn-chalk" data-color="#f48fb1" title="Rosa">🩷</button>
+          <button class="btn-chalk" data-color="#81d4fa" title="Azul">🔵</button>
+          <button class="btn-chalk" data-color="erase" title="Borrador">🧽</button>
+          <input type="range" id="chalk-size" min="2" max="20" value="4" style="width:70px;accent-color:var(--accent)">
+          <button class="btn-chalk" id="btn-clear-board" title="Limpiar">🗑️</button>
+        </div>
+        <button class="btn-close" id="btn-close-blackboard">&times;</button>
+      </div>
+      <div class="modal-body blackboard-body">
+        <canvas id="blackboard-canvas" width="1200" height="900"></canvas>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-save-blackboard">Guardar Pizarra</button>
+        <button class="btn btn-secondary" id="btn-cancel-blackboard">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Configuración de Gráfico ── -->
+  <div class="modal" id="modal-chart">
+    <div class="modal-box modal-compact">
+      <div class="modal-header">
+        <h3>Configurar Gráfico</h3>
+        <button class="btn-close" id="btn-close-chart">&times;</button>
+      </div>
+      <div class="modal-body padded">
+        <div class="property-group">
+          <label>Hoja de cálculo</label>
+          <select id="chart-sheet"></select>
+        </div>
+        <div class="property-group">
+          <label>Tipo de gráfico</label>
+          <select id="chart-type">
+            <option value="bar">Barras</option>
+            <option value="line">Líneas</option>
+            <option value="pie">Circular</option>
+            <option value="scatter">Dispersión</option>
+          </select>
+        </div>
+        <div class="property-group" id="grp-x-type" style="display:none">
+          <label>Tipo eje X</label>
+          <select id="chart-x-type">
+            <option value="category">Categoría</option>
+            <option value="date-full">Fecha DD/MM/YYYY</option>
+            <option value="date-month">Fecha MM/YYYY</option>
+          </select>
+        </div>
+        <div class="property-group" id="grp-x-var" style="display:none">
+          <label>Variable X</label>
+          <select id="chart-x-var"></select>
+        </div>
+        <div class="property-group">
+          <label>Columnas a graficar</label>
+          <div class="column-list" id="chart-columns"></div>
+        </div>
+        <div class="property-group" id="grp-records">
+          <label>Registros</label>
+          <select id="chart-records">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="all">Todos</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-generate-chart">Generar</button>
+        <button class="btn btn-secondary" id="btn-cancel-chart">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SheetJS para leer Excel del lado del cliente -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+          onerror="console.warn('[NEVEN] SheetJS no disponible — gráficos Excel deshabilitados')"></script>
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+          onerror="console.warn('[NEVEN] Chart.js no disponible — gráficos deshabilitados'); window.Chart = null;"></script>
+  <script src="script.js"></script>
+</body>
+</html>

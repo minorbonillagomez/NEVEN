@@ -361,3 +361,34 @@ Si `"r": false`, ControlR no conectó al pipe. El servidor arranca inmediatament
 1. Esperar 15-30 segundos después de iniciar el servidor
 2. Verificar que ControlR.exe está corriendo: `Get-Process | Where-Object {$_.Name -like "*ControlR*"}`
 3. Si no está corriendo, el `.vbs` de arranque no lo inició — revisar `neven-config.json` sección `Standalone.controlDir`
+
+
+---
+
+## P1. Creador de Presentaciones — contenido embebido se recorta al escalar
+
+**Síntoma:** Al aumentar el Zoom del contenido (> 1.0), la tabla o gráfico se ve cortado por los bordes.
+
+**Causa:** Versiones anteriores usaban `overflow:hidden` en el contenedor del slide. `transform:scale` no afecta el layout — el elemento escala visualmente pero el contenedor sigue cortando.
+
+**Solución (v2.2):** El contenedor usa `display:flex` sin `overflow:hidden`. El transform es `translate(Xvw, Yvh) scale(zoom)` sobre el elemento interno. Si persiste el problema, verificar que la versión de `script.js` en producción (`C:\NEVEN\taskpane\presentaciones\script.js`) sea >= 2026-08-02.
+
+---
+
+## P2. Creador de Presentaciones — cambiar una propiedad modifica todos los slides
+
+**Síntoma:** Al cambiar el zoom o posición de un slide, los demás slides también se modifican.
+
+**Causa:** La función `_updateFromPanel()` leía todos los campos del DOM simultáneamente. Si el DOM tenía valores residuales de un slide anterior, los sobreescribía en el slide activo.
+
+**Solución (v2.2):** Cada campo del panel tiene su propia función de escritura que modifica únicamente su propiedad. Verificar versión de `script.js` >= 2026-08-02.
+
+---
+
+## P3. Creador de Presentaciones — panel de propiedades siempre vuelve al Slide 1
+
+**Síntoma:** Al editar propiedades de cualquier slide distinto al primero, la lista de slides se resetea y vuelve a mostrar el Slide 1 como activo.
+
+**Causa:** Los handlers de propiedades llamaban `_renderList()` en cada evento `input`, reconstruyendo todo el DOM de la lista y destruyendo la selección visual.
+
+**Solución (v2.2):** `_renderList()` ahora solo se llama al agregar/eliminar/reordenar slides. Al editar propiedades se usa `_updateCurrentSlideLabel()` que actualiza solo el label del card activo. Verificar versión de `script.js` >= 2026-08-02.
