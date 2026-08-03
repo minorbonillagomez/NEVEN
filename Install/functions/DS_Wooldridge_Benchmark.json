@@ -1,0 +1,47 @@
+{
+  "id": "DS_Wooldridge_Benchmark",
+  "family": "DS",
+  "family_label": "Datasets",
+  "name": "Wooldridge Benchmark Suite",
+  "description": "Ejecuta 6 modelos canónicos del libro 'Introductory Econometrics' de Wooldridge y compara el resultado de NEVEN con los valores de referencia del texto. Muestra output exacto de R (como en la consola) junto al target del libro y la verificación de paridad estadística (MSE < 1e-7).",
+  "wikipedia_url": "https://www.cengage.com/c/introductory-econometrics-a-modern-approach-7e-wooldridge",
+  "languages": ["r"],
+  "function_name": "DS_Wooldridge_Benchmark.Studio",
+  "file": "DS_Wooldridge_Benchmark.Studio.R",
+  "variable_roles": {},
+  "parameters": [
+    {
+      "name": "Caso",
+      "label": "Caso de prueba",
+      "type": "select",
+      "default": 1,
+      "tier": 1,
+      "options": [
+        {
+          "value": 1,
+          "label": "W-001 — WAGE1: Regresión Lineal Múltiple (Cap. 3)"
+        },
+        {
+          "value": 2,
+          "label": "W-002 — 401K: Modelo Lineal de Probabilidad (Cap. 7)"
+        },
+        {
+          "value": 3,
+          "label": "W-003 — JTRAIN: Panel Efectos Fijos (Cap. 14)"
+        },
+        {
+          "value": 4,
+          "label": "W-004 — SMOKE: Regresión Tobit — Censura en cero (Cap. 17)"
+        },
+        {
+          "value": 5,
+          "label": "W-005 — FERTIL1: Serie de Tiempo + RESET (Cap. 10/18)"
+        },
+        {
+          "value": 6,
+          "label": "W-006 — CEOSAL1: Estadística descriptiva + Outliers (Cap. 9)"
+        }
+      ]
+    }
+  ]
+}
