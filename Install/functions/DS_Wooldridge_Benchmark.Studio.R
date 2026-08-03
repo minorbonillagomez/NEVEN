@@ -384,8 +384,20 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L,
     }
   }
 
-  # ── Exportar dataset ────────────────────────────────────────────────────
-  ds_export <- tryCatch(as.data.frame(ds), error = function(e) data.frame())
+  # ── Exportar solo columnas relevantes (evita superar 256KB del pipe) ────
+  ds_cols <- switch(as.character(Caso),
+    "1" = c("wage", "educ", "exper", "tenure"),
+    "2" = c("prate", "mrate", "age", "totemp"),
+    "3" = c("fcode", "year", "lscrap", "hrsemp", "lsales", "lemploy"),
+    "4" = c("cigs", "lincome", "lcigpric", "educ", "age", "agesq", "restaurn"),
+    "5" = c("year", "educ", "age", "agesq", "y74", "y76", "y78", "y80", "y82", "y84"),
+    "6" = c("salary", "roe", "sales"),
+    names(ds)
+  )
+  ds_export <- tryCatch(
+    as.data.frame(ds[, intersect(ds_cols, names(ds)), drop = FALSE]),
+    error = function(e) data.frame()
+  )
 
   # ── Construir lista de slots ────────────────────────────────────────────
   slot_list <- list(
