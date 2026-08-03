@@ -253,9 +253,13 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
     if (!requireNamespace("plm", quietly = TRUE))
       stop("El paquete 'plm' no esta instalado.")
     ds    <- wooldridge::jtrain
-    pdata <- plm::pdata.frame(ds, index = c("fcode", "year"))
-    modelo <- plm::plm(lscrap ~ hrsemp + lsales + lemploy,
-                       data = pdata, model = "within", effect = "individual")
+    pdata <- suppressMessages(suppressWarnings(
+      plm::pdata.frame(ds, index = c("fcode", "year"))
+    ))
+    modelo <- suppressMessages(suppressWarnings(
+      plm::plm(lscrap ~ hrsemp + lsales + lemploy,
+               data = pdata, model = "within", effect = "individual")
+    ))
     sm    <- summary(modelo)
     ct    <- sm$coefficients
     lines <- c(
@@ -288,8 +292,10 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
     if (!requireNamespace("AER", quietly = TRUE))
       stop("El paquete 'AER' no esta instalado.")
     ds     <- wooldridge::smoke
-    modelo <- AER::tobit(cigs ~ lincome + lcigpric + educ + age + agesq + restaurn,
-                         left = 0, data = ds)
+    modelo <- suppressMessages(suppressWarnings(
+      AER::tobit(cigs ~ lincome + lcigpric + educ + age + agesq + restaurn,
+                 left = 0, data = ds)
+    ))
     sm     <- summary(modelo)
     ct     <- sm$coefficients
     lines  <- c(
