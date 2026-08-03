@@ -3,27 +3,12 @@
   "family": "DS",
   "family_label": "Datasets",
   "name": "Wooldridge Benchmark Suite",
-  "description": "Ejecuta 6 modelos canónicos del libro de Wooldridge y compara con los valores de referencia. Las variables Y y X se preseleccionan según el ejemplo del libro — el usuario puede modificarlas para explorar especificaciones alternativas. Si no se asignan columnas, usa las variables canónicas del texto.",
+  "description": "Ejecuta 6 modelos canónicos del libro de Wooldridge y compara el resultado de NEVEN con los valores de referencia del texto. No requiere cargar datos previos — los datasets se cargan internamente desde el paquete wooldridge.",
   "wikipedia_url": "https://www.cengage.com/c/introductory-econometrics-a-modern-approach-7e-wooldridge",
   "languages": ["r"],
   "function_name": "DS_Wooldridge_Benchmark.Studio",
   "file": "DS_Wooldridge_Benchmark.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable dependiente (opcional — se preselecciona del libro)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": false,
-      "hint": "Si no asigna, se usa la variable del ejemplo canónico"
-    },
-    "X": {
-      "label": "Variables independientes (opcional — se preseleccionan del libro)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": false,
-      "hint": "Si no asigna, se usan las variables del ejemplo canónico"
-    }
-  },
+  "variable_roles": {},
   "parameters": [
     {
       "name": "Caso",
