@@ -203,7 +203,7 @@ class PipeClient:
         Read/write timeout in milliseconds (default: 60,000 ms).
     """
 
-    MAX_RESPONSE_BYTES: int = 256 * 1024  # kMaxDynamicBufferSize
+    MAX_RESPONSE_BYTES: int = 2 * 1024 * 1024  # 2 MB — incrementado desde 256 KB (NEVEN v2.3)
 
     def __init__(self, pipe_name: str, timeout_ms: int = 60_000) -> None:
         self._pipe_name: str = pipe_name

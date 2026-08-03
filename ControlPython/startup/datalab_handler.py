@@ -231,11 +231,24 @@ class DataLabHandler:
         )
 
         # 7. Enviar a ControlR
+        # Para funciones que retornan datasets grandes (DS_Wooldridge_Benchmark, etc.)
+        # usamos un cliente fresco con timeout extendido en lugar del cliente compartido.
+        _HEAVY_FUNCTIONS = {"DS_Wooldridge_Benchmark"}
         try:
-            client = get_pipe_client("r")
+            if function_id in _HEAVY_FUNCTIONS:
+                # Cliente fresco con timeout de 5 minutos para funciones pesadas
+                from pipe_client import PipeClient  # type: ignore[import]
+                client = PipeClient(r"\\.\pipe\neven_r", timeout_ms=300_000)
+                client.connect()
+            else:
+                client = get_pipe_client("r")
         except KeyError:
             return {"status": "error",
                     "message": "El motor R no está disponible. Verifique que ControlR.exe esté activo.",
+                    "code": "ENGINE_UNAVAILABLE"}
+        except Exception as exc:
+            return {"status": "error",
+                    "message": f"No se pudo conectar a ControlR: {exc}",
                     "code": "ENGINE_UNAVAILABLE"}
 
         try:
