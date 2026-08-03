@@ -78,3 +78,21 @@ local({
     warning("r_object_to_slots.R no encontrado — Data Lab no disponible")
   }
 })
+
+# ── Pre-carga de paquetes para funciones econometricas avanzadas ─────────────
+# Evita que la primera llamada al Benchmark o a las funciones avanzadas tarde
+# mas de lo permitido por el timeout del Named Pipe, causando cierre del canal.
+# Los paquetes se cargan silenciosamente -- si no estan instalados se ignoran.
+local({
+  pkgs_econometria <- c("lmtest", "sandwich", "AER", "sampleSelection",
+                         "vars", "urca", "plm", "wooldridge")
+  for (pkg in pkgs_econometria) {
+    tryCatch(
+      suppressMessages(suppressWarnings(
+        requireNamespace(pkg, quietly = TRUE)
+      )),
+      error = function(e) invisible(NULL)
+    )
+  }
+  cat("NEVEN: paquetes econometria precargados\n")
+})
