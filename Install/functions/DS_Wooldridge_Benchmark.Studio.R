@@ -30,9 +30,24 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
   if (!requireNamespace("wooldridge", quietly = TRUE))
     stop("El paquete 'wooldridge' no está instalado.")
 
-  # ── Helper: convierte cualquier objeto en texto plano de consola R ────────────
+  # ── Helper: convierte cualquier objeto R en texto limpio de consola ──────────
+  # Limpieza en 3 pasos:
+  # 1. capture.output() captura el print/summary
+  # 2. enc2utf8() normaliza el encoding (R en Windows usa CP1252)
+  # 3. gsub() elimina caracteres de control no imprimibles (basura ASCII)
+  #    Conserva: \n (nueva línea), \t (tabulación), espacio (0x20-0x7E), UTF-8 válido
   .to_text <- function(...) {
-    paste(capture.output(...), collapse = "\n")
+    lines <- capture.output(...)
+    lines <- enc2utf8(lines)
+    # Eliminar caracteres de control excepto espacio, \t, \n (0x00-0x08, 0x0B-0x0C, 0x0E-0x1F, 0x7F)
+    lines <- gsub("[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", lines)
+    # Normalizar los símbolos comunes que R a veces corrompe en Windows
+    lines <- gsub("\u2019", "'",  lines)   # ' → '
+    lines <- gsub("\u2018", "'",  lines)   # ' → '
+    lines <- gsub("\u2013", "-",  lines)   # – → -
+    lines <- gsub("\u2014", "--", lines)   # — → --
+    lines <- gsub("\u00b7", "*",  lines)   # · → *
+    paste(lines, collapse = "\n")
   }
 
   # ── Referencia del libro: output literal del texto de Wooldridge ─────────────

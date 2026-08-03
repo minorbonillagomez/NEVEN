@@ -1251,9 +1251,10 @@ function buildSlotElement(slot) {
         content.innerHTML = _markdownToHtml(displayVal2);
       } else {
         content = document.createElement('div');
-        content.style.cssText = 'background:#373434;border:1px solid var(--border);' +
-          'border-radius:var(--radius);padding:10px 14px;font-family:Consolas,monospace;' +
-          'font-size:12px;color:var(--accent);white-space:pre-wrap;word-break:break-word';
+        content.style.cssText = 'background:#1e1e1e;border:1px solid var(--border);' +
+          'border-radius:var(--radius);padding:12px 16px;font-family:Consolas,\'Cascadia Code\',monospace;' +
+          'font-size:11.5px;color:#d4d4d4;white-space:pre;overflow-x:auto;line-height:1.5;' +
+          'max-height:520px;overflow-y:auto';
         content.textContent = displayVal2;
       }
       break;
