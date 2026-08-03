@@ -1,0 +1,46 @@
+{
+  "id": "RG_Newey_West",
+  "family": "RG",
+  "family_label": "Regresión",
+  "name": "Errores Estándar Robustos Newey-West (HAC)",
+  "description": "Corrige los errores estándar del MCO ante heterocedasticidad y autocorrelación de forma desconocida. Los coeficientes no cambian, solo los EE, t-stats y p-valores. Esencial en series de tiempo y datos de panel. Wooldridge Cap. 12/15.",
+  "wikipedia_url": "https://en.wikipedia.org/wiki/Newey%E2%80%93West_estimator",
+  "languages": ["r"],
+  "function_name": "RG_Newey_West.Studio",
+  "file": "RG_Newey_West.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Rezagos",
+      "label": "Número de rezagos HAC (vacío = regla automática)",
+      "type": "integer",
+      "default": null,
+      "tier": 1
+    },
+    {
+      "name": "NivelAlpha",
+      "label": "Nivel de significancia (alpha)",
+      "type": "select",
+      "default": 0.05,
+      "tier": 1,
+      "options": [
+        {"value": 0.01, "label": "1%"},
+        {"value": 0.05, "label": "5% (estándar)"},
+        {"value": 0.10, "label": "10%"}
+      ]
+    }
+  ]
+}

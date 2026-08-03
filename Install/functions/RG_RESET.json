@@ -1,0 +1,51 @@
+{
+  "id": "RG_RESET",
+  "family": "RG",
+  "family_label": "Regresión",
+  "name": "Prueba RESET de Ramsey",
+  "description": "Detecta errores de forma funcional en un modelo MCO. Un p-valor pequeño indica que el modelo está mal especificado (variables omitidas, no-linealidades). Wooldridge Cap. 9.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Test_RESET_de_Ramsey",
+  "languages": ["r"],
+  "function_name": "RG_RESET.Studio",
+  "file": "RG_RESET.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Potencia",
+      "label": "Potencia máxima de los fitted values",
+      "type": "select",
+      "default": 2,
+      "tier": 1,
+      "options": [
+        {"value": 2, "label": "2 (estándar)"},
+        {"value": 3, "label": "3"},
+        {"value": 4, "label": "4 (más potente)"}
+      ]
+    },
+    {
+      "name": "NivelAlpha",
+      "label": "Nivel de significancia (alpha)",
+      "type": "select",
+      "default": 0.05,
+      "tier": 1,
+      "options": [
+        {"value": 0.01, "label": "1%"},
+        {"value": 0.05, "label": "5% (estándar)"},
+        {"value": 0.10, "label": "10%"}
+      ]
+    }
+  ]
+}

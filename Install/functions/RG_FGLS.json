@@ -1,0 +1,39 @@
+{
+  "id": "RG_FGLS",
+  "family": "RG",
+  "family_label": "Regresión",
+  "name": "FGLS — Mínimos Cuadrados Generalizados Factibles",
+  "description": "Corrección eficiente de heterocedasticidad cuando su estructura depende de los regresores. A diferencia de Newey-West (que solo corrige EE), FGLS produce coeficientes más eficientes. Implementado como WLS ponderado por varianza estimada. Wooldridge Cap. 8.",
+  "wikipedia_url": "https://en.wikipedia.org/wiki/Generalized_least_squares",
+  "languages": ["r"],
+  "function_name": "RG_FGLS.Studio",
+  "file": "RG_FGLS.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "NivelAlpha",
+      "label": "Nivel de significancia (alpha)",
+      "type": "select",
+      "default": 0.05,
+      "tier": 1,
+      "options": [
+        {"value": 0.01, "label": "1%"},
+        {"value": 0.05, "label": "5% (estándar)"},
+        {"value": 0.10, "label": "10%"}
+      ]
+    }
+  ]
+}

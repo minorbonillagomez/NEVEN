@@ -1,0 +1,45 @@
+{
+  "id": "RG_Davidson_MacKinnon",
+  "family": "RG",
+  "family_label": "Regresión",
+  "name": "J-Test Davidson-MacKinnon",
+  "description": "Selección entre dos modelos lineales NO anidados (modelos alternativos con diferentes especificaciones). Indica cuál modelo captura mejor la variación de Y. Wooldridge Cap. 9.",
+  "wikipedia_url": "https://en.wikipedia.org/wiki/Davidson%E2%80%93MacKinnon_test",
+  "languages": ["r"],
+  "function_name": "RG_Davidson_MacKinnon.Studio",
+  "file": "RG_Davidson_MacKinnon.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X_A": {
+      "label": "Variables del Modelo A",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    },
+    "X_B": {
+      "label": "Variables del Modelo B (alternativo)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "NivelAlpha",
+      "label": "Nivel de significancia (alpha)",
+      "type": "select",
+      "default": 0.05,
+      "tier": 1,
+      "options": [
+        {"value": 0.01, "label": "1%"},
+        {"value": 0.05, "label": "5% (estándar)"},
+        {"value": 0.10, "label": "10%"}
+      ]
+    }
+  ]
+}
