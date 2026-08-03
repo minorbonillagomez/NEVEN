@@ -30,11 +30,9 @@ FX_Distancias <- function(SetDatosX,
     # [1] PREPARACION DE DATOS Y PARAMETROS  
     #-------------------------->>>  
 
-    DIR_ORIG <- "~/BERT2/functions/INTERNO/"
-    ARCHIVO  <- paste0(DIR_ORIG,"R4XCL-INTERNO.R")
-    FUENTE01 <- file.path(ARCHIVO)
-    source(FUENTE01)
-    
+    # CM-BAJ-004: source() a ruta BERT2 obsoleta eliminado v2.3
+    # Las funciones internas R4XCL ya están disponibles globalmente.
+
     DT <- R4XCL_INT_DATOS(SetDatosX)
     DT <- data.frame(DT)
     P  <- ncol(DT)

@@ -78,6 +78,7 @@ RJ_NotebookExport
 RJ_PresentationNew
 RJ_PresentationAddSlide
 RJ_PresentationBuild
+RJ_Q
 
 ;-------------------------------------------------------
 ;

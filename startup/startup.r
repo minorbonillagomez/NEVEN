@@ -56,71 +56,10 @@ NEVEN$list.functions <- function() {
 cat("NEVEN R startup complete\n")
 
 # =========================================================================
-# NEVEN: MOTOR DE EXTRACCIÓN DE OUTPUTS (Interno - No modificar)
+# CM-BAJ-011/012: Extraer_outputs y helpers .neven_* eliminados v2.3
+# La versión canónica vive en libreria/R/R4XCL-0-Interno-3.R
+# y se carga automáticamente por el AutoLoader antes que este startup.
 # =========================================================================
-
-Extraer_outputs <- function(objeto, nombre_modelo = NULL, verbose = FALSE) {
-   if (is.null(nombre_modelo)) nombre_modelo <- deparse(substitute(objeto))
-   outputs <- list()
-   es_s4 <- isS4(objeto)
-   es_s3 <- !es_s4
-   
-   # Campos a omitir (grandes y sin valor interpretativo para el usuario)
-   omitir <- c("model", "effects", "qr", "x", "y", "fitted.values")
-   
-   if (es_s4) {
-      for (s in slotNames(objeto)) outputs[[s]] <- .neven_procesar_valor(slot(objeto, s))
-   }
-   if (es_s3) {
-      for (comp in names(objeto)) {
-         if (comp %in% omitir) next
-         outputs[[comp]] <- .neven_procesar_valor(objeto[[comp]])
-      }
-   }
-   
-   resumen <- tryCatch(summary(objeto), error = function(e) NULL)
-   if (!is.null(resumen)) {
-      if (!is.null(resumen$coefficients)) outputs[["Summary_Stats"]] <- .neven_procesar_valor(resumen$coefficients)
-      if (!is.null(resumen$sigma)) {
-         outputs[["Residual_Error"]] <- data.frame(Parametro = "Sigma", Metrica = "Value", Valor = as.character(resumen$sigma))
-         if (!is.null(resumen$df)) outputs[["Degrees_of_Freedom"]] <- data.frame(Parametro = c("Model_DF", "Residual_DF", "Total_DF"), Metrica = "DF", Valor = as.character(resumen$df[1:3]))
-      }
-      if (!is.null(resumen$r.squared)) outputs[["R_Squared"]] <- data.frame(Parametro = c("Multiple_R2", "Adjusted_R2"), Metrica = "Value", Valor = as.character(c(resumen$r.squared, resumen$adj.r.squared)))
-      fstat <- resumen$fstatistic
-      if (!is.null(fstat)) {
-         p_val_f <- pf(fstat[1], fstat[2], fstat[3], lower.tail = FALSE)
-         outputs[["F_Statistic"]] <- data.frame(Parametro = c("F_Value", "DF_Num", "DF_Den", "p_value"), Metrica = "Stat", Valor = as.character(c(fstat[1], fstat[2], fstat[3], p_val_f)))
-      }
-   }
-   
-   for (gen in c("AIC", "BIC")) {
-      val <- tryCatch(get(gen)(objeto), error = function(e) NULL)
-      if (!is.null(val)) outputs[[gen]] <- .neven_procesar_valor(val)
-   }
-   
-   return(.neven_consolidar(outputs, nombre_modelo))
-}
-
-.neven_procesar_valor <- function(valor) {
-   if (is.null(valor) || length(valor) == 0) return(NULL)
-   if (is.matrix(valor) || is.data.frame(valor)) {
-      df_tmp <- as.data.frame(valor)
-      return(data.frame(Parametro = rep(rownames(df_tmp), each = ncol(df_tmp)), Metrica = rep(colnames(df_tmp), times = nrow(df_tmp)), Valor = as.character(unlist(df_tmp, use.names = FALSE)), stringsAsFactors = FALSE))
-   }
-   if (is.atomic(valor)) {
-      return(data.frame(Parametro = if(!is.null(names(valor))) names(valor) else as.character(seq_along(valor)), Metrica = "Value", Valor = as.character(valor), stringsAsFactors = FALSE))
-   }
-   return(NULL)
-}
-
-.neven_consolidar <- function(lista_outputs, nombre_modelo) {
-   lista_limpia <- Filter(function(x) is.data.frame(x) && nrow(x) > 0, lista_outputs)
-   if (length(lista_limpia) == 0) return(data.frame(Modelo=character(), Seccion=character(), Parametro=character(), Metrica=character(), Valor=character()))
-   lista_final <- lapply(names(lista_limpia), function(nom) { item <- lista_limpia[[nom]]; item$Seccion <- nom; item$Modelo <- nombre_modelo; return(item) })
-   df_res <- do.call(rbind, lista_final)
-   rownames(df_res) <- NULL
-   return(df_res[, c("Modelo", "Seccion", "Parametro", "Metrica", "Valor")])
-}
 
 # ── Data Lab: Serializador de slots ─────────────────────────────────────────
 local({

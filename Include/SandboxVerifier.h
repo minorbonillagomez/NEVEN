@@ -45,9 +45,10 @@ public:
      * @brief Evaluates the trust level of a script snippet.
      * @param scriptContext The code string to evaluate.
      * @return Trust level: Trusted, PromptUser, or Blocked.
+     * @deprecated CM-BAJ-004: sin invocaciones activas. Usar ValidateCodeForExecution().
      */
-    ExecutionTrustLevel EvaluateScript(const std::string& scriptContext);
-    
+    // ExecutionTrustLevel EvaluateScript(const std::string& scriptContext);  // eliminado v2.3
+
     /**
      * @brief Validates code before execution against the blocked-pattern list.
      * @param code The code string to validate.
@@ -74,9 +75,10 @@ public:
 
     /**
      * @brief Adds a trusted signature (hash or path) to the allow-list.
-     * @param signature The trusted signature string to add.
+     * @deprecated CM-BAJ-004/014: m_trusted_signatures nunca se consulta.
+     *             Si se necesita en el futuro, reimplementar contra ValidateCodeForExecution.
      */
-    void AddTrustedSignature(const std::string& signature);
+    // void AddTrustedSignature(const std::string& signature);  // eliminado v2.3
 
 private:
     SandboxVerifier() = default;
@@ -85,7 +87,7 @@ private:
     SandboxVerifier(const SandboxVerifier&) = delete;
     SandboxVerifier& operator=(const SandboxVerifier&) = delete;
 
-    std::vector<std::string> m_trusted_signatures;
+    // std::vector<std::string> m_trusted_signatures;  // eliminado v2.3 — CM-BAJ-014
     
     /**
      * @brief Checks whether the code contains any restricted command patterns.

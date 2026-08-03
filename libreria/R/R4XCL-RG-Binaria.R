@@ -130,8 +130,7 @@ MR_Binario.C <- function(
                               )
     
   }else if(TipoOutput == 8){ 
-    
-    A       <- R4XCL_INT_DESCRIPCION()
+    # CM-BAJ-003: R4XCL_INT_DESCRIPCION() no existe — línea eliminada v2.3
     OutPut  <- R4XCL_INT_INFO_EJECUCION(FX, DT)  
     
   }else if(TipoOutput == 9){

@@ -4,9 +4,9 @@ project(Common)
 set(COMMON_SOURCES
     module_functions.cc
     windows_api_functions.cc
-    AutoLoader.cc
-    GCMonitor.cc
-    RuntimeLoader.cc
+    # AutoLoader.cc — eliminado (CM-MED-003): cadena legacy RuntimeLoader→AutoLoader
+    # GCMonitor.cc  — eliminado (CM-MED-001): sin invocaciones externas, depende de IScriptEngine legacy
+    # RuntimeLoader.cc — eliminado (CM-MED-002): embedding directo reemplazado por procesos hijos
     ConfigService.cc
     WindowManager.cc
     debug_functions.cc

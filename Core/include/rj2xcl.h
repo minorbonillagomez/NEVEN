@@ -200,8 +200,8 @@ public:
   /** */
   int AddUserButton(const RJ2XCLBuffers::CallResponse &call, RJ2XCLBuffers::CallResponse &response, const std::string &language);
 
-  /** */
-  void RemoveUserButton(const RJ2XCLBuffers::CallResponse &call, RJ2XCLBuffers::CallResponse &response);
+  // CM-BAJ-005: RemoveUserButton eliminado v2.3 — cuerpo vacío, sin invocaciones activas.
+  // void RemoveUserButton(const RJ2XCLBuffers::CallResponse &call, RJ2XCLBuffers::CallResponse &response);
 
   /** */
   void ExecUserButton(uint32_t id, const std::string &language);

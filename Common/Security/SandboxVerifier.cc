@@ -37,18 +37,12 @@ SandboxVerifier& SandboxVerifier::GetInstance() {
     return instance;
 }
 
-void SandboxVerifier::AddTrustedSignature(const std::string& signature) {
-    if(std::find(m_trusted_signatures.begin(), m_trusted_signatures.end(), signature) == m_trusted_signatures.end()) {
-        m_trusted_signatures.push_back(signature);
-    }
-}
+// CM-BAJ-004: AddTrustedSignature eliminado v2.3 — m_trusted_signatures nunca se consultaba.
+// void SandboxVerifier::AddTrustedSignature(const std::string& signature) { ... }
 
-ExecutionTrustLevel SandboxVerifier::EvaluateScript(const std::string& scriptContext) {
-    if (ContainsRestrictedCommands(scriptContext)) {
-        return ExecutionTrustLevel::Blocked; 
-    }
-    return ExecutionTrustLevel::PromptUser; 
-}
+// CM-BAJ-004: EvaluateScript eliminado v2.3 — sin invocaciones activas.
+// Usar ValidateCodeForExecution() o ValidateFromAnySource() en su lugar.
+// ExecutionTrustLevel SandboxVerifier::EvaluateScript(const std::string& scriptContext) { ... }
 
 /**
  * @brief Strips all whitespace from a string for normalized pattern matching.

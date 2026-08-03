@@ -80,10 +80,6 @@ static LPXLOPER12 TempInt12(int i) {
   return &x;
 }
 
-// ReadConfigFile removed, use ConfigService::Instance().ReadJsonFile
-
-  
-
 int RJ2XCL_Engine::UpdateFunctions() {
 
   RJ2XCL_LOG_INFO("Updating NEVEN functions...");
@@ -282,10 +278,8 @@ int RJ2XCL_Engine::HandleCallbackOnThread(const std::string &language, const RJ2
 
 }
 
-// Redundant UpdateGraphics removed, replaced by GraphicsHandler
-
-void RJ2XCL_Engine::RemoveUserButton(const RJ2XCLBuffers::CallResponse &call, RJ2XCLBuffers::CallResponse &response) {
-}
+// CM-BAJ-005: RemoveUserButton eliminado v2.3 — cuerpo vacío, sin invocaciones activas.
+// Ver rj2xcl.h para el comentario correspondiente.
 
 void RJ2XCL_Engine::ClearUserButtons() {
   ribbon_service_->ClearUserButtons();
