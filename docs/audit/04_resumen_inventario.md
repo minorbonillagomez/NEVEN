@@ -174,3 +174,62 @@ Estos directorios no forman parte del inventario de los 15 módulos definidos en
 ---
 
 *Resumen generado como parte de la Fase 1 (Inventario y Alcance) de la auditoría integral del proyecto NEVEN.*
+
+---
+
+## ACTUALIZACIÓN — Agosto 2026 (NEVEN v2.2)
+
+### Cambios estructurales desde el inventario original (2025-01-27)
+
+| Cambio | Impacto en inventario |
+|:---|:---|
+| **Console/ eliminado** | El módulo Electron (16,323 LOC, 56 archivos) fue removido completamente. Reemplazado por WebView2 REPL (~200 LOC en Common). Reducción real: ~15,000 LOC netos |
+| **ControlPython activo** | Ya NO está deprecado. Activo con 357 tests y funciones AI/LLM |
+| **TaskPane/ nuevo** | NEVEN Studio Standalone: `taskpane.html`, `datalab.js`, `start_studio.py`, `pipe_client.py`, `neven_http_server.py` — aprox. 8,000+ LOC JavaScript/Python |
+| **CreadorPresentaciones/ nuevo** | Editor de presentaciones integrado: `script.js` (~1,100 LOC JS), `index.html`, `styles.css` |
+| **startup/ expandido** | Agregado `r_object_to_slots.R` (serializador Data Lab) |
+| **Install/functions/ nuevo** | 28+ sidecars JSON del catálogo Data Lab (~2,000 líneas JSON) |
+| **libreria/R/ expandido** | 28 funciones `.Studio.R` para Data Lab agregadas al catálogo R4XCL |
+| **NEVEN-SIM/ nuevo** | Módulo de simulación Monte Carlo (XLL separado, `BUILD_NEVEN_SIM=ON`) |
+
+### Tabla resumen actualizada (estimado v2.2)
+
+| Directorio | LOC aprox. | Estado v2.2 |
+|---|---:|---|
+| Core/ | ~9,000 | Sin cambios estructurales |
+| Common/ | ~11,500 | +REPLManager, +REPLBridge eliminando Console |
+| ControlR/ | ~3,700 | Sin cambios |
+| ControlJulia/ | ~2,200 | Sin cambios |
+| ControlPython/ | ~2,500 | **Activo y expandido** (Python 3.13 estable, AI functions) |
+| Console/ | 0 | **ELIMINADO** — reemplazado por WebView2 REPL |
+| TaskPane/ | ~8,000+ | **NUEVO** — NEVEN Studio Standalone |
+| CreadorPresentaciones/ | ~2,000 | **NUEVO** — Editor de presentaciones |
+| Ribbon/ | ~1,700 | Sin cambios |
+| PB/ | ~17,800 | Sin cambios |
+| tests/ | ~5,500 | +357 tests (vs 228) |
+| startup/ | ~1,800 | +r_object_to_slots.R |
+| libreria/R/ | ~7,000 | +28 funciones .Studio.R |
+| libreria/JULIA/ | ~2,200 | Sin cambios |
+| Install/functions/ | ~2,000 | **NUEVO** — 28+ sidecars JSON |
+| NEVEN-SIM/ | ~1,500 | **NUEVO** — Monte Carlo XLL |
+| docs/ | ~80,000+ | +NEVEN-BOOK.md, +Evaluaciones actualizadas |
+
+### Tests: de 228 a 357
+
+| Período | Tests | Cambio |
+|:---|:---:|:---|
+| Mayo 2026 (último inventario) | 228 | — |
+| Julio 2026 (Studio + Data Lab) | 357 | +129 nuevos tests |
+| **Agosto 2026 (v2.2)** | **357** | Sin nuevos tests (cambios UI) |
+
+### Nuevos módulos fuera del alcance original
+
+Los siguientes componentes **no existían** en el inventario original y deben ser incluidos en una auditoría actualizada:
+
+- `TaskPane/` — NEVEN Studio (servidor HTTP Python + UI JS)
+- `CreadorPresentaciones/` — Editor Impress.js
+- `Install/functions/` — Catálogo Data Lab (sidecar JSONs)
+- `NEVEN-SIM/` — Módulo Monte Carlo
+- `startup/r_object_to_slots.R` — Serializador Data Lab
+
+*Inventario actualizado: agosto 2026*

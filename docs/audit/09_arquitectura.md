@@ -373,3 +373,54 @@ graph TD
 6. **[P3]** Unificar implementación de Singleton en RJ2XCL_Engine (ARQ-MED-006).
 7. **[P3]** Definir interfaces para ViewerManager, PlutoManager, QuartoService (ARQ-MED-011).
 8. **[P4]** Abstraer Windows API de LanguageService para mejorar testabilidad (ARQ-MED-010).
+
+---
+
+## ACTUALIZACIÓN — Agosto 2026 (NEVEN v2.2)
+
+### Estado de hallazgos arquitecturales
+
+| ID | Descripción | Estado en v2.2 |
+|:---|:---|:---|
+| ARQ-ALT-001 | Dependencia circular Common → Core | ⚠️ Persiste — `NevenProgressiveRegistrar` sigue en Common |
+| ARQ-ALT-002 | Common incluye headers de ControlR/ControlJulia | ⚠️ Persiste — `RuntimeLoader.cc` no fue refactorizado |
+| ARQ-MED-003 | ControlR/ControlPython duplican archivos de Common | ⚠️ Persiste |
+| ARQ-MED-004 | Common viola SRP (10 responsabilidades) | ⚠️ Persiste — se agregó TaskPane como nuevo módulo separado |
+| ARQ-MED-005 | Ribbon mezcla lógica de negocio con COM | ⚠️ Persiste |
+| ARQ-MED-006 | Singletons inconsistentes | ⚠️ Persiste |
+| ARQ-BAJ-007 | IPC escalable (positivo) | ✅ Confirmado — ControlPython demostró que agregar lenguaje es config + ejecutable |
+| ARQ-BAJ-008 | IExcelBridge abstrae Excel (positivo) | ✅ Sin cambios |
+| ARQ-BAJ-009 | CallbackDispatcher (positivo) | ✅ Sin cambios |
+| ARQ-MED-010 | LanguageService depende de Windows API directamente | ⚠️ Persiste |
+| ARQ-MED-011 | Sin interfaces para ViewerManager/PlutoManager/QuartoService | ⚠️ Persiste |
+| ARQ-BAJ-012 | Ribbon aislado como proceso COM (positivo) | ✅ Sin cambios |
+
+### Nuevo componente: NEVEN Studio (TaskPane/)
+
+La arquitectura de NEVEN v2.2 introduce un nuevo nivel desacoplado que no existía en el análisis anterior:
+
+```
+[Excel + NEVEN64.xll]     [Browser + NEVEN Studio]
+        ↓                           ↓
+  Named Pipe (C++)          HTTP REST (Python)
+        ↓                           ↓
+   ControlX.exe    ←←←←  pipe_client.py
+```
+
+**Hallazgo ARQ-NUE-013 (Positivo):** NEVEN Studio demuestra que la arquitectura de procesos aislados es agnóstica al host. Los mismos `ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe` funcionan tanto iniciados por el XLL como por `start_studio.py` sin ningún cambio. Esto valida la separación de concerns entre host y motores de lenguaje.
+
+**Hallazgo ARQ-NUE-014 (Media):** `neven_http_server.py` tiene responsabilidades múltiples (HTTP server + DuckDB + Data Lab + File I/O + DB connectors). Debería refactorizarse en handlers separados.
+
+**Hallazgo ARQ-NUE-015 (Baja):** El Creador de Presentaciones (`script.js`) tiene una dependencia implícita de que `taskpane.html` actúe como relay de mensajes postMessage. Esta dependencia no está documentada formalmente — si se mueve el Creador de Presentaciones a otro contexto, el relay necesita reimplementarse.
+
+### Estado de deuda técnica arquitectural (agosto 2026)
+
+| Prioridad | Hallazgo | Esfuerzo estimado | Riesgo de regresión |
+|:---:|:---|:---|:---|
+| P1 | ARQ-ALT-001: Circular Common→Core | Alto (2-3 días) | Alto |
+| P1 | ARQ-ALT-002: Common→ControlR/Julia headers | Medio (1 día) | Medio |
+| P2 | ARQ-MED-004: Descomponer Common | Alto (3-5 días) | Alto |
+| P3 | ARQ-NUE-014: Refactorizar neven_http_server.py | Bajo (1 día) | Bajo |
+| P4 | ARQ-MED-006: Unificar Singletons | Bajo (horas) | Bajo |
+
+*Análisis actualizado: agosto 2026*

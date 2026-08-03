@@ -282,3 +282,56 @@ La documentación del proyecto NEVEN es **notablemente completa** para un proyec
 3. **Formato de documentación en código fuente** (R sin roxygen2, Julia sin docstrings)
 
 Las discrepancias de severidad Media (build paths, terminología, requerimiento obsoleto) merecen atención prioritaria para evitar confusión en mantenimiento futuro.
+
+---
+
+## ACTUALIZACIÓN — Agosto 2026 (NEVEN v2.2)
+
+### Estado de hallazgos de documentación
+
+| ID | Descripción | Estado v2.2 |
+|:---|:---|:---|
+| DOC-BAJA-001 | Common/ControlPython sin README | ⚠️ Persiste (Console ya no existe — eliminado) |
+| DOC-BAJA-002 | Funciones XLL sin Doxygen individual | ⚠️ Persiste |
+| DOC-BAJA-003 | Headers legacy sin Doxygen completo | ⚠️ Persiste |
+| DOC-MEDIA-004 | Discrepancia build.ps1 vs docs de despliegue | ✅ **Mitigado** — NEVEN-BOOK.md tiene la ruta canónica correcta |
+| DOC-MEDIA-005 | Inconsistencia RJ2XCL vs NEVEN | ✅ **Parcialmente resuelto** — NEVEN-BOOK.md clarifica la dualidad. Los prefijos C++ siguen siendo `RJ2XCL` por compatibilidad ABI |
+| DOC-BAJA-006 | Funciones R sin roxygen2 | ⚠️ Persiste |
+| DOC-BAJA-007 | Funciones Julia sin docstrings | ⚠️ Persiste |
+| DOC-BAJA-008 | Fecha desactualizada en Diccionario | ✅ **Resuelto** — Estado del arte actualizado a agosto 2026 |
+| DOC-BAJA-009 | Doxyfile no encontrado | ⚠️ Persiste — `Doxyfile` existe en la raíz pero sin CI integration |
+| DOC-MEDIA-010 | Requerimiento v2 "Pendiente" sin resolución | ⚠️ Persiste — arquitectura Named Pipes es la definitiva |
+| DOC-BAJA-011 | Marcadores TODO/PENDIENTE en docs | ⚠️ Persiste |
+
+### Nuevos módulos documentados (agosto 2026)
+
+| Módulo nuevo | Documentación creada |
+|:---|:---|
+| NEVEN Studio (TaskPane/) | NEVEN-BOOK.md §11, CHAT.md, Estado_de_las_cosas.md |
+| Data Lab | NEVEN-BOOK.md §12, Estado_del_arte.md tabla catálogo |
+| Creador de Presentaciones | NEVEN-BOOK.md §15, TROUBLESHOOTING.md P1-P3 |
+| Evaluaciones actualizadas | Evaluacion_objetiva, Evaluacion_comercial, Evaluacion_doctoral revisadas a v2.2 |
+
+### Nuevo hallazgo positivo: NEVEN-BOOK.md
+
+**[DOC-POS-009] Manual técnico exhaustivo para desarrolladores:**
+
+Se creó `docs/NEVEN-BOOK.md` (1,646 líneas, 82 KB) que cubre todo el proyecto desde la perspectiva de un desarrollador que llega desde cero. Incluye:
+- Protocolo IPC completo con ejemplos de código
+- Flujos de llamada UDF con código C++ y Python
+- El índice `flat[i + j*n_slots]` del parser de slots (bug más crítico documentado)
+- Antipatrones identificados y sus fixes (`_updateFromPanel`, `_renderList` en keystroke)
+- Checklist de verificación para nuevos desarrolladores
+- Glosario de 25+ términos específicos del proyecto
+
+Este documento resuelve parcialmente DOC-BAJA-001 para los módulos `TaskPane/` y `CreadorPresentaciones/`, y complementa DOC-MEDIA-004 con la tabla canónica de rutas de producción.
+
+### Resumen de severidades actualizado (agosto 2026)
+
+| Severidad | Cantidad | Estado |
+|:---|:---:|:---|
+| Media | 2 | DOC-MEDIA-005 (parcial), DOC-MEDIA-010 |
+| Baja | 7 | DOC-BAJA-001 a 003, DOC-BAJA-006, 007, 009, 011 |
+| Resueltos | 2 | DOC-MEDIA-004 (mitigado), DOC-BAJA-008 |
+
+*Documentación actualizada: agosto 2026*

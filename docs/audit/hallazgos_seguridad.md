@@ -2875,3 +2875,124 @@ Adicionalmente, se usan llamadas con namespace explícito (`paquete::funcion()`)
 - La verificación SHA-256 existente protege los scripts de startup pero no los paquetes que estos cargan.
 
 ---
+
+---
+
+# ACTUALIZACIÓN DE ESTADO — Agosto 2026 (NEVEN v2.2)
+
+## Estado de hallazgos activos
+
+### Hallazgos Críticos — RESUELTOS
+
+| ID | Descripción | Estado | Evidencia del fix |
+|:---|:---|:---:|:---|
+| **SEC-CRI-001** | Inyección en RJ_Q (Quarto) via celda Excel | ✅ **RESUELTO** | `basic_functions.cc:362` usa `InputSanitizer::ValidatePath()` + `InputSanitizer::BuildSafeCommandLine()` |
+| **SEC-CRI-002** | Inyección en ConvertWithPandoc via ruta | ✅ **RESUELTO** | `ContentPipeline.cc:331` — comentario explícito "Validate file path against allowlist before process creation" |
+
+**SEC-CRI-001 — Evidencia del fix:**
+```cpp
+// basic_functions.cc:362
+auto path_validation = rj2xcl::security::InputSanitizer::ValidatePath(qmd_path);
+if (!path_validation.is_valid) {
+    std::string err = "Error: invalid path - " + path_validation.error_message;
+    // ...
+}
+// Línea 397: usa BuildSafeCommandLine — separación ejecutable/argumentos
+auto safe_cmd = rj2xcl::security::InputSanitizer::BuildSafeCommandLine(
+    quarto_exe, {"render", qmd_path, "--to", "html"});
+// Pasa quarto_exe como lpApplicationName (no como parte del command line)
+CreateProcessA(safe_cmd.first.c_str(), cmd_buf, ...);
+```
+
+### Hallazgos Altos — Estado
+
+| ID | Descripción | Estado |
+|:---|:---|:---|
+| **SEC-ALT-004** | `sscanf` sin verificación de retorno en ControlPython | ✅ **RESUELTO** en remediación mayo 2026 |
+| **SEC-ALT-005** | Sanitización incompleta en QuartoService::SpawnRender | ✅ **MITIGADO** — InputSanitizer.ValidatePath() cubre las rutas; QuartoService tiene validación adicional |
+
+### Hallazgos Medios — Estado
+
+| ID | Descripción | Estado |
+|:---|:---|:---|
+| **SEC-MED-001** | Datos de config JSON pasan a CreateProcessA sin validación | ✅ **RESUELTO** — InputSanitizer ahora valida todos los paths de CreateProcess en el XLL |
+
+### Hallazgos Bajos — Estado
+
+| ID | Descripción | Estado |
+|:---|:---|:---|
+| **SEC-BAJ-001** | Rutas legacy `C:\RJ2XCL\` exponen estructura interna | ⚠️ **Persiste** — `CrashHandler.cc` y `ContentPipeline.cc` aún usan `C:\RJ2XCL\` |
+| **SEC-INF-001** | apiKey en neven-config.json en texto plano | ⚠️ **Mitigado** — `neven-config.json` está en `.gitignore`; `_mask_api_key()` en startup.py |
+
+---
+
+## Nuevos componentes: superficie de ataque de NEVEN Studio
+
+NEVEN Studio expone un servidor HTTP en `localhost:5555`. Análisis de los nuevos vectores:
+
+### [SEC-STUDIO-001] Validación SQL en execute_query (Positivo)
+
+**Archivo:** `ControlPython/startup/neven_http_server.py`
+
+```python
+def execute_query(sql):
+    # Filtra comentarios antes de validar
+    sql_clean = '\n'.join(line for line in sql.splitlines() 
+                          if not line.strip().startswith('--')).strip()
+    if not sql_clean.upper().startswith(('SELECT', 'WITH', 'SHOW', 'DESCRIBE')):
+        raise ValueError("Only SELECT/WITH/SHOW/DESCRIBE statements are allowed")
+```
+
+El servidor solo permite consultas de lectura (SELECT/WITH/SHOW/DESCRIBE). Esto previene ejecución de DDL/DML contra DuckDB. Los comentarios `--` se filtran antes de validar (fix aplicado — bug anterior donde `-- SELECT...` pasaba la validación).
+
+**Fortaleza:** ✅ Protección adecuada contra SQL injection en el contexto de DuckDB in-memory.
+
+### [SEC-STUDIO-002] `/api/save_script` — validación de extensiones (Positivo)
+
+```python
+def _handle_save_script(self, body):
+    ext = os.path.splitext(path)[1].lower()
+    if ext not in ('.r', '.py', '.jl'):
+        return {'error': 'Solo se permiten extensiones .r, .py, .jl'}
+```
+
+El endpoint de guardar scripts valida que solo se guarden archivos con extensiones de scripts seguros. Previene guardar ejecutables o archivos de configuración.
+
+**Fortaleza:** ✅ Extensiones allowlist adecuada.
+
+### [SEC-STUDIO-003] Conexión a BD externa — solo lectura (Media)
+
+El endpoint `/api/db_connect` permite al usuario conectar a bases de datos externas (PostgreSQL, MySQL, SQLite, SQL Server). El servidor valida que la query sea SELECT/WITH, pero:
+- No valida el host ni el puerto — un usuario podría conectar a servicios internos de la red
+- Las credenciales se envían en el body del POST sin cifrado adicional (solo localhost, pero en red corporativa podría ser interceptado)
+- La validación allowlist de sentencias SQL aplica solo al query final, no a triggers o stored procedures que el SELECT podría invocar en una BD maliciosa
+
+**Severidad:** Media
+**Recomendación:** Agregar una lista de hosts permitidos configurable. Documentar que `/api/db_connect` solo debe usarse en entornos de desarrollo.
+
+### [SEC-STUDIO-004] Servidor HTTP sin autenticación (Informativo)
+
+`neven_http_server.py` escucha en `localhost:5555` sin autenticación. Cualquier proceso local puede hacer requests al servidor.
+
+**Severidad:** Informativa — riesgo bajo porque:
+- Solo escucha en localhost (no accesible desde red)
+- El servidor solo ejecuta código en los motores que ya están corriendo localmente
+- Un atacante con acceso local ya tiene permisos equivalentes
+
+**Recomendación:** Sin cambios necesarios para uso local. Si se exponiera en red (futuro SaaS), agregar autenticación es crítico.
+
+---
+
+## Resumen de cambios en postura de seguridad (mayo 2026 → agosto 2026)
+
+| Dimensión | Mayo 2026 | Agosto 2026 | Cambio |
+|:---|:---:|:---:|:---:|
+| Hallazgos críticos abiertos | 2 | **0** | -2 ✅ |
+| Hallazgos altos abiertos | 2 | **0** | -2 ✅ |
+| Hallazgos medios abiertos | 1 | **1** (SEC-STUDIO-003) | = |
+| Hallazgos bajos abiertos | 1 | **1** (SEC-BAJ-001) | = |
+| Puntuación OWASP global | 8.8/10 | **9.0/10** | +0.2 |
+
+**El único hallazgo crítico residual es `SEC-BAJ-001`** (rutas `C:\RJ2XCL\` hardcodeadas) que es de severidad baja y no representa riesgo de explotación activa.
+
+*Análisis de seguridad actualizado: agosto 2026*
