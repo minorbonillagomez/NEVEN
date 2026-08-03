@@ -1241,23 +1241,13 @@ function buildSlotElement(slot) {
       } else {
         displayVal2 = String(slot.value !== undefined ? slot.value : '');
       }
-      // Detect Markdown — render if it contains bullets, headers or bold
-      // Note: lines starting with "---" (separators) are NOT Markdown
-      var looksLikeMarkdown = /^[#\*•]/m.test(displayVal2) ||
-                              /^-\s+\w/m.test(displayVal2) ||
-                              /\*\*[^*]+\*\*/.test(displayVal2);
-      if (looksLikeMarkdown) {
-        content = document.createElement('div');
-        content.style.cssText = 'background:var(--bg-secondary);border:1px solid var(--border);' +
-          'border-radius:var(--radius);padding:12px 16px;line-height:1.7;font-size:12px;' +
-          'color:var(--text-primary)';
-        content.innerHTML = _markdownToHtml(displayVal2);
+      // Always render as plain text in a styled pre block
       } else {
-        content = document.createElement('div');
+        content = document.createElement('pre');
         content.style.cssText = 'background:#1e1e1e;border:1px solid var(--border);' +
           'border-radius:var(--radius);padding:12px 16px;font-family:Consolas,\'Cascadia Code\',monospace;' +
-          'font-size:11.5px;color:#d4d4d4;white-space:pre;overflow-x:auto;line-height:1.5;' +
-          'max-height:520px;overflow-y:auto;tab-size:16;-moz-tab-size:16';
+          'font-size:11.5px;color:#d4d4d4;white-space:pre-wrap;line-height:1.5;' +
+          'max-height:520px;overflow-y:auto;overflow-x:auto;word-break:normal;margin:0';
         content.textContent = displayVal2;
       }
       break;
