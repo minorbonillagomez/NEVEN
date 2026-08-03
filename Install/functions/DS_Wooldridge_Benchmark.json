@@ -3,44 +3,39 @@
   "family": "DS",
   "family_label": "Datasets",
   "name": "Wooldridge Benchmark Suite",
-  "description": "Ejecuta 6 modelos canónicos del libro de Wooldridge y compara el resultado de NEVEN con los valores de referencia del texto. No requiere cargar datos previos — los datasets se cargan internamente desde el paquete wooldridge.",
+  "description": "Ejecuta 6 modelos canonicos del libro de Wooldridge. Variables Y y X preseleccionadas segun el ejemplo — el usuario puede modificarlas para explorar especificaciones alternativas. Si no se asignan, se usa la especificacion canonica del texto.",
   "wikipedia_url": "https://www.cengage.com/c/introductory-econometrics-a-modern-approach-7e-wooldridge",
   "languages": ["r"],
   "function_name": "DS_Wooldridge_Benchmark.Studio",
   "file": "DS_Wooldridge_Benchmark.Studio.R",
-  "variable_roles": {},
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (opcional — preseleccionada del libro)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": false
+    },
+    "X": {
+      "label": "Variables independientes (opcional — preseleccionadas del libro)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": false
+    }
+  },
   "parameters": [
     {
       "name": "Caso",
-      "label": "Seleccione el ejemplo del libro",
+      "label": "Ejemplo del libro",
       "type": "select",
       "default": 1,
       "tier": 1,
       "options": [
-        {
-          "value": 1,
-          "label": "W-001 | Cap. 3 | WAGE1 | wage ~ educ + exper + tenure"
-        },
-        {
-          "value": 2,
-          "label": "W-002 | Cap. 7 | 401K  | prate ~ mrate + age + totemp"
-        },
-        {
-          "value": 3,
-          "label": "W-003 | Cap. 14 | JTRAIN | lscrap ~ hrsemp + lsales + lemploy (Efectos Fijos)"
-        },
-        {
-          "value": 4,
-          "label": "W-004 | Cap. 17 | SMOKE | cigs ~ lincome + lcigpric + educ + age + agesq + restaurn (Tobit)"
-        },
-        {
-          "value": 5,
-          "label": "W-005 | Cap. 10 | FERTIL1 | gfr ~ pe + ww2 + pill + t (Serie de Tiempo + RESET)"
-        },
-        {
-          "value": 6,
-          "label": "W-006 | Cap. 9  | CEOSAL1 | salary -- Estadistica Descriptiva + Outliers IQR"
-        }
+        {"value": 1, "label": "W-001 | Cap. 3 | WAGE1 | wage ~ educ + exper + tenure"},
+        {"value": 2, "label": "W-002 | Cap. 7 | 401K  | prate ~ mrate + age + totemp"},
+        {"value": 3, "label": "W-003 | Cap. 14 | JTRAIN | lscrap ~ hrsemp + lsales + lemploy (Efectos Fijos)"},
+        {"value": 4, "label": "W-004 | Cap. 17 | SMOKE | cigs ~ lincome + lcigpric + educ + age + agesq + restaurn (Tobit)"},
+        {"value": 5, "label": "W-005 | Cap. 10 | FERTIL1 | gfr ~ pe + ww2 + pill + t (Serie de Tiempo + RESET)"},
+        {"value": 6, "label": "W-006 | Cap. 9  | CEOSAL1 | salary — Estadistica Descriptiva + Outliers IQR"}
       ]
     }
   ]
