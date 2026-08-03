@@ -1,0 +1,60 @@
+{
+  "id": "ST_VAR",
+  "family": "ST",
+  "family_label": "Series de Tiempo",
+  "name": "VAR — Vectores Autorregresivos",
+  "description": "Modela la dinámica conjunta de 2+ series de tiempo. Selecciona automáticamente el orden p óptimo (AIC/BIC/HQ/FPE), estima el sistema y genera pronósticos con intervalos de confianza al 95%. Wooldridge Cap. 18.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Vector_autorregresivo",
+  "languages": ["r"],
+  "function_name": "ST_VAR.Studio",
+  "file": "ST_VAR.Studio.R",
+  "variable_roles": {
+    "Series": {
+      "label": "Series de tiempo (mínimo 2 columnas numéricas)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "MaxRezagos",
+      "label": "Máximo de rezagos a evaluar",
+      "type": "integer",
+      "default": 8,
+      "tier": 1
+    },
+    {
+      "name": "CriterioSel",
+      "label": "Criterio de selección de rezagos",
+      "type": "select",
+      "default": 1,
+      "tier": 1,
+      "options": [
+        {"value": 1, "label": "AIC (Akaike)"},
+        {"value": 2, "label": "BIC/SC (Schwarz)"},
+        {"value": 3, "label": "HQ (Hannan-Quinn)"},
+        {"value": 4, "label": "FPE (Error de Predicción Final)"}
+      ]
+    },
+    {
+      "name": "TipoConst",
+      "label": "Componentes deterministas",
+      "type": "select",
+      "default": 1,
+      "tier": 1,
+      "options": [
+        {"value": 1, "label": "Constante (estándar)"},
+        {"value": 2, "label": "Tendencia lineal"},
+        {"value": 3, "label": "Constante + Tendencia"}
+      ]
+    },
+    {
+      "name": "HorizontePron",
+      "label": "Horizonte de pronóstico (períodos)",
+      "type": "integer",
+      "default": 4,
+      "tier": 1
+    }
+  ]
+}

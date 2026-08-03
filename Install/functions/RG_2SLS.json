@@ -1,0 +1,58 @@
+{
+  "id": "RG_2SLS",
+  "family": "RG",
+  "family_label": "Regresión",
+  "name": "2SLS — Variables Instrumentales (IV)",
+  "description": "Corrige el sesgo de endogeneidad usando instrumentos externos Z. Incluye diagnósticos automáticos: F de primera etapa (instrumentos débiles si F<10), Wu-Hausman (confirma endogeneidad) y Sargan (valida instrumentos). Wooldridge Cap. 15.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Método_de_variables_instrumentales",
+  "languages": ["r"],
+  "function_name": "RG_2SLS.Studio",
+  "file": "RG_2SLS.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "Endo": {
+      "label": "Variables endógenas (X endógenas)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    },
+    "Exo": {
+      "label": "Variables exógenas de control (opcional)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": false
+    },
+    "Instru": {
+      "label": "Instrumentos externos (Z) — min. uno por variable endógena",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "NivelAlpha",
+      "label": "Nivel de significancia (alpha)",
+      "type": "select",
+      "default": 0.05,
+      "tier": 1,
+      "options": [
+        {"value": 0.01, "label": "1%"},
+        {"value": 0.05, "label": "5% (estándar)"},
+        {"value": 0.10, "label": "10%"}
+      ]
+    },
+    {
+      "name": "DiagnosticosF",
+      "label": "Mostrar diagnósticos IV (F, Wu-Hausman, Sargan)",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    }
+  ]
+}
