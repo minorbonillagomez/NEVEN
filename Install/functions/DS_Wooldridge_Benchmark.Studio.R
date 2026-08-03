@@ -71,6 +71,20 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
               mse, ifelse(mse < 1e-7, "PARIDAD ESTADISTICA OK", "REVISAR")))
   }
 
+  # ── Envuelve texto en <pre> para renderizado HTML directo ────────────────
+  # Evita que el detector de Markdown de datalab.js malinterprete el texto.
+  # escapeHtml previene XSS si los datos de R contienen < > &
+  .pre <- function(txt) {
+    txt <- gsub("&", "&amp;", txt, fixed = TRUE)
+    txt <- gsub("<", "&lt;",  txt, fixed = TRUE)
+    txt <- gsub(">", "&gt;",  txt, fixed = TRUE)
+    paste0('<pre style="font-family:Consolas,monospace;font-size:11.5px;',
+           'color:#d4d4d4;background:#1e1e1e;padding:12px;',
+           'white-space:pre;tab-size:16;line-height:1.5;',
+           'overflow-x:auto;margin:0">',
+           txt, '</pre>')
+  }
+
   sep <- paste(rep("-", 66), collapse = "")
 
   # ===========================================================================
@@ -381,9 +395,9 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
 
   return(r_object_to_slots(
     list(
-      resultado_NEVEN  = res,
-      referencia_libro = ref,
-      verificacion     = ver
+      resultado_NEVEN  = .pre(res),
+      referencia_libro = .pre(ref),
+      verificacion     = .pre(ver)
     ),
     tier_map = c(resultado_NEVEN = 1L, referencia_libro = 1L, verificacion = 1L)
   ))

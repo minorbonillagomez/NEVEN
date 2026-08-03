@@ -1242,7 +1242,10 @@ function buildSlotElement(slot) {
         displayVal2 = String(slot.value !== undefined ? slot.value : '');
       }
       // Detect Markdown — render if it contains bullets, headers or bold
-      var looksLikeMarkdown = /^[#\*\-•]/m.test(displayVal2) || /\*\*[^*]+\*\*/.test(displayVal2);
+      // Note: lines starting with "---" (separators) are NOT Markdown
+      var looksLikeMarkdown = /^[#\*•]/m.test(displayVal2) ||
+                              /^-\s+\w/m.test(displayVal2) ||
+                              /\*\*[^*]+\*\*/.test(displayVal2);
       if (looksLikeMarkdown) {
         content = document.createElement('div');
         content.style.cssText = 'background:var(--bg-secondary);border:1px solid var(--border);' +
