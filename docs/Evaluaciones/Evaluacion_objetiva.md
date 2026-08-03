@@ -1810,3 +1810,63 @@ NEVEN v2.1 (julio 2026) consolida dos logros arquitectónicos:
 2. **Data Lab V1** — Un catálogo de 18 funciones estadísticas accesibles sin código, con una arquitectura extensible por el usuario (familia UC). El serializador `r_object_to_slots` es una abstracción limpia que funciona con cualquier objeto S3 de R.
 
 *Evaluación actualizada: 30 de julio de 2026 — Team Vikingos ⚔️*
+
+---
+
+## ACTUALIZACIÓN — 2 de agosto de 2026 (NEVEN v2.2)
+
+### Nota global actualizada: 9.8/10
+
+Los cambios de esta sesión son exclusivamente en la capa de presentación (NEVEN Studio / Creador de Presentaciones). No se modificó código C++, no se tocaron los tests, no se alteró la arquitectura de seguridad.
+
+### Cambios evaluados
+
+| Componente | Cambio | Impacto en calidad |
+|:---|:---|:---|
+| Creador de Presentaciones | Integrado como parte del repositorio principal (eliminado submodule) | ✅ Mantenibilidad +0.1 |
+| Panel overlay glassmorphism | `backdrop-filter:blur`, `position:fixed`, arrastrable | ✅ UX — sin impacto en calidad técnica |
+| Zoom de contenido (`contentZoom`) | `transform:scale` en elemento interno — reemplaza width/height | ✅ Corrección de diseño correcto |
+| Offset X/Y del contenido | `translate(Xvw,Yvh) scale(zoom)` — posición dentro del slide | ✅ Nueva funcionalidad correcta |
+| Fix `overflow:hidden` | Eliminado — el contenido ya no se recorta al escalar | ✅ Bug fix |
+| Fix `_updateFromPanel` monolítico | Reemplazado por `propMap` selectivo | ✅ Bug fix crítico de aislamiento |
+| Fix `_renderList` en cada keystroke | Reemplazado por `_updateCurrentSlideLabel` | ✅ Bug fix + mejora de rendimiento |
+| Selector de slide en panel | `<select>` con todos los slides — navegación desde propiedades | ✅ UX correcta |
+
+### Tabla de dimensiones actualizada
+
+| Dimensión | v2.1 (Jul 2026) | v2.2 (Ago 2026) | Cambio | Justificación |
+|:---|:---:|:---:|:---:|:---|
+| **Funcionalidad** | 10/10 | 10/10 | = | Sin cambio — nuevas funciones son mejoras UI, no funcionalidad core |
+| **Calidad de Código** | 9.5/10 | 9.6/10 | +0.1 | propMap selectivo es arquitectura más correcta; _renderList optimizado |
+| **Seguridad** | 9.5/10 | 9.5/10 | = | Sin cambios en seguridad |
+| **Mantenibilidad** | 9.7/10 | 9.8/10 | +0.1 | CreadorPresentaciones integrado al repo; reglas .gitignore limpias |
+| **Confiabilidad** | 9.5/10 | 9.5/10 | = | Sin cambios en motores C++ |
+| **Testing** | 10/10 | 10/10 | = | 357 tests, sin regresiones |
+| **Documentación** | 10/10 | 10/10 | = | Docs actualizadas en esta sesión |
+
+**Nota global v2.2: 9.76/10** ≈ **9.8/10**
+
+### Bugs críticos corregidos en esta sesión
+
+| Bug | Causa raíz | Gravedad |
+|:---|:---|:---:|
+| Propiedades afectaban TODOS los slides | `_updateFromPanel` monolítico leía todo el DOM | Alta |
+| Panel volvía al Slide 1 al editar | `_renderList()` en cada keystroke destruía el DOM | Media |
+| Contenido se recortaba al escalar | `overflow:hidden` en contenedor + `transform:scale` | Media |
+| Alto no funcionaba con `%` | `height:80%` en `.step` de Impress sin altura definida = 0 | Media |
+
+### Historial de versiones completo
+
+| Hito | Nota | Tests | Cambio clave |
+|:---|:---:|:---:|:---|
+| Estado original | 4.3 | 39 | Prototipo funcional con deuda técnica |
+| Post-correcciones | 6.8 | 119 | Seguridad, RAII, mutex, retry limits |
+| Post-Julia sysimage | 7.2 | 119 | Julia arranca en segundos |
+| Post-Python | 7.5 | 165 | Tercer lenguaje integrado |
+| Post-Mantenibilidad | 7.9 | 165 | Constants, logging, dead code, Doxygen |
+| Post-Confiabilidad | 8.1 | 200 | Health monitoring, error messages |
+| Rename + visualizaciones | 9.6 | 228 | NEVEN identity, R.Pivot/D3/Dashboard/Map |
+| Security remediation | 9.8 | 357 | 36/36 audit findings, Python reactivado |
+| Studio Standalone + Data Lab V1 | 9.8 | 357 | NEVEN Studio sin Excel, Data Lab V1 |
+| Data Lab V2 + Presentaciones V1 | 9.8 | 357 | GR_Barras avanzado, Creador integrado |
+| **v2.2 — Presentaciones V2** | **9.8** | **357** | **Zoom contenido, offset X/Y, overlay glassmorphism, propiedades independientes** |

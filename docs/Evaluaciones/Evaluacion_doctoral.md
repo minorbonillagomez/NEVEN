@@ -381,3 +381,36 @@ La implementacion resuelve problemas reales de ingenieria: resolucion IPv6/IPv4,
 *Documento interno de orientacion — no para presentar al comite.*
 *NEVEN v2.0 — Universidad de Costa Rica*
 *Ultima actualizacion: 30 de julio de 2026 (version original: 9 de mayo de 2026)*
+
+---
+
+## ACTUALIZACIÓN — 2 de agosto de 2026 (NEVEN v2.2)
+
+### 2.15 Creador de Presentaciones V2 — Arquitectura de transformaciones CSS y aislamiento de estado
+
+El Creador de Presentaciones evolucionó de editor de texto a sistema completo de presentaciones con objetos embebidos (tablas de datos, gráficos Plotly, iframes) controlables por el usuario. Esta versión documenta decisiones técnicas con valor académico en diseño de UI/UX:
+
+**Problema 1 — Escalado de contenido embebido:**
+`width`/`height` en el contenedor no escala el contenido interno. La solución correcta es `transform: scale(N)` en el elemento interno — aplica a fuentes, celdas, bordes, todo uniformemente. Este patrón es análogo a la propiedad `zoom` del viewport de browsers.
+
+**Problema 2 — Posicionamiento relativo al viewport de Impress.js:**
+Los elementos `.step` de Impress.js son bloques sin dimensiones fijas — `height: 80%` resuelve a 0 porque no hay referencia de altura. Solución: usar `vw`/`vh` como unidades de medida, que son relativas al viewport del documento, no al elemento padre.
+
+**Problema 3 — Transformaciones compuestas:**
+`position:absolute` + `transform:scale` con `overflow:hidden` en el contenedor recorta el contenido escalado (CSS: `transform` no afecta el layout, pero sí el rendering visual). Solución: usar `transform: translate(Xvw, Yvh) scale(zoom)` en un contenedor `display:flex` sin overflow restrictions. El offset se expresa como distancia desde el centro: `tx = (offsetX - 50) * 1vw`.
+
+**Problema 4 — Aislamiento de estado (propMap selectivo):**
+El patrón `_updateFromPanel()` monolítico que lee todo el DOM para actualizar un slide es un antipatrón conocido en UI development — equivalente a un setState global que sobreescribe todo el estado. La solución correcta es un `propMap` donde cada campo tiene su función de escritura que modifica **únicamente** su propiedad. Este patrón es consistente con el principio de responsabilidad única (SRP) de SOLID.
+
+**Integración al repositorio:**
+El Creador de Presentaciones fue un subproyecto con su propio `.git`. Su integración al repositorio principal requirió `git update-index --force-remove` para limpiar el gitlink `160000` y re-agregar los archivos con mode `100644`. Este proceso documenta la mecánica de integración de subproyectos git.
+
+### Tabla de hitos completados — actualizada
+
+| Fase | Estado | Descripción |
+|:---|:---|:---|
+| *(todos los anteriores)* | ✅ | Ver versiones anteriores |
+| **Creador de Presentaciones V2** | ✅ | Zoom de contenido (`transform:scale`), offset X/Y, overlay glassmorphism, propiedades por slide, selector de slide, fix aislamiento de estado |
+| **Integración al repo principal** | ✅ | Eliminado submodule git embebido; ahora parte integral de NEVEN |
+| Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
+| Benchmarks | ⏳ Pendiente | Datos cuantitativos de rendimiento |

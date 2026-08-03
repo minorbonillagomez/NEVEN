@@ -317,3 +317,21 @@ El nucleo tecnico esta. La pregunta no es "¿funciona?" — funciona. La pregunt
 *Documento interno de orientacion comercial.*
 *NEVEN v2.0 — Universidad de Costa Rica*
 *Actualizado: 30 de julio de 2026 (versión original: 9 de mayo de 2026)*
+
+---
+
+## ACTUALIZACIÓN — 2 de agosto de 2026 (NEVEN v2.2)
+
+### Nuevas fortalezas comerciales (sesión 2026-08-02)
+
+**16. Creador de Presentaciones integrado.** El tab "Presentaciones" de NEVEN Studio permite crear presentaciones Impress.js directamente desde el browser. El usuario puede enviar tablas y gráficos generados en DataLab/DataStudio a slides con un clic ("Enviar a Slide"). Los objetos son controlables: zoom del contenido (escala fuentes y celdas), offset X/Y para reposicionarlos dentro del slide, rotación y escala del slide en el espacio de Impress. El panel de propiedades flotante permite ajustar todos los parámetros mientras se ve la presentación en tiempo real.
+
+**Relevancia comercial:** Cierra el ciclo completo de trabajo del analista: datos → análisis → gráficos → tabla resumen → **presentación**, todo sin salir de NEVEN Studio. Ningún competidor (PyXLL, xlwings, Python in Excel) ofrece este flujo integrado.
+
+### Impacto en viabilidad comercial
+
+| Aspecto | Antes | Después |
+|:---|:---|:---|
+| Flujo end-to-end | Datos → Análisis → Gráficos | Datos → Análisis → Gráficos → Presentación |
+| Diferenciación vs. PyXLL/xlwings | R+Julia+Python+visualización | + Presentaciones interactivas generadas desde datos |
+| Propuesta para el demo de ventas | Dashboard en 3 clics | Dashboard + Presentación lista en 5 clics |
