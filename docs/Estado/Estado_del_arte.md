@@ -28,6 +28,8 @@ Excel es universal pero estadisticamente limitado. R y Julia son potentes pero r
 | **NEVEN v2.0** | **May 2026** | **Security remediation: 36/36 hallazgos cerrados, Console/Electron eliminado, ControlPython reactivado, 357 tests, score 6.0→9.4** |
 | **NEVEN v2.1** | **Jul 2026** | **NEVEN Studio Standalone (sin Excel), Data Lab V1 (18 Studio wrappers, punto-y-clic), AI integration LMStudio, Text Mining con WordCloud y resumen LLM, catálogo UC extensible** |
 | **NEVEN v2.1** | **Jul 2026** | **DataLab: GR_Barras (apilado/múltiple Y/ordenar), selector paletas visual, X opcional GR_Lineas/SeriesTiempo, GR_Burbujas color continuo, GR_Scatter eliminado, fixes parse slots, descarga PNG/SVG gráficos** |
+| **NEVEN v2.2** | **Ago 2026** | **Creador de Presentaciones V2: zoom de contenido (`transform:scale`), offset X/Y del contenido, overlay de propiedades en Preview con glassmorphism, propiedades independientes por slide (propMap selectivo), selector de slide en panel** |
+| **NEVEN v2.3** | **Ago 2026** | **Depuración Fase A: limpieza de 18 hallazgos de código muerto (GCMonitor, RuntimeLoader, AutoLoader eliminados del build; R_Environment/Julia_Environment a legacy/; SandboxVerifier limpiado; RJ_Q en .def; startup.r deduplicado; Extraer_outputs canónica en librería; UT_INSTALACION_LOCAL reescrita con versiones actuales; TestAdd/EigenValues Julia eliminados). 8 funciones econométricas avanzadas: RESET, Davidson-MacKinnon, Newey-West HAC, FGLS, 2SLS/IV, Heckman, VAR, ECM/VECM** |
 
 ------------------------------------------------------------------------
 
@@ -178,6 +180,19 @@ Funciones accesibles desde la pestaña Data Lab de NEVEN Studio. Cada función t
 | **GR** | GR_Correlaciones | Mapa de Correlaciones | Heatmap de correlaciones con selector de paleta |
 | **GR** | GR_EjemploBasico | Scatter Mínimo | Scatter plot básico (reemplaza a GR_Scatter eliminado) |
 | **GR** | GR_EjemploAvanzado | Burbujas | Scatter con tamaño y color; color numérico → colorscale continua; color categórico → trazas por grupo (Burbujas con color continuo/categórico) |
+
+> **Funciones Econométricas Avanzadas — Data Lab (nuevo agosto 2026)**
+
+| Familia | ID | Función | Descripción | Paquete |
+|:---|:---|:---|:---|:---|
+| **RG** | RG_RESET | Prueba RESET de Ramsey | Detecta errores de forma funcional en MCO. p<0.05 → problema de especificación | `lmtest` |
+| **RG** | RG_Davidson_MacKinnon | J-Test Davidson-MacKinnon | Selección entre modelos no anidados. Determina cuál modelo captura mejor Y | `lmtest` |
+| **RG** | RG_Newey_West | Errores Estándar HAC | Robustez ante heterocedasticidad + autocorrelación. Rezagos automáticos | `sandwich` |
+| **RG** | RG_FGLS | FGLS (WLS 2 etapas) | Coeficientes eficientes con heterocedasticidad modelada. Wooldridge Cap. 8 | `sandwich` |
+| **RG** | RG_2SLS | 2SLS / Variables Instrumentales | Corrección de endogeneidad. Diagnósticos F, Wu-Hausman, Sargan incluidos | `AER` |
+| **RG** | RG_HECKIT | Heckman / Heckit | Corrección de sesgo de selección muestral. Razón de Mills inversa. Wooldridge Cap. 17 | `sampleSelection` |
+| **ST** | ST_VAR | VAR — Vectores Autorregresivos | Sistema dinámico de series. Selección p automática. Pronóstico IC 95% | `vars` |
+| **ST** | ST_ECM | ECM / VECM | ADF → Johansen → VECM. Velocidad de ajuste ECT. Wooldridge Cap. 18 | `vars` + `urca` |
 
 ### Documentacion para el Usuario
 

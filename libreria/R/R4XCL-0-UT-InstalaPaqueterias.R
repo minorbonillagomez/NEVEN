@@ -129,13 +129,20 @@ UT_INSTALACION_WEB <- function()
     "dummies",
     "wooldridge",
     "e1071",
-    "xgboost"
+    "xgboost",
+    # Econometría avanzada — SRS agosto 2026
+    "AER",              # 2SLS / Variables Instrumentales
+    "sampleSelection",  # Heckman / Heckit
+    "vars",             # VAR / VECM
+    "urca",             # Prueba Johansen / ADF
+    "lmtest",           # RESET, J-test, Breusch-Pagan
+    "sandwich"          # Newey-West HAC, FGLS
   )
   
   elementoActual=1
   
-  # Definir el repositorio CRAN con snapshot
-  repositorio_cran <- "https://packagemanager.rstudio.com/cran/2018-03-15"
+  # Repositorio CRAN actual (actualizado agosto 2026)
+  repositorio_cran <- "https://cloud.r-project.org"
   
   # Anadir la opcion para instalar todos los paquetes
   opciones_disponibles <- c("*** Instalar todos los paquetes ***", paquetes_disponibles)
