@@ -589,7 +589,7 @@ class DataLabHandler:
         # Esto aplica a GR_Lineas, GR_Barras, GR_SeriesTiempo y similares.
         if "X" not in role_var_names and sidecar_role_order and "X" in sidecar_role_order:
             # Determinar N desde la primera columna asignada (Y u otro rol)
-            if all_columns:
+            if col_names:
                 lines.append("data_X <- data.frame(.idx = seq_len(nrow(data)))")
             else:
                 lines.append("data_X <- data.frame(.idx = integer(0))")
