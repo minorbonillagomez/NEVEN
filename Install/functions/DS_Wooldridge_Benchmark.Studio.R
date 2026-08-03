@@ -4,7 +4,9 @@
 # Salida: texto plano simple (scalar) renderizado en <pre> por datalab.js
 # ===============================================================================
 
-DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
+DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L,
+                                             VarY  = "",
+                                             VarX  = "") {
 
   Caso <- as.integer(Caso)
   if (is.na(Caso) || Caso < 1L || Caso > 6L)
@@ -12,6 +14,9 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
 
   if (!requireNamespace("wooldridge", quietly = TRUE))
     stop("El paquete 'wooldridge' no esta instalado.")
+
+  # VarY y VarX reservados para especificacion personalizada (futuro uso)
+  # Por ahora se ignoran y se usa la especificacion canonica del libro.
 
   sep <- paste(rep("-", 60), collapse = "")
 
