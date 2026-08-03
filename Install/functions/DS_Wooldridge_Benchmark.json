@@ -3,25 +3,12 @@
   "family": "DS",
   "family_label": "Datasets",
   "name": "Wooldridge Benchmark Suite",
-  "description": "Ejecuta 6 modelos canonicos del libro de Wooldridge. Variables Y y X preseleccionadas segun el ejemplo — el usuario puede modificarlas para explorar especificaciones alternativas. Si no se asignan, se usa la especificacion canonica del texto.",
+  "description": "Ejecuta 6 modelos canonicos del libro de Wooldridge y compara con los valores de referencia. No requiere dataset previo — los datos se cargan internamente. La especificacion del modelo aparece en el resultado (variable Y, variables X y capitulo del libro).",
   "wikipedia_url": "https://www.cengage.com/c/introductory-econometrics-a-modern-approach-7e-wooldridge",
   "languages": ["r"],
   "function_name": "DS_Wooldridge_Benchmark.Studio",
   "file": "DS_Wooldridge_Benchmark.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable dependiente (opcional — preseleccionada del libro)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": false
-    },
-    "X": {
-      "label": "Variables independientes (opcional — preseleccionadas del libro)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": false
-    }
-  },
+  "variable_roles": {},
   "parameters": [
     {
       "name": "Caso",

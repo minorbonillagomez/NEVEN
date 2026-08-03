@@ -7,9 +7,7 @@
 # Si no se asignan, se usa la especificacion canonica del libro.
 # ===============================================================================
 
-DS_Wooldridge_Benchmark.Studio <- function(data_Y = NULL,
-                                             data_X = NULL,
-                                             Caso   = 1L) {
+DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
 
   Caso <- as.integer(Caso)
   if (is.na(Caso) || Caso < 1L || Caso > 6L)
@@ -18,9 +16,7 @@ DS_Wooldridge_Benchmark.Studio <- function(data_Y = NULL,
   if (!requireNamespace("wooldridge", quietly = TRUE))
     stop("El paquete 'wooldridge' no esta instalado.")
 
-  # ── Detectar si el usuario asigno columnas ────────────────────────────────
-  .usr <- function(d) !is.null(d) && is.data.frame(d) &&
-                      nrow(d) > 0 && ncol(d) > 0
+  # ── Sin variable_roles -- el wrapper no recibe data_Y ni data_X ───────────
 
   # ── Formato coeficientes (sprintf, igual que verificacion) ────────────────
   # ct = matriz de coeficientes (rownames = nombres, cols = Est/SE/t/p)
@@ -73,15 +69,8 @@ DS_Wooldridge_Benchmark.Studio <- function(data_Y = NULL,
   # ===========================================================================
   if (Caso == 1L) {
     ds <- wooldridge::wage1
-    if (.usr(data_Y) && .usr(data_X)) {
-      y_col <- names(data_Y)[1]; x_cols <- names(data_X)
-      df    <- cbind(data_Y, data_X)
-      fml   <- reformulate(x_cols, response = y_col)
-      modo  <- sprintf("Especificacion usuario: %s ~ %s", y_col, paste(x_cols, collapse=" + "))
-    } else {
-      df <- ds; fml <- wage ~ educ + exper + tenure
-      modo <- "Especificacion canonica: wage ~ educ + exper + tenure"
-    }
+    df <- ds; fml <- wage ~ educ + exper + tenure
+    modo <- "Especificacion canonica: wage ~ educ + exper + tenure"
     modelo <- lm(fml, data = df)
     sm <- summary(modelo); ct <- sm$coefficients
     fstat <- sm$fstatistic
@@ -129,15 +118,8 @@ DS_Wooldridge_Benchmark.Studio <- function(data_Y = NULL,
   # ===========================================================================
   else if (Caso == 2L) {
     ds <- wooldridge::k401k
-    if (.usr(data_Y) && .usr(data_X)) {
-      y_col <- names(data_Y)[1]; x_cols <- names(data_X)
-      df    <- cbind(data_Y, data_X)
-      fml   <- reformulate(x_cols, response = y_col)
-      modo  <- sprintf("Especificacion usuario: %s ~ %s", y_col, paste(x_cols, collapse=" + "))
-    } else {
-      df <- ds; fml <- prate ~ mrate + age + totemp
-      modo <- "Especificacion canonica: prate ~ mrate + age + totemp"
-    }
+    df <- ds; fml <- prate ~ mrate + age + totemp
+    modo <- "Especificacion canonica: prate ~ mrate + age + totemp"
     modelo <- lm(fml, data = df)
     sm <- summary(modelo); ct <- sm$coefficients
     fstat <- sm$fstatistic
@@ -192,9 +174,6 @@ DS_Wooldridge_Benchmark.Studio <- function(data_Y = NULL,
     ))
     ct <- summary(modelo)$coefficients
     modo <- "Especificacion canonica: lscrap ~ hrsemp + lsales + lemploy | fcode"
-    if (.usr(data_Y) && .usr(data_X)) modo <- sprintf(
-      "Especificacion usuario: %s ~ %s | fcode",
-      names(data_Y)[1], paste(names(data_X), collapse=" + "))
 
     res <- paste(c(
       "Resultado NEVEN | W-003 | JTRAIN | Cap. 14, Ejemplo 14.1",
@@ -240,7 +219,6 @@ DS_Wooldridge_Benchmark.Studio <- function(data_Y = NULL,
     ll  <- tryCatch(round(logLik(modelo)[[1]], 1), error = function(e) "N/A")
     sig_v <- tryCatch(round(exp(coef(modelo)["Log(scale)"]), 3), error=function(e) "N/A")
     modo <- "Especificacion canonica: cigs ~ lincome+lcigpric+educ+age+agesq+restaurn (Tobit, left=0)"
-
     res <- paste(c(
       "Resultado NEVEN | W-004 | SMOKE | Cap. 17, Ejemplo 17.2",
       modo,
@@ -283,15 +261,8 @@ DS_Wooldridge_Benchmark.Studio <- function(data_Y = NULL,
     if (!requireNamespace("lmtest", quietly = TRUE))
       stop("El paquete 'lmtest' no esta instalado.")
     ds <- wooldridge::fertil1
-    if (.usr(data_Y) && .usr(data_X)) {
-      y_col <- names(data_Y)[1]; x_cols <- names(data_X)
-      df    <- cbind(data_Y, data_X)
-      fml   <- reformulate(x_cols, response = y_col)
-      modo  <- sprintf("Especificacion usuario: %s ~ %s", y_col, paste(x_cols, collapse=" + "))
-    } else {
-      df <- ds; fml <- gfr ~ pe + ww2 + pill + t
-      modo <- "Especificacion canonica: gfr ~ pe + ww2 + pill + t"
-    }
+    df <- ds; fml <- gfr ~ pe + ww2 + pill + t
+    modo <- "Especificacion canonica: gfr ~ pe + ww2 + pill + t"
     modelo <- lm(fml, data = df)
     sm    <- summary(modelo); ct <- sm$coefficients
     fstat <- sm$fstatistic
@@ -344,12 +315,12 @@ DS_Wooldridge_Benchmark.Studio <- function(data_Y = NULL,
   # ===========================================================================
   else {
     ds   <- wooldridge::ceosal1
-    x_v  <- if (.usr(data_Y)) data_Y[[1]] else ds$salary
-    nm_v <- if (.usr(data_Y)) names(data_Y)[1] else "salary"
+    x_v  <- ds$salary
+    nm_v <- "salary"
     q1   <- quantile(x_v, 0.25); q3 <- quantile(x_v, 0.75); iqr <- q3 - q1
     lsup <- q3 + 1.5 * iqr
     outs <- sort(x_v[x_v > lsup], decreasing = TRUE)
-    modo <- sprintf("Especificacion: estadistica descriptiva de %s", nm_v)
+    modo <- "Especificacion: estadistica descriptiva de salary"
 
     res <- paste(c(
       "Resultado NEVEN | W-006 | CEOSAL1 | Cap. 9",
