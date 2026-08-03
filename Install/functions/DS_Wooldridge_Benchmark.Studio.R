@@ -66,10 +66,7 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
       sep,
       sprintf("MSE total: %.2e   %s", mse, ifelse(mse < 1e-7, "PARIDAD ESTADISTICA OK", "REVISAR"))
     ), collapse = "\n")
-  }
-
-  # ===========================================================================
-  # CASO 2: 401K -- LPM (Cap. 7, Ejemplo 7.12)
+  } 401K -- LPM (Cap. 7, Ejemplo 7.12)
   # ===========================================================================
   else if (Caso == 2L) {
     ds     <- wooldridge::k401k
@@ -352,12 +349,22 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
     ), collapse = "\n")
   }
 
+  # ── Exportar dataset de Wooldridge como slot table (tier 2) ─────────────────
+  # El usuario puede hacer clic en "Cargar en Data Studio" para cargarlo en DuckDB
+  # y luego usar las funciones de regresion con esas columnas.
+  ds_export <- tryCatch(
+    as.data.frame(ds),
+    error = function(e) data.frame()
+  )
+
   return(r_object_to_slots(
     list(
       resultado_NEVEN  = res,
       referencia_libro = ref,
-      verificacion     = ver
+      verificacion     = ver,
+      dataset_wooldridge = ds_export
     ),
-    tier_map = c(resultado_NEVEN = 1L, referencia_libro = 1L, verificacion = 1L)
+    tier_map = c(resultado_NEVEN = 1L, referencia_libro = 1L,
+                 verificacion = 1L, dataset_wooldridge = 2L)
   ))
 }

@@ -3,7 +3,7 @@
   "family": "DS",
   "family_label": "Datasets",
   "name": "Wooldridge Benchmark Suite",
-  "description": "Ejecuta 6 modelos canonicos del libro de Wooldridge y compara con los valores de referencia. No requiere dataset previo — los datos se cargan internamente. La especificacion del modelo aparece en el resultado (variable Y, variables X y capitulo del libro).",
+  "description": "Ejecuta 6 modelos canonicos del libro de Wooldridge. Ejecute con la especificacion canonica o escriba su propia Y y X para explorar el mismo dataset.",
   "wikipedia_url": "https://www.cengage.com/c/introductory-econometrics-a-modern-approach-7e-wooldridge",
   "languages": ["r"],
   "function_name": "DS_Wooldridge_Benchmark.Studio",
@@ -22,8 +22,22 @@
         {"value": 3, "label": "W-003 | Cap. 14 | JTRAIN | lscrap ~ hrsemp + lsales + lemploy (Efectos Fijos)"},
         {"value": 4, "label": "W-004 | Cap. 17 | SMOKE | cigs ~ lincome + lcigpric + educ + age + agesq + restaurn (Tobit)"},
         {"value": 5, "label": "W-005 | Cap. 10 | FERTIL1 | gfr ~ pe + ww2 + pill + t (Serie de Tiempo + RESET)"},
-        {"value": 6, "label": "W-006 | Cap. 9  | CEOSAL1 | salary — Estadistica Descriptiva + Outliers IQR"}
+        {"value": 6, "label": "W-006 | Cap. 9  | CEOSAL1 | salary - Estadistica Descriptiva + Outliers IQR"}
       ]
+    },
+    {
+      "name": "VarY",
+      "label": "Variable Y personalizada (vacio = canonica del libro)",
+      "type": "text",
+      "default": "",
+      "tier": 1
+    },
+    {
+      "name": "VarX",
+      "label": "Variables X separadas por coma (vacio = canonicas del libro)",
+      "type": "text",
+      "default": "",
+      "tier": 1
     }
   ]
 }

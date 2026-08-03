@@ -1212,6 +1212,39 @@ function buildSlotElement(slot) {
   switch (slot.type) {
     case 'table':
       content = renderSlotTable(slot.value, slot.name);
+      // Si el slot es un dataset de Wooldridge, agregar boton "Cargar en Data Studio"
+      if (slot.name && slot.name.indexOf('dataset_') === 0) {
+        var btnLoad = document.createElement('button');
+        btnLoad.textContent = 'Cargar en Data Studio';
+        btnLoad.style.cssText = 'margin-top:8px;padding:5px 12px;background:var(--accent);' +
+          'color:var(--bg-primary);border:none;border-radius:4px;font-size:10px;' +
+          'font-weight:700;cursor:pointer;display:block';
+        btnLoad.addEventListener('click', function() {
+          // Convertir array-of-objects a CSV para _loadFromContent
+          var rows = Array.isArray(slot.value) ? slot.value : [];
+          if (!rows.length) return;
+          var cols = Object.keys(rows[0]);
+          var csv  = cols.join(',') + '\n' +
+                     rows.map(function(r) {
+                       return cols.map(function(c) {
+                         var v = r[c];
+                         if (v === null || v === undefined) return '';
+                         var s = String(v);
+                         return s.indexOf(',') >= 0 || s.indexOf('"') >= 0
+                           ? '"' + s.replace(/"/g,'""') + '"' : s;
+                       }).join(',');
+                     }).join('\n');
+          var dsName = slot.name.replace('dataset_', '') + '.csv';
+          if (typeof _loadFromContent === 'function') {
+            _loadFromContent(dsName, csv);
+            btnLoad.textContent = 'Cargado en Data Studio';
+            btnLoad.style.background = 'var(--success, #4caf50)';
+          } else {
+            alert('_loadFromContent no disponible -- abra Data Studio primero');
+          }
+        });
+        content.appendChild(btnLoad);
+      }
       break;
 
     case 'vector':
