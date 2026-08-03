@@ -66,7 +66,10 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L) {
       sep,
       sprintf("MSE total: %.2e   %s", mse, ifelse(mse < 1e-7, "PARIDAD ESTADISTICA OK", "REVISAR"))
     ), collapse = "\n")
-  } 401K -- LPM (Cap. 7, Ejemplo 7.12)
+  }
+
+  # ===========================================================================
+  # CASO 2: 401K -- LPM (Cap. 7, Ejemplo 7.12)
   # ===========================================================================
   else if (Caso == 2L) {
     ds     <- wooldridge::k401k
