@@ -6,7 +6,9 @@
 
 DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L,
                                              VarY  = "",
-                                             VarX  = "") {
+                                             VarX  = "",
+                                             data_Y = NULL,
+                                             data_X = NULL) {
 
   Caso <- as.integer(Caso)
   if (is.na(Caso) || Caso < 1L || Caso > 6L)
@@ -15,8 +17,9 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L,
   if (!requireNamespace("wooldridge", quietly = TRUE))
     stop("El paquete 'wooldridge' no esta instalado.")
 
-  # VarY y VarX reservados para especificacion personalizada (futuro uso)
-  # Por ahora se ignoran y se usa la especificacion canonica del libro.
+  # Detectar si el usuario asigno columnas propias
+  .usr <- function(d) !is.null(d) && is.data.frame(d) && nrow(d) > 0 && ncol(d) > 0
+  tiene_usuario <- .usr(data_Y) && .usr(data_X)
 
   sep <- paste(rep("-", 60), collapse = "")
 
@@ -357,22 +360,47 @@ DS_Wooldridge_Benchmark.Studio <- function(Caso = 1L,
     ), collapse = "\n")
   }
 
-  # ── Exportar dataset de Wooldridge como slot table (tier 2) ─────────────────
-  # El usuario puede hacer clic en "Cargar en Data Studio" para cargarlo en DuckDB
-  # y luego usar las funciones de regresion con esas columnas.
-  ds_export <- tryCatch(
-    as.data.frame(ds),
-    error = function(e) data.frame()
-  )
+  # ── Resultado del usuario si asignó columnas ────────────────────────────
+  res_usr <- NULL
+  if (tiene_usuario) {
+    y_col  <- names(data_Y)[1]
+    x_cols <- names(data_X)
+    df_usr <- cbind(data_Y, data_X)
+    fml_usr <- reformulate(x_cols, response = y_col)
+    modelo_usr <- tryCatch(
+      lm(fml_usr, data = df_usr),
+      error = function(e) NULL
+    )
+    if (!is.null(modelo_usr)) {
+      sm_usr <- summary(modelo_usr)
+      res_usr <- paste(c(
+        sprintf("RESULTADO USUARIO | %s ~ %s", y_col, paste(x_cols, collapse=" + ")),
+        sprintf("Dataset: Wooldridge caso %d | Obs: %d", Caso, nrow(df_usr)),
+        sep,
+        capture.output(print(sm_usr))
+      ), collapse = "\n")
+    } else {
+      res_usr <- "Error al estimar el modelo con la especificacion del usuario."
+    }
+  }
 
-  return(r_object_to_slots(
-    list(
-      resultado_NEVEN  = res,
-      referencia_libro = ref,
-      verificacion     = ver,
-      dataset_wooldridge = ds_export
-    ),
-    tier_map = c(resultado_NEVEN = 1L, referencia_libro = 1L,
+  # ── Exportar dataset ────────────────────────────────────────────────────
+  ds_export <- tryCatch(as.data.frame(ds), error = function(e) data.frame())
+
+  # ── Construir lista de slots ────────────────────────────────────────────
+  slot_list <- list(
+    resultado_NEVEN    = res,
+    referencia_libro   = ref,
+    verificacion       = ver,
+    dataset_wooldridge = ds_export
+  )
+  tier_list <- c(resultado_NEVEN = 1L, referencia_libro = 1L,
                  verificacion = 1L, dataset_wooldridge = 2L)
-  ))
+
+  if (!is.null(res_usr)) {
+    slot_list[["resultado_usuario"]] <- res_usr
+    tier_list[["resultado_usuario"]] <- 1L
+  }
+
+  return(r_object_to_slots(slot_list, tier_map = tier_list))
 }

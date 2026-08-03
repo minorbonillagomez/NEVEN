@@ -1154,6 +1154,34 @@ function renderResults(slots) {
   var tier1 = slots.filter(function(s) { return s.tier === 1 || s.tier === '1'; });
   var tier2 = slots.filter(function(s) { return s.tier === 2 || s.tier === '2'; });
 
+  // Auto-cargar dataset en DuckDB si hay un slot dataset_*
+  // Esto permite que los chips Y/X se pueblen con las columnas del dataset elegido
+  var datasetSlot = slots.find(function(s) {
+    return s.name && s.name.indexOf('dataset_') === 0 && Array.isArray(s.value) && s.value.length > 0;
+  });
+  if (datasetSlot) {
+    var rows = datasetSlot.value;
+    var cols = Object.keys(rows[0]);
+    var types = cols.map(function(c) {
+      var sample = rows.find(function(r) { return r[c] !== null && r[c] !== undefined; });
+      return (sample && typeof sample[c] === 'number') ? 'numeric' : 'text';
+    });
+    var dataForLoad = rows.map(function(r) { return cols.map(function(c) { return r[c] !== undefined ? r[c] : null; }); });
+    fetch(API + '/api/load', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ columns: cols, types: types, data: dataForLoad })
+    }).then(function() {
+      // Dataset cargado -- refrescar columnas disponibles en los chips
+      var info = document.getElementById('data-info');
+      if (info) info.textContent = datasetSlot.name.replace('dataset_', '') + ' cargado (' + rows.length + ' obs, ' + cols.length + ' vars)';
+      // Repoblar los selectores de columnas si hay una funcion activa
+      if (window._dlCurrentCard) {
+        renderColumnPanel(window._dlCurrentCard);
+      }
+    }).catch(function() { /* silencioso -- el usuario puede cargar manualmente */ });
+  }
+
   // Render tier 1 directly
   for (var i = 0; i < tier1.length; i++) {
     container.appendChild(buildSlotElement(tier1[i]));
