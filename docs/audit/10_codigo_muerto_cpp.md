@@ -207,3 +207,34 @@
 - **Funciones placeholder:** Los ~2048 exports `RJ_FunctionCall1000`–`RJ_FunctionCall3047` son slots pre-reservados para el registro dinámico de funciones de usuario (R/Julia). No son código muerto — son el mecanismo por el cual Excel puede llamar funciones descubiertas en runtime.
 - **Entry points excluidos:** `DllMain`, `xlAutoOpen`, `xlAutoFree12`, `xlAutoClose`, `xlAddInManagerInfo12`, y todas las funciones en `funcTemplates[]` fueron excluidas del análisis de "funciones no invocadas" por ser entry points del framework XLL.
 - **Limitación:** El análisis es estático. Funciones invocadas dinámicamente (via punteros a función, COM dispatch, o reflection) podrían no detectarse como "usadas".
+
+---
+
+## ACTUALIZACIÓN — Agosto 2026 (v2.3)
+
+### CM-BAJ-015 — CERRADO: contradicción Python documentación vs. código
+
+**Estado:** ✅ Resuelto
+
+**Acción:** El hallazgo partía de documentación desactualizada. Python NO está deprecado — fue reactivado exitosamente en mayo 2026 tras resolver 4 bugs de estabilidad. Es un motor activo con funciones AI/LLM (`P.ai_call`, `P.ai_setup`) y es el backend del servidor NEVEN Studio.
+
+**Cambio en CMakeLists.txt:**
+```cmake
+# Antes:
+option(NEVEN_ENABLE_PYTHON "Build ControlPython.exe (optional, requires Python >= 3.10)" ON)
+
+# Después:
+option(NEVEN_ENABLE_PYTHON "Build ControlPython.exe (requires Python >= 3.10)" ON)
+# Python is an ACTIVE language engine. Default ON is correct.
+# Historical note: temporarily frozen April 2026, resolved May 2026.
+```
+
+La recomendación "cambiar a OFF" fue incorrecta — la documentación era la que estaba equivocada, no el código.
+
+### CM-BAJ-007 — CERRADO: TestAdd y EigenValues eliminados de functions.jl
+
+**Estado:** ✅ Resuelto
+
+`TestAdd` y `EigenValues` comentados/eliminados. Reemplazos equivalentes ya disponibles:
+- `TestAdd` → no tiene equivalente necesario (era solo una suma)
+- `EigenValues(mat)` → `=J.Algebra(rango, , 4)` (TipoOutput 4 del módulo JM_Algebra)

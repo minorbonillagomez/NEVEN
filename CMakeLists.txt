@@ -87,7 +87,12 @@ add_subdirectory(Common)
 # Language targets (ControlR, ControlJulia) require R/Julia SDKs
 # Skip them in CI when only running unit tests
 option(SKIP_LANGUAGE_TARGETS "Skip ControlR/ControlJulia (for CI without R/Julia)" OFF)
-option(NEVEN_ENABLE_PYTHON "Build ControlPython.exe (optional, requires Python >= 3.10)" ON)
+option(NEVEN_ENABLE_PYTHON "Build ControlPython.exe (requires Python >= 3.10)" ON)
+# Python is an ACTIVE language engine with AI/LLM functions (P.ai_call, P.ai_setup, etc.)
+# and the NEVEN Studio HTTP server. Default ON is correct — do NOT set to OFF.
+# Historical note: Python was temporarily frozen in April 2026 due to 4 stability bugs
+# (startup retry, SEH guard, single-block sending, health check). All 4 were resolved
+# in May 2026. Python has been stable since. Documentation that says "deprecated" is outdated.
 
 if(NOT SKIP_LANGUAGE_TARGETS)
     add_subdirectory(ControlR)
