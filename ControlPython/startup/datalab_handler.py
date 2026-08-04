@@ -190,6 +190,16 @@ class DataLabHandler:
                     col_names = [d[0] for d in result.description]
                     raw_rows  = result.fetchall()
             except Exception as exc:
+                err_msg = str(exc)
+                # Mensaje amigable para columna no encontrada (usuario cambio de caso sin recargar)
+                if "not found in FROM clause" in err_msg or "Binder Error" in err_msg:
+                    return {"status": "error",
+                            "message": (
+                                "El dataset en Data Studio no corresponde al ejemplo seleccionado. "
+                                "Ejecute primero sin asignar columnas Y/X para cargar el dataset correcto, "
+                                "luego asigne las columnas y ejecute de nuevo."
+                            ),
+                            "code": "FILTER_ERROR"}
                 return {"status": "error",
                         "message": f"Error en filtro DuckDB: {exc}",
                         "code": "FILTER_ERROR"}

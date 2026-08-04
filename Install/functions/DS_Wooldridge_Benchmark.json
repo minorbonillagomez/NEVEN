@@ -3,7 +3,7 @@
   "family": "DS",
   "family_label": "Datasets",
   "name": "Wooldridge Benchmark Suite",
-  "description": "Ejecute primero sin asignar variables para cargar el dataset. Luego asigne Y y X con las variables del ejemplo y ejecute de nuevo para ver su resultado junto al del libro.",
+  "description": "PASO 1: Seleccione el ejemplo y ejecute SIN asignar columnas — el dataset se carga automaticamente. PASO 2: Asigne Y y X con las columnas del dataset y ejecute de nuevo para ver su estimacion junto al del libro.",
   "wikipedia_url": "https://www.cengage.com/c/introductory-econometrics-a-modern-approach-7e-wooldridge",
   "languages": ["r"],
   "function_name": "DS_Wooldridge_Benchmark.Studio",
