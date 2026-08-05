@@ -39,6 +39,7 @@ int     *REngineLoader::pUserBreak        = nullptr;
 // Startup / Shutdown
 FnRSetStartTime       REngineLoader::R_setStartTime              = nullptr;
 FnRDefParams          REngineLoader::R_DefParams                 = nullptr;
+FnRDefParamsEx        REngineLoader::R_DefParamsEx               = nullptr;
 FnRSetParams          REngineLoader::R_SetParams                 = nullptr;
 FnRSetCommandLineArgs REngineLoader::R_set_command_line_arguments = nullptr;
 FnGA_initapp          REngineLoader::GA_initapp                  = nullptr;
@@ -255,6 +256,7 @@ bool REngineLoader::Load(const std::string& r_home) {
     // ── Startup / Shutdown ───────────────────────────────────────────────────
     R_setStartTime               = GetProc<FnRSetStartTime>     ("R_setStartTime");
     R_DefParams                  = GetProc<FnRDefParams>        ("R_DefParams");
+    R_DefParamsEx                = GetProc<FnRDefParamsEx>      ("R_DefParamsEx", /*required=*/false);
     R_SetParams                  = GetProc<FnRSetParams>        ("R_SetParams");
     R_set_command_line_arguments = GetProc<FnRSetCommandLineArgs>("R_set_command_line_arguments");
 

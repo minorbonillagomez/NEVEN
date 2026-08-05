@@ -181,6 +181,7 @@ static inline int _r_shim_IsNA(double v) {
 // -- Startup / Shutdown -------------------------------------------------------
 #define R_setStartTime               REngineLoader::R_setStartTime
 #define R_DefParams                  REngineLoader::R_DefParams
+#define R_DefParamsEx                REngineLoader::R_DefParamsEx
 #define R_SetParams                  REngineLoader::R_SetParams
 #define R_set_command_line_arguments REngineLoader::R_set_command_line_arguments
 #define GA_initapp                   REngineLoader::GA_initapp

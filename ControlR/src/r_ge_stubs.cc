@@ -1,11 +1,12 @@
 /*
  * r_ge_stubs.cc -- NEVEN v2.4
  *
- * GE function stubs with C linkage.
- * Compiled as C (via /TC flag in CMakeLists.txt) despite the .cc extension,
- * so all symbols are undecorated C names matching GraphicsEngine.h declarations.
+ * GE function stubs. Contains pure C code despite the .cc extension.
+ * Compiled as C via CompileAs=CompileAsC in the vcxproj (set by /TC in CMakeLists).
+ * For full rebuilds (--clean-first): always produces C linkage symbols.
+ * For incremental builds: use build_controlr.ps1 to pre-compile this file.
  *
- * Functions are lazily resolved from R.dll via GetProcAddress on first call.
+ * Functions resolve lazily from R.dll via GetProcAddress on first call.
  */
 
 #define WIN32_LEAN_AND_MEAN

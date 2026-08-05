@@ -155,7 +155,8 @@ int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
   }
 
   REngineRstart Rp = new REngineStartParams;
-  CHILD_LOG("structRstart allocated");
+  CHILD_LOG("structRstart allocated — sizeof(REngineStartParams)=%zu", sizeof(REngineStartParams));
+  CHILD_LOG("sizeof(structRstart real) should be ~128 bytes on x64");
 
   char *local_rhome = new char[MAX_PATH];
   if(rhome) strcpy_s(local_rhome, MAX_PATH, rhome);
@@ -167,8 +168,15 @@ int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
 
   R_setStartTime();
   CHILD_LOG("R_setStartTime done");
-  R_DefParams(Rp);
-  CHILD_LOG("R_DefParams done");
+  // Use R_DefParamsEx to set RstartVersion=1 (R 4.2+), then populate our fields.
+  // If R_DefParamsEx is unavailable (pre-4.2), fall back to R_DefParams.
+  if (REngineLoader::R_DefParamsEx) {
+      REngineLoader::R_DefParamsEx(Rp, 1);
+      CHILD_LOG("R_DefParamsEx(version=1) done");
+  } else {
+      R_DefParams(Rp);
+      CHILD_LOG("R_DefParams done (fallback)");
+  }
 
   Rp->rhome = local_rhome;
   Rp->home = local_ruser;
@@ -176,9 +184,18 @@ int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
   // typedef enum {RGui, RTerm, LinkDLL} UImode;
   Rp->CharacterMode = LinkDLL;  // No GUI needed — we handle I/O via pipes
   Rp->R_Interactive = TRUE;
+  // Initialize R 4.2.0+ fields (required when RstartVersion >= 1)
+  Rp->EmitEmbeddedUTF8  = FALSE;
+  Rp->CleanUp           = nullptr;
+  Rp->ClearerrConsole   = nullptr;
+  Rp->FlushConsole      = nullptr;
+  Rp->ResetConsole      = nullptr;
+  Rp->Suicide           = nullptr;
 
   // v2.4: select the correct ReadConsole signature for this R version
+  CHILD_LOG("About to ApplyReadConsoleCallback Rp=%p", (void*)Rp);
   RVersionCompat::ApplyReadConsoleCallback(Rp);
+  CHILD_LOG("ApplyReadConsoleCallback done");
   Rp->WriteConsole = NULL;
   Rp->WriteConsoleEx = R_WriteConsoleEx;
 
@@ -197,10 +214,20 @@ int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
   CHILD_LOG("R_set_command_line_arguments done");
   FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
   CHILD_LOG("FlushConsoleInputBuffer done");
-  GA_initapp(0, 0);
-  CHILD_LOG("GA_initapp done");
-  readconsolecfg();
-  CHILD_LOG("readconsolecfg done");
+  // GA_initapp lives in RGraphApp64.dll — may be null if that DLL is unavailable.
+  // In LinkDLL mode (no GUI) it is optional; skip gracefully if not resolved.
+  if (GA_initapp) {
+      GA_initapp(0, 0);
+      CHILD_LOG("GA_initapp done");
+  } else {
+      CHILD_LOG("GA_initapp not available (LinkDLL mode) — skipping");
+  }
+  if (readconsolecfg) {
+      readconsolecfg();
+      CHILD_LOG("readconsolecfg done");
+  } else {
+      CHILD_LOG("readconsolecfg not available — skipping");
+  }
 
   // call setup separately so we can install functions
   CHILD_LOG("setup_Rmainloop start");
@@ -208,16 +235,20 @@ int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
   CHILD_LOG("setup_Rmainloop done");
 
   // Install R callbacks — static array required by R API
+  CHILD_LOG("R_registerRoutines start");
   static REngineCallMethodDef methods[] = {
     { "RJ2XCL.Callback", (void*)&RCallback, 2 },
     { "RJ2XCL.COMCallback", (void*)&COMCallback, 5 },
     { 0, 0, 0 }
   };
   R_registerRoutines(R_getEmbeddingDllInfo(), NULL, methods, NULL, NULL);
+  CHILD_LOG("R_registerRoutines done");
 
   // Register as C-callable for COM interop
+  CHILD_LOG("R_RegisterCCallable start");
   R_RegisterCCallable("RJ2XCLControlR", "Callback", (void*)RCallback);
   R_RegisterCCallable("RJ2XCLControlR", "COMCallback", (void*)COMCallback);
+  CHILD_LOG("R_RegisterCCallable done");
 
   // now run the loop
   CHILD_LOG("run_Rmainloop start");

@@ -687,13 +687,21 @@ int main(int argc, char** argv) {
   char* args[] = { argv[0], "--no-save", "--no-restore", "--encoding=UTF-8" };
 
   CHILD_LOG("Starting RLoop with rhome=%s", State().rhome.c_str());
-  CHILD_LOG("About to call RLoop...");
-  rj2xcl::ChildProcessLog::Shutdown();
+  CHILD_LOG("About to call RLoop... (v2.4 struct fixed)");
+  // v2.4 debug: keep log open during RLoop to diagnose startup issues
+  // rj2xcl::ChildProcessLog::Shutdown();  // <-- temporarily disabled
+
+  // v2.4 debug: verify key function pointers before entering RLoop
+  CHILD_LOG("REngineLoader loaded: %d", (int)REngineLoader::IsLoaded());
+  CHILD_LOG("R_setStartTime ptr: %p", (void*)REngineLoader::R_setStartTime);
+  CHILD_LOG("R_DefParams ptr: %p", (void*)REngineLoader::R_DefParams);
+  CHILD_LOG("setup_Rmainloop ptr: %p", (void*)REngineLoader::setup_Rmainloop);
+  CHILD_LOG("run_Rmainloop ptr: %p", (void*)REngineLoader::run_Rmainloop);
 
   // Reopen after RLoop returns
   int result = RLoop(State().rhome.c_str(), "", 4, args);
   
-  rj2xcl::ChildProcessLog::Initialize("controlr");
+  // rj2xcl::ChildProcessLog::Initialize("controlr");  // <-- temporarily disabled
   CHILD_LOG("RLoop returned: %d", result);
   if (result) CHILD_LOG_ERR("R loop failed: %d", result);
 

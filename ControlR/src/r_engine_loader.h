@@ -59,36 +59,60 @@ typedef struct { double r, i; } Rcomplex;
 #endif
 
 typedef int    SA_TYPE;
-typedef int    R_AppType;
 typedef int    Rboolean;
 
+// structRstart -- MUST match the layout in R_ext/RStartup.h for the R version used.
+// This definition mirrors structRstart from R 4.2+ (RstartVersion 1).
+// The Win32 front-end fields (rhome, ReadConsole, etc.) follow the platform-
+// independent fields.
+#ifndef R_SIZE_T
+#include <stddef.h>
+#define R_SIZE_T size_t
+#endif
+
 typedef struct {
-    char   *rhome;
-    char   *home;
-    // ReadConsole — two possible signatures depending on R version:
-    //   R < 4.4  :  int (*)(const char*, char*, int, int)
-    //   R >= 4.4 :  int (*)(const char*, unsigned char*, int, int)
-    // We store it as a void* and set it through r_version_compat.cc
-    void   *ReadConsole;
-    void  (*WriteConsole)(const char *, int);
-    void  (*WriteConsoleEx)(const char *, int, int);
-    void  (*Busy)(int);
-    void  (*CallBack)(void);
-    void  (*ShowMessage)(const char *);
-    int   (*YesNoCancel)(const char *);
-    SA_TYPE RestoreAction;
-    SA_TYPE SaveAction;
-    R_AppType R_Quiet;
-    int    R_Interactive;
-    int    R_Verbose;
-    int    R_LoadSiteFile;
-    int    R_LoadProfile;
-    int    R_NoRenviron;
-    int    R_NoHistory;
-    int    R_RestoreHistory;
-    int    R_SaveHistory;
-    int    CharacterMode;
-    int    ShowMessage2;
+    // --- Platform-independent fields (same on all platforms) ---
+    Rboolean R_Quiet;
+    Rboolean R_NoEcho;
+    Rboolean R_Interactive;
+    Rboolean R_Verbose;
+    Rboolean LoadSiteFile;
+    Rboolean LoadInitFile;
+    Rboolean DebugInitFile;
+    SA_TYPE  RestoreAction;
+    SA_TYPE  SaveAction;
+    R_SIZE_T vsize;
+    R_SIZE_T nsize;
+    R_SIZE_T max_vsize;
+    R_SIZE_T max_nsize;
+    R_SIZE_T ppsize;
+    int      NoRenviron : 16;   // bit-field
+    int      RstartVersion : 16;// bit-field (added R 4.2.0)
+    int      nconnections;
+
+    // --- Win32-specific fields ---
+    char    *rhome;             // R_HOME
+    char    *home;              // HOME
+
+    // ReadConsole: two possible signatures (R < 4.4 vs R >= 4.4).
+    // Stored as void* so we can assign either callback type without casting
+    // at the call site. RVersionCompat::ApplyReadConsoleCallback() sets this.
+    void    *ReadConsole;
+    void   (*WriteConsole)(const char *, int);
+    void   (*CallBack)(void);
+    void   (*ShowMessage)(const char *);
+    int    (*YesNoCancel)(const char *);
+    void   (*Busy)(int);
+    int      CharacterMode;     // UImode enum stored as int
+    void   (*WriteConsoleEx)(const char *, int, int);  // added R 2.5.0
+    int      EmitEmbeddedUTF8;  // Rboolean, added R 4.0.0
+
+    // Added R 4.2.0 (only present when RstartVersion >= 1)
+    void   (*CleanUp)(SA_TYPE, int, int);
+    void   (*ClearerrConsole)(void);
+    void   (*FlushConsole)(void);
+    void   (*ResetConsole)(void);
+    void   (*Suicide)(const char *s);
 } REngineStartParams, *REngineRstart;
 
 typedef struct {
@@ -118,6 +142,7 @@ typedef int REcetype;
 // --- Startup / Shutdown ---
 typedef void   (*FnRSetStartTime)     (void);
 typedef void   (*FnRDefParams)        (REngineRstart);
+typedef int    (*FnRDefParamsEx)      (REngineRstart, int);  // R 4.2+
 typedef void   (*FnRSetParams)        (REngineRstart);
 typedef void   (*FnRSetCommandLineArgs)(int argc, char **argv);
 typedef void   (*FnGA_initapp)        (int, char **);
@@ -270,6 +295,7 @@ public:
     // Startup / Shutdown
     static FnRSetStartTime      R_setStartTime;
     static FnRDefParams         R_DefParams;
+    static FnRDefParamsEx       R_DefParamsEx;
     static FnRSetParams         R_SetParams;
     static FnRSetCommandLineArgs R_set_command_line_arguments;
     static FnGA_initapp         GA_initapp;
