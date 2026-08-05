@@ -257,8 +257,21 @@ bool REngineLoader::Load(const std::string& r_home) {
     R_DefParams                  = GetProc<FnRDefParams>        ("R_DefParams");
     R_SetParams                  = GetProc<FnRSetParams>        ("R_SetParams");
     R_set_command_line_arguments = GetProc<FnRSetCommandLineArgs>("R_set_command_line_arguments");
-    GA_initapp                   = GetProc<FnGA_initapp>        ("GA_initapp");
-    readconsolecfg               = GetProc<FnReadconsolecfg>    ("readconsolecfg");
+
+    // GA_initapp and readconsolecfg live in RGraphApp64.dll, not R.dll.
+    // Load RGraphApp64.dll from the same bin\x64 directory.
+    {
+        std::string graphapp_path = r_home + "\\bin\\x64\\RGraphApp64.dll";
+        HMODULE hGraphApp = LoadLibraryA(graphapp_path.c_str());
+        if (hGraphApp) {
+            GA_initapp     = reinterpret_cast<FnGA_initapp>    (GetProcAddress(hGraphApp, "GA_initapp"));
+            readconsolecfg = reinterpret_cast<FnReadconsolecfg>(GetProcAddress(hGraphApp, "readconsolecfg"));
+            if (!GA_initapp)     CHILD_LOG("REngineLoader: GA_initapp not in RGraphApp64.dll (optional)");
+            if (!readconsolecfg) CHILD_LOG("REngineLoader: readconsolecfg not in RGraphApp64.dll (optional)");
+        } else {
+            CHILD_LOG("REngineLoader: RGraphApp64.dll not found — GA_initapp/readconsolecfg unavailable");
+        }
+    }
     setup_Rmainloop              = GetProc<FnSetup_Rmainloop>   ("setup_Rmainloop");
     run_Rmainloop                = GetProc<FnRun_Rmainloop>     ("run_Rmainloop");
     Rf_endEmbeddedR              = GetProc<FnRf_endEmbeddedR>   ("Rf_endEmbeddedR");
