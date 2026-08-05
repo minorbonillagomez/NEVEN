@@ -19,13 +19,22 @@
 
 #include "controlr.h"
 #include "controlr_common.h"
+#include "r_version_compat.h"
 #include "convert.h"
 #include "child_process_log.h"
 #include <cstdio>
 
 /**
- * we're now basing "exec" commands on the standard repl; otherwise
- * we have to have two parallel paths for exec and debug.
+ * R_ReadConsole — the actual implementation forwarded to by both
+ * ReadConsole_OldSignature and ReadConsole_NewSignature in r_version_compat.cc.
+ *
+ * In v2.4 this function is no longer registered directly in structRstart.
+ * Instead, RVersionCompat::ApplyReadConsoleCallback() selects the correct
+ * wrapper (old/new signature) at runtime and stores it in Rp->ReadConsole.
+ * Both wrappers ultimately call InputStreamRead(), defined in controlr.cc.
+ *
+ * The function below is kept as a named callback for backward compatibility
+ * with any code that calls it by name (e.g. unit tests).
  */
 int R_ReadConsole(const char *prompt, unsigned char *buf, int len, int addtohistory) {
 
@@ -107,32 +116,29 @@ void RTick() {
   R_ProcessEvents();
 }
 
-/** read a number from a version string (e.g. 3.4.1) */
-int PartialVersion(const char **ptr) {
-
-  char buffer[32];
-  memset(buffer, 0, 32);
-
-  for (int i = 0; i < 32; i++, (*ptr)++) {
-    char c = **ptr;
-    if (!c || c == '.') break;
-    buffer[i] = c;
-  }
-
-  return atoi(buffer);
-}
-
-
+/**
+ * returns version as reported by the loaded R library
+ * v2.4: delegates to REngineLoader (resolved at runtime)
+ */
 void RGetVersion(int32_t *major, int32_t *minor, int32_t *patch) {
 
-  *major = *minor = *patch = 0;
-
-  const char *version = getDLLVersion();
-  if (!version) return;
-
-  if (*version) *major = PartialVersion(&version);
-  if (*version && *(++version)) *minor = PartialVersion(&version);
-  if (*version && *(++version)) *patch = PartialVersion(&version);
+  *major = REngineLoader::VersionMajor();
+  *minor = REngineLoader::VersionMinor();
+  // patch: parse from getDLLVersion if available
+  *patch = 0;
+  if (REngineLoader::getDLLVersion) {
+    const char *version = REngineLoader::getDLLVersion();
+    if (version) {
+      int dots = 0;
+      char buf[16] = {};
+      int idx = 0;
+      for (const char *p = version; *p; ++p) {
+        if (*p == '.') { dots++; idx = 0; continue; }
+        if (dots == 2 && idx < 15) buf[idx++] = *p;
+      }
+      if (idx > 0) *patch = atoi(buf);
+    }
+  }
 
 }
 
@@ -141,7 +147,14 @@ void RGetVersion(int32_t *major, int32_t *minor, int32_t *patch) {
  */
 int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
 
-  Rstart Rp = new structRstart;
+  // v2.4: R.dll was already loaded in main() before version check.
+  // Validate it's still loaded (defensive check).
+  if (!REngineLoader::IsLoaded()) {
+    CHILD_LOG_ERR("RLoop: REngineLoader not loaded — call Load() before RLoop()");
+    return -1;
+  }
+
+  REngineRstart Rp = new REngineStartParams;
   CHILD_LOG("structRstart allocated");
 
   char *local_rhome = new char[MAX_PATH];
@@ -164,7 +177,8 @@ int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
   Rp->CharacterMode = LinkDLL;  // No GUI needed — we handle I/O via pipes
   Rp->R_Interactive = TRUE;
 
-  Rp->ReadConsole = R_ReadConsole;
+  // v2.4: select the correct ReadConsole signature for this R version
+  RVersionCompat::ApplyReadConsoleCallback(Rp);
   Rp->WriteConsole = NULL;
   Rp->WriteConsoleEx = R_WriteConsoleEx;
 
@@ -194,16 +208,16 @@ int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
   CHILD_LOG("setup_Rmainloop done");
 
   // Install R callbacks — static array required by R API
-  static R_CallMethodDef methods[] = {
-    { "RJ2XCL.Callback", (DL_FUNC)&RCallback, 2 },
-    { "RJ2XCL.COMCallback", (DL_FUNC)&COMCallback, 5 },
+  static REngineCallMethodDef methods[] = {
+    { "RJ2XCL.Callback", (void*)&RCallback, 2 },
+    { "RJ2XCL.COMCallback", (void*)&COMCallback, 5 },
     { 0, 0, 0 }
   };
   R_registerRoutines(R_getEmbeddingDllInfo(), NULL, methods, NULL, NULL);
 
   // Register as C-callable for COM interop
-  R_RegisterCCallable("RJ2XCLControlR", "Callback", (DL_FUNC)RCallback);
-  R_RegisterCCallable("RJ2XCLControlR", "COMCallback", (DL_FUNC)COMCallback);
+  R_RegisterCCallable("RJ2XCLControlR", "Callback", (void*)RCallback);
+  R_RegisterCCallable("RJ2XCLControlR", "COMCallback", (void*)COMCallback);
 
   // now run the loop
   CHILD_LOG("run_Rmainloop start");
@@ -217,6 +231,7 @@ int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
   delete Rp;
 
   Rf_endEmbeddedR(0);
+  REngineLoader::Unload();
 
   return 0;
 

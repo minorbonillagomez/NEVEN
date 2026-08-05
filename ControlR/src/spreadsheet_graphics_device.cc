@@ -20,6 +20,8 @@
 #include "controlr.h"
 #include "console_graphics_device.h"
 #include "gdi_graphics_device.h"
+// v2.4: include shim FIRST to block mock Rinternals.h and use dynamic loader
+#include "r_api_shim.h"
 
 // NOTE: R internals use functions that Windows declares deprecated for security.
 // Isolated in this file to limit the scope of _CRT_SECURE_NO_WARNINGS.
@@ -31,7 +33,9 @@
 // we may be able to redefine these interfaces, as long as they're the
 // same shape. probably fragile but still maybe preferable.
 
+extern "C" {
 #include <R_ext/GraphicsEngine.h>
+}
 
 #ifdef length
 #undef length

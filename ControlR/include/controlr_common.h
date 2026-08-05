@@ -38,25 +38,10 @@
 #include <vector>
 #include <iostream>
 
-#include <Rversion.h>
-#include <Rinternals.h>
-#include <Rembedded.h>
-
-#ifdef WIN32
-
-	#include <graphapp.h>
-	#include <R_ext\RStartup.h>
-
-#else // #ifdef WIN32
-
-	#include <signal.h>
-	#include <unistd.h>
-	#include <Rinterface.h>
-
-#endif // #ifdef WIN32
-
-#include <R_ext/Parse.h>
-#include <R_ext/Rdynload.h>
+// v2.4 — Dynamic Engine Loading: include the shim instead of real R headers.
+// All R API calls go through REngineLoader function pointers.
+// The shim provides identical macro/type names so no other source changes needed.
+#include "r_api_shim_clean.h"
 
 // try to store fuel now, you jerks
 #undef clear
@@ -67,23 +52,10 @@
 SEXP RCallback(SEXP, SEXP);
 SEXP COMCallback(SEXP, SEXP, SEXP, SEXP, SEXP);
 
-extern "C" {
-
-  // loop functions
-  extern void setup_Rmainloop();
-  extern void run_Rmainloop();
-
-  // Programmatic save/restore — available for future use
-  extern void R_RestoreGlobalEnvFromFile(const char *, Rboolean);
-  extern void R_SaveGlobalEnvToFile(const char *);
-
-  // for win32
-  extern void R_ProcessEvents(void);
-
-  extern void Rf_PrintWarnings();
-  extern Rboolean R_Visible;
-
-};
+// v2.4: setup_Rmainloop, run_Rmainloop and R_ProcessEvents are now resolved
+// dynamically through REngineLoader (via r_api_shim.h macros).
+// Rf_PrintWarnings and R_Visible are optional helpers; guarded at call sites.
+// No static extern "C" declarations needed — all resolved via REngineLoader.
 
 #endif // #ifndef __CONTROLR_COMMON_H
 

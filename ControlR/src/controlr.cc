@@ -18,6 +18,7 @@
  */
 
 #include "controlr.h"
+#include "r_engine_loader.h"
 #include "windows_api_functions.h"
 #include "result.h"
 #include "json11\json11.hpp"
@@ -550,8 +551,48 @@ int main(int argc, char** argv) {
   CHILD_LOG("ControlR starting...");
 
   char buffer[MAX_PATH];
-  int major, minor, patch;
-  RGetVersion(&major, &minor, &patch);
+
+  // ── v2.4: Parse -r rhome EARLY so we can load R.dll before RGetVersion ──
+  // Full argument parsing happens again below (for -p pipename etc.).
+  std::string early_rhome;
+  for (int i = 0; i < argc; i++) {
+    if (!strncmp(argv[i], "-r", 2) && i < argc - 1) {
+      early_rhome = argv[++i];
+      break;
+    }
+  }
+
+  if (early_rhome.empty()) {
+    CHILD_LOG_ERR("ControlR: -r rhome argument required");
+    rj2xcl::ChildProcessLog::Shutdown();
+    return PROCESS_ERROR_CONFIGURATION_ERROR;
+  }
+
+  // Load R.dll dynamically — must happen before any R API call (including RGetVersion)
+  if (!REngineLoader::Load(early_rhome)) {
+    CHILD_LOG_ERR("ControlR: failed to load R.dll from '%s'", early_rhome.c_str());
+    rj2xcl::ChildProcessLog::Shutdown();
+    return PROCESS_ERROR_UNSUPPORTED_VERSION;
+  }
+
+  int major = REngineLoader::VersionMajor();
+  int minor = REngineLoader::VersionMinor();
+  int patch = REngineLoader::VersionMinor(); // patch not separately stored; use minor as placeholder
+  // Re-read actual patch from getDLLVersion string
+  {
+    const char *ver = REngineLoader::getDLLVersion ? REngineLoader::getDLLVersion() : nullptr;
+    if (ver) {
+      // format "major.minor.patch" — skip to third segment
+      int dots = 0;
+      char pbuf[16] = {};
+      int pi = 0;
+      for (const char *p = ver; *p; ++p) {
+        if (*p == '.') { dots++; pi = 0; continue; }
+        if (dots == 2 && pi < 15) pbuf[pi++] = *p;
+      }
+      if (pi > 0) patch = atoi(pbuf);
+    }
+  }
 
   CHILD_LOG("R version: %d.%d.%d", major, minor, patch);
 
