@@ -29,9 +29,10 @@
  */
 int R_ReadConsole(const char *prompt, unsigned char *buf, int len, int addtohistory) {
 
-  // every time?
-  const char *cprompt = R_CHAR(STRING_ELT(GetOption1(install("continue")), 0));
-  bool is_continuation = (!strcmp(cprompt, prompt));
+  // Note: Continuation prompt detection disabled — GetOption1("continue") inside
+  // R_ReadConsole callback causes crash in R.dll (offset 0x11b111) on some R 4.4.x
+  // builds. The is_continuation feature is cosmetic only (affects console display).
+  bool is_continuation = false;
 
   return InputStreamRead(prompt, buf, len, addtohistory, is_continuation);
 }
