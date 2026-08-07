@@ -18,9 +18,6 @@
  */
  
 #include "controlr.h"
-// v2.4: include shim FIRST — defines cetype_t and REngineLoader macros before
-// any header that includes Rinternals.h (which would cause redefinition).
-#include "r_api_shim_clean.h"
 #include "console_graphics_device.h"
 #include "child_process_log.h"
 
@@ -34,9 +31,7 @@
 // we may be able to redefine these interfaces, as long as they're the
 // same shape. probably fragile but still maybe preferable.
 
-extern "C" {
 #include <R_ext/GraphicsEngine.h>
-}
 
 #ifdef length
 #undef length

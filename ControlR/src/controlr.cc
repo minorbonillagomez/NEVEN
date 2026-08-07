@@ -18,7 +18,6 @@
  */
 
 #include "controlr.h"
-#include "r_engine_loader.h"
 #include "windows_api_functions.h"
 #include "result.h"
 #include "json11\json11.hpp"
@@ -551,48 +550,8 @@ int main(int argc, char** argv) {
   CHILD_LOG("ControlR starting...");
 
   char buffer[MAX_PATH];
-
-  // ── v2.4: Parse -r rhome EARLY so we can load R.dll before RGetVersion ──
-  // Full argument parsing happens again below (for -p pipename etc.).
-  std::string early_rhome;
-  for (int i = 0; i < argc; i++) {
-    if (!strncmp(argv[i], "-r", 2) && i < argc - 1) {
-      early_rhome = argv[++i];
-      break;
-    }
-  }
-
-  if (early_rhome.empty()) {
-    CHILD_LOG_ERR("ControlR: -r rhome argument required");
-    rj2xcl::ChildProcessLog::Shutdown();
-    return PROCESS_ERROR_CONFIGURATION_ERROR;
-  }
-
-  // Load R.dll dynamically — must happen before any R API call (including RGetVersion)
-  if (!REngineLoader::Load(early_rhome)) {
-    CHILD_LOG_ERR("ControlR: failed to load R.dll from '%s'", early_rhome.c_str());
-    rj2xcl::ChildProcessLog::Shutdown();
-    return PROCESS_ERROR_UNSUPPORTED_VERSION;
-  }
-
-  int major = REngineLoader::VersionMajor();
-  int minor = REngineLoader::VersionMinor();
-  int patch = REngineLoader::VersionMinor(); // patch not separately stored; use minor as placeholder
-  // Re-read actual patch from getDLLVersion string
-  {
-    const char *ver = REngineLoader::getDLLVersion ? REngineLoader::getDLLVersion() : nullptr;
-    if (ver) {
-      // format "major.minor.patch" — skip to third segment
-      int dots = 0;
-      char pbuf[16] = {};
-      int pi = 0;
-      for (const char *p = ver; *p; ++p) {
-        if (*p == '.') { dots++; pi = 0; continue; }
-        if (dots == 2 && pi < 15) pbuf[pi++] = *p;
-      }
-      if (pi > 0) patch = atoi(pbuf);
-    }
-  }
+  int major, minor, patch;
+  RGetVersion(&major, &minor, &patch);
 
   CHILD_LOG("R version: %d.%d.%d", major, minor, patch);
 
@@ -687,21 +646,13 @@ int main(int argc, char** argv) {
   char* args[] = { argv[0], "--no-save", "--no-restore", "--encoding=UTF-8" };
 
   CHILD_LOG("Starting RLoop with rhome=%s", State().rhome.c_str());
-  CHILD_LOG("About to call RLoop... (v2.4 struct fixed)");
-  // v2.4 debug: keep log open during RLoop to diagnose startup issues
-  // rj2xcl::ChildProcessLog::Shutdown();  // <-- temporarily disabled
-
-  // v2.4 debug: verify key function pointers before entering RLoop
-  CHILD_LOG("REngineLoader loaded: %d", (int)REngineLoader::IsLoaded());
-  CHILD_LOG("R_setStartTime ptr: %p", (void*)REngineLoader::R_setStartTime);
-  CHILD_LOG("R_DefParams ptr: %p", (void*)REngineLoader::R_DefParams);
-  CHILD_LOG("setup_Rmainloop ptr: %p", (void*)REngineLoader::setup_Rmainloop);
-  CHILD_LOG("run_Rmainloop ptr: %p", (void*)REngineLoader::run_Rmainloop);
+  CHILD_LOG("About to call RLoop...");
+  rj2xcl::ChildProcessLog::Shutdown();
 
   // Reopen after RLoop returns
   int result = RLoop(State().rhome.c_str(), "", 4, args);
   
-  // rj2xcl::ChildProcessLog::Initialize("controlr");  // <-- temporarily disabled
+  rj2xcl::ChildProcessLog::Initialize("controlr");
   CHILD_LOG("RLoop returned: %d", result);
   if (result) CHILD_LOG_ERR("R loop failed: %d", result);
 
