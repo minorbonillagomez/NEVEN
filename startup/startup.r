@@ -1,4 +1,4 @@
-﻿# NEVEN Startup Script for R
+# NEVEN Startup Script for R
 # Copyright (c) 2026 NEVEN Project - GPL v3
 
 NEVEN <- new.env(parent = globalenv())
