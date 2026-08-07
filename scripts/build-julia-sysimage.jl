@@ -117,3 +117,10 @@ println("Path: $OUTPUT_SYSIMAGE")
 println("=" ^ 60)
 println()
 println("ControlJulia.exe will automatically use this sysimage on next Excel startup.")
+
+# Write version file so ControlJulia can verify compatibility
+version_file = joinpath(NEVEN_HOME, "neven_julia.version")
+open(version_file, "w") do f
+    write(f, "$(VERSION.major).$(VERSION.minor).$(VERSION.patch)")
+end
+println("Version file written: $version_file (Julia $(VERSION.major).$(VERSION.minor).$(VERSION.patch))")
