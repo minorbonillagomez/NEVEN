@@ -1,4 +1,4 @@
-# NEVEN Startup Script for R
+﻿# NEVEN Startup Script for R
 # Copyright (c) 2026 NEVEN Project - GPL v3
 
 NEVEN <- new.env(parent = globalenv())
@@ -57,29 +57,29 @@ cat("NEVEN R startup complete\n")
 
 # =========================================================================
 # CM-BAJ-011/012: Extraer_outputs y helpers .neven_* eliminados v2.3
-# La versión canónica vive en libreria/R/R4XCL-0-Interno-3.R
-# y se carga automáticamente por el AutoLoader antes que este startup.
+# La versiÃ³n canÃ³nica vive en libreria/R/R4XCL-0-Interno-3.R
+# y se carga automÃ¡ticamente por el AutoLoader antes que este startup.
 # =========================================================================
 
-# ── Data Lab: Serializador de slots ─────────────────────────────────────────
+# â”€â”€ Data Lab: Serializador de slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 local({
   sr_path <- tryCatch(
     file.path(dirname(sys.frame(1)$ofile), "r_object_to_slots.R"),
     error = function(e) NA_character_
   )
   if (is.na(sr_path) || !file.exists(sr_path)) {
-    # Fallback: buscar en el directorio estándar de producción
+    # Fallback: buscar en el directorio estÃ¡ndar de producciÃ³n
     sr_path <- "C:\\NEVEN\\startup\\r_object_to_slots.R"
   }
   if (file.exists(sr_path)) {
     source(sr_path, local = FALSE)
     cat("NEVEN Data Lab: r_object_to_slots cargado\n")
   } else {
-    warning("r_object_to_slots.R no encontrado — Data Lab no disponible")
+    warning("r_object_to_slots.R no encontrado â€” Data Lab no disponible")
   }
 })
 
-# ── Pre-carga de paquetes para funciones econometricas avanzadas ─────────────
+# â”€â”€ Pre-carga de paquetes para funciones econometricas avanzadas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Evita que la primera llamada al Benchmark o a las funciones avanzadas tarde
 # mas de lo permitido por el timeout del Named Pipe, causando cierre del canal.
 # Los paquetes se cargan silenciosamente -- si no estan instalados se ignoran.
@@ -96,3 +96,6 @@ local({
   }
   cat("NEVEN: paquetes econometria precargados\n")
 })
+
+# PLUTO.READ: leer datos exportados desde Pluto de vuelta a Excel
+source(file.path(Sys.getenv('NEVEN_HOME', 'C:/NEVEN'), 'startup', 'R4XCL-NEVEN-pluto-read.R'), local=FALSE)

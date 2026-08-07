@@ -252,7 +252,89 @@ function list_data()
     return collect(keys(_datasets))
 end
 
-export set_data, get_data, get_data_version, list_data
+"""
+    export_data(name::String, data; headers=nothing)
+
+Export data from a Pluto notebook back to Excel.
+
+This is the inverse of `set_data`. The data is written as a TSV file
+to `C:\\NEVEN\\data\\{name}.tsv` with an optional header row.
+Excel can then read it with `=NEVEN.r("NEVEN.pluto_read('\\"{name}\\"')")`.
+
+# Arguments
+- `name`:    Dataset name (must be a valid filename)
+- `data`:    Matrix, DataFrame, or Vector to export
+- `headers`: Optional vector of column names (auto-detected for DataFrames)
+
+# Example (in Pluto notebook)
+```julia
+results = [1 2; 3 4; 5 6]
+NEVEN.export_data("resultados", results, headers=["X", "Y"])
+```
+"""
+function export_data(name::String, data; headers=nothing)
+    # Sanitize name
+    safe_name = replace(name, r"[^A-Za-z0-9_\\-]" => "_")
+    if isempty(safe_name)
+        return "Error: nombre de dataset inválido"
+    end
+
+    dir = get(ENV, "NEVEN_HOME", "C:\\NEVEN")
+    mkpath(joinpath(dir, "data"))
+    filepath = joinpath(dir, "data", "$(safe_name).tsv")
+
+    try
+        # Detect if data is a DataFrame (check for Tables.jl interface)
+        local mat, col_headers
+        if hasproperty(data, :columns) || (isdefined(Main, :DataFrames) && data isa Main.DataFrames.DataFrame)
+            # DataFrame-like: extract column names and matrix
+            col_headers = isnothing(headers) ? string.(propertynames(data)) : headers
+            mat = Matrix(data)
+        elseif data isa AbstractMatrix
+            mat = data
+            col_headers = isnothing(headers) ? nothing : headers
+        elseif data isa AbstractVector
+            mat = reshape(data, length(data), 1)
+            col_headers = isnothing(headers) ? nothing : headers
+        else
+            # Fallback: convert to string matrix
+            mat = hcat(data)
+            col_headers = isnothing(headers) ? nothing : headers
+        end
+
+        open(filepath, "w") do io
+            # Write header row if provided
+            if !isnothing(col_headers) && !isempty(col_headers)
+                println(io, join(string.(col_headers), "\t"))
+            end
+            # Write data rows
+            nrows = size(mat, 1)
+            ncols = size(mat, 2)
+            for i in 1:nrows
+                for j in 1:ncols
+                    if j > 1; print(io, "\t"); end
+                    v = mat[i, j]
+                    # Format numbers without scientific notation for Excel compatibility
+                    if v isa AbstractFloat && isfinite(v)
+                        print(io, round(v, digits=10))
+                    elseif v === missing || v === nothing
+                        print(io, "")
+                    else
+                        print(io, v)
+                    end
+                end
+                println(io)
+            end
+        end
+
+        nrows = size(mat, 1); ncols = size(mat, 2)
+        return "OK: $(safe_name) exportado ($(nrows)×$(ncols)) → $(filepath)"
+    catch e
+        return "Error al exportar '$(safe_name)': $(sprint(showerror, e))"
+    end
+end
+
+export set_data, get_data, get_data_version, list_data, export_data
 
 # Register the display
 function __init__()
