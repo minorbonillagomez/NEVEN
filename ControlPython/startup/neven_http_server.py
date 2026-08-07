@@ -443,6 +443,38 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_json(result)
             return
 
+        # ── AI config ─────────────────────────────────────────────────────────
+        if path == 'api/ai/config':
+            config_path = os.path.join(
+                os.path.dirname(_config.get("staticDir", r"C:\NEVEN\taskpane")), "..",
+                "neven-config.json"
+            )
+            if not os.path.isfile(config_path):
+                config_path = r"C:\NEVEN\neven-config.json"
+            try:
+                with open(config_path, "r", encoding="utf-8") as _f:
+                    full_cfg = json.load(_f)
+                ai = full_cfg.get("AI", {})
+                prompts_dir = ai.get("promptsDirectory", r"C:\NEVEN\prompts")
+                prompt_ids = []
+                if os.path.isdir(prompts_dir):
+                    prompt_ids = [
+                        os.path.splitext(f)[0]
+                        for f in sorted(os.listdir(prompts_dir))
+                        if f.endswith(".txt")
+                    ]
+                self._send_json({
+                    "status":    "ok",
+                    "enabled":   ai.get("enabled", False),
+                    "provider":  ai.get("provider", "lmstudio"),
+                    "model":     ai.get("model", ""),
+                    "endpoint":  ai.get("endpoint", ""),
+                    "prompts":   prompt_ids,
+                })
+            except Exception as exc:
+                self._send_error_json(f"Error leyendo config AI: {exc}", 500)
+            return
+
         # Serve viewers
         if path.startswith('viewers/'):
             viewers_dir = _config.get("viewersDir", "C:\\NEVEN\\workspace")
@@ -541,8 +573,151 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_db_connect(body)
         elif path == 'api/save_script':
             self._handle_save_script(body)
+        elif path == 'api/ai/chat':
+            self._handle_ai_chat(body)
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
+
+    # ── AI/Chat endpoint ──────────────────────────────────────────────────────
+
+    def _handle_ai_chat(self, body: dict):
+        """POST /api/ai/chat — proxies a conversational message to the LLM.
+
+        Body:
+          messages   : list of {role, content} — full conversation history
+          context    : optional str — dataset summary injected as system context
+          prompt_id  : optional str — load a prompt template from promptsDirectory
+          stream     : always False (streaming not supported via this endpoint)
+
+        Returns:
+          {status, reply, model, tokens_used}   on success
+          {status, message, code}               on error
+        """
+        import urllib.request as _url_req
+
+        # ── Load AI config from neven-config.json ────────────────────────────
+        config_path = os.path.join(
+            os.path.dirname(_config.get("staticDir", r"C:\NEVEN\taskpane")), "..",
+            "neven-config.json"
+        )
+        # Fallback to canonical production path
+        if not os.path.isfile(config_path):
+            config_path = r"C:\NEVEN\neven-config.json"
+        try:
+            with open(config_path, "r", encoding="utf-8") as _f:
+                full_cfg = json.load(_f)
+        except Exception as exc:
+            self._send_error_json(f"No se pudo leer neven-config.json: {exc}", 503)
+            return
+
+        ai = full_cfg.get("AI", {})
+        if not ai.get("enabled", False):
+            self._send_error_json(
+                "AI.enabled=false en neven-config.json. Habilite la integración AI primero.",
+                503
+            )
+            return
+
+        endpoint    = ai.get("endpoint", "http://localhost:1234/v1/chat/completions")
+        model       = ai.get("model", "local-model")
+        max_tokens  = int(ai.get("maxTokens", 1000))
+        temperature = float(ai.get("temperature", 0.3))
+        timeout_sec = int(ai.get("timeout", 60))
+        api_key     = ai.get("apiKey", "")
+        provider    = ai.get("provider", "lmstudio")
+        prompts_dir = ai.get("promptsDirectory", r"C:\NEVEN\prompts")
+
+        # ── Build messages array ──────────────────────────────────────────────
+        messages = body.get("messages", [])
+        context  = body.get("context", "").strip()
+
+        # Resolve prompt template if requested
+        prompt_id = body.get("prompt_id", "").strip()
+        if prompt_id:
+            tmpl_path = os.path.join(prompts_dir, f"{prompt_id}.txt")
+            if os.path.isfile(tmpl_path):
+                try:
+                    template = open(tmpl_path, "r", encoding="utf-8").read()
+                    # Replace {{resultado}} and {{datos}} placeholders with context
+                    template = template.replace("{{resultado}}", context)
+                    template = template.replace("{{datos}}", context)
+                    template = template.replace("{{contexto}}", "")
+                    # Inject as first user message if messages is empty
+                    if not messages:
+                        messages = [{"role": "user", "content": template}]
+                except Exception:
+                    pass  # Fall through to plain messages
+
+        if not messages:
+            self._send_error_json("El campo 'messages' no puede estar vacío.", 400)
+            return
+
+        # Validate messages structure
+        valid_roles = {"user", "assistant", "system"}
+        for msg in messages:
+            if not isinstance(msg, dict) or "role" not in msg or "content" not in msg:
+                self._send_error_json("Cada mensaje debe tener 'role' y 'content'.", 400)
+                return
+            if msg["role"] not in valid_roles:
+                self._send_error_json(f"Rol inválido '{msg['role']}'. Use: user, assistant, system.", 400)
+                return
+
+        # Inject dataset context as system message (first in list)
+        if context:
+            sys_msg = {"role": "system", "content": (
+                "Eres un analista de datos experto. El usuario está trabajando con NEVEN, "
+                "un add-in de Excel con R, Julia y Python. "
+                f"Contexto del dataset actual:\n\n{context}\n\n"
+                "Responde siempre en español a menos que el usuario escriba en otro idioma. "
+                "Usa Markdown para formatear tu respuesta."
+            )}
+            messages = [sys_msg] + [m for m in messages if m.get("role") != "system"]
+
+        # ── HTTP request to LLM ───────────────────────────────────────────────
+        headers = {"Content-Type": "application/json"}
+        if api_key and provider not in ("ollama", "lmstudio"):
+            headers["Authorization"] = f"Bearer {api_key}"
+
+        req_body = json.dumps({
+            "model":       model,
+            "messages":    messages,
+            "max_tokens":  max_tokens,
+            "temperature": temperature,
+        }, ensure_ascii=False).encode("utf-8")
+
+        try:
+            req = _url_req.Request(
+                endpoint, data=req_body, headers=headers, method="POST"
+            )
+            with _url_req.urlopen(req, timeout=timeout_sec) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+        except _url_req.URLError as exc:
+            reason = str(exc.reason) if hasattr(exc, "reason") else str(exc)
+            self._send_error_json(
+                f"No se pudo conectar al LLM ({provider}). "
+                f"Verifique que {endpoint} esté activo. Detalle: {reason}",
+                503
+            )
+            return
+        except Exception as exc:
+            self._send_error_json(f"Error al llamar al LLM: {exc}", 500)
+            return
+
+        # ── Parse response ────────────────────────────────────────────────────
+        try:
+            reply  = data["choices"][0]["message"]["content"].strip()
+            usage  = data.get("usage", {})
+            tokens = usage.get("total_tokens", 0)
+        except (KeyError, IndexError) as exc:
+            self._send_error_json(f"Respuesta inesperada del LLM: {exc}. Raw: {str(data)[:200]}", 500)
+            return
+
+        self._send_json({
+            "status":      "ok",
+            "reply":       reply,
+            "model":       model,
+            "tokens_used": tokens,
+        })
 
     def _handle_save_script(self, body):
         """POST /api/save_script — guarda contenido en un archivo del filesystem.
