@@ -1,0 +1,40 @@
+{
+  "id": "J_RG_Lineal",
+  "family": "RG",
+  "family_label": "Regresión",
+  "name": "Regresión Lineal (Julia)",
+  "description": "Regresión Lineal MCO implementada con álgebra lineal nativa de Julia (sin dependencias externas). Retorna coeficientes, errores estándar, t-estadísticos, p-valores, R², AIC, BIC y tabla de residuos.",
+  "languages": ["julia"],
+  "function_name": "RG_Lineal_Studio",
+  "file": "J4XCL-RG-Lineal.Studio.jl",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Constante",
+      "label": "Incluir constante (intercepto)",
+      "type": "boolean",
+      "default": true,
+      "tier": 1
+    },
+    {
+      "name": "Decimales",
+      "label": "Decimales en resultados",
+      "type": "integer",
+      "default": 4,
+      "tier": 1
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "J_AD_Descriptiva",
+  "family": "AD",
+  "family_label": "Análisis de Datos",
+  "name": "Estadísticas Descriptivas",
+  "description": "Calcula estadísticas descriptivas completas (media, mediana, desv. estándar, cuartiles, asimetría, curtosis) y matriz de correlaciones para columnas numéricas. Implementado nativamente en Julia sin dependencias externas.",
+  "languages": ["julia"],
+  "function_name": "AD_Descriptiva_Studio",
+  "file": "J4XCL-AD-Descriptiva.Studio.jl",
+  "variable_roles": {
+    "X": {
+      "label": "Columnas a analizar",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Decimales",
+      "label": "Decimales en resultados",
+      "type": "integer",
+      "default": 4,
+      "tier": 1
+    }
+  ]
+}
