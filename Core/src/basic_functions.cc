@@ -1233,10 +1233,102 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoStopCmd() {
 }
 
 /**
+ * @brief Launches the Julia sysimage rebuild script in a visible console window.
+ *
+ * The sysimage (neven_julia.dll) pre-compiles the NEVEN Julia module so that
+ * the first call to =NEVEN.j() starts in ~2 seconds instead of 1-5 minutes.
+ * This command must be run once after installing or updating Julia.
+ *
+ * The build script writes neven_julia.version alongside the sysimage so that
+ * ControlJulia can verify compatibility before loading.
+ *
+ * @return LPXLOPER12 Status message (launched/error).
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_JuliaSysimageCmd() {
+    thread_local XLOPER12 rslt;
+
+    // Locate the build script
+    std::string neven_home = rj2xcl::ConfigService::Instance().GetHomePath();
+    // GetHomePath returns path with trailing backslash
+    std::string script_path = neven_home + "startup\\build-julia-sysimage.jl";
+
+    // Check script exists
+    DWORD attrs = GetFileAttributesA(script_path.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        std::string err = "Error: script no encontrado en " + script_path;
+        Convert::StringToXLOPER(&rslt, err, false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Show confirmation dialog before launching (can take 5-10 minutes)
+    int confirm = MessageBoxA(
+        FindWindowA("XLMAIN", nullptr),
+        "Este proceso compilara la sysimage de Julia (~5-10 minutos).\n\n"
+        "Durante la compilacion:\n"
+        "  - Julia estara disponible para usar normalmente\n"
+        "  - Al terminar, reinicie Excel para activar la sysimage\n\n"
+        "La sysimage elimina el retraso de 1-5 minutos del primer calculo Julia.\n\n"
+        "Desea continuar?",
+        "NEVEN - Compilar Sysimage Julia",
+        MB_YESNO | MB_ICONQUESTION);
+
+    if (confirm != IDYES) {
+        Convert::StringToXLOPER(&rslt, "Cancelado por el usuario", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Find julia.exe (should be in PATH since it was prepended for ControlJulia)
+    // Try common locations
+    const char* julia_candidates[] = {
+        nullptr,  // Sentinel: try from PATH
+    };
+
+    // Build command: julia <script>
+    // Use CREATE_NEW_CONSOLE so the user can see progress
+    std::string cmd = "julia \"" + script_path + "\"";
+    char cmd_buf[MAX_PATH * 2];
+    strncpy_s(cmd_buf, cmd.c_str(), sizeof(cmd_buf) - 1);
+
+    STARTUPINFOA si = {};
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi = {};
+
+    BOOL ok = CreateProcessA(
+        nullptr,        // julia from PATH
+        cmd_buf,
+        nullptr, nullptr, FALSE,
+        CREATE_NEW_CONSOLE,   // visible console for progress
+        nullptr, nullptr,
+        &si, &pi);
+
+    if (!ok) {
+        DWORD err = GetLastError();
+        std::string msg = "Error al lanzar julia.exe (codigo " +
+                          std::to_string(err) + ").\n"
+                          "Verifique que Julia esta instalado y en el PATH.";
+        Convert::StringToXLOPER(&rslt, msg, false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+
+    Convert::StringToXLOPER(&rslt,
+        "Compilando sysimage Julia... Abra la consola que aparecio para ver el progreso. "
+        "Al terminar, reinicie Excel.", false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
  * @brief Opens the presentation editor (ribbon command variant).
  * @return LPXLOPER12 Viewer ID string, or error if WebView2 is unavailable.
  */
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_EditorCmd() {
+
     thread_local XLOPER12 rslt;
     auto& viewer = rj2xcl::ViewerManager::Instance();
     if (!viewer.IsAvailable()) {

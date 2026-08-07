@@ -80,6 +80,7 @@ static LPWSTR funcTemplates[][16] = {
   { L"RJ_PlutoStartCmd", L"Q", L"NEVEN.cmd.pluto.start", L"", L"2", L"NEVEN", L"", L"", L"Start Pluto server (command)", L"", L"", L"", L"", L"", L"", L"" },
   { L"RJ_PlutoStopCmd", L"Q", L"NEVEN.cmd.pluto.stop", L"", L"2", L"NEVEN", L"", L"", L"Stop Pluto server (command)", L"", L"", L"", L"", L"", L"", L"" },
   { L"RJ_EditorCmd", L"Q", L"NEVEN.cmd.editor", L"", L"2", L"NEVEN", L"", L"", L"Open presentation editor (command)", L"", L"", L"", L"", L"", L"", L"" },
+  { L"RJ_JuliaSysimageCmd", L"Q", L"OnJuliaSysimageCommand", L"", L"2", L"NEVEN", L"", L"", L"Compilar sysimage Julia (elimina retraso JIT)", L"", L"", L"", L"", L"", L"", L"" },
 
   { L"RJ_Q", L"UQ", L"NEVEN.q", L"QMD File Path", L"1", L"NEVEN", L"", L"", L"Render a Quarto document and display in WebView2", L"Path to .qmd file", L"", L"", L"", L"", L"", L"" },
 
@@ -139,6 +140,7 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_LangToggle();
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoStartCmd();
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoStopCmd();
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_EditorCmd();
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_JuliaSysimageCmd();
 
 /** Quarto render function */
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Q(
