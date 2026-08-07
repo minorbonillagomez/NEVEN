@@ -144,9 +144,9 @@ class DataLabHandler:
         if not function_id:
             return {"status": "error", "message": "Falta el campo 'function_id'.",
                     "code": "VALIDATION_ERROR"}
-        if language not in ("r", "python"):
+        if language not in ("r", "python", "julia"):
             return {"status": "error",
-                    "message": f"Idioma '{language}' no soportado. Use 'r' o 'python'.",
+                    "message": f"Idioma '{language}' no soportado. Use 'r', 'python' o 'julia'.",
                     "code": "VALIDATION_ERROR"}
 
         # ── Caso Python: ejecutar función Python directamente ──────────────────
@@ -154,6 +154,13 @@ class DataLabHandler:
             return self._handle_python_function(
                 function_id, column_roles, parameters, filter_clause,
                 db, db_lock, functions_dir
+            )
+
+        # ── Caso Julia: enviar código Julia por Named Pipe ─────────────────────
+        if language == "julia":
+            return self._handle_julia_function(
+                function_id, column_roles, parameters, filter_clause,
+                db, db_lock, functions_dir, get_pipe_client
             )
 
         # 2. Construir la lista de columnas desde column_roles (deduplicada)
@@ -529,6 +536,127 @@ class DataLabHandler:
             return {"status": "error",
                     "message": f"Error en {func_name}: {e}",
                     "code": "R_ERROR"}
+
+        exec_ms = round(time.time() * 1000 - start_ms)
+        return {"status": "ok", "slots": slots, "execution_time_ms": exec_ms}
+
+    def _handle_julia_function(self, function_id: str, column_roles: dict,
+                                parameters: dict, filter_clause: str,
+                                db, db_lock, functions_dir: str,
+                                get_pipe_client) -> dict:
+        """
+        Ejecuta una función Studio Julia enviando código al pipe de ControlJulia.
+
+        El archivo `{function_id}.Studio.jl` en functions_dir debe definir una
+        función `{function_id}_Studio(df::Dict; kwargs...) -> Vector{Dict}` donde
+        cada Dict tiene keys: name, label, type, value, tier.
+
+        Protocolo de comunicación:
+        1. Leer datos de DuckDB según column_roles
+        2. Serializar como JSON
+        3. Construir código Julia que carga el archivo .Studio.jl y lo llama
+        4. Enviar por Named Pipe al ControlJulia.exe
+        5. Parsear la Variable devuelta como slots
+        """
+        start_ms = time.time() * 1000
+
+        # Localizar el archivo .Studio.jl
+        jl_file = os.path.join(functions_dir, f"{function_id}.Studio.jl")
+        if not os.path.isfile(jl_file):
+            return {"status": "error",
+                    "message": f"Archivo '{function_id}.Studio.jl' no encontrado en {functions_dir}",
+                    "code": "ENGINE_UNAVAILABLE"}
+
+        # Obtener datos de DuckDB
+        all_columns = []
+        for role_key, cols in column_roles.items():
+            for col in cols:
+                if col not in all_columns:
+                    all_columns.append(col)
+
+        data_by_role = {}  # {roleKey: list[dict]}
+        if all_columns:
+            try:
+                with db_lock:
+                    db.execute("SELECT COUNT(*) FROM dataset")
+            except Exception:
+                return {"status": "error",
+                        "message": "No hay datos cargados. Cargue un dataset primero.",
+                        "code": "NO_DATASET"}
+
+            for role_key, cols in column_roles.items():
+                if not cols:
+                    continue
+                quoted = ", ".join(f'"{c}"' for c in cols)
+                sql = f"SELECT {quoted} FROM dataset"
+                if filter_clause:
+                    sql += f" WHERE {filter_clause}"
+                try:
+                    with db_lock:
+                        res       = db.execute(sql)
+                        col_names = [d[0] for d in res.description]
+                        rows      = res.fetchall()
+                    data_by_role[role_key] = [dict(zip(col_names, row)) for row in rows]
+                except Exception as exc:
+                    return {"status": "error",
+                            "message": f"Error DuckDB: {exc}",
+                            "code": "FILTER_ERROR"}
+
+        # Construir código Julia
+        jl_path   = jl_file.replace("\\", "/")
+        data_json = json.dumps(data_by_role, default=str)
+        # Escapar para string Julia: \ → \\ y " → \"
+        data_json_esc = data_json.replace("\\", "\\\\").replace('"', '\\"')
+        param_json    = json.dumps(parameters, default=str)
+        param_json_esc = param_json.replace("\\", "\\\\").replace('"', '\\"')
+
+        jl_lines = [
+            f'include("{jl_path}")',
+            f'_neven_data  = JSON3.read("""{data_json}""", Dict{{String, Any}})',
+            f'_neven_params = JSON3.read("""{param_json}""", Dict{{String, Any}})',
+            f'_neven_result = {function_id}_Studio(_neven_data; _neven_params...)',
+            f'_neven_result',
+        ]
+
+        # Enviar al pipe de Julia
+        try:
+            client = get_pipe_client("julia")
+        except KeyError:
+            return {"status": "error",
+                    "message": "El motor Julia no está disponible. Verifique que ControlJulia.exe esté activo.",
+                    "code": "ENGINE_UNAVAILABLE"}
+        except Exception as exc:
+            return {"status": "error",
+                    "message": f"No se pudo conectar a ControlJulia: {exc}",
+                    "code": "ENGINE_UNAVAILABLE"}
+
+        try:
+            var = client.send_code(jl_lines, wait=True)
+        except Exception as exc:
+            msg = str(exc)
+            if "timed out" in msg.lower():
+                return {"status": "error",
+                        "message": "La ejecución Julia superó el tiempo límite.",
+                        "code": "ENGINE_UNAVAILABLE"}
+            return {"status": "error",
+                    "message": f"Error en ControlJulia: {msg}",
+                    "code": "R_ERROR"}
+
+        # Parsear Variable → slots (mismo formato que R)
+        from pipe_client import variable_to_python  # type: ignore
+        raw   = variable_to_python(var)
+        slots = self._parse_slots_from_variable(raw)
+
+        # Si no hay slots, retornar el raw como diagnóstico
+        if not slots:
+            try:
+                _dbg = json.dumps(raw, default=str)[:2000]
+            except Exception:
+                _dbg = str(raw)[:2000]
+            return {"status": "ok",
+                    "slots": [{"name": "debug_raw", "label": "Debug: Julia raw response",
+                               "type": "scalar", "value": f"raw={_dbg}", "tier": 1}],
+                    "execution_time_ms": 0}
 
         exec_ms = round(time.time() * 1000 - start_ms)
         return {"status": "ok", "slots": slots, "execution_time_ms": exec_ms}

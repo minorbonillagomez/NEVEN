@@ -473,8 +473,60 @@ void JuliaInit() {
   std::string sysimage_path = rj2xcl_home + "neven_julia.dll";
   DWORD sysimage_attrs = GetFileAttributesA(sysimage_path.c_str());
 
+  bool use_sysimage = false;
   if (sysimage_attrs != INVALID_FILE_ATTRIBUTES) {
-    // Sysimage exists — use jl_init_with_image for fast startup
+    // Verify the sysimage was built with the same Julia version.
+    // A sysimage is tightly coupled to the exact Julia runtime that compiled it.
+    // Mismatched versions cause jl_init_with_image to crash immediately.
+    //
+    // Convention: NEVEN stores the Julia version used to build the sysimage
+    // in a companion text file:  neven_julia.version
+    // File format:  single line, e.g. "1.12.6"
+    // If the file is missing or the version does not match the running Julia,
+    // we fall back to standard init (JIT cold start on first call, but safe).
+
+    std::string version_file = rj2xcl_home + "neven_julia.version";
+    std::string sysimage_version;
+    HANDLE hv = CreateFileA(version_file.c_str(), GENERIC_READ, FILE_SHARE_READ,
+                            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hv != INVALID_HANDLE_VALUE) {
+      char vbuf[64] = {};
+      DWORD vread = 0;
+      ReadFile(hv, vbuf, sizeof(vbuf) - 1, &vread, NULL);
+      CloseHandle(hv);
+      // Strip trailing whitespace / newlines
+      for (int i = (int)strlen(vbuf) - 1; i >= 0; --i) {
+        if (vbuf[i] == '\r' || vbuf[i] == '\n' || vbuf[i] == ' ')
+          vbuf[i] = '\0';
+        else break;
+      }
+      sysimage_version = vbuf;
+    }
+
+    // Get current Julia version string (e.g. "1.12.6")
+    std::string current_version;
+    {
+      char major[8]={}, minor[8]={}, patch[8]={};
+      snprintf(major, sizeof(major), "%d", JULIA_VERSION_MAJOR);
+      snprintf(minor, sizeof(minor), "%d", JULIA_VERSION_MINOR);
+      snprintf(patch, sizeof(patch), "%d", JULIA_VERSION_PATCH);
+      current_version = std::string(major) + "." + minor + "." + patch;
+    }
+
+    if (sysimage_version.empty()) {
+      CHILD_LOG("Sysimage version file missing (%s) — skipping sysimage (safe fallback)",
+                version_file.c_str());
+    } else if (sysimage_version != current_version) {
+      CHILD_LOG("Sysimage version mismatch: sysimage=%s running=%s — skipping sysimage",
+                sysimage_version.c_str(), current_version.c_str());
+    } else {
+      use_sysimage = true;
+      CHILD_LOG("Sysimage version OK (%s) — will use sysimage", current_version.c_str());
+    }
+  }
+
+  if (use_sysimage) {
+    // Sysimage exists AND version matches — use jl_init_with_image for fast startup
     std::string julia_bindir;
     char julia_home[MAX_PATH];
     GetEnvironmentVariableA("JULIA_BINDIR", julia_home, MAX_PATH);
@@ -490,8 +542,8 @@ void JuliaInit() {
     CHILD_LOG("Loading Julia sysimage: %s (bindir: %s)", sysimage_path.c_str(), julia_bindir.c_str());
     jl_init_with_image(julia_bindir.c_str(), sysimage_path.c_str());
   } else {
-    // No sysimage — standard init (slow first call due to JIT)
-    CHILD_LOG("No sysimage found, using standard Julia init (JIT will be slow)");
+    // No sysimage / version mismatch — standard init (JIT cold start on first call)
+    CHILD_LOG("Using standard Julia init (no sysimage or version mismatch)");
     jl_init();
   }
 
