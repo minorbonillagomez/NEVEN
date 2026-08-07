@@ -111,6 +111,7 @@ RJ_ViewerCloseAll
 RJ_PlutoStartCmd
 RJ_PlutoStopCmd
 RJ_EditorCmd
+RJ_JuliaSysimageCmd
 
 ;-------------------------------------------------------
 ;

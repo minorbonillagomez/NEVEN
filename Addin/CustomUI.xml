@@ -98,6 +98,14 @@
                   onAction="OnPlutoStopCommand"
                   imageMso="RecordStop"
                   screentip="Detener Pluto.jl" />
+
+          <button id="btnJuliaSysimage"
+                  label="Sysimage"
+                  size="normal"
+                  onAction="OnJuliaSysimageCommand"
+                  imageMso="ExportExcel"
+                  screentip="Compilar sysimage Julia"
+                  supertip="Compila la sysimage de Julia (neven_julia.dll). Elimina el retraso de 1-5 minutos del primer calculo. Ejecutar una vez al instalar o actualizar Julia. Tarda 5-10 minutos." />
         </group>
 
         <!-- Grupo: NEVEN Studio (Task Pane v3.0) -->
