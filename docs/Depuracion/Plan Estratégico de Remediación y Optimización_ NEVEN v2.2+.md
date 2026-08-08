@@ -1,84 +1,162 @@
-### Plan Estratégico de Remediación y Optimización: NEVEN v2.2+
+# Plan Estratégico de Remediación y Optimización: NEVEN v2.2+
 
-Este documento constituye la directriz técnica de cumplimiento obligatorio para la estabilización y blindaje de NEVEN. Como Arquitecto Senior, el objetivo central es la transición de un prototipo avanzado hacia un sistema de grado de producción, eliminando vulnerabilidades de diseño y saneando el núcleo del sistema mediante la remoción exhaustiva de deuda técnica identificada en las auditorías de mayo de 2026\.
+> **Última actualización:** 2026-08-07
+> **Estado general:** En progreso — v2.3.2 estable en producción
+> **Versiones activas:** R 4.6.1 · Julia 1.12.6 · Python 3.13.5
 
-#### 1\. Fortalecimiento de la Seguridad Crítica (Aislamiento de Nivel OS)
+Este documento constituye la directriz técnica de cumplimiento obligatorio para la estabilización y blindaje de NEVEN. El objetivo central es la transición de un prototipo avanzado hacia un sistema de grado de producción, eliminando vulnerabilidades de diseño y saneando el núcleo mediante la remoción exhaustiva de deuda técnica identificada en las auditorías de mayo de 2026.
 
-La arquitectura actual depende de  **SandboxVerifier** , el cual opera mediante filtrado de patrones de texto. Si bien cuenta con una cobertura de 154 tests, el análisis de riesgo en la "Evaluación Doctoral" (Sección 2.2) admite una limitación estructural: la validación basada en patrones es susceptible de bypass ante atacantes motivados que empleen técnicas de ofuscación complejas.Se instruye la transición inmediata hacia un esquema de aislamiento gestionado por el Kernel del Sistema Operativo para reducir drásticamente la superficie de ataque.
+---
 
-##### Comparativa Técnica: Seguridad Basada en Patrones vs. Aislamiento de Kernel
+## 1. Fortalecimiento de la Seguridad Crítica (Aislamiento de Nivel OS)
 
-Característica,Situación Actual (Basada en Patrones),Mejora Propuesta (Aislamiento OS-Level)  
-Mecanismo Primario,Análisis de strings y listas de bloqueo en  SandboxVerifier .,Restricción de privilegios de proceso vía  AppContainer  (Win32).  
-Punto de Control,Espacio de usuario (User-space).,Nivel de Kernel/Sistema Operativo.  
-Riesgo Identificado,Bypass mediante ofuscación no detectada Doc 2.2.,Inviolable mediante código; denegación por política de hardware/red.  
-Mantenimiento,Actualización reactiva de blocklists de R/Julia/Python.,Definición estática de capacidades de proceso (Capabilities).  
-Dependencias,Lógica interna de  SandboxVerifier.cc .,API de seguridad nativa de Windows / perfiles  seccomp .
+**Estado: ⏳ Pendiente (prioridad diferida)**
 
-#### 2\. Depuración Arquitectónica y Saneamiento de Deuda Técnica
+La arquitectura actual depende de **SandboxVerifier**, el cual opera mediante filtrado de patrones de texto. Si bien cuenta con una cobertura de 154 tests, el análisis de riesgo admite una limitación estructural: la validación basada en patrones es susceptible de bypass ante atacantes motivados que empleen técnicas de ofuscación complejas. Se propone la transición hacia AppContainer (Win32) para aislamiento a nivel de Kernel.
 
-La "Auditoría de Código Muerto C++" Documento 10 revela una proliferación de componentes huérfanos que pertenecen a la arquitectura de  *embedding*  directo, la cual ha sido totalmente deprecada en favor de la arquitectura de procesos hijos coordinados. El mantenimiento de estos archivos compromete la higiene de la compilación y aumenta la complejidad cognitiva del sistema.
+| Característica | Situación Actual | Mejora Propuesta |
+|:---|:---|:---|
+| Mecanismo primario | Análisis de strings en SandboxVerifier | Restricción de privilegios via AppContainer (Win32) |
+| Punto de control | Espacio de usuario (User-space) | Nivel de Kernel/Sistema Operativo |
+| Riesgo identificado | Bypass mediante ofuscación (Doc 2.2) | Denegación por política de hardware/red |
+| Mantenimiento | Actualización reactiva de blocklists | Definición estática de capabilities de proceso |
 
-##### Eliminación de Componentes Obsoletos
+**Decisión:** Diferido hasta completar v2.4 Dynamic Loading. La superficie de ataque actual es aceptable para el contexto académico de la tesis.
 
-Se ordena la remoción definitiva de los siguientes elementos del repositorio y de los archivos  **CMakeLists.txt** :
+---
 
-1. **Cadena de Carga Legacy:**  Eliminar  **RuntimeLoader.cc** ,  **AutoLoader.cc**  y  **GCMonitor.cc**  (Common/). Estos componentes dependían de la interfaz  **IScriptEngine**  que ya no tiene invocaciones activas CM-MED-001/002/003.  
-2. **Métodos Huérfanos en Sandbox:**  En  **SandboxVerifier.cc** , eliminar EvaluateScript y AddTrustedSignature, junto con el vector miembro m\_trusted\_signatures CM-BAJ-004/014.  
-3. **Fuentes Excluidos:**  Eliminar  **R\_Environment.cpp**  y  **Julia\_Environment.cpp** . Estos archivos, aunque presentes en el árbol de fuentes, fueron excluidos de  **CMakeLists.txt**  debido a incompatibilidades críticas con el  **Excel SDK**  bajo la arquitectura de procesos hijos CM-BAJ-011/012.
+## 2. Depuración Arquitectónica y Saneamiento de Deuda Técnica
 
-##### Consistencia en Exportaciones XLL
+### 2.1 Eliminación de Componentes Obsoletos
 
-Para asegurar la integridad del registro de funciones en el framework XLL, se debe sincronizar el archivo de definiciones del proyecto:
+| Ítem | Componente | Estado |
+|:---|:---|:---:|
+| CM-MED-001/002/003 | RuntimeLoader.cc, AutoLoader.cc, GCMonitor.cc | ✅ Eliminados (sesión ago-2026) |
+| CM-BAJ-004 | SandboxVerifier: EvaluateScript, AddTrustedSignature | ✅ Limpiado |
+| CM-BAJ-011/012 | R_Environment.cpp, Julia_Environment.cpp | ✅ Movidos a legacy/ |
 
-* **Fix CM-MED-013:**  Incluir explícitamente la función  **RJ\_Q**  (NEVEN.q) en  **rj2xcl.def** . Actualmente, la función solo se exporta mediante \_\_declspec(dllexport), lo que representa un riesgo de mantenimiento por inconsistencia con el estándar de exportaciones del proyecto.
+### 2.2 Consistencia en Exportaciones XLL
 
-#### 3\. Estabilidad de Motores y Resolución Funcional
+| Ítem | Fix | Estado |
+|:---|:---|:---:|
+| CM-MED-013 | Incluir RJ_Q en rj2xcl.def | ✅ Aplicado |
+| — | Agregar RJ_JuliaSysimageCmd a rj2xcl.def | ✅ Aplicado (ago-2026) |
 
-Basado en el "Roadmap de Líneas Futuras", se priorizan las correcciones que impactan la fiabilidad de los motores de lenguaje y la interoperabilidad reactiva.
+---
 
-1. **Corrección de Regresión en Julia 1.12:**  Resolver el bug de scope detectado en el módulo  **J.EDO**  para los TipoOutput 2-4. Este fallo es una regresión directa tras la actualización del motor Julia y afecta la resolución numérica de ecuaciones diferenciales.  
-2. **Implementación de PLUTO.READ:**  Habilitar el flujo de datos bidireccional mediante el patrón  **PLUTO.READ**  (Pluto → Excel). Esto permitirá que los resultados procesados en notebooks reactivos retornen automáticamente a las celdas del host.  
-3. **Estabilización de Viewer Professional:**  Finalizar la lógica del botón de guardado y activar la detección de  **hashes**  de contenido en  **WebView2**  para evitar recargas innecesarias que degradan el rendimiento visual.  
-4. **Telemetría Local:**  Integrar de forma estable el  **CrashHandler**  para capturar  *health snapshots*  y reportes de excepciones SEH, facilitando el diagnóstico de fallos en despliegues distribuidos.
+## 3. Estabilidad de Motores y Resolución Funcional
 
-#### 4\. Validación Externa y Viabilidad del Proyecto
+### 3.1 Correcciones aplicadas en esta etapa
 
-Para la consolidación académica de la tesis en la UCR y su viabilidad competitiva, se establecen los siguientes hitos de validación:
+| Fix | Descripción | Commit | Estado |
+|:---|:---|:---|:---:|
+| R_ReadConsole crash | `GetOption1` en ReadConsole callback causaba crash c0000005 en R.dll 0x11b111. Removido `is_continuation = false`. | `7179d4f` | ✅ |
+| Sysimage Julia versión | `jl_init_with_image` crashea con sysimage de versión distinta. Ahora verifica `neven_julia.version` antes de cargar. | `d0a80ad` | ✅ |
+| UTF-8 BOM en .r | `WriteAllText(Encoding.UTF8)` agrega BOM → R no parsea → crash RLoop. Regla: usar `UTF8NoBOM`. | `073241f` | ✅ |
+| startup.jl bloqueaba Core | `export_data` (80+ líneas) en startup principal bloqueaba el Core durante el envío. Movido a archivo separado. | `073241f` | ✅ |
 
-* **Benchmark de Rendimiento:**  Ejecución de una comparativa formal de latencia que contraste la arquitectura de  **Named Pipes \+ Protobuf**  de NEVEN frente a  **VBA**  nativo y  **xlwings** .  
-* **Estudio de Usabilidad (UCR):**  Realización de pruebas controladas con usuarios reales en la Universidad de Costa Rica para validar la tesis de "democratización del análisis de datos".  
-* **Comparativa de Mercado:**  Documentación técnica que posicione a NEVEN frente a alternativas comerciales como  **PyXLL**  y  **RExcel** .  
-* **Declaración de Diseño:**  Formalizar en la documentación técnica que la limitación de plataforma (Windows-only) es una decisión de diseño dictada por la dependencia profunda de la  **XLL architecture**  y la  **Win32 API** .
+### 3.2 Compatibilidad de versiones verificada (2026-08-07)
 
-#### 5\. Lista Maestra de Tareas Priorizadas (Master List)
+| Motor | Versión | Actualización | Resultado |
+|:---|:---|:---|:---:|
+| R | 4.6.1 | winget upgrade | ✅ Funciona sin recompilar ControlR |
+| Julia | 1.12.6 | juliaup update | ✅ Init estándar auto (sin sysimage) |
+| Python | 3.13.5 | winget upgrade | ✅ Sin cambios requeridos |
 
-Ordenadas por criticidad técnica y de seguridad.
+**Nota importante:** R 4.6.1 funciona con ControlR.exe compilado para R 4.4.1. Windows resuelve `R.dll` dinámicamente por PATH — confirma que v2.4 dynamic loading probablemente ya funciona con el fix de R_ReadConsole.
 
-* **Implementar aislamiento OS-Level (AppContainer):**  Migrar de filtros de patrones a restricciones de Kernel.  
-* *Justificación:*  Mitigación del riesgo crítico de bypass de sandbox detectado en la auditoría de seguridad Doc 2.2.  
-* **Remover cadena de código muerto RuntimeLoader → AutoLoader → GCMonitor:**  Eliminación de archivos y referencias en  **CMakeLists.txt** .  
-* *Justificación:*  CM-MED-001/002/003 Código huérfano de alta severidad que compromete la integridad arquitectónica.  
-* **Sincronizar rj2xcl.def con exportación RJ\_Q:**  Inclusión de la función de Quarto en el archivo de definiciones.  
-* *Justificación:*  CM-MED-013 Prevención de inconsistencias en el framework XLL y riesgos de mantenimiento.  
-* **Eliminar funciones con cuerpo vacío y comentarios residuales:**  Implementar o borrar  **RemoveUserButton**  y limpiar  **rj2xcl.cc** .  
-* *Justificación:*  CM-BAJ-005/006/007 Higiene del código fuente y eliminación de ruido en el path crítico.  
-* **Sanear métodos huérfanos en SandboxVerifier:**  Remover EvaluateScript y AddTrustedSignature.  
-* *Justificación:*  CM-BAJ-004 Reducción de superficie de ataque y eliminación de lógica no consultada.  
-* **Corregir bug de scope en Julia 1.12 para EDO:**  Arreglo en  **J.EDO**  (TipoOutput 2-4).  
-* *Justificación:*  Corrección de una regresión funcional mayor en el motor de cálculo matemático.  
-* **Remover archivos excluidos R\_Environment.cpp y Julia\_Environment.cpp:**  Mover a directorio legacy o eliminar.  
-* *Justificación:*  CM-BAJ-011/012 Incompatibilidad insalvable con el  **Excel SDK**  bajo la arquitectura actual.  
-* **Integración estable de CrashHandler:**  Activar telemetría de errores local.  
-* *Justificación:*  Necesidad crítica de diagnóstico para la confiabilidad del sistema en producción.  
-* **Implementar flujo bidireccional PLUTO.READ:**  Permitir lectura de Pluto desde Excel.  
-* *Justificación:*  Cierre de brecha funcional identificada en el roadmap de interoperabilidad.  
-* **Finalizar optimizaciones de Viewer Professional:**  Estabilizar guardado y validación de  **hashes** .  
-* *Justificación:*  Mejora de UX y optimización de recursos en la visualización interactiva.  
-1. **Ejecutar Benchmarks de Rendimiento:**  Comparativa contra  **VBA**  y  **xlwings** .  
-* *Justificación:*  Validación cuantitativa de la eficiencia del protocolo de comunicación.  
-1. **Documentar limitación Windows-only:**  Justificar dependencia de  **Win32 API**  y  **XLL** .  
-* *Justificación:*  Transparencia académica sobre las restricciones de plataforma inherentes al diseño.  
-1. **Realizar estudio de usabilidad (UCR):**  Pruebas de campo con usuarios universitarios.  
-* *Justificación:*  Validación empírica de la propuesta de valor del proyecto para la defensa de tesis.
+### 3.3 Pendientes de esta sección
 
+| Ítem | Descripción | Prioridad |
+|:---|:---|:---:|
+| Bug EDO Julia 1.12 | TipoOutput 2-4 de J.EDO tienen bug de scope | Media |
+| Viewer Professional | Estabilizar botón guardado + hash de contenido | Baja |
+| CrashHandler | Integrar telemetría local estable | Media |
+
+---
+
+## 4. Nuevas funcionalidades implementadas (NEVEN v2.3.x)
+
+Trabajo realizado en agosto de 2026 que no estaba en el plan original:
+
+### NEVEN Studio — Bloques completados
+
+| Bloque | Descripción | Commit | Estado |
+|:---|:---|:---|:---:|
+| B1 — Tests Studio | Suite de tests wrappers .Studio(): 110 pass, 0 fail, 21 skip. 33 funciones cubiertas. | `4ed4e53` | ✅ |
+| B2 — Data Lab Julia | Soporte `language:"julia"` en DataLab. Funciones `J_AD_Descriptiva` y `J_RG_Lineal` en Julia puro. | `e93932d` | ✅ |
+| B3 — Tab IA | Endpoint `/api/ai/chat` + tab "IA" con chat LLM, contexto dataset DuckDB, prompts guía. | `246100e` | ✅ |
+| B4 — PLUTO.READ | `NEVEN.export_data()` en Julia + `NEVEN.pluto_read()` en R para pipeline Julia→Excel. | `3ce88a7` | ✅ |
+
+### Mejoras de infraestructura
+
+| Mejora | Descripción | Estado |
+|:---|:---|:---:|
+| Botón Ribbon "Sysimage" | Compila `neven_julia.dll` desde el Ribbon sin abrir terminal | ✅ v2.3.2 |
+| Verificación versión sysimage | ControlJulia no carga sysimage incompatible → degradación graceful | ✅ v2.3.1 |
+| build_controlr.ps1 | Script de build incremental para ControlR sin cmake directo | ✅ |
+
+---
+
+## 5. Hoja de ruta: v2.4 Dynamic Engine Loading
+
+### Estado actual
+
+| Task | Descripción | Estado |
+|:---|:---|:---:|
+| TASK-R-01..05 | REngineLoader, shims, compat, CMake sin R64.lib | ✅ En stash |
+| TASK-R-06 | Test R 4.4.1 paridad funcional | ⚠️ Bloqueado por crash (resuelto en v2.3?) |
+| TASK-R-07 | Test R 4.6.1 sin recompilar | ⏳ R 4.6.1 ya funciona con v2.3 — a confirmar con dynamic loading |
+| TASK-J-01..07 | Julia Engine Loader | ⏳ |
+| TASK-INT-01..04 | Integración y release | ⏳ |
+
+### Próximos pasos para v2.4
+
+1. `git stash pop` — recuperar trabajo de dynamic loading
+2. Compilar con `.\build_controlr.ps1 -CleanFirst`
+3. Probar — el fix de `R_ReadConsole` probablemente resuelve el crash `0x11b111`
+4. Si pasa → TASK-R-06 completada → continuar con TASK-J
+
+**Bloqueante original resuelto:** El crash `c0000005 R.dll 0x11b111` era `GetOption1(install("continue"))` en `R_ReadConsole`. Ya removido en v2.3.1 (`7179d4f`). El dynamic loading debería funcionar ahora.
+
+---
+
+## 6. Validación Externa y Viabilidad del Proyecto
+
+| Ítem | Estado |
+|:---|:---:|
+| Benchmark Named Pipes+Protobuf vs VBA vs xlwings | ⏳ Pendiente |
+| Estudio de Usabilidad UCR | ⏳ Pendiente |
+| Comparativa vs PyXLL y RExcel | ⏳ Pendiente |
+| Documentar limitación Windows-only | ⏳ Pendiente |
+
+---
+
+## 7. Lista Maestra de Tareas — Estado Actualizado
+
+| Prioridad | Tarea | Estado |
+|:---|:---|:---:|
+| 🔴 Crítica | Implementar aislamiento OS-Level (AppContainer) | ⏳ Diferido |
+| 🔴 Crítica | Fix crash R.dll 0x11b111 en R_ReadConsole | ✅ `7179d4f` |
+| 🟠 Alta | Remover RuntimeLoader → AutoLoader → GCMonitor | ✅ Agosto 2026 |
+| 🟠 Alta | Sincronizar rj2xcl.def con RJ_Q | ✅ |
+| 🟠 Alta | Tests Studio wrappers (Tarea 15) | ✅ 110 pass |
+| 🟠 Alta | Data Lab Julia | ✅ Bloque 2 |
+| 🟠 Alta | Tab IA NEVEN Studio | ✅ Bloque 3 |
+| 🟠 Alta | PLUTO.READ pipeline | ✅ Bloque 4 |
+| 🟠 Alta | Sysimage Julia versión-safe | ✅ `d0a80ad` |
+| 🟠 Alta | Botón Ribbon "Sysimage Julia" | ✅ `b4f0b53` |
+| 🟡 Media | v2.4 Dynamic Loading ControlR | ⏳ Próxima etapa |
+| 🟡 Media | Corregir bug EDO Julia 1.12 TipoOutput 2-4 | ⏳ |
+| 🟡 Media | Integración estable CrashHandler | ⏳ |
+| 🟡 Media | Probar Studio en vivo (todos los bloques) | ⏳ Próxima sesión |
+| 🟢 Baja | Sanear SandboxVerifier métodos huérfanos | ✅ |
+| 🟢 Baja | Remover R_Environment.cpp / Julia_Environment.cpp | ✅ |
+| 🟢 Baja | Finalizar Viewer Professional (hash + guardado) | ⏳ |
+| 🟢 Baja | Benchmark rendimiento vs VBA/xlwings | ⏳ |
+| 🟢 Baja | Documentar limitación Windows-only | ⏳ |
+| 🟢 Baja | Estudio usabilidad UCR | ⏳ |
+
+---
+
+*Actualizado: 2026-08-07 — NEVEN v2.3.2 en producción · R 4.6.1 · Julia 1.12.6 · Python 3.13.5*
