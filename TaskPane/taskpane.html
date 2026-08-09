@@ -225,7 +225,7 @@
         </select>
         <span id="dl-catalog-spinner" style="display:none">⏳</span>
         <button class="btn btn-secondary" id="dl-pkg-check-btn" title="Verificar paquetes instalados"
-                style="margin-left:auto;font-size:10px">🔍 Paquetes</button>
+                style="margin-left:auto;font-size:10px">Verificar paquetes</button>
       </div>
       <div id="dl-catalog-error" style="display:none;margin-top:6px">
         <span id="dl-catalog-error-msg" class="msg-error"></span>
@@ -1969,7 +1969,7 @@ function filterFunctionsRS() {
     _pkgDoInstall(_pkgMissingForFn.map(function(p){ return {motor: p.motor, nombre: p.paquete||p.nombre}; }));
   }
 
-  // Enviar solicitud de instalación y mostrar progreso
+  // Enviar solicitud de instalación y mostrar progreso en Run Script
   function _pkgDoInstall(items) {
     fetch(API + '/api/packages/install', {
       method: 'POST',
@@ -1979,31 +1979,92 @@ function filterFunctionsRS() {
       .then(function(r){ return r.json(); })
       .then(function(data) {
         if (data.status === 'ok') {
-          showToast('Instalando ' + data.encolados + ' paquete(s)...');
+          // Navegar al tab Run Script para mostrar progreso visible
+          _pkgSwitchToRunScript();
+          _pkgShowInstallProgress(data.encolados);
           _pkgPollProgress();
         }
       })
-      .catch(function(e){ showToast('Error al iniciar instalación: ' + e.message); });
+      .catch(function(e){ showToast('Error al iniciar instalacion: ' + e.message); });
   }
 
-  // Polling del progreso de instalación
+  // Cambiar al tab Run Script y preparar el panel de output
+  function _pkgSwitchToRunScript() {
+    // Activar el tab Run Script
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.tab-content').forEach(function(x){ x.classList.remove('active'); });
+    var tab = document.querySelector('[data-tab="run-script"]');
+    var content = document.getElementById('run-script');
+    if (tab) tab.classList.add('active');
+    if (content) content.classList.add('active');
+  }
+
+  // Mostrar panel de progreso en el output card de Run Script
+  function _pkgShowInstallProgress(total) {
+    var card = document.getElementById('script-output-card');
+    var scalar = document.getElementById('script-scalar');
+    var iframe = document.getElementById('script-iframe');
+    var table  = document.getElementById('script-table');
+    var errDiv = document.getElementById('script-error');
+    var consoleWrap = document.getElementById('script-console-wrap');
+    var consolePre  = document.getElementById('script-console');
+
+    if (card)    { card.style.display = 'block'; }
+    if (iframe)  { iframe.style.display = 'none'; }
+    if (table)   { table.style.display = 'none'; }
+    if (errDiv)  { errDiv.style.display = 'none'; }
+    if (scalar)  {
+      scalar.style.display = 'block';
+      scalar.textContent   = 'Instalando ' + total + ' paquete(s)...\nEsperando respuesta del gestor de paquetes...';
+    }
+    if (consoleWrap) { consoleWrap.style.display = 'block'; }
+    if (consolePre)  { consolePre.textContent = ''; }
+  }
+
+  // Actualizar el panel con el progreso de instalación
+  function _pkgUpdateProgress(prog) {
+    var scalar     = document.getElementById('script-scalar');
+    var consolePre = document.getElementById('script-console');
+
+    if (scalar) {
+      var estado = prog.status === 'en_progreso' ? 'Instalando...' :
+                   prog.status === 'completado'  ? 'Completado' : prog.status;
+      var linea = estado + ' (' + (prog.completados||0) + '/' + (prog.total||0) + ')';
+      if (prog.en_curso) linea += '\n  > ' + prog.en_curso;
+      scalar.textContent = linea;
+    }
+
+    if (consolePre && prog.historial && prog.historial.length > 0) {
+      var log = '';
+      prog.historial.forEach(function(h) {
+        var icono = h.resultado === 'ok' ? '[OK]  ' : '[ERR] ';
+        log += icono + h.paquete + ' (' + h.motor + ')';
+        if (h.resultado === 'ok' && h.version) log += ' v' + h.version;
+        if (h.resultado !== 'ok' && h.error)   log += '\n       ' + h.error;
+        log += '\n';
+      });
+      consolePre.textContent = log;
+      consolePre.scrollTop = consolePre.scrollHeight;
+    }
+  }
+
+  // Polling del progreso cada 2s — actualiza Run Script en tiempo real
   function _pkgPollProgress() {
     var interval = setInterval(function() {
       fetch(API + '/api/packages/progress')
         .then(function(r){ return r.json(); })
         .then(function(prog) {
+          _pkgUpdateProgress(prog);
           var status = prog.status || 'idle';
-          if (prog.en_curso) {
-            showToast('Instalando: ' + prog.en_curso + ' (' + (prog.completados||0) + '/' + (prog.total||0) + ')');
-          }
           if (status === 'completado' || status === 'idle') {
             clearInterval(interval);
             var errores = (prog.errores || []).length;
             var ok = (prog.completados || 0) - errores;
-            if (errores > 0) {
-              showToast('Instalación: ' + ok + ' OK, ' + errores + ' errores. Revise el log.');
-            } else {
-              showToast('✓ ' + ok + ' paquete(s) instalado(s) correctamente');
+            var msg = document.getElementById('script-scalar');
+            if (msg) {
+              msg.textContent = (errores === 0)
+                ? 'Instalacion completada: ' + ok + ' paquete(s) OK.\nReinicie NEVEN Studio para que los cambios tomen efecto.'
+                : 'Instalacion terminada: ' + ok + ' OK, ' + errores + ' errores.\nRevise el log de la consola para detalles.';
             }
             window._pkgShowWarning([]);
           }
