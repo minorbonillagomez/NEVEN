@@ -163,6 +163,33 @@ class DataLabHandler:
                 db, db_lock, functions_dir, get_pipe_client
             )
 
+        # ── Verificación de paquetes (advertencia, sin bloquear) ───────────────
+        _pkg_advertencia_slot = None
+        try:
+            import package_manager_service as _pms  # type: ignore
+            if _pms._PKG_SERVICE_AVAILABLE and _pms._pkg_service is not None:
+                import concurrent.futures as _cf
+                with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+                    _fut = _ex.submit(_pms._pkg_service.verificar_funcion, function_id)
+                    try:
+                        _pkg_check = _fut.result(timeout=3)
+                        _faltantes = [p for p in _pkg_check if not p.get("instalado")]
+                        if _faltantes:
+                            _nombres = ", ".join(p["paquete"] for p in _faltantes)
+                            _pkg_advertencia_slot = {
+                                "name":  "advertencia_paquetes",
+                                "label": "Paquetes faltantes detectados",
+                                "type":  "scalar",
+                                "value": (f"ADVERTENCIA: Faltan paquetes R requeridos: {_nombres}. "
+                                          f"Instalarlos en NEVEN Studio > Data Lab > 'Verificar paquetes' "
+                                          f"o con: =NEVEN.R(\"install.packages(c('{_nombres.replace(', ', chr(39)+','+chr(39))}'))\""),
+                                "tier":  1,
+                            }
+                    except _cf.TimeoutError:
+                        pass  # Timeout silencioso — no bloquear
+        except Exception:
+            pass  # PKG service no disponible — continuar sin advertencia
+
         # 2. Construir la lista de columnas desde column_roles (deduplicada)
         all_columns = []
         for role_key, cols in column_roles.items():
@@ -351,6 +378,11 @@ class DataLabHandler:
                 ]
 
         exec_time = round(time.time() * 1000 - start_ms)
+        # Inyectar advertencia de paquetes faltantes al inicio si existe
+        if _pkg_advertencia_slot and slots:
+            slots = [_pkg_advertencia_slot] + slots
+        elif _pkg_advertencia_slot:
+            slots = [_pkg_advertencia_slot]
         return {"status": "ok", "slots": slots, "execution_time_ms": exec_time}
 
     # ------------------------------------------------------------------

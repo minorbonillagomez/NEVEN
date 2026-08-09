@@ -218,6 +218,11 @@ function selectFunction(card) {
   if (runRow)     runRow.style.display     = 'flex';
 
   updateRunButtonState();
+
+  // Verificar paquetes para esta función (no bloquea)
+  if (typeof window._pkgCheckFunction === 'function' && card.id) {
+    window._pkgCheckFunction(card.id, _dlState.language || 'r');
+  }
 }
 
 // =============================================================================

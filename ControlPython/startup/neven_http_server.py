@@ -67,6 +67,19 @@ try:
 except ImportError:
     _DATALAB_AVAILABLE = False
 
+# Package Manager Service
+try:
+    from package_manager_service import (  # type: ignore
+        init_pkg_service as _init_pkg_service,
+        PackageManagerService as _PackageManagerService,
+    )
+    _PKG_IMPORT_OK = True
+except ImportError:
+    _PKG_IMPORT_OK = False
+
+_pkg_service: object = None
+_PKG_SERVICE_AVAILABLE = False
+
 
 def _is_broken_pipe(exc: Exception, msg: str) -> bool:
     """Return True when *exc* indicates the Named Pipe connection was lost.
@@ -443,6 +456,28 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_json(result)
             return
 
+        # ── Package Manager endpoints ─────────────────────────────────────────
+        if path == 'api/packages/status':
+            self._handle_pkg_status(None)
+            return
+
+        if path.startswith('api/packages/status/'):
+            motor = path.split('api/packages/status/', 1)[1]
+            self._handle_pkg_status(motor)
+            return
+
+        if path == 'api/packages/progress':
+            if not _PKG_SERVICE_AVAILABLE:
+                self._send_json({"status": "unavailable"})
+            else:
+                self._send_json(_pkg_service.get_progress())
+            return
+
+        if path.startswith('api/packages/function/'):
+            fn_id = path.split('api/packages/function/', 1)[1]
+            self._handle_pkg_function(fn_id)
+            return
+
         # ── AI config ─────────────────────────────────────────────────────────
         if path == 'api/ai/config':
             config_path = os.path.join(
@@ -575,8 +610,60 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_save_script(body)
         elif path == 'api/ai/chat':
             self._handle_ai_chat(body)
+        elif path == 'api/packages/install':
+            self._handle_pkg_install(body)
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
+
+    # ── Package Manager endpoints ──────────────────────────────────────────────
+
+    def _handle_pkg_status(self, motor: str = None):
+        """GET /api/packages/status[/{motor}]"""
+        if not _PKG_SERVICE_AVAILABLE:
+            self._send_json({"status": "ok", "fuente": "unavailable", "paquetes": []})
+            return
+        cache = _pkg_service.load_cache()
+        estado = cache.get("estado", [])
+        if motor:
+            estado = [e for e in estado if e.get("motor", "").lower() == motor.lower()]
+            if not estado:
+                # Motor no tiene caché aún — indicar no disponible
+                estado = [{"motor": motor, "motor_disponible": False,
+                           "paquete": None, "instalado": None,
+                           "version_instalada": None, "version_requerida": None,
+                           "funciones_afectadas": []}]
+        ts = cache.get("ultima_verificacion", {})
+        self._send_json({"status": "ok", "fuente": "cache",
+                         "timestamp_cache": ts, "paquetes": estado})
+
+    def _handle_pkg_function(self, function_id: str):
+        """GET /api/packages/function/{id}"""
+        if not _PKG_SERVICE_AVAILABLE:
+            self._send_json({"status": "ok", "function_id": function_id, "paquetes": []})
+            return
+        try:
+            results = _pkg_service.verificar_funcion(function_id)
+            self._send_json({"status": "ok", "function_id": function_id, "paquetes": results})
+        except Exception as e:
+            self._send_json({"status": "ok", "function_id": function_id,
+                             "paquetes": [], "error": str(e)})
+
+    def _handle_pkg_install(self, body: dict):
+        """POST /api/packages/install"""
+        if not _PKG_SERVICE_AVAILABLE:
+            self._send_error_json("Package Manager no disponible", 503)
+            return
+        items = body.get("paquetes", [])
+        if not items or not isinstance(items, list):
+            self._send_error_json("Se requiere 'paquetes': [{motor, nombre}, ...]", 400)
+            return
+        # Validar estructura mínima
+        valid = [i for i in items if isinstance(i, dict) and "motor" in i and "nombre" in i]
+        if not valid:
+            self._send_error_json("Cada paquete debe tener 'motor' y 'nombre'", 400)
+            return
+        _pkg_service.encolar_instalacion(valid)
+        self._send_json({"status": "ok", "encolados": len(valid)})
 
     # ── AI/Chat endpoint ──────────────────────────────────────────────────────
 
@@ -1444,6 +1531,21 @@ def start_server(config=None):
         print("[NEVEN HTTP] No cert configured — running HTTP (Task Pane may require HTTPS)", file=sys.stderr)
 
     _server_instance = server
+
+    # Inicializar Package Manager Service
+    global _pkg_service, _PKG_SERVICE_AVAILABLE
+    if _PKG_IMPORT_OK:
+        try:
+            factory = _config.get("pipe_client_factory", {})
+            def _get_pipe_for_pkg(lang: str):
+                if lang in factory:
+                    return factory[lang]()
+                raise KeyError(f"No factory for {lang}")
+            _pkg_service = _init_pkg_service(_get_pipe_for_pkg)
+            _PKG_SERVICE_AVAILABLE = True
+            print("[NEVEN HTTP] Package Manager Service iniciado", file=sys.stderr)
+        except Exception as e:
+            print(f"[NEVEN HTTP] Package Manager Service no disponible: {e}", file=sys.stderr)
 
     # Start on daemon thread
     thread = threading.Thread(target=server.serve_forever, daemon=True)

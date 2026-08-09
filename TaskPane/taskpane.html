@@ -224,6 +224,8 @@
           <option value="">— Familia —</option>
         </select>
         <span id="dl-catalog-spinner" style="display:none">⏳</span>
+        <button class="btn btn-secondary" id="dl-pkg-check-btn" title="Verificar paquetes instalados"
+                style="margin-left:auto;font-size:10px">🔍 Paquetes</button>
       </div>
       <div id="dl-catalog-error" style="display:none;margin-top:6px">
         <span id="dl-catalog-error-msg" class="msg-error"></span>
@@ -235,6 +237,15 @@
         <label style="font-size:12px;margin-right:4px">Idioma:</label>
         <select id="dl-language-select"></select>
       </div>
+    </div>
+
+    <!-- Advertencia de paquetes faltantes -->
+    <div id="dl-pkg-warning" style="display:none;margin-bottom:6px;padding:8px 10px;
+         background:rgba(220,150,0,0.12);border:1px solid rgba(220,150,0,0.4);
+         border-radius:4px;font-size:11px;color:#e0b060">
+      <span id="dl-pkg-warning-msg"></span>
+      <button class="btn btn-secondary" id="dl-pkg-install-btn"
+              style="margin-left:8px;font-size:10px">Instalar faltantes</button>
     </div>
 
     <!-- Panel de columnas -->
@@ -1825,6 +1836,183 @@ function filterFunctionsRS() {
     el.style.display = (el.dataset.name.toLowerCase().includes(q) || el.dataset.desc.toLowerCase().includes(q)) ? '' : 'none';
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Package Manager — Verificación y instalación de paquetes
+// ═══════════════════════════════════════════════════════════════════════════
+
+(function() {
+  'use strict';
+
+  // ── Botón "Verificar paquetes" ──────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('dl-pkg-check-btn');
+    if (btn) btn.addEventListener('click', _pkgCheckAll);
+
+    var btnInstall = document.getElementById('dl-pkg-install-btn');
+    if (btnInstall) btnInstall.addEventListener('click', _pkgInstallMissing);
+  });
+
+  var _pkgMissingForFn = [];  // paquetes faltantes de la función seleccionada
+
+  // Mostrar advertencia cuando hay paquetes faltantes para la función
+  window._pkgShowWarning = function(faltantes) {
+    _pkgMissingForFn = faltantes || [];
+    var div = document.getElementById('dl-pkg-warning');
+    var msg = document.getElementById('dl-pkg-warning-msg');
+    if (!div || !msg) return;
+    if (_pkgMissingForFn.length === 0) {
+      div.style.display = 'none';
+      return;
+    }
+    var nombres = _pkgMissingForFn.map(function(p){ return p.nombre || p.paquete; }).join(', ');
+    msg.textContent = 'Paquetes faltantes: ' + nombres;
+    div.style.display = '';
+  };
+
+  // Verificar paquetes de la función seleccionada (llamado desde selectFunction)
+  window._pkgCheckFunction = function(functionId, motor) {
+    if (!functionId) return;
+    fetch(API + '/api/packages/function/' + encodeURIComponent(functionId))
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        var faltantes = (data.paquetes || []).filter(function(p){ return !p.instalado; });
+        window._pkgShowWarning(faltantes);
+      })
+      .catch(function(){ window._pkgShowWarning([]); });
+  };
+
+  // Verificar todos los paquetes (botón manual)
+  function _pkgCheckAll() {
+    var btn = document.getElementById('dl-pkg-check-btn');
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+    fetch(API + '/api/packages/status')
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        if (btn) { btn.textContent = '🔍 Paquetes'; btn.disabled = false; }
+        _pkgRenderReport(data.paquetes || []);
+      })
+      .catch(function(e) {
+        if (btn) { btn.textContent = '🔍 Paquetes'; btn.disabled = false; }
+        showToast('No se pudo contactar al Package Manager');
+      });
+  }
+
+  // Renderizar reporte de paquetes en los resultados del DataLab
+  function _pkgRenderReport(paquetes) {
+    var container = document.getElementById('dl-results-content');
+    if (!container) return;
+    var faltantes = paquetes.filter(function(p){ return !p.instalado; });
+    var instalados = paquetes.filter(function(p){ return p.instalado; });
+
+    var html = '<div style="padding:8px">';
+    html += '<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px">';
+    html += 'Estado de paquetes — ' + paquetes.length + ' total';
+    if (faltantes.length > 0) {
+      html += ' <span style="color:#f88;margin-left:6px">⚠ ' + faltantes.length + ' faltantes</span>';
+    } else {
+      html += ' <span style="color:#8f8;margin-left:6px">✓ Todos instalados</span>';
+    }
+    html += '</div>';
+
+    if (faltantes.length > 0) {
+      html += '<div style="margin-bottom:8px">';
+      html += '<div style="font-size:10px;color:#f88;margin-bottom:4px">FALTANTES:</div>';
+      faltantes.forEach(function(p) {
+        html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">';
+        html += '<span style="font-size:10px;color:#f88">✗</span>';
+        html += '<span style="font-size:10px;font-family:Consolas,monospace">' + (p.paquete||'') + '</span>';
+        html += '<span style="font-size:9px;color:#888">(' + (p.motor||'') + ')</span>';
+        html += '<button onclick="window._pkgInstallOne(\'' + (p.paquete||'') + '\',\'' + (p.motor||'') + '\')" ';
+        html += 'style="font-size:9px;padding:1px 6px;background:rgba(215,165,56,0.2);';
+        html += 'border:1px solid rgba(215,165,56,0.4);border-radius:3px;color:var(--accent);cursor:pointer">';
+        html += 'Instalar</button>';
+        html += '</div>';
+      });
+      html += '<button id="dl-pkg-install-all-btn" onclick="window._pkgInstallAll()" ';
+      html += 'style="margin-top:6px;font-size:10px" class="btn btn-primary">Instalar todos los faltantes</button>';
+      html += '</div>';
+    }
+
+    if (instalados.length > 0) {
+      html += '<details><summary style="font-size:10px;color:#888;cursor:pointer">Ver ' + instalados.length + ' instalados</summary>';
+      html += '<div style="margin-top:4px">';
+      instalados.forEach(function(p) {
+        html += '<div style="font-size:10px;color:#8f8;margin-bottom:2px">✓ ';
+        html += (p.paquete||'') + ' v' + (p.version_instalada||'?');
+        html += ' <span style="color:#888">(' + (p.motor||'') + ')</span></div>';
+      });
+      html += '</div></details>';
+    }
+    html += '</div>';
+    container.innerHTML = html;
+
+    // Guardar faltantes para instalación masiva
+    window._pkgAllMissing = faltantes;
+  }
+
+  // Instalar todos los faltantes detectados en el reporte
+  window._pkgInstallAll = function() {
+    var faltantes = window._pkgAllMissing || [];
+    if (!faltantes.length) return;
+    _pkgDoInstall(faltantes.map(function(p){ return {motor: p.motor, nombre: p.paquete||p.nombre}; }));
+  };
+
+  // Instalar un paquete específico
+  window._pkgInstallOne = function(nombre, motor) {
+    _pkgDoInstall([{motor: motor, nombre: nombre}]);
+  };
+
+  // Instalar paquetes faltantes de la función actual
+  function _pkgInstallMissing() {
+    if (!_pkgMissingForFn.length) return;
+    _pkgDoInstall(_pkgMissingForFn.map(function(p){ return {motor: p.motor, nombre: p.paquete||p.nombre}; }));
+  }
+
+  // Enviar solicitud de instalación y mostrar progreso
+  function _pkgDoInstall(items) {
+    fetch(API + '/api/packages/install', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({paquetes: items})
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        if (data.status === 'ok') {
+          showToast('Instalando ' + data.encolados + ' paquete(s)...');
+          _pkgPollProgress();
+        }
+      })
+      .catch(function(e){ showToast('Error al iniciar instalación: ' + e.message); });
+  }
+
+  // Polling del progreso de instalación
+  function _pkgPollProgress() {
+    var interval = setInterval(function() {
+      fetch(API + '/api/packages/progress')
+        .then(function(r){ return r.json(); })
+        .then(function(prog) {
+          var status = prog.status || 'idle';
+          if (prog.en_curso) {
+            showToast('Instalando: ' + prog.en_curso + ' (' + (prog.completados||0) + '/' + (prog.total||0) + ')');
+          }
+          if (status === 'completado' || status === 'idle') {
+            clearInterval(interval);
+            var errores = (prog.errores || []).length;
+            var ok = (prog.completados || 0) - errores;
+            if (errores > 0) {
+              showToast('Instalación: ' + ok + ' OK, ' + errores + ' errores. Revise el log.');
+            } else {
+              showToast('✓ ' + ok + ' paquete(s) instalado(s) correctamente');
+            }
+            window._pkgShowWarning([]);
+          }
+        })
+        .catch(function(){ clearInterval(interval); });
+    }, 2000);
+  }
+
+})();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Tab IA — Chat con LLM
