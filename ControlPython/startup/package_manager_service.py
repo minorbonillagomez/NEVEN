@@ -208,8 +208,9 @@ class PackageManagerService:
             rscript = shutil.which("Rscript") or "Rscript"
             code = (f"tryCatch({{cat('OK:', as.character(packageVersion('{paquete}')))}}, "
                     f"error=function(e) cat('MISSING'))")
+            # NO usar --vanilla: deshabilita R_LIBS_USER y no encuentra paquetes de usuario
             proc = subprocess.run(
-                [rscript, "--vanilla", "-e", code],
+                [rscript, "--no-save", "--no-restore", "-e", code],
                 capture_output=True, text=True, timeout=15,
                 env={**os.environ}
             )
@@ -406,7 +407,7 @@ class PackageManagerService:
         )
         try:
             proc = subprocess.run(
-                [rscript, "--vanilla", "-e", r_code],
+                [rscript, "--no-save", "--no-restore", "-e", r_code],
                 capture_output=True, text=True, timeout=300,
                 env={**os.environ}
             )
