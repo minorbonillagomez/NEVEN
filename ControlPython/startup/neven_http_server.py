@@ -618,22 +618,40 @@ class NEVENHandler(BaseHTTPRequestHandler):
     # ── Package Manager endpoints ──────────────────────────────────────────────
 
     def _handle_pkg_status(self, motor: str = None):
-        """GET /api/packages/status[/{motor}]"""
+        """GET /api/packages/status[/{motor}][?refresh=true]"""
         if not _PKG_SERVICE_AVAILABLE:
             self._send_json({"status": "ok", "fuente": "unavailable", "paquetes": []})
             return
-        cache = _pkg_service.load_cache()
-        estado = cache.get("estado", [])
+
+        # ?refresh=true fuerza re-verificación en vivo (no usa caché)
+        from urllib.parse import urlparse, parse_qs
+        query = parse_qs(urlparse(self.path).query)
+        force_refresh = query.get("refresh", ["false"])[0].lower() == "true"
+
+        if force_refresh:
+            # Verificación en vivo — actualiza el caché al terminar
+            try:
+                results = _pkg_service.verificar_todos(timeout_s=60)
+                _pkg_service.save_cache(results)
+                estado = results
+                fuente = "live"
+            except Exception as e:
+                self._send_json({"status": "error", "message": str(e)})
+                return
+        else:
+            cache = _pkg_service.load_cache()
+            estado = cache.get("estado", [])
+            fuente = "cache"
+
         if motor:
             estado = [e for e in estado if e.get("motor", "").lower() == motor.lower()]
             if not estado:
-                # Motor no tiene caché aún — indicar no disponible
                 estado = [{"motor": motor, "motor_disponible": False,
                            "paquete": None, "instalado": None,
                            "version_instalada": None, "version_requerida": None,
                            "funciones_afectadas": []}]
-        ts = cache.get("ultima_verificacion", {})
-        self._send_json({"status": "ok", "fuente": "cache",
+        ts = _pkg_service.load_cache().get("ultima_verificacion", {})
+        self._send_json({"status": "ok", "fuente": fuente,
                          "timestamp_cache": ts, "paquetes": estado})
 
     def _handle_pkg_function(self, function_id: str):

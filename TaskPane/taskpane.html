@@ -1882,18 +1882,18 @@ function filterFunctionsRS() {
       .catch(function(){ window._pkgShowWarning([]); });
   };
 
-  // Verificar todos los paquetes (botón manual)
+  // Verificar todos los paquetes (botón manual — siempre en vivo)
   function _pkgCheckAll() {
     var btn = document.getElementById('dl-pkg-check-btn');
-    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
-    fetch(API + '/api/packages/status')
+    if (btn) { btn.textContent = 'Verificando...'; btn.disabled = true; }
+    fetch(API + '/api/packages/status?refresh=true')
       .then(function(r){ return r.json(); })
       .then(function(data) {
-        if (btn) { btn.textContent = '🔍 Paquetes'; btn.disabled = false; }
+        if (btn) { btn.textContent = 'Verificar paquetes'; btn.disabled = false; }
         _pkgRenderReport(data.paquetes || []);
       })
       .catch(function(e) {
-        if (btn) { btn.textContent = '🔍 Paquetes'; btn.disabled = false; }
+        if (btn) { btn.textContent = 'Verificar paquetes'; btn.disabled = false; }
         showToast('No se pudo contactar al Package Manager');
       });
   }
@@ -2063,10 +2063,21 @@ function filterFunctionsRS() {
             var msg = document.getElementById('script-scalar');
             if (msg) {
               msg.textContent = (errores === 0)
-                ? 'Instalacion completada: ' + ok + ' paquete(s) OK.\nReinicie NEVEN Studio para que los cambios tomen efecto.'
+                ? 'Instalacion completada: ' + ok + ' paquete(s) OK.\nActualizando estado...'
                 : 'Instalacion terminada: ' + ok + ' OK, ' + errores + ' errores.\nRevise el log de la consola para detalles.';
             }
-            window._pkgShowWarning([]);
+            // Re-verificar en vivo para actualizar el caché
+            fetch(API + '/api/packages/status?refresh=true')
+              .then(function(r){ return r.json(); })
+              .then(function(data) {
+                window._pkgShowWarning([]);
+                if (msg) {
+                  msg.textContent = (errores === 0)
+                    ? 'Instalacion completada: ' + ok + ' paquete(s) OK. Estado actualizado.'
+                    : 'Instalacion terminada: ' + ok + ' OK, ' + errores + ' errores.';
+                }
+              })
+              .catch(function(){ window._pkgShowWarning([]); });
           }
         })
         .catch(function(){ clearInterval(interval); });
