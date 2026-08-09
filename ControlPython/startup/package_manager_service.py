@@ -198,29 +198,62 @@ class PackageManagerService:
         except Exception:
             return ""
 
+    def _find_rscript(self) -> Optional[str]:
+        """Localiza Rscript.exe: registro Windows → rutas conocidas → PATH."""
+        import shutil
+        candidates: List[str] = []
+        # 1. Registro de Windows — versión activa
+        try:
+            import winreg
+            for hive in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+                for sub in (r"SOFTWARE\R-core\R", r"SOFTWARE\WOW6432Node\R-core\R"):
+                    try:
+                        with winreg.OpenKey(hive, sub) as k:
+                            val, _ = winreg.QueryValueEx(k, "InstallPath")
+                            if val:
+                                candidates.insert(0, os.path.join(str(val), "bin", "Rscript.exe"))
+                    except OSError:
+                        pass
+        except ImportError:
+            pass
+        # 2. Rutas fijas conocidas (R 4.x típico en Windows)
+        candidates += [
+            r"C:\Program Files\R\R-4.6.1\bin\Rscript.exe",
+            r"C:\Program Files\R\R-4.6.1\bin\x64\Rscript.exe",
+            r"C:\Program Files\R\R-4.5.0\bin\Rscript.exe",
+            r"C:\Program Files\R\R-4.5.0\bin\x64\Rscript.exe",
+            r"C:\Program Files\R\R-4.4.1\bin\Rscript.exe",
+            r"C:\Program Files\R\R-4.4.1\bin\x64\Rscript.exe",
+        ]
+        # 3. Buscar en PATH del sistema
+        found = next((p for p in candidates if os.path.isfile(p)), None)
+        return found or shutil.which("Rscript")
+
     def _verificar_r(self, paquete: str) -> Dict:
-        """Verifica paquete R via subprocess Rscript (no usa pipe — compatible con Excel activo)."""
-        import subprocess, shutil
+        """Verifica paquete R via subprocess Rscript."""
+        import subprocess
         result = {"motor": "R", "motor_disponible": False, "paquete": paquete,
                   "instalado": False, "version_instalada": None,
                   "version_requerida": "0.0.0", "funciones_afectadas": []}
+        rscript = self._find_rscript()
+        if not rscript:
+            return result  # motor_disponible permanece False — Rscript no encontrado
         try:
-            rscript = shutil.which("Rscript") or "Rscript"
-            code = (f"tryCatch({{cat('OK:', as.character(packageVersion('{paquete}')))}}, "
-                    f"error=function(e) cat('MISSING'))")
-            # NO usar --vanilla: deshabilita R_LIBS_USER y no encuentra paquetes de usuario
+            # Incluir explícitamente la librería de usuario: el entorno de ControlPython.exe
+            # no hereda R_LIBS_USER, así que .libPaths() solo tendría la librería del sistema.
+            code = (
+                f".libPaths(c(.libPaths(), file.path(Sys.getenv('APPDATA'), 'R', 'win-library', paste(R.version$major, strsplit(R.version$minor, '\\\\.')[[1]][1], sep='.')), file.path(Sys.getenv('LOCALAPPDATA'), 'R', 'win-library', paste(R.version$major, strsplit(R.version$minor, '\\\\.')[[1]][1], sep='.'))));"
+                f"tryCatch({{cat('OK:', as.character(packageVersion('{paquete}')))}}, "
+                f"error=function(e) cat('MISSING'))"
+            )
             proc = subprocess.run(
                 [rscript, "--no-save", "--no-restore", "-e", code],
-                capture_output=True, text=True, timeout=15,
-                env={**os.environ}
-            )
+                capture_output=True, text=True, timeout=15)
             result["motor_disponible"] = True
             out = (proc.stdout + proc.stderr).strip()
             if out.startswith("OK:"):
                 result["instalado"] = True
                 result["version_instalada"] = out.replace("OK:", "").strip().split()[0]
-            else:
-                result["instalado"] = False
         except Exception:
             pass
         return result
@@ -372,32 +405,10 @@ class PackageManagerService:
 
     def _instalar_r(self, paquete: str, repo: str) -> Dict:
         """Instala paquete R via subprocess Rscript — NO usa el pipe (que está ocupado por Excel)."""
-        import subprocess, shutil
-        # Buscar Rscript en rutas conocidas
-        rscript_candidates = [
-            r"C:\Program Files\R\R-4.6.1\bin\Rscript.exe",
-            r"C:\Program Files\R\R-4.6.1\bin\x64\Rscript.exe",
-            r"C:\Program Files\R\R-4.5.0\bin\Rscript.exe",
-            r"C:\Program Files\R\R-4.5.0\bin\x64\Rscript.exe",
-        ]
-        # También buscar en el registro de Windows la versión activa
-        try:
-            import winreg
-            for hive in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
-                for sub in (r"SOFTWARE\R-core\R", r"SOFTWARE\WOW6432Node\R-core\R"):
-                    try:
-                        with winreg.OpenKey(hive, sub) as k:
-                            val, _ = winreg.QueryValueEx(k, "InstallPath")
-                            if val:
-                                rscript_candidates.insert(0, os.path.join(str(val), "bin", "Rscript.exe"))
-                    except OSError:
-                        pass
-        except ImportError:
-            pass
-
-        rscript = next((p for p in rscript_candidates if os.path.isfile(p)), None)
+        import subprocess
+        rscript = self._find_rscript()
         if not rscript:
-            rscript = shutil.which("Rscript") or "Rscript"
+            return {"ok": False, "error": "Rscript.exe no encontrado en el sistema"}
 
         r_code = (
             f"lib_path <- Sys.getenv('R_LIBS_USER', unset=file.path(Sys.getenv('USERPROFILE','~'), 'R', 'win-library', R.version$major));"
