@@ -199,17 +199,25 @@ class PackageManagerService:
             return ""
 
     def _verificar_r(self, paquete: str) -> Dict:
+        """Verifica paquete R via subprocess Rscript (no usa pipe — compatible con Excel activo)."""
+        import subprocess, shutil
         result = {"motor": "R", "motor_disponible": False, "paquete": paquete,
                   "instalado": False, "version_instalada": None,
                   "version_requerida": "0.0.0", "funciones_afectadas": []}
         try:
-            code = (f"tryCatch({{v<-as.character(packageVersion('{paquete}'));"
-                    f"cat('OK:', v)}}, error=function(e) cat('MISSING'))")
-            out = self._send_r(code, timeout_s=8)
+            rscript = shutil.which("Rscript") or "Rscript"
+            code = (f"tryCatch({{cat('OK:', as.character(packageVersion('{paquete}')))}}, "
+                    f"error=function(e) cat('MISSING'))")
+            proc = subprocess.run(
+                [rscript, "--vanilla", "-e", code],
+                capture_output=True, text=True, timeout=15,
+                env={**os.environ}
+            )
             result["motor_disponible"] = True
+            out = (proc.stdout + proc.stderr).strip()
             if out.startswith("OK:"):
                 result["instalado"] = True
-                result["version_instalada"] = out.replace("OK:", "").strip()
+                result["version_instalada"] = out.replace("OK:", "").strip().split()[0]
             else:
                 result["instalado"] = False
         except Exception:
@@ -362,14 +370,61 @@ class PackageManagerService:
             return dict(self._progress)
 
     def _instalar_r(self, paquete: str, repo: str) -> Dict:
-        code = (f"tryCatch({{install.packages('{paquete}', repos='{repo}',"
-                f"dependencies=TRUE, quiet=TRUE);"
-                f"cat('OK:', as.character(packageVersion('{paquete}')))}}, "
-                f"error=function(e) cat('ERROR:', conditionMessage(e)))")
-        out = self._send_r(code, timeout_s=300)
-        if out.startswith("OK:"):
-            return {"ok": True, "version": out.replace("OK:", "").strip()}
-        return {"ok": False, "error": out.replace("ERROR:", "").strip()}
+        """Instala paquete R via subprocess Rscript — NO usa el pipe (que está ocupado por Excel)."""
+        import subprocess, shutil
+        # Buscar Rscript en rutas conocidas
+        rscript_candidates = [
+            r"C:\Program Files\R\R-4.6.1\bin\Rscript.exe",
+            r"C:\Program Files\R\R-4.6.1\bin\x64\Rscript.exe",
+            r"C:\Program Files\R\R-4.5.0\bin\Rscript.exe",
+            r"C:\Program Files\R\R-4.5.0\bin\x64\Rscript.exe",
+        ]
+        # También buscar en el registro de Windows la versión activa
+        try:
+            import winreg
+            for hive in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+                for sub in (r"SOFTWARE\R-core\R", r"SOFTWARE\WOW6432Node\R-core\R"):
+                    try:
+                        with winreg.OpenKey(hive, sub) as k:
+                            val, _ = winreg.QueryValueEx(k, "InstallPath")
+                            if val:
+                                rscript_candidates.insert(0, os.path.join(str(val), "bin", "Rscript.exe"))
+                    except OSError:
+                        pass
+        except ImportError:
+            pass
+
+        rscript = next((p for p in rscript_candidates if os.path.isfile(p)), None)
+        if not rscript:
+            rscript = shutil.which("Rscript") or "Rscript"
+
+        r_code = (
+            f"lib_path <- Sys.getenv('R_LIBS_USER', unset=file.path(Sys.getenv('USERPROFILE','~'), 'R', 'win-library', R.version$major));"
+            f"if (!dir.exists(lib_path)) dir.create(lib_path, recursive=TRUE);"
+            f"install.packages('{paquete}', repos='{repo}', dependencies=TRUE, quiet=FALSE, lib=lib_path);"
+            f"cat('VERSION:', as.character(tryCatch(packageVersion('{paquete}'), error=function(e)'?')))"
+        )
+        try:
+            proc = subprocess.run(
+                [rscript, "--vanilla", "-e", r_code],
+                capture_output=True, text=True, timeout=300,
+                env={**os.environ}
+            )
+            output = (proc.stdout + proc.stderr).strip()
+            if proc.returncode == 0 and "error" not in output.lower()[:100]:
+                version = ""
+                for line in output.splitlines():
+                    if line.startswith("VERSION:"):
+                        version = line.replace("VERSION:", "").strip()
+                return {"ok": True, "version": version}
+            # Buscar mensaje de error real
+            err_lines = [l for l in output.splitlines() if "error" in l.lower() or "Error" in l]
+            err = err_lines[-1] if err_lines else output[-300:]
+            return {"ok": False, "error": err}
+        except subprocess.TimeoutExpired:
+            return {"ok": False, "error": "Timeout durante instalacion (>5 min)"}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
 
     def _instalar_julia(self, paquete: str) -> Dict:
         code = f'import Pkg; Pkg.add("{paquete}"); println("OK:", string(pkgversion(Base.PkgId("{paquete}"))))'
