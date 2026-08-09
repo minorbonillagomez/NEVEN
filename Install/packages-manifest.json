@@ -1,0 +1,175 @@
+{
+  "version": "1.0",
+  "description": "NEVEN Package Manager - Manifiesto de paquetes requeridos por motor",
+  "generated_at": "2026-08-07T00:00:00",
+  "packages": [
+    {
+      "nombre": "jsonlite",
+      "motor": "R",
+      "version_minima": "1.8.0",
+      "funciones": ["ALL"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Requerido por todos los wrappers GR_* y RG_* para serializar graficos Plotly"
+    },
+    {
+      "nombre": "plm",
+      "motor": "R",
+      "version_minima": "2.6.0",
+      "funciones": ["RG_DatosPanel", "DS_Wooldridge_Benchmark"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Regresion con datos panel (efectos fijos, efectos aleatorios)"
+    },
+    {
+      "nombre": "stargazer",
+      "motor": "R",
+      "version_minima": "5.2.3",
+      "funciones": ["RG_Lineal", "RG_Logistica", "RG_Poisson", "RG_SeriesTiempo", "RG_DatosPanel"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Tablas de resultados estadisticos en HTML"
+    },
+    {
+      "nombre": "e1071",
+      "motor": "R",
+      "version_minima": "1.7.0",
+      "funciones": ["RG_SVM"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Support Vector Machines"
+    },
+    {
+      "nombre": "rpart",
+      "motor": "R",
+      "version_minima": "4.1.0",
+      "funciones": ["RG_ArbolDecision"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Arboles de decision y clasificacion"
+    },
+    {
+      "nombre": "VGAM",
+      "motor": "R",
+      "version_minima": "1.1.0",
+      "funciones": ["RG_Tobit"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Regresion Tobit y modelos VGAM"
+    },
+    {
+      "nombre": "tseries",
+      "motor": "R",
+      "version_minima": "0.10.0",
+      "funciones": ["RG_SeriesTiempo"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Series de tiempo - pruebas de raiz unitaria, GARCH"
+    },
+    {
+      "nombre": "AER",
+      "motor": "R",
+      "version_minima": "1.2.0",
+      "funciones": ["RG_2SLS", "RG_Tobit", "DS_Wooldridge_Benchmark"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Applied Econometrics with R - ivreg, tobit"
+    },
+    {
+      "nombre": "lmtest",
+      "motor": "R",
+      "version_minima": "0.9.0",
+      "funciones": ["RG_RESET", "RG_Davidson_MacKinnon", "RG_Newey_West", "RG_FGLS", "RG_2SLS", "DS_Wooldridge_Benchmark"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Tests de diagnostico para modelos lineales (RESET, J-test)"
+    },
+    {
+      "nombre": "sandwich",
+      "motor": "R",
+      "version_minima": "3.0.0",
+      "funciones": ["RG_Newey_West", "RG_FGLS"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Errores estandar robustos HAC (Newey-West, HC)"
+    },
+    {
+      "nombre": "sampleSelection",
+      "motor": "R",
+      "version_minima": "1.2.0",
+      "funciones": ["RG_HECKIT"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Modelos de seleccion muestral de Heckman (Heckit)"
+    },
+    {
+      "nombre": "vars",
+      "motor": "R",
+      "version_minima": "1.5.0",
+      "funciones": ["ST_VAR", "ST_ECM"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Vectores Autorregresivos (VAR) y modelos de correccion de error"
+    },
+    {
+      "nombre": "urca",
+      "motor": "R",
+      "version_minima": "1.3.0",
+      "funciones": ["ST_ECM"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Pruebas de raiz unitaria y cointegración (Johansen, ADF)"
+    },
+    {
+      "nombre": "wooldridge",
+      "motor": "R",
+      "version_minima": "1.4.0",
+      "funciones": ["DS_Wooldridge", "DS_Wooldridge_Benchmark"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "115 datasets del libro de econometria de Wooldridge"
+    },
+    {
+      "nombre": "FactoMineR",
+      "motor": "R",
+      "version_minima": "2.6.0",
+      "funciones": ["UC_EjemploFactoMineR"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Analisis de componentes principales con FactoMineR"
+    },
+    {
+      "nombre": "forecast",
+      "motor": "R",
+      "version_minima": "8.20.0",
+      "funciones": ["RG_SeriesTiempo"],
+      "repo": "https://cloud.r-project.org",
+      "descripcion": "Pronostico de series de tiempo - auto.arima, ETS"
+    },
+    {
+      "nombre": "Statistics",
+      "motor": "Julia",
+      "version_minima": "1.0.0",
+      "funciones": ["J_AD_Descriptiva", "J_RG_Lineal"],
+      "repo": null,
+      "descripcion": "Estadisticas descriptivas (stdlib de Julia)"
+    },
+    {
+      "nombre": "LinearAlgebra",
+      "motor": "Julia",
+      "version_minima": "1.0.0",
+      "funciones": ["J_RG_Lineal"],
+      "repo": null,
+      "descripcion": "Algebra lineal - MCO, descomposiciones (stdlib de Julia)"
+    },
+    {
+      "nombre": "nltk",
+      "motor": "Python",
+      "version_minima": "3.8.0",
+      "funciones": ["TM_TextAnalysis"],
+      "repo": null,
+      "descripcion": "Natural Language Toolkit - tokenizacion, analisis de texto"
+    },
+    {
+      "nombre": "PyPDF2",
+      "motor": "Python",
+      "version_minima": "3.0.0",
+      "funciones": ["TM_TextAnalysis"],
+      "repo": null,
+      "descripcion": "Extraccion de texto desde archivos PDF"
+    },
+    {
+      "nombre": "python-docx",
+      "motor": "Python",
+      "version_minima": "0.8.0",
+      "funciones": ["TM_TextAnalysis"],
+      "repo": null,
+      "descripcion": "Lectura de archivos DOCX para analisis de texto"
+    }
+  ]
+}
