@@ -1032,14 +1032,20 @@ def main(argv: Optional[list[str]] = None) -> None:
             executables[lang] = exe
 
     # --- Process launch (Req 1.3, 1.4) ---
+    # If a pipe already exists (Excel has the engine running), reuse it.
+    # Only launch a new Control*.exe if the pipe is NOT already active.
     processes: Dict[str, subprocess.Popen] = {}
     if _IS_WINDOWS:
         for lang, exe in executables.items():
-            try:
-                proc = launch_control(exe, lang, config)
-                processes[lang] = proc
-            except OSError as exc:
-                _warn(f"Failed to launch {lang} engine: {exc} — skipping")
+            pipe_name = r"\\.\pipe\neven_" + lang
+            if _probe_pipe_once(pipe_name):
+                _info(f"Pipe {pipe_name} already active (Excel has {lang} running) — skipping launch, will reuse")
+            else:
+                try:
+                    proc = launch_control(exe, lang, config)
+                    processes[lang] = proc
+                except OSError as exc:
+                    _warn(f"Failed to launch {lang} engine: {exc} — skipping")
     else:
         # Non-Windows: log and skip all Control processes (Req 4.7)
         _info("Non-Windows platform — scripting engines not started")
