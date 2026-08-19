@@ -12,9 +12,12 @@ MR_PanelData.C <- function(
   # PREPARACION DE DATOS Y PARAMETROS
   #-------------------------->>>
   
-  require(plm)
-  require(stargazer)
-  require(svDialogs)
+  # plm es necesario para todos los modelos (pooling, within, etc.)
+  if (!requireNamespace("plm", quietly=TRUE)) {
+    return("Paquete plm no instalado. Ejecute: =R.instalar(\"plm\")")
+  }
+  library(plm)
+  # stargazer y svDialogs se cargan solo cuando se necesitan
   
   # ---------------------
   #[0] NOTAS MEMO T?CNICAS
@@ -112,15 +115,20 @@ MR_PanelData.C <- function(
     
   } else if (TipoOutput == 1){  
     
-    OutPut <- stargazer(
-                      OLS, pooling, within, between, random, Pool.Fixed.t,
-                      column.labels=c("OLS", "pooling","within","between","random", "Pooled Fixed (t)"),
-                      type="text",
-                      ci=TRUE, ci.level=0.95,single.row=FALSE,
-                      align=TRUE,
-                      notes = Nota001,
-                      notes.append = TRUE
-                    )
+    if (!requireNamespace("stargazer", quietly=TRUE)) {
+      OutPut <- capture.output(summary(OLS))
+    } else {
+      library(stargazer)
+      OutPut <- stargazer(
+                        OLS, pooling, within, between, random, Pool.Fixed.t,
+                        column.labels=c("OLS", "pooling","within","between","random", "Pooled Fixed (t)"),
+                        type="text",
+                        ci=TRUE, ci.level=0.95,single.row=FALSE,
+                        align=TRUE,
+                        notes = Nota001,
+                        notes.append = TRUE
+                      )
+    }
     
   } else if (TipoOutput == 2){
     

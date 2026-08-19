@@ -6,12 +6,18 @@
 
 GR_PlotlyView <- function(SetDatosX, SetDatosY=NULL, TipoGrafico=0, Titulo="RJ2XCL Chart", TipoOutput=0)
 {
-  library(plotly)
-  library(htmlwidgets)
-
   if (TipoOutput <= 0){
     return(c("[01] Lineas","[02] Barras","[03] Scatter","[04] Area","[05] Combinado"))
   }
+
+  if (!requireNamespace("plotly", quietly=TRUE)) {
+    return("Paquete plotly no instalado. Ejecute: =R.instalar(\"plotly\")")
+  }
+  if (!requireNamespace("htmlwidgets", quietly=TRUE)) {
+    return("Paquete htmlwidgets no instalado. Ejecute: =R.instalar(\"htmlwidgets\")")
+  }
+  library(plotly)
+  library(htmlwidgets)
 
   nombres <- as.character(SetDatosX[1,])
   datos <- data.frame(SetDatosX[-1,, drop=FALSE], stringsAsFactors=FALSE)

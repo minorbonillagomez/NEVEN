@@ -43,7 +43,7 @@ AD_KMedias.C <- function(
   # PREPARACION DE DATOS Y PARAMETROS
   #-------------------------->>>
   
-  library(cluster)
+  # cluster se carga solo cuando se necesita (TipoOutput==6 usa clusGap)
   
   #-------------------------->>>   
   # [1] PREPARACION DE DATOS Y PARAMETROS  
@@ -128,12 +128,16 @@ AD_KMedias.C <- function(
     
   }else if(TipoOutput == 6){
     
-    res.kopt <- clusGap(DT, kmeans, Koptimo, B = 100, verbose = interactive())
-    b <- data.frame(res.kopt$Tab)
-    b$gap.min <- b[,3]-b[,4]
-    b$gap.max <- b[,3]+b[,4]
-    
-    OutPut <- b
+    if (!requireNamespace("cluster", quietly=TRUE)) {
+      OutPut <- "Paquete cluster no instalado. Ejecute: =R.instalar(\"cluster\")"
+    } else {
+      library(cluster)
+      res.kopt <- clusGap(DT, kmeans, Koptimo, B = 100, verbose = interactive())
+      b <- data.frame(res.kopt$Tab)
+      b$gap.min <- b[,3]-b[,4]
+      b$gap.max <- b[,3]+b[,4]
+      OutPut <- b
+    }
     
   }else if(TipoOutput == 7){    
     

@@ -15,10 +15,8 @@ MR_Poisson.C <- function(
   # PREPARACION DE DATOS Y PARAMETROS
   #-------------------------->>>
   
-  library(ResourceSelection)
-  library(sandwich)
-  library(margins)
-  library(stargazer)
+  # ResourceSelection y margins eliminados — no se usan en esta función
+  # stargazer y sandwich se cargan solo cuando se necesitan
   
   FX <- R4XCL_INT_FUNCION(SetDatosX,SetDatosY)
   especificacion <- as.formula(FX)
@@ -52,7 +50,12 @@ MR_Poisson.C <- function(
     
   } else if (TipoOutput == 1){  
     
-    OutPut <- data.frame("R4XCL_ModeloEstimado"= capture.output(stargazer(Modelo, type="text", ci=TRUE, ci.level=0.95,single.row=TRUE)))
+    if (!requireNamespace("stargazer", quietly=TRUE)) {
+      OutPut <- data.frame("R4XCL_ModeloEstimado"= capture.output(summary(Modelo)))
+    } else {
+      library(stargazer)
+      OutPut <- data.frame("R4XCL_ModeloEstimado"= capture.output(stargazer(Modelo, type="text", ci=TRUE, ci.level=0.95,single.row=TRUE)))
+    }
     
   } else if (TipoOutput == 2){
     
@@ -82,8 +85,13 @@ MR_Poisson.C <- function(
     
   } else if (TipoOutput == 4){
     
-    OutPut <- sapply(marginal_effects(Modelo, Datos),mean)
-    OutPut <- data.frame("R4XCL_EfectosMarginales"= capture.output(OutPut))
+    if (!requireNamespace("margins", quietly=TRUE)) {
+      OutPut <- data.frame("R4XCL_EfectosMarginales"= "Paquete margins no instalado. Ejecute: =R.instalar(\"margins\")")
+    } else {
+      library(margins)
+      OutPut <- sapply(marginal_effects(Modelo, Datos),mean)
+      OutPut <- data.frame("R4XCL_EfectosMarginales"= capture.output(OutPut))
+    }
     
   } else if (TipoOutput == 4){  
     

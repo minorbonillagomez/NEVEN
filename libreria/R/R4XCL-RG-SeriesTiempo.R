@@ -6,6 +6,12 @@
 ST_SeriesTemporales<- function(SetDatosX,Periodicidad=1, TipoOutPut=0)
 {
   
+    if (!requireNamespace("tseries", quietly=TRUE)) {
+      if (TipoOutPut == 0) {
+        return(R4XCL_INT_PROCEDIMIENTOS()$SERIES_T)
+      }
+      return("Paquete tseries no instalado. Ejecute: =R.instalar(\"tseries\")")
+    }
     library(tseries)
   
     Procedimientos <- R4XCL_INT_PROCEDIMIENTOS()
@@ -103,6 +109,12 @@ attr(ST_SeriesTemporales, "description" ) =
 ST_Autoregresivos<- function(SetDatosX,Periodicidad=1, TipoOutPut=0, OrdenP, OrdenD, OrdenQ)
 {
   
+  if (!requireNamespace("tseries", quietly=TRUE)) {
+    if (TipoOutPut == 0) {
+      return(R4XCL_INT_PROCEDIMIENTOS()$SERIES_AR)
+    }
+    return("Paquete tseries no instalado. Ejecute: =R.instalar(\"tseries\")")
+  }
   library(tseries)
   Procedimientos <- R4XCL_INT_PROCEDIMIENTOS()
 
@@ -214,7 +226,11 @@ ST_Filtro <- function(
   # PREPARACION DE DATOS Y PARAMETROS
   #-------------------------->>>
   
-  library(tseries) 
+  # tseries eliminado — no se usa en ST_Filtro
+  # mFilter es necesario para todos los modelos de filtro
+  if (!requireNamespace("mFilter", quietly=TRUE)) {
+    return("Paquete mFilter no instalado. Ejecute: =R.instalar(\"mFilter\")")
+  }
   library(mFilter)
  
   Procedimientos <- R4XCL_INT_PROCEDIMIENTOS()

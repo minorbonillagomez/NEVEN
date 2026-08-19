@@ -555,7 +555,16 @@ R4XCL_INT_FILTRAR <- function (
   #-------------------------->>>
   
   if (is.null(Ponderadores)){Ponderadores<-rep(1,nX)}
-  if (is.null(Filtro)){Filtro<-rep(0,nX)}
+  if (is.null(Filtro)){
+    Filtro <- rep(0, nX)
+  } else {
+    # Normalize Filtro: strip header row if present (nrow > nX), then coerce to numeric vector
+    if (!is.null(dim(Filtro)) && nrow(Filtro) > nX) Filtro <- Filtro[-1, , drop=FALSE]
+    Filtro <- as.numeric(as.matrix(unlist(Filtro)))
+    if (length(Filtro) != nX) Filtro <- rep(0, nX)  # safety fallback
+  }
+  # Normalize Ponderadores length to match nX (strip header row if needed)
+  if (length(Ponderadores) > nX) Ponderadores <- Ponderadores[seq_len(nX)]
  
   #-------------------------->>>
   # FILTRAR DATOS
@@ -565,12 +574,12 @@ R4XCL_INT_FILTRAR <- function (
       {
         
         pXY     <-    1 + pX
-        YX      <-    cbind(SetDatosY,SetDatosX,Ponderadores)
+        YX      <-    cbind(SetDatosY, SetDatosX, c(NA, Ponderadores))
         YX      <-    YX[Filtro==0,]
         
       }else{
         
-        YX      <- cbind(SetDatosX,Ponderadores)
+        YX      <- cbind(SetDatosX, c(NA, Ponderadores))
         YX      <- YX[Filtro==0,]
         
       }
@@ -697,6 +706,9 @@ R4XCL_INT_CREAXCL <- function(pModelo)
   # PREPARACION DE DATOS Y PARAMETROS
   #-------------------------->>>
   
+  if (!requireNamespace("writexl", quietly=TRUE)) {
+    return("Paquete writexl no instalado. Ejecute: =R.instalar(\"writexl\")")
+  }
   library(writexl)
   
   qModelos <- length(pModelo)
