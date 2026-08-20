@@ -69,15 +69,18 @@ void RVersionCompat::ApplyReadConsoleCallback(REngineRstart Rp) {
     int minor = REngineLoader::VersionMinor();
 
     if (major > 4 || (major == 4 && minor >= 4)) {
-        // R >= 4.4 — unsigned char* signature
+        // R >= 4.4 — unsigned char* signature (matches our struct field exactly)
         CHILD_LOG("RVersionCompat: R %d.%d — using ReadConsole_NewSignature (unsigned char*)",
                   major, minor);
-        Rp->ReadConsole = reinterpret_cast<void*>(ReadConsole_NewSignature);
+        Rp->ReadConsole = ReadConsole_NewSignature;
     } else {
-        // R < 4.4 — char* signature
+        // R < 4.4 — char* signature; cast needed because struct field is unsigned char*
         CHILD_LOG("RVersionCompat: R %d.%d — using ReadConsole_OldSignature (char*)",
                   major, minor);
-        Rp->ReadConsole = reinterpret_cast<void*>(ReadConsole_OldSignature);
+        // The old signature (char*) is binary-compatible with (unsigned char*)
+        // on all supported platforms — safe to cast.
+        Rp->ReadConsole = reinterpret_cast<int(*)(const char*, unsigned char*, int, int)>(
+            ReadConsole_OldSignature);
     }
 }
 

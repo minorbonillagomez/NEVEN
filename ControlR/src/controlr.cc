@@ -18,6 +18,8 @@
  */
 
 #include "controlr.h"
+#include "r_engine_loader.h"
+#include "r_version_compat.h"
 #include "windows_api_functions.h"
 #include "result.h"
 #include "json11\json11.hpp"
@@ -259,18 +261,22 @@ int SystemCall(RJ2XCLBuffers::CallResponse &response, const RJ2XCLBuffers::CallR
   translated_call.CopyFrom(call);
 
   if (!function.compare("install-application-pointer")) {
+    CHILD_LOG("SystemCall: install-application-pointer");
     translated_call.mutable_function_call()->set_target(RJ2XCLBuffers::CallTarget::language);
     translated_call.mutable_function_call()->set_function("RJ$install.application.pointer");
     RCall(response, translated_call);
   }
   else if (!function.compare("list-functions")) {
+    CHILD_LOG("SystemCall: list-functions");
     response.set_id(call.id());
     ListScriptFunctions(response);
   }
   else if (!function.compare("get-language")) {
+    CHILD_LOG("SystemCall: get-language");
     response.mutable_result()->set_str(State().language_tag);
   }
   else if (!function.compare("read-source-file")) {
+    CHILD_LOG("SystemCall: read-source-file: %s", call.function_call().arguments(0).str().c_str());
     std::string file = call.function_call().arguments(0).str();
     bool notify = false;
     if (call.function_call().arguments_size() > 1) notify = call.function_call().arguments(1).boolean();
@@ -370,6 +376,12 @@ int InputStreamRead(const char *prompt, unsigned char *buf, int len, int addtohi
           if (success) {
 
             CHILD_LOG("Received message on pipe %d, op=%d, wait=%d", index, call.operation_case(), call.wait());
+            // Log the function name if it's a function call
+            if (call.operation_case() == RJ2XCLBuffers::CallResponse::kFunctionCall) {
+                CHILD_LOG("  -> function: target=%d fn='%s'",
+                    (int)call.function_call().target(),
+                    call.function_call().function().c_str());
+            }
 
             response.set_id(call.id());
             switch (call.operation_case()) {
@@ -550,8 +562,58 @@ int main(int argc, char** argv) {
   CHILD_LOG("ControlR starting...");
 
   char buffer[MAX_PATH];
-  int major, minor, patch;
-  RGetVersion(&major, &minor, &patch);
+
+  // ── v2.4: Parse -r rhome EARLY so we can load R.dll before RGetVersion ──
+  // Full argument parsing happens again below (for -p pipename etc.).
+  std::string early_rhome;
+  for (int i = 0; i < argc; i++) {
+    if (!strncmp(argv[i], "-r", 2) && i < argc - 1) {
+      early_rhome = argv[++i];
+      break;
+    }
+  }
+
+  if (early_rhome.empty()) {
+    CHILD_LOG_ERR("ControlR: -r rhome argument required");
+    rj2xcl::ChildProcessLog::Shutdown();
+    return PROCESS_ERROR_CONFIGURATION_ERROR;
+  }
+
+  // Load R.dll dynamically — must happen before any R API call (including RGetVersion)
+  // AddDllDirectory ensures R's dependencies (Rblas.dll, Riconv.dll, Rgraphapp.dll)
+  // are found when LoadLibrary resolves them — even if not in the process PATH yet.
+  {
+    std::string r_bin_dir = early_rhome + "\\bin\\x64";
+    int wlen = MultiByteToWideChar(CP_ACP, 0, r_bin_dir.c_str(), -1, NULL, 0);
+    if (wlen > 0) {
+      std::wstring wdir(wlen, 0);
+      MultiByteToWideChar(CP_ACP, 0, r_bin_dir.c_str(), -1, &wdir[0], wlen);
+      DLL_DIRECTORY_COOKIE cookie = AddDllDirectory(wdir.c_str());
+      CHILD_LOG("AddDllDirectory('%s'): %s", r_bin_dir.c_str(), cookie ? "OK" : "FAILED (non-fatal)");
+    }
+  }
+  if (!REngineLoader::Load(early_rhome)) {
+    CHILD_LOG_ERR("ControlR: failed to load R.dll from '%s'", early_rhome.c_str());
+    rj2xcl::ChildProcessLog::Shutdown();
+    return PROCESS_ERROR_UNSUPPORTED_VERSION;
+  }
+
+  int major = REngineLoader::VersionMajor();
+  int minor = REngineLoader::VersionMinor();
+  int patch = REngineLoader::VersionMinor();
+  {
+    const char *ver = REngineLoader::getDLLVersion ? REngineLoader::getDLLVersion() : nullptr;
+    if (ver) {
+      int dots = 0;
+      char pbuf[16] = {};
+      int pi = 0;
+      for (const char *p = ver; *p; ++p) {
+        if (*p == '.') { dots++; pi = 0; continue; }
+        if (dots == 2 && pi < 15) pbuf[pi++] = *p;
+      }
+      if (pi > 0) patch = atoi(pbuf);
+    }
+  }
 
   CHILD_LOG("R version: %d.%d.%d", major, minor, patch);
 

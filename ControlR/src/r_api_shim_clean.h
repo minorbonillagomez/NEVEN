@@ -123,11 +123,15 @@ static inline int _r_shim_IsNA(double v) {
 #endif
 
 #ifndef SA_NOSAVE
-#define SA_NOSAVE    0
-#define SA_SAVE      1
-#define SA_SAVEASK   2
-#define SA_SUICIDE   3
-#define SA_NORESTORE 0x10
+// SA_TYPE enum values from R's R_ext/RStartup.h
+// Must match exactly — R uses these to determine save/restore behavior at startup.
+#define SA_NORESTORE 0
+#define SA_RESTORE   1
+#define SA_DEFAULT   2
+#define SA_NOSAVE    3
+#define SA_SAVE      4
+#define SA_SAVEASK   5
+#define SA_SUICIDE   6
 #endif
 
 // =============================================================================

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) 2026 RJ2XCL Project
  *
  * r_engine_loader.h — NEVEN v2.4 Dynamic Engine Loading
@@ -27,17 +27,29 @@
 #ifndef REMBEDDED_H
 #define REMBEDDED_H
 #endif
+#ifndef REMBEDDED_H_
+#define REMBEDDED_H_
+#endif
 #ifndef GRAPHAPP_H
 #define GRAPHAPP_H
 #endif
+#ifndef _GRAPHAPP_H
+#define _GRAPHAPP_H
+#endif
 #ifndef R_EXT_RSTARTUP_H
 #define R_EXT_RSTARTUP_H
+#endif
+#ifndef R_EXT_RSTARTUP_H_
+#define R_EXT_RSTARTUP_H_
 #endif
 #ifndef RINTERFACE_H
 #define RINTERFACE_H
 #endif
 #ifndef RVERSION_H
 #define RVERSION_H
+#endif
+#ifndef R_VERSION_H
+#define R_VERSION_H
 #endif
 
 #include <Windows.h>
@@ -61,65 +73,94 @@ typedef struct { double r, i; } Rcomplex;
 typedef int    SA_TYPE;
 typedef int    Rboolean;
 
-// structRstart -- MUST match the layout in R_ext/RStartup.h for the R version used.
-// This definition mirrors structRstart from R 4.2+ (RstartVersion 1).
-// The Win32 front-end fields (rhome, ReadConsole, etc.) follow the platform-
-// independent fields.
-#ifndef R_SIZE_T
-#include <stddef.h>
-#define R_SIZE_T size_t
+// SA_TYPE enum values — match R's SA_TYPE in R_ext/RStartup.h exactly
+// These values are stable across R versions.
+#ifndef SA_NORESTORE
+#define SA_NORESTORE 0
+#define SA_RESTORE   1
+#define SA_DEFAULT   2
+#define SA_NOSAVE    3
+#define SA_SAVE      4
+#define SA_SAVEASK   5
+#define SA_SUICIDE   6
 #endif
 
+// DL_FUNC — generic function pointer, matches R's canonical definition
+// typedef void *(*DL_FUNC)(void) — function returning void*
+#ifndef DL_FUNC
+typedef void *(*DL_FUNC)(void);
+#endif
+
+// UImode enum — matches R's definition in R_ext/RStartup.h
+// Used to set CharacterMode in structRstart (RGui=0, RTerm=1, LinkDLL=2)
+typedef enum { RGui = 0, RTerm = 1, LinkDLL = 2 } UImode;
+
+// ─── structRstart — exact layout from R 4.4.1 R_ext/RStartup.h ──────────────
+//
+// CRITICAL: This struct MUST match the memory layout that R_DefParams /
+// R_DefParamsEx writes into. Any mismatch causes field corruption and crashes.
+//
+// Layout verified against:
+//   C:\Program Files\R\R-4.4.1\include\R_ext\RStartup.h
+//
+// RstartVersion 1 (introduced in R 4.2.0) is used via R_DefParamsEx(Rp, 1).
+// This enables the extra fields (CleanUp, ClearerrConsole, etc.) at the end.
+// If R_DefParamsEx is unavailable, fall back to R_DefParams(Rp) which only
+// initialises the version-0 fields.
+//
+// sizeof(structRstart) on x64 = 216 bytes (verified with MSVC x64).
+//
 typedef struct {
-    // --- Platform-independent fields (same on all platforms) ---
-    Rboolean R_Quiet;
-    Rboolean R_NoEcho;
-    Rboolean R_Interactive;
-    Rboolean R_Verbose;
-    Rboolean LoadSiteFile;
-    Rboolean LoadInitFile;
-    Rboolean DebugInitFile;
-    SA_TYPE  RestoreAction;
-    SA_TYPE  SaveAction;
-    R_SIZE_T vsize;
-    R_SIZE_T nsize;
-    R_SIZE_T max_vsize;
-    R_SIZE_T max_nsize;
-    R_SIZE_T ppsize;
-    int      NoRenviron : 16;   // bit-field
-    int      RstartVersion : 16;// bit-field (added R 4.2.0)
-    int      nconnections;
+    // ── Version 0 fields (available with R_DefParams and R_DefParamsEx) ──────
+    Rboolean R_Quiet;           // offset  0
+    Rboolean R_NoEcho;          // offset  4
+    Rboolean R_Interactive;     // offset  8
+    Rboolean R_Verbose;         // offset 12
+    Rboolean LoadSiteFile;      // offset 16
+    Rboolean LoadInitFile;      // offset 20
+    Rboolean DebugInitFile;     // offset 24
+    SA_TYPE  RestoreAction;     // offset 28   (SA_TYPE == int)
+    SA_TYPE  SaveAction;        // offset 32
+    // R_SIZE_T = size_t = 8 bytes on x64
+    size_t   vsize;             // offset 40   (after 4 bytes of padding: 36+4=40)
+    size_t   nsize;             // offset 48
+    size_t   max_vsize;         // offset 56
+    size_t   max_nsize;         // offset 64
+    size_t   ppsize;            // offset 72
+    // Bit-fields: NoRenviron:16 + RstartVersion:16 = 32 bits total = 4 bytes
+    int      NoRenviron    : 16; // offset 80
+    int      RstartVersion : 16; // offset 80+2 bytes
+    int      nconnections;       // offset 84
 
-    // --- Win32-specific fields ---
-    char    *rhome;             // R_HOME
-    char    *home;              // HOME
+    // ── Win32-specific fields ─────────────────────────────────────────────
+    char    *rhome;                                       // offset  88
+    char    *home;                                        // offset  96
+    int    (*ReadConsole)(const char *, unsigned char *, int, int); // offset 104
+    void   (*WriteConsole)(const char *, int);            // offset 112
+    void   (*CallBack)(void);                             // offset 120
+    void   (*ShowMessage)(const char *);                  // offset 128
+    int    (*YesNoCancel)(const char *);                  // offset 136
+    void   (*Busy)(int);                                  // offset 144
+    int      CharacterMode;                               // offset 152  (UImode == int)
+    int      _pad1;                                       // offset 156  (alignment pad)
+    void   (*WriteConsoleEx)(const char *, int, int);     // offset 160  (added R 2.5.0)
+    Rboolean EmitEmbeddedUTF8;                            // offset 168  (added R 4.0.0)
+    int      _pad2;                                       // offset 172  (alignment pad)
 
-    // ReadConsole: two possible signatures (R < 4.4 vs R >= 4.4).
-    // Stored as void* so we can assign either callback type without casting
-    // at the call site. RVersionCompat::ApplyReadConsoleCallback() sets this.
-    void    *ReadConsole;
-    void   (*WriteConsole)(const char *, int);
-    void   (*CallBack)(void);
-    void   (*ShowMessage)(const char *);
-    int    (*YesNoCancel)(const char *);
-    void   (*Busy)(int);
-    int      CharacterMode;     // UImode enum stored as int
-    void   (*WriteConsoleEx)(const char *, int, int);  // added R 2.5.0
-    int      EmitEmbeddedUTF8;  // Rboolean, added R 4.0.0
-
-    // Added R 4.2.0 (only present when RstartVersion >= 1)
-    void   (*CleanUp)(SA_TYPE, int, int);
-    void   (*ClearerrConsole)(void);
-    void   (*FlushConsole)(void);
-    void   (*ResetConsole)(void);
-    void   (*Suicide)(const char *s);
+    // ── Version 1 fields (added R 4.2.0, only valid when RstartVersion==1) ──
+    void   (*CleanUp)(SA_TYPE, int, int);                 // offset 176
+    void   (*ClearerrConsole)(void);                      // offset 184
+    void   (*FlushConsole)(void);                         // offset 192
+    void   (*ResetConsole)(void);                         // offset 200
+    void   (*Suicide)(const char *);                      // offset 208
+                                                          // total = 216 bytes
 } REngineStartParams, *REngineRstart;
 
-typedef struct {
+typedef struct R_CallMethodDef {
     const char *name;
-    void *fun;
-    int   numArgs;
-} REngineCallMethodDef;
+    DL_FUNC     fun;
+    int         numArgs;
+} R_CallMethodDef, *R_CallMethodDefPtr;
 
 // ─── ParseStatus (R's parse result type) ─────────────────────────────────────
 // Use a simple int typedef for the loader; the actual enum values are defined
@@ -236,7 +277,7 @@ typedef void  *(*FnR_ExternalPtrAddr) (SEXP s);
 // --- Routine registration ---
 typedef DllInfo *(*FnR_getEmbeddingDllInfo)(void);
 typedef void   (*FnR_registerRoutines)(DllInfo *info, void *cMethods,
-                                       REngineCallMethodDef *callMethods,
+                                       void *callMethods,
                                        void *fortranMethods, void *externalMethods);
 typedef void   (*FnR_RegisterCCallable)(const char *pkg, const char *name, void *f);
 

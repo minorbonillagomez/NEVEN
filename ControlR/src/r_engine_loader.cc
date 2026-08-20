@@ -260,18 +260,32 @@ bool REngineLoader::Load(const std::string& r_home) {
     R_SetParams                  = GetProc<FnRSetParams>        ("R_SetParams");
     R_set_command_line_arguments = GetProc<FnRSetCommandLineArgs>("R_set_command_line_arguments");
 
-    // GA_initapp and readconsolecfg live in RGraphApp64.dll, not R.dll.
-    // Load RGraphApp64.dll from the same bin\x64 directory.
+    // readconsolecfg lives in R.dll itself (verified via dumpbin /exports).
+    // Resolve it now while hR_ is the active DLL.
+    readconsolecfg = GetProc<FnReadconsolecfg>("readconsolecfg", /*required=*/false);
+
+    // GA_initapp lives in Rgraphapp.dll (name varies by R version):
+    //   R 4.4.1+: Rgraphapp.dll  (lowercase, no "64")
+    //   R < 4.4:  RGraphApp64.dll
+    // Try both names. The DLL is already loaded as a dependency of R.dll, so
+    // GetModuleHandle avoids a redundant LoadLibrary call.
     {
-        std::string graphapp_path = r_home + "\\bin\\x64\\RGraphApp64.dll";
-        HMODULE hGraphApp = LoadLibraryA(graphapp_path.c_str());
+        HMODULE hGraphApp = GetModuleHandleA("Rgraphapp.dll");
+        if (!hGraphApp) hGraphApp = GetModuleHandleA("RGraphApp64.dll");
+        if (!hGraphApp) {
+            // Not in memory yet — load explicitly.
+            std::string graphapp_path = r_home + "\\bin\\x64\\Rgraphapp.dll";
+            hGraphApp = LoadLibraryA(graphapp_path.c_str());
+            if (!hGraphApp) {
+                graphapp_path = r_home + "\\bin\\x64\\RGraphApp64.dll";
+                hGraphApp = LoadLibraryA(graphapp_path.c_str());
+            }
+        }
         if (hGraphApp) {
-            GA_initapp     = reinterpret_cast<FnGA_initapp>    (GetProcAddress(hGraphApp, "GA_initapp"));
-            readconsolecfg = reinterpret_cast<FnReadconsolecfg>(GetProcAddress(hGraphApp, "readconsolecfg"));
-            if (!GA_initapp)     CHILD_LOG("REngineLoader: GA_initapp not in RGraphApp64.dll (optional)");
-            if (!readconsolecfg) CHILD_LOG("REngineLoader: readconsolecfg not in RGraphApp64.dll (optional)");
+            GA_initapp = reinterpret_cast<FnGA_initapp>(GetProcAddress(hGraphApp, "GA_initapp"));
+            CHILD_LOG("REngineLoader: Rgraphapp — GA_initapp=%s", GA_initapp ? "OK" : "null");
         } else {
-            CHILD_LOG("REngineLoader: RGraphApp64.dll not found — GA_initapp/readconsolecfg unavailable");
+            CHILD_LOG("REngineLoader: Rgraphapp.dll not found — GA_initapp unavailable (LinkDLL mode OK)");
         }
     }
     setup_Rmainloop              = GetProc<FnSetup_Rmainloop>   ("setup_Rmainloop");

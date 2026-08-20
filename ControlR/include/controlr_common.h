@@ -40,12 +40,20 @@
 
 #include <Rversion.h>
 #include <Rinternals.h>
+
+#ifndef NEVEN_DYNAMIC_LOAD
+// In dynamic-load mode (v2.4), REngineLoader provides its own structRstart
+// definition and manages R startup. Including Rembedded.h / R_ext\RStartup.h
+// here would cause redefinition conflicts with r_engine_loader.h.
 #include <Rembedded.h>
+#endif
 
 #ifdef WIN32
 
 	#include <graphapp.h>
+#ifndef NEVEN_DYNAMIC_LOAD
 	#include <R_ext\RStartup.h>
+#endif
 
 #else // #ifdef WIN32
 
