@@ -34,6 +34,15 @@ if ($CleanFirst) {
     & $msbuild $vcxproj /p:Configuration=$Config /p:Platform=x64 `
         /t:ClCompile "/p:SelectedFiles=$stubFile" /v:m 2>&1 | Select-Object -Last 2
 
+    # Step 1b: Pre-compile rcall_seh.cc with /Od to preserve __except block
+    $sehFile = "$PSScriptRoot\ControlR\src\rcall_seh.cc"
+    if (Test-Path $sehFile) {
+        Write-Host "Step 1b: Pre-compiling rcall_seh.cc (/Od)..." -ForegroundColor Yellow
+        (Get-Item $sehFile).LastWriteTime = Get-Date
+        & $msbuild $vcxproj /p:Configuration=$Config /p:Platform=x64 `
+            /t:ClCompile "/p:SelectedFiles=$sehFile" /v:m 2>&1 | Select-Object -Last 2
+    }
+
     # Step 2: Full build (r_ge_stubs.obj with C linkage is now in cache)
     Write-Host "Step 2: Building ControlR..." -ForegroundColor Yellow
     & $cmake --build $buildDir --target ControlR --config $Config 2>&1

@@ -2070,11 +2070,13 @@ function filterFunctionsRS() {
             fetch(API + '/api/packages/status?refresh=true')
               .then(function(r){ return r.json(); })
               .then(function(data) {
-                window._pkgShowWarning([]);
+                // Mostrar solo los que siguen faltando (instalación parcial o error)
+                var aunFaltantes = (data.paquetes || []).filter(function(p){ return !p.instalado; });
+                window._pkgShowWarning(aunFaltantes);
                 if (msg) {
-                  msg.textContent = (errores === 0)
+                  msg.textContent = (aunFaltantes.length === 0)
                     ? 'Instalacion completada: ' + ok + ' paquete(s) OK. Estado actualizado.'
-                    : 'Instalacion terminada: ' + ok + ' OK, ' + errores + ' errores.';
+                    : 'Instalacion terminada: ' + ok + ' OK, ' + errores + ' error(es). Quedan ' + aunFaltantes.length + ' faltantes.';
                 }
               })
               .catch(function(){ window._pkgShowWarning([]); });

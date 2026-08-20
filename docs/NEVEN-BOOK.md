@@ -2,23 +2,21 @@
 
 > **Propósito:** Documento de referencia exhaustivo para que un desarrollador que llega por primera vez al proyecto pueda entenderlo, reproducirlo, depurarlo y extenderlo sin depender de ninguna otra fuente.
 >
-> **Versión:** NEVEN v2.2 — Agosto 2026
-> **Autor del sistema:** Minor Bonilla Gómez, Universidad de Costa Rica
-> **Repositorio:** https://github.com/minorbonillagomez/NEVEN.git
+> **Versión:** NEVEN v2.2 — Agosto 2026 **Autor del sistema:** Minor Bonilla Gómez, Universidad de Costa Rica **Repositorio:** https://github.com/minorbonillagomez/NEVEN.git
 
----
+------------------------------------------------------------------------
 
 ## Tabla de Contenidos
 
-1. [¿Qué es NEVEN?](#1-qué-es-neven)
-2. [Visión de alto nivel — dos modos de uso](#2-visión-de-alto-nivel)
-3. [Estructura del repositorio](#3-estructura-del-repositorio)
-4. [Arquitectura del sistema](#4-arquitectura-del-sistema)
-5. [Protocolo IPC — Protocol Buffers + Named Pipes](#5-protocolo-ipc)
-6. [NEVEN64.xll — el Add-in de Excel](#6-neven64xll)
-7. [ControlR.exe — motor R](#7-controlrexe)
-8. [ControlJulia.exe — motor Julia](#8-controljuliaexe)
-9. [ControlPython.exe — motor Python](#9-controlpythonexe)
+1.  [¿Qué es NEVEN?](#1-qué-es-neven)
+2.  [Visión de alto nivel — dos modos de uso](#2-visión-de-alto-nivel)
+3.  [Estructura del repositorio](#3-estructura-del-repositorio)
+4.  [Arquitectura del sistema](#4-arquitectura-del-sistema)
+5.  [Protocolo IPC — Protocol Buffers + Named Pipes](#5-protocolo-ipc)
+6.  [NEVEN64.xll — el Add-in de Excel](#6-neven64xll)
+7.  [ControlR.exe — motor R](#7-controlrexe)
+8.  [ControlJulia.exe — motor Julia](#8-controljuliaexe)
+9.  [ControlPython.exe — motor Python](#9-controlpythonexe)
 10. [NEVENRibbon.dll — pestaña COM](#10-nevenribbondll)
 11. [NEVEN Studio — servidor standalone](#11-neven-studio)
 12. [Data Lab — análisis punto-y-clic](#12-data-lab)
@@ -36,15 +34,15 @@
 24. [Convenciones de código](#24-convenciones-de-código)
 25. [Glosario](#25-glosario)
 
----
+------------------------------------------------------------------------
 
 ## 1. ¿Qué es NEVEN?
 
 NEVEN es una plataforma multilenguaje para análisis de datos que integra R 4.4.1, Julia 1.12.6 y Python 3.13 en dos contextos:
 
-1. **Add-in XLL de Microsoft Excel**: el usuario escribe `=R.MR_Lineal(Y, X, 1)` en una celda y obtiene un modelo de regresión. Las funciones de R/Julia/Python se exponen como fórmulas nativas de Excel.
+1.  **Add-in XLL de Microsoft Excel**: el usuario escribe `=R.MR_Lineal(Y, X, 1)` en una celda y obtiene un modelo de regresión. Las funciones de R/Julia/Python se exponen como fórmulas nativas de Excel.
 
-2. **NEVEN Studio Standalone**: una interfaz web accesible en `http://localhost:5555` que expone Data Lab (análisis punto-y-clic), Run Script (editor de scripts), Data Studio (explorador de datos con SQL) y el Creador de Presentaciones. No requiere Excel instalado.
+2.  **NEVEN Studio Standalone**: una interfaz web accesible en `http://localhost:5555` que expone Data Lab (análisis punto-y-clic), Run Script (editor de scripts), Data Studio (explorador de datos con SQL) y el Creador de Presentaciones. No requiere Excel instalado.
 
 NEVEN es la evolución de BERT (Basic Excel R Toolkit, Structured Data LLC, 2017-2018), modernizado para R 4.4.1 y Julia 1.12.6, con seguridad, testing y visualización interactiva vía WebView2.
 
@@ -58,13 +56,13 @@ Excel es universal pero estadísticamente limitado. R y Julia son potentes pero 
 - No es un wrapper simple de R — es un sistema multi-proceso con IPC, sandboxing, RAII y 357 tests
 - No funciona en macOS/Linux (usa Named Pipes de Windows, COM, WebView2)
 
----
+------------------------------------------------------------------------
 
 ## 2. Visión de Alto Nivel
 
 ### Modo 1: Add-in Excel
 
-```
+```         
 Usuario escribe =R.MR_Lineal(Y, X, 1) en celda
     ↓
 Excel invoca RJ_FunctionCall1000 en NEVEN64.xll
@@ -84,7 +82,7 @@ Celda muestra resultado (tabla, escalar, HTML)
 
 ### Modo 2: NEVEN Studio
 
-```
+```         
 Usuario abre navegador en http://localhost:5555
     ↓
 taskpane.html (HTML/JS) hace fetch a neven_http_server.py
@@ -98,11 +96,11 @@ neven_http_server.py convierte Variable → JSON → respuesta HTTP
 taskpane.html renderiza resultado (tabla, Plotly, scalar)
 ```
 
----
+------------------------------------------------------------------------
 
 ## 3. Estructura del Repositorio
 
-```
+```         
 NEVEN/                          ← raíz del repositorio
 ├── Core/                       ← NEVEN.dll (add-in XLL)
 │   ├── src/                    ← archivos .cc de implementación
@@ -177,7 +175,7 @@ NEVEN/                          ← raíz del repositorio
 └── Include/                    ← headers mock (R, Julia, Excel SDK)
 ```
 
----
+------------------------------------------------------------------------
 
 ## 4. Arquitectura del Sistema
 
@@ -185,7 +183,7 @@ NEVEN/                          ← raíz del repositorio
 
 NEVEN usa una arquitectura multi-proceso. El principio fundamental es que un crash de R o Julia no mata Excel ni Studio.
 
-```
+```         
 ┌─────────────────────────────────────────────────────┐
 │  Microsoft Excel (host)                              │
 │  ┌─────────────────────────────────────────────┐    │
@@ -205,28 +203,25 @@ NEVEN usa una arquitectura multi-proceso. El principio fundamental es que un cra
 └──────┘ └─────────┘ └────────────────┘
 ```
 
-Cada `Control*.exe` expone exactamente **tres Named Pipes**:
-- `\\.\pipe\neven_{lang}` — pipe principal (llamadas/respuestas)
-- `\\.\pipe\neven_{lang}_callback` — callbacks desde el lenguaje hacia Excel
-- `\\.\pipe\neven_{lang}_extra` — pipe auxiliar (no crítico)
+Cada `Control*.exe` expone exactamente **tres Named Pipes**: - `\\.\pipe\neven_{lang}` — pipe principal (llamadas/respuestas) - `\\.\pipe\neven_{lang}_callback` — callbacks desde el lenguaje hacia Excel - `\\.\pipe\neven_{lang}_extra` — pipe auxiliar (no crítico)
 
 ### 4.2 Ciclo de vida del Add-in
 
-1. Excel carga `NEVEN64.xll` → `xlAutoOpen()` es llamado
-2. `RJ2XCL_Engine::Init()` arranca:
-   - Mata procesos huérfanos de sesiones anteriores (Zombie Process Killer)
-   - Lee `neven-config.json` y `neven-languages.json`
-   - `DiscoveryService` detecta dónde están R, Julia, Python
-   - Lanza `ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe` con `CreateProcess`
-   - Espera conexión de cada pipe (timeout 10s por motor)
-   - Envía script de startup al motor (`startup.r`, `startup.jl`, `startup.py`)
-   - Motor responde con lista de funciones disponibles
-   - `RegisterFunctions()` registra cada función en Excel con `xlfRegister`
-3. Excel muestra las funciones `R.`, `J.`, `P.` en el asistente de funciones (Shift+F3)
+1.  Excel carga `NEVEN64.xll` → `xlAutoOpen()` es llamado
+2.  `RJ2XCL_Engine::Init()` arranca:
+    - Mata procesos huérfanos de sesiones anteriores (Zombie Process Killer)
+    - Lee `neven-config.json` y `neven-languages.json`
+    - `DiscoveryService` detecta dónde están R, Julia, Python
+    - Lanza `ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe` con `CreateProcess`
+    - Espera conexión de cada pipe (timeout 10s por motor)
+    - Envía script de startup al motor (`startup.r`, `startup.jl`, `startup.py`)
+    - Motor responde con lista de funciones disponibles
+    - `RegisterFunctions()` registra cada función en Excel con `xlfRegister`
+3.  Excel muestra las funciones `R.`, `J.`, `P.` en el asistente de funciones (Shift+F3)
 
 ### 4.3 Flujo de una llamada UDF
 
-```
+```         
 Celda: =R.MR_Lineal(A1:A100, B1:C100, 1)
         ↓
 Excel invoca RJ_FunctionCall1042 (índice asignado al registrar)
@@ -255,14 +250,14 @@ Celda muestra resultado
 
 Para gráficos interactivos, el XLL usa WebView2 (Edge Chromium embebido) en un STA thread dedicado (Single-Threaded Apartment, requerido por COM). El patrón:
 
-1. R genera HTML con Plotly/D3 y lo retorna como `HtmlContent` en el Protobuf
-2. XLL recibe `html_content` → `ViewerManager` abre una ventana WebView2
-3. `ContentPipeline` decide si enviar el HTML inline o vía archivo temporal (`file://`)
-4. `PostMessageBridge` permite comunicación bidireccional JS ↔ C++
+1.  R genera HTML con Plotly/D3 y lo retorna como `HtmlContent` en el Protobuf
+2.  XLL recibe `html_content` → `ViewerManager` abre una ventana WebView2
+3.  `ContentPipeline` decide si enviar el HTML inline o vía archivo temporal (`file://`)
+4.  `PostMessageBridge` permite comunicación bidireccional JS ↔ C++
 
 ### 4.5 Arquitectura NEVEN Studio (standalone)
 
-```
+```         
 NEVEN Studio.vbs
     ↓
 start_studio.py --no-browser
@@ -288,7 +283,7 @@ neven_http_server.py (puerto 5555) sirve:
 Navegador del usuario: http://localhost:5555
 ```
 
----
+------------------------------------------------------------------------
 
 ## 5. Protocolo IPC — Protocol Buffers + Named Pipes
 
@@ -296,7 +291,7 @@ Navegador del usuario: http://localhost:5555
 
 Cada mensaje en el pipe está prefijado con un entero de 4 bytes (signed int32, little-endian) que indica el tamaño del payload Protobuf que sigue. La función C++ es `MessageUtilities::Frame` / `MessageUtilities::Unframe`. En Python es `_frame()` / `_unframe()` en `pipe_client.py`.
 
-```
+```         
 [4 bytes: longitud] [N bytes: CallResponse serializado]
 ```
 
@@ -304,7 +299,7 @@ El límite es 256 KB (`kMaxDynamicBufferSize`). Mensajes más grandes se rechaza
 
 ### 5.2 El mensaje raíz: `CallResponse`
 
-```protobuf
+``` protobuf
 message CallResponse {
   uint32 id = 1;
   bool wait = 2;      // true = esperar respuesta sincrónicamente
@@ -329,7 +324,7 @@ message CallResponse {
 
 ### 5.3 El tipo `Variable`
 
-```protobuf
+``` protobuf
 message Variable {
   oneof value {
     bool nil = 1;
@@ -352,7 +347,8 @@ message Variable {
 ```
 
 **Tipo `Array`** (el más importante):
-```protobuf
+
+``` protobuf
 message Array {
   int32 rows = 1;
   int32 cols = 2;
@@ -366,15 +362,15 @@ Un data.frame de R con N filas y 5 columnas se serializa como `Array{rows=N, col
 
 ### 5.4 Pipe names
 
-| Motor | Pipe principal | Callback pipe |
-|:---|:---|:---|
-| R | `\\.\pipe\neven_r` | `\\.\pipe\neven_r_callback` |
-| Julia | `\\.\pipe\neven_julia` | `\\.\pipe\neven_julia_callback` |
+| Motor  | Pipe principal          | Callback pipe                    |
+|:-------|:------------------------|:---------------------------------|
+| R      | `\\.\pipe\neven_r`      | `\\.\pipe\neven_r_callback`      |
+| Julia  | `\\.\pipe\neven_julia`  | `\\.\pipe\neven_julia_callback`  |
 | Python | `\\.\pipe\neven_python` | `\\.\pipe\neven_python_callback` |
 
 En NEVEN Studio, los pipes se manejan desde Python con `PipeClient` en `pipe_client.py`. En el XLL, los pipes los maneja `LanguageService` en C++.
 
----
+------------------------------------------------------------------------
 
 ## 6. NEVEN64.xll
 
@@ -382,7 +378,7 @@ El XLL es el componente central del modo Excel. Es una DLL renombrada con extens
 
 ### 6.1 Punto de entrada
 
-```cpp
+``` cpp
 // Core/src/NEVEN.cc
 int xlAutoOpen() {
     // 1. Guard contra doble inicialización
@@ -398,7 +394,7 @@ int xlAutoOpen() {
 
 ### 6.2 Clase principal: `RJ2XCL_Engine`
 
-```cpp
+``` cpp
 class RJ2XCL_Engine {
 public:
     static RJ2XCL_Engine& GetInstance();  // singleton
@@ -410,22 +406,15 @@ public:
 };
 ```
 
-`Init()` hace (en este orden):
-1. Zombie Process Killer: `CreateProcess("taskkill /F /IM ControlR.exe", CREATE_NO_WINDOW)`
-2. Cargar `neven-config.json` vía `ConfigService`
-3. Cargar `neven-languages.json` vía `DiscoveryService`
-4. Crear directorios de usuario si no existen (`CreateDirectoryA` recursivo)
-5. `LanguageManager::ConnectLanguages()` — lanza y conecta los motores
-6. Enviar startup scripts (espera respuesta sincrónicamente con `set_wait(true)`)
-7. `MapFunctions()` — obtiene lista de funciones de cada motor
-8. `RegisterFunctions()` — registra en Excel vía `xlfRegister`
+`Init()` hace (en este orden): 1. Zombie Process Killer: `CreateProcess("taskkill /F /IM ControlR.exe", CREATE_NO_WINDOW)` 2. Cargar `neven-config.json` vía `ConfigService` 3. Cargar `neven-languages.json` vía `DiscoveryService` 4. Crear directorios de usuario si no existen (`CreateDirectoryA` recursivo) 5. `LanguageManager::ConnectLanguages()` — lanza y conecta los motores 6. Enviar startup scripts (espera respuesta sincrónicamente con `set_wait(true)`) 7. `MapFunctions()` — obtiene lista de funciones de cada motor 8. `RegisterFunctions()` — registra en Excel vía `xlfRegister`
 
 > **Bug histórico importante:** `xlfRegister` solo funciona durante `xlAutoOpen`. No se puede llamar desde un timer (`WM_TIMER`) ni desde un hilo de background. Intentarlo causa que Excel cuelgue.
 
 ### 6.3 Funciones UDF: slots estáticos
 
 El archivo `.def` exporta funciones con nombres predefinidos:
-```
+
+```         
 RJ_FunctionCall1000
 RJ_FunctionCall1001
 ...
@@ -438,7 +427,7 @@ Cada función registrada en Excel se asigna a uno de estos slots en tiempo de in
 
 Implementa la lógica central de las UDFs:
 
-```cpp
+``` cpp
 // Ejemplo simplificado
 LPXLOPER12 RJ_Exec_Generic(int idx, LPXLOPER12 args[], int nargs) {
     // 1. Obtener la función registrada en el slot idx
@@ -469,7 +458,7 @@ LPXLOPER12 RJ_Exec_Generic(int idx, LPXLOPER12 args[], int nargs) {
 ### 6.5 Type conversion: `XLOPER12` ↔ `Variable`
 
 | XLOPER12 type | Variable Protobuf |
-|:---|:---|
+|:-----------------------------------|:-----------------------------------|
 | `xltypeNum` | `real` (double) |
 | `xltypeInt` | **`real`** (no `integer`) — R no soporta int64 de Excel |
 | `xltypeStr` | `str` |
@@ -480,7 +469,7 @@ LPXLOPER12 RJ_Exec_Generic(int idx, LPXLOPER12 args[], int nargs) {
 
 ### 6.6 `RaiiXlOper` — RAII para memoria Excel
 
-```cpp
+``` cpp
 class RaiiXlOper {
 public:
     explicit RaiiXlOper(XLOPER12* p) : ptr_(p) {}
@@ -495,13 +484,13 @@ private:
 
 Siempre que el XLL recibe un `XLOPER12` de Excel (p.ej. resultado de `xlfCoerce`), lo envuelve en `RaiiXlOper` para garantizar que `xlFree` sea llamado incluso si hay excepciones.
 
----
+------------------------------------------------------------------------
 
 ## 7. ControlR.exe
 
 ### 7.1 Arquitectura interna
 
-```
+```         
 main()
   ├── Parsear argumentos: -p pipe_name -r r_home
   ├── Crear pipe de management (non-blocking)
@@ -529,9 +518,9 @@ R 4.4.1 introdujo cambios de API incompatibles con BERT/versiones anteriores:
 
 ### 7.3 Localización de R
 
-1. `neven-config.json → NEVEN.R.home` (si está configurado)
-2. Registro de Windows: `HKLM\SOFTWARE\R-core\R\InstallPath`
-3. Default: `C:\Program Files\R\R-4.4.1`
+1.  `neven-config.json → NEVEN.R.home` (si está configurado)
+2.  Registro de Windows: `HKLM\SOFTWARE\R-core\R\InstallPath`
+3.  Default: `C:\Program Files\R\R-4.4.1`
 
 La ruta se convierte a formato 8.3 (`GetShortPathNameW`) para evitar espacios en los argumentos de línea de comandos.
 
@@ -539,23 +528,17 @@ La ruta se convierte a formato 8.3 (`GetShortPathNameW`) para evitar espacios en
 
 Al conectar, el XLL envía el contenido de `startup.r` como `Code{startup=true}`. El motor lo ejecuta y responde. El `set_wait(true)` es crítico — sin él, el pipe queda en estado inconsistente porque el motor enviaría una respuesta que nadie leería.
 
-`startup.r` define:
-- El entorno `NEVEN` (namespace interno)
-- `NEVEN$install.application.pointer(p)` — para callbacks COM
-- `BERT.graphics.device()` — capa de compatibilidad con BERT
-- `NEVEN$list.functions()` — introspección de funciones de usuario
-- `Extraer_outputs(modelo)` — extractor universal de outputs de modelos
-- Fuente de `r_object_to_slots.R` — serializador para Data Lab
+`startup.r` define: - El entorno `NEVEN` (namespace interno) - `NEVEN$install.application.pointer(p)` — para callbacks COM - `BERT.graphics.device()` — capa de compatibilidad con BERT - `NEVEN$list.functions()` — introspección de funciones de usuario - `Extraer_outputs(modelo)` — extractor universal de outputs de modelos - Fuente de `r_object_to_slots.R` — serializador para Data Lab
 
----
+------------------------------------------------------------------------
 
 ## 8. ControlJulia.exe
 
 ### 8.1 Compatibilidad con Julia 1.12.6
 
-Julia 1.12.6 cambió ~50 funciones de API respecto a Julia 0.6 (la versión que usaba BERT). El header `ControlJulia/include/julia_compat.h` contiene 10+ macros de traducción:
+Julia 1.12.6 cambió \~50 funciones de API respecto a Julia 0.6 (la versión que usaba BERT). El header `ControlJulia/include/julia_compat.h` contiene 10+ macros de traducción:
 
-```cpp
+``` cpp
 // Ejemplos de cambios de API:
 // Julia 0.6           → Julia 1.12
 // jl_arrayset()       → eliminado (usar jl_array_ptr_set)
@@ -569,21 +552,19 @@ Julia 1.12.6 cambió ~50 funciones de API respecto a Julia 0.6 (la versión que 
 
 Para eliminar el cold start de Julia (JIT compilation tarda 1-5 minutos), NEVEN genera una sysimage precompilada:
 
-```bash
+``` bash
 julia scripts/build-julia-sysimage.jl
 # Genera: C:\NEVEN\neven_julia.dll (~415 MB)
 ```
 
-`ControlJulia.exe` detecta si existe `neven_julia.dll` en su directorio:
-- Si existe: `jl_init_with_image("C:/NEVEN", "neven_julia.dll")` → Julia arranca en ~1-2 segundos
-- Si no existe: `jl_init()` estándar → Julia arranca en ~1-5 minutos
+`ControlJulia.exe` detecta si existe `neven_julia.dll` en su directorio: - Si existe: `jl_init_with_image("C:/NEVEN", "neven_julia.dll")` → Julia arranca en \~1-2 segundos - Si no existe: `jl_init()` estándar → Julia arranca en \~1-5 minutos
 
 ### 8.3 Librería J4XCL
 
 Los módulos Julia exponen 9 namespaces a Excel con el prefijo `J.`:
 
 | Función Excel | Módulo | Procedimientos |
-|:---|:---|:---|
+|:-----------------------|:-----------------------|:-----------------------|
 | `=J.Algebra(rango, vector, tipo)` | Álgebra lineal | 12: LU, QR, SVD, eigenvalores, det, etc. |
 | `=J.Estadistica(datos, Y, tipo)` | Estadística | 8: descriptiva, correlación, t-test |
 | `=J.Regresion(X, Y, param, tipo)` | Regresión | 5: coeficientes, predicción, residuos |
@@ -594,7 +575,7 @@ Los módulos Julia exponen 9 namespaces a Excel con el prefijo `J.`:
 | `=J.Optimizar(A, b, lr, iter, tipo)` | Optimización | 7: gradiente, Newton, simplex |
 | `=J.Transformar(datos, col, val, tipo)` | Transformaciones | 6: filtrar, ordenar, transponer |
 
----
+------------------------------------------------------------------------
 
 ## 9. ControlPython.exe
 
@@ -606,7 +587,7 @@ Python se compila usando la Stable ABI (`python3.dll` en lugar de `python3XX.dll
 
 Las funciones `P.ai_*` permiten enviar datos a un LLM:
 
-```python
+``` python
 # En startup/startup.py
 def ai_call(data_str, prompt_name="interpretar_regresion"):
     """Envía datos al LLM configurado y retorna interpretación textual."""
@@ -616,7 +597,8 @@ def ai_call(data_str, prompt_name="interpretar_regresion"):
 ```
 
 Configuración en `neven-config.json`:
-```json
+
+``` json
 "AI": {
     "provider": "lmstudio",
     "endpoint": "http://localhost:1234/v1/chat/completions",
@@ -627,13 +609,9 @@ Configuración en `neven-config.json`:
 
 ### 9.3 Estabilización de ControlPython
 
-ControlPython fue congelado temporalmente y requirió 4 fixes críticos para estabilizarse:
-1. **Startup retry**: `PythonInit()` reintenta si `Py_Initialize()` falla en el primer intento
-2. **SEH stack guard**: `__try/__except` alrededor del main pipe loop para capturar excepciones de Windows (ACCESS_VIOLATION, STACK_OVERFLOW)
-3. **Single-block sending**: el frame entero se envía en una sola `WriteFile` — enviar header y payload en llamadas separadas causaba corrupción del protocolo
-4. **Health check**: `GetExitCodeProcess` verifica que el proceso siga vivo antes de cada I/O
+ControlPython fue congelado temporalmente y requirió 4 fixes críticos para estabilizarse: 1. **Startup retry**: `PythonInit()` reintenta si `Py_Initialize()` falla en el primer intento 2. **SEH stack guard**: `__try/__except` alrededor del main pipe loop para capturar excepciones de Windows (ACCESS_VIOLATION, STACK_OVERFLOW) 3. **Single-block sending**: el frame entero se envía en una sola `WriteFile` — enviar header y payload en llamadas separadas causaba corrupción del protocolo 4. **Health check**: `GetExitCodeProcess` verifica que el proceso siga vivo antes de cada I/O
 
----
+------------------------------------------------------------------------
 
 ## 10. NEVENRibbon.dll
 
@@ -642,7 +620,7 @@ COM Add-in separado del XLL. Expone la pestaña "NEVEN" en la cinta de Excel con
 ### 10.1 Grupos y botones
 
 | Grupo | Botones |
-|:---|:---|
+|:-----------------------------------|:-----------------------------------|
 | Motores | Consola R, Consola Julia, Actualizar, Instalar Paquete R/Julia |
 | Visualización | Abrir HTML, Presentaciones, Cerrar Visores |
 | Pluto.jl | Iniciar Pluto, Notebooks, Detener Pluto |
@@ -653,7 +631,7 @@ COM Add-in separado del XLL. Expone la pestaña "NEVEN" en la cinta de Excel con
 
 El Ribbon llama `RJ_SetPointers(IDispatch* app, IDispatch* book)` exportada por el XLL para obtener los punteros COM de la aplicación Excel. Esta función puede ser invocada antes de que todos los motores conecten — por eso verifica el estado antes de llamar `SetApplicationPointer()` en cada servicio.
 
-```cpp
+``` cpp
 // Core/src/NEVEN.cc
 void RJ2XCL_Engine::SetPointers(IDispatch* app, IDispatch* book) {
     for (auto& service : language_services_) {
@@ -667,40 +645,24 @@ void RJ2XCL_Engine::SetPointers(IDispatch* app, IDispatch* book) {
 
 Sin esta verificación, el Ribbon podría llamar `SetPointers` antes de que ControlR esté listo y causar un hang.
 
----
+------------------------------------------------------------------------
 
 ## 11. NEVEN Studio — Servidor Standalone
 
 ### 11.1 Arranque
 
-El usuario lanza `NEVEN Studio.vbs` (doble clic), que:
-1. Mata `ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe` (procesos huérfanos)
-2. Pausa 2 segundos (libera el mutex de instancia)
-3. Ejecuta: `python start_studio.py --no-browser` desde `C:\NEVEN\taskpane\`
-4. Espera hasta 45 segundos a que el servidor escuche en el puerto 5555
-5. Abre `http://localhost:5555` en el navegador por defecto
+El usuario lanza `NEVEN Studio.vbs` (doble clic), que: 1. Mata `ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe` (procesos huérfanos) 2. Pausa 2 segundos (libera el mutex de instancia) 3. Ejecuta: `python start_studio.py --no-browser` desde `C:\NEVEN\taskpane\` 4. Espera hasta 45 segundos a que el servidor escuche en el puerto 5555 5. Abre `http://localhost:5555` en el navegador por defecto
 
 ### 11.2 `start_studio.py`
 
-Responsabilidades:
-- **Mutex de instancia única**: `CreateMutex("Global\\NEVEN_Studio_Launcher")` — previene dos instancias simultáneas. Si el mutex está ocupado, el proceso termina con error descriptivo.
-- **Carga de config**: `load_config(path)` lee `neven-config.json`. Si no existe, usa defaults.
-- **Resolución de lenguajes**: `resolve_languages(config, arg)` decide qué motores iniciar.
-- **Descubrimiento de ejecutables**: `find_exe(config, lang)` busca `ControlR.exe`, etc.
-- **Lanzamiento de motores**: `launch_control(exe, lang, config)` con `subprocess.Popen`.
-  - Para R: prepend `R\bin\x64` al PATH, argumento `-r <R_HOME>`
-  - Para Julia: setea `JULIA_BINDIR`, prepend bin al PATH
-  - Paths con espacios se convierten a 8.3 con `GetShortPathNameW`
-- **Espera de pipes**: `wait_for_pipes(processes, timeout=10.0)` hace `CreateFile` cada 100ms hasta que el pipe esté disponible.
-- **Archivo PID**: `write_pid_file(config, processes, os.getpid())` — JSON con PIDs de todos los procesos.
-- **Servidor HTTP**: `start_server(config, pipe_clients)` inicia `neven_http_server.py` en un hilo daemon.
+Responsabilidades: - **Mutex de instancia única**: `CreateMutex("Global\\NEVEN_Studio_Launcher")` — previene dos instancias simultáneas. Si el mutex está ocupado, el proceso termina con error descriptivo. - **Carga de config**: `load_config(path)` lee `neven-config.json`. Si no existe, usa defaults. - **Resolución de lenguajes**: `resolve_languages(config, arg)` decide qué motores iniciar. - **Descubrimiento de ejecutables**: `find_exe(config, lang)` busca `ControlR.exe`, etc. - **Lanzamiento de motores**: `launch_control(exe, lang, config)` con `subprocess.Popen`. - Para R: prepend `R\bin\x64` al PATH, argumento `-r <R_HOME>` - Para Julia: setea `JULIA_BINDIR`, prepend bin al PATH - Paths con espacios se convierten a 8.3 con `GetShortPathNameW` - **Espera de pipes**: `wait_for_pipes(processes, timeout=10.0)` hace `CreateFile` cada 100ms hasta que el pipe esté disponible. - **Archivo PID**: `write_pid_file(config, processes, os.getpid())` — JSON con PIDs de todos los procesos. - **Servidor HTTP**: `start_server(config, pipe_clients)` inicia `neven_http_server.py` en un hilo daemon.
 
 ### 11.3 `neven_http_server.py`
 
 Servidor HTTP construido sobre `http.server.BaseHTTPRequestHandler`. Maneja:
 
 | Endpoint | Método | Descripción |
-|:---|:---|:---|
+|:-----------------------|:-----------------------|:-----------------------|
 | `/` | GET | Sirve `taskpane.html` |
 | `/static/*` | GET | Archivos estáticos (CSS, JS, imágenes) |
 | `/api/run` | POST | Ejecuta código R/Julia/Python |
@@ -721,7 +683,7 @@ Servidor HTTP construido sobre `http.server.BaseHTTPRequestHandler`. Maneja:
 
 `PipeClient` implementa el protocolo framing C++ en Python:
 
-```python
+``` python
 class PipeClient:
     def connect(self):
         """Abre CreateFile al Named Pipe."""
@@ -745,19 +707,15 @@ class PipeClient:
         return response.result
 ```
 
-`variable_to_python(var)` convierte el resultado a Python nativo:
-- `integer/real` → `int/float`
-- `str` → `str`
-- `arr` → `{"columns": [...], "rows": [[...], ...]}` (formato row-major)
-- `html_content` → `{"html": "...", "title": "..."}`
+`variable_to_python(var)` convierte el resultado a Python nativo: - `integer/real` → `int/float` - `str` → `str` - `arr` → `{"columns": [...], "rows": [[...], ...]}` (formato row-major) - `html_content` → `{"html": "...", "title": "..."}`
 
----
+------------------------------------------------------------------------
 
 ## 12. Data Lab — Análisis Punto-y-Clic
 
 ### 12.1 Arquitectura
 
-```
+```         
 datalab.js (browser)
   selectFunction(id)    → carga sidecar JSON, renderiza formulario
   runAnalysis()         → POST /api/datalab/run
@@ -777,14 +735,15 @@ datalab.js
 
 Cada función del catálogo tiene un archivo `.json` co-ubicado con el `.Studio.R`:
 
-```
+```         
 C:\NEVEN\functions\
   AD_KMedias.Studio.R      ← implementación R
   AD_KMedias.json          ← sidecar (descripción de la interfaz)
 ```
 
 Estructura del sidecar JSON:
-```json
+
+``` json
 {
   "id": "AD_KMedias",
   "label": "K-Medias",
@@ -820,14 +779,13 @@ Estructura del sidecar JSON:
 }
 ```
 
-Tipos de `parameter.type` disponibles:
-- `number`, `text`, `boolean`, `select`, `palette`
+Tipos de `parameter.type` disponibles: - `number`, `text`, `boolean`, `select`, `palette`
 
 El tipo `palette` renderiza botones con 6 swatches de color usando la paleta NEVEN (dorado).
 
 ### 12.3 `_build_r_script()` en `datalab_handler.py`
 
-```python
+``` python
 def _build_r_script(function_id, column_roles, parameters, sidecar):
     """Construye el script R que ejecuta la función Studio."""
     lines = []
@@ -864,14 +822,14 @@ def _build_r_script(function_id, column_roles, parameters, sidecar):
 
 ControlR serializa un `data.frame` de N filas × 5 columnas como un `Array` flatten row-major:
 
-```
+```         
 Array{rows=N, cols=5, colnames=["name","label","type","value","tier"],
       data=[N*5 Variables]}
 
 flat[i + j*N] = campo j del slot i
 ```
 
-```python
+``` python
 def _parse_slots_from_variable(raw):
     """Convierte la Variable Protobuf de ControlR en lista de slots."""
     result = variable_to_python(raw)
@@ -908,7 +866,7 @@ def _parse_slots_from_variable(raw):
 
 La función central de renderizado — **nunca reimplementar**:
 
-```javascript
+``` javascript
 function buildSlotElement(slot) {
     // slot = { name, label, type, value, tier }
     const el = document.createElement('div');
@@ -932,24 +890,15 @@ function buildSlotElement(slot) {
 
 Convierte cualquier objeto R S3 en un data.frame de slots:
 
-```r
+``` r
 r_object_to_slots(obj, tier_map = NULL)
 ```
 
-Detección de tipo (en orden de prioridad):
-1. `data.frame` o `matrix` → `"table"`
-2. `string` con `"<html"` → `"html"`
-3. Vector atómico longitud > 1 → `"vector"`
-4. Vector atómico longitud == 1 → `"scalar"`
-5. Cualquier otro → `"unknown"`
+Detección de tipo (en orden de prioridad): 1. `data.frame` o `matrix` → `"table"` 2. `string` con `"<html"` → `"html"` 3. Vector atómico longitud \> 1 → `"vector"` 4. Vector atómico longitud == 1 → `"scalar"` 5. Cualquier otro → `"unknown"`
 
-Serialización JSON:
-- `"table"` → `jsonlite::toJSON(df, dataframe="rows")`
-- `"html"` → string tal cual
-- `"vector"` → `jsonlite::toJSON(as.list(val))`
-- `"scalar"` → `jsonlite::toJSON(val, auto_unbox=TRUE)`
+Serialización JSON: - `"table"` → `jsonlite::toJSON(df, dataframe="rows")` - `"html"` → string tal cual - `"vector"` → `jsonlite::toJSON(as.list(val))` - `"scalar"` → `jsonlite::toJSON(val, auto_unbox=TRUE)`
 
----
+------------------------------------------------------------------------
 
 ## 13. Data Studio — Exploración de Datos
 
@@ -966,7 +915,7 @@ Serialización JSON:
 
 ### 13.2 DuckDB como motor SQL
 
-```python
+``` python
 # En neven_http_server.py
 import duckdb
 _duckdb_conn = duckdb.connect()  # in-memory
@@ -997,7 +946,7 @@ def execute_query(sql):
 
 El flujo de datos DataStudio → Presentaciones usa `postMessage` cruzado entre iframes:
 
-```javascript
+``` javascript
 // En taskpane.html
 function sendTableToSlide(html, title) {
     const msg = {
@@ -1018,7 +967,7 @@ function sendTableToSlide(html, title) {
 }
 ```
 
----
+------------------------------------------------------------------------
 
 ## 14. Run Script — Editor de Scripts
 
@@ -1035,7 +984,7 @@ function sendTableToSlide(html, title) {
 
 El servidor retorna el resultado del script como JSON. `renderScriptResultRS` normaliza el tipo y delega a `buildSlotElement`:
 
-```javascript
+``` javascript
 function renderScriptResultRS(res) {
     let slot = { name: 'resultado', label: 'Resultado', tier: 1 };
     
@@ -1064,7 +1013,7 @@ function renderScriptResultRS(res) {
 
 ### 14.3 `/api/save_script`
 
-```python
+``` python
 def _handle_save_script(self, body):
     """Escribe el contenido del script al filesystem."""
     path = body.get('path', '').strip()
@@ -1084,7 +1033,7 @@ def _handle_save_script(self, body):
     return {'status': 'ok', 'path': path}
 ```
 
----
+------------------------------------------------------------------------
 
 ## 15. Creador de Presentaciones
 
@@ -1093,7 +1042,8 @@ def _handle_save_script(self, body):
 El Creador de Presentaciones es una aplicación HTML/CSS/JS autocontenida en `CreadorPresentaciones/`. Se embebe en NEVEN Studio como un iframe lazy-loaded en el tab "Presentaciones". También puede usarse de forma independiente abriendo `index.html` directamente.
 
 Cuando se carga dentro de NEVEN Studio (dentro de un iframe), detecta el contexto y oculta el header duplicado:
-```html
+
+``` html
 <script>
 if (window.self !== window.top) {
     document.documentElement.classList.add('embedded');
@@ -1105,7 +1055,7 @@ if (window.self !== window.top) {
 
 Todo el estado y la lógica residen en la clase `PresentationEditor`:
 
-```javascript
+``` javascript
 class PresentationEditor {
     constructor() {
         this.slides = [];         // array de objetos slide
@@ -1125,7 +1075,7 @@ class PresentationEditor {
 
 Cada slide es un objeto plain JS con estas propiedades:
 
-```javascript
+``` javascript
 {
     id: 'slide-N',           // string único
     text: 'Contenido',       // texto principal
@@ -1164,7 +1114,7 @@ Cada slide es un objeto plain JS con estas propiedades:
 
 El panel de propiedades usa un `propMap` donde cada campo del DOM tiene su propia función de escritura que modifica **únicamente** su propiedad en el slide activo:
 
-```javascript
+``` javascript
 _bindProperties() {
     const propMap = [
         [this.el.x,           s => { s.x = parseInt(this.el.x.value) || 0; }],
@@ -1197,7 +1147,8 @@ _bindProperties() {
 `_buildPresentationHTML(forExport)` genera el HTML completo para Preview o Exportar.
 
 **Para tablas HTML embebidas (`type='iframe'` con `_srcdoc`)**:
-```javascript
+
+``` javascript
 const zoom = s.contentZoom || 1.0;
 const tx = ((s.contentOffsetX ?? 50) - 50);  // desplazamiento desde centro en vw
 const ty = ((s.contentOffsetY ?? 50) - 50);  // desplazamiento desde centro en vh
@@ -1211,30 +1162,19 @@ const ty = ((s.contentOffsetY ?? 50) - 50);  // desplazamiento desde centro en v
 </div>`
 ```
 
-**Por qué `translate + scale` en lugar de `width/height`:**
-- `width/height` en un contenedor no escala el contenido — solo agrandea el espacio vacío
-- `transform:scale(N)` escala todo el contenido (fuentes, celdas, bordes) uniformemente
-- `transform` no afecta el layout del DOM — el contenedor padre no se recorta si no tiene `overflow:hidden`
-- El desplazamiento `(offsetX - 50) vw` funciona porque `50/50` = centrado, `60/50` = 10vw a la derecha
+**Por qué `translate + scale` en lugar de `width/height`:** - `width/height` en un contenedor no escala el contenido — solo agrandea el espacio vacío - `transform:scale(N)` escala todo el contenido (fuentes, celdas, bordes) uniformemente - `transform` no afecta el layout del DOM — el contenedor padre no se recorta si no tiene `overflow:hidden` - El desplazamiento `(offsetX - 50) vw` funciona porque `50/50` = centrado, `60/50` = 10vw a la derecha
 
-**Por qué `%` no funciona para `height` en Impress.js:**
-Los elementos `.step` de Impress.js son bloques sin altura definida. `height: 80%` resuelve a 0 porque no hay referencia de altura en el padre. La solución es usar `vh` (unidades de viewport). El método `_normalizeUnit(val, axis)` convierte `%` → `vw/vh` automáticamente.
+**Por qué `%` no funciona para `height` en Impress.js:** Los elementos `.step` de Impress.js son bloques sin altura definida. `height: 80%` resuelve a 0 porque no hay referencia de altura en el padre. La solución es usar `vh` (unidades de viewport). El método `_normalizeUnit(val, axis)` convierte `%` → `vw/vh` automáticamente.
 
 ### 15.6 Preview con overlay flotante de propiedades
 
-Cuando el usuario hace clic en "Preview":
-1. `_buildPresentationHTML(false)` genera el HTML y lo asigna a `previewFrame.srcdoc`
-2. `_attachPropsToPreview()` crea (o reutiliza) el overlay `#preview-props-overlay`
-3. El overlay usa `position:fixed` (z-index 9999) para escapar de `overflow:hidden` del modal
-4. Los campos del overlay tienen `_pvBound = true` para no registrar listeners duplicados
-5. Al cambiar cualquier campo, el handler actualiza `this.currentSlide.propiedad` directamente
-6. El preview se regenera: `this.el.previewFrame.srcdoc = this._buildPresentationHTML(false)`
+Cuando el usuario hace clic en "Preview": 1. `_buildPresentationHTML(false)` genera el HTML y lo asigna a `previewFrame.srcdoc` 2. `_attachPropsToPreview()` crea (o reutiliza) el overlay `#preview-props-overlay` 3. El overlay usa `position:fixed` (z-index 9999) para escapar de `overflow:hidden` del modal 4. Los campos del overlay tienen `_pvBound = true` para no registrar listeners duplicados 5. Al cambiar cualquier campo, el handler actualiza `this.currentSlide.propiedad` directamente 6. El preview se regenera: `this.el.previewFrame.srcdoc = this._buildPresentationHTML(false)`
 
 El overlay es arrastrable (drag con `getBoundingClientRect` para coordenadas `position:fixed`) y minimizable con el botón `−/+`.
 
 ### 15.7 Flujo DataLab/DataStudio → Slide
 
-```javascript
+``` javascript
 // 1. En datalab.js o taskpane.html:
 window.parent.postMessage({
     type: 'NEVEN_ADD_SLIDE',
@@ -1271,15 +1211,13 @@ window.addEventListener('message', e => {
 });
 ```
 
----
+------------------------------------------------------------------------
 
 ## 16. Librería R (R4XCL)
 
 ### 16.1 Estructura
 
-Cada módulo estadístico tiene:
-- `libreria/R/MR_Lineal.Studio.R` — implementación completa
-- `Install/functions/MR_Lineal.json` — sidecar Data Lab
+Cada módulo estadístico tiene: - `libreria/R/MR_Lineal.Studio.R` — implementación completa - `Install/functions/MR_Lineal.json` — sidecar Data Lab
 
 Las funciones se registran en Excel con prefijo `R.`: `=R.MR_Lineal(Y, X, TipoOutput)`.
 
@@ -1287,7 +1225,7 @@ Las funciones se registran en Excel con prefijo `R.`: `=R.MR_Lineal(Y, X, TipoOu
 
 Todas las funciones R4XCL siguen el patrón `TipoOutput`:
 
-```r
+``` r
 MR_Lineal <- function(Y, X, TipoOutput = 1) {
     modelo <- lm(Y ~ ., data = data.frame(Y=Y, X))
     
@@ -1305,19 +1243,19 @@ MR_Lineal <- function(Y, X, TipoOutput = 1) {
 ### 16.3 Módulos disponibles
 
 | Prefijo | Módulo | Funciones |
-|:---|:---|:---|
-| MR_ | Regresión | MR_Lineal, MR_Binario, MR_Poisson, MR_Tobit, MR_PanelData, MR_SVM |
-| AD_ | Análisis de Datos | AD_ACP, AD_KMedias, AD_Descriptiva, AD_Psicometria |
-| ST_ | Series de Tiempo | ST_SeriesTemporales, ST_Autoregresivos, ST_Filtro |
-| GR_ | Gráficos | GR_PlotlyView, GR_QuickPlot |
-| RG_ | Modelos avanzados | RG_Mixtos, RG_Supervivencia, RG_Bayesiana |
+|:-----------------------|:-----------------------|:-----------------------|
+| MR\_ | Regresión | MR_Lineal, MR_Binario, MR_Poisson, MR_Tobit, MR_PanelData, MR_SVM |
+| AD\_ | Análisis de Datos | AD_ACP, AD_KMedias, AD_Descriptiva, AD_Psicometria |
+| ST\_ | Series de Tiempo | ST_SeriesTemporales, ST_Autoregresivos, ST_Filtro |
+| GR\_ | Gráficos | GR_PlotlyView, GR_QuickPlot |
+| RG\_ | Modelos avanzados | RG_Mixtos, RG_Supervivencia, RG_Bayesiana |
 | R. | Visualización interactiva | R.Pivot, R.Esquisse, R.D3, R.Dashboard, R.Map |
 
 ### 16.4 Funciones Data Lab (`.Studio.R`)
 
 Las funciones del Data Lab tienen la convención `.Studio()`:
 
-```r
+``` r
 AD_KMedias.Studio <- function(data_Variables, K=3, PaletaColores="1", ...) {
     # Ejecuta el análisis
     resultado <- kmeans(data_Variables, centers=K)
@@ -1331,13 +1269,13 @@ El resultado de `r_object_to_slots(resultado)` es el data.frame que `_parse_slot
 
 ### 16.5 `Extraer_outputs(modelo)` — extractor universal
 
-```r
+``` r
 Extraer_outputs(objeto, nombre_modelo = NULL)
 ```
 
 Extrae TODOS los outputs de cualquier modelo R como un data.frame estructurado:
 
-```
+```         
 [Modelo] [Seccion] [Parametro] [Metrica] [Valor]
 lm_reg   Coefficients  (Intercept)  Estimate  2.345
 lm_reg   Coefficients  X1           Estimate  0.876
@@ -1348,7 +1286,7 @@ lm_reg   F_Statistic   F_Value      Stat      45.23
 
 Disponible como `TipoOutput=N_MAX` en 11 funciones. Permite al usuario obtener todos los outputs con una sola llamada.
 
----
+------------------------------------------------------------------------
 
 ## 17. Librería Julia (J4XCL)
 
@@ -1357,7 +1295,8 @@ Disponible como `TipoOutput=N_MAX` en 11 funciones. Permite al usuario obtener t
 Archivo principal: `libreria/JULIA/functions.jl` carga los 9 módulos.
 
 Cada módulo es un módulo Julia (namespace):
-```julia
+
+``` julia
 module JM_Algebra
     using LinearAlgebra
 
@@ -1373,7 +1312,7 @@ end
 
 El módulo de startup de Julia define aliases para que el usuario pueda escribir `J.Algebra` en lugar de `J.JM_Algebra`:
 
-```julia
+``` julia
 # En startup/startup.jl
 J_Algebra    = JM_Algebra.main
 J_Estadistica = JM_Estadistica.main
@@ -1386,7 +1325,7 @@ Los nombres originales siguen funcionando — los aliases son adicionales.
 
 Julia usa un GC que puede interferir con los Named Pipes en ventanas de tiempo largas. El `GCMonitor` en C++ detecta presión de memoria y puede forzar un `GC.gc()` cuando es seguro hacerlo.
 
----
+------------------------------------------------------------------------
 
 ## 18. Seguridad
 
@@ -1394,25 +1333,20 @@ Julia usa un GC que puede interferir con los Named Pipes en ventanas de tiempo l
 
 Protege contra código malicioso en `=NEVEN.r()`, `=NEVEN.j()`, `=NEVEN.p()` y la consola REPL.
 
-**Mecanismo 1 — Whitespace stripping:**
-`sys tem()` → strip → `system()` → bloqueado
+**Mecanismo 1 — Whitespace stripping:** `sys tem()` → strip → `system()` → bloqueado
 
-**Mecanismo 2 — Concatenation detection:**
-`paste0("sys","tem()")` → detectado como intento de bypass
+**Mecanismo 2 — Concatenation detection:** `paste0("sys","tem()")` → detectado como intento de bypass
 
-**Mecanismo 3 — Case insensitivity:**
-`SYSTEM()`, `System()`, `sYsTeM()` → todos bloqueados
+**Mecanismo 3 — Case insensitivity:** `SYSTEM()`, `System()`, `sYsTeM()` → todos bloqueados
 
-**Mecanismo 4 — Context-aware detection:**
-Un `file.remove` dentro de un string literal no se bloquea, pero fuera de comillas sí.
+**Mecanismo 4 — Context-aware detection:** Un `file.remove` dentro de un string literal no se bloquea, pero fuera de comillas sí.
 
-**Mecanismo 5 — Unified enforcement:**
-El mismo mecanismo aplica en REPL, AutoLoader y llamadas arbitrarias.
+**Mecanismo 5 — Unified enforcement:** El mismo mecanismo aplica en REPL, AutoLoader y llamadas arbitrarias.
 
 Patrones bloqueados por lenguaje:
 
 | R | Julia | Python |
-|:---|:---|:---|
+|:-----------------------|:-----------------------|:-----------------------|
 | `system()`, `system2()` | `run()`, `pipeline()` | `os.system()`, `subprocess.*` |
 | `shell()`, `shell.exec()` | `@ccall`, `ccall()` | `eval()`, `exec()` |
 | `file.remove()`, `unlink()` | `unsafe_*` | `open()` con modo `w` |
@@ -1423,19 +1357,13 @@ Patrones bloqueados por lenguaje:
 
 ### 18.2 InputSanitizer
 
-Allowlist validation para paths de `CreateProcess`. Solo permite ejecutar:
-- `ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe`
-- `julia.exe`, `Rgui.exe` (consolas interactivas)
-- `quarto.exe` (renderizado de documentos)
+Allowlist validation para paths de `CreateProcess`. Solo permite ejecutar: - `ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe` - `julia.exe`, `Rgui.exe` (consolas interactivas) - `quarto.exe` (renderizado de documentos)
 
 Cualquier otro path es rechazado.
 
 ### 18.3 MessageValidator
 
-Valida frames Protobuf antes de deserializar:
-- Longitud del frame ≥ 4 bytes
-- Longitud declarada ≤ 256 KB (`kMaxDynamicBufferSize`)
-- El payload puede ser deserializado como `CallResponse`
+Valida frames Protobuf antes de deserializar: - Longitud del frame ≥ 4 bytes - Longitud declarada ≤ 256 KB (`kMaxDynamicBufferSize`) - El payload puede ser deserializado como `CallResponse`
 
 ### 18.4 SafePipeHandle
 
@@ -1447,7 +1375,7 @@ RAII wrapper para handles de Named Pipes con `CRITICAL_SECTION` para operaciones
 
 ### 18.6 MSVC hardening flags
 
-```
+```         
 /GS           — buffer overrun detection
 /guard:cf     — Control Flow Guard
 /sdl          — Additional Security Checks
@@ -1456,7 +1384,7 @@ RAII wrapper para handles de Named Pipes con `CRITICAL_SECTION` para operaciones
 /CETCOMPAT    — Control-flow Enforcement Technology
 ```
 
----
+------------------------------------------------------------------------
 
 ## 19. Sistema de Configuración
 
@@ -1464,7 +1392,7 @@ RAII wrapper para handles de Named Pipes con `CRITICAL_SECTION` para operaciones
 
 Ubicación en producción: `C:\NEVEN\neven-config.json`
 
-```json
+``` json
 {
   "NEVEN": {
     "functionsDirectory": "C:\\NEVEN\\functions",
@@ -1497,7 +1425,7 @@ Ubicación en producción: `C:\NEVEN\neven-config.json`
 
 Define los motores de lenguaje. El XLL lee este archivo para saber cómo lanzar cada motor:
 
-```json
+``` json
 [
   {
     "name": "R",
@@ -1516,7 +1444,7 @@ Define los motores de lenguaje. El XLL lee este archivo para saber cómo lanzar 
 
 Singleton que expone getters tipados:
 
-```cpp
+``` cpp
 int GetCallTimeoutMs() const;
 int GetCallTimeoutMs(const std::string& lang) const;  // por lenguaje
 bool IsSandboxEnabled() const;
@@ -1527,13 +1455,13 @@ HealthStatus GetLanguageHealth(const std::string& lang) const;
 
 Paths con variables de entorno se expanden automáticamente (`%USERPROFILE%`, `%NEVEN_HOME%`).
 
----
+------------------------------------------------------------------------
 
 ## 20. Build System
 
 ### 20.1 CMake — estructura
 
-```
+```         
 CMakeLists.txt (raíz)
   ├── FetchContent: Protobuf v21.12, GTest v1.14.0, rapidcheck, WebView2 SDK
   ├── add_subdirectory(PB)        → PB.lib
@@ -1550,14 +1478,15 @@ CMakeLists.txt (raíz)
 
 ### 20.2 Comandos de build
 
-```powershell
+``` powershell
 # Desde la raíz del repositorio
 cmake -S . -B Build -G "Visual Studio 17 2022" -A x64
 cmake --build Build --config Release --target INSTALL
 ```
 
 El target `INSTALL` copia todos los binarios a `Build/Dist/`:
-```
+
+```         
 Build/Dist/
   NEVEN64.xll
   NEVENRibbon.dll
@@ -1572,7 +1501,7 @@ Build/Dist/
 
 ### 20.3 Build del Ribbon (separado)
 
-```powershell
+``` powershell
 scripts/build-ribbon.ps1
 ```
 
@@ -1580,7 +1509,7 @@ El Ribbon se compila con MSBuild (no CMake) porque usa ATL/COM que tiene mejor s
 
 ### 20.4 Variables de build importantes
 
-```cmake
+``` cmake
 NEVEN_ENABLE_PYTHON=ON      # incluir ControlPython.exe (default: ON)
 BUILD_NEVEN_SIM=ON          # incluir NEVEN-SIM.xll (default: OFF)
 CMAKE_BUILD_TYPE=Release    # Release / Debug
@@ -1590,7 +1519,7 @@ CMAKE_BUILD_TYPE=Release    # Release / Debug
 
 ControlR necesita `R64.lib` y `RGraphApp64.lib`. Estas se generan desde la instalación de R:
 
-```powershell
+``` powershell
 scripts/rebuild-r-libs.ps1
 ```
 
@@ -1598,7 +1527,7 @@ Usa `dumpbin` + `lib` para generar las librerías de importación desde las DLLs
 
 ### 20.6 Julia sysimage
 
-```bash
+``` bash
 julia scripts/build-julia-sysimage.jl
 # Genera C:\NEVEN\neven_julia.dll (~415 MB)
 # Tarda 5-10 minutos
@@ -1608,20 +1537,20 @@ julia scripts/build-julia-sysimage.jl
 
 El Ribbon es un COM DLL y necesita registrarse en Windows:
 
-```cmd
+``` cmd
 regsvr32 C:\NEVEN\NEVENRibbon.dll
 ```
 
 El instalador hace esto automáticamente con elevación de permisos.
 
----
+------------------------------------------------------------------------
 
 ## 21. Testing
 
 ### 21.1 Suite completa: 357 tests
 
 | Suite | Tests | Tecnología | Qué cubre |
-|:---|:---:|:---|:---|
+|:----------------|:------------------:|:----------------|:----------------|
 | SandboxTest | 154 | GTest | Todos los patrones de sandbox R/Julia/Python + bypass |
 | InputSanitizer | 21 | GTest | Allowlist validation para CreateProcess |
 | ReliabilityPBT | 24 | rapidcheck | Property-based: timeouts, mensajes de error, health |
@@ -1635,18 +1564,18 @@ El instalador hace esto automáticamente con elevación de permisos.
 | BuildVerification | 4 | GTest | Verificación de que los binarios se generan |
 | RLibrary | 1 | GTest | r_object_to_slots.R funciona correctamente |
 | EnvLookup | 4 | GTest | DiscoveryService, detección de R/Julia/Python |
-| Otros | ~12 | GTest | COM, callbacks, tipos |
+| Otros | \~12 | GTest | COM, callbacks, tipos |
 
 ### 21.2 Tests de Python
 
-```python
+``` python
 # tests/test_datalab_handler.py
 # tests/test_r_object_to_slots.R
 ```
 
 ### 21.3 Ejecutar los tests
 
-```powershell
+``` powershell
 cmake --build Build --config Release
 cd Build
 ctest -C Release --output-on-failure
@@ -1656,7 +1585,7 @@ ctest -C Release --output-on-failure
 
 Los tests corren sin Excel, R ni Julia gracias a `MockExcelBridge`:
 
-```cpp
+``` cpp
 // tests/mocks/mock_engine_backend.cc
 class MockEngineBackend : public IEngineBackend {
     Variable Execute(const Code& code) override {
@@ -1671,42 +1600,34 @@ class MockEngineBackend : public IEngineBackend {
 };
 ```
 
----
+------------------------------------------------------------------------
 
 ## 22. Instalación y Despliegue
 
 ### 22.1 Prerrequisitos
 
-| Componente | Versión mínima | Descarga |
-|:---|:---|:---|
-| R | 4.4.1+ | cran.r-project.org |
-| Julia | 1.12.6+ | julialang.org |
-| Python | 3.10+ | python.org |
-| WebView2 Runtime | Cualquiera | Preinstalado en Windows 10/11 |
-| Windows | 10+ (64-bit) | — |
-| Excel | 2013+ | — |
+| Componente       | Versión mínima | Descarga                      |
+|:-----------------|:---------------|:------------------------------|
+| R                | 4.4.1+         | cran.r-project.org            |
+| Julia            | 1.12.6+        | julialang.org                 |
+| Python           | 3.10+          | python.org                    |
+| WebView2 Runtime | Cualquiera     | Preinstalado en Windows 10/11 |
+| Windows          | 10+ (64-bit)   | —                             |
+| Excel            | 2013+          | —                             |
 
 ### 22.2 Instalación automática
 
-```cmd
+``` cmd
 Install-NEVEN.exe
 ```
 
-El instalador hace:
-1. Detecta R, Julia, Python y Excel automáticamente
-2. Pregunta directorio de instalación (default: `C:\NEVEN\`)
-3. Copia binarios y configs
-4. Registra XLL en Excel: `%APPDATA%\Microsoft\AddIns\NEVEN64.xll`
-5. Registra Ribbon COM: `regsvr32 NEVENRibbon.dll`
-6. Crea `%USERPROFILE%\Documents\NEVEN\functions\` con ejemplos
-7. Instala paquetes R necesarios: `install.packages(c("jsonlite","plotly","ggplot2","stargazer",...))`
-8. Verifica: `=NEVEN.r("1+1")` → 2
+El instalador hace: 1. Detecta R, Julia, Python y Excel automáticamente 2. Pregunta directorio de instalación (default: `C:\NEVEN\`) 3. Copia binarios y configs 4. Registra XLL en Excel: `%APPDATA%\Microsoft\AddIns\NEVEN64.xll` 5. Registra Ribbon COM: `regsvr32 NEVENRibbon.dll` 6. Crea `%USERPROFILE%\Documents\NEVEN\functions\` con ejemplos 7. Instala paquetes R necesarios: `install.packages(c("jsonlite","plotly","ggplot2","stargazer",...))` 8. Verifica: `=NEVEN.r("1+1")` → 2
 
 ### 22.3 Despliegue manual de archivos editados
 
 **Regla crítica:** NUNCA usar `Copy-Item` de PowerShell para archivos con caracteres UTF-8 (JS, Python). Corrompe el encoding.
 
-```powershell
+``` powershell
 # CORRECTO — preserva UTF-8
 [System.IO.File]::Copy("repo\archivo.js", "C:\NEVEN\taskpane\archivo.js", $true)
 
@@ -1717,7 +1638,7 @@ Copy-Item "repo\archivo.js" "C:\NEVEN\taskpane\archivo.js" -Force
 Rutas de producción:
 
 | Archivo del repositorio | Ruta en producción |
-|:---|:---|
+|:-----------------------------------|:-----------------------------------|
 | `TaskPane/taskpane.html` | `C:\NEVEN\taskpane\taskpane.html` |
 | `TaskPane/datalab.js` | `C:\NEVEN\taskpane\datalab.js` |
 | `ControlPython/startup/datalab_handler.py` | `C:\NEVEN\startup\datalab_handler.py` |
@@ -1730,7 +1651,7 @@ Rutas de producción:
 
 ### 22.4 Reiniciar el servidor
 
-```powershell
+``` powershell
 # Matar el servidor actual
 netstat -ano | findstr :5555 | findstr LISTENING
 taskkill /PID <PID> /F
@@ -1746,38 +1667,36 @@ python start_studio.py --no-browser
 
 ### 22.5 Verificar sintaxis JS antes de desplegar
 
-```powershell
+``` powershell
 node --check "F:\ANTIGRAVITY\2026\NEVEN\NEVEN\CreadorPresentaciones\script.js"
 # Exit code 0 = OK
 ```
 
----
+------------------------------------------------------------------------
 
 ## 23. Guía de Resolución de Problemas
 
 ### 23.1 Excel no muestra las funciones R./J.
 
 **Diagnóstico:**
-```excel
+
+``` excel
 =NEVEN.r("1+1")
 ```
+
 Si retorna `#VALOR!` en lugar de `2`, el motor R no está conectado.
 
-**Verificar:**
-1. Abrir Task Manager → verificar que `ControlR.exe` esté corriendo
-2. Revisar `C:\NEVEN\neven.log` (últimas 50 líneas)
-3. Esperar 15-30 segundos — los motores conectan en background
+**Verificar:** 1. Abrir Task Manager → verificar que `ControlR.exe` esté corriendo 2. Revisar `C:\NEVEN\neven.log` (últimas 50 líneas) 3. Esperar 15-30 segundos — los motores conectan en background
 
-**Si ControlR.exe no corre:**
-- Cerrar Excel completamente
-- Ejecutar `NEVEN Studio.vbs` (mata procesos huérfanos y los reinicia)
+**Si ControlR.exe no corre:** - Cerrar Excel completamente - Ejecutar `NEVEN Studio.vbs` (mata procesos huérfanos y los reinicia)
 
 ### 23.2 NEVEN Studio no arranca
 
 **Síntoma:** El .vbs abre pero el browser no responde en localhost:5555.
 
 **Pasos:**
-```powershell
+
+``` powershell
 # Verificar si hay proceso en el puerto
 netstat -ano | findstr :5555
 
@@ -1798,7 +1717,8 @@ python start_studio.py
 **Causa:** El parser `_parse_slots_from_variable` detectó incorrectamente el formato del Array.
 
 **Diagnóstico:**
-```python
+
+``` python
 # En Python, conectar directamente al pipe y ver el raw:
 from pipe_client import PipeClient, variable_to_python
 
@@ -1819,7 +1739,8 @@ Si `columns = ["name","label","type","value","tier"]` y `rows[0]` tiene 5 elemen
 **Causa:** El gráfico se retorna como `type='html'` con el tag `<neven-plotly>` que contiene el JSON del gráfico en base64.
 
 **Fix en `datalab.js`:**
-```javascript
+
+``` javascript
 function _renderPlotlyJSON(jsonStr, name) {
     // Extraer base64 del tag <neven-plotly>
     const match = jsonStr.match(/<neven-plotly>(.*?)<\/neven-plotly>/s);
@@ -1840,12 +1761,14 @@ function _renderPlotlyJSON(jsonStr, name) {
 **Causa:** `Copy-Item` de PowerShell recodifica el archivo de UTF-8 a latin-1.
 
 **Fix:**
-```powershell
+
+``` powershell
 [System.IO.File]::Copy("origen.js", "destino.js", $true)
 ```
 
 **Verificar:**
-```powershell
+
+``` powershell
 # Verificar encoding del archivo en producción
 $bytes = [System.IO.File]::ReadAllBytes("C:\NEVEN\taskpane\datalab.js")
 $bytes[0..3]  # Debe ser 239 187 191 (BOM UTF-8) o simplemente texto UTF-8
@@ -1857,7 +1780,7 @@ $bytes[0..3]  # Debe ser 239 187 191 (BOM UTF-8) o simplemente texto UTF-8
 
 **Causa:** `R64.lib` y `RGraphApp64.lib` fueron generadas para una versión anterior de R. Si actualizaste R, necesitas regenerar las librerías.
 
-```powershell
+``` powershell
 scripts/rebuild-r-libs.ps1
 cmake --build Build --config Release --target ControlR
 ```
@@ -1877,19 +1800,20 @@ cmake --build Build --config Release --target ControlR
 **Causa:** Versión antigua de `script.js` con `_updateFromPanel()` monolítica.
 
 **Verificar:**
-```powershell
+
+``` powershell
 # Verificar fecha del archivo en producción
 (Get-Item "C:\NEVEN\taskpane\presentaciones\script.js").LastWriteTime
 # Debe ser >= 2026-08-02
 ```
 
----
+------------------------------------------------------------------------
 
 ## 24. Convenciones de Código
 
 ### 24.1 C++
 
-```
+```         
 Clases:    PascalCase           → LanguageManager, SandboxVerifier
 Funciones: snake_case           → register_functions(), connect_pipe()
 Miembros:  snake_case_ (trailing underscore) → pipe_handle_, next_id_
@@ -1898,15 +1822,11 @@ Archivos:  .cc para implementación, .h para headers
 Macros de logging: RJ2XCL_LOG_INFO("mensaje"), RJ2XCL_LOG_ERROR("error")
 ```
 
-**Nunca usar en código de producción:**
-- `std::cout` o `std::cerr` → usar `RJ2XCL_LOG_*`
-- `MessageBoxA()` / `MessageBoxW()` → debugging únicamente
-- `system()` → usar `CreateProcess` con `CREATE_NO_WINDOW`
-- Variables estáticas en funciones UDF → usar `thread_local`
+**Nunca usar en código de producción:** - `std::cout` o `std::cerr` → usar `RJ2XCL_LOG_*` - `MessageBoxA()` / `MessageBoxW()` → debugging únicamente - `system()` → usar `CreateProcess` con `CREATE_NO_WINDOW` - Variables estáticas en funciones UDF → usar `thread_local`
 
 ### 24.2 JavaScript (NEVEN Studio)
 
-```
+```         
 Funciones privadas: _camelCase    → _renderCanvas(), _buildPresentationHTML()
 Funciones públicas: camelCase     → addSlide(), showPreview()
 Clases: PascalCase                → PresentationEditor
@@ -1916,7 +1836,7 @@ Variables DOM: el.nombreCampo     → this.el.slidesList, this.el.canvas
 **Reglas de reutilización (CRÍTICO):**
 
 | Componente | Ubicación | Cuándo usar |
-|:---|:---|:---|
+|:-----------------------|:-----------------------|:-----------------------|
 | `buildSlotElement(slot)` | `datalab.js` | Renderizar cualquier resultado de R/Julia/Python |
 | `renderSlotTable(rows, name)` | `datalab.js` | Mostrar tablas con paginación |
 | `_renderPlotlyJSON(json, name)` | `datalab.js` | Renderizar gráficos Plotly |
@@ -1927,7 +1847,7 @@ Variables DOM: el.nombreCampo     → this.el.slidesList, this.el.canvas
 
 ### 24.3 Python
 
-```python
+``` python
 # Funciones: snake_case
 def load_data(cols, types, rows):
     pass
@@ -1942,7 +1862,7 @@ MAX_RESPONSE_BYTES = 256 * 1024
 
 ### 24.4 R (funciones de usuario)
 
-```r
+``` r
 # Funciones de la librería R4XCL: PascalCase con guiones bajos
 MR_Lineal <- function(Y, X, TipoOutput = 1) { ... }
 AD_ACP <- function(Datos, TipoOutput = 1) { ... }
@@ -1952,12 +1872,12 @@ AD_ACP <- function(Datos, TipoOutput = 1) { ... }
 .neven_dl_detect_type <- function(val) { ... }
 ```
 
----
+------------------------------------------------------------------------
 
 ## 25. Glosario
 
 | Término | Definición |
-|:---|:---|
+|:-----------------------------------|:-----------------------------------|
 | **XLL** | DLL renombrada con extensión `.xll`. Add-in nativo de Excel que puede registrar funciones de hoja de cálculo (UDFs). |
 | **UDF** | User-Defined Function. Función personalizada registrada en Excel que el usuario puede llamar desde una celda como `=MI_FUNCION()`. |
 | **Named Pipe** | Mecanismo IPC de Windows. Un canal de comunicación bidireccional con nombre (`\\.\pipe\nombre`) entre dos procesos. |
@@ -1965,7 +1885,7 @@ AD_ACP <- function(Datos, TipoOutput = 1) { ... }
 | **Frame** | El protocolo de NEVEN: 4 bytes de longitud (signed int32 LE) seguidos del payload Protobuf serializado. |
 | **Slot** | Unidad de resultado del Data Lab: `{name, label, type, value, tier}`. Una función puede retornar múltiples slots (tabla, gráfico, escalar). |
 | **Sidecar JSON** | Archivo `.json` co-ubicado con una función `.Studio.R` que describe su interfaz para el Data Lab (roles, parámetros, tipos). |
-| **Control*.exe** | Proceso hijo que embebe un motor de lenguaje (R, Julia, Python). Corre de forma aislada — si crashea, no afecta a Excel. |
+| \*\*Control\*.exe\*\* | Proceso hijo que embebe un motor de lenguaje (R, Julia, Python). Corre de forma aislada — si crashea, no afecta a Excel. |
 | **SandboxVerifier** | Componente que valida código enviado por el usuario antes de ejecutarlo, bloqueando patrones peligrosos. |
 | **WebView2** | Edge Chromium embebido en una aplicación Win32. Usado para renderizar Plotly, D3.js, Leaflet dentro de Excel. |
 | **STA thread** | Single-Threaded Apartment. Requerido por COM (y por WebView2). El XLL crea un thread dedicado para WebView2. |
@@ -1981,11 +1901,11 @@ AD_ACP <- function(Datos, TipoOutput = 1) { ... }
 | **neven-config.json** | Archivo de configuración central. Define directorios, timeouts, sandbox, AI, WebView2. |
 | **Zombie Process Killer** | Código en `Init()` que mata procesos huérfanos de sesiones anteriores usando `taskkill /F /IM`. |
 
----
+------------------------------------------------------------------------
 
 ## Apéndice A: Diagrama de componentes completo
 
-```
+```         
 ┌─────────────────────────────────────────────────────────────────────┐
 │  NEVEN v2.2                                                          │
 │                                                                      │
@@ -2025,7 +1945,7 @@ AD_ACP <- function(Datos, TipoOutput = 1) { ... }
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
----
+------------------------------------------------------------------------
 
 ## Apéndice B: Checklist para un nuevo desarrollador
 
@@ -2042,8 +1962,6 @@ Antes de tocar código, verificar que puedas hacer:
 
 Si alguno falla, revisar TROUBLESHOOTING.md antes de tocar código.
 
----
+------------------------------------------------------------------------
 
-*NEVEN-BOOK — Versión 2.2 — Agosto 2026*
-*Universidad de Costa Rica — Minor Bonilla Gómez*
-*Team Vikingos ⚔️ — SKÅL!*
+*NEVEN-BOOK — Versión 2.2 — Agosto 2026* *Universidad de Costa Rica — Minor Bonilla Gómez* *Team Vikingos ⚔️ — SKÅL!*
