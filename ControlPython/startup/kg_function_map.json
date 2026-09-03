@@ -1,0 +1,84 @@
+{
+  "_comment": "Mapeo function_id (catálogo DataLab) → method_id (grafo ontología). Actualizar cuando se añadan funciones nuevas al DataLab o agentes nuevos a la ontología.",
+  "_version": "1.0",
+  "_updated": "2026-08-19",
+
+  "RG_Lineal":              "method_ols",
+  "RG_FGLS":                "method_ols",
+  "RG_Newey_West":          "method_ols",
+  "RG_RESET":               "method_ols",
+  "RG_Davidson_MacKinnon":  "method_ols",
+  "RG_2SLS":                "method_iv",
+  "RG_Logistica":           "method_logit",
+  "RG_Poisson":             "method_poisson",
+  "RG_Tobit":               "method_tobit",
+  "RG_HECKIT":              "method_heckman",
+  "RG_DatosPanel":          "method_fixed_effects",
+  "RG_SeriesTiempo":        "method_arima",
+
+  "ST_VAR":                 "method_var",
+  "ST_ECM":                 "method_vecm_johansen",
+
+  "J_RG_Lineal":            "method_ols",
+
+  "AD_ACP":                 null,
+  "AD_KMedias":             null,
+  "AD_ClusteringJerarquico": null,
+
+  "GR_Barras":              null,
+  "GR_BoxPlot":             null,
+  "GR_Correlaciones":       null,
+  "GR_EjemploAvanzado":     null,
+  "GR_EjemploBasico":       null,
+  "GR_Histograma":          null,
+  "GR_Lineas":              null,
+  "GR_Mapa":                null,
+  "GR_SeriesTiempo":        null,
+
+  "DS_Wooldridge":          null,
+  "DS_Wooldridge_Benchmark": null,
+
+  "UC_EjemploBasico":       null,
+  "UC_EjemploAvanzado":     null,
+  "UC_EjemploFactoMineR":   null,
+
+  "TM_TextAnalysis":        null,
+
+  "RG_ArbolDecision":       null,
+  "RG_SVM":                 null,
+
+  "J_AD_Descriptiva":       null,
+
+  "_future": {
+    "_note": "Mapeos pendientes cuando se creen las funciones correspondientes",
+    "CAU_DID":         "method_did",
+    "CAU_RDD":         "method_rdd",
+    "CAU_FUZZY_RDD":   "method_fuzzy_rdd",
+    "CAU_IPTW":        "method_iptw",
+    "CAU_AIPW":        "method_aipw",
+    "CAU_PSM":         "method_ps_matching",
+    "CAU_GCOMP":       "method_gcomp",
+    "CAU_MSM":         "method_msm",
+    "CAU_FRONTDOOR":   "method_front_door",
+    "LOG_ORDINAL":     "method_ordinal_logit",
+    "LOG_MULTINOMIAL": "method_multinomial_logit",
+    "PAN_RE":          "method_random_effects",
+    "PAN_GMM":         "method_dynamic_panel",
+    "PAN_SUR":         "method_sur",
+    "PAN_GMM_GEN":     "method_gmm",
+    "ESP_SAR":         "method_sar",
+    "ESP_SEM":         "method_sem",
+    "ESP_SDM":         "method_sdm",
+    "ST_GARCH":        "method_garch",
+    "ST_SVAR":         "method_svar_identification",
+    "MIT_DOUBLEML":    "method_double_ml",
+    "MIT_LASSO":       "method_post_lasso",
+    "MIT_LATE":        "method_late_wald",
+    "MIT_QR":          "method_quantile_regression",
+    "MIT_LIML":        "method_liml_jive",
+    "MIT_DISTREG":     "method_distribution_regression",
+    "MIT_GMM_NL":      "method_nonlinear_gmm",
+    "ST_KALMAN":       "method_kalman_filter",
+    "ST_FACTOR":       "method_factor_models_ts"
+  }
+}

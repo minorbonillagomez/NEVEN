@@ -18,7 +18,7 @@ MR_Lineal <- function(
   # PREPARACION DE DATOS Y PARAMETROS
   #-------------------------->>>
   
-  library(stargazer)
+  # stargazer se carga solo cuando se necesita (TipoOutput==1 y TipoOutput==7)
   
   #-------------------------->>>   
   # [1] PREPARACION DE DATOS Y PARAMETROS  
@@ -65,7 +65,12 @@ MR_Lineal <- function(
     
   } else if (TipoOutput == 1){  
     
-    OutPut <- data.frame("R4XCL_ModeloEstimado"= stargazer(Modelo, type="text", ci=TRUE, ci.level=0.95,single.row=TRUE))
+    if (!requireNamespace("stargazer", quietly=TRUE)) {
+      OutPut <- data.frame("R4XCL_ModeloEstimado"= capture.output(summary(Modelo)))
+    } else {
+      library(stargazer)
+      OutPut <- data.frame("R4XCL_ModeloEstimado"= stargazer(Modelo, type="text", ci=TRUE, ci.level=0.95,single.row=TRUE))
+    }
     
   }else if(TipoOutput == 2){
     
@@ -112,15 +117,18 @@ MR_Lineal <- function(
     
   }else if(TipoOutput == 7){    
     
-    cov <- sandwich::vcovHC(Modelo, type = "HC")
-    
-    robust.se <- sqrt(diag(cov))
-    
-    OutPut <- stargazer(Modelo, Modelo, 
-                     se=list(NULL, robust.se),
-                     column.labels=c("OLS","OLS E.S. Robusto"), 
-                     type="text",
-                     align=TRUE);  
+    if (!requireNamespace("stargazer", quietly=TRUE)) {
+      OutPut <- data.frame("R4XCL_ModeloEstimado"= capture.output(summary(Modelo)))
+    } else {
+      library(stargazer)
+      cov <- sandwich::vcovHC(Modelo, type = "HC")
+      robust.se <- sqrt(diag(cov))
+      OutPut <- stargazer(Modelo, Modelo, 
+                       se=list(NULL, robust.se),
+                       column.labels=c("OLS","OLS E.S. Robusto"), 
+                       type="text",
+                       align=TRUE)
+    }
     
   }else if(TipoOutput == 8){ 
     

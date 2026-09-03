@@ -26,8 +26,11 @@ MR_Tobit.C <- function(
   # ARCHIVO  = "~/BERT2/functions/INTERNO/R4XCL-Interno.r"
   # FUENTE01 = file.path(ARCHIVO)
   
-  library(ResourceSelection)
-  library(margins)
+  # ResourceSelection y margins eliminados — no se usan en esta función
+  # VGAM es necesario para el modelo (vglm), se carga con guard
+  if (!requireNamespace("VGAM", quietly=TRUE)) {
+    return("Paquete VGAM no instalado. Ejecute: =R.instalar(\"VGAM\")")
+  }
   library(VGAM)
   
   FX <- R4XCL_INT_FUNCION(SetDatosX,SetDatosY)

@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEVEN AI</title>
+
+  <!-- Office.js — biblioteca oficial de Microsoft para Office Add-ins -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+  <!-- Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+
+  <!-- KaTeX — fórmulas matemáticas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          onload="window._katexReady = true"></script>
+
+  <style>
+    /* ── Variables de diseño — idénticas a NEVEN Studio ── */
+    :root {
+      --bg-primary:    #0d0e12;
+      --bg-secondary:  #16171d;
+      --bg-card:       #1a1b22;
+      --bg-input:      #111218;
+      --border:        #2a2b35;
+      --accent:        #d7a538;
+      --accent-dim:    rgba(215,165,56,0.12);
+      --text-primary:  #e8e9f0;
+      --text-secondary:#8b8d9a;
+      --radius:        6px;
+      --user-bg:       rgba(215,165,56,0.08);
+      --ai-bg:         rgba(255,255,255,0.03);
+      --error-bg:      rgba(220,53,69,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 12px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 8px 12px 6px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.3px;
+    }
+    .header-title span { color: var(--accent); }
+    #model-badge {
+      font-size: 9px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(215,165,56,0.25);
+    }
+
+    /* ── Barra de contexto — muestra qué hay cargado ── */
+    #context-bar {
+      display: none;
+      padding: 5px 12px;
+      background: rgba(215,165,56,0.06);
+      border-bottom: 1px solid rgba(215,165,56,0.15);
+      font-size: 10px;
+      color: var(--accent);
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    #context-bar .ctx-label { flex: 1; }
+    #context-bar button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 10px;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    #context-bar button:hover { color: #e55; }
+
+    /* ── Barra de acciones (botones de contexto) ── */
+    .action-bar {
+      padding: 6px 10px;
+      display: flex;
+      gap: 5px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .btn-action {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: var(--radius);
+      padding: 4px 10px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-action:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-action:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .btn-action.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    .btn-action.primary:hover { background: #c4922a; }
+
+    /* ── Área de mensajes ── */
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scroll-behavior: smooth;
+    }
+    #messages::-webkit-scrollbar { width: 4px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Burbujas de chat ── */
+    .bubble {
+      max-width: 100%;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      font-size: 11px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .bubble.user {
+      background: var(--user-bg);
+      border: 1px solid rgba(215,165,56,0.15);
+      align-self: flex-end;
+      max-width: 88%;
+    }
+    .bubble.assistant {
+      background: var(--ai-bg);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+    }
+    .bubble.error {
+      background: var(--error-bg);
+      border: 1px solid rgba(220,53,69,0.2);
+      color: #f08080;
+      align-self: flex-start;
+    }
+    .bubble.system-note {
+      background: rgba(215,165,56,0.06);
+      border-left: 3px solid var(--accent);
+      padding: 6px 10px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 10px;
+      color: var(--text-secondary);
+      align-self: stretch;
+    }
+    .bubble.system-note strong { color: var(--accent); }
+
+    /* Markdown dentro de burbujas */
+    .bubble p  { margin: 0 0 6px; }
+    .bubble p:last-child { margin-bottom: 0; }
+    .bubble code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 10px;
+      background: rgba(255,255,255,0.06);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    .bubble pre {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px;
+      overflow-x: auto;
+      margin: 6px 0;
+    }
+    .bubble pre code {
+      background: none;
+      padding: 0;
+      font-size: 10px;
+    }
+    .bubble h1,.bubble h2,.bubble h3 {
+      font-size: 12px;
+      color: var(--accent);
+      margin: 8px 0 4px;
+    }
+    .bubble ul,.bubble ol { padding-left: 16px; margin: 4px 0; }
+    .bubble li { margin-bottom: 2px; }
+    .bubble strong { color: var(--text-primary); }
+    .bubble table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      margin: 6px 0;
+    }
+    .bubble th {
+      background: rgba(215,165,56,0.1);
+      color: var(--accent);
+      padding: 3px 6px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .bubble td {
+      padding: 3px 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    /* Bloque neven-run — sugerencia ejecutable */
+    .neven-run-block {
+      background: rgba(215,165,56,0.05);
+      border: 1px solid rgba(215,165,56,0.2);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      margin: 6px 0;
+    }
+    .neven-run-block .run-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      color: var(--accent);
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+    .neven-run-block .run-desc { font-size: 10px; color: var(--text-secondary); margin-bottom: 6px; }
+    .neven-run-btn {
+      background: var(--accent);
+      color: #1a1a1a;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .neven-run-btn:hover { background: #c4922a; }
+    .neven-run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Spinner ── */
+    #spinner {
+      display: none;
+      padding: 6px 10px;
+      font-size: 10px;
+      color: var(--text-secondary);
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .dot-anim { display: inline-flex; gap: 3px; }
+    .dot-anim span {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: dotPulse 1.2s infinite;
+    }
+    .dot-anim span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-anim span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotPulse {
+      0%,80%,100% { opacity: 0.2; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ── Input area ── */
+    .input-area {
+      padding: 8px 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    #ai-input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-size: 11px;
+      padding: 7px 10px;
+      resize: none;
+      min-height: 34px;
+      max-height: 100px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    #ai-input:focus { border-color: rgba(215,165,56,0.4); }
+    #ai-input::placeholder { color: var(--text-secondary); opacity: 0.6; }
+    #send-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #1a1a1a;
+      cursor: pointer;
+      padding: 7px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      transition: background 0.15s;
+      white-space: nowrap;
+      align-self: flex-end;
+    }
+    #send-btn:hover { background: #c4922a; }
+    #send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Footer con tokens y estado ── */
+    .footer {
+      padding: 3px 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    #token-info { font-size: 9px; color: var(--text-secondary); opacity: 0.6; }
+    #status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #555;
+      transition: background 0.3s;
+    }
+    #status-dot.connected { background: #4caf50; }
+    #status-dot.error     { background: #e55; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(26,27,31,0.95);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    #toast.visible { opacity: 1; }
+
+    /* ── Offline msg ── */
+    #offline-msg {
+      display: none;
+      padding: 8px 12px;
+      background: rgba(220,53,69,0.06);
+      border-bottom: 1px solid rgba(220,53,69,0.15);
+      font-size: 10px;
+      color: #f08080;
+      flex-shrink: 0;
+    }
+
+    /* ── Selection preview ── */
+    #selection-preview {
+      display: none;
+      padding: 5px 10px;
+      background: rgba(215,165,56,0.04);
+      border-bottom: 1px solid var(--border);
+      font-size: 9px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      font-family: 'Consolas', monospace;
+      max-height: 36px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #selection-preview strong { color: var(--accent); margin-right: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="header-title">NEVEN <span>AI</span></div>
+    <div id="model-badge">cargando...</div>
+  </div>
+
+  <!-- ── Mensaje offline ── -->
+  <div id="offline-msg"></div>
+
+  <!-- ── Barra de contexto activo ── -->
+  <div id="context-bar">
+    <span class="ctx-label" id="context-label">Contexto cargado</span>
+    <button id="btn-clear-ctx" title="Limpiar contexto">✕</button>
+  </div>
+
+  <!-- ── Preview de selección activa en Excel ── -->
+  <div id="selection-preview">
+    <strong id="sel-address"></strong><span id="sel-summary"></span>
+  </div>
+
+  <!-- ── Barra de acciones ── -->
+  <div class="action-bar">
+    <button class="btn-action primary" id="btn-send-selection" title="Enviar rango seleccionado al agente">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9" x2="21" y2="9"/>
+        <line x1="9" y1="3" x2="9" y2="21"/>
+      </svg>
+      Enviar selección
+    </button>
+    <button class="btn-action" id="btn-clear-chat" title="Limpiar historial">
+      Limpiar chat
+    </button>
+  </div>
+
+  <!-- ── Historial de mensajes ── -->
+  <div id="messages">
+    <div class="bubble system-note">
+      <strong>NEVEN AI</strong> — Selecciona un rango en Excel y pulsa
+      <em>Enviar selección</em> para que el agente acceda a tus datos.
+    </div>
+  </div>
+
+  <!-- ── Spinner ── -->
+  <div id="spinner">
+    <div class="dot-anim"><span></span><span></span><span></span></div>
+    <span>Pensando...</span>
+  </div>
+
+  <!-- ── Input ── -->
+  <div class="input-area">
+    <textarea id="ai-input" placeholder="Pregunta sobre tus datos..." rows="1"></textarea>
+    <button id="send-btn">Enviar</button>
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="footer">
+    <span id="token-info"></span>
+    <div id="status-dot" title="Estado de conexión"></div>
+  </div>
+
+  <!-- ── Toast ── -->
+  <div id="toast"></div>
+
+<script>
+'use strict';
+
+// =============================================================================
+// Configuración
+// =============================================================================
+
+// URL del servicio IA — se puede sobrescribir con ?service=https://... en la URL
+var _SERVICE_URL = (function() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('service') || 'http://localhost:5556';
+})();
+
+// session_id único por instancia del add-in
+var _SESSION_ID = (function() {
+  var stored = sessionStorage.getItem('neven_ai_session');
+  if (stored) return stored;
+  var id = 'agent-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+  sessionStorage.setItem('neven_ai_session', id);
+  return id;
+})();
+
+var _state = {
+  messages:   [],          // [{role, content}]
+  context:    '',          // contexto activo
+  tokenAccum: 0,
+  officeReady: false,      // Office.js inicializado
+  busy:       false,       // request en curso
+};
+
+// =============================================================================
+// Utilidades
+// =============================================================================
+
+function _showToast(msg, dur) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('visible');
+  setTimeout(function() { el.classList.remove('visible'); }, dur || 2200);
+}
+
+function _setStatus(state) {
+  var dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (state ? ' ' + state : '');
+}
+
+function _autoResizeInput() {
+  var el = document.getElementById('ai-input');
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// =============================================================================
+// Renderizado de Markdown + KaTeX
+// =============================================================================
+
+function _renderMarkdown(text) {
+  if (typeof marked === 'undefined') return _escapeHtml(text);
+
+  marked.setOptions({
+    breaks: true,
+    gfm:    true,
+    renderer: (function() {
+      var r = new marked.Renderer();
+      // Bloques de código neven-run → componente ejecutable
+      r.code = function(code, lang) {
+        if (lang === 'neven-run') {
+          return _renderNevenRun(code);
+        }
+        return '<pre><code>' + _escapeHtml(code) + '</code></pre>';
+      };
+      return r;
+    })(),
+  });
+
+  return marked.parse(text);
+}
+
+function _escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function _renderNevenRun(jsonStr) {
+  try {
+    var spec = JSON.parse(jsonStr.trim());
+    var fn   = spec.function_id || '?';
+    var note = spec.context_note || '';
+    var lang = spec.language || 'r';
+    return (
+      '<div class="neven-run-block">' +
+        '<div class="run-label">Análisis sugerido</div>' +
+        (note ? '<div class="run-desc">' + _escapeHtml(note) + '</div>' : '') +
+        '<button class="neven-run-btn" ' +
+          'data-spec=\'' + _escapeHtml(jsonStr) + '\' ' +
+          'onclick="window._onRunSuggestion(this)">' +
+          _escapeHtml(fn) + ' (' + lang + ')' +
+        '</button>' +
+      '</div>'
+    );
+  } catch (e) {
+    return '<pre><code>' + _escapeHtml(jsonStr) + '</code></pre>';
+  }
+}
+
+function _applyKatex(el) {
+  if (window._katexReady && typeof renderMathInElement === 'function') {
+    try {
+      renderMathInElement(el, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$',  right: '$',  display: false },
+        ],
+        throwOnError: false,
+      });
+    } catch (e) { /* ignorar */ }
+  }
+}
+
+// =============================================================================
+// Gestión de mensajes en el DOM
+// =============================================================================
+
+function _addMessage(role, content) {
+  // Actualizar estado (no guardar errores en el historial)
+  if (role !== 'error' && role !== 'system-note') {
+    _state.messages.push({ role: role, content: content });
+  }
+
+  var msgs  = document.getElementById('messages');
+  var div   = document.createElement('div');
+  div.className = 'bubble ' + (role === 'user' ? 'user'
+                             : role === 'error' ? 'error'
+                             : role === 'system-note' ? 'system-note'
+                             : 'assistant');
+
+  if (role === 'assistant' || role === 'system-note') {
+    div.innerHTML = _renderMarkdown(content);
+    _applyKatex(div);
+  } else {
+    div.textContent = content;
+  }
+
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function _clearMessages() {
+  _state.messages = [];
+  _state.context  = '';
+  var msgs = document.getElementById('messages');
+  msgs.innerHTML  = '';
+  _addMessage('system-note',
+    'Chat limpiado. Selecciona un rango y pulsa *Enviar selección* para empezar.');
+  _updateContextBar('', '');
+}
+
+// =============================================================================
+// Contexto
+// =============================================================================
+
+function _updateContextBar(label, contextText) {
+  var bar   = document.getElementById('context-bar');
+  var lbl   = document.getElementById('context-label');
+  _state.context = contextText || '';
+  if (label) {
+    bar.style.display = 'flex';
+    lbl.textContent   = label;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function _injectContext(ctx) {
+  if (!ctx || !ctx.text) return;
+
+  var header = '=== DATOS DE EXCEL ===\n';
+  if (ctx.n_rows)   header += 'Filas: ' + ctx.n_rows + '\n';
+  if (ctx.columns && ctx.columns.length)
+    header += 'Variables: ' + ctx.columns.join(', ') + '\n';
+  header += '\n';
+
+  var markedText = header + ctx.text;
+  _state.context = _state.context
+    ? _state.context + '\n\n' + markedText
+    : markedText;
+
+  var dim = '';
+  if (ctx.n_rows)   dim += ctx.n_rows + ' filas';
+  if (ctx.columns)  dim += (dim ? ' × ' : '') + ctx.columns.length + ' cols';
+  _updateContextBar('Excel: ' + (dim || 'datos cargados'), _state.context);
+
+  _addMessage('system-note',
+    '**Contexto de Excel cargado** — ' + (dim || 'datos disponibles') +
+    '. Puedes hacer preguntas directamente sobre tus datos.');
+
+  _showToast('Contexto de Excel cargado');
+}
+
+// =============================================================================
+// Polling de contexto pendiente (para cuando el XLL hace POST al servicio)
+// =============================================================================
+
+setInterval(function() {
+  fetch(_SERVICE_URL + '/api/ai/context/pending?session_id=' + _SESSION_ID)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok' && data.context) {
+        _injectContext(data.context);
+      }
+    })
+    .catch(function() { /* silencioso */ });
+}, 3000);
+
+// =============================================================================
+// Office.js — integración con Excel
+// =============================================================================
+
+// Inicializar Office.js cuando esté listo
+Office.onReady(function(info) {
+  _state.officeReady = true;
+  _setStatus('connected');
+  console.log('[NEVEN AI] Office.js listo — host:', info.host);
+
+  // Registrar listener de cambio de selección
+  if (info.host === Office.HostType.Excel) {
+    _registerSelectionListener();
+  }
+});
+
+function _registerSelectionListener() {
+  try {
+    Excel.run(function(ctx) {
+      ctx.workbook.onSelectionChanged.add(function(event) {
+        _onSelectionChanged();
+      });
+      return ctx.sync();
+    }).catch(function(err) {
+      console.warn('[NEVEN AI] No se pudo registrar onSelectionChanged:', err);
+    });
+  } catch (e) {
+    console.warn('[NEVEN AI] Excel.run no disponible:', e);
+  }
+}
+
+function _onSelectionChanged() {
+  // Actualizar preview de selección (no inyectar contexto automáticamente)
+  Excel.run(function(ctx) {
+    var range = ctx.workbook.getSelectedRange();
+    range.load(['address', 'rowCount', 'columnCount']);
+    return ctx.sync().then(function() {
+      var addr = range.address;
+      var rows = range.rowCount;
+      var cols = range.columnCount;
+      if (rows > 1 || cols > 1) {
+        document.getElementById('selection-preview').style.display = 'block';
+        document.getElementById('sel-address').textContent = addr;
+        document.getElementById('sel-summary').textContent =
+          rows + ' × ' + cols + ' — pulsa Enviar selección';
+      } else {
+        document.getElementById('selection-preview').style.display = 'none';
+      }
+    });
+  }).catch(function() { /* silencioso */ });
+}
+
+/**
+ * Lee el rango seleccionado en Excel vía Office.js y lo envía al servicio IA.
+ * Reemplaza completamente =NEVEN.IA.Contexto() para usuarios del add-in web.
+ */
+function _sendSelectionToAgent() {
+  if (!_state.officeReady) {
+    _showToast('Office.js no está disponible en este contexto');
+    return;
+  }
+  if (_state.busy) return;
+
+  var btn = document.getElementById('btn-send-selection');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  Excel.run(function(ctx) {
+    var range = ctx.workbook.getSelectedRange();
+    range.load(['values', 'address', 'rowCount', 'columnCount', 'formulas']);
+    return ctx.sync().then(function() {
+      var rows   = range.rowCount;
+      var cols   = range.columnCount;
+      var values = range.values;
+      var addr   = range.address;
+
+      if (rows === 0 || cols === 0) {
+        _showToast('Selecciona un rango con datos primero');
+        btn.disabled    = false;
+        btn.textContent = 'Enviar selección';
+        return;
+      }
+
+      // Limitar a 51 filas (1 header + 50 datos) para no saturar el contexto
+      var maxRows = Math.min(rows, 51);
+
+      // Extraer headers de la primera fila
+      var headers = [];
+      for (var c = 0; c < cols; c++) {
+        var h = String(values[0][c] || ('Col' + (c + 1)));
+        headers.push(h);
+      }
+
+      // Serializar a CSV
+      var csv = headers.join(',') + '\n';
+      for (var r = 1; r < maxRows; r++) {
+        var row = [];
+        for (var cc = 0; cc < cols; cc++) {
+          var v = String(values[r][cc] !== null && values[r][cc] !== undefined
+                         ? values[r][cc] : '');
+          if (v.indexOf(',') !== -1 || v.indexOf('"') !== -1) {
+            v = '"' + v.replace(/"/g, '""') + '"';
+          }
+          row.push(v);
+        }
+        csv += row.join(',') + '\n';
+      }
+
+      if (rows > 51) {
+        csv += '... (' + (rows - 51) + ' filas más)\n';
+      }
+
+      var n_rows = rows - 1;  // descontar header
+
+      // POST al servicio IA
+      return fetch(_SERVICE_URL + '/api/ai/context', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id:   _SESSION_ID,
+          dataset_text: csv,
+          source:       'excel_officejs',
+          n_rows:       n_rows,
+          columns:      headers,
+          address:      addr,
+        }),
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        btn.disabled    = false;
+        btn.textContent = 'Enviar selección';
+        if (data.status === 'ok') {
+          // Inyectar directamente en el contexto local
+          _injectContext({
+            text:    csv,
+            n_rows:  n_rows,
+            columns: headers,
+            source:  'excel_officejs',
+          });
+        } else {
+          _showToast('Error: ' + (data.detail || 'No se pudo enviar'));
+        }
+      });
+    });
+  }).catch(function(err) {
+    btn.disabled    = false;
+    btn.textContent = 'Enviar selección';
+    console.error('[NEVEN AI] Error leyendo rango:', err);
+    _showToast('Error al leer el rango de Excel');
+  });
+}
+
+// =============================================================================
+// Sugerencias ejecutables (neven-run blocks)
+// =============================================================================
+
+window._onRunSuggestion = function(btnEl) {
+  var jsonStr = btnEl.getAttribute('data-spec');
+  if (!jsonStr) return;
+  try {
+    var spec = JSON.parse(jsonStr);
+    // Redirigir al servidor local de cómputo si está disponible
+    var computeUrl = sessionStorage.getItem('neven_compute_url') || 'http://localhost:5555';
+    fetch(computeUrl + '/api/ai/run_suggestion', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(spec),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok') {
+        _showToast('Análisis enviado a NEVEN Studio');
+      } else {
+        _showToast('Error: ' + (data.message || 'No se pudo ejecutar'));
+      }
+    })
+    .catch(function() {
+      _showToast('NEVEN Studio no está disponible localmente');
+    });
+  } catch (e) {
+    _showToast('Error al procesar la sugerencia');
+  }
+};
+
+// =============================================================================
+// Llamada al LLM
+// =============================================================================
+
+function _callLLM() {
+  if (_state.busy) return;
+  _state.busy = true;
+
+  var spinner = document.getElementById('spinner');
+  var sendBtn = document.getElementById('send-btn');
+  spinner.style.display = 'flex';
+  sendBtn.disabled = true;
+
+  var payload = {
+    session_id: _SESSION_ID,
+    messages:   _state.messages.slice(),
+    context:    _state.context,
+  };
+
+  var abort   = new AbortController();
+  var timeout = setTimeout(function() { abort.abort(); }, 120000);
+
+  fetch(_SERVICE_URL + '/api/ai/chat', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(payload),
+    signal:  abort.signal,
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    clearTimeout(timeout);
+    spinner.style.display = 'none';
+    sendBtn.disabled      = false;
+    _state.busy           = false;
+
+    if (data.status !== 'ok') {
+      _addMessage('error', data.detail || data.message || 'Error desconocido');
+      _setStatus('error');
+      return;
+    }
+
+    _addMessage('assistant', data.reply);
+    _setStatus('connected');
+
+    _state.tokenAccum += (data.tokens_used || 0);
+    if (_state.tokenAccum > 0) {
+      document.getElementById('token-info').textContent =
+        _state.tokenAccum.toLocaleString() + ' tokens';
+    }
+  })
+  .catch(function(err) {
+    clearTimeout(timeout);
+    spinner.style.display = 'none';
+    sendBtn.disabled      = false;
+    _state.busy           = false;
+    _setStatus('error');
+
+    var msg = err.name === 'AbortError'
+      ? 'Sin respuesta del modelo en 120 s. Verifica que el servicio IA esté activo.'
+      : 'Error de conexión: ' + err.message;
+    _addMessage('error', msg);
+  });
+}
+
+// =============================================================================
+// Enviar mensaje
+// =============================================================================
+
+function _send() {
+  var input = document.getElementById('ai-input');
+  var text  = (input.value || '').trim();
+  if (!text || _state.busy) return;
+
+  _addMessage('user', text);
+  input.value = '';
+  input.style.height = '';
+  _callLLM();
+}
+
+// =============================================================================
+// Carga inicial — verificar conexión y config
+// =============================================================================
+
+function _init() {
+  // Verificar conexión al servicio IA
+  fetch(_SERVICE_URL + '/ready')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      _setStatus('connected');
+      document.getElementById('model-badge').textContent =
+        data.provider || 'conectado';
+    })
+    .catch(function() {
+      _setStatus('error');
+      document.getElementById('model-badge').textContent = 'sin conexión';
+      var offline = document.getElementById('offline-msg');
+      offline.style.display = 'block';
+      offline.textContent =
+        'No se pudo conectar al servicio IA en ' + _SERVICE_URL +
+        '. Verifica que está activo.';
+    });
+}
+
+// =============================================================================
+// Event listeners
+// =============================================================================
+
+document.getElementById('send-btn').addEventListener('click', _send);
+
+document.getElementById('ai-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    _send();
+  }
+});
+
+document.getElementById('ai-input').addEventListener('input', _autoResizeInput);
+
+document.getElementById('btn-send-selection').addEventListener('click',
+  _sendSelectionToAgent);
+
+document.getElementById('btn-clear-chat').addEventListener('click',
+  _clearMessages);
+
+document.getElementById('btn-clear-ctx').addEventListener('click', function() {
+  _updateContextBar('', '');
+  _showToast('Contexto limpiado');
+});
+
+// Inicializar al cargar
+window.addEventListener('load', _init);
+</script>
+</body>
+</html>

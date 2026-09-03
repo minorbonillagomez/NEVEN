@@ -37,5 +37,10 @@
       "default": true,
       "tier": 1
     }
-  ]
+  ],
+  "dependencies": {
+    "R": ["plm", "stargazer", "jsonlite"],
+    "Julia": [],
+    "Python": []
+  }
 }

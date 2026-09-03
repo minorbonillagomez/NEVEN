@@ -11,7 +11,7 @@ AD_ACP.C <- function(
                      )
 {
   
-  library(PerformanceAnalytics)
+  # PerformanceAnalytics se carga solo cuando se necesita (TipoOutput==3)
   
   #-------------------------->>>   
   # VALIDACIONES
@@ -61,11 +61,15 @@ AD_ACP.C <- function(
     
   }else if(TipoOutput == 3){   
     
-    BERT.graphics.device(cell = T)
-    chart.Correlation(DT, histogram=TRUE)
-    dev.off()
-    
-    OutPut =  "Grafico de Correlaciones Ejecutado"
+    if (!requireNamespace("PerformanceAnalytics", quietly=TRUE)) {
+      OutPut <- "Paquete PerformanceAnalytics no instalado. Ejecute: =R.instalar(\"PerformanceAnalytics\")"
+    } else {
+      library(PerformanceAnalytics)
+      BERT.graphics.device(cell = T)
+      chart.Correlation(DT, histogram=TRUE)
+      dev.off()
+      OutPut =  "Grafico de Correlaciones Ejecutado"
+    }
     
   }else if(TipoOutput == 4){
     

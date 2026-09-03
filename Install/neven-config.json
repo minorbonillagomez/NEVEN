@@ -1,0 +1,73 @@
+{
+  "NEVEN": {
+    "functionsDirectory": "C:\\NEVEN\\functions",
+    "graphicsDirectory": "C:\\NEVEN\\graphics",
+    "logFile": "C:\\NEVEN\\neven.log",
+    "openConsole": false,
+    "useJobObject": true,
+    "callTimeoutMs": 600000,
+    "maxRetries": 2,
+    "sandboxEnabled": true,
+    "R": {
+      "home": "",
+      "minMajor": 3,
+      "minMinor": 5,
+      "maxMajor": 99
+    },
+    "Julia": {
+      "home": "",
+      "enabled": true,
+      "minMajor": 1,
+      "minMinor": 6,
+      "maxMajor": 99
+    },
+    "Python": {
+      "home": "",
+      "enabled": true,
+      "minMajor": 3,
+      "minMinor": 10,
+      "maxMajor": 99
+    }
+  },
+  "WebView2": {
+    "enabled": true,
+    "maxViewers": 8,
+    "maxMemoryMB": 512
+  },
+  "Pluto": {
+    "port": 1235
+  },
+  "AI": {
+    "enabled": false,
+    "_comment_providers": "Proveedores soportados: lmstudio, ollama, openai, openrouter, azure",
+    "_comment_lmstudio": "LM Studio local: provider=lmstudio, endpoint=http://localhost:PUERTO/v1/chat/completions, apiKey vacío",
+    "_comment_openrouter": "OpenRouter (modelos gratuitos): provider=openrouter, endpoint=https://openrouter.ai/api/v1/chat/completions, apiKey=sk-or-v1-...",
+    "_comment_azure": "Azure OpenAI: provider=azure, endpoint=https://RECURSO.openai.azure.com, model=NOMBRE-DEPLOYMENT, apiKey=TU-KEY",
+    "provider": "lmstudio",
+    "apiKey": "",
+    "model": "local-model",
+    "endpoint": "http://localhost:1234/v1/chat/completions",
+    "apiVersion": "",
+    "maxTokens": 2000,
+    "temperature": 0.3,
+    "timeout": 120,
+    "promptsDirectory": "C:\\NEVEN\\prompts"
+  },
+  "TaskPane": {
+    "enabled": true,
+    "port": 5555,
+    "fallbackPort": 5556,
+    "certPath": "C:\\NEVEN\\certs\\localhost.crt",
+    "keyPath": "C:\\NEVEN\\certs\\localhost.key",
+    "staticDir": "C:\\NEVEN\\taskpane",
+    "viewersDir": "C:\\NEVEN\\workspace",
+    "queryTimeoutSec": 30,
+    "maxPayloadMB": 50
+  },
+  "Standalone": {
+    "controlDir": "C:\\NEVEN\\",
+    "startupDir": "C:\\NEVEN\\startup\\",
+    "staticDir": "C:\\NEVEN\\taskpane\\",
+    "functionsDir": "C:\\NEVEN\\functions\\"
+  }
+}

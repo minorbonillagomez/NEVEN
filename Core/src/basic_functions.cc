@@ -31,6 +31,11 @@
 #include "ConfigService.h"
 #include "ViewerManager.h"
 
+// WinHTTP — usado por RJ_IA_Contexto para POST a localhost:5555
+#include <winhttp.h>
+#pragma comment(lib, "winhttp.lib")
+#include <fstream>    // std::ifstream — para leer neven-config.json en RJ_IA_Contexto
+
 /**
  * @brief Dispatches a registered R/Julia function call from Excel.
  * 
@@ -1455,6 +1460,432 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_ViewerCloseAll() {
     rslt.val.num = 1;
 
     rj2xcl::ViewerManager::Instance().CloseAllViewers();
+    return &rslt;
+}
+
+/**
+ * @brief Opens NEVEN Studio AI Agent in a WebView2 window pointing to the local HTTP server.
+ *
+ * Activates advanced mode on port 5555 (same mechanism as Pluto.jl) so the
+ * WebView2 security policy allows navigation to localhost:5555.
+ * If a viewer with title "NEVEN Studio AI" already exists it is reused.
+ *
+ * @return LPXLOPER12 Viewer ID (e.g. "viewer-N") or error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_AgenteIA() {
+    static XLOPER12 rslt;
+    static std::string agente_viewer_id;
+
+    auto& viewer = rj2xcl::ViewerManager::Instance();
+    if (!viewer.IsAvailable()) {
+        Convert::StringToXLOPER(&rslt,
+            "WebView2 not available - install Edge WebView2 Runtime", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Reuse existing viewer if still alive
+    if (!agente_viewer_id.empty() && viewer.IsViewerAlive(agente_viewer_id)) {
+        Convert::StringToXLOPER(&rslt, agente_viewer_id, false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Enable localhost navigation on port 5555 (same mechanism as Pluto.jl)
+    viewer.SetAdvancedMode(true, 5555);
+
+    agente_viewer_id = viewer.CreateViewerFromUrl(
+        "http://localhost:5555/taskpane.html",
+        "NEVEN Studio AI");
+
+    Convert::StringToXLOPER(&rslt, agente_viewer_id, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Publica el contexto de la hoja de cálculo al agente IA de NEVEN Studio.
+ *
+ * Serializa dos rangos de Excel (datos y resultados) y los envía via HTTP POST
+ * al servidor NEVEN Studio en localhost:5555/api/ai/context.
+ * El agente los recoge automáticamente al abrir la ventana o al cambiar de tab.
+ *
+ * Uso: =NEVEN.IA.Contexto(datos_rango, resultados_rango)
+ *   datos_rango     : rango con los datos (incluyendo fila de headers)
+ *   resultados_rango: rango con los resultados del modelo (opcional, puede ser "")
+ *
+ * @return "OK — contexto enviado (N filas x K cols)" o mensaje de error.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+RJ_IA_Contexto(LPXLOPER12 data_range, LPXLOPER12 results_range) {
+    thread_local XLOPER12 rslt;
+
+    // ── 0. Garantizar que el Agente IA esté abierto ───────────────────────────
+    // Si el viewer no existe, lo creamos ahora. Sin esto, el POST a localhost:5555
+    // falla con el servidor apagado y Excel puede colapsar.
+    {
+        auto& viewer = rj2xcl::ViewerManager::Instance();
+        if (!viewer.IsAvailable()) {
+            Convert::StringToXLOPER(&rslt,
+                "Error: WebView2 no disponible. Instala Edge WebView2 Runtime.", false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+
+        // Verificar si hay algún viewer vivo
+        bool agente_activo = false;
+        auto viewer_ids = viewer.ListViewers();
+        for (const auto& vid : viewer_ids) {
+            if (viewer.IsViewerAlive(vid)) { agente_activo = true; break; }
+        }
+
+        if (!agente_activo) {
+            // Abrir el agente automáticamente
+            // Usar el puerto del servicio IA si está configurado en neven-config.json,
+            // de lo contrario usar el servidor local estándar (5555)
+            int   ai_port = 5555;
+            bool  ai_service_enabled = false;
+            std::wstring ai_host = L"localhost";
+            std::wstring ai_url  = L"http://localhost:5555/taskpane.html";
+            std::wstring health_path = L"/api/engines";
+
+            // Leer AIService de neven-config.json
+            {
+                const char* cfg_path = "C:\\NEVEN\\neven-config.json";
+                std::ifstream f(cfg_path);
+                if (f.good()) {
+                    std::string content((std::istreambuf_iterator<char>(f)),
+                                         std::istreambuf_iterator<char>());
+                    // Buscar "AIService" → "enabled": true y "url"
+                    auto pos_svc = content.find("\"AIService\"");
+                    if (pos_svc != std::string::npos) {
+                        auto pos_en = content.find("\"enabled\"", pos_svc);
+                        if (pos_en != std::string::npos && pos_en < pos_svc + 200) {
+                            auto pos_true = content.find("true", pos_en);
+                            auto pos_next = content.find(",", pos_en);
+                            if (pos_true != std::string::npos &&
+                                (pos_next == std::string::npos || pos_true < pos_next + 20)) {
+                                ai_service_enabled = true;
+                            }
+                        }
+                        if (ai_service_enabled) {
+                            auto pos_url = content.find("\"url\"", pos_svc);
+                            if (pos_url != std::string::npos && pos_url < pos_svc + 300) {
+                                auto q1 = content.find('"', pos_url + 5);
+                                auto q2 = content.find('"', q1 + 1);
+                                if (q1 != std::string::npos && q2 != std::string::npos) {
+                                    std::string svc_url = content.substr(q1 + 1, q2 - q1 - 1);
+                                    // Extraer host y puerto de la URL
+                                    // Formato esperado: http://host:port o http://host
+                                    auto colon = svc_url.rfind(':');
+                                    if (colon != std::string::npos && colon > 6) {
+                                        try {
+                                            ai_port = std::stoi(svc_url.substr(colon + 1));
+                                        } catch (...) {}
+                                    }
+                                    // Construir URL del add-in del agente
+                                    std::wstring wsvc(svc_url.begin(), svc_url.end());
+                                    ai_url = wsvc + L"/";
+                                    health_path = L"/health";  // FastAPI usa /health
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!ai_service_enabled) {
+                viewer.SetAdvancedMode(true, 5555);
+                ai_url = L"http://localhost:5555/taskpane.html";
+                ai_port = 5555;
+            }
+
+            viewer.CreateViewerFromUrl(
+                std::string(ai_url.begin(), ai_url.end()),
+                "NEVEN Studio AI");
+        }
+
+        // Esperar a que el servidor esté listo (máx 8 segundos)
+        // Detectar puerto del servicio activo
+        int   check_port = 5555;
+        std::wstring check_path = L"/api/engines";
+        {
+            // Re-leer config para el health check
+            const char* cfg_path = "C:\\NEVEN\\neven-config.json";
+            std::ifstream f(cfg_path);
+            if (f.good()) {
+                std::string content((std::istreambuf_iterator<char>(f)),
+                                     std::istreambuf_iterator<char>());
+                auto pos_svc = content.find("\"AIService\"");
+                if (pos_svc != std::string::npos) {
+                    auto pos_en = content.find("\"enabled\"", pos_svc);
+                    if (pos_en != std::string::npos) {
+                        auto pos_true = content.find("true", pos_en);
+                        auto pos_next = content.find(",", pos_en);
+                        if (pos_true != std::string::npos &&
+                            (pos_next == std::string::npos || pos_true < pos_next + 20)) {
+                            auto pos_url = content.find("\"url\"", pos_svc);
+                            if (pos_url != std::string::npos) {
+                                auto q1 = content.find('"', pos_url + 5);
+                                auto q2 = content.find('"', q1 + 1);
+                                if (q1 != std::string::npos && q2 != std::string::npos) {
+                                    std::string svc_url = content.substr(q1 + 1, q2 - q1 - 1);
+                                    auto colon = svc_url.rfind(':');
+                                    if (colon != std::string::npos && colon > 6) {
+                                        try { check_port = std::stoi(svc_url.substr(colon + 1)); }
+                                        catch (...) {}
+                                    }
+                                    check_path = L"/health";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        bool servidor_listo = false;
+        for (int i = 0; i < 16 && !servidor_listo; i++) {
+            Sleep(500);
+            HINTERNET hT = WinHttpOpen(L"NEVEN-XLL/3.0",
+                                        WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                        WINHTTP_NO_PROXY_NAME,
+                                        WINHTTP_NO_PROXY_BYPASS, 0);
+            if (hT) {
+                DWORD timeout_ms = 400;
+                WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT,    &timeout_ms, sizeof(timeout_ms));
+                WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,       &timeout_ms, sizeof(timeout_ms));
+                WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT,    &timeout_ms, sizeof(timeout_ms));
+
+                HINTERNET hC = WinHttpConnect(hT, L"localhost",
+                                               static_cast<INTERNET_PORT>(check_port), 0);
+                if (hC) {
+                    HINTERNET hR = WinHttpOpenRequest(hC, L"GET", check_path.c_str(),
+                                                       nullptr, WINHTTP_NO_REFERER,
+                                                       WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+                    if (hR) {
+                        if (WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                               nullptr, 0, 0, 0) &&
+                            WinHttpReceiveResponse(hR, nullptr)) {
+                            servidor_listo = true;
+                        }
+                        WinHttpCloseHandle(hR);
+                    }
+                    WinHttpCloseHandle(hC);
+                }
+                WinHttpCloseHandle(hT);
+            }
+        }
+
+        if (!servidor_listo) {
+            Convert::StringToXLOPER(&rslt,
+                "Error: NEVEN Studio no responde (localhost:5555). "
+                "Inicia el servidor con el acceso directo 'NEVEN Studio.vbs'.", false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    // Escapar string para JSON inline
+    auto escape_json = [](const std::string& s) -> std::string {
+        std::string o; o.reserve(s.size() + 16);
+        for (unsigned char c : s) {
+            if      (c == '"')  o += "\\\"";
+            else if (c == '\\') o += "\\\\";
+            else if (c == '\n') o += "\\n";
+            else if (c == '\r') o += "\\r";
+            else if (c == '\t') o += "\\t";
+            else if (c < 0x20)  o += ' ';   // control chars → espacio
+            else                o += c;
+        }
+        return o;
+    };
+
+    // Convertir una celda XLOPER12 a string CSV-seguro
+    auto cell_to_str = [](LPXLOPER12 cell) -> std::string {
+        if (!cell) return "";
+        int t = cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        if (t == xltypeNum)  return std::to_string(cell->val.num);
+        if (t == xltypeInt)  return std::to_string(cell->val.w);
+        if (t == xltypeBool) return cell->val.xbool ? "TRUE" : "FALSE";
+        if (t == xltypeStr)  return Convert::XLOPERToString(cell);
+        if (t == xltypeNil || t == xltypeMissing || t == xltypeErr) return "";
+        return Convert::XLOPERToString(cell);
+    };
+
+    // Serializar un rango (ya materializado como xltypeMulti por Excel con tipo Q)
+    // a texto CSV. Retorna "" si el rango es inválido/vacío.
+    auto range_to_csv = [&cell_to_str](LPXLOPER12 rng) -> std::string {
+        if (!rng) return "";
+        int t = rng->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        // Escalar: retornar directamente
+        if (t == xltypeNum || t == xltypeStr || t == xltypeBool || t == xltypeInt)
+            return cell_to_str(rng);
+        // Tipos vacíos
+        if (t == xltypeMissing || t == xltypeNil || t == xltypeErr) return "";
+        // Multi: iterar celdas
+        if (t != xltypeMulti) return "";
+
+        int rows = static_cast<int>(rng->val.array.rows);
+        int cols = static_cast<int>(rng->val.array.columns);
+        if (rows == 0 || cols == 0) return "";
+
+        std::string csv;
+        int max_rows = (std::min)(rows, 51); // máx 51 filas (1 header + 50 datos)
+        for (int r = 0; r < max_rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (c > 0) csv += ',';
+                LPXLOPER12 cell = &rng->val.array.lparray[r * cols + c];
+                std::string v = cell_to_str(cell);
+                // Citar si contiene coma o comilla
+                if (v.find(',') != std::string::npos || v.find('"') != std::string::npos) {
+                    // reemplazar " por "" (CSV estándar)
+                    std::string q = "\"";
+                    for (char ch : v) { if (ch == '"') q += "\"\""; else q += ch; }
+                    q += '"';
+                    csv += q;
+                } else {
+                    csv += v;
+                }
+            }
+            csv += '\n';
+        }
+        if (rows > 51)
+            csv += "... (" + std::to_string(rows - 51) + " filas más)\n";
+        return csv;
+    };
+
+    // ── 1. Serializar rangos ──────────────────────────────────────────────────
+    // Con tipo "UQQ" en funcTemplates, Excel ya materializa los rangos a
+    // xltypeMulti antes de llamar esta función. No se necesita xlCoerce.
+    std::string dataset_csv  = range_to_csv(data_range);
+    std::string results_csv  = range_to_csv(results_range);
+
+    if (dataset_csv.empty() && results_csv.empty()) {
+        Convert::StringToXLOPER(&rslt,
+            "Error: selecciona un rango con datos antes de ejecutar NEVEN.IA.Contexto", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // ── 2. Contar filas y columnas del dataset ────────────────────────────────
+    int n_rows = 0, n_cols = 0;
+    if (data_range && (data_range->xltype & ~(xlbitXLFree | xlbitDLLFree)) == xltypeMulti) {
+        n_rows = (std::max)(0, static_cast<int>(data_range->val.array.rows) - 1);
+        n_cols = static_cast<int>(data_range->val.array.columns);
+    }
+
+    // ── 3. Construir JSON y hacer POST al servicio IA ────────────────────────
+    // Puerto configurable: si AIService.enabled=true en neven-config.json usa ese
+    // puerto, de lo contrario usa el servidor local en 5555
+    int post_port = 5555;
+    {
+        const char* cfg_path = "C:\\NEVEN\\neven-config.json";
+        std::ifstream fcfg(cfg_path);
+        if (fcfg.good()) {
+            std::string content((std::istreambuf_iterator<char>(fcfg)),
+                                 std::istreambuf_iterator<char>());
+            auto pos_svc = content.find("\"AIService\"");
+            if (pos_svc != std::string::npos) {
+                auto pos_en = content.find("\"enabled\"", pos_svc);
+                if (pos_en != std::string::npos && pos_en < pos_svc + 200) {
+                    auto pos_true = content.find("true", pos_en);
+                    auto pos_next = content.find(",", pos_en);
+                    if (pos_true != std::string::npos &&
+                        (pos_next == std::string::npos || pos_true < pos_next + 20)) {
+                        auto pos_url = content.find("\"url\"", pos_svc);
+                        if (pos_url != std::string::npos && pos_url < pos_svc + 300) {
+                            auto q1 = content.find('"', pos_url + 5);
+                            auto q2 = content.find('"', q1 + 1);
+                            if (q1 != std::string::npos && q2 != std::string::npos) {
+                                std::string svc_url = content.substr(q1 + 1, q2 - q1 - 1);
+                                auto colon = svc_url.rfind(':');
+                                if (colon != std::string::npos && colon > 6) {
+                                    try { post_port = std::stoi(svc_url.substr(colon + 1)); }
+                                    catch (...) {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::string json_body = "{\"source\":\"excel_xll\",\"n_rows\":";
+    json_body += std::to_string(n_rows);
+    json_body += ",\"n_cols\":";
+    json_body += std::to_string(n_cols);
+    json_body += ",\"dataset_text\":\"";
+    json_body += escape_json(dataset_csv);
+    json_body += "\",\"results_text\":\"";
+    json_body += escape_json(results_csv);
+    json_body += "\"}";
+
+    // HTTP POST via WinHTTP (sin dependencias externas)
+    HINTERNET hSess = nullptr, hConn = nullptr, hReq = nullptr;
+    bool ok = false;
+    std::string resp_msg;
+
+    hSess = WinHttpOpen(L"NEVEN-XLL/3.0",
+                        WINHTTP_ACCESS_TYPE_NO_PROXY,
+                        WINHTTP_NO_PROXY_NAME,
+                        WINHTTP_NO_PROXY_BYPASS, 0);
+    if (hSess) {
+        // Timeouts conservadores: 3s connect, 10s send/receive
+        DWORD t_conn = 3000, t_rw = 10000;
+        WinHttpSetOption(hSess, WINHTTP_OPTION_CONNECT_TIMEOUT, &t_conn, sizeof(t_conn));
+        WinHttpSetOption(hSess, WINHTTP_OPTION_SEND_TIMEOUT,    &t_rw,   sizeof(t_rw));
+        WinHttpSetOption(hSess, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t_rw,   sizeof(t_rw));
+        hConn = WinHttpConnect(hSess, L"localhost",
+                               static_cast<INTERNET_PORT>(post_port), 0);
+    }
+    if (hConn) hReq  = WinHttpOpenRequest(hConn, L"POST", L"/api/ai/context",
+                                          nullptr, WINHTTP_NO_REFERER,
+                                          WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+    if (hReq) {
+        BOOL sent = WinHttpSendRequest(hReq,
+                                       L"Content-Type: application/json\r\n", (DWORD)-1,
+                                       (LPVOID)json_body.c_str(),
+                                       (DWORD)json_body.size(),
+                                       (DWORD)json_body.size(), 0);
+        if (sent && WinHttpReceiveResponse(hReq, nullptr)) {
+            DWORD sz = 0;
+            WinHttpQueryDataAvailable(hReq, &sz);
+            if (sz > 0 && sz < 4096) {
+                std::string buf(sz, '\0');
+                DWORD rd = 0;
+                WinHttpReadData(hReq, &buf[0], sz, &rd);
+                buf.resize(rd);
+                auto p = buf.find("\"message\":\"");
+                if (p != std::string::npos) {
+                    p += 11;
+                    auto e = buf.find('"', p);
+                    if (e != std::string::npos) resp_msg = buf.substr(p, e - p);
+                }
+            }
+            ok = true;
+        }
+    }
+
+    if (hReq)  WinHttpCloseHandle(hReq);
+    if (hConn) WinHttpCloseHandle(hConn);
+    if (hSess) WinHttpCloseHandle(hSess);
+
+    std::string result_str;
+    if (ok) {
+        result_str = resp_msg.empty()
+            ? "OK - contexto enviado (" + std::to_string(n_rows) + " filas x "
+              + std::to_string(n_cols) + " cols)"
+            : resp_msg;
+    } else {
+        result_str = "Error: NEVEN Studio no responde (localhost:5555). "
+                     "Inicia el servidor primero.";
+    }
+
+    Convert::StringToXLOPER(&rslt, result_str, false);
+    rslt.xltype |= xlbitDLLFree;
     return &rslt;
 }
 

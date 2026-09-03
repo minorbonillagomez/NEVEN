@@ -138,13 +138,28 @@ RG_Tobit.Studio <- function(data_Y,
     paste0('<html><body><p style="color:#888;padding:8px">Grafico no disponible</p></body></html>')
   })
 
+  # Tabla científica — texto plano estilo consola R
+  tabla_cientifica_txt <- tryCatch({
+    paste(capture.output(print(summary(mod))), collapse = "\n")
+  }, error = function(e) {
+    paste("Error al generar resumen del modelo:", conditionMessage(e))
+  })
+
   resultado <- list(
+    tabla_cientifica   = tabla_cientifica_txt,
     coeficientes       = coef_df,
     efectos_marginales = mfx_df,
-    metricas           = metricas,
+    metricas           = local({
+      m <- metricas; vals <- as.character(m[[2]]); keys <- as.character(m[[1]])
+      w_k <- max(nchar(keys)); w_v <- max(nchar(vals))
+      paste(c(paste0(formatC("Metrica",width=-w_k),"  ",formatC("Valor",width=w_v)),
+              strrep("-",w_k+w_v+2),
+              mapply(function(k,v) paste0(formatC(k,width=-w_k),"  ",formatC(v,width=w_v)),keys,vals)),
+            collapse="\n")
+    }),
     grafico            = html_graf
   )
-  tier_map <- c(coeficientes = 1L, efectos_marginales = 1L,
-                metricas = 1L, grafico = 1L)
+  tier_map <- c(tabla_cientifica = 1L, coeficientes = 2L,
+                efectos_marginales = 2L, metricas = 1L, grafico = 1L)
   return(r_object_to_slots(resultado, tier_map = tier_map))
 }

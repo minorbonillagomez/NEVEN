@@ -110,44 +110,100 @@ RG_Lineal.Studio <- function(data_Y,
     paste0('<html><body><p style="color:#888;padding:8px">Grafico no disponible</p></body></html>')
   })
 
-  # Stargazer: tabla cientifica HTML
-  html_stargazer <- tryCatch({
-    if (!requireNamespace("stargazer", quietly = TRUE)) stop("stargazer requerido")
-    raw_lines <- capture.output(
-      stargazer::stargazer(mod, type = "html",
-                           title   = "Regresion Lineal",
-                           dep.var.labels = y_col,
-                           covariate.labels = x_cols,
-                           out = NULL)
-    )
-    # Envolver en HTML con estilos dark
-    style <- paste0(
-      "<style>",
-      "body{background:#373434;color:#e0e0e0;font-family:'Segoe UI',sans-serif;font-size:12px;padding:8px}",
-      "table{border-collapse:collapse;width:100%}",
-      "td,th{padding:4px 8px;border-bottom:1px solid #555}",
-      "td:first-child{text-align:left}",
-      "td:not(:first-child){text-align:center}",
-      "p{color:#888;font-size:10px}",
-      "</style>"
-    )
-    html_body <- paste(raw_lines, collapse = "\n")
-    full_html <- paste0("<html><head>", style, "</head><body>", html_body, "</body></html>")
-    full_html <- iconv(full_html, from = "UTF-8", to = "UTF-8", sub = "byte")
-    full_html
+  # Tabla científica — texto plano estilo consola R (sin stargazer, sin encoding issues)
+  tabla_cientifica_txt <- tryCatch({
+    paste(capture.output(print(summary(mod))), collapse = "\n")
   }, error = function(e) {
-    paste0("<html><body><p style='color:#888;padding:8px'>Tabla Stargazer no disponible: ",
-           conditionMessage(e), "</p></body></html>")
+    paste("Error al generar resumen del modelo:", conditionMessage(e))
   })
 
+  # ── Diagnósticos para advertencias pedagógicas ──────────────────────────────
+  # Cada advertencia es un slot de tipo "warning_pedagogy".
+  # El servidor Python lo enriquece con el contenido del Knowledge Graph.
+  # El slot lleva el assumption_id y el contexto numérico del test.
+
+  warnings_list <- list()
+
+  # 1. Test de Breusch-Pagan (heterocedasticidad)
+  bp_warning <- tryCatch({
+    if (requireNamespace("lmtest", quietly = TRUE)) {
+      bp <- lmtest::bptest(mod)
+      bp_pval <- as.numeric(bp$p.value)
+      bp_stat <- as.numeric(bp$statistic)
+      if (!is.na(bp_pval) && bp_pval < 0.05) {
+        # Heterocedasticidad detectada — emitir advertencia
+        ctx <- list(
+          assumption_id      = "assumption_homoscedasticity",
+          test_statistic     = round(bp_stat, 4),
+          p_value            = round(bp_pval, 6),
+          threshold          = 0.05,
+          variable_name      = "los residuos del modelo",
+          correction_applied = "HC1"
+        )
+        list(
+          name  = "warning_heterocedasticidad",
+          label = "\u26a0 Heterocedasticidad detectada",
+          type  = "warning_pedagogy",
+          value = jsonlite::toJSON(ctx, auto_unbox = TRUE),
+          tier  = 1L
+        )
+      } else NULL
+    } else NULL
+  }, error = function(e) NULL)
+  if (!is.null(bp_warning)) warnings_list <- c(warnings_list, list(bp_warning))
+
+  # 2. Test de VIF (multicolinealidad) — solo cuando hay 2+ regresores
+  vif_warning <- tryCatch({
+    if (length(x_cols) >= 2 && requireNamespace("car", quietly = TRUE)) {
+      vif_vals <- car::vif(mod)
+      max_vif  <- max(vif_vals, na.rm = TRUE)
+      if (!is.na(max_vif) && max_vif > 5) {
+        ctx <- list(
+          assumption_id      = "assumption_no_multicollinearity",
+          test_statistic     = round(max_vif, 4),
+          p_value            = NULL,
+          threshold          = 5,
+          variable_name      = names(which.max(vif_vals)),
+          correction_applied = ""
+        )
+        list(
+          name  = "warning_multicolinealidad",
+          label = "\u26a0 Multicolinealidad elevada",
+          type  = "warning_pedagogy",
+          value = jsonlite::toJSON(ctx, auto_unbox = TRUE, null = "null"),
+          tier  = 1L
+        )
+      } else NULL
+    } else NULL
+  }, error = function(e) NULL)
+  if (!is.null(vif_warning)) warnings_list <- c(warnings_list, list(vif_warning))
+
+  # ── Construir resultado final con advertencias al frente (tier 1) ────────────
   resultado <- list(
-    tabla_cientifica = html_stargazer,
+    tabla_cientifica = tabla_cientifica_txt,
     coeficientes     = coef_mat,
-    metricas         = metricas,
+    metricas         = local({
+      m <- metricas; vals <- as.character(m[[2]]); keys <- as.character(m[[1]])
+      w_k <- max(nchar(keys)); w_v <- max(nchar(vals))
+      paste(c(paste0(formatC("Metrica",width=-w_k),"  ",formatC("Valor",width=w_v)),
+              strrep("-",w_k+w_v+2),
+              mapply(function(k,v) paste0(formatC(k,width=-w_k),"  ",formatC(v,width=w_v)),keys,vals)),
+            collapse="\n")
+    }),
     residuos         = fitted_df,
     grafico          = html_residuos
   )
   tier_map <- c(tabla_cientifica = 1L, coeficientes = 2L,
                 metricas = 1L, residuos = 2L, grafico = 1L)
-  return(r_object_to_slots(resultado, tier_map = tier_map))
+  slots_df <- r_object_to_slots(resultado, tier_map = tier_map)
+
+  # Convertir advertencias a data.frame y prepender (aparecen antes de los resultados)
+  if (length(warnings_list) > 0) {
+    warn_df <- do.call(rbind, lapply(warnings_list, function(w) {
+      as.data.frame(w, stringsAsFactors = FALSE)
+    }))
+    slots_df <- rbind(warn_df, slots_df)
+  }
+
+  return(slots_df)
 }

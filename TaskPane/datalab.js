@@ -211,6 +211,7 @@ function selectFunction(card) {
   renderColumnPanel(card);
   renderParameterForm(card);
   renderDescriptionCard(card);
+  renderOntologyPanel(card);   // ← Knowledge Graph: marco metodológico + supuestos
 
   var filterCard = document.getElementById('dl-filter-card');
   var runRow     = document.getElementById('dl-run-row');
@@ -218,6 +219,11 @@ function selectFunction(card) {
   if (runRow)     runRow.style.display     = 'flex';
 
   updateRunButtonState();
+
+  // Verificar paquetes para esta función (no bloquea)
+  if (typeof window._pkgCheckFunction === 'function' && card.id) {
+    window._pkgCheckFunction(card.id, _dlState.language || 'r');
+  }
 }
 
 // =============================================================================
@@ -964,6 +970,197 @@ function renderDescriptionCard(card) {
 }
 
 // =============================================================================
+// renderOntologyPanel — panel del Knowledge Graph econométrico
+// Se llama desde selectFunction(card) cada vez que el usuario elige una función.
+// Consulta GET /api/kg/method/{function_id} y rellena los tres sub-cards:
+//   #dl-kg-method-card     → marco metodológico (descripción + referencia)
+//   #dl-kg-assumptions-card → supuestos a verificar (chips expandibles)
+//   #dl-kg-alternatives-card → métodos alternativos (chips)
+// Si la función no tiene nodo en el grafo, oculta el panel discretamente.
+// =============================================================================
+function renderOntologyPanel(card) {
+  var panel = document.getElementById('dl-ontology-panel');
+  if (!panel) return;
+
+  // Ocultar mientras carga (evita flash de contenido anterior)
+  panel.style.display = 'none';
+  _hideOntologyCards();
+
+  if (!card || !card.id) return;
+
+  fetch(_DL_API + '/api/kg/method/' + encodeURIComponent(card.id))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data || !data.found) return;  // Sin nodo → panel permanece oculto
+
+      panel.style.display = 'block';
+
+      // ── Marco metodológico ────────────────────────────────────────────────
+      var method = data.method || {};
+      if (method.name || method.description) {
+        var methodCard  = document.getElementById('dl-kg-method-card');
+        var methodBadge = document.getElementById('dl-kg-method-badge');
+        var methodText  = document.getElementById('dl-kg-method-text');
+        var methodRef   = document.getElementById('dl-kg-method-ref');
+
+        if (methodCard)  methodCard.style.display  = 'block';
+        if (methodBadge) methodBadge.textContent    = method.type || 'Method';
+
+        if (methodText) {
+          // Mostrar solo la primera oración de la descripción (conciso en panel)
+          var desc = method.description || '';
+          var firstSentence = desc.split('.')[0];
+          methodText.textContent = firstSentence
+            ? firstSentence + '.'
+            : desc.substring(0, 150) + (desc.length > 150 ? '…' : '');
+        }
+
+        if (methodRef) {
+          var ref = method.reference || {};
+          if (ref.book) {
+            // Formato corto: "Hanck et al. · Cap. 4 & 6 · pp. 85-160"
+            var bookShort = _kgShortBook(ref.book);
+            methodRef.textContent = '📖 ' + bookShort +
+              (ref.chapter ? ' · ' + _kgShortChapter(ref.chapter) : '') +
+              (ref.pages   ? ' · ' + ref.pages : '');
+          }
+        }
+      }
+
+      // ── Supuestos a verificar ────────────────────────────────────────────
+      var assumptions = data.assumptions || [];
+      if (assumptions.length > 0) {
+        var assCard  = document.getElementById('dl-kg-assumptions-card');
+        var assChips = document.getElementById('dl-kg-assumption-chips');
+        if (assCard)  assCard.style.display  = 'block';
+        if (assChips) {
+          assChips.innerHTML = '';
+          assumptions.forEach(function(a) {
+            assChips.appendChild(_kgAssumptionChip(a));
+          });
+        }
+      }
+
+      // ── Métodos alternativos ──────────────────────────────────────────────
+      var alternatives = data.alternatives || [];
+      if (alternatives.length > 0) {
+        var altCard  = document.getElementById('dl-kg-alternatives-card');
+        var altChips = document.getElementById('dl-kg-alternative-chips');
+        if (altCard)  altCard.style.display  = 'block';
+        if (altChips) {
+          altChips.innerHTML = '';
+          alternatives.forEach(function(alt) {
+            altChips.appendChild(_kgAlternativeChip(alt));
+          });
+        }
+      }
+    })
+    .catch(function() {
+      // Error de red o servidor — panel permanece oculto, sin romper el flujo
+    });
+}
+
+// ── Helpers internos del panel ontológico ─────────────────────────────────────
+
+function _hideOntologyCards() {
+  ['dl-kg-method-card', 'dl-kg-assumptions-card', 'dl-kg-alternatives-card']
+    .forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+}
+
+function _kgShortBook(book) {
+  // "Introduction to Econometrics with R (Hanck et al.)" → "Hanck et al."
+  var m = book.match(/\(([^)]+)\)/);
+  return m ? m[1] : book.split(' ').slice(0, 3).join(' ');
+}
+
+function _kgShortChapter(chapter) {
+  // "Chapter 4 & 6: Linear Regression..." → "Cap. 4 & 6"
+  var m = chapter.match(/[Cc]hapter\s+([\d\s&,]+)/);
+  return m ? 'Cap. ' + m[1].trim() : chapter.split(':')[0].trim();
+}
+
+function _kgAssumptionChip(assumption) {
+  var chip = document.createElement('div');
+  chip.style.cssText =
+    'position:relative;display:inline-block;' +
+    'background:var(--bg-secondary);border:1px solid var(--border);' +
+    'border-radius:12px;padding:3px 10px;font-size:10px;' +
+    'color:var(--text-secondary);cursor:pointer;transition:all .15s;' +
+    'max-width:100%;user-select:none';
+
+  var label = document.createElement('span');
+  label.textContent = assumption.name || assumption.id || '';
+  chip.appendChild(label);
+
+  // Tooltip expandido con definición + referencia
+  var tooltip = document.createElement('div');
+  tooltip.style.cssText =
+    'display:none;position:absolute;z-index:200;bottom:calc(100% + 6px);left:0;' +
+    'min-width:260px;max-width:320px;padding:10px 12px;' +
+    'background:var(--bg-card);border:1px solid rgba(215,165,56,0.35);' +
+    'border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,0.5);' +
+    'font-size:11px;line-height:1.6;color:var(--text-primary);' +
+    'pointer-events:none;white-space:normal;word-break:break-word';
+
+  var defText = assumption.definition || '';
+  var ref     = assumption.reference  || {};
+  var refStr  = '';
+  if (ref.book) {
+    refStr = '<div style="margin-top:6px;font-size:9px;color:var(--text-secondary);' +
+             'font-style:italic;border-top:1px solid var(--border);padding-top:5px">' +
+             '📖 ' + _kgShortBook(ref.book) +
+             (ref.chapter ? ' · ' + _kgShortChapter(ref.chapter) : '') +
+             (ref.pages   ? ' · ' + ref.pages : '') +
+             '</div>';
+  }
+
+  tooltip.innerHTML =
+    '<div style="font-weight:700;color:var(--accent);margin-bottom:4px;font-size:10px">' +
+    (assumption.name || '') + '</div>' +
+    '<div>' + defText.substring(0, 220) + (defText.length > 220 ? '…' : '') + '</div>' +
+    refStr;
+
+  chip.appendChild(tooltip);
+
+  // Mostrar/ocultar tooltip al hacer hover
+  chip.addEventListener('mouseenter', function() {
+    chip.style.borderColor = 'rgba(215,165,56,0.6)';
+    chip.style.color       = 'var(--accent)';
+    tooltip.style.display  = 'block';
+  });
+  chip.addEventListener('mouseleave', function() {
+    chip.style.borderColor = 'var(--border)';
+    chip.style.color       = 'var(--text-secondary)';
+    tooltip.style.display  = 'none';
+  });
+
+  return chip;
+}
+
+function _kgAlternativeChip(alt) {
+  var chip = document.createElement('div');
+  chip.style.cssText =
+    'display:inline-block;background:var(--bg-secondary);' +
+    'border:1px solid var(--border);border-radius:12px;' +
+    'padding:3px 10px;font-size:10px;color:var(--text-secondary);' +
+    'cursor:default;transition:border-color .15s';
+  chip.textContent = alt.name || alt.id || '';
+  chip.title       = alt.name || '';
+  chip.addEventListener('mouseenter', function() {
+    chip.style.borderColor = 'var(--border)';
+    chip.style.color       = 'var(--text-primary)';
+  });
+  chip.addEventListener('mouseleave', function() {
+    chip.style.borderColor = 'var(--border)';
+    chip.style.color       = 'var(--text-secondary)';
+  });
+  return chip;
+}
+
+// =============================================================================
 // Task 8.17 — updateRunButtonState
 // =============================================================================
 function updateRunButtonState() {
@@ -1112,6 +1309,21 @@ async function runAnalysis() {
 
     if (response.ok && data.status === 'ok') {
       renderResults(data.slots || []);
+      // Guardar slots del último análisis para el botón + Resultados del Tab IA
+      window._dlLastSlots      = data.slots || [];
+      window._dlLastFunctionId = _dlState.selectedCard ? _dlState.selectedCard.id : null;
+      window._dlLastCard       = _dlState.selectedCard || null;
+      // Acumular en historial de modelos
+      if (typeof _dlAddToHistory === 'function') {
+        _dlAddToHistory({
+          function_id:  window._dlLastFunctionId,
+          source:       'user',
+          context_note: '',
+          column_roles: JSON.parse(JSON.stringify(_dlState.columnRoles  || {})),
+          parameters:   JSON.parse(JSON.stringify(_dlState.parameters   || {})),
+          slots:        data.slots || []
+        });
+      }
       // Si se cargó un dataset Wooldridge, re-introspect para actualizar columnas
       var loadSlots = (data.slots || []).filter(function(s) { return s.name === 'dataset_cargado'; });
       if (loadSlots.length > 0) {
@@ -1309,6 +1521,10 @@ function buildSlotElement(slot) {
       }
       break;
 
+    case 'warning_pedagogy':
+      content = _renderPedagogyWarning(slot.value);
+      break;
+
     case 'scalar':
     case 'text':
     default: {
@@ -1331,6 +1547,148 @@ function buildSlotElement(slot) {
 
   container.appendChild(content);
   return container;
+}
+
+// =============================================================================
+// _renderPedagogyWarning — renderer para slots de tipo 'warning_pedagogy'
+// Muestra el texto compacto siempre visible + panel expandible de 5 capas.
+// Las 5 capas son: fenómeno, implicación, acción, referencia, reflexión.
+// =============================================================================
+function _renderPedagogyWarning(warning) {
+  // warning puede llegar como objeto o como string JSON (fallback de seguridad)
+  var w = warning;
+  if (typeof w === 'string') {
+    try { w = JSON.parse(w); } catch(e) {
+      var fb = document.createElement('div');
+      fb.style.cssText = 'padding:8px 12px;font-size:11px;color:var(--accent);' +
+                         'border:1px solid rgba(215,165,56,0.3);border-radius:6px';
+      fb.textContent = '⚠ ' + w;
+      return fb;
+    }
+  }
+  if (!w || typeof w !== 'object') {
+    var fb2 = document.createElement('div');
+    fb2.textContent = '⚠ Advertencia metodológica';
+    return fb2;
+  }
+
+  var wrap = document.createElement('div');
+  wrap.style.cssText =
+    'border:1px solid rgba(215,165,56,0.35);border-radius:6px;' +
+    'background:rgba(215,165,56,0.04);overflow:hidden;margin-bottom:2px';
+
+  // ── Nivel compacto (siempre visible, clicable) ───────────────────────────
+  var compact = document.createElement('div');
+  compact.style.cssText =
+    'padding:8px 12px;cursor:pointer;display:flex;align-items:center;' +
+    'justify-content:space-between;user-select:none;gap:8px';
+
+  var compactText = document.createElement('span');
+  compactText.style.cssText = 'font-size:11px;color:var(--accent);flex:1;line-height:1.4';
+  compactText.textContent = w.compact || '⚠ Advertencia metodológica';
+
+  var compactToggle = document.createElement('span');
+  compactToggle.style.cssText =
+    'font-size:9px;color:var(--text-secondary);white-space:nowrap;' +
+    'padding:2px 6px;border:1px solid var(--border);border-radius:4px;' +
+    'transition:all .15s;flex-shrink:0';
+  compactToggle.textContent = 'Ver más ▼';
+
+  compact.appendChild(compactText);
+  compact.appendChild(compactToggle);
+
+  // ── Nivel expandido (oculto por defecto) ─────────────────────────────────
+  var expanded = document.createElement('div');
+  expanded.style.cssText =
+    'display:none;padding:10px 14px 14px;' +
+    'border-top:1px solid rgba(215,165,56,0.2)';
+  expanded.innerHTML = _buildExpandedWarning(w);
+
+  // Toggle
+  var _isOpen = false;
+  compact.addEventListener('click', function() {
+    _isOpen = !_isOpen;
+    expanded.style.display    = _isOpen ? 'block' : 'none';
+    compactToggle.textContent = _isOpen ? 'Ver menos ▲' : 'Ver más ▼';
+    compactToggle.style.borderColor = _isOpen
+      ? 'rgba(215,165,56,0.5)' : 'var(--border)';
+    compactToggle.style.color = _isOpen
+      ? 'var(--accent)' : 'var(--text-secondary)';
+  });
+  compact.addEventListener('mouseenter', function() {
+    compact.style.background = 'rgba(215,165,56,0.06)';
+  });
+  compact.addEventListener('mouseleave', function() {
+    compact.style.background = '';
+  });
+
+  wrap.appendChild(compact);
+  wrap.appendChild(expanded);
+  return wrap;
+}
+
+function _buildExpandedWarning(w) {
+  var ref = (w && w.reference) ? w.reference : {};
+  var accentHex = 'var(--accent)';
+  var mutedHex  = 'var(--text-secondary)';
+
+  function _section(title, body) {
+    if (!body || !body.trim()) return '';
+    return '<div style="margin-bottom:10px">' +
+      '<div style="font-size:9px;font-weight:700;color:' + accentHex + ';' +
+        'text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">' +
+        title + '</div>' +
+      '<div style="font-size:11px;line-height:1.65;color:var(--text-primary)">' +
+        body + '</div>' +
+      '</div>';
+  }
+
+  var refBlock = '';
+  if (ref.book) {
+    var bookShort = '';
+    var bm = ref.book.match(/\(([^)]+)\)/);
+    bookShort = bm ? bm[1] : ref.book.split(' ').slice(0, 3).join(' ');
+    var chapShort = '';
+    if (ref.chapter) {
+      var cm = ref.chapter.match(/[Cc]hapter\s+([\d\s&,]+)/);
+      chapShort = cm ? 'Cap. ' + cm[1].trim() : ref.chapter.split(':')[0].trim();
+    }
+    var refText = (w.reference && w.reference.text) ? w.reference.text : 'Referencia canónica:';
+    refBlock =
+      '<div style="margin-bottom:10px;padding:8px 10px;' +
+        'background:rgba(215,165,56,0.06);border-radius:4px;' +
+        'border-left:2px solid rgba(215,165,56,0.4)">' +
+        '<div style="font-size:9px;font-weight:700;color:' + accentHex + ';' +
+          'text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Para profundizar</div>' +
+        '<div style="font-size:11px;line-height:1.6;font-style:italic;color:var(--text-primary)">' +
+          refText + '</div>' +
+        '<div style="font-size:10px;color:' + mutedHex + ';margin-top:5px">' +
+          '📖 ' + bookShort +
+          (chapShort ? ' · ' + chapShort : '') +
+          (ref.pages  ? ' · ' + ref.pages : '') +
+        '</div>' +
+      '</div>';
+  }
+
+  var reflectionBlock = '';
+  if (w.reflection_question && w.reflection_question.trim()) {
+    reflectionBlock =
+      '<div style="padding:8px 10px;background:rgba(255,255,255,0.03);' +
+        'border-radius:4px;border-left:2px solid rgba(215,165,56,0.3)">' +
+        '<div style="font-size:9px;font-weight:700;color:' + accentHex + ';' +
+          'text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Para reflexionar</div>' +
+        '<div style="font-size:11px;line-height:1.65;font-style:italic;color:var(--text-primary)">' +
+          w.reflection_question + '</div>' +
+      '</div>';
+  }
+
+  return (
+    _section('El fenómeno', w.phenomenon || '') +
+    _section('Por qué importa', w.implication || '') +
+    _section('Lo que NEVEN hará', w.action || '') +
+    refBlock +
+    reflectionBlock
+  );
 }
 
 // =============================================================================
@@ -1593,14 +1951,94 @@ function _renderPlotlyJSON(jsonStr, slotName) {
 
 // =============================================================================
 // Helper — simple Markdown to HTML converter (no external deps)
-// Supports: # headers, **bold**, *italic*, - bullets, • bullets, blank lines
+// Supports: # headers, **bold**, *italic*, - bullets, • bullets, blank lines, LaTeX $...$ $$...$$
 // =============================================================================
 function _markdownToHtml(md) {
-  var accent  = 'var(--accent)';
-  var muted   = 'var(--text-secondary)';
-  var lines   = md.split('\n');
-  var html    = '';
-  var inList  = false;
+  var accent = 'var(--accent)';
+
+  // ── Paso 1: extraer bloques LaTeX antes de escapar HTML ──────────────────
+  var mathBlocks  = [];   // display math
+  var mathInlines = [];   // inline math
+
+  // Display math: $$...$$ o \[...\]
+  md = md.replace(/\$\$([\s\S]+?)\$\$/g, function(_, tex) {
+    var idx = mathBlocks.length;
+    mathBlocks.push(tex.trim());
+    return '\x00MATHD' + idx + '\x00';
+  });
+  md = md.replace(/\\\[([\s\S]+?)\\\]/g, function(_, tex) {
+    var idx = mathBlocks.length;
+    mathBlocks.push(tex.trim());
+    return '\x00MATHD' + idx + '\x00';
+  });
+
+  // Inline math: $...$ (solo si parece fórmula) o \(...\)
+  md = md.replace(/\$([^$\n]{1,300}?)\$/g, function(full, tex) {
+    if (!/[\\^_{}=]/.test(tex)) return full;
+    var idx = mathInlines.length;
+    mathInlines.push(tex.trim());
+    return '\x00MATHI' + idx + '\x00';
+  });
+  md = md.replace(/\\\(([^)]{1,500}?)\\\)/g, function(_, tex) {
+    var idx = mathInlines.length;
+    mathInlines.push(tex.trim());
+    return '\x00MATHI' + idx + '\x00';
+  });
+
+  // Líneas sueltas de LaTeX sin delimitadores — el LLM las emite sin $...$
+  // Detectar: línea que contiene 2+ comandos \cmd o 1 comando + signo =
+  // Usar split por línea en lugar de regex multiline para evitar backtracking
+  var mdLines2 = md.split('\n');
+  md = mdLines2.map(function(line) {
+    // Saltar líneas vacías, encabezados Markdown y placeholders ya procesados
+    if (!line.trim()) return line;
+    if (/^#{1,6}\s/.test(line.trim())) return line;
+    if (line.indexOf('\x00MATH') !== -1) return line;
+    // Contar comandos LaTeX \cmd en la línea
+    var texCmdCount = (line.match(/\\[a-zA-Z]+/g) || []).length;
+    if (texCmdCount === 0) return line;
+    var hasEqual = line.indexOf('=') !== -1;
+
+    // Caso A: línea que es MAYORMENTE LaTeX (empieza con \ o tiene pocos words no-LaTeX)
+    // → tratar como display block
+    var trimmed = line.trim();
+    var startsWithCmd = /^\\[a-zA-Z]/.test(trimmed);
+    var nonCmdWords = (trimmed.replace(/\\[a-zA-Z]+\{[^}]*\}/g, '')
+                               .replace(/\\[a-zA-Z]+/g, '')
+                               .match(/[a-zA-Z]{4,}/g) || []).length;
+    var isPureFormula = startsWithCmd
+                     || (texCmdCount >= 2 && nonCmdWords <= 1)
+                     || (texCmdCount >= 2 && hasEqual);
+
+    if (isPureFormula && (texCmdCount >= 2 || (texCmdCount >= 1 && hasEqual))) {
+      var idx = mathBlocks.length;
+      mathBlocks.push(trimmed);
+      return '\x00MATHD' + idx + '\x00';
+    }
+
+    // Caso B: línea mixta con texto + fragmento(s) LaTeX
+    // Estrategia: buscar secuencias \cmd... que no estén ya entre delimitadores
+    // y envolverlas en $...$ para que KaTeX las renderice inline
+    if (texCmdCount >= 1) {
+      // Extraer fragmentos LaTeX: secuencias contiguas de \cmd, {}, ^, _, espacios y símbolos matemáticos
+      // Separados del texto normal por espacios o puntuación
+      var converted = line.replace(/((?:\\[a-zA-Z]+(?:\{[^}]*\})?(?:[_^][{a-zA-Z0-9}]+)?[\s]*)+(?:[=<>≈×%+\-\/][\s]*(?:\\[a-zA-Z]+(?:\{[^}]*\})?(?:[_^][{a-zA-Z0-9}]+)?[\s]*|[\d.]+[\s]*))*)/g, function(match) {
+        var m = match.trim();
+        if (!m || m.length < 2) return match;
+        var inlineIdx = mathInlines.length;
+        mathInlines.push(m);
+        return ' \x00MATHI' + inlineIdx + '\x00 ';
+      });
+      if (converted !== line) return converted;
+    }
+
+    return line;
+  }).join('\n');
+
+  // ── Paso 2: parseo Markdown normal ───────────────────────────────────────
+  var lines  = md.split('\n');
+  var html   = '';
+  var inList = false;
 
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
@@ -1614,17 +2052,21 @@ function _markdownToHtml(md) {
     // H1
     if (/^#\s+/.test(line)) {
       html += '<h3 style="color:' + accent + ';font-size:13px;margin:10px 0 4px;font-weight:700">' +
-              _escMd(line.replace(/^#\s+/, '')) + '</h3>';
+              _inlineMd(line.replace(/^#+\s+/, '')) + '</h3>';
     // H2
     } else if (/^##\s+/.test(line)) {
       html += '<h4 style="color:' + accent + ';font-size:12px;margin:8px 0 3px;font-weight:600">' +
-              _escMd(line.replace(/^##\s+/, '')) + '</h4>';
+              _inlineMd(line.replace(/^#+\s+/, '')) + '</h4>';
+    // H3-H6 → mismo nivel que H2 visualmente
+    } else if (/^#{3,6}\s+/.test(line)) {
+      html += '<h4 style="color:' + accent + ';font-size:12px;margin:8px 0 3px;font-weight:600">' +
+              _inlineMd(line.replace(/^#+\s+/, '')) + '</h4>';
     // Bullet
     } else if (/^[\-\*•]\s/.test(line.trim())) {
       if (!inList) { html += '<ul style="margin:6px 0 6px 16px;padding:0">'; inList = true; }
       var bullet = line.trim().replace(/^[\-\*•]\s/, '');
       html += '<li style="margin:3px 0;color:var(--text-primary)">' + _inlineMd(bullet) + '</li>';
-    // Blank line → only add space if NOT inside a list
+    // Blank line
     } else if (line.trim() === '') {
       if (!inList) html += '<div style="height:4px"></div>';
     // Normal paragraph
@@ -1633,7 +2075,38 @@ function _markdownToHtml(md) {
     }
   }
   if (inList) html += '</ul>';
+
+  // ── Paso 3: reinyectar LaTeX renderizado con KaTeX ───────────────────────
+  mathBlocks.forEach(function(tex, idx) {
+    html = html.replace('\x00MATHD' + idx + '\x00', _renderKatex(tex, true));
+  });
+  mathInlines.forEach(function(tex, idx) {
+    html = html.replace('\x00MATHI' + idx + '\x00', _renderKatex(tex, false));
+  });
+
   return html;
+}
+
+function _renderKatex(tex, displayMode) {
+  if (typeof katex !== 'undefined') {
+    try {
+      return katex.renderToString(tex, {
+        displayMode:  displayMode,
+        throwOnError: false,
+        output:       'html',
+        macros: { '\\R': '\\mathbb{R}', '\\E': '\\mathbb{E}',
+                  '\\hat': '\\hat', '\\beta': '\\beta' }
+      });
+    } catch(e) { /* caer al fallback */ }
+  }
+  // Fallback: mostrar LaTeX como código coloreado si KaTeX no está listo
+  var delim = displayMode ? '$$' : '$';
+  var tag   = displayMode ? 'div' : 'span';
+  var style = displayMode
+    ? 'display:block;text-align:center;padding:6px 2px;' +
+      'font-family:\'Cascadia Code\',Consolas,monospace;font-size:12px;color:var(--accent)'
+    : 'font-family:\'Cascadia Code\',Consolas,monospace;font-size:11px;color:var(--accent)';
+  return '<' + tag + ' style="' + style + '">' + delim + tex + delim + '</' + tag + '>';
 }
 
 function _inlineMd(text) {

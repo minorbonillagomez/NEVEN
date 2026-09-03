@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) 2026 RJ2XCL Project
  * 
  * This file is part of RJ2XCL.
@@ -22,6 +22,17 @@
 #include "convert.h"
 #include "child_process_log.h"
 #include <cstdio>
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * we're now basing "exec" commands on the standard repl; otherwise
@@ -134,91 +145,5 @@ void RGetVersion(int32_t *major, int32_t *minor, int32_t *patch) {
   if (*version) *major = PartialVersion(&version);
   if (*version && *(++version)) *minor = PartialVersion(&version);
   if (*version && *(++version)) *patch = PartialVersion(&version);
-
-}
-
-/**
- * runs the main R loop; the rest of the code interacts via callbacks
- */
-int RLoop(const char *rhome, const char *ruser, int argc, char ** argv) {
-
-  Rstart Rp = new structRstart;
-  CHILD_LOG("structRstart allocated");
-
-  char *local_rhome = new char[MAX_PATH];
-  if(rhome) strcpy_s(local_rhome, MAX_PATH, rhome);
-  else local_rhome[0] = 0;
-
-  char *local_ruser = new char[MAX_PATH];
-  if(ruser) strcpy_s(local_ruser, MAX_PATH, ruser);
-  else local_ruser[0] = 0;
-
-  R_setStartTime();
-  CHILD_LOG("R_setStartTime done");
-  R_DefParams(Rp);
-  CHILD_LOG("R_DefParams done");
-
-  Rp->rhome = local_rhome;
-  Rp->home = local_ruser;
-
-  // typedef enum {RGui, RTerm, LinkDLL} UImode;
-  Rp->CharacterMode = LinkDLL;  // No GUI needed — we handle I/O via pipes
-  Rp->R_Interactive = TRUE;
-
-  Rp->ReadConsole = R_ReadConsole;
-  Rp->WriteConsole = NULL;
-  Rp->WriteConsoleEx = R_WriteConsoleEx;
-
-  Rp->Busy = R_Busy;
-  Rp->CallBack = R_CallBack;
-  Rp->ShowMessage = R_AskOk;
-  Rp->YesNoCancel = R_AskYesNoCancel;
-
-  // we can handle these in code, more flexible
-  Rp->RestoreAction = SA_NORESTORE;
-  Rp->SaveAction = SA_NOSAVE;
-
-  R_SetParams(Rp);
-  CHILD_LOG("R_SetParams done");
-  R_set_command_line_arguments(argc, argv);
-  CHILD_LOG("R_set_command_line_arguments done");
-  FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-  CHILD_LOG("FlushConsoleInputBuffer done");
-  GA_initapp(0, 0);
-  CHILD_LOG("GA_initapp done");
-  readconsolecfg();
-  CHILD_LOG("readconsolecfg done");
-
-  // call setup separately so we can install functions
-  CHILD_LOG("setup_Rmainloop start");
-  setup_Rmainloop();
-  CHILD_LOG("setup_Rmainloop done");
-
-  // Install R callbacks — static array required by R API
-  static R_CallMethodDef methods[] = {
-    { "RJ2XCL.Callback", (DL_FUNC)&RCallback, 2 },
-    { "RJ2XCL.COMCallback", (DL_FUNC)&COMCallback, 5 },
-    { 0, 0, 0 }
-  };
-  R_registerRoutines(R_getEmbeddingDllInfo(), NULL, methods, NULL, NULL);
-
-  // Register as C-callable for COM interop
-  R_RegisterCCallable("RJ2XCLControlR", "Callback", (DL_FUNC)RCallback);
-  R_RegisterCCallable("RJ2XCLControlR", "COMCallback", (DL_FUNC)COMCallback);
-
-  // now run the loop
-  CHILD_LOG("run_Rmainloop start");
-  run_Rmainloop();
-  CHILD_LOG("run_Rmainloop returned!");
-
-  // clean up
-  delete[] local_ruser;
-  delete[] local_rhome;
-
-  delete Rp;
-
-  Rf_endEmbeddedR(0);
-
-  return 0;
 
 }

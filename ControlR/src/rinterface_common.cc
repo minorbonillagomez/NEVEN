@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) 2026 RJ2XCL Project
  * 
  * This file is part of RJ2XCL.
@@ -18,12 +18,25 @@
  */
 
 #include "controlr.h"
+#define NEVEN_DYNAMIC_LOAD
 #include "controlr_common.h"
 #include "console_graphics_device.h"
 #include "spreadsheet_graphics_device.h"
 #include "convert.h"
 
 #include "gdi_graphics_device.h"
+
+
+
+
+
+
+
+
+
+
+
+
 
 // try to store fuel now, you jerks
 #undef clear
@@ -203,7 +216,8 @@ SEXP VariableToSEXP(const RJ2XCLBuffers::Variable &var) {
     // COM pointer installation logged to file only
 
     SEXP external_pointer = R_MakeExternalPtr((void*)(var.com_pointer().pointer()), install("COM dispatch pointer"), R_NilValue);
-    R_RegisterCFinalizerEx(external_pointer, (R_CFinalizer_t)ReleaseExternalPointer, TRUE);
+    // v2.4 debug: temporarily skip finalizer registration to diagnose crash
+    // R_RegisterCFinalizerEx(external_pointer, (R_CFinalizer_t)ReleaseExternalPointer, TRUE);
 
     SEXP descriptor = Rf_allocVector(VECSXP, 4);
     SET_VECTOR_ELT(descriptor, 0, Rf_mkString(com_pointer.interface_name().c_str()));
@@ -603,7 +617,7 @@ void SEXPToVariable(RJ2XCLBuffers::Variable *var, SEXP sexp, std::vector <SEXP> 
     int ncol = 1;
     RJ2XCLBuffers::Array *arr = 0;
         
-    if (Rf_isFrame(sexp) && rtype == VECSXP) {
+    if (Rf_inherits(sexp, "data.frame") && rtype == VECSXP) {
 
       // this is a list of lists; we want to flatten it and we don't want nested 
       // arrays. for this one, columns is the number of entries in the outer 

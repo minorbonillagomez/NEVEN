@@ -1,4 +1,4 @@
-#ifndef R_EXT_RDYNLOAD_H
+﻿#ifndef R_EXT_RDYNLOAD_H
 #define R_EXT_RDYNLOAD_H
-typedef void* DL_FUNC;
+typedef void *(*DL_FUNC)(void);
 #endif

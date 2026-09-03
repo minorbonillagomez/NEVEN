@@ -46,9 +46,12 @@ AD_ArbolDeDecision.C <- function(
   # PREPARACION DE DATOS Y PARAMETROS
   #-------------------------->>>
   
+  # rpart es necesario para el modelo — se carga con guard
+  if (!requireNamespace("rpart", quietly=TRUE)) {
+    return("Paquete rpart no instalado. Ejecute: =R.instalar(\"rpart\")")
+  }
   library(rpart)
-  library(rpart.plot)
-  require(svDialogs)
+  # rpart.plot se carga solo en TipoOutput==1; svDialogs eliminado (no se usa)
   
   #-------------------------->>>   
   # [1] PREPARACION DE DATOS Y PARAMETROS  
@@ -84,9 +87,13 @@ AD_ArbolDeDecision.C <- function(
     
   } else if (TipoOutput == 1){  
     
-    suppressMessages(rpart.plot(Modelo))
-    
-    OutPut <- "Ver Gráfico"
+    if (!requireNamespace("rpart.plot", quietly=TRUE)) {
+      OutPut <- "Paquete rpart.plot no instalado. Ejecute: =R.instalar(\"rpart.plot\")"
+    } else {
+      library(rpart.plot)
+      suppressMessages(rpart.plot(Modelo))
+      OutPut <- "Ver Gráfico"
+    }
     
   }else if(TipoOutput == 2){   
     
