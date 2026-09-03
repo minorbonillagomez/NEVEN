@@ -83,29 +83,11 @@ RG_DatosPanel.Studio <- function(data_Y,
   )
 
   # Stargazer
+  # Tabla científica — texto plano estilo consola R
   html_stargazer <- tryCatch({
-    if (!requireNamespace("stargazer", quietly = TRUE)) stop("stargazer requerido")
-    raw_lines <- capture.output(
-      stargazer::stargazer(mod, type = "html",
-                           title = paste("Regresion Panel:", tipo_str),
-                           dep.var.labels = y_col,
-                           covariate.labels = x_cols,
-                           out = NULL)
-    )
-    style <- paste0(
-      "<style>",
-      "body{background:#373434;color:#e0e0e0;font-family:'Segoe UI',sans-serif;font-size:12px;padding:8px}",
-      "table{border-collapse:collapse;width:100%}",
-      "td,th{padding:4px 8px;border-bottom:1px solid #555}",
-      "td:first-child{text-align:left}td:not(:first-child){text-align:center}",
-      "p{color:#888;font-size:10px}",
-      "</style>"
-    )
-    html_body <- paste(raw_lines, collapse = "\n")
-    iconv(paste0("<html><head>", style, "</head><body>", html_body, "</body></html>"),
-          from = "UTF-8", to = "UTF-8", sub = "byte")
+    paste(capture.output(print(summary(mod))), collapse = "\n")
   }, error = function(e) {
-    paste0("<html><body><p style='color:#888;padding:8px'>Stargazer no disponible</p></body></html>")
+    paste("Error al generar resumen del modelo:", conditionMessage(e))
   })
 
   # Grafico residuos
@@ -145,7 +127,14 @@ RG_DatosPanel.Studio <- function(data_Y,
   resultado <- list(
     tabla_cientifica = html_stargazer,
     coeficientes     = coef_mat,
-    metricas         = metricas,
+    metricas         = local({
+      m <- metricas; vals <- as.character(m[[2]]); keys <- as.character(m[[1]])
+      w_k <- max(nchar(keys)); w_v <- max(nchar(vals))
+      paste(c(paste0(formatC("Metrica",width=-w_k),"  ",formatC("Valor",width=w_v)),
+              strrep("-",w_k+w_v+2),
+              mapply(function(k,v) paste0(formatC(k,width=-w_k),"  ",formatC(v,width=w_v)),keys,vals)),
+            collapse="\n")
+    }),
     grafico          = html_res
   )
   tier_map <- c(tabla_cientifica = 1L, coeficientes = 2L,

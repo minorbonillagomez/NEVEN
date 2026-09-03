@@ -238,3 +238,32 @@ table.data-table tr:hover td { background: var(--accent-dim); }
   border-radius: var(--radius);
   background: var(--bg-secondary);
 }
+
+
+/* ── Estilos para HTML generado por marked.js en el chat IA ─────────────── */
+#ai-chat-history p          { margin: 4px 0; color: var(--text-primary); line-height: 1.6; }
+#ai-chat-history h1,
+#ai-chat-history h2         { color: var(--accent); font-size: 13px; margin: 10px 0 4px; font-weight: 700; }
+#ai-chat-history h3,
+#ai-chat-history h4,
+#ai-chat-history h5,
+#ai-chat-history h6         { color: var(--accent); font-size: 12px; margin: 8px 0 3px; font-weight: 600; }
+#ai-chat-history ul,
+#ai-chat-history ol         { margin: 4px 0 4px 18px; padding: 0; }
+#ai-chat-history li         { margin: 2px 0; color: var(--text-primary); line-height: 1.5; }
+#ai-chat-history strong     { color: var(--accent); font-weight: 700; }
+#ai-chat-history em         { color: var(--text-secondary); font-style: italic; }
+#ai-chat-history code       { background: #1e1e1e; border: 1px solid #444; border-radius: 3px;
+                               padding: 1px 5px; font-family: Consolas, 'Cascadia Code', monospace;
+                               font-size: 11px; color: var(--accent); }
+#ai-chat-history pre        { background: #1e1e1e; border: 1px solid var(--border); border-radius: 4px;
+                               padding: 10px 14px; font-family: Consolas, 'Cascadia Code', monospace;
+                               font-size: 11px; color: #d4d4d4; white-space: pre-wrap;
+                               overflow-x: auto; margin: 6px 0; }
+#ai-chat-history pre code   { background: none; border: none; padding: 0; color: inherit; }
+#ai-chat-history blockquote { border-left: 2px solid rgba(215,165,56,0.4); margin: 4px 0;
+                               padding: 4px 10px; color: var(--text-secondary); }
+#ai-chat-history hr         { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+#ai-chat-history a          { color: var(--accent); text-decoration: underline; }
+/* KaTeX display en el chat */
+#ai-chat-history .katex-display { margin: 8px 0; overflow-x: auto; }

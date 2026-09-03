@@ -383,6 +383,10 @@ class DataLabHandler:
             slots = [_pkg_advertencia_slot] + slots
         elif _pkg_advertencia_slot:
             slots = [_pkg_advertencia_slot]
+
+        # 10. Enriquecer slots warning_pedagogy con el Knowledge Graph
+        slots = self._enrich_with_pedagogy(slots)
+
         return {"status": "ok", "slots": slots, "execution_time_ms": exec_time}
 
     # ------------------------------------------------------------------
@@ -405,6 +409,13 @@ class DataLabHandler:
             r"C:\Program Files\R\R-4.4.2\bin\Rscript.exe",
             r"C:\Program Files\R\R-4.4.3\bin\Rscript.exe",
         ]
+        # Escanear todas las versiones instaladas (más reciente primero)
+        _r_base = r"C:\Program Files\R"
+        if os.path.isdir(_r_base):
+            for _entry in sorted(os.listdir(_r_base), reverse=True):
+                _candidate = os.path.join(_r_base, _entry, "bin", "Rscript.exe")
+                if os.path.isfile(_candidate) and _candidate not in r_paths:
+                    r_paths.insert(0, _candidate)
         rscript = next((p for p in r_paths if os.path.isfile(p)), "Rscript")
 
         tmp_csv = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
@@ -711,7 +722,7 @@ class DataLabHandler:
             # Fallback: ruta estándar de producción
             r_slots_path = r"C:\NEVEN\startup\r_object_to_slots.R"
         r_slots_r = r_slots_path.replace("\\", "/")
-        lines.append(f"if (!exists('r_object_to_slots', mode='function')) {{")
+        lines.append(f"if (!exists('r_object_to_slots', mode='function') || !exists('.neven_fmt_metricas', mode='function')) {{")
         lines.append(f"  source('{r_slots_r}', local=FALSE)")
         lines.append("}")
         lines.append("")
@@ -970,3 +981,69 @@ class DataLabHandler:
 
         except Exception:
             return []
+
+    # ------------------------------------------------------------------
+    # _enrich_with_pedagogy
+    # ------------------------------------------------------------------
+    def _enrich_with_pedagogy(self, slots: list) -> list:
+        """
+        Enriquece los slots de tipo 'warning_pedagogy' con el contenido
+        pedagógico completo del OntologyEngine (5 capas).
+
+        El slot llega de R con:
+            type  = "warning_pedagogy"
+            value = {"assumption_id": str, "test_statistic": float,
+                     "p_value": float, "threshold": float,
+                     "variable_name": str, "correction_applied": str}
+
+        Tras el enriquecimiento el value contiene la estructura completa:
+            {compact, phenomenon, implication, action, reference,
+             reflection_question}
+
+        Si el OntologyEngine no está disponible o el supuesto no se encuentra,
+        el slot se pasa sin modificar — nunca se pierde un resultado.
+        """
+        # Importar el engine de forma lazy para no bloquear el arranque
+        try:
+            from ontology_engine import get_engine as _get_engine  # type: ignore
+            engine = _get_engine()
+            if engine is None or not engine.is_loaded:
+                return slots
+        except ImportError:
+            return slots
+
+        enriched = []
+        for slot in slots:
+            if slot.get("type") != "warning_pedagogy":
+                enriched.append(slot)
+                continue
+
+            # El value puede llegar como dict (ya parseado) o como string JSON
+            raw_value = slot.get("value")
+            if isinstance(raw_value, str):
+                try:
+                    ctx = json.loads(raw_value)
+                except Exception:
+                    enriched.append(slot)
+                    continue
+            elif isinstance(raw_value, dict):
+                ctx = raw_value
+            else:
+                enriched.append(slot)
+                continue
+
+            assumption_id = ctx.get("assumption_id", "")
+            if not assumption_id:
+                enriched.append(slot)
+                continue
+
+            try:
+                warning_content = engine.build_pedagogy_warning(assumption_id, ctx)
+                enriched_slot = dict(slot)
+                enriched_slot["value"] = warning_content
+                enriched.append(enriched_slot)
+            except Exception:
+                # En caso de error en el engine, pasar el slot original sin tocar
+                enriched.append(slot)
+
+        return enriched

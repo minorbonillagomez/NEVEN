@@ -25,12 +25,12 @@
         <!-- Grupo: Analisis (nuevos viewers) -->
         <group id="grpAnalysis" label="Analisis">
           <button id="btnAIAssistant"
-                  label="AI Assistant"
+                  label="Agente IA"
                   size="large"
                   onAction="OnAIAssistantCommand"
                   imageMso="BlogHomePage"
-                  screentip="AI Assistant (LM Studio)"
-                  supertip="Abre el asistente de IA conectado a LM Studio local. Resume, traduce, analiza y responde preguntas sobre sus datos." />
+                  screentip="NEVEN Studio AI — Agente de analisis econometrico"
+                  supertip="Abre NEVEN Studio con el agente de IA econometrico. Ejecuta modelos, detecta problemas metodologicos, sugiere correcciones y genera informes. Requiere que ControlPython.exe este activo." />
 
           <button id="btnTextAnalysis"
                   label="Texto"

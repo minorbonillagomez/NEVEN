@@ -83,6 +83,7 @@ BERTModule_*.gz
 *.p12
 *.pfx
 neven-config.json
+!Install/neven-config.json
 crashes/
 
 # ─── Temporary/generated files ───────────────────────────────

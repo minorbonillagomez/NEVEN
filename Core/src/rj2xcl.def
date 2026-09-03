@@ -112,6 +112,8 @@ RJ_PlutoStartCmd
 RJ_PlutoStopCmd
 RJ_EditorCmd
 RJ_JuliaSysimageCmd
+RJ_AgenteIA
+RJ_IA_Contexto
 
 ;-------------------------------------------------------
 ;

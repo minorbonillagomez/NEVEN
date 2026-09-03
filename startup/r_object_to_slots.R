@@ -138,3 +138,25 @@ r_object_to_slots <- function(obj, tier_map = NULL) {
     paste0('"[Error al serializar: ', gsub('"', '\\"', conditionMessage(e)), ']"')
   })
 }
+
+#' Formatea un data.frame de métricas (Metrica, Valor) como texto plano alineado.
+#' Metrica alineada a la izquierda, Valor alineado a la derecha.
+#'
+#' @param m data.frame con columnas Metrica (character) y Valor (character o numeric)
+#' @return Character(1) listo para retornar como slot scalar
+#'
+.neven_fmt_metricas <- function(m) {
+  if (!is.data.frame(m) || nrow(m) == 0) return("")
+  vals <- as.character(m[[2]])
+  keys <- as.character(m[[1]])
+  w_k  <- max(nchar(keys))
+  w_v  <- max(nchar(vals))
+  header <- paste0(formatC("Metrica", width = -w_k),
+                   "  ",
+                   formatC("Valor",   width =  w_v))
+  sep    <- strrep("-", w_k + w_v + 2)
+  rows   <- mapply(function(k, v) {
+    paste0(formatC(k, width = -w_k), "  ", formatC(v, width = w_v))
+  }, keys, vals)
+  paste(c(header, sep, rows), collapse = "\n")
+}

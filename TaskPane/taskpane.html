@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -16,6 +16,13 @@
     })();
   </script>
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <!-- marked.js Á¢â¬â renderizado de Markdown en el chat IA -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+  <!-- KaTeX Á¢â¬â renderizado de LaTeX/matem¡ticas en el chat IA -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          onload="window._katexReady = true"></script>
 </head>
 <body>
 
@@ -56,9 +63,9 @@
         <select id="sql-examples" style="background:var(--bg-secondary);color:var(--text-secondary);
                 border:1px solid #555;border-radius:4px;font-size:10px;padding:4px 6px;cursor:pointer">
           <option value="">Cargar ejemplo...</option>
-          <option value="duck1">DuckDB — Resumen estadístico</option>
-          <option value="duck2">DuckDB — Análisis agrupado</option>
-          <option value="ext">DB externa — PostgreSQL (guía)</option>
+          <option value="duck1">DuckDB Á¢â¬â Resumen estadístico</option>
+          <option value="duck2">DuckDB Á¢â¬â An¡lisis agrupado</option>
+          <option value="ext">DB externa Á¢â¬â PostgreSQL (guía)</option>
         </select>
         <span id="sql-status"></span>
       </div>
@@ -69,12 +76,28 @@
 
   <!-- Tab: Data Studio -->
   <div class="tab-content" id="data-studio">
+
+    <!-- Estado del proyecto Á¢â¬â los controles est¡n en el panel flotante -->
+    <div class="card" id="buklo-card" style="border-left:3px solid rgba(215,165,56,0.25)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="card-title" style="margin-bottom:0;color:var(--text-secondary)">
+          Proyecto
+        </div>
+        <div id="buklo-status-badge"
+             style="font-size:9px;padding:1px 7px;border-radius:8px;
+                    background:var(--bg-primary);color:var(--text-secondary);
+                    border:1px solid var(--border)">sin guardar</div>
+      </div>
+      <div id="buklo-msg" style="font-size:10px;color:var(--text-secondary);
+           margin-top:4px;display:none"></div>
+    </div>
+
     <div class="card">
       <div class="card-title">Datos</div>
       <div class="controls">
-        <button class="btn btn-primary" id="btn-load" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Abrir archivo</button>
-        <button class="btn btn-primary" id="btn-bridge-read" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg> Leer de Excel</button>
-        <button class="btn btn-primary" id="btn-db-connect" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> Conectar DB</button>
+        <button class="btn btn-primary" id="btn-load" style="background:var(--accent)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Abrir archivo</button>
+        <button class="btn btn-primary" id="btn-bridge-read" style="background:var(--accent)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg> Leer de Excel</button>
+        <button class="btn btn-primary" id="btn-db-connect" style="background:var(--accent)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> Conectar DB</button>
         <input type="file" id="file-picker" accept=".csv,.tsv,.json,.parquet" style="display:none">
       </div>
       <!-- Archivos recientes -->
@@ -121,9 +144,9 @@
           <option value="python">Python</option>
           <option value="julia">Julia</option>
         </select>
-        <span id="engine-status-r"      class="engine-dot" title="R">●</span>
-        <span id="engine-status-python" class="engine-dot" title="Python">●</span>
-        <span id="engine-status-julia"  class="engine-dot" title="Julia">●</span>
+        <span id="engine-status-r"      class="engine-dot" title="R">&#x25CF;</span>
+        <span id="engine-status-python" class="engine-dot" title="Python">&#x25CF;</span>
+        <span id="engine-status-julia"  class="engine-dot" title="Julia">&#x25CF;</span>
       </div>
 
       <!-- Nombre del archivo activo -->
@@ -160,19 +183,19 @@
                        padding:4px 6px;cursor:pointer">
           <option value="">Ejemplos...</option>
           <optgroup label="R">
-            <option value="r_estadistica">R — Estadística descriptiva</option>
-            <option value="r_regresion">R — Regresión lineal</option>
-            <option value="r_grafico">R — Gráfico con Plotly</option>
+            <option value="r_estadistica">R Á¢â¬â Estadística descriptiva</option>
+            <option value="r_regresion">R Á¢â¬â Regresión lineal</option>
+            <option value="r_grafico">R Á¢â¬â Gr¡fico con Plotly</option>
           </optgroup>
           <optgroup label="Python">
-            <option value="py_datos">Python — Pandas básico</option>
-            <option value="py_ml">Python — Scikit-learn</option>
-            <option value="py_grafico">Python — Matplotlib</option>
+            <option value="py_datos">Python Á¢â¬â Pandas b¡sico</option>
+            <option value="py_ml">Python Á¢â¬â Scikit-learn</option>
+            <option value="py_grafico">Python Á¢â¬â Matplotlib</option>
           </optgroup>
           <optgroup label="Julia">
-            <option value="jl_estadistica">Julia — Estadística</option>
-            <option value="jl_algebra">Julia — Álgebra lineal</option>
-            <option value="jl_grafico">Julia — Gráfico básico</option>
+            <option value="jl_estadistica">Julia Á¢â¬â Estadística</option>
+            <option value="jl_algebra">Julia Á¢â¬â Âlgebra lineal</option>
+            <option value="jl_grafico">Julia Á¢â¬â Gr¡fico b¡sico</option>
           </optgroup>
         </select>
         <span id="script-status" style="font-size:10px;color:var(--text-secondary)"></span>
@@ -192,7 +215,7 @@
         <div class="card-title" style="margin-bottom:0">Output</div>
         <button onclick="document.getElementById('script-output-card').style.display='none'"
                 style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px"
-                title="Cerrar">×</button>
+                title="Cerrar"></button>
       </div>
       <iframe id="script-iframe"  style="width:100%;height:400px;display:none;border:0"></iframe>
       <div    id="script-table"   style="display:none"></div>
@@ -221,9 +244,9 @@
       <div class="card-title">Seleccionar función</div>
       <div class="controls" style="gap:6px">
         <select id="dl-family-select" disabled style="min-width:160px">
-          <option value="">— Familia —</option>
+          <option value="">Á¢â¬â Familia Á¢â¬â</option>
         </select>
-        <span id="dl-catalog-spinner" style="display:none">⏳</span>
+        <span id="dl-catalog-spinner" style="display:none">Á¢ÂÂ³</span>
         <button class="btn btn-secondary" id="dl-pkg-check-btn" title="Verificar paquetes instalados"
                 style="margin-left:auto;font-size:10px">Verificar paquetes</button>
       </div>
@@ -232,7 +255,7 @@
         <button class="btn btn-secondary" id="dl-retry-catalog" style="margin-left:6px">Reintentar</button>
       </div>
       <div id="dl-function-list" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
-      <!-- Selector de idioma (visible solo si hay múltiples idiomas) -->
+      <!-- Selector de idioma (visible solo si hay mÂºltiples idiomas) -->
       <div id="dl-language-row" style="display:none;margin-top:6px">
         <label style="font-size:12px;margin-right:4px">Idioma:</label>
         <select id="dl-language-select"></select>
@@ -263,12 +286,12 @@
       </div>
     </div>
 
-    <!-- Formulario de parámetros -->
+    <!-- Formulario de par¡metros -->
     <div id="dl-param-card" style="display:none" class="card">
-      <div class="card-title">Parámetros</div>
+      <div class="card-title">Par¡metros</div>
       <div id="dl-param-tier1"></div>
       <details id="dl-param-advanced" style="margin-top:6px">
-        <summary style="cursor:pointer;font-size:12px;color:#888">Parámetros avanzados</summary>
+        <summary style="cursor:pointer;font-size:12px;color:#888">Par¡metros avanzados</summary>
         <div id="dl-param-tier2" style="margin-top:6px"></div>
       </details>
     </div>
@@ -295,10 +318,54 @@
       </div>
     </div>
 
+    <!-- Panel Ontológico Á¢â¬â aparece al seleccionar una función con nodo en el grafo -->
+    <div id="dl-ontology-panel" style="display:none;margin-top:6px">
+
+      <!-- Marco metodológico (descripción del método desde el grafo) -->
+      <div id="dl-kg-method-card" style="display:none;background:var(--bg-card);
+           border:1px solid rgba(215,165,56,0.25);border-radius:var(--radius);
+           padding:8px 10px;margin-bottom:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <div style="font-size:9px;font-weight:700;color:var(--accent);
+               text-transform:uppercase;letter-spacing:0.7px">Marco Metodológico</div>
+          <div id="dl-kg-method-badge" style="font-size:8px;padding:1px 6px;border-radius:8px;
+               background:rgba(215,165,56,0.1);color:var(--accent);
+               border:1px solid rgba(215,165,56,0.25)"></div>
+        </div>
+        <div id="dl-kg-method-text" style="font-size:11px;line-height:1.6;
+             color:var(--text-primary);margin-bottom:4px"></div>
+        <div id="dl-kg-method-ref" style="font-size:9px;color:var(--text-secondary);
+             font-style:italic"></div>
+      </div>
+
+      <!-- Supuestos del método (chips expandibles) -->
+      <div id="dl-kg-assumptions-card" style="display:none;background:var(--bg-card);
+           border:1px solid var(--border);border-radius:var(--radius);
+           padding:8px 10px;margin-bottom:6px">
+        <div style="font-size:9px;font-weight:700;color:var(--text-secondary);
+             text-transform:uppercase;letter-spacing:0.7px;margin-bottom:5px">
+          Supuestos a verificar
+        </div>
+        <div id="dl-kg-assumption-chips" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+      </div>
+
+      <!-- Alternativas metodológicas -->
+      <div id="dl-kg-alternatives-card" style="display:none;background:var(--bg-card);
+           border:1px solid var(--border);border-radius:var(--radius);
+           padding:8px 10px;margin-bottom:6px">
+        <div style="font-size:9px;font-weight:700;color:var(--text-secondary);
+             text-transform:uppercase;letter-spacing:0.7px;margin-bottom:5px">
+          Métodos alternativos
+        </div>
+        <div id="dl-kg-alternative-chips" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+      </div>
+
+    </div><!-- /#dl-ontology-panel -->
+
     <!-- Botón Ejecutar -->
     <div id="dl-run-row" style="display:none;margin-top:8px">
-      <button class="btn btn-primary" id="dl-run-btn" disabled>Ejecutar análisis</button>
-      <span id="dl-run-spinner" style="display:none;margin-left:8px">⏳</span>
+      <button class="btn btn-primary" id="dl-run-btn" disabled>Ejecutar an¡lisis</button>
+      <span id="dl-run-spinner" style="display:none;margin-left:8px">Á¢ÂÂ³</span>
     </div>
 
     <!-- Panel de resultados -->
@@ -331,22 +398,22 @@
         </div>
       </div>
       <div id="ai-offline-msg" class="msg-error" style="display:none;margin-top:6px">
-        LLM no disponible. Verifique que LMStudio esté activo y tenga un modelo cargado.
+        LLM no disponible. Verifique que LMStudio estÁé activo y tenga un modelo cargado.
       </div>
     </div>
 
     <!-- Contexto del dataset -->
     <div class="card" id="ai-context-card" style="display:none">
       <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:10px;color:var(--text-secondary)">📊 Contexto:</span>
+        <span style="font-size:10px;color:var(--text-secondary)">Contexto:</span>
         <span id="ai-context-summary" style="font-size:10px;color:var(--accent)"></span>
         <button id="ai-clear-context"
                 style="margin-left:auto;background:none;border:none;color:#666;
-                       cursor:pointer;font-size:11px;padding:0 2px" title="Quitar contexto">×</button>
+                       cursor:pointer;font-size:11px;padding:0 2px" title="Quitar contexto"></button>
       </div>
     </div>
 
-    <!-- Prompts rápidos -->
+    <!-- Prompts r¡pidos -->
     <div class="card" id="ai-prompts-card" style="display:none">
       <div class="card-title" style="margin-bottom:4px">Prompts guía</div>
       <div id="ai-prompt-chips" style="display:flex;flex-wrap:wrap;gap:4px"></div>
@@ -359,7 +426,7 @@
       <!-- mensajes insertados por JS -->
     </div>
 
-    <!-- Área de entrada -->
+    <!-- Ârea de entrada -->
     <div class="card" style="padding:8px">
       <textarea id="ai-input"
         placeholder="Escribe tu pregunta… (Enter envía, Shift+Enter nueva línea)"
@@ -373,12 +440,33 @@
       ></textarea>
       <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
         <button class="btn btn-primary" id="ai-send-btn">Enviar</button>
-        <button class="btn btn-secondary" id="ai-use-dataset-btn"
-                title="Incluir resumen del dataset activo como contexto">
-          + Dataset
-        </button>
-        <button class="btn btn-secondary" id="ai-clear-btn">Limpiar</button>
-        <span id="ai-spinner" style="display:none;font-size:11px;color:var(--text-secondary)">⏳ pensando…</span>
+        <!-- Incrementar contexto a IA -->
+        <div style="display:flex;flex-direction:column;gap:3px;margin-left:4px">
+          <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;
+               letter-spacing:0.5px;font-weight:600;white-space:nowrap">
+            Incrementar contexto a IA
+          </div>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-secondary" id="ai-use-dataset-btn"
+                    style="font-size:9px;padding:3px 8px"
+                    title="Incluir el set de datos activo como contexto del modelo IA">
+              Set de datos utilizados
+            </button>
+            <button class="btn btn-secondary" id="ai-use-method-btn"
+                    style="font-size:9px;padding:3px 8px"
+                    title="Incluir el método seleccionado en Data Lab como contexto">
+              Método seleccionado
+            </button>
+            <button class="btn btn-secondary" id="ai-use-results-btn"
+                    style="font-size:9px;padding:3px 8px"
+                    title="Incluir el historial de modelos estimados como contexto">
+              Historial de modelos
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-secondary" id="ai-clear-btn"
+                style="margin-left:auto">Limpiar</button>
+        <span id="ai-spinner" style="display:none;font-size:11px;color:var(--text-secondary)">Á¢ÂÂ³ pensando…</span>
         <span id="ai-token-info" style="margin-left:auto;font-size:9px;color:#555"></span>
       </div>
     </div>
@@ -450,7 +538,7 @@
           </div>
         </div>
 
-        <!-- Base de datos / Usuario / Contraseña (oculto para SQLite) -->
+        <!-- Base de datos / Usuario / ContraseÂ±a (oculto para SQLite) -->
         <div id="db-creds-row">
           <div style="margin-bottom:8px">
             <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
@@ -469,7 +557,7 @@
             </div>
             <div style="flex:1">
               <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
-                     text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Contraseña</label>
+                     text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">ContraseÂ±a</label>
               <input id="db-password" type="password"
                      style="width:100%;background:var(--bg-primary);color:var(--text-primary);
                             border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
@@ -503,11 +591,30 @@
   </div>
 
   <div class="status-bar">
-    <span id="status-server">●</span>
+    <span id="status-server">&#x25CF;</span>
   </div>
 
 <script>
 var API = window.location.origin;
+
+// ── Servicio IA independiente (Fase 1 Enterprise) ──────────────────────────
+// AI_API apunta al Agente IA. Si AIService.enabled=true en neven-config.json,
+// usa esa URL. Si no, cae al servidor local (mismo origen que API).
+// Esto permite que el tab IA hable con localhost:5556 o con ai.neven.app
+// sin cambiar el resto del código de Studio.
+var AI_API = API;  // default: mismo servidor local
+
+(function _resolveAiServiceUrl() {
+  fetch(API + '/api/ai/service-url')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.enabled && data.url) {
+        AI_API = data.url.replace(/\/$/, '');
+        console.log('[NEVEN] AIService URL:', AI_API);
+      }
+    })
+    .catch(function() { /* silencioso — usar el servidor local */ });
+})();
 
 // --- Tabs ---
 document.querySelectorAll('.tab').forEach(function(t){
@@ -530,7 +637,7 @@ document.querySelectorAll('.tab').forEach(function(t){
   });
 });
 
-// --- Relay postMessage: DataLab → Presentaciones iframe ---
+// --- Relay postMessage: DataLab Á¢â â Presentaciones iframe ---
 window.addEventListener('message', function(event) {
   if (event.origin !== window.location.origin) return;
   if (!event.data || event.data.type !== 'NEVEN_ADD_SLIDE') return;
@@ -540,7 +647,7 @@ window.addEventListener('message', function(event) {
 
   var msg = event.data;
 
-  // Función de toast — confirma sin cambiar de tab
+  // Función de toast Á¢â¬â confirma sin cambiar de tab
   function showToast(text) {
     var t = document.getElementById('neven-toast');
     if (!t) {
@@ -558,23 +665,23 @@ window.addEventListener('message', function(event) {
     t._tid = setTimeout(function(){ t.style.opacity='0'; }, 2500);
   }
 
-  // Cargar el iframe de presentaciones en background si no está cargado aún
+  // Cargar el iframe de presentaciones en background si no est¡ cargado aÂºn
   if (!frame.src || frame.src === window.location.href || frame.src === 'about:blank') {
     frame.src = API + '/presentaciones/index.html';
     frame.addEventListener('load', function onLoad() {
       frame.removeEventListener('load', onLoad);
       setTimeout(function() {
         frame.contentWindow.postMessage(msg, window.location.origin);
-        showToast('✓ Slide agregado a Presentaciones');
+        showToast('Á¢Åâ Slide agregado a Presentaciones');
       }, 300);
     });
   } else {
     frame.contentWindow.postMessage(msg, window.location.origin);
-    showToast('✓ Slide agregado a Presentaciones');
+    showToast('Á¢Åâ Slide agregado a Presentaciones');
   }
 });
 
-// --- Cargar archivo (FileReader — Opcion A) ---
+// --- Cargar archivo (FileReader Á¢â¬â Opcion A) ---
 var _RECENT_KEY = 'neven_recent_files';
 var _MAX_RECENT = 8;
 
@@ -614,7 +721,7 @@ function _renderRecentFiles() {
     nameSpan.style.cssText = 'font-size:10px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px';
 
     var metaSpan = document.createElement('span');
-    metaSpan.textContent = item.rows + ' × ' + item.cols;
+    metaSpan.textContent = item.rows + '  ' + item.cols;
     metaSpan.style.cssText = 'font-size:9px;color:var(--text-secondary);margin-left:8px;white-space:nowrap';
 
     btn.appendChild(nameSpan);
@@ -645,6 +752,9 @@ function _parseCSV(text, delimiter) {
 function _loadFromContent(name, content) {
   var info = document.getElementById('data-info');
   info.innerHTML = '<span class="spinner"></span> Procesando ' + name + '...';
+
+  // Nuevo dataset = nueva sesión de modelos Á¢â¬â reiniciar el historial
+  if (typeof _dlResetHistory === 'function') _dlResetHistory();
 
   var parsed;
   var lower = name.toLowerCase();
@@ -689,7 +799,7 @@ function _loadFromContent(name, content) {
   .then(function(r){ return r.json(); })
   .then(function(d) {
     if (d.status === 'ok') {
-      info.textContent = rows.length + ' filas × ' + headers.length + ' cols — ' + name;
+      info.textContent = rows.length + ' filas  ' + headers.length + ' cols Á¢â¬â ' + name;
       _addRecentFile(name, content, rows.length, headers.length);
       populateGroupBy(headers, types);
       // Auto-analyze
@@ -801,10 +911,10 @@ _renderRecentFiles();
     .then(function(d) {
       btn.disabled = false;
       if (d.status === 'ok') {
-        statusEl.innerHTML = '<span style="color:var(--success)">✓ ' + d.rows_loaded +
-          ' filas × ' + d.columns.length + ' cols cargadas</span>';
+        statusEl.innerHTML = '<span style="color:var(--success)">Á¢Åâ ' + d.rows_loaded +
+          ' filas  ' + d.columns.length + ' cols cargadas</span>';
         document.getElementById('data-info').textContent =
-          d.rows_loaded + ' filas × ' + d.columns.length + ' cols — ' +
+          d.rows_loaded + ' filas  ' + d.columns.length + ' cols Á¢â¬â ' +
           (eng === 'sqlite' ? body.sqlite_path.split(/[\\/]/).pop() : body.database + ' (' + eng + ')');
         populateGroupBy(d.columns, d.types);
         fetch(API+'/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
@@ -820,7 +930,7 @@ _renderRecentFiles();
         var msg = d.message || 'Error desconocido';
         statusEl.innerHTML = '<span style="color:var(--error)">' + msg + '</span>';
         if (d.code === 'MISSING_PACKAGE') {
-          statusEl.innerHTML += '<br><span style="font-size:9px;color:#888">Instale el paquete desde Run Script → Python</span>';
+          statusEl.innerHTML += '<br><span style="font-size:9px;color:#888">Instale el paquete desde Run Script Á¢â â Python</span>';
         }
       }
     })
@@ -933,7 +1043,7 @@ var _SQL_EXAMPLES = {
   ].join('\n'),
 
   duck2: [
-    '-- Ejemplo 2: Análisis agrupado',
+    '-- Ejemplo 2: An¡lisis agrupado',
     '-- Agrupa por una categoría y calcula métricas por grupo',
     '-- Reemplaza "categoria" y "valor" con tus columnas reales',
     '',
@@ -956,7 +1066,7 @@ var _SQL_EXAMPLES = {
     '--',
     '-- PASO 1: Ve al tab "Data Studio" y haz clic en "Conectar DB"',
     '-- PASO 2: Selecciona el motor (PostgreSQL, MySQL, SQLite, SQL Server)',
-    '-- PASO 3: Completa los parámetros de conexión:',
+    '-- PASO 3: Completa los par¡metros de conexión:',
     '--   Host:     tu-servidor.ejemplo.com',
     '--   Puerto:   5432  (PostgreSQL) / 3306 (MySQL)',
     '--   Base:     nombre_de_tu_base',
@@ -976,8 +1086,8 @@ var _SQL_EXAMPLES = {
     'LIMIT 100',
     '',
     '-- PASO 5: Haz clic en "Conectar y cargar"',
-    '-- Los datos quedarán disponibles aquí como tabla "dataset"',
-    '-- y podrás consultarlos con SQL normal de DuckDB.'
+    '-- Los datos quedar¡n disponibles aquí como tabla "dataset"',
+    '-- y podr¡s consultarlos con SQL normal de DuckDB.'
   ].join('\n')
 };
 
@@ -1008,7 +1118,7 @@ function populateGroupBy(cols,types){
           var traces=[{x:labels,y:vals,type:'bar',marker:{color:'rgba(168,230,0,0.7)'}}];
           var layout={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#888',size:9},margin:{t:8,r:10,b:35,l:50}};
           Plotly.newPlot('grp-chart',traces,layout,{responsive:true,displayModeBar:false});
-          // Boton Enviar a Slide para el gráfico GROUP BY
+          // Boton Enviar a Slide para el gr¡fico GROUP BY
           var grpChartEl = document.getElementById('grp-chart');
           _addSendToSlideBtn(grpChartEl, gc+' / '+gm+'('+gv+')', function(){
             return { plotly: {data:traces, layout:Object.assign({},layout,{paper_bgcolor:'#1a1a1a',plot_bgcolor:'#1a1a1a',font:{color:'#e0e0e0'}})} };
@@ -1049,7 +1159,7 @@ function _addSendToSlideBtn(containerEl, title, getContent) {
   btn.addEventListener('click', function() {
     var payload = getContent();
     _nevenSendToSlide(title, payload.html || null, payload.plotly || null);
-    btn.textContent = '✓ Enviado';
+    btn.textContent = 'Á¢Åâ Enviado';
     btn.style.color = 'var(--accent)';
     setTimeout(function(){ btn.textContent='Enviar a Slide'; btn.style.color=''; }, 2000);
   });
@@ -1154,7 +1264,7 @@ function showStats(result){
 </script>
 
 <script>
-// ─── Run Script Tab — engine dots + execution ────────────────────────────────
+// Á¢ââ¬Á¢ââ¬Á¢ââ¬ Run Script Tab Á¢â¬â engine dots + execution Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
 // (Complementa el script principal inline; no duplica handlers existentes)
 
 const API_BASE_RS = window.location.origin;
@@ -1183,7 +1293,7 @@ async function refreshEngineStatusRS() {
       var dot = document.getElementById('engine-status-' + lang);
       if (dot) {
         dot.className = 'engine-dot ' + (data[lang] ? 'available' : 'unavailable');
-        dot.title = lang.toUpperCase() + ': ' + (data[lang] ? 'running ✓' : 'stopped ✗');
+        dot.title = lang.toUpperCase() + ': ' + (data[lang] ? 'running Á¢Åâ' : 'stopped Á¢Åâ');
       }
     });
   } catch(err) {
@@ -1202,7 +1312,7 @@ var _snippets = {
   julia:  '# Julia\nprintln("NEVEN Julia OK")\n'
 };
 document.getElementById('script-lang').addEventListener('change', function() {
-  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Continuar?')) { this.value = _scriptLang; return; }
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. Á¿Continuar?')) { this.value = _scriptLang; return; }
   _scriptLang = this.value;
   var ta = document.getElementById('script-input');
   ta.value = _snippets[this.value] || '';
@@ -1210,7 +1320,7 @@ document.getElementById('script-lang').addEventListener('change', function() {
 });
 document.getElementById('script-input').value = _snippets['r'];
 
-// ── Editor de scripts — estado ────────────────────────────────────
+// Á¢ââ¬Á¢ââ¬ Editor de scripts Á¢â¬â estado Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
 var _scriptFilePath = null;   // ruta del archivo abierto (o null)
 var _scriptFileName = null;   // nombre visible
 var _scriptDirty    = false;  // cambios sin guardar
@@ -1249,9 +1359,9 @@ document.getElementById('script-input').addEventListener('input', function() {
   if (!_scriptDirty) _markDirty();
 });
 
-// ── Abrir script ──────────────────────────────────────────────────
+// Á¢ââ¬Á¢ââ¬ Abrir script Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
 document.getElementById('btn-script-open').addEventListener('click', function() {
-  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Abrir otro archivo?')) return;
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. Á¿Abrir otro archivo?')) return;
   document.getElementById('script-file-picker').click();
 });
 
@@ -1274,7 +1384,7 @@ document.getElementById('script-file-picker').addEventListener('change', functio
   e.target.value = '';
 });
 
-// ── Guardar (solo si tenemos path real del servidor) ──────────────
+// Á¢ââ¬Á¢ââ¬ Guardar (solo si tenemos path real del servidor) Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
 document.getElementById('btn-script-save').addEventListener('click', _saveScript);
 
 function _saveScript() {
@@ -1291,7 +1401,7 @@ function _saveScript() {
       _scriptDirty = false;
       _updateScriptBar();
       var st = document.getElementById('script-status');
-      st.textContent = '✓ Guardado';
+      st.textContent = 'Á¢Åâ Guardado';
       st.style.color = 'var(--success)';
       setTimeout(function(){ st.textContent = ''; }, 2000);
     } else {
@@ -1301,7 +1411,7 @@ function _saveScript() {
   .catch(function(e){ alert('Error: ' + e); });
 }
 
-// ── Guardar como (File System Access API o fallback descarga) ─────
+// Á¢ââ¬Á¢ââ¬ Guardar como (File System Access API o fallback descarga) Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
 document.getElementById('btn-script-save-as').addEventListener('click', _saveScriptAs);
 
 async function _saveScriptAs() {
@@ -1342,21 +1452,21 @@ async function _saveScriptAs() {
   _updateScriptBar();
 }
 
-// ── Nuevo script ──────────────────────────────────────────────────
+// Á¢ââ¬Á¢ââ¬ Nuevo script Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
 document.getElementById('btn-script-new').addEventListener('click', function() {
-  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Crear nuevo script?')) return;
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. Á¿Crear nuevo script?')) return;
   var lang = document.getElementById('script-lang').value;
   document.getElementById('script-input').value = _snippets[lang] || '';
   _setScriptFile(null);
 });
 
-// ── Ejemplos ──────────────────────────────────────────────────────
+// Á¢ââ¬Á¢ââ¬ Ejemplos Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
 var _EXAMPLES = {
 
   r_estadistica: { lang: 'r', name: 'ejemplo_estadistica.R', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo R: Estadística descriptiva
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo R: Estadística descriptiva
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 # Datos de ejemplo: ingresos y gastos de 20 personas
 ingresos <- c(800000,1200000,950000,1800000,2200000,
               600000,3000000,2000000,880000,1400000,
@@ -1368,7 +1478,7 @@ gastos <- c(650000,900000,750000,1200000,1500000,
             2000000,1900000,680000,1100000,1600000,
             2100000,820000,1300000,530000,1700000)
 
-# Estadísticas básicas
+# Estadísticas b¡sicas
 cat("=== Ingresos ===\\n")
 cat("Media:   ", mean(ingresos), "\\n")
 cat("Mediana: ", median(ingresos), "\\n")
@@ -1390,9 +1500,9 @@ data.frame(
 `},
 
   r_regresion: { lang: 'r', name: 'ejemplo_regresion.R', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo R: Regresión lineal simple
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo R: Regresión lineal simple
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 set.seed(42)
 n <- 50
 edad    <- round(runif(n, 22, 60))
@@ -1406,13 +1516,13 @@ pred35 <- round(predict(modelo, newdata = data.frame(edad = 35)))
 
 cat("=== Regresión lineal: ingreso ~ edad ===\\n")
 cat("Intercepto:", round(coef(modelo)[1]), "\\n")
-cat("Pendiente: ", round(coef(modelo)[2]), "por año\\n")
-cat("R²:        ", round(summary(modelo)$r.squared, 4), "\\n")
+cat("Pendiente: ", round(coef(modelo)[2]), "por aÂ±o\\n")
+cat("RÁÂ²:        ", round(summary(modelo)$r.squared, 4), "\\n")
 cat("Pred. edad=35:", pred35, "\\n")
 
 # Retornar tabla de resultados serializable
 data.frame(
-  Metrica     = c("Intercepto", "Pendiente (por año)", "R²", "RMSE", "Pred. edad=35"),
+  Metrica     = c("Intercepto", "Pendiente (por aÂ±o)", "RÁÂ²", "RMSE", "Pred. edad=35"),
   Valor       = c(
     round(coef(modelo)[1]),
     round(coef(modelo)[2]),
@@ -1424,9 +1534,9 @@ data.frame(
 `},
 
   r_grafico: { lang: 'r', name: 'ejemplo_grafico.R', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo R: Gráfico interactivo con Plotly
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo R: Gr¡fico interactivo con Plotly
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 if (!require("jsonlite", quietly=TRUE)) install.packages("jsonlite")
 
 x <- c(1,2,3,4,5,6,7,8,9,10)
@@ -1456,9 +1566,9 @@ html
 `},
 
   py_datos: { lang: 'python', name: 'ejemplo_datos.py', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Python: Pandas básico
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo Python: Pandas b¡sico
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 
 # Datos de ejemplo
 nombres  = ["Ana","Luis","María","Carlos","Sofía"]
@@ -1471,7 +1581,7 @@ media_salario = sum(salarios) / n
 
 print("=== Resumen del dataset ===")
 print(f"Registros: {n}")
-print(f"Edad promedio: {media_edad:.1f} años")
+print(f"Edad promedio: {media_edad:.1f} aÂ±os")
 print(f"Salario promedio: {media_salario:,.0f}")
 
 # Retornar tabla serializable
@@ -1481,9 +1591,9 @@ print(f"Salario promedio: {media_salario:,.0f}")
 `},
 
   py_ml: { lang: 'python', name: 'ejemplo_ml.py', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Python: Regresión con scikit-learn
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo Python: Regresión con scikit-learn
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 try:
     from sklearn.linear_model import LinearRegression
 
@@ -1495,14 +1605,14 @@ try:
     modelo.fit(experiencia, salario)
     r2 = modelo.score(experiencia, salario)
 
-    print("=== Regresión Lineal: Experiencia → Salario ===")
+    print("=== Regresión Lineal: Experiencia Á¢â â Salario ===")
     print(f"Intercepto:  {modelo.intercept_:,.0f}")
-    print(f"Coeficiente: {modelo.coef_[0]:,.0f} por año")
-    print(f"R²:          {r2:.4f}")
+    print(f"Coeficiente: {modelo.coef_[0]:,.0f} por aÂ±o")
+    print(f"RÁÂ²:          {r2:.4f}")
 
-    # Predicciones para 5, 10 y 15 años
+    # Predicciones para 5, 10 y 15 aÂ±os
     preds = [1, 5, 10, 15, 20]
-    [{"años_exp": x,
+    [{"aÂ±os_exp": x,
       "salario_pred": round(float(modelo.predict([[x]])[0]))}
      for x in preds]
 
@@ -1512,9 +1622,9 @@ except ImportError:
 `},
 
   py_grafico: { lang: 'python', name: 'ejemplo_grafico.py', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Python: Gráfico con Plotly
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo Python: Gr¡fico con Plotly
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 import json, base64
 
 meses  = ["Ene","Feb","Mar","Abr","May","Jun",
@@ -1542,9 +1652,9 @@ html
 `},
 
   jl_estadistica: { lang: 'julia', name: 'ejemplo_estadistica.jl', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Julia: Estadística básica
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo Julia: Estadística b¡sica
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 
 datos = [23.5, 45.2, 67.8, 34.1, 56.7, 78.3, 89.1, 12.4, 55.6, 43.8,
          61.2, 72.5, 38.9, 51.3, 66.7, 29.8, 84.2, 47.6, 58.1, 35.4]
@@ -1553,7 +1663,7 @@ println("=== Estadísticas descriptivas ===")
 println("N:       ", length(datos))
 println("Media:   ", round(sum(datos)/length(datos), digits=2))
 println("Mínimo:  ", minimum(datos))
-println("Máximo:  ", maximum(datos))
+println("M¡ximo:  ", maximum(datos))
 
 # Varianza manual
 media = sum(datos) / length(datos)
@@ -1564,20 +1674,20 @@ println("Std Dev: ", round(sqrt(varianza), digits=2))
 ordenados = sort(datos)
 n = length(ordenados)
 println("Mediana: ", n % 2 == 0 ?
-    (ordenados[n÷2] + ordenados[n÷2+1])/2 :
-    ordenados[(n+1)÷2])
+    (ordenados[n·2] + ordenados[n·2+1])/2 :
+    ordenados[(n+1)·2])
 `},
 
   jl_algebra: { lang: 'julia', name: 'ejemplo_algebra.jl', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Julia: Álgebra lineal
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo Julia: Âlgebra lineal
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 
 # Matriz de ejemplo
 A = [4.0 3.0; 6.0 3.0]
 b = [10.0; 12.0]
 
-println("=== Álgebra Lineal ===")
+println("=== Âlgebra Lineal ===")
 println("Matriz A:")
 display(A)
 
@@ -1596,17 +1706,17 @@ println("\\nEigenvalores: ", round.(vals, digits=4))
 println("Determinante: ", round(det(A), digits=4))
 
 # Inversa
-println("\\nInversa A⁻¹:")
+println("\\nInversa AÁ¢ÂÂ»ÁÂ¹:")
 display(round.(inv(A), digits=4))
 `},
 
   jl_grafico: { lang: 'julia', name: 'ejemplo_grafico.jl', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Julia: Gráfico con Plotly JSON
-# ══════════════════════════════════════════════
+`# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+# NEVEN Studio Á¢â¬â Ejemplo Julia: Gr¡fico con Plotly JSON
+# Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 using JSON, Base64
 
-x = collect(0:0.2:2π)
+x = collect(0:0.2:2Áâ¬)
 y_sin = sin.(x)
 y_cos = cos.(x)
 
@@ -1639,7 +1749,7 @@ html
 document.getElementById('script-examples').addEventListener('change', function() {
   var key = this.value;
   if (!key) return;
-  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Cargar ejemplo?')) {
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. Á¿Cargar ejemplo?')) {
     this.value = ''; return;
   }
   var ex = _EXAMPLES[key];
@@ -1656,7 +1766,7 @@ document.getElementById('script-examples').addEventListener('change', function()
   this.value = '';  // reset selector
 });
 
-// ── Ctrl+S para guardar ───────────────────────────────────────────
+// Á¢ââ¬Á¢ââ¬ Ctrl+S para guardar Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
 document.getElementById('script-input').addEventListener('keydown', function(e) {
   if (e.ctrlKey && e.key === 's') { e.preventDefault(); _saveScript(); }
   if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); runScriptRS(); }
@@ -1674,7 +1784,7 @@ async function runScriptRS() {
   if (!code) return;
   var btn = document.getElementById('btn-run-script');
   var status = document.getElementById('script-status');
-  btn.disabled = true; status.textContent = '⏳';
+  btn.disabled = true; status.textContent = 'Á¢ÂÂ³';
 
   // Timeout de 120 segundos
   var controller = new AbortController();
@@ -1693,7 +1803,7 @@ async function runScriptRS() {
   } catch(e) {
     clearTimeout(timeoutId);
     if (e.name === 'AbortError') {
-      showScriptErrorRS('Tiempo de espera agotado (120s). El script puede seguir ejecutándose en el motor.');
+      showScriptErrorRS('Tiempo de espera agotado (120s). El script puede seguir ejecut¡ndose en el motor.');
     } else {
       showScriptErrorRS(e.message);
     }
@@ -1798,7 +1908,7 @@ function showScriptErrorRS(msg) {
 async function openRPivotRS() {
   var btn = document.getElementById('btn-run-script');
   var status = document.getElementById('script-status');
-  btn.disabled = true; status.textContent = '⏳';
+  btn.disabled = true; status.textContent = 'Á¢ÂÂ³';
   try {
     var resp = await fetch(API_BASE_RS + '/api/rpivot', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     renderScriptResultRS(await resp.json());
@@ -1822,7 +1932,7 @@ async function loadAvailableFunctionsRS() {
         entry.className = 'func-entry';
         entry.dataset.name = fn.name || '';
         entry.dataset.desc = fn.description || '';
-        entry.innerHTML = '<code>' + fn.name + '</code> — ' + (fn.description || '');
+        entry.innerHTML = '<code>' + fn.name + '</code> Á¢â¬â ' + (fn.description || '');
         sec.appendChild(entry);
       });
       list.appendChild(sec);
@@ -1837,14 +1947,14 @@ function filterFunctionsRS() {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Package Manager — Verificación y instalación de paquetes
-// ═══════════════════════════════════════════════════════════════════════════
+// Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+// Package Manager Á¢â¬â Verificación y instalación de paquetes
+// Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 
 (function() {
   'use strict';
 
-  // ── Botón "Verificar paquetes" ──────────────────────────────────────────
+  // Á¢ââ¬Á¢ââ¬ Botón "Verificar paquetes" Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
   document.addEventListener('DOMContentLoaded', function() {
     var btn = document.getElementById('dl-pkg-check-btn');
     if (btn) btn.addEventListener('click', _pkgCheckAll);
@@ -1882,7 +1992,7 @@ function filterFunctionsRS() {
       .catch(function(){ window._pkgShowWarning([]); });
   };
 
-  // Verificar todos los paquetes (botón manual — siempre en vivo)
+  // Verificar todos los paquetes (botón manual Á¢â¬â siempre en vivo)
   function _pkgCheckAll() {
     var btn = document.getElementById('dl-pkg-check-btn');
     if (btn) { btn.textContent = 'Verificando...'; btn.disabled = true; }
@@ -1907,11 +2017,11 @@ function filterFunctionsRS() {
 
     var html = '<div style="padding:8px">';
     html += '<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px">';
-    html += 'Estado de paquetes — ' + paquetes.length + ' total';
+    html += 'Estado de paquetes Á¢â¬â ' + paquetes.length + ' total';
     if (faltantes.length > 0) {
-      html += ' <span style="color:#f88;margin-left:6px">⚠ ' + faltantes.length + ' faltantes</span>';
+      html += ' <span style="color:#f88;margin-left:6px">Á¢Å¡Â  ' + faltantes.length + ' faltantes</span>';
     } else {
-      html += ' <span style="color:#8f8;margin-left:6px">✓ Todos instalados</span>';
+      html += ' <span style="color:#8f8;margin-left:6px">Á¢Åâ Todos instalados</span>';
     }
     html += '</div>';
 
@@ -1920,7 +2030,7 @@ function filterFunctionsRS() {
       html += '<div style="font-size:10px;color:#f88;margin-bottom:4px">FALTANTES:</div>';
       faltantes.forEach(function(p) {
         html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">';
-        html += '<span style="font-size:10px;color:#f88">✗</span>';
+        html += '<span style="font-size:10px;color:#f88">Á¢Åâ</span>';
         html += '<span style="font-size:10px;font-family:Consolas,monospace">' + (p.paquete||'') + '</span>';
         html += '<span style="font-size:9px;color:#888">(' + (p.motor||'') + ')</span>';
         html += '<button onclick="window._pkgInstallOne(\'' + (p.paquete||'') + '\',\'' + (p.motor||'') + '\')" ';
@@ -1938,7 +2048,7 @@ function filterFunctionsRS() {
       html += '<details><summary style="font-size:10px;color:#888;cursor:pointer">Ver ' + instalados.length + ' instalados</summary>';
       html += '<div style="margin-top:4px">';
       instalados.forEach(function(p) {
-        html += '<div style="font-size:10px;color:#8f8;margin-bottom:2px">✓ ';
+        html += '<div style="font-size:10px;color:#8f8;margin-bottom:2px">Á¢Åâ ';
         html += (p.paquete||'') + ' v' + (p.version_instalada||'?');
         html += ' <span style="color:#888">(' + (p.motor||'') + ')</span></div>';
       });
@@ -2048,7 +2158,7 @@ function filterFunctionsRS() {
     }
   }
 
-  // Polling del progreso cada 2s — actualiza Run Script en tiempo real
+  // Polling del progreso cada 2s Á¢â¬â actualiza Run Script en tiempo real
   function _pkgPollProgress() {
     var interval = setInterval(function() {
       fetch(API + '/api/packages/progress')
@@ -2066,7 +2176,7 @@ function filterFunctionsRS() {
                 ? 'Instalacion completada: ' + ok + ' paquete(s) OK.\nActualizando estado...'
                 : 'Instalacion terminada: ' + ok + ' OK, ' + errores + ' errores.\nRevise el log de la consola para detalles.';
             }
-            // Re-verificar en vivo para actualizar el caché
+            // Re-verificar en vivo para actualizar el cachÁé
             fetch(API + '/api/packages/status?refresh=true')
               .then(function(r){ return r.json(); })
               .then(function(data) {
@@ -2088,12 +2198,12 @@ function filterFunctionsRS() {
 
 })();
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Tab IA — Chat con LLM
-// ═══════════════════════════════════════════════════════════════════════════
+// Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
+// Tab IA Á¢â¬â Chat con LLM
+// Á¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢ÂÁ¢â¢Â
 
 var _aiState = {
-  messages:    [],      // [{role, content}] — historial de la conversación
+  messages:    [],      // [{role, content}] Á¢â¬â historial de la conversación
   context:     '',      // resumen del dataset activo
   prompts:     [],      // IDs de prompts disponibles
   initialized: false,
@@ -2104,8 +2214,18 @@ function initAITab() {
   if (window._aiTabInitialized) return;
   window._aiTabInitialized = true;
 
+  // Comprobar si hay contexto pendiente de Excel (publicado por =NEVEN.IA.Contexto())
+  fetch(AI_API + '/api/ai/context/pending')
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok' && data.context && data.context.text) {
+        _aiInjectExcelContext(data.context);
+      }
+    })
+    .catch(function(){});  // silencioso si falla
+
   // Cargar config AI del servidor
-  fetch(API + '/api/ai/config')
+  fetch(AI_API + '/api/ai/config')
     .then(function(r){ return r.json(); })
     .then(function(cfg) {
       var badge = document.getElementById('ai-model-badge');
@@ -2156,18 +2276,101 @@ function initAITab() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _aiSend(); }
   });
   document.getElementById('ai-use-dataset-btn').addEventListener('click', _aiAttachDataset);
+  document.getElementById('ai-use-method-btn').addEventListener('click', _aiAttachMethodContext);
+  document.getElementById('ai-use-results-btn').addEventListener('click', _aiAttachResults);
   document.getElementById('ai-clear-btn').addEventListener('click', _aiClear);
   document.getElementById('ai-clear-context').addEventListener('click', function() {
     _aiState.context = '';
     document.getElementById('ai-context-card').style.display = 'none';
   });
+
+  // Polling periódico: revisar contexto pendiente cada 3s mientras el tab IA está visible.
+  // Esto permite que NEVEN.IA.Contexto() inyecte datos incluso si el agente ya estaba abierto.
+  window._aiContextPollInterval = setInterval(function() {
+    var tab = document.getElementById('tab-ia');
+    if (!tab || tab.style.display === 'none') return;  // solo si el tab está visible
+    fetch(AI_API + '/api/ai/context/pending')
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        if (data.status === 'ok' && data.context && data.context.text) {
+          _aiInjectExcelContext(data.context);
+        }
+      })
+      .catch(function(){});
+  }, 3000);
+}
+
+/**
+ * Inyecta contexto de Excel (datos + resultados) al agente IA.
+ * - Carga el texto en _aiState.context para que _aiCallLLM lo envíe al modelo
+ * - Muestra un mensaje de sistema en el historial del chat
+ * - Actualiza el card de contexto activo
+ */
+function _aiInjectExcelContext(ctx) {
+  if (!ctx || !ctx.text) return;
+
+  // Construir bloque de contexto con marcadores reconocibles por el servidor Python.
+  // El servidor detecta "=== DATOS DE EXCEL ===" para construir el system prompt correcto.
+  var nrows = ctx.n_rows || '?';
+  var cols  = ctx.columns ? ctx.columns.length : '?';
+  var header = '=== DATOS DE EXCEL ===\n'
+    + 'Filas: ' + nrows + '  |  Columnas: ' + cols + '\n';
+  if (ctx.columns && ctx.columns.length) {
+    header += 'Variables: ' + ctx.columns.join(', ') + '\n';
+  }
+  var markedText = header + '\n' + ctx.text;
+
+  // Acumular en _aiState.context (puede haber contexto de DataLab ya cargado)
+  _aiState.context = _aiState.context
+    ? _aiState.context + '\n\n' + markedText
+    : markedText;
+
+  // Mostrar card de contexto activo
+  var ctxCard = document.getElementById('ai-context-card');
+  if (ctxCard) {
+    ctxCard.style.display = '';
+    var label = ctxCard.querySelector('.ctx-label') || ctxCard.querySelector('span');
+    if (label) {
+      var nrows = ctx.n_rows ? ctx.n_rows + ' filas' : '';
+      var cols  = ctx.columns && ctx.columns.length ? ctx.columns.length + ' cols' : '';
+      var dim   = [nrows, cols].filter(Boolean).join(' × ');
+      label.textContent = dim ? 'Excel: ' + dim : 'Contexto de Excel cargado';
+    }
+  }
+
+  // Insertar mensaje de sistema en el historial del chat
+  var msgs = document.getElementById('ai-messages');
+  if (msgs) {
+    var divider = document.createElement('div');
+    var nrows = ctx.n_rows || '?';
+    var cols  = ctx.columns ? ctx.columns.length : '?';
+    divider.style.cssText = 'margin:10px 0;padding:8px 12px;background:rgba(215,165,56,0.08);' +
+      'border-left:3px solid var(--accent);border-radius:4px;font-size:11px;color:var(--text-secondary)';
+    divider.innerHTML = '<span style="color:var(--accent);font-weight:600">Contexto de Excel cargado</span>' +
+      ' &mdash; ' + nrows + ' filas &times; ' + cols + ' columnas. ' +
+      'El agente ahora conoce tus datos. Puedes hacer preguntas directamente.';
+    msgs.appendChild(divider);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  showToast('Contexto de Excel cargado en el agente (' + ctx.n_rows + ' filas)');
+}
+
+function _aiCheckExcelContext() {
+  fetch(AI_API + '/api/ai/context/pending')
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok' && data.context && data.context.text) {
+        _aiInjectExcelContext(data.context);
+      }
+    })
+    .catch(function(){});
 }
 
 function _aiSend() {
   var input = document.getElementById('ai-input');
   var text  = (input.value || '').trim();
   if (!text) return;
-
   _aiAddMessage('user', text);
   input.value = '';
   input.style.height = '';
@@ -2191,14 +2394,14 @@ function _aiAttachDataset() {
       if (data.status !== 'ok') throw new Error(data.message || 'Sin datos');
 
       // Construir resumen compacto
-      var lines = ['Dataset: ' + data.row_count + ' filas × ' + data.col_count + ' columnas\n'];
+      var lines = ['Dataset: ' + data.row_count + ' filas  ' + data.col_count + ' columnas\n'];
       (data.statistics || []).forEach(function(s) {
         if (s.numeric) {
           lines.push(s.column + ': media=' + (s.mean||0).toFixed(2) +
             ', std=' + (s.std||0).toFixed(2) +
             ', [' + (s.min||0).toFixed(2) + ', ' + (s.max||0).toFixed(2) + ']');
         } else {
-          lines.push(s.column + ': texto, ' + (s.unique||0) + ' valores únicos');
+          lines.push(s.column + ': texto, ' + (s.unique||0) + ' valores Âºnicos');
         }
       });
       _aiState.context = lines.join('\n');
@@ -2206,12 +2409,189 @@ function _aiAttachDataset() {
       var ctxCard = document.getElementById('ai-context-card');
       var ctxSummary = document.getElementById('ai-context-summary');
       ctxCard.style.display = '';
-      ctxSummary.textContent = data.row_count + ' filas · ' + data.col_count + ' cols';
-      showToast('✓ Contexto del dataset adjuntado');
+      ctxSummary.textContent = data.row_count + ' filas Á· ' + data.col_count + ' cols';
+      showToast('Á¢Åâ Contexto del dataset adjuntado');
     })
     .catch(function(e) {
-      showToast('Sin dataset activo — cargue datos primero');
+      showToast('Sin dataset activo Á¢â¬â cargue datos primero');
     });
+}
+
+function _aiAttachMethodContext() {
+  // Obtener la función activa en Data Lab (estado compartido entre tabs)
+  var card = (typeof _dlState !== 'undefined' && _dlState.selectedCard)
+    ? _dlState.selectedCard
+    : (window._dlCurrentCard || null);
+
+  if (!card || !card.id) {
+    showToast('Selecciona una función en Data Lab primero');
+    return;
+  }
+
+  var btn = document.getElementById('ai-use-method-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Á¢ÂÂ³'; }
+
+  fetch(API + '/api/kg/method/' + encodeURIComponent(card.id))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (btn) { btn.disabled = false; btn.textContent = '+ Método'; }
+
+      if (!data || !data.found) {
+        showToast('Este método no tiene nodo en la ontología todavía');
+        return;
+      }
+
+      var method      = data.method      || {};
+      var assumptions = data.assumptions || [];
+      var r_functions = data.r_functions || [];
+      var ref         = method.reference || {};
+
+      // Construir texto de contexto metodológico
+      var lines = [
+        '=== CONTEXTO METODOLGICO ===',
+        'Método activo en Data Lab: ' + (method.name || card.name || card.id),
+        '',
+        'Descripción:',
+        method.description || card.description || '(sin descripción)',
+        '',
+      ];
+
+      if (ref.book) {
+        lines.push('Referencia canónica: ' + ref.book +
+          (ref.chapter ? ', ' + ref.chapter : '') +
+          (ref.pages   ? ', ' + ref.pages   : ''));
+        lines.push('');
+      }
+
+      if (assumptions.length > 0) {
+        lines.push('Supuestos a verificar:');
+        assumptions.forEach(function(a) {
+          var def = a.definition || '';
+          lines.push('  Á¢â¬Â¢ ' + a.name + ': ' +
+            def.substring(0, 120) + (def.length > 120 ? '…' : ''));
+        });
+        lines.push('');
+      }
+
+      if (r_functions.length > 0) {
+        lines.push('Funciones R asociadas:');
+        r_functions.forEach(function(f) {
+          lines.push('  Á¢â¬Â¢ ' + f.name + ' (' + (f.package || '') + ')' +
+            (f.r_syntax ? ' Á¢â¬â ' + f.r_syntax : ''));
+        });
+        lines.push('');
+      }
+
+      if (method.interpretation_guide) {
+        lines.push('Guía de interpretación:');
+        lines.push(method.interpretation_guide.substring(0, 300) +
+          (method.interpretation_guide.length > 300 ? '…' : ''));
+      }
+
+      var methodCtx = lines.join('\n').trim();
+
+      // Append al contexto existente (puede haber contexto de dataset ya)
+      _aiState.context = _aiState.context
+        ? _aiState.context + '\n\n' + methodCtx
+        : methodCtx;
+
+      // Mostrar badge en la card de contexto
+      var ctxCard    = document.getElementById('ai-context-card');
+      var ctxSummary = document.getElementById('ai-context-summary');
+      if (ctxCard)    ctxCard.style.display = '';
+      if (ctxSummary) ctxSummary.textContent =
+        (ctxSummary.textContent ? ctxSummary.textContent + ' Á· ' : '') +
+        (method.name || card.id).split('(')[0].trim();
+
+      showToast('Á¢Åâ Contexto metodológico de "' +
+        (method.name || card.id).split('(')[0].trim() + '" adjuntado');
+    })
+    .catch(function(err) {
+      if (btn) { btn.disabled = false; btn.textContent = '+ Método'; }
+      showToast('Error al obtener contexto metodológico');
+    });
+}
+
+function _aiAttachResults() {
+  var slots = window._dlLastSlots;
+  var history = window._dlModelHistory || [];
+
+  // Si no hay historial, intentar construir uno con el Âºltimo an¡lisis (compatibilidad)
+  if (!history.length && slots && slots.length) {
+    if (typeof _dlAddToHistory === 'function') {
+      _dlAddToHistory({
+        function_id:  window._dlLastFunctionId || 'an¡lisis',
+        source:       'user',
+        context_note: '',
+        column_roles: (window._dlState && window._dlState.columnRoles) || {},
+        parameters:   (window._dlState && window._dlState.parameters)  || {},
+        slots:        slots
+      });
+      history = window._dlModelHistory || [];
+    }
+  }
+
+  if (!history.length) {
+    showToast('Ejecuta un an¡lisis en Data Lab primero');
+    return;
+  }
+
+  var lines = ['=== HISTORIAL DE MODELOS ===', ''];
+
+  history.forEach(function(model) {
+    lines.push('--- ' + model.label + ': ' + model.function_id + ' ---');
+    if (model.source === 'ai_suggestion' && model.context_note) {
+      lines.push('Motivación: ' + model.context_note);
+    }
+    // Especificación de roles
+    var roles = Object.keys(model.column_roles || {}).map(function(k) {
+      var cols = model.column_roles[k];
+      return k + ': [' + (Array.isArray(cols) ? cols.join(', ') : String(cols)) + ']';
+    });
+    if (roles.length) lines.push('Especificación: ' + roles.join(' | '));
+
+    // Slots del modelo
+    var modelSlots = model.slots || [];
+    modelSlots.forEach(function(slot) {
+      if (!slot) return;
+      if (slot.type === 'warning_pedagogy') {
+        var compact = (typeof slot.value === 'object' && slot.value)
+          ? (slot.value.compact || slot.label) : slot.label;
+        lines.push('Á¢Å¡Â  ' + compact);
+        return;
+      }
+      if (slot.type === 'scalar' && (slot.tier === 1 || slot.tier === '1')) {
+        var val = slot.value;
+        if (val !== null && val !== undefined && String(val).length < 600) {
+          lines.push((slot.label || slot.name) + ':\n' + val);
+        }
+        return;
+      }
+    });
+    lines.push('');
+  });
+
+  // Columnas disponibles (para que el LLM use los nombres correctos)
+  if (window._dlState && window._dlState.datasetColumns && window._dlState.datasetColumns.length > 0) {
+    var allCols = window._dlState.datasetColumns.map(function(c) {
+      return typeof c === 'object' ? c.name : c;
+    });
+    lines.push('Columnas disponibles en el dataset: ' + allCols.join(', '));
+    lines.push('IMPORTANTE: usa EXACTAMENTE estos nombres en cualquier sugerencia neven-run.');
+    lines.push('');
+  }
+
+  var ctx = lines.join('\n').trim();
+  _aiState.context = _aiState.context ? _aiState.context + '\n\n' + ctx : ctx;
+
+  var ctxCard    = document.getElementById('ai-context-card');
+  var ctxSummary = document.getElementById('ai-context-summary');
+  if (ctxCard)    ctxCard.style.display = '';
+  if (ctxSummary) ctxSummary.textContent =
+    history.length + ' modelo' + (history.length > 1 ? 's' : '') + ' en historial';
+
+  showToast('Á¢Åâ Historial de ' + history.length +
+    ' modelo' + (history.length > 1 ? 's' : '') + ' adjuntado al chat IA');
 }
 
 function _aiCallLLM(extra) {
@@ -2229,13 +2609,18 @@ function _aiCallLLM(extra) {
   };
   if (extra.prompt_id) { payload.prompt_id = extra.prompt_id; }
 
-  fetch(API + '/api/ai/chat', {
+  var aiAbort   = new AbortController();
+  var aiTimeout = setTimeout(function() { aiAbort.abort(); }, 120000);  // 120 s
+
+  fetch(AI_API + '/api/ai/chat', {
     method:  'POST',
     headers: {'Content-Type': 'application/json'},
     body:    JSON.stringify(payload),
+    signal:  aiAbort.signal,
   })
     .then(function(r){ return r.json(); })
     .then(function(data) {
+      clearTimeout(aiTimeout);
       spinner.style.display = 'none';
       sendBtn.disabled = false;
 
@@ -2251,9 +2636,13 @@ function _aiCallLLM(extra) {
       }
     })
     .catch(function(err) {
+      clearTimeout(aiTimeout);
       spinner.style.display = 'none';
       sendBtn.disabled = false;
-      _aiAddMessage('error', 'Error de red: ' + err.message);
+      var msg = (err.name === 'AbortError')
+        ? 'Sin respuesta del modelo en 120 s. Verifica que el LLM esté activo en LM Studio / Ollama.'
+        : 'Error de red: ' + err.message;
+      _aiAddMessage('error', msg);
     });
 }
 
@@ -2282,9 +2671,13 @@ function _aiAddMessage(role, content) {
 
   if (isAssist) {
     // Renderizar Markdown del asistente usando el helper existente de datalab.js
-    bubble.innerHTML = typeof _markdownToHtml === 'function'
-      ? _markdownToHtml(content)
-      : content.replace(/\n/g, '<br>');
+    // DEBUG: mostrar raw + rendered en consola del navegador
+    if (window._aiDebug) {
+      console.log('[NEVEN AI raw]', content);
+    }
+    bubble.innerHTML = typeof _renderWithMarked === 'function'
+      ? _renderWithMarked(content)
+      : (typeof _markdownToHtml === 'function' ? _markdownToHtml(content) : content.replace(/\n/g, '<br>'));
   } else {
     bubble.textContent = content;
   }
@@ -2301,8 +2694,891 @@ function _aiClear() {
   document.getElementById('ai-token-info').textContent = '';
 }
 
+// =============================================================================
+// _renderWithMarked Á¢â¬â renderer Markdown + KaTeX para el chat IA
+// Usa marked.js para Markdown y KaTeX auto-render para LaTeX.
+// Soporta: $$...$$ display, $...$ inline, \[...\] display, \(...\) inline.
+// =============================================================================
+function _renderWithMarked(content) {
+  if (!content) return '';
+
+  var html;
+
+  if (typeof marked !== 'undefined' && marked.parse) {
+    try {
+      // Pre-procesar: proteger bloques $$...$$ multilínea antes de que
+      // marked los envuelva en <p> y rompa los delimitadores de KaTeX.
+      // Reemplazarlos por un <div> con un atributo data que KaTeX leer¡.
+      var protected_content = content.replace(
+        /\$\$([\s\S]+?)\$\$/g,
+        function(_, tex) {
+          // Escapar para que marked no toque el contenido
+          return '\n\n<div class="katex-block">$$' + tex + '$$</div>\n\n';
+        }
+      );
+
+      marked.setOptions({ breaks: true, gfm: true });
+      html = marked.parse(protected_content);
+    } catch(e) {
+      html = content.replace(/\n/g, '<br>');
+    }
+  } else {
+    // Fallback si marked no est¡ disponible
+    html = typeof _markdownToHtml === 'function'
+      ? _markdownToHtml(content)
+      : content.replace(/\n/g, '<br>');
+  }
+
+  // Á¢ââ¬Á¢ââ¬ Aplicar KaTeX auto-render al HTML generado por marked Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
+  if (typeof renderMathInElement !== 'undefined') {
+    var tmpDiv = document.createElement('div');
+    tmpDiv.innerHTML = html;
+    try {
+      renderMathInElement(tmpDiv, {
+        delimiters: [
+          {left: '$$',  right: '$$',  display: true},
+          {left: '\\[', right: '\\]', display: true},
+          {left: '$',   right: '$',   display: false},
+          {left: '\\(', right: '\\)', display: false},
+        ],
+        throwOnError: false,
+        errorColor:   '#e55',
+        output:       'html',
+        macros: {'\\R': '\\mathbb{R}', '\\E': '\\mathbb{E}'},
+      });
+      // Post-procesar: convertir bloques ```neven-run y ```neven-install a cards ejecutables
+      tmpDiv.innerHTML = _processNevenRunBlocks(tmpDiv.innerHTML);
+      return tmpDiv.innerHTML;
+    } catch(e) {
+      return html;
+    }
+  }
+
+  // Si no hay KaTeX, igual procesar los bloques neven-run y neven-install
+  return _processNevenRunBlocks(html);
+}
+
+// =============================================================================
+// _processNevenRunBlocks Á¢â¬â convierte bloques ```neven-run en cards ejecutables
+// Tarea 2.2: el LLM incluye bloques con JSON de an¡lisis Á¢â â botón "Ejecutar"
+// =============================================================================
+function _processNevenRunBlocks(html) {
+  function _decodeBlock(encoded) {
+    return encoded
+      .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+      .replace(/&quot;/g,'"').replace(/&#39;/g,"'").trim();
+  }
+  // neven-run: sugerencia de an¡lisis
+  html = html.replace(
+    /<pre[^>]*><code[^>]*class="[^"]*language-neven-run[^"]*"[^>]*>([\s\S]+?)<\/code><\/pre>/g,
+    function(_, enc) {
+      try { return _buildRunSuggestionCard(JSON.parse(_decodeBlock(enc))); }
+      catch(e) { return '<pre><code>' + enc + '</code></pre>'; }
+    }
+  );
+  // neven-install: instalación bajo solicitud explícita del usuario
+  html = html.replace(
+    /<pre[^>]*><code[^>]*class="[^"]*language-neven-install[^"]*"[^>]*>([\s\S]+?)<\/code><\/pre>/g,
+    function(_, enc) {
+      try { return _buildInstallCard(JSON.parse(_decodeBlock(enc))); }
+      catch(e) { return '<pre><code>' + enc + '</code></pre>'; }
+    }
+  );
+  return html;
+}
+
+function _buildRunSuggestionCard(suggestion) {
+  var fnId  = suggestion.function_id  || '?';
+  var lang  = suggestion.language     || 'r';
+  var note  = suggestion.context_note || '';
+  var roles = suggestion.column_roles || {};
+
+  // ID Âºnico para recuperar la sugerencia al hacer clic
+  var dataId = 'nsr-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+  window._nevenRunSuggestions = window._nevenRunSuggestions || {};
+  window._nevenRunSuggestions[dataId] = suggestion;
+
+  // Resumen de roles para mostrar en la card
+  var rolesSummary = Object.keys(roles).map(function(k) {
+    var cols = roles[k];
+    return k + ': ' + (Array.isArray(cols) ? cols.join(', ') : cols);
+  }).join(' | ');
+
+  return [
+    '<div style="border:1px solid rgba(215,165,56,0.45);border-radius:6px;',
+    'background:rgba(215,165,56,0.06);padding:10px 12px;margin:8px 0">',
+
+    // Header
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">',
+    '<div style="font-size:9px;font-weight:700;color:var(--accent);',
+    'text-transform:uppercase;letter-spacing:0.6px">Á¢Å¡¡ Sugerencia de an¡lisis</div>',
+    '<div style="font-size:9px;color:var(--text-secondary);',
+    'background:var(--bg-secondary);padding:1px 6px;border-radius:8px;',
+    'border:1px solid var(--border)">' + lang.toUpperCase() + '</div>',
+    '</div>',
+
+    // Nombre de la función
+    '<div style="font-size:12px;color:var(--text-primary);font-weight:600;margin-bottom:2px">',
+    fnId,
+    '</div>',
+
+    // Resumen de roles
+    rolesSummary ? '<div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">' +
+      rolesSummary + '</div>' : '',
+
+    // Nota de contexto
+    note ? '<div style="font-size:11px;color:var(--text-secondary);font-style:italic;margin-bottom:6px">' +
+      note + '</div>' : '',
+
+    // Botón ejecutar
+    '<button onclick="_executeRunSuggestion(\'' + dataId + '\')" ',
+    'style="background:var(--accent);color:var(--bg-primary);border:none;',
+    'border-radius:4px;padding:5px 14px;font-size:10px;font-weight:700;',
+    'cursor:pointer;transition:opacity .15s" ',
+    'onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'">',
+    'Á¢âÂ¶ Ejecutar este an¡lisis',
+    '</button>',
+
+    '</div>',
+  ].join('');
+}
+
+function _executeRunSuggestion(dataId) {
+  var suggestion = (window._nevenRunSuggestions || {})[dataId];
+  if (!suggestion) { showToast('Sugerencia no disponible'); return; }
+
+  suggestion.source = 'ai_suggestion';
+
+  // Deshabilitar el botón mientras ejecuta
+  var btn = document.querySelector('[onclick="_executeRunSuggestion(\'' + dataId + '\')"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Á¢ÂÂ³ Ejecutando…'; }
+
+  _aiAddMessage('assistant',
+    'Á¢ÂÂ³ Ejecutando **' + (suggestion.function_id || '?') + '**…'
+  );
+
+  fetch(AI_API + '/api/ai/run_suggestion', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify(suggestion),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Á¢Åâ Ejecutado'; }
+
+    if (data.status !== 'ok') {
+      _aiAddMessage('assistant',
+        'Á¢Åâ Error al ejecutar **' + (suggestion.function_id || '?') + '**: ' +
+        (data.message || 'error desconocido')
+      );
+      return;
+    }
+
+    // Guardar los nuevos slots para que el usuario pueda hacer + Resultados
+    window._dlLastSlots      = data.slots || [];
+    window._dlLastFunctionId = suggestion.function_id || null;
+    window._dlLastCard       = null;
+    // Acumular en historial de modelos
+    if (typeof _dlAddToHistory === 'function') {
+      _dlAddToHistory({
+        function_id:  suggestion.function_id  || 'unknown',
+        source:       suggestion.source       || 'ai_suggestion',
+        context_note: suggestion.context_note || '',
+        column_roles: suggestion.column_roles || {},
+        parameters:   suggestion.parameters   || {},
+        slots:        data.slots || []
+      });
+    }
+
+    // Mensaje de Áéxito en texto
+    var execMs = data.execution_time_ms || 0;
+    _aiAddMessage('assistant',
+      'Á¢Åâ **' + (suggestion.function_id || '?') + '** completado en ' + execMs + ' ms'
+    );
+
+    // Renderizar los slots directamente en el chat usando buildSlotElement
+    // (maneja gr¡ficos Plotly, tablas, texto plano y advertencias)
+    var history = document.getElementById('ai-chat-history');
+    if (history && data.slots && data.slots.length > 0) {
+      var slotsWrapper = document.createElement('div');
+      slotsWrapper.style.cssText =
+        'width:100%;margin:4px 0;padding:8px 10px;' +
+        'background:var(--bg-secondary);border:1px solid var(--border);' +
+        'border-radius:6px;box-sizing:border-box';
+
+      var tier1 = data.slots.filter(function(s) { return s && (s.tier===1||s.tier==='1'); });
+      var tier2 = data.slots.filter(function(s) { return s && (s.tier===2||s.tier==='2'); });
+
+      tier1.forEach(function(slot) {
+        if (typeof buildSlotElement === 'function') {
+          slotsWrapper.appendChild(buildSlotElement(slot));
+        }
+      });
+
+      if (tier2.length > 0) {
+        var details = document.createElement('details');
+        details.style.marginTop = '6px';
+        var summary2 = document.createElement('summary');
+        summary2.style.cssText = 'cursor:pointer;font-size:9px;color:var(--text-secondary);' +
+          'text-transform:uppercase;letter-spacing:0.6px;font-weight:600';
+        summary2.textContent = 'Detalles tÁécnicos';
+        details.appendChild(summary2);
+        tier2.forEach(function(slot) {
+          if (typeof buildSlotElement === 'function') {
+            details.appendChild(buildSlotElement(slot));
+          }
+        });
+        slotsWrapper.appendChild(details);
+      }
+
+      history.appendChild(slotsWrapper);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    _aiAddMessage('assistant',
+      '_Los resultados est¡n disponibles. Usa **+ Resultados** para adjuntarlos al contexto._'
+    );
+  })
+  .catch(function(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Á¢âÂ¶ Ejecutar este an¡lisis'; }
+    _aiAddMessage('assistant', 'Á¢Åâ Error de red: ' + e.message);
+  });
+}
+
+// =============================================================================
+// _buildSlotsSummary Á¢â¬â resumen compacto de slots para mostrar en el chat
+// =============================================================================
+// _buildInstallCard / _executeInstall Á¢â¬â instalación de paquetes reactiva
+// Solo se activa cuando el usuario solicita explícitamente instalar un paquete.
+// El agente NUNCA lo hace proactivamente.
+// =============================================================================
+function _buildInstallCard(req) {
+  var pkg    = req.package      || '?';
+  var lang   = req.language     || 'r';
+  var note   = req.context_note || '';
+  var dataId = 'nsi-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+  window._nevenInstallRequests = window._nevenInstallRequests || {};
+  window._nevenInstallRequests[dataId] = req;
+
+  return [
+    '<div style="border:1px solid rgba(215,165,56,0.35);border-radius:6px;',
+    'background:rgba(215,165,56,0.04);padding:10px 12px;margin:8px 0">',
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">',
+    '<div style="font-size:9px;font-weight:700;color:var(--accent);',
+    'text-transform:uppercase;letter-spacing:0.6px">Instalar paquete</div>',
+    '<div style="font-size:9px;color:var(--text-secondary);',
+    'background:var(--bg-secondary);padding:1px 6px;border-radius:8px;',
+    'border:1px solid var(--border)">' + lang.toUpperCase() + '</div>',
+    '</div>',
+    '<div style="font-size:12px;color:var(--text-primary);font-weight:600;margin-bottom:2px">',
+    pkg,
+    '</div>',
+    note ? '<div style="font-size:10px;color:var(--text-secondary);font-style:italic;margin-bottom:6px">' + note + '</div>' : '',
+    '<div style="display:flex;gap:6px">',
+    '<button onclick="_executeInstall(\'' + dataId + '\')" ',
+    'style="background:var(--accent);color:var(--bg-primary);border:none;',
+    'border-radius:4px;padding:5px 14px;font-size:10px;font-weight:700;cursor:pointer">',
+    'Instalar',
+    '</button>',
+    '<button onclick="this.closest(\'div[style]\').remove()" ',
+    'style="background:transparent;border:1px solid var(--border);color:var(--text-secondary);',
+    'border-radius:4px;padding:5px 14px;font-size:10px;cursor:pointer">',
+    'Cancelar',
+    '</button>',
+    '</div>',
+    '</div>',
+  ].join('');
+}
+
+function _executeInstall(dataId) {
+  var req = (window._nevenInstallRequests || {})[dataId];
+  if (!req) { showToast('Solicitud no disponible'); return; }
+
+  var pkg  = req.package  || '?';
+  var lang = req.language || 'r';
+
+  var btn = document.querySelector('[onclick="_executeInstall(\'' + dataId + '\')"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Instalando…'; }
+
+  _aiAddMessage('assistant', 'Instalando **' + pkg + '** en ' + lang.toUpperCase() + '…');
+
+  fetch(API + '/api/packages/install', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({packages: [pkg], language: lang}),
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Á¢Åâ Instalado'; }
+    if (data.status === 'ok' || data.status === 'queued') {
+      _aiAddMessage('assistant',
+        'Á¢Åâ **' + pkg + '** ' + (data.status === 'queued' ? 'en cola de instalación' : 'instalado') +
+        '. Puedes usarlo en el próximo an¡lisis.'
+      );
+    } else {
+      _aiAddMessage('assistant',
+        'Á¢Åâ Error al instalar **' + pkg + '**: ' + (data.message || 'error desconocido')
+      );
+    }
+  })
+  .catch(function(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Instalar'; }
+    _aiAddMessage('assistant', 'Á¢Åâ Error de red: ' + e.message);
+  });
+}
+
+// =============================================================================
+// Tarea 2.3: versión Markdown de los resultados para respuesta inline del LLM
+// =============================================================================
+function _buildSlotsSummary(slots) {
+  if (!slots || !slots.length) return '_Sin resultados._';
+
+  var lines = [];
+
+  slots.forEach(function(slot) {
+    if (!slot) return;
+
+    // Advertencias pedagógicas Á¢â¬â solo el texto compacto
+    if (slot.type === 'warning_pedagogy') {
+      var compact = (typeof slot.value === 'object' && slot.value)
+        ? (slot.value.compact || slot.label)
+        : slot.label;
+      lines.push('> Á¢Å¡Â  ' + compact);
+      return;
+    }
+
+    // Tablas de tier 1 Á¢â¬â max 10 filas en el chat
+    if (slot.type === 'table' && Array.isArray(slot.value) &&
+        slot.value.length > 0 && (slot.tier === 1 || slot.tier === '1')) {
+      lines.push('**' + (slot.label || slot.name) + '**');
+      var rows = slot.value.slice(0, 10);
+      var cols = Object.keys(rows[0]);
+      lines.push('| ' + cols.join(' | ') + ' |');
+      lines.push('| ' + cols.map(function() { return '---'; }).join(' | ') + ' |');
+      rows.forEach(function(row) {
+        lines.push('| ' + cols.map(function(c) {
+          var v = row[c];
+          return (v !== null && v !== undefined) ? String(v) : '';
+        }).join(' | ') + ' |');
+      });
+      if (slot.value.length > 10) {
+        lines.push('_(' + (slot.value.length - 10) + ' filas m¡s…)_');
+      }
+      lines.push('');
+      return;
+    }
+
+    // Scalars de tier 1
+    if (slot.type === 'scalar' && (slot.tier === 1 || slot.tier === '1')) {
+      var val = slot.value;
+      if (val !== null && val !== undefined && String(val).length < 200) {
+        lines.push('**' + (slot.label || slot.name) + ':** ' + val);
+      }
+      return;
+    }
+  });
+
+  return lines.length > 0 ? lines.join('\n') : '_Sin resultados destacados._';
+}
+
+function _escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;');
+}
+
+// =============================================================================
+// Buklo Á¢â¬â Gestor de proyectos .buklo
+// =============================================================================
+
+var _bukloState = {
+  currentPath: null,   // ruta del Âºltimo .buklo guardado/abierto
+  lastSaved:   null,   // timestamp ISO de la Âºltima vez que se guardó
+};
+
+(function _initBuklo() {
+  // Á¢ââ¬Á¢ââ¬ Botón Guardar Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
+  // Á¢ââ¬Á¢ââ¬ Botón Guardar Á¢â¬â delega a _bukloDoSave(path) Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
+  function _bukloPromptAndSave() {
+    var suggested = _bukloState.currentPath
+      ? _bukloState.currentPath.replace(/\.buklo$/i, '')
+      : 'C:\\NEVEN\\projects\\mi_proyecto';
+    var savePath = window.prompt(
+      'Guardar proyecto como:\n(Se guardar¡ el dataset activo + historial del chat IA)',
+      suggested
+    );
+    if (!savePath || !savePath.trim()) return;
+    _bukloDoSave(savePath.trim());
+  }
+
+  document.getElementById('btn-buklo-save-f').addEventListener('click', _bukloPromptAndSave);
+
+  // Á¢ââ¬Á¢ââ¬ Botón Abrir (panel flotante) Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
+  document.getElementById('btn-buklo-open-f').addEventListener('click', function() {
+    document.getElementById('buklo-file-picker-f').click();
+  });
+
+  document.getElementById('buklo-file-picker-f').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    var path = window.prompt(
+      'Ruta completa del archivo .buklo a abrir:\n' +
+      '(ej: C:\\NEVEN\\projects\\mi_proyecto.buklo)',
+      'C:\\NEVEN\\projects\\' + file.name
+    );
+    if (!path || !path.trim()) return;
+    _bukloLoadFromPath(path.trim());
+  });
+
+  // Á¢ââ¬Á¢ââ¬ Botón Exportar informe Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
+  document.getElementById('btn-export-report-f').addEventListener('click', _exportReport);
+
+  // Á¢ââ¬Á¢ââ¬ Panel flotante Á¢â¬â mismas funciones que la card de Data Studio Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬Á¢ââ¬
+  document.getElementById('btn-buklo-save-f').addEventListener('click', function() {
+    document.getElementById('btn-buklo-save-f').click();
+  });
+  document.getElementById('btn-buklo-open-f').addEventListener('click', function() {
+    document.getElementById('buklo-file-picker-f').click();
+  });
+  document.getElementById('buklo-file-picker-f').addEventListener('change', function(e) {
+    // Reusa el mismo handler que el picker original
+    var file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    var path = window.prompt(
+      'Ruta completa del archivo .buklo a abrir:',
+      'C:\\NEVEN\\projects\\' + file.name
+    );
+    if (!path || !path.trim()) return;
+    _bukloLoadFromPath(path.trim());
+  });
+  document.getElementById('btn-export-report-f').addEventListener('click', _exportReport);
+
+})();
+
+function _bukloDoSave(path) {
+  _bukloSetMsg('Á¢ÂÂ³ Guardando proyecto…', '#888');
+  var chatHistory = _buildChatExport();
+  fetch(API + '/api/buklo/save', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({
+      path:           path,
+      chat_history:   chatHistory,
+      plan:           {},
+      metadata:       {saved_from: 'NEVEN Studio', timestamp: new Date().toISOString()},
+      analysis_log:   (window._dlModelHistory || []).map(function(m) {
+        return {id:m.id, label:m.label, function_id:m.function_id,
+                timestamp:m.timestamp, source:m.source,
+                context_note:m.context_note||'', column_roles:m.column_roles||{},
+                n_slots:(m.slots||[]).length, metrics_text:m.metrics_text||''};
+      }),
+      report_content: window._exportedReport ? window._exportedReport.content  : '',
+      report_format:  window._exportedReport ? window._exportedReport.format   : 'tex',
+      report_pdf_b64: window._exportedReport ? window._exportedReport.pdf_b64  : null,
+    }),
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (data.status === 'ok') {
+      _bukloState.currentPath = data.path;
+      _bukloState.lastSaved   = new Date().toISOString();
+      _bukloUpdateBadge('Á¢Åâ ' + data.size_kb + ' KB', 'var(--accent)');
+      _bukloSetMsg(
+        'Á¢Åâ Guardado: ' + data.path +
+        (data.has_dataset ? ' Á¢â¬â ' + data.n_rows.toLocaleString() + ' filas  ' + data.n_cols + ' cols' : ' Á¢â¬â sin dataset'),
+        'var(--accent)'
+      );
+      showToast('Á¢Åâ Proyecto guardado (' + data.size_kb + ' KB)');
+    } else {
+      _bukloSetMsg('Á¢Åâ Error: ' + (data.message || 'desconocido'), '#e55');
+    }
+  })
+  .catch(function(e){ _bukloSetMsg('Á¢Åâ Error de red: ' + e.message, '#e55'); });
+}
+
+function _bukloLoadFromPath(path) {
+  _bukloSetMsg('Á¢ÂÂ³ Cargando proyecto…', '#888');
+
+  fetch(API + '/api/buklo/load', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({path: path}),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.status !== 'ok') {
+      _bukloSetMsg('Á¢Åâ Error: ' + (data.message || 'desconocido'), '#e55');
+      return;
+    }
+
+    _bukloState.currentPath = path;
+
+    // Actualizar UI de datos si hay dataset
+    if (data.has_dataset && data.n_rows > 0) {
+      var info = document.getElementById('data-info');
+      if (info) {
+        info.textContent = (data.columns || []).slice(0, 5).join(', ') +
+          (data.columns.length > 5 ? '…' : '') +
+          ' Á¢â¬â ' + data.n_rows.toLocaleString() + ' filas  ' + data.n_cols + ' cols';
+      }
+    }
+
+    // Restaurar historial del chat IA si existe
+    if (data.chat_history && data.chat_history.trim()) {
+      _bukloRestoreChatHistory(data.chat_history);
+    }
+
+    // Restaurar historial de modelos si existe
+    if (data.analysis_log && data.analysis_log.length > 0) {
+      // Restaurar como entradas del historial (sin slots completos Á¢â¬â solo metadatos)
+      window._dlModelHistory = data.analysis_log.map(function(entry) {
+        return {
+          id:           entry.id           || 0,
+          label:        entry.label        || ('Modelo ' + entry.id),
+          function_id:  entry.function_id  || 'unknown',
+          timestamp:    entry.timestamp    || '',
+          source:       entry.source       || 'user',
+          context_note: entry.context_note || '',
+          column_roles: entry.column_roles || {},
+          parameters:   {},
+          slots:        [],   // no se guardan los slots completos en el .buklo
+          metrics_text: entry.metrics_text || ''
+        };
+      });
+      showToast('Á¢Åâ Historial de ' + data.analysis_log.length +
+        ' modelo' + (data.analysis_log.length > 1 ? 's' : '') + ' restaurado');
+    }
+
+    var meta = data.metadata || {};
+    _bukloUpdateBadge('Á¢Åâ cargado', 'var(--accent)');
+    _bukloSetMsg(
+      'Á¢Åâ Proyecto cargado' +
+      (data.has_dataset ? ' Á¢â¬â ' + data.n_rows.toLocaleString() + ' filas  ' + data.n_cols + ' cols' : '') +
+      (meta.saved_from ? ' Á· ' + meta.saved_from : ''),
+      'var(--accent)'
+    );
+    showToast('Á¢Åâ Proyecto cargado' + (data.has_dataset ? ' con dataset' : ''));
+  })
+  .catch(function(e) { _bukloSetMsg('Á¢Åâ Error de red: ' + e.message, '#e55'); });
+}
+
+function _buildChatExport() {
+  // Exportar el historial del chat IA como Markdown
+  if (typeof _aiState === 'undefined' || !_aiState.messages || !_aiState.messages.length) {
+    return '';
+  }
+  var lines = ['# Historial de sesión NEVEN Studio', ''];
+  _aiState.messages.forEach(function(m) {
+    var role = m.role === 'user' ? '**Usuario**' : '**NEVEN Assistant**';
+    lines.push('### ' + role);
+    lines.push(m.content || '');
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+function _bukloRestoreChatHistory(markdown) {
+  // Restaurar mensajes del chat desde el Markdown exportado
+  if (typeof _aiState === 'undefined') return;
+  // Parseo simple: secciones separadas por ### **Rol**
+  var sections = markdown.split(/\n### \*\*(Usuario|NEVEN Assistant)\*\*\n/);
+  var messages = [];
+  for (var i = 1; i < sections.length; i += 2) {
+    var role    = sections[i] === 'Usuario' ? 'user' : 'assistant';
+    var content = (sections[i + 1] || '').trim();
+    if (content) messages.push({role: role, content: content});
+  }
+  if (messages.length > 0) {
+    _aiState.messages = messages;
+    // Re-renderizar en el historial del chat
+    var history = document.getElementById('ai-chat-history');
+    if (history) {
+      history.innerHTML = '';
+      messages.forEach(function(m) { _aiAddMessage(m.role, m.content); });
+    }
+    showToast('Á¢Åâ ' + messages.length + ' mensajes restaurados en el chat IA');
+  }
+}
+
+// =============================================================================
+// _exportReport Á¢â¬â genera informe analítico (.tex/.qmd Á¢â â PDF) y lo descarga
+// Llama a /api/export/capabilities Á¢â â /api/export/generate Á¢â â /api/export/compile
+// El informe generado se guarda en window._exportedReport para incluirlo en .buklo
+// =============================================================================
+async function _exportReport() {
+  var history = window._dlModelHistory || [];
+  if (!history.length) {
+    showToast('Ejecuta al menos un an¡lisis antes de exportar el informe');
+    return;
+  }
+
+  var btn = document.getElementById('btn-export-report-f');
+  if (btn) { btn.disabled = true; btn.textContent = 'Á¢ÂÂ³ Detectando...'; }
+
+  try {
+    // 1. Detectar herramientas disponibles
+    var caps = await fetch(API + '/api/export/capabilities').then(function(r){ return r.json(); });
+
+    var fmt = (caps.best === 'quarto') ? 'qmd' : 'tex';
+    var fmtLabel = (fmt === 'qmd') ? 'Quarto (.qmd)' : 'LaTeX (.tex)';
+
+    if (btn) btn.textContent = 'Á¢ÂÂ³ Generando ' + fmtLabel + '...';
+
+    // 2. Construir contexto del dataset
+    var dataInfo = {
+      name:    document.getElementById('data-info')
+               ? document.getElementById('data-info').textContent.split('Á¢â¬â')[0].trim() : 'dataset',
+      n_rows:  0,
+      n_cols:  0,
+      columns: []
+    };
+    if (window._dlState && window._dlState.datasetColumns) {
+      dataInfo.columns = window._dlState.datasetColumns.map(function(c){
+        return typeof c === 'object' ? c.name : c;
+      });
+      dataInfo.n_cols  = dataInfo.columns.length;
+    }
+
+    // Extracto compacto del chat IA
+    var chatSummary = '';
+    if (typeof _aiState !== 'undefined' && _aiState.messages) {
+      chatSummary = _aiState.messages.slice(0, 15).map(function(m) {
+        var role = m.role === 'user' ? 'Usuario' : 'Agente';
+        return role + ': ' + (m.content || '').substring(0, 200);
+      }).join('\n');
+    }
+
+    // 3. Generar el documento via LLM
+    var gen = await fetch(API + '/api/export/generate', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body:    JSON.stringify({
+        format:       fmt,
+        analysis_log: history.map(function(m) {
+          return {id: m.id, label: m.label, function_id: m.function_id,
+                  source: m.source, context_note: m.context_note,
+                  column_roles: m.column_roles, metrics_text: m.metrics_text || ''};
+        }),
+        chat_history: chatSummary,
+        dataset_info: dataInfo,
+        title:        'An¡lisis Econométrico Á¢â¬â ' + dataInfo.name
+      })
+    }).then(function(r){ return r.json(); });
+
+    if (gen.status !== 'ok') throw new Error(gen.message || 'Error al generar el informe');
+
+    // Guardar el contenido generado para incluirlo en el .buklo
+    window._exportedReport = {
+      format:  fmt,
+      content: gen.content,
+      title:   gen.title   || 'Informe',
+      pdf_b64: null
+    };
+
+    // 4. Compilar a PDF si hay compilador
+    if (caps.best !== 'tex_only') {
+      if (btn) btn.textContent = 'Á¢ÂÂ³ Compilando PDF...';
+      var compiled = await fetch(API + '/api/export/compile', {
+        method:  'POST',
+        headers: {'Content-Type': 'application/json'},
+        body:    JSON.stringify({content: gen.content, format: fmt, filename: 'report'})
+      }).then(function(r){ return r.json(); });
+
+      if (compiled.status === 'ok') {
+        window._exportedReport.pdf_b64 = compiled.pdf_b64;
+      }
+    }
+
+    // 5. Descargar el resultado
+    if (window._exportedReport.pdf_b64) {
+      _downloadBase64('report.pdf', 'application/pdf', window._exportedReport.pdf_b64);
+      showToast('Á¢Åâ Informe PDF generado y descargado');
+      _bukloSetMsg('Á¢Åâ Informe PDF listo. Guarda el proyecto (.buklo) para conservarlo.', 'var(--accent)');
+    } else {
+      _downloadText('report.' + fmt, gen.content);
+      showToast('Á¢Åâ Informe .' + fmt + ' generado' +
+        (caps.best === 'tex_only' ? ' (sin compilador PDF Á¢â¬â compila en Overleaf)' : ''));
+      _bukloSetMsg('Á¢Åâ Informe .' + fmt + ' listo.', 'var(--accent)');
+    }
+
+  } catch(e) {
+    showToast('Á¢Åâ Error al exportar: ' + e.message);
+    _bukloSetMsg('Á¢Åâ ' + e.message, '#e55');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Á°Å¸ââ Exportar informe'; }
+  }
+}
+
+function _downloadBase64(filename, mime, b64) {
+  var a = document.createElement('a');
+  a.href = 'data:' + mime + ';base64,' + b64;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function _downloadText(filename, text) {
+  var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+// =============================================================================
+// _dlAddToHistory Á¢â¬â acumula modelos en window._dlModelHistory
+// Se llama desde datalab.js (usuario) y taskpane.html (_executeRunSuggestion)
+// =============================================================================
+function _dlAddToHistory(entry) {
+  // ── Primer acceso: comprobar contexto Excel pendiente ─────────────────────
+  // Se comprueba la primera vez que se añade un modelo al historial,
+  // por si el contexto Excel llegó mientras la ventana ya estaba abierta.
+  if (!window._dlHistoryStarted) {
+    window._dlHistoryStarted = true;
+    if (typeof _aiCheckExcelContext === 'function') {
+      // Silencioso — solo inyecta si hay algo pendiente, no muestra toast si no
+      fetch(AI_API + '/api/ai/context/pending')
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+          if (data.status === 'ok' && data.context) _aiInjectExcelContext(data.context);
+        })
+        .catch(function(){});
+    }
+  }
+  window._dlModelHistory = window._dlModelHistory || [];
+  var id = window._dlModelHistory.length + 1;
+
+  // Extraer texto de métricas de los slots para uso en el LLM
+  var metrics_lines = [];
+  (entry.slots || []).forEach(function(slot) {
+    if (!slot) return;
+    if (slot.type === 'scalar' && (slot.tier === 1 || slot.tier === '1')) {
+      var val = slot.value;
+      if (typeof val === 'string' && val.length > 0 && val.length < 600) {
+        metrics_lines.push((slot.label || slot.name) + ':\n' + val);
+      }
+    }
+  });
+
+  window._dlModelHistory.push({
+    id:           id,
+    label:        'Modelo ' + id,
+    function_id:  entry.function_id  || 'unknown',
+    timestamp:    new Date().toISOString(),
+    source:       entry.source       || 'user',
+    context_note: entry.context_note || '',
+    column_roles: entry.column_roles || {},
+    parameters:   entry.parameters   || {},
+    slots:        entry.slots        || [],
+    metrics_text: metrics_lines.join('\n\n')
+  });
+
+  console.log('[NEVEN] Historial: Modelo ' + id + ' (' + entry.function_id + ') aÂ±adido. Total: ' + id);
+}
+
+function _dlResetHistory() {
+  window._dlModelHistory   = [];
+  window._dlLastSlots      = [];
+  window._dlLastFunctionId = null;
+  window._dlLastCard       = null;
+  console.log('[NEVEN] Historial de modelos reiniciado.');
+}
+
+function _bukloUpdateBadge(text, color) {
+  // Actualizar badge en la card de Data Studio (puede no existir si se ocultó)
+  var badge = document.getElementById('buklo-status-badge');
+  if (badge) {
+    badge.textContent  = text;
+    badge.style.color  = color || 'var(--accent)';
+    badge.style.background = color === 'var(--accent)'
+      ? 'rgba(215,165,56,0.1)' : 'var(--bg-primary)';
+    badge.style.borderColor = color === 'var(--accent)'
+      ? 'rgba(215,165,56,0.3)' : 'var(--border)';
+  }
+  // Actualizar badge en el flotante
+  var badgeF = document.getElementById('buklo-status-badge-flotante');
+  if (badgeF) {
+    badgeF.textContent   = text;
+    badgeF.style.color   = color || 'var(--text-secondary)';
+    badgeF.style.display = text ? '' : 'none';
+  }
+}
+
+function _bukloSetMsg(text, color) {
+  var el = document.getElementById('buklo-msg');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color  = color || 'var(--text-secondary)';
+  el.style.display = text ? '' : 'none';
+}
+
 </script>
-<script src="datalab.js?v=1785523931"></script>
+  <script>
+    // datalab.js con timestamp para evitar cachÁé del browser en cada recarga
+    document.write('<script src="datalab.js?v=' + Date.now() + '"><\/script>');
+  </script>
+
+  <!-- Panel flotante de proyecto Á¢â¬â visible en todos los tabs -->
+  <div id="proyecto-flotante"
+       style="position:fixed;bottom:14px;right:14px;z-index:1500;
+              display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+    <div id="buklo-status-badge-flotante"
+         style="font-size:8px;padding:1px 7px;border-radius:8px;
+                background:var(--bg-secondary);color:var(--text-secondary);
+                border:1px solid var(--border);opacity:0.75;margin-bottom:2px;
+                display:none">
+    </div>
+    <div style="display:flex;gap:5px;
+                background:rgba(26,27,31,0.72);backdrop-filter:blur(6px);
+                border:1px solid var(--border);border-radius:var(--radius);
+                padding:5px 8px">
+      <button id="btn-buklo-save-f"
+              style="background:transparent;border:none;
+                     color:var(--text-secondary);font-size:10px;
+                     padding:2px 6px;cursor:pointer;transition:color .15s;
+                     white-space:nowrap"
+              onmouseover="this.style.color='var(--accent)'"
+              onmouseout="this.style.color='var(--text-secondary)'"
+              title="Guardar proyecto actual como archivo .buklo">
+        Guardar proyecto
+      </button>
+      <span style="color:var(--border);font-size:10px;align-self:center">|</span>
+      <button id="btn-buklo-open-f"
+              style="background:transparent;border:none;
+                     color:var(--text-secondary);font-size:10px;
+                     padding:2px 6px;cursor:pointer;transition:color .15s;
+                     white-space:nowrap"
+              onmouseover="this.style.color='var(--accent)'"
+              onmouseout="this.style.color='var(--text-secondary)'"
+              title="Abrir un proyecto .buklo guardado anteriormente">
+        Abrir proyecto
+      </button>
+      <span style="color:var(--border);font-size:10px;align-self:center">|</span>
+      <button id="btn-export-report-f"
+              style="background:transparent;border:none;
+                     color:var(--text-secondary);font-size:10px;
+                     padding:2px 6px;cursor:pointer;transition:color .15s;
+                     white-space:nowrap"
+              onmouseover="this.style.color='var(--accent)'"
+              onmouseout="this.style.color='var(--text-secondary)'"
+              title="Generar informe analítico del proceso de modelación">
+        Exportar informe
+      </button>
+    </div>
+    <div id="buklo-msg-flotante"
+         style="font-size:9px;color:var(--text-secondary);display:none;
+                text-align:right;max-width:320px;opacity:0.85">
+    </div>
+  </div>
+  <input type="file" id="buklo-file-picker-f" accept=".buklo" style="display:none">
 
 </body>
 </html>
