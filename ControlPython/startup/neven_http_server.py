@@ -19,19 +19,6 @@
 #   POST /api/rpivot       → RPivot table generation via R (task 7.3)
 #   GET  /api/engines      → Pipe-probe each language engine (task 7.1)
 #   GET  /api/functions    → List registered functions per language (task 7.2)
-#   GET  /api/kg/stats                  → Estadísticas del Knowledge Graph
-#   GET  /api/kg/method/{function_id}   → Nodo Method + supuestos + funciones R
-#   GET  /api/kg/profile                → Perfil automático del dataset en DuckDB
-#   GET  /api/kg/diagnose/{function_id} → Plan metodológico completo
-#   POST /api/buklo/save                → Guarda proyecto activo como .buklo
-#   POST /api/buklo/load                → Abre un .buklo y restaura el estado
-#   GET  /api/buklo/status              → Estado del proyecto actual
-#   POST /api/ai/run_suggestion         → Ejecuta análisis propuesto por LLM/servicio externo
-#   GET  /api/export/capabilities       → Detecta Quarto, pdflatex, xelatex disponibles
-#   POST /api/export/generate           → LLM genera informe .tex o .qmd
-#   POST /api/export/compile            → Compila .tex/.qmd a PDF
-#   POST /api/ai/context                → Recibe contexto de Excel (datos + resultados)
-#   GET  /api/ai/context/pending        → Retorna contexto pendiente de Excel para el Tab IA
 
 import os
 import sys
@@ -79,36 +66,6 @@ try:
     _DATALAB_AVAILABLE = True
 except ImportError:
     _DATALAB_AVAILABLE = False
-
-# Ontology Engine — Knowledge Graph econométrico
-try:
-    from ontology_engine import get_engine as _get_ontology_engine  # type: ignore
-    _ONTOLOGY_AVAILABLE = True
-except ImportError:
-    _ONTOLOGY_AVAILABLE = False
-    def _get_ontology_engine(*args, **kwargs):  # type: ignore
-        return None
-
-# Buklo Manager — formato de proyecto persistente .buklo
-try:
-    from buklo_manager import (  # type: ignore
-        get_buklo_manager as _get_buklo_manager,
-        set_current_path  as _buklo_set_path,
-        get_current_path  as _buklo_get_path,
-    )
-    _BUKLO_AVAILABLE = True
-except ImportError:
-    _BUKLO_AVAILABLE = False
-    def _get_buklo_manager():      return None   # type: ignore
-    def _buklo_set_path(p): pass                 # type: ignore
-    def _buklo_get_path():         return None   # type: ignore
-
-# ── Estado global del contexto Excel → Tab IA ─────────────────────────────────
-# Almacena el último contexto publicado por =NEVEN.IA.Contexto()
-# Se consume (y borra) cuando el Tab IA lo recoge via GET /api/ai/context/pending
-import threading as _threading
-_excel_context_lock    = _threading.Lock()
-_excel_context_pending: dict | None = None   # {text, timestamp, source}
 
 # Package Manager Service
 try:
@@ -184,6 +141,12 @@ _server_instance = None
 _server_port = None
 _config = {}
 
+# ── Estado global del contexto Excel → Tab IA ─────────────────────────────
+# Almacena el último contexto publicado por =NEVEN.IA.Contexto()
+# Se consume al ser leído por GET /api/ai/context/pending
+_excel_context_lock    = threading.Lock()
+_excel_context_pending = None   # {text, timestamp, source, columns, n_rows}
+
 DEFAULT_CONFIG = {
     "enabled": True,
     "port": 5555,
@@ -200,7 +163,6 @@ DEFAULT_CONFIG = {
     # (task 4.3) or by unit tests.  When absent, all Script endpoints return 503.
     "pipe_client_factory": {},
     "functions_dir": r"C:\NEVEN\functions",  # Directorio de sidecar JSONs
-    "bukloDir":      r"C:\NEVEN\projects",   # Directorio de proyectos .buklo
 }
 
 
@@ -554,62 +516,12 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 self._send_error_json(f"Error leyendo config AI: {exc}", 500)
             return
 
-        # ── AIService URL — para que el taskpane sepa si usar servicio externo ──
-        if path == 'api/ai/service-url':
-            config_path = os.path.join(
-                os.path.dirname(_config.get("staticDir", r"C:\NEVEN\taskpane")), "..",
-                "neven-config.json"
-            )
-            if not os.path.isfile(config_path):
-                config_path = r"C:\NEVEN\neven-config.json"
-            try:
-                with open(config_path, "r", encoding="utf-8") as _f:
-                    full_cfg = json.load(_f)
-                svc = full_cfg.get("AIService", {})
-                self._send_json({
-                    "status":  "ok",
-                    "enabled": svc.get("enabled", False),
-                    "url":     svc.get("url", ""),
-                })
-            except Exception:
-                self._send_json({"status": "ok", "enabled": False, "url": ""})
-            return
-
-        # ── Ontology / Knowledge Graph endpoints ──────────────────────────────
-        if path.startswith('api/kg/'):
-            self._handle_kg(path[7:])  # pasa la parte después de 'api/kg/'
-            return
-
-        # ── Buklo status (GET) ────────────────────────────────────────────────
-        if path == 'api/buklo/status':
-            if not _BUKLO_AVAILABLE:
-                self._send_json({"status": "unavailable"})
-                return
-            mgr = _get_buklo_manager()
-            self._send_json(mgr.status(_buklo_get_path()) if mgr else {"status": "unavailable"})
-            return
-
-        if path == 'api/buklo/list':
-            if not _BUKLO_AVAILABLE:
-                self._send_json({"status": "unavailable", "projects": []})
-                return
-            mgr = _get_buklo_manager()
-            buklo_dir = _config.get("bukloDir", r"C:\NEVEN\projects")
-            projects = mgr.list_projects(buklo_dir) if mgr else []
-            self._send_json({"status": "ok", "projects": projects})
-            return
-
-        # ── Export capabilities (GET) ─────────────────────────────────────────
-        if path == 'api/export/capabilities':
-            self._handle_export_capabilities()
-            return
-
-        # ── Contexto Excel → Tab IA (GET — consume el contexto pendiente) ──────
+        # ── AI context/pending — GET consume el contexto pendiente de Excel ──
         if path == 'api/ai/context/pending':
             global _excel_context_pending
             with _excel_context_lock:
                 ctx = _excel_context_pending
-                _excel_context_pending = None   # consumido
+                _excel_context_pending = None   # consumible — se borra al leerse
             if ctx:
                 self._send_json({"status": "ok", "context": ctx})
             else:
@@ -656,10 +568,6 @@ class NEVENHandler(BaseHTTPRequestHandler):
         self._add_cors_headers()
         self.send_header('Content-Type', ctype)
         self.send_header('Content-Length', str(len(content)))
-        # No cachear JS/CSS — el browser siempre pide la versión en disco
-        if ext in ('.js', '.css'):
-            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
-            self.send_header('Pragma', 'no-cache')
         self.end_headers()
         self.wfile.write(content)
 
@@ -720,20 +628,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_save_script(body)
         elif path == 'api/ai/chat':
             self._handle_ai_chat(body)
-        elif path == 'api/packages/install':
-            self._handle_pkg_install(body)
-        elif path == 'api/buklo/save':
-            self._handle_buklo_save(body)
-        elif path == 'api/buklo/load':
-            self._handle_buklo_load(body)
-        elif path == 'api/ai/run_suggestion':
-            self._handle_ai_run_suggestion(body)
         elif path == 'api/ai/context':
             self._handle_ai_context(body)
-        elif path == 'api/export/generate':
-            self._handle_export_generate(body)
-        elif path == 'api/export/compile':
-            self._handle_export_compile(body)
+        elif path == 'api/packages/install':
+            self._handle_pkg_install(body)
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
 
@@ -891,198 +789,39 @@ class NEVENHandler(BaseHTTPRequestHandler):
 
         # Inject dataset context as system message (first in list)
         if context:
-            # Detectar si el contexto incluye sección metodológica (del botón + Método)
-            has_method_context  = "=== CONTEXTO METODOLÓGICO ===" in context
-            has_dataset_context = "Dataset:" in context or "filas" in context
-            has_results_context = "=== RESULTADOS DEL ANÁLISIS ===" in context
-            has_history_context = "=== HISTORIAL DE MODELOS ===" in context
-            has_excel_context   = "=== DATOS DE EXCEL ===" in context
-
-            # Instrucciones de formato comunes a todas las personas
-            _fmt = (
+            sys_msg = {"role": "system", "content": (
+                "Eres un analista de datos experto. El usuario está trabajando con NEVEN, "
+                "un add-in de Excel con R, Julia y Python. "
+                f"Contexto del dataset actual:\n\n{context}\n\n"
                 "Responde siempre en español a menos que el usuario escriba en otro idioma. "
-                "Usa Markdown para formatear tu respuesta. "
-                "Para fórmulas matemáticas usa SIEMPRE delimitadores Markdown estándar: "
-                "$$...$$ para fórmulas en bloque y $...$ para fórmulas inline. "
-                "NUNCA uses \\(...\\) ni \\[...\\] ni ninguna otra notación LaTeX."
-            )
-
-            # Instrucción de sugerencias ejecutables (cuando hay resultados o historial)
-            _run_hint = (
-                "Cuando sugieras un nuevo análisis o corrección metodológica, "
-                "incluye un bloque ```neven-run con el JSON de la llamada. "
-                "El schema EXACTO es: "
-                "{\"function_id\": string, \"language\": \"r\"|\"python\"|\"julia\", "
-                "\"column_roles\": {\"Y\": [...], \"X\": [...], \"Z\": [...]}, "
-                "\"parameters\": {}, \"context_note\": string}. "
-                "IMPORTANTE: language SIEMPRE debe ser \"r\", \"python\" o \"julia\" en minúsculas. "
-                "Los function_id disponibles para R son: RG_Lineal, RG_2SLS, RG_Logistica, "
-                "RG_Poisson, RG_Tobit, RG_HECKIT, RG_DatosPanel, RG_FGLS, RG_Newey_West, "
-                "RG_RESET, ST_VAR, ST_ECM. "
-                "Usa EXACTAMENTE uno de estos IDs — no inventes nombres nuevos. "
-                "Para RG_2SLS los roles son: Y (dependiente), Endo (endógenas), "
-                "Exo (controles exógenos, opcional), Instru (instrumentos externos Z). "
-                "Para RG_Lineal los roles son: Y (dependiente), X (independientes). "
-                "Usa los nombres de roles EXACTAMENTE como están — no uses 'Z' en lugar de 'Instru'. "
-                "El usuario podrá ejecutarlo con un clic desde el chat. "
-                "Si el usuario pide EXPLÍCITAMENTE instalar un paquete, genera un bloque "
-                "```neven-install con el JSON: "
-                "{\"package\": \"nombre_paquete\", \"language\": \"r\"|\"python\"|\"julia\", "
-                "\"context_note\": \"para qué se necesita\"}. "
-                "NUNCA sugiereas instalar paquetes proactivamente — solo bajo solicitud explícita del usuario. "
-            ) if (has_results_context or has_history_context) else ""
-
-            if has_history_context:
-                # Historial de múltiples modelos — persona de comparación y evolución
-                sys_content = (
-                    "Eres NEVEN Assistant, un econometrista experto. "
-                    "Tienes acceso al historial completo de modelos estimados en esta sesión. "
-                    "Tu tarea principal es comparar especificaciones, coeficientes y métricas "
-                    "entre los modelos del historial y razonar sobre la evolución del análisis. "
-                    "Cuando compares, cita los números reales de cada modelo: "
-                    "  - Si el coeficiente cambió, di cuánto y qué implica (ej: sesgo de endogeneidad). "
-                    "  - Si las métricas mejoraron/empeoraron, explica por qué. "
-                    "  - Si hay advertencias metodológicas, vincúlalas con el cambio de especificación. "
-                    "Basa tu razonamiento en la ontología econométrica de NEVEN "
-                    "(Wooldridge, Hanck et al., MIT 14.382/14.384/14.387). "
-                    "Cita el libro/capítulo cuando sea relevante. "
-                    + _run_hint +
-                    f"Historial de modelos estimados:\n\n{context}\n\n"
-                    + _fmt
-                )
-            elif has_results_context and has_method_context:
-                # Máximo contexto: resultados reales + método ontológico
-                sys_content = (
-                    "Eres NEVEN Assistant, un econometrista experto. "
-                    "Tienes acceso a la estimación real del usuario: coeficientes, "
-                    "p-valores, R², tests diagnósticos y advertencias metodológicas. "
-                    "Responde sobre ESTE modelo específico, no en abstracto. "
-                    "Tu base de conocimiento incluye la ontología econométrica de NEVEN "
-                    "(Wooldridge, Hanck et al., MIT 14.382/14.384/14.387). "
-                    "Si detectas problemas (instrumento débil, heterocedasticidad, "
-                    "endogeneidad), cita el libro/capítulo y propone la corrección concreta. "
-                    + _run_hint +
-                    f"Contexto completo del usuario:\n\n{context}\n\n"
-                    + _fmt
-                )
-            elif has_results_context and has_dataset_context:
-                # Resultados + dataset (sin método ontológico)
-                sys_content = (
-                    "Eres NEVEN Assistant, un analista de datos experto. "
-                    "Tienes acceso a los resultados reales del análisis del usuario "
-                    "y a la estructura de sus datos. "
-                    "Responde sobre ESTE modelo específico. "
-                    + _run_hint +
-                    f"Contexto del usuario:\n\n{context}\n\n"
-                    + _fmt
-                )
-            elif has_results_context:
-                # Solo resultados (sin dataset ni método)
-                sys_content = (
-                    "Eres NEVEN Assistant, un econometrista experto. "
-                    "Tienes acceso a los resultados del análisis del usuario. "
-                    "Responde sobre ESTE modelo específico. "
-                    + _run_hint +
-                    f"Resultados del análisis:\n\n{context}\n\n"
-                    + _fmt
-                )
-            elif has_method_context and has_dataset_context:
-                # Contexto completo: dataset + método ontológico (sin resultados)
-                sys_content = (
-                    "Eres NEVEN Assistant, un econometrista y analista de datos experto. "
-                    "El usuario trabaja con NEVEN, un add-in de Excel que integra R, Julia y Python. "
-                    "Tu base de conocimiento incluye la ontología econométrica de NEVEN, "
-                    "que cubre métodos desde Wooldridge y Hanck et al. hasta los cursos MIT 14.382/14.384/14.387 "
-                    "(Angrist, Chernozhukov, Mikusheva). "
-                    "Cuando detectes posibles problemas metodológicos, cita el libro y capítulo relevante. "
-                    f"Contexto actual del usuario:\n\n{context}\n\n"
-                    "Sé preciso y pedagógico: explica el razonamiento, no solo el resultado. "
-                    + _fmt
-                )
-            elif has_method_context:
-                # Solo contexto metodológico
-                sys_content = (
-                    "Eres NEVEN Assistant, un econometrista experto especializado en "
-                    "R, Julia y Python aplicados al análisis de datos. "
-                    "Tu base de conocimiento incluye la ontología econométrica de NEVEN "
-                    "(Wooldridge, Hanck et al., MIT 14.382/14.384/14.387). "
-                    "Cuando cites supuestos, métodos o tests, menciona la referencia "
-                    "bibliográfica específica (libro, capítulo). "
-                    f"Marco metodológico activo del usuario:\n\n{context}\n\n"
-                    "Orienta al usuario en el razonamiento metodológico, "
-                    "no solo en la ejecución técnica. "
-                    + _fmt
-                )
-            elif has_excel_context:
-                # Datos y/o resultados directos de la hoja de cálculo Excel
-                # Enviados por =NEVEN.IA.Contexto(datos_rango, resultados_rango)
-                sys_content = (
-                    "Eres NEVEN Assistant, un analista de datos experto. "
-                    "El usuario ha enviado datos directamente desde su hoja de cálculo de Excel. "
-                    "Tienes acceso a los datos reales con los que está trabajando: "
-                    "variables, valores y estructura de la tabla. "
-                    "Responde sobre ESTOS datos específicos, no en abstracto. "
-                    "Si detectas patrones, valores atípicos o relaciones relevantes, coméntalos. "
-                    "Cuando sugieras un análisis, sé concreto: menciona las columnas por su nombre real. "
-                    + _run_hint +
-                    f"Datos de la hoja de cálculo del usuario:\n\n{context}\n\n"
-                    + _fmt
-                )
-            else:
-                # Solo contexto de dataset (genérico)
-                sys_content = (
-                    "Eres NEVEN Assistant, un analista de datos experto. "
-                    "El usuario está trabajando con NEVEN, "
-                    "un add-in de Excel con R, Julia y Python. "
-                    f"Contexto del dataset actual:\n\n{context}\n\n"
-                    + _fmt
-                )
-
-            sys_msg = {"role": "system", "content": sys_content}
+                "Usa Markdown para formatear tu respuesta."
+            )}
             messages = [sys_msg] + [m for m in messages if m.get("role") != "system"]
-        else:
-            # Sin contexto adjunto — system message mínimo solo para instrucciones de formato
-            _fmt_instructions = (
-                "Eres NEVEN Assistant, un analista de datos y econometrista experto. "
-                "Responde siempre en español a menos que el usuario escriba en otro idioma. "
-                "Usa Markdown para formatear tu respuesta. "
-                "Para fórmulas matemáticas usa SIEMPRE delimitadores Markdown estándar: "
-                "$$...$$ para fórmulas en bloque y $...$ para fórmulas inline. "
-                "NUNCA uses \\(...\\) ni \\[...\\] ni ninguna otra notación LaTeX."
-            )
-            # Solo inyectar si no hay ya un system message del usuario
-            if not any(m.get("role") == "system" for m in messages):
-                messages = [{"role": "system", "content": _fmt_instructions}] + messages
 
         # ── HTTP request to LLM ───────────────────────────────────────────────
         headers = {"Content-Type": "application/json"}
-        if api_key and provider not in ("ollama", "lmstudio"):
-            headers["Authorization"] = f"Bearer {api_key}"
 
-        # OpenRouter requiere headers adicionales para identificar la app
-        if provider == "openrouter":
-            headers["HTTP-Referer"] = "https://neven-studio.app"
-            headers["X-Title"]      = "NEVEN Studio"
-
-        # Azure OpenAI: usa api-key en header, construye endpoint con deployment + api-version
         if provider == "azure":
-            headers.pop("Authorization", None)          # Azure no usa Bearer
-            headers["api-key"] = api_key                # Header propio de Azure
-            api_version = ai.get("apiVersion", "2024-02-15-preview")
-            # endpoint en config debe ser la base: https://<resource>.openai.azure.com
-            # El path completo incluye el deployment y la versión
-            azure_base = endpoint.rstrip("/")
+            # Azure OpenAI usa api-key en header y endpoint con deployment + api-version
+            headers["api-key"] = api_key
+            api_version = ai.get("apiVersion", "2025-01-01-preview")
+            azure_base  = endpoint.rstrip("/")
             endpoint = (
                 f"{azure_base}/openai/deployments/{model}"
                 f"/chat/completions?api-version={api_version}"
             )
-            # Azure ignora el campo "model" en el body — el modelo va en la URL
             req_body = json.dumps({
                 "messages":    messages,
                 "max_tokens":  max_tokens,
                 "temperature": temperature,
             }, ensure_ascii=False).encode("utf-8")
         else:
+            # OpenRouter, LM Studio, Ollama, OpenAI compatible
+            if api_key and provider not in ("ollama", "lmstudio"):
+                headers["Authorization"] = f"Bearer {api_key}"
+            if provider == "openrouter":
+                headers["HTTP-Referer"] = "https://neven-studio.app"
+                headers["X-Title"]      = "NEVEN Studio"
             req_body = json.dumps({
                 "model":       model,
                 "messages":    messages,
@@ -1094,55 +833,34 @@ class NEVENHandler(BaseHTTPRequestHandler):
             req = _url_req.Request(
                 endpoint, data=req_body, headers=headers, method="POST"
             )
-            # Log del request para diagnóstico
-            import datetime as _dt_log
-            _log_path = r"C:\NEVEN\ai_chat_debug.log"
-            try:
-                with open(_log_path, "a", encoding="utf-8") as _lf:
-                    _lf.write(f"\n[{_dt_log.datetime.now()}] POST {endpoint}\n")
-                    _lf.write(f"  body_size={len(req_body)} bytes  timeout={timeout_sec}s\n")
-                    ctx_preview = context[:200].replace('\n', '\\n') if context else "(sin contexto)"
-                    _lf.write(f"  context_preview: {ctx_preview}\n")
-            except Exception:
-                pass  # el log nunca debe abortar el handler
-
             with _url_req.urlopen(req, timeout=timeout_sec) as resp:
-                raw_body = resp.read().decode("utf-8")
-                data = json.loads(raw_body)
-
-            try:
-                with open(_log_path, "a", encoding="utf-8") as _lf:
-                    finish = data.get('choices', [{}])[0].get('finish_reason', '?')
-                    _lf.write(f"  => OK finish_reason={finish}\n")
-            except Exception:
-                pass
+                raw_body = resp.read()
+                # Defensive decode — strip BOM si existe
+                raw_str = raw_body.decode("utf-8-sig").strip()
+                if not raw_str:
+                    self._send_error_json(
+                        f"El LLM ({provider}) retornó respuesta vacía. "
+                        f"Verifica el modelo '{model}' y la apiVersion en neven-config.json.",
+                        502
+                    )
+                    return
+                data = json.loads(raw_str)
         except _url_req.HTTPError as exc:
-            # Error HTTP con body — leer el mensaje de error del proveedor
             try:
-                err_body = exc.read().decode("utf-8")
+                err_body = exc.read().decode("utf-8", errors="replace")
                 try:
                     err_json = json.loads(err_body)
-                    # Azure retorna {"error": {"code": ..., "message": ...}}
-                    err_detail = (
-                        err_json.get("error", {}).get("message")
-                        or err_json.get("message")
-                        or err_body[:300]
-                    )
+                    detail = (err_json.get("error", {}).get("message")
+                              or err_json.get("message") or err_body[:300])
                 except Exception:
-                    err_detail = err_body[:300]
+                    detail = err_body[:300]
             except Exception:
-                err_detail = str(exc)
+                detail = str(exc)
             self._send_error_json(
-                f"El proveedor LLM ({provider}) retornó HTTP {exc.code}: {err_detail}",
-                502
-            )
-            with open(r"C:\NEVEN\ai_chat_debug.log", "a", encoding="utf-8") as _lf:
-                _lf.write(f"  => HTTPError {exc.code}: {err_detail[:200]}\n")
+                f"El LLM ({provider}) retornó HTTP {exc.code}: {detail}", 502)
             return
         except _url_req.URLError as exc:
             reason = str(exc.reason) if hasattr(exc, "reason") else str(exc)
-            with open(r"C:\NEVEN\ai_chat_debug.log", "a", encoding="utf-8") as _lf:
-                _lf.write(f"  => URLError: {reason}\n")
             self._send_error_json(
                 f"No se pudo conectar al LLM ({provider}). "
                 f"Verifique que {endpoint} esté activo. Detalle: {reason}",
@@ -1150,8 +868,6 @@ class NEVENHandler(BaseHTTPRequestHandler):
             )
             return
         except Exception as exc:
-            with open(r"C:\NEVEN\ai_chat_debug.log", "a", encoding="utf-8") as _lf:
-                _lf.write(f"  => Exception: {type(exc).__name__}: {exc}\n")
             self._send_error_json(f"Error al llamar al LLM: {exc}", 500)
             return
 
@@ -1171,724 +887,53 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "tokens_used": tokens,
         })
 
-    # ── Ontology / Knowledge Graph handler ────────────────────────────────────
-
-    def _handle_kg(self, sub_path: str):
-        """
-        Router interno para todos los endpoints GET /api/kg/*.
-
-        Rutas manejadas:
-          method/{function_id}   → nodo Method + supuestos + funciones R + alternativas
-          stats                  → estadísticas del grafo cargado
-          profile                → perfil automático del dataset activo en DuckDB
-          diagnose/{function_id} → plan metodológico completo (usa perfil implícito)
-        """
-        engine = _get_ontology_engine() if _ONTOLOGY_AVAILABLE else None
-
-        # ── GET /api/kg/stats ─────────────────────────────────────────────────
-        if sub_path == "stats":
-            if engine is None:
-                self._send_json({"status": "unavailable", "loaded": False,
-                                 "n_nodes": 0, "n_edges": 0})
-            else:
-                self._send_json({"status": "ok", **engine.stats})
-            return
-
-        # ── GET /api/kg/method/{function_id} ──────────────────────────────────
-        if sub_path.startswith("method/"):
-            function_id = sub_path[7:].strip("/")
-            if not function_id:
-                self._send_error_json("Falta el function_id", 400)
-                return
-
-            if engine is None or not engine.is_loaded:
-                self._send_json({
-                    "status": "ok",
-                    "found": False,
-                    "function_id": function_id,
-                    "message": "OntologyEngine no disponible",
-                })
-                return
-
-            method_node = engine.get_method_node(function_id)
-
-            if method_node is None:
-                self._send_json({
-                    "status": "ok",
-                    "found": False,
-                    "function_id": function_id,
-                })
-                return
-
-            method_id   = method_node["id"]
-            assumptions = engine.get_assumptions(method_id)
-            concepts    = engine.get_concepts(method_id)
-            r_functions = engine.get_r_functions(method_id)
-            r_packages  = engine.get_r_packages(method_id)
-            datasets    = engine.get_datasets(method_id)
-            alternatives = engine.get_alternatives(method_id)
-
-            self._send_json({
-                "status":      "ok",
-                "found":       True,
-                "function_id": function_id,
-                "method":      engine.serialize_for_api(method_node),
-                "assumptions": [engine.serialize_for_api(a) for a in assumptions],
-                "concepts":    [engine.serialize_for_api(c) for c in concepts],
-                "r_functions": [engine._serialize_r_function(f) for f in r_functions],
-                "r_packages":  [engine.serialize_for_api(p) for p in r_packages],
-                "datasets":    [engine.serialize_for_api(d) for d in datasets],
-                "alternatives": [
-                    {"id": a["id"],
-                     "name": a.get("properties", {}).get("name", a["id"])}
-                    for a in alternatives
-                ],
-            })
-            return
-
-        # ── GET /api/kg/profile ───────────────────────────────────────────────
-        if sub_path == "profile":
-            try:
-                profile = self._build_dataset_profile()
-                self._send_json({"status": "ok", "profile": profile})
-            except Exception as exc:
-                self._send_json({
-                    "status": "ok",
-                    "profile": {},
-                    "message": f"No se pudo perfilar el dataset: {exc}",
-                })
-            return
-
-        # ── GET /api/kg/diagnose/{function_id} ────────────────────────────────
-        if sub_path.startswith("diagnose/"):
-            function_id = sub_path[9:].strip("/")
-            if not function_id:
-                self._send_error_json("Falta el function_id", 400)
-                return
-
-            if engine is None or not engine.is_loaded:
-                self._send_json({
-                    "status": "unavailable",
-                    "function_id": function_id,
-                })
-                return
-
-            method_node = engine.get_method_node(function_id)
-            if method_node is None:
-                self._send_json({
-                    "status": "ok",
-                    "found": False,
-                    "function_id": function_id,
-                })
-                return
-
-            try:
-                profile = self._build_dataset_profile()
-            except Exception:
-                profile = {}
-
-            plan = engine.build_diagnostic_plan(method_node["id"], profile)
-            self._send_json({
-                "status":      "ok",
-                "found":       True,
-                "function_id": function_id,
-                "plan":        plan,
-            })
-            return
-
-        # Ruta no reconocida
-        self._send_error_json(f"Endpoint /api/kg/{sub_path} no existe", 404)
-
-    def _build_dataset_profile(self) -> dict:
-        """
-        Genera el perfil automático del dataset activo en DuckDB.
-        Se ejecuta con una sola pasada sobre los metadatos de DuckDB.
-
-        Returns:
-            dict con dimensiones, tipos de columnas y dimensiones detectadas.
-        """
-        db = _get_db()
-        with _db_lock:
-            try:
-                cols_info = db.execute("DESCRIBE dataset").fetchall()
-                n_rows    = db.execute("SELECT COUNT(*) FROM dataset").fetchone()[0]
-            except Exception:
-                return {"n_rows": 0, "n_cols": 0, "columns": [],
-                        "has_time_dimension": False,
-                        "has_panel_structure": False,
-                        "has_spatial_dimension": False,
-                        "outcome_candidates": [],
-                        "numeric_cols": [], "categorical_cols": []}
-
-        columns = []
-        numeric_cols = []
-        categorical_cols = []
-
-        # Heurísticas de detección de estructura
-        col_names_lower = [row[0].lower() for row in cols_info]
-
-        _TIME_KEYWORDS    = {"year", "year_", "anyo", "año", "date", "time",
-                              "periodo", "period", "t", "fecha", "mes", "month"}
-        _PANEL_ID_KW      = {"id", "cod", "code", "entity", "state", "country",
-                              "pais", "estado", "region", "firm", "empresa"}
-        _SPATIAL_KW       = {"lat", "lon", "lng", "latitude", "longitude",
-                              "x", "y", "coord", "geometry", "shape", "geom"}
-
-        has_time    = any(c in _TIME_KEYWORDS for c in col_names_lower)
-        has_id_col  = any(c in _PANEL_ID_KW for c in col_names_lower)
-        has_panel   = has_time and has_id_col
-        has_spatial = any(c in _SPATIAL_KW for c in col_names_lower)
-
-        for row in cols_info:
-            col_name = row[0]
-            col_type = row[1].upper() if len(row) > 1 else "VARCHAR"
-            is_num   = any(t in col_type for t in
-                           ("INT", "FLOAT", "DOUBLE", "DECIMAL", "NUMERIC",
-                            "BIGINT", "REAL", "HUGEINT", "TINYINT", "SMALLINT"))
-            columns.append({"name": col_name, "type": col_type,
-                             "numeric": is_num})
-            if is_num:
-                numeric_cols.append(col_name)
-            else:
-                categorical_cols.append(col_name)
-
-        return {
-            "n_rows":               n_rows,
-            "n_cols":               len(columns),
-            "columns":              columns,
-            "numeric_cols":         numeric_cols,
-            "categorical_cols":     categorical_cols,
-            "has_time_dimension":   has_time,
-            "has_panel_structure":  has_panel,
-            "has_spatial_dimension": has_spatial,
-            "outcome_candidates":   numeric_cols[:3] if numeric_cols else [],
-        }
-
-    # ── AI context desde Excel ────────────────────────────────────────────────
-
     def _handle_ai_context(self, body: dict):
-        """POST /api/ai/context — recibe contexto de Excel publicado por =NEVEN.IA.Contexto().
+        """POST /api/ai/context — recibe contexto de Excel para el Tab IA.
 
-        Body (enviado desde RJ_IA_Contexto en el XLL):
-        {
-            dataset_text   (str)  — datos serializados como tabla de texto
-            columns        (list) — nombres de columnas
-            results_text   (str)  — resultados del modelo como texto plano
-            formula        (str)  — ej: "=R.MR_Lineal(A1:A100, B1:D100)"
-            n_rows         (int)  — número de observaciones
-            source         (str)  — "excel" siempre
-        }
-
-        Almacena el contexto en _excel_context_pending para que el Tab IA
-        lo recoja via GET /api/ai/context/pending al abrir la ventana.
+        Llamado por =NEVEN.IA.Contexto() desde el XLL.
+        Body: { dataset_text, results_text, source, n_rows, n_cols, columns }
         """
+        import datetime as _dt
         global _excel_context_pending
 
         dataset_text  = body.get("dataset_text",  "").strip()
         results_text  = body.get("results_text",  "").strip()
-        columns       = body.get("columns",       [])
-        formula       = body.get("formula",       "")
+        source        = body.get("source",        "excel_xll")
         n_rows        = body.get("n_rows",        0)
+        columns       = body.get("columns",       [])
 
         if not dataset_text and not results_text:
-            self._send_error_json("Falta dataset_text o results_text.", 400)
+            self._send_error_json("dataset_text o results_text requerido", 400)
             return
 
-        # Construir texto de contexto estructurado con los mismos marcadores
-        # que usa _aiAttachResults() en el Tab IA
-        import datetime as _dt
-        lines = ["=== CONTEXTO DESDE EXCEL ===", ""]
-
-        if formula:
-            lines.append(f"Fórmula activa: {formula}")
-        if columns:
-            lines.append(f"Variables: {', '.join(str(c) for c in columns)}")
+        # Construir texto de contexto con marcadores reconocibles
+        parts = ["=== DATOS DE EXCEL ==="]
         if n_rows:
-            lines.append(f"Observaciones: {n_rows}")
-        lines.append("")
-
+            parts.append(f"Filas: {n_rows}")
+        if columns:
+            parts.append(f"Variables: {', '.join(str(c) for c in columns)}")
+        parts.append("")
         if dataset_text:
-            lines.append("--- Datos (muestra) ---")
-            lines.append(dataset_text[:1500])
-            lines.append("")
-
+            parts.append(dataset_text)
         if results_text:
-            lines.append("--- Resultados del modelo ---")
-            lines.append(results_text[:2000])
-            lines.append("")
+            parts.append("\n=== RESULTADOS DEL ANÁLISIS ===")
+            parts.append(results_text)
 
-        lines.append("IMPORTANTE: usa EXACTAMENTE los nombres de variables de la lista anterior.")
-
-        context_text = "\n".join(lines).strip()
+        context_text = "\n".join(parts)
 
         with _excel_context_lock:
             _excel_context_pending = {
                 "text":      context_text,
                 "timestamp": _dt.datetime.utcnow().isoformat() + "Z",
-                "source":    "excel",
+                "source":    source,
                 "columns":   columns,
-                "formula":   formula,
                 "n_rows":    n_rows,
             }
 
         self._send_json({
             "status":  "ok",
-            "message": f"Contexto almacenado ({len(context_text)} chars). Abre el Agente IA en el ribbon.",
+            "message": f"Contexto almacenado ({len(context_text)} chars)",
         })
-
-    # ── AI run_suggestion endpoint ────────────────────────────────────────────
-
-    def _handle_ai_run_suggestion(self, body: dict):
-        """POST /api/ai/run_suggestion — ejecuta un análisis propuesto por el LLM
-        o un servicio externo. Reutiliza datalab_handler.handle_run internamente.
-
-        Body: {
-            function_id   (str, required)
-            language      (str, default: "r")
-            column_roles  (dict, required)
-            parameters    (dict, optional)
-            filter_clause (str, optional)
-            source        (str, optional) — "ai_suggestion" | "external_api" | "user" | "script"
-            context_note  (str, optional) — justificación en texto libre
-        }
-
-        Retorna: igual que /api/datalab/run + campos source y context_note.
-        Es intencionalmente idéntico a /api/datalab/run para permitir
-        invocación desde cualquier servicio externo con el mismo schema.
-        """
-        if not _DATALAB_AVAILABLE:
-            self._send_error_json("DataLab no disponible", 503)
-            return
-
-        # Normalizar language: el LLM puede enviar "es", "español", "R", etc.
-        _LANG_MAP = {
-            "r": "r", "R": "r", "es": "r", "español": "r",
-            "python": "python", "Python": "python", "py": "python",
-            "julia": "julia", "Julia": "julia", "jl": "julia",
-        }
-        if "language" in body:
-            body["language"] = _LANG_MAP.get(
-                str(body["language"]).strip(), "r"
-            )
-
-        # Normalizar column_roles: el LLM puede usar alias distintos a los del sidecar
-        # Mapa: alias_del_llm → nombre_real_del_rol_en_el_sidecar
-        if "column_roles" in body and isinstance(body["column_roles"], dict):
-            _ROLE_ALIASES = {
-                # RG_2SLS: instrumentos
-                "Z":           "Instru",
-                "z":           "Instru",
-                "IV":          "Instru",
-                "instrument":  "Instru",
-                "instruments": "Instru",
-                "Instrument":  "Instru",
-                "Instruments": "Instru",
-                # RG_2SLS: endógenas
-                "Endo":        "Endo",
-                "endogena":    "Endo",
-                "endógena":    "Endo",
-                "endog":       "Endo",
-                # RG_2SLS: exógenas de control
-                "Exo":         "Exo",
-                "controls":    "Exo",
-                "control":     "Exo",
-                "exogena":     "Exo",
-            }
-            normalized_roles = {}
-            for role_key, cols in body["column_roles"].items():
-                mapped = _ROLE_ALIASES.get(role_key, role_key)
-                normalized_roles[mapped] = cols
-            body["column_roles"] = normalized_roles
-
-        # Validar source
-        _VALID_SOURCES = {"user", "ai_suggestion", "external_api", "script"}
-        source       = body.get("source", "external_api")
-        context_note = body.get("context_note", "").strip()
-
-        if source not in _VALID_SOURCES:
-            self._send_error_json(
-                f"source inválido: '{source}'. "
-                f"Valores permitidos: {sorted(_VALID_SOURCES)}", 400
-            )
-            return
-
-        # Validar function_id mínimo
-        if not body.get("function_id", "").strip():
-            self._send_error_json("Falta el campo 'function_id'.", 400)
-            return
-
-        # Log de trazabilidad
-        import logging as _log
-        _log.getLogger("neven.api").info(
-            "[run_suggestion] source=%s function_id=%s note=%s",
-            source, body.get("function_id", ""), context_note[:80]
-        )
-
-        # Delegar al pipeline completo de DataLab (validación, DuckDB, ControlR, slots)
-        # Con un retry automático si el pipe está cerrándose (error 232)
-        result = _datalab_handler.handle_run(
-            body, _config,
-            _get_db(), _db_lock,
-            self._get_pipe_client
-        )
-        if result.get("code") == "ENGINE_UNAVAILABLE" or (
-            "cerrando la canalización" in result.get("message", "") or
-            "232" in result.get("message", "")
-        ):
-            # Pipe transitoriamente no disponible — esperar y reintentar una vez
-            import time as _time
-            _time.sleep(2.0)
-            result = _datalab_handler.handle_run(
-                body, _config,
-                _get_db(), _db_lock,
-                self._get_pipe_client
-            )
-
-        # Inyectar metadatos de trazabilidad en la respuesta
-        result["source"]       = source
-        result["context_note"] = context_note
-
-        status_code = 200 if result.get("status") == "ok" else 400
-        self._send_json(result, status_code)
-
-    # ── Buklo endpoints ───────────────────────────────────────────────────────
-
-    def _handle_buklo_save(self, body: dict):
-        """POST /api/buklo/save — guarda el proyecto activo como archivo .buklo.
-
-        Body: {
-            path         (str, required)  — ruta destino, ej: "C:/NEVEN/projects/mi_analisis"
-            chat_history (str, optional)  — historial del chat como Markdown
-            plan         (dict, optional) — plan metodológico del análisis
-            metadata     (dict, optional) — metadatos adicionales del usuario
-        }
-        """
-        if not _BUKLO_AVAILABLE:
-            self._send_error_json("BukloManager no disponible", 503)
-            return
-
-        path = body.get("path", "").strip()
-        if not path:
-            self._send_error_json("Falta el campo 'path'", 400)
-            return
-
-        # Seguridad: solo permitir paths dentro de directorios razonables
-        # (evitar guardar en rutas del sistema)
-        path = os.path.normpath(path)
-
-        mgr = _get_buklo_manager()
-        if mgr is None:
-            self._send_error_json("BukloManager no inicializado", 503)
-            return
-
-        result = mgr.save(
-            path             = path,
-            db               = _get_db(),
-            db_lock          = _db_lock,
-            chat_history     = body.get("chat_history", ""),
-            plan             = body.get("plan", {}),
-            metadata         = body.get("metadata", {}),
-            analysis_log     = body.get("analysis_log", []),
-            report_content   = body.get("report_content", ""),
-            report_format    = body.get("report_format",  "tex"),
-            report_pdf_bytes = (
-                __import__("base64").b64decode(body["report_pdf_b64"])
-                if body.get("report_pdf_b64") else None
-            ),
-        )
-
-        if result.get("status") == "ok":
-            _buklo_set_path(result["path"])
-
-        status_code = 200 if result.get("status") == "ok" else 500
-        self._send_json(result, status_code)
-
-    def _handle_buklo_load(self, body: dict):
-        """POST /api/buklo/load — abre un .buklo y restaura el estado del proyecto.
-
-        Body: {
-            path (str, required) — ruta del archivo .buklo a cargar
-        }
-
-        Respuesta: {
-            status, metadata, chat_history, plan,
-            n_rows, n_cols, columns, has_dataset
-        }
-        """
-        if not _BUKLO_AVAILABLE:
-            self._send_error_json("BukloManager no disponible", 503)
-            return
-
-        path = body.get("path", "").strip()
-        if not path:
-            self._send_error_json("Falta el campo 'path'", 400)
-            return
-
-        if not os.path.isfile(path):
-            self._send_error_json(f"Archivo no encontrado: {path}", 404)
-            return
-
-        mgr = _get_buklo_manager()
-        if mgr is None:
-            self._send_error_json("BukloManager no inicializado", 503)
-            return
-
-        result = mgr.load(
-            path    = path,
-            db      = _get_db(),
-            db_lock = _db_lock,
-        )
-
-        if result.get("status") == "ok":
-            _buklo_set_path(path)
-
-        status_code = 200 if result.get("status") == "ok" else 500
-        self._send_json(result, status_code)
-
-    # ── Export endpoints ──────────────────────────────────────────────────────
-
-    def _handle_export_capabilities(self):
-        """GET /api/export/capabilities — detecta Quarto, pdflatex, xelatex."""
-        import shutil, subprocess as _sp
-
-        quarto     = shutil.which("quarto")
-        pdflatex   = shutil.which("pdflatex")
-        xelatex    = shutil.which("xelatex")
-        latex_bin  = xelatex or pdflatex
-
-        quarto_version = None
-        if quarto:
-            try:
-                r = _sp.run([quarto, "--version"],
-                            capture_output=True, text=True, timeout=5)
-                quarto_version = r.stdout.strip()
-            except Exception:
-                quarto = None
-
-        if quarto:
-            best = "quarto"
-        elif latex_bin:
-            best = "latex"
-        else:
-            best = "tex_only"
-
-        self._send_json({
-            "status":          "ok",
-            "best":            best,
-            "quarto":          bool(quarto),
-            "quarto_version":  quarto_version,
-            "latex":           bool(latex_bin),
-            "latex_bin":       latex_bin,
-        })
-
-    def _handle_export_generate(self, body: dict):
-        """POST /api/export/generate — usa el LLM para generar el informe .tex o .qmd.
-
-        Body: {
-            format:        "tex" | "qmd"
-            analysis_log:  [...]
-            chat_history:  str  (mensajes del chat como texto)
-            dataset_info:  {name, n_rows, n_cols, columns}
-            title:         str  (opcional)
-        }
-        """
-        import urllib.request as _url_req
-
-        fmt          = body.get("format", "tex")
-        analysis_log = body.get("analysis_log", [])
-        chat_history = body.get("chat_history", "")
-        dataset_info = body.get("dataset_info", {})
-        title        = body.get("title", "Informe de Análisis Econométrico")
-
-        if not analysis_log:
-            self._send_error_json("No hay modelos en el historial para generar el informe.", 400)
-            return
-
-        # Leer config del LLM
-        config_path = r"C:\NEVEN\neven-config.json"
-        try:
-            with open(config_path, "r", encoding="utf-8") as _f:
-                full_cfg = json.load(_f)
-        except Exception as exc:
-            self._send_error_json(f"No se pudo leer neven-config.json: {exc}", 503)
-            return
-
-        ai = full_cfg.get("AI", {})
-        if not ai.get("enabled", False):
-            self._send_error_json("AI.enabled=false — habilita la integración AI primero.", 503)
-            return
-
-        endpoint    = ai.get("endpoint", "")
-        model       = ai.get("model", "")
-        api_key     = ai.get("apiKey", "")
-        provider    = ai.get("provider", "lmstudio")
-        max_tokens  = int(ai.get("maxTokens", 4000))
-        temperature = float(ai.get("temperature", 0.3))
-        timeout_sec = int(ai.get("timeout", 120))
-
-        # Serializar historial para el prompt
-        def _serialize_log(log):
-            lines = []
-            for entry in log:
-                lines.append(f"Modelo {entry.get('id','?')}: {entry.get('function_id','?')}")
-                if entry.get('source') == 'ai_suggestion' and entry.get('context_note'):
-                    lines.append(f"  Motivación: {entry['context_note']}")
-                roles = entry.get('column_roles', {})
-                if roles:
-                    role_str = " | ".join(
-                        f"{k}: [{', '.join(v) if isinstance(v,list) else v}]"
-                        for k,v in roles.items()
-                    )
-                    lines.append(f"  Especificación: {role_str}")
-                metrics = entry.get('metrics_text', '')
-                if metrics:
-                    lines.append(f"  Resultados:\n{metrics[:400]}")
-                lines.append("")
-            return "\n".join(lines)
-
-        ds_name = dataset_info.get("name", "dataset")
-        ds_rows = dataset_info.get("n_rows", 0)
-        ds_cols = dataset_info.get("n_cols", 0)
-
-        fmt_name = "Quarto Markdown (archivo .qmd)" if fmt == "qmd" else "LaTeX (archivo .tex)"
-        fmt_instructions = (
-            "Usa sintaxis Quarto/R Markdown válida con YAML frontmatter al inicio."
-            if fmt == "qmd" else
-            "Usa LaTeX estándar con paquetes: geometry, booktabs, hyperref, "
-            "inputenc (utf8), fontenc (T1). Usa verbatim para las tablas de resultados."
-        )
-
-        system_prompt = (
-            f"Eres un asistente académico especializado en econometría. "
-            f"Genera un informe técnico en {fmt_name} titulado '{title}' "
-            f"que documente el siguiente análisis econométrico paso a paso.\n\n"
-            f"El informe debe:\n"
-            f"1. Introducción con la pregunta de investigación y descripción del dataset\n"
-            f"2. Para cada modelo: especificación, resultados, diagnósticos, motivación del cambio\n"
-            f"3. Modelo final con interpretación económica\n"
-            f"4. Conclusiones\n"
-            f"5. Apéndice con el historial completo\n\n"
-            f"Dataset: {ds_name} ({ds_rows} observaciones × {ds_cols} variables)\n\n"
-            f"Historial de modelos:\n{_serialize_log(analysis_log)}\n\n"
-            f"Extracto de la discusión:\n{chat_history[:1500]}\n\n"
-            f"{fmt_instructions}\n"
-            f"Escribe el documento completo en español. "
-            f"NO incluyas explicaciones fuera del documento — solo el contenido del archivo."
-        )
-
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": f"Genera el informe completo en formato {fmt}."}
-        ]
-
-        headers = {"Content-Type": "application/json"}
-        if api_key and provider not in ("ollama", "lmstudio"):
-            headers["Authorization"] = f"Bearer {api_key}"
-        if provider == "openrouter":
-            headers["HTTP-Referer"] = "https://neven-studio.app"
-            headers["X-Title"]      = "NEVEN Studio"
-        if provider == "azure":
-            headers.pop("Authorization", None)
-            headers["api-key"] = api_key
-            api_version = ai.get("apiVersion", "2024-02-15-preview")
-            azure_base  = endpoint.rstrip("/")
-            endpoint    = (f"{azure_base}/openai/deployments/{model}"
-                           f"/chat/completions?api-version={api_version}")
-
-        req_body = json.dumps({
-            "model":       model,
-            "messages":    messages,
-            "max_tokens":  max_tokens,
-            "temperature": temperature,
-        }, ensure_ascii=False).encode("utf-8")
-
-        try:
-            req = _url_req.Request(endpoint, data=req_body, headers=headers, method="POST")
-            with _url_req.urlopen(req, timeout=timeout_sec) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-            content = data["choices"][0]["message"]["content"].strip()
-        except Exception as exc:
-            self._send_error_json(f"Error al llamar al LLM para generar informe: {exc}", 500)
-            return
-
-        self._send_json({
-            "status":  "ok",
-            "content": content,
-            "format":  fmt,
-            "title":   title,
-        })
-
-    def _handle_export_compile(self, body: dict):
-        """POST /api/export/compile — compila .tex/.qmd a PDF.
-
-        Body: {
-            content:  str   (contenido del archivo)
-            format:   "tex" | "qmd"
-            filename: str   (sin extensión, default "report")
-        }
-        """
-        import shutil, subprocess as _sp, tempfile, base64
-
-        fmt      = body.get("format", "tex")
-        content  = body.get("content", "")
-        filename = body.get("filename", "report")
-
-        if not content.strip():
-            self._send_error_json("Falta el contenido del documento.", 400)
-            return
-
-        tmp_dir = tempfile.mkdtemp(prefix="neven_export_")
-        try:
-            if fmt == "qmd":
-                quarto = shutil.which("quarto")
-                if not quarto:
-                    self._send_error_json("Quarto no está disponible.", 503)
-                    return
-                src_path = os.path.join(tmp_dir, filename + ".qmd")
-                pdf_path = os.path.join(tmp_dir, filename + ".pdf")
-                with open(src_path, "w", encoding="utf-8") as f:
-                    f.write(content)
-                result = _sp.run(
-                    [quarto, "render", src_path, "--to", "pdf"],
-                    capture_output=True, text=True, timeout=180, cwd=tmp_dir
-                )
-            else:  # tex
-                latex_bin = shutil.which("xelatex") or shutil.which("pdflatex")
-                if not latex_bin:
-                    self._send_error_json("No hay compilador LaTeX disponible.", 503)
-                    return
-                src_path = os.path.join(tmp_dir, filename + ".tex")
-                pdf_path = os.path.join(tmp_dir, filename + ".pdf")
-                with open(src_path, "w", encoding="utf-8") as f:
-                    f.write(content)
-                # Dos pasadas para referencias cruzadas
-                for _ in range(2):
-                    result = _sp.run(
-                        [latex_bin, "-interaction=nonstopmode",
-                         f"-output-directory={tmp_dir}", src_path],
-                        capture_output=True, text=True, timeout=120, cwd=tmp_dir
-                    )
-
-            if os.path.isfile(pdf_path):
-                with open(pdf_path, "rb") as f:
-                    pdf_b64 = base64.b64encode(f.read()).decode("utf-8")
-                self._send_json({
-                    "status":   "ok",
-                    "pdf_b64":  pdf_b64,
-                    "filename": filename + ".pdf",
-                    "log":      result.stdout[-1000:] if result else "",
-                })
-            else:
-                self._send_json({
-                    "status":  "error",
-                    "message": "La compilación no generó PDF.",
-                    "log":     (result.stderr + result.stdout)[-2000:] if result else "",
-                })
-        except Exception as exc:
-            self._send_error_json(f"Error al compilar: {exc}", 500)
-        finally:
-            import shutil as _sh
-            _sh.rmtree(tmp_dir, ignore_errors=True)
 
     def _handle_save_script(self, body):
         """POST /api/save_script — guarda contenido en un archivo del filesystem.
@@ -2630,40 +1675,6 @@ def start_server(config=None):
             print("[NEVEN HTTP] Package Manager Service iniciado", file=sys.stderr)
         except Exception as e:
             print(f"[NEVEN HTTP] Package Manager Service no disponible: {e}", file=sys.stderr)
-
-    # Inicializar Ontology Engine — Knowledge Graph econométrico
-    if _ONTOLOGY_AVAILABLE:
-        try:
-            # Leer ruta del grafo desde neven-config.json si está configurada
-            ontology_path = None
-            config_path = os.path.join(
-                os.path.dirname(_config.get("staticDir", r"C:\NEVEN\taskpane")),
-                "..", "neven-config.json"
-            )
-            if not os.path.isfile(config_path):
-                config_path = r"C:\NEVEN\neven-config.json"
-            if os.path.isfile(config_path):
-                try:
-                    with open(config_path, "r", encoding="utf-8") as _f:
-                        _cfg_full = json.load(_f)
-                    ontology_path = _cfg_full.get("OntologyPath") or None
-                except Exception:
-                    pass
-
-            _kg_engine = _get_ontology_engine(graph_path=ontology_path)
-            if _kg_engine and _kg_engine.is_loaded:
-                st = _kg_engine.stats
-                print(
-                    f"[NEVEN HTTP] OntologyEngine listo — "
-                    f"{st['n_nodes']} nodos, {st['n_edges']} aristas",
-                    file=sys.stderr
-                )
-            else:
-                print("[NEVEN HTTP] OntologyEngine: grafo no encontrado — funciona sin ontología", file=sys.stderr)
-        except Exception as _e:
-            print(f"[NEVEN HTTP] OntologyEngine error al iniciar: {_e}", file=sys.stderr)
-    else:
-        print("[NEVEN HTTP] OntologyEngine no disponible (ontology_engine.py no encontrado)", file=sys.stderr)
 
     # Start on daemon thread
     thread = threading.Thread(target=server.serve_forever, daemon=True)

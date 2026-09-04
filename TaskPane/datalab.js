@@ -2039,9 +2039,69 @@ function _markdownToHtml(md) {
   var lines  = md.split('\n');
   var html   = '';
   var inList = false;
+  var tableBuffer = [];  // acumula líneas de tabla GFM
+
+  var _flushTable = function() {
+    if (tableBuffer.length < 2) {
+      // No es tabla válida — volcar como párrafos
+      tableBuffer.forEach(function(l) {
+        html += '<p style="margin:3px 0;color:var(--text-primary)">' + _inlineMd(l) + '</p>';
+      });
+      tableBuffer = [];
+      return;
+    }
+    var header = tableBuffer[0];
+    var sep    = tableBuffer[1];
+    // Verificar que la segunda línea es un separador (---|:---|---)
+    if (!/^[\|\s\-:]+$/.test(sep)) {
+      tableBuffer.forEach(function(l) {
+        html += '<p style="margin:3px 0;color:var(--text-primary)">' + _inlineMd(l) + '</p>';
+      });
+      tableBuffer = [];
+      return;
+    }
+    var parseRow = function(line) {
+      return line.replace(/^\||\|$/g, '').split('|').map(function(c){ return c.trim(); });
+    };
+    var headers = parseRow(header);
+    var rows    = tableBuffer.slice(2).map(parseRow);
+
+    var thtml = '<div style="overflow-x:auto;margin:8px 0">' +
+      '<table style="width:100%;border-collapse:collapse;font-size:10px">' +
+      '<thead><tr>' +
+      headers.map(function(h) {
+        return '<th style="background:rgba(215,165,56,0.12);color:var(--accent);' +
+               'padding:4px 8px;text-align:left;border-bottom:1px solid rgba(215,165,56,0.3);' +
+               'font-weight:600;white-space:nowrap">' + _inlineMd(h) + '</th>';
+      }).join('') +
+      '</tr></thead><tbody>' +
+      rows.map(function(row, ri) {
+        return '<tr style="background:' + (ri%2===0?'transparent':'rgba(255,255,255,0.02)') + '">' +
+          row.map(function(cell) {
+            return '<td style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05);' +
+                   'color:var(--text-primary)">' + _inlineMd(cell) + '</td>';
+          }).join('') +
+        '</tr>';
+      }).join('') +
+      '</tbody></table></div>';
+
+    html += thtml;
+    tableBuffer = [];
+  };
 
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
+
+    // Detectar líneas de tabla GFM (empiezan y/o terminan con |)
+    var isTableLine = /^\s*\|/.test(line) || (/\|/.test(line) && /\|/.test(line.replace(/[^|]/g,'')));
+    if (isTableLine && line.trim().startsWith('|')) {
+      // Volcar lista si estaba abierta
+      if (inList) { html += '</ul>'; inList = false; }
+      tableBuffer.push(line);
+      continue;
+    } else if (tableBuffer.length > 0) {
+      _flushTable();
+    }
 
     // Close list if needed
     if (inList && !/^[\-\*•]\s/.test(line.trim()) && line.trim() !== '') {
@@ -2075,6 +2135,7 @@ function _markdownToHtml(md) {
     }
   }
   if (inList) html += '</ul>';
+  if (tableBuffer.length > 0) _flushTable();
 
   // ── Paso 3: reinyectar LaTeX renderizado con KaTeX ───────────────────────
   mathBlocks.forEach(function(tex, idx) {

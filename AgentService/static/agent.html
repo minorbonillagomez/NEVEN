@@ -292,7 +292,7 @@
 
     /* ── Input area ── */
     .input-area {
-      padding: 8px 10px;
+      padding: 8px 10px 14px; /* padding-bottom extra para no quedar bajo elementos externos */
       border-top: 1px solid var(--border);
       display: flex;
       gap: 6px;
@@ -520,29 +520,9 @@ function _autoResizeInput() {
 
 // =============================================================================
 // Renderizado de Markdown + KaTeX
+// Idéntico al tab IA de NEVEN Studio — pre-protección $$, 4 delimitadores,
+// macros \R y \E, post-proceso neven-run / neven-install.
 // =============================================================================
-
-function _renderMarkdown(text) {
-  if (typeof marked === 'undefined') return _escapeHtml(text);
-
-  marked.setOptions({
-    breaks: true,
-    gfm:    true,
-    renderer: (function() {
-      var r = new marked.Renderer();
-      // Bloques de código neven-run → componente ejecutable
-      r.code = function(code, lang) {
-        if (lang === 'neven-run') {
-          return _renderNevenRun(code);
-        }
-        return '<pre><code>' + _escapeHtml(code) + '</code></pre>';
-      };
-      return r;
-    })(),
-  });
-
-  return marked.parse(text);
-}
 
 function _escapeHtml(s) {
   return String(s)
@@ -552,41 +532,131 @@ function _escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-function _renderNevenRun(jsonStr) {
-  try {
-    var spec = JSON.parse(jsonStr.trim());
-    var fn   = spec.function_id || '?';
-    var note = spec.context_note || '';
-    var lang = spec.language || 'r';
-    return (
-      '<div class="neven-run-block">' +
-        '<div class="run-label">Análisis sugerido</div>' +
-        (note ? '<div class="run-desc">' + _escapeHtml(note) + '</div>' : '') +
-        '<button class="neven-run-btn" ' +
-          'data-spec=\'' + _escapeHtml(jsonStr) + '\' ' +
-          'onclick="window._onRunSuggestion(this)">' +
-          _escapeHtml(fn) + ' (' + lang + ')' +
-        '</button>' +
-      '</div>'
-    );
-  } catch (e) {
-    return '<pre><code>' + _escapeHtml(jsonStr) + '</code></pre>';
-  }
+function _decodeBlock(encoded) {
+  return encoded
+    .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"').replace(/&#39;/g,"'").trim();
 }
 
-function _applyKatex(el) {
-  if (window._katexReady && typeof renderMathInElement === 'function') {
+function _renderWithMarked(content) {
+  if (!content) return '';
+  var html;
+
+  if (typeof marked !== 'undefined' && marked.parse) {
     try {
-      renderMathInElement(el, {
+      // Pre-proteger bloques $$...$$ multilínea antes de que marked los envuelva
+      // en <p> y rompa los delimitadores de KaTeX
+      var protected_content = content.replace(
+        /\$\$([\s\S]+?)\$\$/g,
+        function(_, tex) {
+          return '\n\n<div class="katex-block">$$' + tex + '$$</div>\n\n';
+        }
+      );
+      marked.setOptions({ breaks: true, gfm: true });
+      html = marked.parse(protected_content);
+    } catch(e) {
+      html = content.replace(/\n/g, '<br>');
+    }
+  } else {
+    html = content.replace(/\n/g, '<br>');
+  }
+
+  // Aplicar KaTeX auto-render con los 4 delimitadores estándar
+  if (typeof renderMathInElement !== 'undefined') {
+    var tmpDiv = document.createElement('div');
+    tmpDiv.innerHTML = html;
+    try {
+      renderMathInElement(tmpDiv, {
         delimiters: [
-          { left: '$$', right: '$$', display: true },
-          { left: '$',  right: '$',  display: false },
+          {left: '$$',  right: '$$',  display: true},
+          {left: '\\[', right: '\\]', display: true},
+          {left: '$',   right: '$',   display: false},
+          {left: '\\(', right: '\\)', display: false},
         ],
         throwOnError: false,
+        errorColor:   '#e55',
+        output:       'html',
+        macros: {'\\R': '\\mathbb{R}', '\\E': '\\mathbb{E}'},
       });
-    } catch (e) { /* ignorar */ }
+      tmpDiv.innerHTML = _processNevenRunBlocks(tmpDiv.innerHTML);
+      return tmpDiv.innerHTML;
+    } catch(e) {
+      return _processNevenRunBlocks(html);
+    }
   }
+
+  return _processNevenRunBlocks(html);
 }
+
+function _processNevenRunBlocks(html) {
+  // neven-run: sugerencia de análisis ejecutable
+  html = html.replace(
+    /<pre[^>]*><code[^>]*class="[^"]*language-neven-run[^"]*"[^>]*>([\s\S]+?)<\/code><\/pre>/g,
+    function(_, enc) {
+      try { return _buildRunSuggestionCard(JSON.parse(_decodeBlock(enc))); }
+      catch(e) { return '<pre><code>' + enc + '</code></pre>'; }
+    }
+  );
+  // neven-install: instalación explícita de paquetes
+  html = html.replace(
+    /<pre[^>]*><code[^>]*class="[^"]*language-neven-install[^"]*"[^>]*>([\s\S]+?)<\/code><\/pre>/g,
+    function(_, enc) {
+      try {
+        var spec = JSON.parse(_decodeBlock(enc));
+        var pkg  = spec.package  || '?';
+        var lang = spec.language || 'r';
+        var note = spec.context_note || '';
+        var specJson = _escapeHtml(JSON.stringify(spec));
+        return '<div class="neven-run-block">' +
+          '<div class="run-label">Instalar paquete</div>' +
+          (note ? '<div class="run-desc">' + _escapeHtml(note) + '</div>' : '') +
+          '<button class="neven-run-btn" data-spec=\'' + specJson + '\' ' +
+            'onclick="window._onRunSuggestion(this)">' +
+            _escapeHtml(pkg) + ' (' + lang + ')' +
+          '</button></div>';
+      } catch(e) { return '<pre><code>' + enc + '</code></pre>'; }
+    }
+  );
+  return html;
+}
+
+function _buildRunSuggestionCard(suggestion) {
+  var fnId  = suggestion.function_id  || '?';
+  var lang  = suggestion.language     || 'r';
+  var note  = suggestion.context_note || '';
+  var roles = suggestion.column_roles || {};
+
+  var dataId = 'nsr-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+  window._nevenRunSuggestions = window._nevenRunSuggestions || {};
+  window._nevenRunSuggestions[dataId] = suggestion;
+
+  var rolesSummary = Object.keys(roles).map(function(k) {
+    var cols = roles[k];
+    return k + ': ' + (Array.isArray(cols) ? cols.join(', ') : cols);
+  }).join(' | ');
+
+  return [
+    '<div style="border:1px solid rgba(215,165,56,0.45);border-radius:6px;',
+    'background:rgba(215,165,56,0.06);padding:10px 12px;margin:8px 0">',
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">',
+    '<div style="font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.6px">Sugerencia de análisis</div>',
+    '<div style="font-size:9px;color:var(--text-secondary);background:var(--bg-secondary);padding:1px 6px;border-radius:8px;border:1px solid var(--border)">' + lang.toUpperCase() + '</div>',
+    '</div>',
+    '<div style="font-size:12px;color:var(--text-primary);font-weight:600;margin-bottom:2px">' + _escapeHtml(fnId) + '</div>',
+    rolesSummary ? '<div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">' + _escapeHtml(rolesSummary) + '</div>' : '',
+    note ? '<div style="font-size:11px;color:var(--text-secondary);font-style:italic;margin-bottom:6px">' + _escapeHtml(note) + '</div>' : '',
+    '<button onclick="window._onRunSuggestion_byId(\'' + dataId + '\')" ',
+    'style="background:var(--accent);color:#1a1a1a;border:none;border-radius:4px;padding:5px 14px;font-size:10px;font-weight:700;cursor:pointer">',
+    'Ejecutar este análisis',
+    '</button>',
+    '</div>',
+  ].join('');
+}
+
+window._onRunSuggestion_byId = function(dataId) {
+  var spec = (window._nevenRunSuggestions || {})[dataId];
+  if (spec) window._onRunSuggestion({ getAttribute: function() { return JSON.stringify(spec); } });
+};
 
 // =============================================================================
 // Gestión de mensajes en el DOM
@@ -606,8 +676,7 @@ function _addMessage(role, content) {
                              : 'assistant');
 
   if (role === 'assistant' || role === 'system-note') {
-    div.innerHTML = _renderMarkdown(content);
-    _applyKatex(div);
+    div.innerHTML = _renderWithMarked(content);
   } else {
     div.textContent = content;
   }
@@ -671,17 +740,34 @@ function _injectContext(ctx) {
 
 // =============================================================================
 // Polling de contexto pendiente (para cuando el XLL hace POST al servicio)
+// Consulta tanto localhost:5556 (AgentService) como localhost:5555 (NEVEN Studio)
+// porque =NEVEN.IA.Contexto() puede enviar el contexto a cualquiera de los dos
+// dependiendo de si AIService.enabled está activo en neven-config.json.
 // =============================================================================
 
-setInterval(function() {
-  fetch(_SERVICE_URL + '/api/ai/context/pending?session_id=' + _SESSION_ID)
+var _STUDIO_URL = 'http://localhost:5555';
+
+function _pollContextFromUrl(url) {
+  return fetch(url + '/api/ai/context/pending?session_id=' + _SESSION_ID)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.status === 'ok' && data.context) {
         _injectContext(data.context);
+        return true;  // contexto recibido
       }
+      return false;
     })
-    .catch(function() { /* silencioso */ });
+    .catch(function() { return false; });
+}
+
+setInterval(function() {
+  // Primero consulta el AgentService (5556 — contexto enviado cuando AIService.enabled=true)
+  _pollContextFromUrl(_SERVICE_URL).then(function(found) {
+    if (!found) {
+      // Si no hubo contexto en 5556, consultar NEVEN Studio (5555 — =NEVEN.IA.Contexto() default)
+      _pollContextFromUrl(_STUDIO_URL);
+    }
+  });
 }, 3000);
 
 // =============================================================================
@@ -972,33 +1058,40 @@ function _init() {
 }
 
 // =============================================================================
-// Event listeners
+// Event listeners + carga inicial
 // =============================================================================
 
-document.getElementById('send-btn').addEventListener('click', _send);
+window.addEventListener('load', function() {
+  // Botón Enviar
+  document.getElementById('send-btn').addEventListener('click', _send);
 
-document.getElementById('ai-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    _send();
-  }
+  // Enter en textarea
+  document.getElementById('ai-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      _send();
+    }
+  });
+
+  document.getElementById('ai-input').addEventListener('input', _autoResizeInput);
+
+  // Botones de contexto
+  document.getElementById('btn-send-selection').addEventListener('click',
+    _sendSelectionToAgent);
+
+  document.getElementById('btn-clear-chat').addEventListener('click',
+    _clearMessages);
+
+  document.getElementById('btn-clear-ctx').addEventListener('click', function() {
+    _updateContextBar('', '');
+    _showToast('Contexto limpiado');
+  });
+
+  // Inicializar conexión
+  _init();
 });
 
-document.getElementById('ai-input').addEventListener('input', _autoResizeInput);
-
-document.getElementById('btn-send-selection').addEventListener('click',
-  _sendSelectionToAgent);
-
-document.getElementById('btn-clear-chat').addEventListener('click',
-  _clearMessages);
-
-document.getElementById('btn-clear-ctx').addEventListener('click', function() {
-  _updateContextBar('', '');
-  _showToast('Contexto limpiado');
-});
-
-// Inicializar al cargar
-window.addEventListener('load', _init);
+// fin
 </script>
 </body>
 </html>

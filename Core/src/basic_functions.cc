@@ -1484,21 +1484,82 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_AgenteIA() {
         return &rslt;
     }
 
-    // Reuse existing viewer if still alive
+    // Reusar viewer existente si sigue vivo
     if (!agente_viewer_id.empty() && viewer.IsViewerAlive(agente_viewer_id)) {
-        Convert::StringToXLOPER(&rslt, agente_viewer_id, false);
+        Convert::StringToXLOPER(&rslt, agente_viewer_id.c_str(), false);
         rslt.xltype |= xlbitDLLFree;
         return &rslt;
     }
 
-    // Enable localhost navigation on port 5555 (same mechanism as Pluto.jl)
-    viewer.SetAdvancedMode(true, 5555);
+    // ── Verificar si NEVEN Studio está activo en localhost:5555 ──────────────
+    auto _studio_alive = []() -> bool {
+        HINTERNET hT = WinHttpOpen(L"NEVEN-XLL/3.0",
+                                    WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                    WINHTTP_NO_PROXY_NAME,
+                                    WINHTTP_NO_PROXY_BYPASS, 0);
+        if (!hT) return false;
+        DWORD t = 500;
+        WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
+        WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
+        WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
+        bool alive = false;
+        HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
+        if (hC) {
+            HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
+                                               nullptr, WINHTTP_NO_REFERER,
+                                               WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+            if (hR) {
+                alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                           nullptr, 0, 0, 0) &&
+                        WinHttpReceiveResponse(hR, nullptr);
+                WinHttpCloseHandle(hR);
+            }
+            WinHttpCloseHandle(hC);
+        }
+        WinHttpCloseHandle(hT);
+        return alive;
+    };
 
+    // ── Arrancar NEVEN Studio si no está activo ───────────────────────────────
+    if (!_studio_alive()) {
+        // Mismo comando que el .vbs: python start_studio.py --no-browser
+        // Buscar Python en la ruta de NEVEN primero, luego en el PATH
+        std::wstring python_exe = L"C:\\NEVEN\\python\\python.exe";
+        DWORD attrs = GetFileAttributesW(python_exe.c_str());
+        if (attrs == INVALID_FILE_ATTRIBUTES)
+            python_exe = L"python";  // fallback al PATH del sistema
+
+        std::wstring cmd = python_exe +
+            L" \"C:\\NEVEN\\taskpane\\start_studio.py\" --no-browser";
+
+        STARTUPINFOW si{};
+        si.cb          = sizeof(si);
+        si.dwFlags     = STARTF_USESHOWWINDOW;
+        si.wShowWindow = SW_HIDE;
+        PROCESS_INFORMATION pi{};
+
+        CreateProcessW(nullptr,
+                       const_cast<LPWSTR>(cmd.c_str()),
+                       nullptr, nullptr, FALSE,
+                       CREATE_NO_WINDOW,
+                       nullptr,
+                       L"C:\\NEVEN\\taskpane\\",   // working dir
+                       &si, &pi);
+        if (pi.hThread)  CloseHandle(pi.hThread);
+        if (pi.hProcess) CloseHandle(pi.hProcess);
+
+        // Esperar hasta 30 segundos (Studio tarda más que el AgentService)
+        for (int i = 0; i < 60 && !_studio_alive(); i++)
+            Sleep(500);
+    }
+
+    // ── Abrir el viewer ───────────────────────────────────────────────────────
+    viewer.SetAdvancedMode(true, 5555);
     agente_viewer_id = viewer.CreateViewerFromUrl(
         "http://localhost:5555/taskpane.html",
         "NEVEN Studio AI");
 
-    Convert::StringToXLOPER(&rslt, agente_viewer_id, false);
+    Convert::StringToXLOPER(&rslt, agente_viewer_id.c_str(), false);
     rslt.xltype |= xlbitDLLFree;
     return &rslt;
 }

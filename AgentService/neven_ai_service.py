@@ -366,12 +366,42 @@ def _call_llm(messages: list[dict], ai: dict) -> dict:
 # Aplicación FastAPI
 # =============================================================================
 
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def _lifespan(application: "FastAPI"):
+    """Lifespan handler — reemplaza el deprecado @app.on_event('startup')."""
+    global _config, _ai_cfg
+
+    cfg_path = None
+    for i, arg in enumerate(sys.argv):
+        if arg == "--config" and i + 1 < len(sys.argv):
+            cfg_path = sys.argv[i + 1]
+
+    _config = _load_config(cfg_path)
+    _ai_cfg = _config.get("AI", {})
+
+    if not _ai_cfg.get("enabled", False):
+        log.warning(
+            "AI.enabled=false en neven-config.json. "
+            "El servicio arrancará pero el endpoint /api/ai/chat retornará 503."
+        )
+
+    _start_cleanup_thread()
+    log.info("NEVEN AI Service iniciado")
+
+    yield  # aplicación corriendo
+
+    log.info("NEVEN AI Service detenido")
+
+
 app = FastAPI(
     title="NEVEN AI Service",
     description="Agente IA de NEVEN como microservicio independiente",
     version="1.0.0",
     docs_url="/docs",
     redoc_url=None,
+    lifespan=_lifespan,
 )
 
 # CORS: permite requests desde cualquier origen (Office Add-in, localhost, dominio cloud)
@@ -385,33 +415,6 @@ app.add_middleware(
 
 # Directorio de archivos estáticos del add-in (agent.html, etc.)
 _STATIC_DIR = Path(__file__).parent / "static"
-
-# =============================================================================
-# Startup / shutdown
-# =============================================================================
-
-@app.on_event("startup")
-async def _startup():
-    global _config, _ai_cfg
-
-    # Parsear argumentos de línea de comandos
-    # (FastAPI no los expone directamente — leer de sys.argv)
-    cfg_path = None
-    for i, arg in enumerate(sys.argv):
-        if arg == "--config" and i + 1 < len(sys.argv):
-            cfg_path = sys.argv[i + 1]
-
-    _config  = _load_config(cfg_path)
-    _ai_cfg  = _config.get("AI", {})
-
-    if not _ai_cfg.get("enabled", False):
-        log.warning(
-            "AI.enabled=false en neven-config.json. "
-            "El servicio arrancará pero el endpoint /api/ai/chat retornará 503."
-        )
-
-    _start_cleanup_thread()
-    log.info("NEVEN AI Service iniciado")
 
 # =============================================================================
 # Health / readiness

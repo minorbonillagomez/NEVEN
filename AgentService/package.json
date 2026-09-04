@@ -1,0 +1,14 @@
+{
+  "name": "neven-ai-agent",
+  "version": "1.0.0",
+  "description": "NEVEN AI Agent - Office Add-in para Excel",
+  "scripts": {
+    "start": "python neven_ai_service.py --port 5556 --config \"C:\\NEVEN\\neven-config.json\"",
+    "stop": "npx office-addin-dev-settings clear manifest.dev.xml"
+  },
+  "devDependencies": {
+    "office-addin-debugging": "^5.0.0",
+    "office-addin-dev-settings": "^2.0.0",
+    "office-addin-manifest": "^2.0.0"
+  }
+}

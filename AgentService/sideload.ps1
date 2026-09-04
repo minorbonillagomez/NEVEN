@@ -116,9 +116,12 @@ Write-Ok "Catálogo registrado en el registro de Windows"
 if ($StartService) {
     Write-Step "Iniciando servicio IA en puerto $ServicePort..."
 
-    $PythonExe = (Get-Command python -ErrorAction SilentlyContinue)?.Source
+    $PythonExe = $null
+    $cmd = Get-Command python -ErrorAction SilentlyContinue
+    if ($cmd) { $PythonExe = $cmd.Source }
     if (-not $PythonExe) {
-        $PythonExe = (Get-Command python3 -ErrorAction SilentlyContinue)?.Source
+        $cmd3 = Get-Command python3 -ErrorAction SilentlyContinue
+        if ($cmd3) { $PythonExe = $cmd3.Source }
     }
 
     if ($PythonExe) {
