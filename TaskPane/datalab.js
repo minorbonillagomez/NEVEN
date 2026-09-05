@@ -2137,6 +2137,31 @@ function _markdownToHtml(md) {
   if (inList) html += '</ul>';
   if (tableBuffer.length > 0) _flushTable();
 
+  // ── Post-proceso: bloques especiales del agente IA ────────────────────────
+  // neven-run: sugerencia ejecutable
+  html = html.replace(
+    /<pre[^>]*><code[^>]*class="language-neven-run"[^>]*>([\s\S]+?)<\/code><\/pre>/g,
+    function(_, enc) {
+      try {
+        function dec(s){return s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').trim();}
+        var spec = JSON.parse(dec(enc));
+        return typeof _buildRunSuggestionCard === 'function'
+          ? _buildRunSuggestionCard(spec)
+          : '<pre><code>' + enc + '</code></pre>';
+      } catch(e) { return '<pre><code>' + enc + '</code></pre>'; }
+    }
+  );
+
+  // neven-create-function: el agente propone crear una función nueva
+  html = html.replace(
+    /<pre[^>]*><code[^>]*class="language-neven-create-function"[^>]*>([\s\S]+?)<\/code><\/pre>/g,
+    function(_, enc) {
+      return typeof window !== 'undefined' && typeof window._renderCreateFunctionBlock === 'function'
+        ? window._renderCreateFunctionBlock(enc)
+        : '<pre><code>' + enc + '</code></pre>';
+    }
+  );
+
   // ── Paso 3: reinyectar LaTeX renderizado con KaTeX ───────────────────────
   mathBlocks.forEach(function(tex, idx) {
     html = html.replace('\x00MATHD' + idx + '\x00', _renderKatex(tex, true));

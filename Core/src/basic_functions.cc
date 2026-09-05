@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright (c) 2026 NEVEN Project
  * 
  * This file is part of NEVEN.
@@ -1950,6 +1950,72 @@ RJ_IA_Contexto(LPXLOPER12 data_range, LPXLOPER12 results_range) {
     return &rslt;
 }
 
+// =============================================================================
+// NevenX -- Dispatcher generico de procesos
+// Usa la misma firma que NEVEN.Call (17Q = func + 16 args) para que Excel
+// pase todos los argumentos no usados como xltypeMissing — nunca nullptr.
+// El primer arg (proceso) va como arg0 al dispatcher NEVEN$.nevenx_dispatch.
+
+static XLOPER12 g_nevenx_disp_R;
+static XLOPER12 g_nevenx_disp_J;
+static XLOPER12 g_nevenx_disp_P;
+static bool     g_nevenx_init_done = false;
+
+extern "C" void NevenX_InitGlobals() {
+    if (g_nevenx_init_done) return;
+    // Usar la funcion interna que no pone xlbitDLLFree
+    g_nevenx_disp_R.xltype = xltypeStr;
+    std::wstring disp_name = L"NEVEN$.nevenx_dispatch";
+    // Formato string Excel: primer byte = longitud, resto = caracteres
+    static wchar_t disp_buf_R[32] = {};
+    static wchar_t disp_buf_J[32] = {};
+    static wchar_t disp_buf_P[32] = {};
+    disp_buf_R[0] = (wchar_t)disp_name.size();
+    disp_buf_J[0] = (wchar_t)disp_name.size();
+    disp_buf_P[0] = (wchar_t)disp_name.size();
+    for (size_t i = 0; i < disp_name.size(); ++i) {
+        disp_buf_R[i+1] = disp_buf_J[i+1] = disp_buf_P[i+1] = disp_name[i];
+    }
+    g_nevenx_disp_R.xltype = xltypeStr; g_nevenx_disp_R.val.str = disp_buf_R;
+    g_nevenx_disp_J.xltype = xltypeStr; g_nevenx_disp_J.val.str = disp_buf_J;
+    g_nevenx_disp_P.xltype = xltypeStr; g_nevenx_disp_P.val.str = disp_buf_P;
+    g_nevenx_init_done = true;
+}
+
+// NevenX_R: firma identica a RJ_CallLanguage_ (func + 16 args opcionales = 17Q)
+// Excel pasa los no usados como xltypeMissing — nunca nullptr
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+NevenX_R(LPXLOPER12 proceso,
+  LPXLOPER12 a0, LPXLOPER12 a1, LPXLOPER12 a2, LPXLOPER12 a3,
+  LPXLOPER12 a4, LPXLOPER12 a5, LPXLOPER12 a6, LPXLOPER12 a7,
+  LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
+  LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
+    NevenX_InitGlobals();
+    return RJ_Call_Generic(0, &g_nevenx_disp_R,
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13);
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+NevenX_J(LPXLOPER12 proceso,
+  LPXLOPER12 a0, LPXLOPER12 a1, LPXLOPER12 a2, LPXLOPER12 a3,
+  LPXLOPER12 a4, LPXLOPER12 a5, LPXLOPER12 a6, LPXLOPER12 a7,
+  LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
+  LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
+    NevenX_InitGlobals();
+    return RJ_Call_Generic(1, &g_nevenx_disp_J,
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13);
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+NevenX_P(LPXLOPER12 proceso,
+  LPXLOPER12 a0, LPXLOPER12 a1, LPXLOPER12 a2, LPXLOPER12 a3,
+  LPXLOPER12 a4, LPXLOPER12 a5, LPXLOPER12 a6, LPXLOPER12 a7,
+  LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
+  LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
+    NevenX_InitGlobals();
+    return RJ_Call_Generic(2, &g_nevenx_disp_P,
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13);
+}
 BCALL(1000);
 BCALL(1001);
 BCALL(1002);

@@ -391,19 +391,19 @@ public:
 
     // ─── New NEVEN v2.0 commands ───
     case DispIds::OnPlutoStart:
-      return RunXllFunction(L"NEVEN.cmd.pluto.start");
+      return RunXllFunction(L"NEVEN.Pluto.Start");
     case DispIds::OnPlutoStop:
-      return RunXllFunction(L"NEVEN.cmd.pluto.stop");
+      return RunXllFunction(L"NEVEN.Pluto.Stop");
     case DispIds::OnViewDialog:
-      return RunXllFunction(L"NEVEN.v.dialog");
+      return RunXllFunction(L"NEVEN.View.Dialog");
     case DispIds::OnEditor:
-      return RunXllFunction(L"NEVEN.cmd.editor");
+      return RunXllFunction(L"NEVEN.Editor");
     case DispIds::OnCloseViewers:
-      return RunXllFunction(L"NEVEN.v.closeall");
+      return RunXllFunction(L"NEVEN.View.CloseAll");
     case DispIds::OnNotebookDialog:
-      return RunXllFunction(L"NEVEN.notebook.dialog");
+      return RunXllFunction(L"NEVEN.Notebook.Dialog");
     case DispIds::OnQuartoDialog:
-      return RunXllFunction(L"NEVEN.v.dialog");  // Reuse file dialog for .qmd
+      return RunXllFunction(L"NEVEN.View.Dialog");  // Reuse file dialog for .qmd
     case DispIds::OnRefreshFunctions:
       return RunXllFunction(L"RJ_UpdateFunctions");
     case DispIds::OnOpenScriptsDir:
@@ -417,14 +417,14 @@ public:
       return S_OK;
     }
     case DispIds::OnAbout:
-      return RunXllFunction(L"NEVEN.about.dialog");
+      return RunXllFunction(L"NEVEN.About.Dialog");
 
     case DispIds::OnOpenDocs:
     {
       // Open NEVEN documentation in WebView2 viewer
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant runCmd(L"NEVEN.v");
+          CComVariant runCmd(L"NEVEN.View");
           CComVariant docPath("C:/NEVEN/neven-docs.html");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
@@ -441,7 +441,7 @@ public:
       // Show active viewers in a message box
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant cmd(L"NEVEN.v.list");
+          CComVariant cmd(L"NEVEN.View.List");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
           pApp->_Run2(cmd, missing, missing, missing, missing, missing, missing, missing,
@@ -650,7 +650,7 @@ public:
       // Show engine connection status
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant cmd(L"NEVEN.status");
+          CComVariant cmd(L"NEVEN.Status");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
           pApp->_Run2(cmd, missing, missing, missing, missing, missing, missing, missing,
@@ -671,7 +671,7 @@ public:
       // Open AI Assistant HTML in WebView2 viewer
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant runCmd(L"NEVEN.v");
+          CComVariant runCmd(L"NEVEN.View");
           CComVariant docPath("C:/NEVEN/workspace/ai-assistant.html");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
@@ -688,7 +688,7 @@ public:
       // Open Text Analysis HTML in WebView2 viewer
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant runCmd(L"NEVEN.v");
+          CComVariant runCmd(L"NEVEN.View");
           CComVariant docPath("C:/NEVEN/workspace/text-analysis.html");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
@@ -705,7 +705,7 @@ public:
       // Open Monte Carlo Simulation HTML in WebView2 viewer
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant runCmd(L"NEVEN.v");
+          CComVariant runCmd(L"NEVEN.View");
           CComVariant docPath("C:/NEVEN/workspace/sim-report-template.html");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
@@ -718,26 +718,26 @@ public:
     }
 
     case DispIds::OnViewerOpenCommand:
-      return RunXllFunction(L"NEVEN.v.dialog");
+      return RunXllFunction(L"NEVEN.View.Dialog");
 
     case DispIds::OnViewerCloseAllCommand:
-      return RunXllFunction(L"NEVEN.v.closeall");
+      return RunXllFunction(L"NEVEN.View.CloseAll");
 
     case DispIds::OnPlutoStartCommand:
-      return RunXllFunction(L"NEVEN.cmd.pluto.start");
+      return RunXllFunction(L"NEVEN.Pluto.Start");
 
     case DispIds::OnNotebookListCommand:
-      return RunXllFunction(L"NEVEN.notebook.dialog");
+      return RunXllFunction(L"NEVEN.Notebook.Dialog");
 
     case DispIds::OnPlutoStopCommand:
-      return RunXllFunction(L"NEVEN.cmd.pluto.stop");
+      return RunXllFunction(L"NEVEN.Pluto.Stop");
 
     case DispIds::OnDocsCommand:
     {
       // Open NEVEN documentation in WebView2 viewer
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant runCmd(L"NEVEN.v");
+          CComVariant runCmd(L"NEVEN.View");
           CComVariant docPath("C:/NEVEN/neven-docs.html");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
@@ -750,7 +750,7 @@ public:
     }
 
     case DispIds::OnAboutCommand:
-      return RunXllFunction(L"NEVEN.about.dialog");
+      return RunXllFunction(L"NEVEN.About.Dialog");
 
     case DispIds::OnTaskPaneCommand:
     {
@@ -758,7 +758,7 @@ public:
       // taskpane.html connects to the HTTP server at localhost:5555 once open.
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant runCmd(L"NEVEN.v");
+          CComVariant runCmd(L"NEVEN.View");
           CComVariant docPath("C:/NEVEN/taskpane/taskpane.html");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
@@ -775,7 +775,7 @@ public:
       // Open Presentation Creator (CreadorPresentaciones) in WebView2 viewer
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
-          CComVariant runCmd(L"NEVEN.v");
+          CComVariant runCmd(L"NEVEN.View");
           CComVariant docPath("C:/NEVEN/taskpane/presentaciones/index.html");
           CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);

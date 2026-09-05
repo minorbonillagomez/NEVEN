@@ -639,6 +639,7 @@ extern "C" {
     if (pEntry) {
         SetExcel12EntryPt(pEntry);
         RJ2XCL_Engine::Instance()->Init();
+        NevenX_InitGlobals();
     } else {
         MessageBoxA(NULL, "CRITICAL: MdCallBack12 not found!", "NEVEN", MB_ICONERROR);
     }

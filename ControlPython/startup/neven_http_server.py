@@ -630,6 +630,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_ai_chat(body)
         elif path == 'api/ai/context':
             self._handle_ai_context(body)
+        elif path == 'api/functions/create':
+            self._handle_function_create(body)
         elif path == 'api/packages/install':
             self._handle_pkg_install(body)
         else:
@@ -788,15 +790,111 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 return
 
         # Inject dataset context as system message (first in list)
-        if context:
-            sys_msg = {"role": "system", "content": (
-                "Eres un analista de datos experto. El usuario está trabajando con NEVEN, "
-                "un add-in de Excel con R, Julia y Python. "
-                f"Contexto del dataset actual:\n\n{context}\n\n"
-                "Responde siempre en español a menos que el usuario escriba en otro idioma. "
-                "Usa Markdown para formatear tu respuesta."
-            )}
+        # Carga el catálogo de funciones para que el agente pueda sugerir análisis concretos
+        try:
+            from catalog_loader import build_catalog_prompt_section
+            catalog_section = build_catalog_prompt_section()
+        except Exception:
+            catalog_section = ""
+
+        has_excel_context   = "=== DATOS DE EXCEL ===" in context
+        has_results_context = "=== RESULTADOS DEL ANÁLISIS ===" in context
+
+        _fmt = (
+            "Responde siempre en español a menos que el usuario escriba en otro idioma. "
+            "Usa Markdown para formatear tu respuesta. "
+            "Para fórmulas matemáticas usa SIEMPRE delimitadores Markdown estándar: "
+            "$$...$$ para fórmulas en bloque y $...$ para fórmulas inline. "
+            "NUNCA uses \\(...\\) ni \\[...\\] ni ninguna otra notación LaTeX."
+        )
+
+        _run_hint = (
+            "Cuando sugieras un nuevo análisis o corrección metodológica, "
+            "incluye un bloque ```neven-run con el JSON de la llamada. "
+            "El schema EXACTO es: "
+            "{\"function_id\": string, \"language\": \"r\"|\"python\"|\"julia\", "
+            "\"column_roles\": {\"Y\": [...], \"X\": [...], \"Z\": [...]}, "
+            "\"parameters\": {}, \"context_note\": string}. "
+            "Usa EXACTAMENTE uno de los function_id del catálogo — no inventes nombres. "
+            "Cuando sea más apropiado usar una función XLL directamente, incluye también "
+            "la fórmula Excel exacta con los nombres de columna reales del contexto. "
+            "\n\n"
+            "Si la función que necesitas NO existe en el catálogo, puedes crearla. "
+            "SOLO bajo solicitud o aprobación explícita del usuario, incluye un bloque "
+            "```neven-create-function con el JSON: "
+            "{\"filename\": \"R4XCL-RG-NombreFuncion.R\", "
+            "\"language\": \"r\", "
+            "\"description\": \"descripción breve\", "
+            "\"code\": \"<código R completo siguiendo el protocolo NEVEN>\", "
+            "\"excel_usage\": \"=NEVEN.r(\\\"NombreFuncion\\\", Y, X, TipoOutput=1)\"}. "
+            "El código DEBE seguir el protocolo de C:\\\\NEVEN\\\\functions\\\\: "
+            "función con SetDatosY/SetDatosX como primeros parámetros, "
+            "primera fila de cada rango = nombres de columnas, "
+            "filas restantes = datos, retornar data.frame con prefijo R4XCL_. "
+            "\n\n"
+            "Si el usuario pide EXPLÍCITAMENTE instalar un paquete, genera un bloque "
+            "```neven-install con el JSON: "
+            "{\"package\": \"nombre\", \"language\": \"r\"|\"python\"|\"julia\", "
+            "\"context_note\": \"para qué se necesita\"}. "
+            "NUNCA sugiereas instalar paquetes ni crear funciones proactivamente — "
+            "solo bajo solicitud o aprobación explícita del usuario."
+        )
+
+        if context or catalog_section:
+            if has_results_context and has_excel_context:
+                sys_content = (
+                    "Eres NEVEN Assistant, un econometrista experto. "
+                    "Tienes acceso a los datos reales y los resultados del análisis del usuario. "
+                    "Responde sobre ESTE modelo específico, no en abstracto. "
+                    "Si detectas problemas metodológicos (endogeneidad, heterocedasticidad, "
+                    "especificación incorrecta), cita el diagnóstico concreto y sugiere "
+                    "la función NEVEN que lo corrige.\n\n"
+                    + _run_hint + "\n\n"
+                    + (f"Contexto del usuario:\n\n{context}\n\n" if context else "")
+                    + (catalog_section + "\n\n" if catalog_section else "")
+                    + _fmt
+                )
+            elif has_results_context:
+                sys_content = (
+                    "Eres NEVEN Assistant, un econometrista experto. "
+                    "Tienes acceso a los resultados del análisis del usuario. "
+                    "Responde sobre ESTE modelo específico.\n\n"
+                    + _run_hint + "\n\n"
+                    + (f"Resultados:\n\n{context}\n\n" if context else "")
+                    + (catalog_section + "\n\n" if catalog_section else "")
+                    + _fmt
+                )
+            elif has_excel_context:
+                sys_content = (
+                    "Eres NEVEN Assistant, un analista de datos experto. "
+                    "El usuario ha enviado datos directamente desde su hoja de cálculo de Excel. "
+                    "Responde sobre ESTOS datos específicos. "
+                    "Cuando sugieras un análisis, menciona las columnas por su nombre real "
+                    "y la función NEVEN exacta que ejecutarlo.\n\n"
+                    + _run_hint + "\n\n"
+                    + (f"Datos de Excel:\n\n{context}\n\n" if context else "")
+                    + (catalog_section + "\n\n" if catalog_section else "")
+                    + _fmt
+                )
+            else:
+                sys_content = (
+                    "Eres NEVEN Assistant, un econometrista y analista de datos experto. "
+                    "El usuario trabaja con NEVEN, un add-in de Excel con R, Julia y Python.\n\n"
+                    + (f"Contexto actual:\n\n{context}\n\n" if context else "")
+                    + (catalog_section + "\n\n" if catalog_section else "")
+                    + _fmt
+                )
+
+            sys_msg = {"role": "system", "content": sys_content}
             messages = [sys_msg] + [m for m in messages if m.get("role") != "system"]
+        else:
+            # Sin contexto — system message mínimo
+            if not any(m.get("role") == "system" for m in messages):
+                messages = [{"role": "system", "content": (
+                    "Eres NEVEN Assistant, un econometrista y analista de datos experto. "
+                    "Responde siempre en español. Usa Markdown. "
+                    "Para fórmulas usa $$...$$ (bloque) y $...$ (inline)."
+                )}] + messages
 
         # ── HTTP request to LLM ───────────────────────────────────────────────
         headers = {"Content-Type": "application/json"}
@@ -934,6 +1032,82 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "status":  "ok",
             "message": f"Contexto almacenado ({len(context_text)} chars)",
         })
+
+    def _handle_function_create(self, body: dict):
+        """POST /api/functions/create — guarda una nueva función en C:\\NEVEN\\functions\\
+
+        Llamado por el agente IA cuando el usuario aprueba crear una función nueva.
+        Body:
+            filename   : str — nombre del archivo, ej: "R4XCL-RG-2SLS.R"
+            code       : str — código R/Python/Julia completo de la función
+            language   : str — "r" | "python" | "julia"
+            description: str — descripción breve para el log
+        Returns:
+            {status, path, message}
+        """
+        filename    = body.get("filename", "").strip()
+        code        = body.get("code", "").strip()
+        language    = body.get("language", "r").lower()
+        description = body.get("description", "")
+
+        if not filename or not code:
+            self._send_error_json("'filename' y 'code' son requeridos.", 400)
+            return
+
+        # Validar extensión según lenguaje
+        ext_map = {"r": ".R", "python": ".py", "julia": ".jl"}
+        expected_ext = ext_map.get(language, ".R")
+        if not filename.endswith(expected_ext) and not filename.endswith(expected_ext.lower()):
+            self._send_error_json(
+                f"El filename '{filename}' debe terminar en '{expected_ext}' para lenguaje '{language}'.",
+                400
+            )
+            return
+
+        # Solo permitir nombres seguros (sin rutas relativas o absolutas)
+        import re as _re
+        if not _re.match(r'^[A-Za-z0-9_\-\.]+$', filename):
+            self._send_error_json(
+                f"Nombre de archivo inválido: '{filename}'. Solo se permiten letras, números, guiones y puntos.",
+                400
+            )
+            return
+
+        functions_dir = _config.get("functionsDir",
+                        _config.get("Standalone", {}).get("functionsDir", r"C:\NEVEN\functions"))
+        dest_path = os.path.join(functions_dir, filename)
+
+        # No sobreescribir funciones del sistema sin confirmación explícita
+        is_system = filename.startswith("R4XCL-") or filename.startswith("J4XCL-")
+        if os.path.exists(dest_path) and is_system:
+            self._send_error_json(
+                f"El archivo '{filename}' ya existe. Para sobreescribirlo, renombra el archivo nuevo.",
+                409
+            )
+            return
+
+        try:
+            with open(dest_path, "w", encoding="utf-8") as f:
+                f.write(code)
+
+            import logging as _log
+            _log.getLogger("neven.functions").info(
+                f"Función creada por el agente: {filename} ({len(code)} chars) — {description}"
+            )
+
+            self._send_json({
+                "status":   "ok",
+                "path":     dest_path,
+                "filename": filename,
+                "message":  (
+                    f"Función guardada en {dest_path}. "
+                    f"Reinicia NEVEN Studio para que aparezca en DataLab, "
+                    f"o usa =NEVEN.r(\"{filename.replace('.R','').replace('R4XCL-RG-','MR_').replace('R4XCL-','')}\", ...) "
+                    f"desde Excel directamente."
+                ),
+            })
+        except Exception as exc:
+            self._send_error_json(f"No se pudo guardar '{filename}': {exc}", 500)
 
     def _handle_save_script(self, body):
         """POST /api/save_script — guarda contenido en un archivo del filesystem.

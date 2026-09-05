@@ -2374,7 +2374,65 @@ function _aiClear() {
 }
 
 </script>
-<script src="datalab.js?v=1785523931"></script>
+<script src="datalab.js?v=1785523931">
+// ── Handler: crear funcion nueva en C:\NEVEN\functions\ ──────────────────────
+window._nevenCreateFunctions = window._nevenCreateFunctions || {};
+
+window._onCreateFunction = function(dataId) {
+  var spec = (window._nevenCreateFunctions || {})[dataId];
+  if (!spec) { showToast('Especificacion no disponible'); return; }
+  var btn = document.querySelector('[data-create-id="' + dataId + '"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Creando...'; }
+  fetch(API + '/api/functions/create', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      filename:    spec.filename,
+      code:        spec.code,
+      language:    spec.language || 'r',
+      description: spec.description || ''
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (data.status === 'ok') {
+      showToast('Funcion creada: ' + data.filename);
+      _aiAddMessage('assistant',
+        '**Funcion creada:** ' + data.filename + '\n\n' +
+        data.message + '\n\n' +
+        (spec.excel_usage ? '**Usala en Excel:**\n`\n' + spec.excel_usage + '\n`' : '')
+      );
+      if (btn) { btn.textContent = 'Creada'; btn.style.background = '#2a6a2a'; }
+    } else {
+      showToast('Error: ' + (data.message || 'No se pudo crear'));
+      if (btn) { btn.disabled = false; btn.textContent = 'Reintentar'; }
+    }
+  })
+  .catch(function(err) {
+    showToast('Error: ' + err.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Reintentar'; }
+  });
+};
+
+// ── Renderer de bloque neven-create-function en el chat ───────────────────────
+// Se llama desde _markdownToHtml cuando el agente genera este tipo de bloque
+window._renderCreateFunctionBlock = function(jsonStr) {
+  try {
+    function decodeHtml(s) { return s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').trim(); }
+    var spec = JSON.parse(decodeHtml(jsonStr));
+    var dataId = 'ncf-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+    window._nevenCreateFunctions[dataId] = spec;
+    return '<div style="border:1px solid rgba(100,200,100,0.4);border-radius:6px;background:rgba(100,200,100,0.05);padding:10px 12px;margin:8px 0">' +
+      '<div style="font-size:9px;font-weight:700;color:#7dc97d;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Nueva funcion NEVEN</div>' +
+      '<div style="font-size:12px;color:var(--text-primary);font-weight:600;margin-bottom:2px">' + (spec.filename || '?') + '</div>' +
+      (spec.description ? '<div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px">' + spec.description + '</div>' : '') +
+      (spec.excel_usage ? '<div style="font-size:10px;color:var(--text-secondary);font-family:monospace;margin-bottom:6px">' + spec.excel_usage + '</div>' : '') +
+      '<button data-create-id="' + dataId + '" onclick="window._onCreateFunction(\'' + dataId + '\')" ' +
+        'style="background:#4a8c4a;color:#fff;border:none;border-radius:4px;padding:5px 14px;font-size:10px;font-weight:700;cursor:pointer">' +
+        'Guardar en C:\\NEVEN\\functions\\' +
+      '</button></div>';
+  } catch(e) { return '<pre><code>' + jsonStr + '</code></pre>'; }
+};</script>
 
 </body>
 </html>

@@ -1,0 +1,568 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Catálogo de funciones NEVEN — alimenta la ontología del agente IA",
+    "nota": "Este archivo es la fuente base. El servidor también carga dinámicamente los *.json de C:\\NEVEN\\functions\\",
+    "ultima_actualizacion": "2026-09-03"
+  },
+
+  "families": {
+    "RG": "Regresión",
+    "ST": "Series de Tiempo",
+    "AD": "Análisis de Datos",
+    "GR": "Gráficos",
+    "DS": "Conjuntos de Datos",
+    "UC": "Funciones de Usuario",
+    "TM": "Text Mining"
+  },
+
+  "functions": [
+
+    {
+      "function_id": "RG_Lineal",
+      "family": "RG",
+      "name": "Regresión Lineal (OLS)",
+      "xll_name": "MR_Lineal",
+      "xll_example": "=NEVEN.r(\"MR_Lineal\", Y, X, TipoOutput=1)",
+      "studio_file": "R4XCL-RG-Lineal.Studio.R",
+      "languages": ["r"],
+      "description": "Estimación MCO. Coeficientes, R², F-test, diagnósticos de heterocedasticidad, multicolinealidad, observaciones influyentes y errores estándar robustos.",
+      "cuando_usar": "Relación lineal entre Y y X, errores homocedásticos, sin endogeneidad.",
+      "supuestos": ["Linealidad", "Exogeneidad estricta", "No multicolinealidad perfecta", "Homocedasticidad", "No autocorrelación"],
+      "libraries_required": ["stargazer (opcional)", "sandwich (robusto)", "lmtest", "margins", "usdm"],
+      "column_roles": {
+        "Y": "Variable dependiente (numérica)",
+        "X": "Variables independientes (numéricas, múltiple)"
+      },
+      "parameters": {
+        "Escala": "Estandarizar X antes de estimar (bool, default: false)",
+        "Constante": "Incluir intercepto (bool, default: true)"
+      },
+      "tipo_output_xll": {
+        "1": "Tabla stargazer con coeficientes, IC 95%, sig.",
+        "2": "Predicciones dentro de muestra",
+        "3": "Predicciones fuera de muestra",
+        "4": "Efectos marginales (margins)",
+        "5": "VIF — Inflación de Varianza",
+        "6": "Test Breusch-Pagan heterocedasticidad",
+        "7": "Tabla OLS + OLS errores robustos (sandwich)",
+        "8": "Observaciones influyentes",
+        "12": "Residuos",
+        "13": "Métricas completas (Sección/Parámetro/Métrica/Valor)"
+      },
+      "problemas_que_resuelve": ["regresion_lineal", "prediccion", "diagnostico_modelo"],
+      "alternativas_ontologicas": {
+        "si_endogeneidad": "RG_2SLS",
+        "si_heterocedasticidad_severa": "RG_Newey_West",
+        "si_panel": "RG_DatosPanel",
+        "si_y_censurada": "RG_Tobit",
+        "si_y_binaria": "RG_Logistica",
+        "si_y_conteos": "RG_Poisson",
+        "si_especificacion_incorrecta": "RG_RESET"
+      },
+      "referencia": "Wooldridge, Cap. 2-9"
+    },
+
+    {
+      "function_id": "RG_2SLS",
+      "family": "RG",
+      "name": "2SLS — Variables Instrumentales",
+      "xll_name": null,
+      "studio_file": "RG_2SLS.Studio.R",
+      "languages": ["r"],
+      "description": "Mínimos Cuadrados en Dos Etapas para corregir endogeneidad. Incluye diagnósticos de instrumentos débiles (F>10) y prueba de sobreidentificación.",
+      "cuando_usar": "Cuando una o más variables X están correlacionadas con el error (endogeneidad por variable omitida, error de medición o causalidad inversa) y se tienen instrumentos válidos.",
+      "supuestos": ["Relevancia del instrumento: corr(Z, X_endo) ≠ 0 — verificable con F > 10", "Exogeneidad del instrumento: corr(Z, u) = 0 — supuesto no testeable directamente"],
+      "libraries_required": ["AER", "lmtest"],
+      "column_roles": {
+        "Y": "Variable dependiente",
+        "Endo": "Variables endógenas (múltiple)",
+        "Exo": "Controles exógenos (opcional)",
+        "Instru": "Instrumentos externos Z (múltiple, ≥ número de endógenas)"
+      },
+      "parameters": {
+        "NivelAlpha": "Nivel de significancia (default: 0.05)",
+        "DiagnosticosF": "Incluir diagnósticos de instrumentos débiles (bool, default: true)"
+      },
+      "problemas_que_resuelve": ["endogeneidad", "variables_instrumentales", "causalidad"],
+      "alternativas_ontologicas": {
+        "si_no_hay_instrumentos": "RG_FGLS",
+        "si_sin_endogeneidad": "RG_Lineal",
+        "si_seleccion_muestral": "RG_HECKIT"
+      },
+      "referencia": "Wooldridge, Cap. 15"
+    },
+
+    {
+      "function_id": "RG_Newey_West",
+      "family": "RG",
+      "name": "Errores Estándar HAC Newey-West",
+      "xll_name": null,
+      "studio_file": "RG_Newey_West.Studio.R",
+      "languages": ["r"],
+      "description": "OLS con errores estándar robustos a heterocedasticidad y autocorrelación (HAC). Corrige los errores estándar sin cambiar los coeficientes.",
+      "cuando_usar": "Cuando hay heterocedasticidad o autocorrelación en los residuos pero el modelo OLS es correcto en media.",
+      "libraries_required": ["sandwich", "lmtest"],
+      "column_roles": {"Y": "Variable dependiente", "X": "Variables independientes"},
+      "parameters": {
+        "Rezagos": "Número de rezagos para la corrección HAC (int, default: automático = floor(4*(n/100)^(2/9)))",
+        "NivelAlpha": "Nivel de significancia (default: 0.05)"
+      },
+      "problemas_que_resuelve": ["heterocedasticidad", "autocorrelacion", "errores_robustos"],
+      "alternativas_ontologicas": {
+        "si_heterocedasticidad_cambia_coeficientes": "RG_FGLS",
+        "sin_autocorrelacion": "RG_Lineal TipoOutput=7"
+      },
+      "referencia": "Wooldridge, Cap. 12"
+    },
+
+    {
+      "function_id": "RG_FGLS",
+      "family": "RG",
+      "name": "FGLS — Mínimos Cuadrados Generalizados Factibles",
+      "xll_name": null,
+      "studio_file": "RG_FGLS.Studio.R",
+      "languages": ["r"],
+      "description": "Estimación GLS cuando la varianza del error no es constante. Re-pondera las observaciones para recuperar eficiencia.",
+      "cuando_usar": "Heterocedasticidad confirmada (BP significativo) y la estructura de la varianza puede modelarse.",
+      "libraries_required": ["lmtest (opcional)"],
+      "column_roles": {"Y": "Variable dependiente", "X": "Variables independientes"},
+      "problemas_que_resuelve": ["heterocedasticidad", "eficiencia_estimacion"],
+      "referencia": "Wooldridge, Cap. 8"
+    },
+
+    {
+      "function_id": "RG_HECKIT",
+      "family": "RG",
+      "name": "Modelo de Heckman (Heckit)",
+      "xll_name": null,
+      "studio_file": "RG_HECKIT.Studio.R",
+      "languages": ["r"],
+      "description": "Corrige el sesgo de selección muestral en dos etapas: ecuación de selección (probit) y ecuación de resultados (OLS con Inversa de Mills).",
+      "cuando_usar": "Cuando la muestra no es aleatoria — solo se observa Y para individuos que satisfacen un criterio de selección.",
+      "libraries_required": ["sampleSelection"],
+      "column_roles": {
+        "Y_obs": "Variable dependiente (observada solo para seleccionados)",
+        "X_outcome": "Regresores ecuación de resultados",
+        "S_binary": "Variable binaria de selección (0/1)",
+        "X_selection": "Regresores ecuación de selección (opcional, adicionales a X_outcome)"
+      },
+      "problemas_que_resuelve": ["sesgo_seleccion_muestral", "datos_truncados"],
+      "referencia": "Wooldridge, Cap. 17"
+    },
+
+    {
+      "function_id": "RG_RESET",
+      "family": "RG",
+      "name": "Prueba RESET de Ramsey",
+      "xll_name": null,
+      "studio_file": "RG_RESET.Studio.R",
+      "languages": ["r"],
+      "description": "Detecta mala especificación del modelo lineal (no linealidades, variables omitidas). H0: el modelo está correctamente especificado.",
+      "cuando_usar": "Verificar si el modelo lineal es suficiente o si se necesitan términos cuadráticos/cúbicos.",
+      "libraries_required": ["lmtest"],
+      "column_roles": {"Y": "Variable dependiente", "X": "Variables independientes"},
+      "parameters": {
+        "Potencia": "Potencia máxima de los valores ajustados en el test (2, 3 o 4, default: 2)",
+        "NivelAlpha": "Nivel de significancia (default: 0.05)"
+      },
+      "problemas_que_resuelve": ["especificacion_modelo", "no_linealidad"],
+      "referencia": "Wooldridge, Cap. 9"
+    },
+
+    {
+      "function_id": "RG_Davidson_MacKinnon",
+      "family": "RG",
+      "name": "J-Test Davidson-MacKinnon",
+      "xll_name": null,
+      "studio_file": "RG_Davidson_MacKinnon.Studio.R",
+      "languages": ["r"],
+      "description": "Compara dos modelos no anidados. Determina cuál especificación (X_A vs X_B) es más apropiada.",
+      "cuando_usar": "Cuando se tienen dos especificaciones alternativas no anidadas y se quiere elegir entre ellas.",
+      "libraries_required": ["lmtest"],
+      "column_roles": {
+        "Y": "Variable dependiente",
+        "X_A": "Regresores del Modelo A",
+        "X_B": "Regresores del Modelo B"
+      },
+      "problemas_que_resuelve": ["seleccion_especificacion", "modelos_no_anidados"],
+      "referencia": "Wooldridge, Cap. 9"
+    },
+
+    {
+      "function_id": "RG_Logistica",
+      "family": "RG",
+      "name": "Regresión Logística / Probit",
+      "xll_name": "MR_Binario.C",
+      "xll_example": "=NEVEN.r(\"MR_Binario.C\", Y, X, TipoOutput=1)",
+      "studio_file": "R4XCL-RG-Logistica.Studio.R",
+      "languages": ["r"],
+      "description": "Modelos de probabilidad no lineales para Y binaria. Logit o Probit según elección.",
+      "cuando_usar": "Variable dependiente binaria (0/1). Se prefiere sobre LPM cuando las probabilidades predichas deben estar entre 0 y 1.",
+      "libraries_required": ["ResourceSelection (Hosmer-Lemeshow)"],
+      "column_roles": {"Y": "Variable dependiente binaria", "X": "Variables independientes"},
+      "parameters": {
+        "TipoModelo": "1=Logit, 2=Probit (default: 1)",
+        "Escala": "Estandarizar X (bool, default: false)"
+      },
+      "tipo_output_xll": {
+        "1": "Tabla stargazer",
+        "2": "Predicciones (probabilidades)",
+        "4": "Test Hosmer-Lemeshow",
+        "5": "Efectos marginales"
+      },
+      "problemas_que_resuelve": ["variable_dependiente_binaria", "modelo_probabilidad"],
+      "referencia": "Wooldridge, Cap. 17"
+    },
+
+    {
+      "function_id": "RG_Poisson",
+      "family": "RG",
+      "name": "Regresión de Poisson",
+      "xll_name": "MR_Poisson.C",
+      "xll_example": "=NEVEN.r(\"MR_Poisson.C\", Y, X, TipoOutput=1)",
+      "studio_file": "R4XCL-RG-Poisson.Studio.R",
+      "languages": ["r"],
+      "description": "Modelo de conteos. Y debe ser entera no negativa. Incluye test de sobredispersión.",
+      "cuando_usar": "Variable dependiente son conteos (enteros ≥ 0). Si hay sobredispersión, considerar Binomial Negativa.",
+      "libraries_required": ["stargazer (condicional)", "sandwich", "margins"],
+      "column_roles": {"Y": "Variable de conteo (≥0)", "X": "Variables independientes"},
+      "tipo_output_xll": {
+        "1": "Tabla stargazer",
+        "2": "Predicción en muestra",
+        "5": "Test chi-cuadrado sobredispersión"
+      },
+      "problemas_que_resuelve": ["datos_conteos", "sobredispersion"],
+      "referencia": "Wooldridge, Cap. 17"
+    },
+
+    {
+      "function_id": "RG_Tobit",
+      "family": "RG",
+      "name": "Regresión Tobit",
+      "xll_name": "MR_Tobit.C",
+      "xll_example": "=NEVEN.r(\"MR_Tobit.C\", Y, X, TipoOutput=1)",
+      "studio_file": "R4XCL-RG-Tobit.Studio.R",
+      "languages": ["r"],
+      "description": "Regresión para variable dependiente censurada (agrupada en un límite inferior o superior).",
+      "cuando_usar": "Y está censurada a la izquierda (ej: gasto=0 para no consumidores) o a la derecha.",
+      "libraries_required": ["VGAM"],
+      "column_roles": {"Y": "Variable dependiente censurada", "X": "Variables independientes"},
+      "parameters": {
+        "Limite_Inferior": "Punto de censura inferior (default: 0)",
+        "Limite_Superior": "Punto de censura superior (default: sin límite)"
+      },
+      "problemas_que_resuelve": ["variable_censurada", "datos_truncados"],
+      "referencia": "Wooldridge, Cap. 17"
+    },
+
+    {
+      "function_id": "RG_DatosPanel",
+      "family": "ST",
+      "name": "Regresión con Datos de Panel",
+      "xll_name": "MR_PanelData.C",
+      "xll_example": "=NEVEN.r(\"MR_PanelData.C\", Y, X, i, t, TipoOutput=1)",
+      "studio_file": "R4XCL-RG-DatosPanel.Studio.R",
+      "languages": ["r"],
+      "description": "Efectos Fijos, Efectos Aleatorios y Pooled OLS. Incluye Hausman test, tests BP, dependencia transversal.",
+      "cuando_usar": "Datos con dimensión individual (i) y temporal (t). Hausman test decide entre EF y EA.",
+      "libraries_required": ["plm", "stargazer (condicional)", "tseries"],
+      "column_roles": {
+        "Y": "Variable dependiente",
+        "X": "Variables independientes",
+        "I": "Identificador de individuo",
+        "T": "Identificador de período"
+      },
+      "parameters": {
+        "TipoModelo": "1=Efectos Fijos, 2=Efectos Aleatorios, 3=Pooled (default: 1)",
+        "Escala": "Estandarizar X (bool, default: false)"
+      },
+      "tipo_output_xll": {
+        "1": "Tabla comparativa (OLS, pooling, within, between, random)",
+        "4": "Hausman test (EF vs EA)",
+        "3": "F-test (within vs OLS)"
+      },
+      "problemas_que_resuelve": ["datos_panel", "heterogeneidad_no_observada"],
+      "referencia": "Wooldridge, Cap. 13-14"
+    },
+
+    {
+      "function_id": "RG_SeriesTiempo",
+      "family": "ST",
+      "name": "Análisis de Series de Tiempo",
+      "xll_name": "ST_SeriesTemporales",
+      "studio_file": "R4XCL-RG-SeriesTiempo.Studio.R",
+      "languages": ["r"],
+      "description": "Pruebas de raíz unitaria (ADF, PP), cointegración, ACF/PACF, descomposición y modelos ARIMA/GARCH.",
+      "cuando_usar": "Serie temporal univariada. Para multivariada usar ST_VAR o ST_ECM.",
+      "libraries_required": ["tseries", "stargazer (condicional)"],
+      "column_roles": {"Y": "Serie temporal (numérica)", "X": "Regresores adicionales (opcional)"},
+      "parameters": {
+        "Periodicidad": "1=Anual, 2=Semestral, 3=Trimestral, 4=Mensual, 5=Semanal (default: 3)",
+        "Rezagos": "Rezagos para ACF/PACF (default: 12)"
+      },
+      "problemas_que_resuelve": ["raiz_unitaria", "cointegracion", "arima", "descomposicion"],
+      "referencia": "Wooldridge, Cap. 10-12"
+    },
+
+    {
+      "function_id": "ST_VAR",
+      "family": "ST",
+      "name": "VAR — Vectores Autorregresivos",
+      "xll_name": null,
+      "studio_file": "ST_VAR.Studio.R",
+      "languages": ["r"],
+      "description": "Sistema de ecuaciones simultáneas para series de tiempo estacionarias. Funciones de impulso-respuesta, descomposición de varianza, causalidad de Granger.",
+      "cuando_usar": "Dos o más series estacionarias I(0) con interdependencias dinámicas.",
+      "libraries_required": ["vars"],
+      "column_roles": {"Series": "Dos o más series temporales estacionarias"},
+      "parameters": {
+        "MaxRezagos": "Máximo de rezagos a evaluar (int, default: 8)",
+        "CriterioSel": "1=AIC, 2=BIC, 3=HQ, 4=FPE (default: 1)",
+        "TipoConst": "1=Constante, 2=Tendencia, 3=Ambos (default: 1)",
+        "HorizontePron": "Períodos a pronosticar (int, default: 4)"
+      },
+      "problemas_que_resuelve": ["series_multivariadas", "impulso_respuesta", "causalidad_granger"],
+      "alternativas_ontologicas": {
+        "si_series_integradas_I1": "ST_ECM"
+      },
+      "referencia": "Wooldridge, Cap. 18 / Lütkepohl (2005)"
+    },
+
+    {
+      "function_id": "ST_ECM",
+      "family": "ST",
+      "name": "ECM/VECM — Corrección de Error",
+      "xll_name": null,
+      "studio_file": "ST_ECM.Studio.R",
+      "languages": ["r"],
+      "description": "Vector de Corrección de Error para series cointegradas I(1). Prueba de Johansen, estimación VECM.",
+      "cuando_usar": "Dos o más series integradas I(1) con relación de largo plazo (cointegración).",
+      "libraries_required": ["vars", "urca"],
+      "column_roles": {"Series": "Dos o más series integradas I(1)"},
+      "parameters": {
+        "MaxRezagos": "Máximo de rezagos (int, default: 8)",
+        "CriterioSel": "1=AIC, 2=BIC (default: 2)",
+        "NivelCoint": "Nivel de significancia para Johansen (default: 1=10%)",
+        "TipoPrueba": "1=Traza, 2=Eigenvalor (default: 1)"
+      },
+      "problemas_que_resuelve": ["cointegracion", "largo_plazo", "series_integradas"],
+      "alternativas_ontologicas": {
+        "si_series_estacionarias": "ST_VAR"
+      },
+      "referencia": "Engle & Granger (1987)"
+    },
+
+    {
+      "function_id": "AD_ACP",
+      "family": "AD",
+      "name": "Análisis de Componentes Principales",
+      "xll_name": "AD_ACP.C",
+      "xll_example": "=NEVEN.r(\"AD_ACP.C\", X, TipoOutput=4)",
+      "studio_file": "R4XCL-AD-ACP.Studio.R",
+      "languages": ["r"],
+      "description": "Reducción de dimensionalidad. Extrae componentes que maximizan la varianza explicada.",
+      "cuando_usar": "Muchas variables correlacionadas. Reducir dimensionalidad antes de regresión o clustering.",
+      "libraries_required": ["PerformanceAnalytics (gráfico, condicional)"],
+      "column_roles": {"X": "Variables numéricas (múltiple, ≥2)"},
+      "parameters": {
+        "Escala": "Estandarizar antes de ACP (bool, default: true)",
+        "N_Componentes": "Número de componentes a retener (int, 0=todos, default: 0)"
+      },
+      "tipo_output_xll": {
+        "4": "Cargas + valores propios",
+        "5": "Scores (coordenadas individuos)",
+        "8": "Varianza explicada por componente"
+      },
+      "problemas_que_resuelve": ["multicolinealidad", "reduccion_dimensionalidad", "visualizacion"],
+      "referencia": "Wooldridge, Cap. 9 (multicolinealidad)"
+    },
+
+    {
+      "function_id": "AD_KMedias",
+      "family": "AD",
+      "name": "K-Medias (Clustering)",
+      "xll_name": "AD_KMedias.C",
+      "xll_example": "=NEVEN.r(\"AD_KMedias.C\", X, K=3, TipoOutput=1)",
+      "studio_file": "R4XCL-AD-KMediass.Studio.R",
+      "languages": ["r"],
+      "description": "Agrupamiento no supervisado. Asigna observaciones a K grupos minimizando la varianza intra-cluster.",
+      "cuando_usar": "Identificar grupos homogéneos en los datos cuando no hay etiquetas.",
+      "libraries_required": ["cluster (gap statistic, condicional)"],
+      "column_roles": {"X": "Variables numéricas (múltiple)"},
+      "parameters": {
+        "K": "Número de clusters (int, default: 3)",
+        "Escala": "Estandarizar (bool, default: true)",
+        "Semilla": "Semilla aleatoria para reproducibilidad (default: 123456)"
+      },
+      "tipo_output_xll": {
+        "1": "Cluster asignado por observación",
+        "2": "Centroides",
+        "6": "Gap statistic para K óptimo",
+        "7": "Elbow curve"
+      },
+      "problemas_que_resuelve": ["segmentacion", "clustering_no_supervisado"]
+    },
+
+    {
+      "function_id": "AD_ClusteringJerarquico",
+      "family": "AD",
+      "name": "Clustering Jerárquico",
+      "xll_name": null,
+      "studio_file": "R4XCL-AD-ClusteringJerarquico.Studio.R",
+      "languages": ["r"],
+      "description": "Dendrograma jerárquico. No requiere especificar K a priori.",
+      "cuando_usar": "Cuando no se sabe el número de clusters o se quiere explorar la estructura jerárquica.",
+      "libraries_required": [],
+      "column_roles": {"X": "Variables numéricas (múltiple)"},
+      "parameters": {
+        "K": "Número de grupos a cortar el dendrograma (int, default: 3)",
+        "Metodo": "1=Ward.D2, 2=Complete, 3=Average, 4=Single (default: 1)",
+        "Distancia": "1=Euclidiana, 2=Manhattan (default: 1)"
+      },
+      "problemas_que_resuelve": ["clustering_no_supervisado", "segmentacion_jerarquica"]
+    },
+
+    {
+      "function_id": "RG_ArbolDecision",
+      "family": "RG",
+      "name": "Árbol de Decisión",
+      "xll_name": "AD_ArbolDeDecision.C",
+      "studio_file": "R4XCL-RG-ArbolDecision.Studio.R",
+      "languages": ["r"],
+      "description": "Clasificación o regresión basada en particionamiento recursivo. Interpretable, maneja no linealidades.",
+      "cuando_usar": "Relaciones no lineales, interacciones complejas, interpretabilidad requerida.",
+      "libraries_required": ["rpart", "rpart.plot"],
+      "column_roles": {"Y": "Variable objetivo", "X": "Variables predictoras"},
+      "parameters": {
+        "TipoModelo": "1=Clasificación, 2=Regresión (default: auto según Y)",
+        "MaxProf": "Profundidad máxima (int, default: 5)",
+        "MinObs": "Observaciones mínimas por nodo (int, default: 10)"
+      },
+      "problemas_que_resuelve": ["no_linealidad", "clasificacion", "regresion_no_parametrica"]
+    },
+
+    {
+      "function_id": "RG_SVM",
+      "family": "RG",
+      "name": "SVM — Máquinas de Soporte Vectorial",
+      "xll_name": "MR_SVM",
+      "studio_file": "R4XCL-RG-SVM.Studio.R",
+      "languages": ["r"],
+      "description": "Clasificación o regresión con hiperplano de máximo margen. Kernels: lineal, polinomial, radial, sigmoide.",
+      "libraries_required": ["e1071"],
+      "column_roles": {"Y": "Variable objetivo", "X": "Variables predictoras"},
+      "parameters": {
+        "TipoModelo": "1=Clasificación, 2=Regresión (default: 1)",
+        "Kernel": "1=Lineal, 2=Polinomial, 3=RBF, 4=Sigmoide (default: 3)",
+        "Costo": "Parámetro de regularización C (default: 1)"
+      },
+      "problemas_que_resuelve": ["clasificacion", "regresion_no_lineal", "ml_supervisado"]
+    },
+
+    {
+      "function_id": "DS_Wooldridge",
+      "family": "DS",
+      "name": "Datasets Wooldridge (115)",
+      "xll_name": null,
+      "studio_file": "R4XCL-DS-Wooldridge.Studio.R",
+      "languages": ["r"],
+      "description": "Carga cualquiera de los 115 datasets del libro Introductory Econometrics directamente en DuckDB.",
+      "libraries_required": ["wooldridge"],
+      "column_roles": {},
+      "parameters": {
+        "Dataset": "Nombre del dataset (select, 115 opciones, default: 'wage1')"
+      },
+      "problemas_que_resuelve": ["carga_datos", "datos_ejemplo"]
+    }
+  ],
+
+  "libraries_inventory": {
+    "lmtest": {
+      "installed": true,
+      "used_in": ["RG_Lineal", "RG_2SLS", "RG_Newey_West", "RG_FGLS", "RG_RESET", "RG_Davidson_MacKinnon"],
+      "capabilities_not_yet_exposed": [
+        "grangertest() — Causalidad de Granger (alternativa a vars::causality)",
+        "coeftest() con vcov personalizada — errores robustos para cualquier modelo",
+        "bgtest() — Breusch-Godfrey para autocorrelación de orden p"
+      ]
+    },
+    "sandwich": {
+      "installed": true,
+      "used_in": ["RG_Lineal TipoOutput=7", "RG_Newey_West"],
+      "capabilities_not_yet_exposed": [
+        "vcovCL() — errores estándar agrupados (cluster-robust SE)",
+        "vcovHC() tipos HC0-HC5 — diferentes estimadores robustos",
+        "vcovBS() — bootstrap SE"
+      ]
+    },
+    "AER": {
+      "installed": true,
+      "used_in": ["RG_2SLS"],
+      "capabilities_not_yet_exposed": [
+        "tobit() — alternativa a VGAM para modelos Tobit",
+        "ivreg() con diagnósticos Sargan/Wu-Hausman — endogeneidad más completa",
+        "Datasets adicionales: CPS1985, Fatalities, PSID, etc."
+      ]
+    },
+    "plm": {
+      "installed": true,
+      "used_in": ["RG_DatosPanel"],
+      "capabilities_not_yet_exposed": [
+        "pmg() — Mean Group Estimator (Pesaran-Smith) para paneles heterogéneos",
+        "pcce() — Common Correlated Effects para dependencia transversal",
+        "pggls() — GLS para panel"
+      ]
+    },
+    "vars": {
+      "installed": true,
+      "used_in": ["ST_VAR", "ST_ECM"],
+      "capabilities_not_yet_exposed": [
+        "SVAR() — VAR estructural con restricciones de corto/largo plazo",
+        "fevd() — Descomposición varianza del error de predicción",
+        "arch.test() — Test ARCH sobre residuos VAR"
+      ]
+    },
+    "urca": {
+      "installed": true,
+      "used_in": ["ST_ECM"],
+      "capabilities_not_yet_exposed": [
+        "ur.kpss() — Test KPSS (H0: estacionariedad, complementa ADF)",
+        "ur.ers() — Elliott-Rothenberg-Stock (más potencia que ADF)",
+        "ur.za() — Zivot-Andrews con quiebre estructural"
+      ]
+    },
+    "sampleSelection": {
+      "installed": "verificar",
+      "used_in": ["RG_HECKIT"],
+      "capabilities_not_yet_exposed": [
+        "selection() con método MLE — alternativa al método en dos etapas",
+        "Modelos Tobit tipo II y III"
+      ]
+    },
+    "tseries": {
+      "installed": true,
+      "used_in": ["RG_SeriesTiempo"],
+      "capabilities_not_yet_exposed": [
+        "kpss.test() — complementa ADF para raíz unitaria",
+        "arma() — estimación ARMA directa"
+      ]
+    },
+    "mFilter": {
+      "installed": true,
+      "used_in": ["ST_Filtro (XLL)"],
+      "capabilities_not_yet_exposed": [
+        "Filtro Baxter-King — exposición completa en Studio",
+        "Filtro Christiano-Fitzgerald — pendiente exposición Studio"
+      ]
+    },
+    "rpart": {
+      "installed": true,
+      "used_in": ["RG_ArbolDecision"],
+      "capabilities_not_yet_exposed": [
+        "prune() — poda del árbol por complejidad cp",
+        "printcp() — tabla de parámetros de complejidad"
+      ]
+    }
+  }
+}
