@@ -100,12 +100,17 @@ local({
 # PLUTO.READ: leer datos exportados desde Pluto de vuelta a Excel
 source(file.path(Sys.getenv('NEVEN_HOME', 'C:/NEVEN'), 'startup', 'R4XCL-NEVEN-pluto-read.R'), local=FALSE)
 
-# NevenX: dispatcher genérico de procesos (NevenX.R / NevenX.J / NevenX.P)
+# NevenX: dispatcher generico de procesos (NevenX.R / NevenX.J / NevenX.P)
 local({
   nx_path <- file.path(Sys.getenv('NEVEN_HOME', 'C:/NEVEN'), 'functions', 'R4XCL-0-NevenX.R')
   if (file.exists(nx_path)) {
-    source(nx_path, local = FALSE)
+    tryCatch(
+      source(nx_path, local = FALSE),
+      error = function(e) cat(paste0("[NevenX] ERROR al cargar dispatcher: ", conditionMessage(e), "\n"),
+                              file = "C:/NEVEN/nevenx_startup.log", append = TRUE)
+    )
   } else {
-    cat("[NevenX] R4XCL-0-NevenX.R no encontrado — NevenX.R/J/P no disponible\n")
+    cat("[NevenX] R4XCL-0-NevenX.R no encontrado\n",
+        file = "C:/NEVEN/nevenx_startup.log", append = TRUE)
   }
 })
