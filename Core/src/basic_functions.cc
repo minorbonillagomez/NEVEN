@@ -91,7 +91,7 @@ LPXLOPER12 RJ_FunctionCall(
   function_call->set_flags(function_descriptor->flags_);
 
 	int argcount = 16;
-	for (; argcount && arglist[argcount - 1]->xltype == xltypeMissing; argcount--);
+	for (; argcount && arglist[argcount - 1] && arglist[argcount - 1]->xltype == xltypeMissing; argcount--);
 
   int function_arguments = function_descriptor->language_service_->named_arguments() ? 
     function_descriptor->arguments_.size() : 0;
@@ -215,7 +215,7 @@ LPXLOPER12 RJ_Call_Generic(uint32_t language_key, LPXLOPER12 func,
   };
 
   int argcount = 16;
-  for (; argcount && arglist[argcount - 1]->xltype == xltypeMissing; argcount--);
+  for (; argcount && arglist[argcount - 1] && arglist[argcount - 1]->xltype == xltypeMissing; argcount--);
 
   for (int i = 0; i < argcount; i++) {
     auto argument = function_call->add_arguments();
@@ -1992,7 +1992,7 @@ NevenX_R(LPXLOPER12 proceso,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
     return RJ_Call_Generic(0, &g_nevenx_disp_R,
-        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13);
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }
 
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
@@ -2003,7 +2003,7 @@ NevenX_J(LPXLOPER12 proceso,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
     return RJ_Call_Generic(1, &g_nevenx_disp_J,
-        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13);
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }
 
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
@@ -2014,7 +2014,7 @@ NevenX_P(LPXLOPER12 proceso,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
     return RJ_Call_Generic(2, &g_nevenx_disp_P,
-        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13);
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }
 BCALL(1000);
 BCALL(1001);
