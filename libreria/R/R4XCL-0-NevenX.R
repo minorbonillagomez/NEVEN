@@ -1,277 +1,346 @@
-﻿# =============================================================================
-# NEVEN NevenX â€” Dispatcher genÃ©rico de procesos
 # =============================================================================
+# NEVEN NevenX -- Dispatcher generico de procesos v5
+# =============================================================================
+# CONVENCION UNIVERSAL DE POSICIONES (verificada empiricamente):
+#   Pos 1  (proceso) : Metodo
+#   Pos 2  (a0)      : SetDatosY / data_Y
+#   Pos 3  (a1)      : SetDatosX / data_X
+#   Pos 4  (a2)      : TipoOutput  (entero, default 1) -- SIEMPRE pos 4
+#   Pos 5  (a3)      : Escala      (0/1, default 0)
+#   Pos 6  (a4)      : Filtro      (rango, opcional)
+#   Pos 7  (a5)      : Constante   (0/1, default 1)
+#   Pos 8  (a6)      : Libre_1     (tercer rango, ej: Z instrumentos)
+#   Pos 9  (a7)      : Libre_2     (cuarto rango)
+#   Pos 10 (a8)      : Libre_3     (quinto rango)
+#   Pos 11 (a9)      : Param_1     (escalar adicional)
+#   Pos 12 (a10)     : Param_2     (escalar adicional)
+#   Pos 13 (a11)     : Param_3     (escalar adicional)
 #
-# CONVENCIÃ“N UNIVERSAL DE POSICIONES (fija, sin depender de sidecars):
-#
-#   Pos 1  (A1)  : MÃ©todo       â€” nombre de la funciÃ³n R (string)
-#   Pos 2  (A2)  : SetDatosY    â€” variable dependiente Y (rango)
-#   Pos 3  (A3)  : SetDatosX    â€” variables independientes X (rango)
-#   Pos 4  (A4)  : Escala       â€” 1=SI, 0=NO (default: 0)
-#   Pos 5  (A5)  : Filtro       â€” vector filtro 0/1 (rango, opcional)
-#   Pos 6  (A6)  : Constante    â€” 1=SI (default), 0=NO
-#   Pos 7  (A7)  : Libre_1      â€” tercer rango (ej: Z instrumentos en 2SLS)
-#   Pos 8  (A8)  : Libre_2      â€” cuarto rango (ej: X_exo en 2SLS)
-#   Pos 9  (A9)  : Libre_3      â€” quinto rango (libre)
-#   Pos 10 (A10) : Param_1      â€” parÃ¡metro escalar adicional
-#   Pos 11 (A11) : Param_2      â€” parÃ¡metro escalar adicional
-#   Pos 12 (A12) : Param_3      â€” parÃ¡metro escalar adicional
-#   Pos 13 (A13) : Param_4      â€” parÃ¡metro escalar adicional
-#   Pos 14 (A14) : Param_5      â€” parÃ¡metro escalar adicional
-#   Pos 15 (A15) : TipoOutput   â€” Ãºltimo parÃ¡metro siempre (default: 1)
-#
-# EJEMPLOS:
-#   =NevenX.R("MR_Lineal", A1:A50, B1:C50)                  â†’ TipoOutput=1
-#   =NevenX.R("MR_Lineal", A1:A50, B1:C50, , , , , , , , , , , , 7)  â†’ TipoOutput=7
-#   =NevenX.R("MR_Lineal", A1:A50, B1:C50, 1)               â†’ Escala=SI
-#   =NevenX.R("MR_2SLS",   A1:A50, B1:C50, , , , D1:D50)    â†’ Z en pos 7
-#
-# NOMBRES QUE RECIBEN LAS FUNCIONES R (mapeo de posiciÃ³n â†’ parÃ¡metro):
-#   A2 â†’ SetDatosY  (funciones XLL legacy) / data_Y (funciones Studio)
-#   A3 â†’ SetDatosX  (funciones XLL legacy) / data_X (funciones Studio)
-#   A4 â†’ Escala     (0/1)
-#   A5 â†’ Filtro     (vector)
-#   A6 â†’ Constante  (0/1)
-#   A7 â†’ el tercer rol del proceso (Z, Endo, Variable_i, etc.)
-#   A8 â†’ el cuarto rol (Exo, Variable_t, etc.)
-#   A9 â†’ el quinto rol (libre)
-#   A10..A14 â†’ parÃ¡metros escalares adicionales (Param_1..Param_5)
-#   A15 â†’ TipoOutput
+# TIPOOUTPUT=0 -- IntelliSense dinamico:
+#   Retorna DOS tablas desde el sidecar JSON del proceso:
+#   Tabla 1: parametros de entrada (posicion, nombre, descripcion, tipo, default)
+#   Tabla 2: TipoOutputs disponibles (id, descripcion)
 # =============================================================================
 
-# â”€â”€ Tabla de mapeo universal (posiciÃ³n Aâ†’nombre R) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-.NEVENX_POS_MAP <- c(
-  a0  = "proceso_interno",  # a0 = nombre del proceso (ya procesado)
-  a1  = "SetDatosY",        # pos 2 = Y
-  a2  = "SetDatosX",        # pos 3 = X
-  a3  = "Escala",           # pos 4 = Escala (0/1)
-  a4  = "Filtro",           # pos 5 = Filtro
-  a5  = "Constante",        # pos 6 = Constante (0/1)
-  a6  = "Libre_1",          # pos 7 = tercer rango libre
-  a7  = "Libre_2",          # pos 8 = cuarto rango libre
-  a8  = "Libre_3",          # pos 9 = quinto rango libre
-  a9  = "Param_1",          # pos 10
-  a10 = "Param_2",          # pos 11
-  a11 = "Param_3",          # pos 12
-  a12 = "Param_5",          # pos 13
-  a13 = "TipoOutput"        # pos 14 â€” SIEMPRE el Ãºltimo (a14 no se usa)
-)
-
-# â”€â”€ Mapeo semÃ¡ntico del tercer rol segÃºn el proceso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# El tercer rango (a6/Libre_1) varÃ­a segÃºn la funciÃ³n:
-# - MR_2SLS: Instrumentos / data_Instru
-# - MR_PanelData: Variable_i
-# - etc.
-# Los sidecars JSON pueden sobreescribir esto via "third_role_name"
 .NEVENX_THIRD_ROLE <- list(
-  "MR_2SLS"      = list(a6 = "SetInstrumentos", a7 = "SetDatosExo"),
-  "RG_2SLS"      = list(a6 = "data_Instru",     a7 = "data_Exo"),
-  "MR_PanelData" = list(a6 = "Variable_i",      a7 = "Variable_t"),
-  "RG_DatosPanel"= list(a6 = "data_I",          a7 = "data_T"),
-  "ST_VAR"       = list(a1 = "data_Series"),     # VAR: solo un rango multi-columna
-  "ST_ECM"       = list(a1 = "data_Series")
+  "MR_2SLS"         = list(a6 = "SetInstrumentos", a7 = "SetDatosExo"),
+  "RG_2SLS"         = list(a6 = "data_Instru",     a7 = "data_Exo"),
+  "MR_PanelData"    = list(a6 = "Variable_i",      a7 = "Variable_t"),
+  "MR_PanelData.C"  = list(a6 = "Variable_i",      a7 = "Variable_t"),
+  "RG_DatosPanel"   = list(a6 = "data_I",          a7 = "data_T"),
+  "ST_VAR"          = list(a0 = "data_Series"),
+  "ST_ECM"          = list(a0 = "data_Series")
 )
 
-# â”€â”€ Leer sidecar .json â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-.nevenx_get_sidecar <- function(proceso) {
-  functions_dir <- "C:\\NEVEN\\functions"
-  if (!dir.exists(functions_dir)) return(NULL)
+.NEVENX_POS_LABELS <- list(
+  a0  = list(name="SetDatosY",  label="Variable dependiente Y",               type="range",   default="requerido"),
+  a1  = list(name="SetDatosX",  label="Variables independientes X",            type="range",   default="requerido"),
+  a3  = list(name="Escala",     label="Estandarizar variables X (0=No, 1=Si)", type="boolean", default="0"),
+  a4  = list(name="Filtro",     label="Excluir observaciones (0=incluir)",     type="range",   default="NULL"),
+  a5  = list(name="Constante",  label="Incluir intercepto (0=No, 1=Si)",      type="boolean", default="1"),
+  a6  = list(name="Libre_1",    label="Rango libre 1",                         type="range",   default="NULL"),
+  a7  = list(name="Libre_2",    label="Rango libre 2",                         type="range",   default="NULL"),
+  a8  = list(name="Libre_3",    label="Rango libre 3",                         type="range",   default="NULL"),
+  a9  = list(name="Param_1",    label="Parametro escalar 1",                   type="scalar",  default="NULL"),
+  a10 = list(name="Param_2",    label="Parametro escalar 2",                   type="scalar",  default="NULL"),
+  a11 = list(name="Param_3",    label="Parametro escalar 3",                   type="scalar",  default="NULL")
+)
 
-  json_files <- list.files(functions_dir, pattern = "\\.json$", full.names = TRUE)
-  strip <- function(s) toupper(gsub("^(RG_|ST_|AD_|GR_|DS_|UC_|MR_|J_)", "", s))
-
-  for (f in json_files) {
-    tryCatch({
-      sidecar <- jsonlite::fromJSON(f, simplifyVector = FALSE)
-      sid     <- sidecar[["id"]] %||% ""
-      if (identical(sid, proceso))            return(sidecar)
-      if (identical(strip(sid), strip(proceso))) return(sidecar)
-    }, error = function(e) NULL)
-  }
-  return(NULL)
-}
-
-# â”€â”€ Detectar si un valor es "vacÃ­o" (Missing/NULL/NA/data.frame vacÃ­o) â”€â”€â”€â”€â”€â”€â”€â”€
 .nevenx_is_empty <- function(val) {
-  if (is.null(val))      return(TRUE)
-  if (is.na(val[1]))     return(TRUE)
+  if (is.null(val)) return(TRUE)
+  if (length(val) == 0) return(TRUE)
   if (is.data.frame(val) && (nrow(val) == 0 || ncol(val) == 0)) return(TRUE)
-  if (is.character(val) && nchar(trimws(val[1])) == 0) return(TRUE)
+  if (is.character(val) && nchar(trimws(paste(val, collapse=""))) == 0) return(TRUE)
+  v1 <- tryCatch(val[1,1], error=function(e) val[1])
+  if (is.na(v1)) return(TRUE)
   FALSE
 }
 
-# â”€â”€ Extraer escalar de XLOPER (puede venir como data.frame 1x1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .nevenx_as_scalar <- function(val, type_fn = as.numeric, default = NULL) {
   if (.nevenx_is_empty(val)) return(default)
   tryCatch({
-    if (is.data.frame(val)) val <- val[1, 1]
-    type_fn(val)
+    v <- if (is.data.frame(val)) val[1,1] else val[1]
+    type_fn(v)
   }, error = function(e) default)
 }
 
-# â”€â”€ Dispatcher principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-.nevenx_dispatch <- function(proceso,
-                              a0  = NULL, a1  = NULL, a2  = NULL,
-                              a3  = NULL, a4  = NULL, a5  = NULL,
-                              a6  = NULL, a7  = NULL, a8  = NULL,
-                              a9  = NULL, a10 = NULL, a11 = NULL,
-                              a12 = NULL, a13 = NULL, a14 = NULL) {
+.nevenx_load_sidecar <- function(proceso) {
+  neven_home <- Sys.getenv("NEVEN_HOME", "C:/NEVEN")
+  fn_dir <- file.path(neven_home, "functions")
+  jsons <- list.files(fn_dir, pattern="\\.json$", full.names=TRUE)
+  result <- NULL
+  for (jf in jsons) {
+    tryCatch({
+      j <- jsonlite::fromJSON(jf, simplifyVector=FALSE)
+      xll_name <- j[["function_name_xll"]]
+      if (!is.null(xll_name) && trimws(xll_name) == proceso) {
+        result <- j
+      }
+    }, error=function(e) NULL)
+    if (!is.null(result)) break
+  }
+  result
+}
 
-  # â”€â”€ 1. Normalizar nombre del proceso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  proceso <- trimws(as.character(proceso))
-  if (nchar(proceso) == 0)
-    return(data.frame(R4XCL_Error = "NevenX: nombre del proceso vacÃ­o."))
+.nevenx_ayuda <- function(proceso, sidecar, libre_map) {
+  pos_labels <- .NEVENX_POS_LABELS
 
-  # â”€â”€ 2. Buscar la funciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  fn <- NULL
-  for (env in list(globalenv(), NEVEN, baseenv())) {
-    if (exists(proceso, envir = env, inherits = FALSE)) {
-      obj <- get(proceso, envir = env, inherits = FALSE)
-      if (is.function(obj)) { fn <- obj; break }
+  # Sobreescribir con nevenx_positions del sidecar si existe
+  if (!is.null(sidecar)) {
+    np <- sidecar[["nevenx_positions"]]
+    if (!is.null(np)) {
+      for (slot in names(np)) {
+        entry <- np[[slot]]
+        def_raw <- entry[["default"]]
+        req <- entry[["required"]]
+        def_label <- if (isTRUE(req)) "requerido" else if (is.null(def_raw)) "NULL" else as.character(def_raw)
+        pos_labels[[slot]] <- list(
+          name    = entry[["name"]],
+          label   = entry[["label"]],
+          type    = entry[["type"]],
+          default = def_label
+        )
+      }
+    }
+    # Sobreescribir nombres de rangos libres con THIRD_ROLE
+    for (slot in c("a6","a7","a8")) {
+      nm <- libre_map[[slot]]
+      if (!is.null(nm) && !grepl("^Libre_", nm)) {
+        if (!is.null(pos_labels[[slot]])) {
+          pos_labels[[slot]][["name"]] <- nm
+        }
+      }
     }
   }
 
-  if (is.null(fn)) {
-    todos    <- ls(globalenv())
-    parecidos <- todos[agrep(proceso, todos, max.distance = 0.3)]
-    sug <- if (length(parecidos) > 0)
-      paste0(" Â¿Quisiste decir: ", paste(parecidos[1:min(3,length(parecidos))], collapse=", "), "?")
-    else ""
-    return(data.frame(R4XCL_Error = paste0(
-      "NevenX: proceso '", proceso, "' no encontrado.", sug
-    )))
+  # --- Tabla 1: parametros de entrada ---
+  pos_nums <- c(a0=2, a1=3, a3=5, a4=6, a5=7, a6=8, a7=9, a8=10, a9=11, a10=12, a11=13)
+
+  rows <- list()
+  rows[[1]] <- data.frame(
+    Posicion    = "---",
+    Nombre      = "PARAMETROS DE ENTRADA",
+    Descripcion = paste0("=NevenX.R(\"", proceso, "\", ...)"),
+    Tipo        = "---",
+    Default     = "---",
+    stringsAsFactors = FALSE
+  )
+  rows[[2]] <- data.frame(
+    Posicion    = "4",
+    Nombre      = "TipoOutput",
+    Descripcion = "Tipo de resultado (ver tabla siguiente)",
+    Tipo        = "entero",
+    Default     = "1",
+    stringsAsFactors = FALSE
+  )
+  for (slot in names(pos_nums)) {
+    info <- pos_labels[[slot]]
+    if (is.null(info)) next
+    rows[[length(rows)+1]] <- data.frame(
+      Posicion    = as.character(pos_nums[[slot]]),
+      Nombre      = info[["name"]],
+      Descripcion = info[["label"]],
+      Tipo        = info[["type"]],
+      Default     = info[["default"]],
+      stringsAsFactors = FALSE
+    )
+  }
+  t1 <- do.call(rbind, rows)
+  t1 <- t1[order(as.integer(ifelse(t1$Posicion == "---", "0", t1$Posicion))), ]
+  rownames(t1) <- NULL
+
+  # --- Separador ---
+  sep <- data.frame(Posicion="", Nombre="", Descripcion="", Tipo="", Default="",
+                    stringsAsFactors=FALSE)
+
+  # --- Tabla 2: TipoOutputs disponibles ---
+  t2_rows <- list()
+  t2_rows[[1]] <- data.frame(
+    Posicion    = "---",
+    Nombre      = "TIPOOUTPUTS DISPONIBLES",
+    Descripcion = paste0("Usar en Pos 4 de =NevenX.R(\"", proceso, "\", ...)"),
+    Tipo        = "---",
+    Default     = "---",
+    stringsAsFactors = FALSE
+  )
+
+  to_list <- if (!is.null(sidecar)) sidecar[["tipo_outputs"]] else NULL
+  if (!is.null(to_list) && length(to_list) > 0) {
+    for (item in to_list) {
+      t2_rows[[length(t2_rows)+1]] <- data.frame(
+        Posicion    = as.character(item[["id"]]),
+        Nombre      = "",
+        Descripcion = item[["label"]],
+        Tipo        = "",
+        Default     = "",
+        stringsAsFactors = FALSE
+      )
+    }
+  } else {
+    t2_rows[[2]] <- data.frame(
+      Posicion="?", Nombre="", Descripcion="Sin sidecar -- llamar con datos para ver outputs",
+      Tipo="", Default="", stringsAsFactors=FALSE
+    )
+  }
+  t2 <- do.call(rbind, t2_rows)
+  rownames(t2) <- NULL
+
+  rbind(t1, sep, t2)
+}
+
+.nevenx_dispatch <- function(proceso,
+    a0=NULL, a1=NULL, a2=NULL, a3=NULL, a4=NULL,
+    a5=NULL, a6=NULL, a7=NULL, a8=NULL, a9=NULL,
+    a10=NULL, a11=NULL, a12=NULL, a13=NULL, a14=NULL) {
+
+  proceso <- trimws(as.character(proceso))
+  if (nchar(proceso) == 0) {
+    return(data.frame(R4XCL_Error = "NevenX: nombre del proceso vacio."))
   }
 
-  # â”€â”€ 3. Extraer TipoOutput (posiciÃ³n fija: a14) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  TipoOutput <- .nevenx_as_scalar(a13, as.integer, default = 1L)
-  # DIAGNOSTICO v2 — ver todos los args
-  tryCatch({
-    info <- paste0('[NevenX] ', proceso,
-      ' | a0=', if(is.null(a0)) 'NULL' else 'DATA',
-      ' | a1=', if(is.null(a1)) 'NULL' else 'DATA',
-      ' | a11=', if(is.null(a11)) 'NULL' else paste(as.character(a11),collapse='|'),
-      ' | a12=', if(is.null(a12)) 'NULL' else paste(as.character(a12),collapse='|'),
-      ' | a13=', if(is.null(a13)) 'NULL' else paste(as.character(a13),collapse='|'),
-      ' | a14=', if(is.null(a14)) 'NULL' else paste(as.character(a14),collapse='|'))
-    write(info, file='C:/NEVEN/nevenx_diag.log', append=TRUE)
-  }, error=function(e) NULL)
+  # Buscar funcion en globalenv y NEVEN
+  fn <- NULL
+  envs <- list(globalenv())
+  if (exists("NEVEN", envir=globalenv(), inherits=FALSE) &&
+      is.environment(get("NEVEN", envir=globalenv(), inherits=FALSE))) {
+    envs <- c(envs, list(get("NEVEN", envir=globalenv(), inherits=FALSE)))
+  }
+  for (env in envs) {
+    if (exists(proceso, envir=env, inherits=FALSE)) {
+      obj <- get(proceso, envir=env, inherits=FALSE)
+      if (is.function(obj)) {
+        fn <- obj
+        break
+      }
+    }
+  }
+  if (is.null(fn)) {
+    todos <- ls(globalenv())
+    parecidos <- todos[agrep(proceso, todos, max.distance=0.3)]
+    sug <- if (length(parecidos) > 0) {
+      paste0(" Quisiste decir: ", paste(parecidos[1:min(3,length(parecidos))], collapse=", "), "?")
+    } else {
+      ""
+    }
+    return(data.frame(R4XCL_Error = paste0("NevenX: proceso '", proceso, "' no encontrado.", sug)))
+  }
 
-  # â”€â”€ 4. Mapeo de rangos segÃºn convenciÃ³n universal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  # ConvenciÃ³n fija base: a0=Y, a1=X, a2=Escala, a3=Filtro, a4=Constante, a5..a7=libres
-  # Los roles del tercer/cuarto rango dependen del proceso (tabla .NEVENX_THIRD_ROLE)
+  # TipoOutput -- posicion a2 (pos 4) -- FIJA
+  # EXCEPCION: si a0 es escalar (no data.frame) significa que el usuario
+  # llamo sin datos (ej: =NevenX.R("MR_Lineal",,, 0)) y Excel comprimo
+  # las comas vacias -- el escalar aterriza en a0.
+  TipoOutput <- .nevenx_as_scalar(a2, as.integer, default=1L)
+  if (!is.null(a0) && !is.data.frame(a0) && is.numeric(a0) && length(a0) == 1) {
+    TipoOutput <- as.integer(a0)
+    a0 <- NULL
+    a1 <- NULL
+  }
 
-  # Base: a0=SetDatosY, a1=SetDatosX
+  # Nombres de Y y X segun tipo de funcion
   y_name <- "SetDatosY"
   x_name <- "SetDatosX"
-
-  # Si el proceso es una funciÃ³n Studio (.Studio.R), usar nombres data_Y / data_X
   if (grepl("\\.Studio$|^RG_|^ST_|^AD_", proceso)) {
     y_name <- "data_Y"
     x_name <- "data_X"
   }
 
-  # Nombres para los rangos libres (a6, a7, a8)
-  libre_names <- list(a6 = "Libre_1", a7 = "Libre_2", a8 = "Libre_3")
+  # Nombres para rangos libres (fallback hardcodeado)
+  libre_map <- list(a6="Libre_1", a7="Libre_2", a8="Libre_3")
   if (proceso %in% names(.NEVENX_THIRD_ROLE)) {
     overrides <- .NEVENX_THIRD_ROLE[[proceso]]
-    for (nm in names(overrides)) libre_names[[nm]] <- overrides[[nm]]
-    # Si VAR/ECM usan el Y como "data_Series"
-    if (!is.null(overrides[["a1"]])) y_name <- overrides[["a1"]]
+    for (nm in names(overrides)) {
+      libre_map[[nm]] <- overrides[[nm]]
+    }
+    if (!is.null(overrides[["a0"]])) {
+      y_name <- overrides[["a0"]]
+    }
   }
 
-  # â”€â”€ 5. Construir lista de argumentos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # TipoOutput=0 -- retornar ayuda desde sidecar
+  if (isTRUE(TipoOutput == 0L)) {
+    sidecar <- tryCatch(
+      .nevenx_load_sidecar(proceso),
+      error = function(e) NULL
+    )
+    resultado <- tryCatch(
+      .nevenx_ayuda(proceso, sidecar, libre_map),
+      error = function(e) data.frame(
+        R4XCL_Error = paste0("NevenX ayuda: ", conditionMessage(e))
+      )
+    )
+    return(resultado)
+  }
+
+  # -------------------------------------------------------------------------
+  # Flujo normal (TipoOutput != 0)
+  # -------------------------------------------------------------------------
+
   args <- list()
-
-  # Y (a0)
   if (!.nevenx_is_empty(a0)) args[[y_name]] <- a0
-
-  # X (a1)
   if (!.nevenx_is_empty(a1)) args[[x_name]] <- a1
 
-  # Escala (a2) â€” escalar 0/1
-  if (!.nevenx_is_empty(a2)) {
-    v <- .nevenx_as_scalar(a2, as.integer)
+  if (!.nevenx_is_empty(a3)) {
+    v <- .nevenx_as_scalar(a3, as.integer)
     if (!is.null(v)) args[["Escala"]] <- v
   }
 
-  # Filtro (a3) â€” rango
-  if (!.nevenx_is_empty(a3)) args[["Filtro"]] <- a3
-
-  # Constante (a4) â€” escalar 0/1
+  # Filtro: recortar al mismo nrow que Y si el rango es mas grande
   if (!.nevenx_is_empty(a4)) {
-    v <- .nevenx_as_scalar(a4, as.integer)
+    filtro_df <- a4
+    if (is.data.frame(filtro_df) && !.nevenx_is_empty(a0) && is.data.frame(a0)) {
+      nY <- nrow(a0)
+      if (nrow(filtro_df) > nY) {
+        filtro_df <- filtro_df[seq_len(nY), , drop=FALSE]
+      }
+    }
+    args[["Filtro"]] <- filtro_df
+  }
+
+  if (!.nevenx_is_empty(a5)) {
+    v <- .nevenx_as_scalar(a5, as.integer)
     if (!is.null(v)) args[["Constante"]] <- v
   }
 
-  # Rangos libres (a5, a6, a7)
-  libres <- list(a5 = libre_names[["a6"]],
-                 a6 = libre_names[["a6"]],
-                 a7 = libre_names[["a7"]],
-                 a8 = libre_names[["a8"]])
-  raw_libres <- list(a5 = a5, a6 = a6, a7 = a7, a8 = a8)
-  for (pos in names(raw_libres)) {
-    val <- raw_libres[[pos]]
-    nm  <- libres[[pos]]
-    if (!.nevenx_is_empty(val) && !is.null(nm)) args[[nm]] <- val
+  for (pos in c("a6","a7","a8")) {
+    val <- tryCatch(get(pos, envir=environment(), inherits=FALSE), error=function(e) NULL)
+    if (!.nevenx_is_empty(val) && !is.null(libre_map[[pos]])) {
+      args[[libre_map[[pos]]]] <- val
+    }
   }
 
-  # ParÃ¡metros escalares adicionales (a9..a13)
-  extra_params <- list(a9=a9, a10=a10, a11=a11, a12=a12, a13=a13)
-  extra_names  <- paste0("Param_", 1:5)
-  for (i in seq_along(extra_params)) {
-    val <- extra_params[[i]]
+  extra_pos   <- c("a9","a10","a11")
+  extra_names <- paste0("Param_", 1:3)
+  for (i in seq_along(extra_pos)) {
+    val <- tryCatch(get(extra_pos[i], envir=environment(), inherits=FALSE), error=function(e) NULL)
     if (!.nevenx_is_empty(val)) {
       v <- .nevenx_as_scalar(val)
       if (!is.null(v)) args[[extra_names[i]]] <- v
     }
   }
 
-  # TipoOutput â€” siempre al final
   args[["TipoOutput"]] <- TipoOutput
 
-  # â”€â”€ 6. Filtrar args que la funciÃ³n no acepta â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  # Filtrar solo parametros que la funcion acepta
   fn_params <- names(formals(fn))
   if (length(fn_params) > 0 && !("..." %in% fn_params)) {
     args <- args[names(args) %in% fn_params]
   }
 
-  # â”€â”€ 7. Ejecutar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  # TipoOutput=0 es especial: retorna la lista de outputs disponibles.
-  # Las funciones XLL evalÃºan TipoOutput DESPUÃ‰S de preparar los datos,
-  # asÃ­ que si no hay datos los creamos mÃ­nimos (1 fila, 1 col) para
-  # que la funciÃ³n llegue al bloque TipoOutput=0 sin error.
-  if (isTRUE(TipoOutput == 0L)) {
-    if (is.null(args[[y_name]]) || .nevenx_is_empty(args[[y_name]])) {
-      # Datos ficticios mÃ­nimos: header + 2 filas numÃ©ricas
-      dummy <- data.frame(Y = c(1, 2)); colnames(dummy) <- "Y_dummy"
-      dummy_header <- rbind(colnames(dummy), dummy)
-      args[[y_name]] <- dummy_header
-    }
-    if (!is.null(x_name) && (is.null(args[[x_name]]) || .nevenx_is_empty(args[[x_name]]))) {
-      dummy <- data.frame(X = c(1, 2)); colnames(dummy) <- "X_dummy"
-      dummy_header <- rbind(colnames(dummy), dummy)
-      args[[x_name]] <- dummy_header
-    }
-  }
-
   tryCatch(
     do.call(fn, args),
-    error = function(e) {
-      data.frame(R4XCL_Error = paste0("NevenX ['", proceso, "']: ", conditionMessage(e)))
-    }
+    error = function(e) data.frame(
+      R4XCL_Error = paste0("NevenX ['", proceso, "']: ", conditionMessage(e))
+    )
   )
 }
 
-# â”€â”€ Registrar en NEVEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-if (exists("NEVEN") && is.environment(NEVEN)) {
-  NEVEN$.nevenx_dispatch      <- .nevenx_dispatch
-  NEVEN$.nevenx_get_sidecar   <- .nevenx_get_sidecar
-  NEVEN$.NEVENX_POS_MAP       <- .NEVENX_POS_MAP
-  NEVEN$.NEVENX_THIRD_ROLE    <- .NEVENX_THIRD_ROLE
+if (exists("NEVEN", envir=globalenv(), inherits=FALSE) &&
+    is.environment(get("NEVEN", envir=globalenv(), inherits=FALSE))) {
+  neven_env <- get("NEVEN", envir=globalenv(), inherits=FALSE)
+  assign(".nevenx_dispatch",      .nevenx_dispatch,      envir=neven_env)
+  assign(".NEVENX_THIRD_ROLE",    .NEVENX_THIRD_ROLE,    envir=neven_env)
+  assign(".nevenx_load_sidecar",  .nevenx_load_sidecar,  envir=neven_env)
+  assign(".nevenx_ayuda",         .nevenx_ayuda,         envir=neven_env)
 }
 
-if (!exists("%||%")) {
-  `%||%` <- function(a, b) if (!is.null(a) && length(a) > 0) a else b
-}
-
-cat("[NevenX] Dispatcher v2 cargado â€” convenciÃ³n universal de posiciones activa\n")
+cat("[NevenX] Dispatcher v5 listo -- TipoOutput=0 con sidecar unificado\n")

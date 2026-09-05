@@ -7,6 +7,7 @@
   "wikipedia_url": "https://es.wikipedia.org/wiki/Regresi%C3%B3n_lineal",
   "languages": ["r"],
   "function_name": "RG_Lineal.Studio",
+  "function_name_xll": "MR_Lineal",
   "file": "R4XCL-RG-Lineal.Studio.R",
   "variable_roles": {
     "Y": {
@@ -42,5 +43,29 @@
     "R": ["plm", "stargazer", "jsonlite"],
     "Julia": [],
     "Python": []
-  }
+  },
+  "nevenx_positions": {
+    "a0": { "name": "SetDatosY",        "label": "Variable dependiente Y",              "type": "range",   "required": true,  "default": null },
+    "a1": { "name": "SetDatosX",        "label": "Variables independientes X",           "type": "range",   "required": true,  "default": null },
+    "a3": { "name": "Escala",           "label": "Estandarizar variables X (0=No, 1=Si)","type": "boolean", "required": false, "default": 0    },
+    "a4": { "name": "Filtro",           "label": "Excluir observaciones (0=incluir)",    "type": "range",   "required": false, "default": null },
+    "a5": { "name": "Constante",        "label": "Incluir intercepto (0=No, 1=Si)",      "type": "boolean", "required": false, "default": 1    },
+    "a6": { "name": "SetDatosPredecir", "label": "Rango para prediccion fuera de muestra","type": "range",  "required": false, "default": null },
+    "a9": { "name": "Categorica",       "label": "Variable categorica (0=No, 1=Si)",     "type": "boolean", "required": false, "default": 0    }
+  },
+  "tipo_outputs": [
+    { "id": 0,  "label": "Ayuda -- parametros de entrada y outputs disponibles" },
+    { "id": 1,  "label": "Tabla OLS con stargazer (IC 95%)" },
+    { "id": 2,  "label": "Prediccion dentro de muestra (Y ajustado)" },
+    { "id": 3,  "label": "Prediccion fuera de muestra (requiere SetDatosPredecir)" },
+    { "id": 4,  "label": "Efectos marginales" },
+    { "id": 5,  "label": "Factor de inflacion de varianza (VIF)" },
+    { "id": 6,  "label": "Test de heterocedasticidad (Breusch-Pagan)" },
+    { "id": 7,  "label": "OLS con errores estandar robustos (HC)" },
+    { "id": 8,  "label": "Observaciones de influencia (Cook, leverage)" },
+    { "id": 9,  "label": "Informacion de ejecucion (formula, N, variables)" },
+    { "id": 11, "label": "Resumen summary() basico" },
+    { "id": 12, "label": "Vector de residuos" },
+    { "id": 13, "label": "Metricas estructuradas (Seccion, Parametro, Metrica, Valor)" }
+  ]
 }

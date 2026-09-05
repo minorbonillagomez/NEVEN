@@ -1,12 +1,13 @@
 {
   "id": "RG_2SLS",
   "family": "RG",
-  "family_label": "Regresión",
-  "name": "2SLS — Variables Instrumentales (IV)",
-  "description": "Corrige el sesgo de endogeneidad usando instrumentos externos Z. Incluye diagnósticos automáticos: F de primera etapa (instrumentos débiles si F<10), Wu-Hausman (confirma endogeneidad) y Sargan (valida instrumentos). Wooldridge Cap. 15.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Método_de_variables_instrumentales",
+  "family_label": "Regresion",
+  "name": "2SLS -- Variables Instrumentales (IV)",
+  "description": "Corrige el sesgo de endogeneidad usando instrumentos externos Z. Incluye diagnosticos automaticos: F de primera etapa (instrumentos debiles si F<10), Wu-Hausman (confirma endogeneidad) y Sargan (valida instrumentos). Wooldridge Cap. 15.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Metodo_de_variables_instrumentales",
   "languages": ["r"],
   "function_name": "RG_2SLS.Studio",
+  "function_name_xll": "MR_2SLS",
   "file": "RG_2SLS.Studio.R",
   "variable_roles": {
     "Y": {
@@ -16,19 +17,19 @@
       "required": true
     },
     "Endo": {
-      "label": "Variables endógenas (X endógenas)",
+      "label": "Variables endogenas (X endogenas)",
       "types": ["numeric"],
       "multiple": true,
       "required": true
     },
     "Exo": {
-      "label": "Variables exógenas de control (opcional)",
+      "label": "Variables exogenas de control (opcional)",
       "types": ["numeric"],
       "multiple": true,
       "required": false
     },
     "Instru": {
-      "label": "Instrumentos externos (Z) — min. uno por variable endógena",
+      "label": "Instrumentos externos (Z) -- min. uno por variable endogena",
       "types": ["numeric"],
       "multiple": true,
       "required": true
@@ -43,16 +44,34 @@
       "tier": 1,
       "options": [
         {"value": 0.01, "label": "1%"},
-        {"value": 0.05, "label": "5% (estándar)"},
+        {"value": 0.05, "label": "5% (estandar)"},
         {"value": 0.10, "label": "10%"}
       ]
     },
     {
       "name": "DiagnosticosF",
-      "label": "Mostrar diagnósticos IV (F, Wu-Hausman, Sargan)",
+      "label": "Mostrar diagnosticos IV (F, Wu-Hausman, Sargan)",
       "type": "boolean",
       "default": true,
       "tier": 1
     }
+  ],
+  "nevenx_positions": {
+    "a0": { "name": "SetDatosY",        "label": "Variable dependiente Y",                    "type": "range",   "required": true,  "default": null },
+    "a1": { "name": "SetDatosX",        "label": "Variables endogenas X",                     "type": "range",   "required": true,  "default": null },
+    "a3": { "name": "Escala",           "label": "Estandarizar variables (0=No, 1=Si)",        "type": "boolean", "required": false, "default": 0    },
+    "a4": { "name": "Filtro",           "label": "Excluir observaciones (0=incluir)",          "type": "range",   "required": false, "default": null },
+    "a5": { "name": "Constante",        "label": "Incluir intercepto (0=No, 1=Si)",            "type": "boolean", "required": false, "default": 1    },
+    "a6": { "name": "SetInstrumentos",  "label": "Variables instrumentales Z (requerido)",     "type": "range",   "required": true,  "default": null },
+    "a7": { "name": "SetDatosExo",      "label": "Variables exogenas de control (opcional)",   "type": "range",   "required": false, "default": null }
+  },
+  "tipo_outputs": [
+    { "id": 0, "label": "Ayuda -- parametros de entrada y outputs disponibles" },
+    { "id": 1, "label": "Tabla 2SLS con stargazer" },
+    { "id": 2, "label": "Prediccion dentro de muestra" },
+    { "id": 3, "label": "Test de endogeneidad Wu-Hausman" },
+    { "id": 4, "label": "Test de instrumentos debiles (F primera etapa)" },
+    { "id": 5, "label": "Test de sobreidentificacion Sargan" },
+    { "id": 9, "label": "Informacion de ejecucion (formula, N, variables)" }
   ]
 }
