@@ -1,4 +1,4 @@
-﻿{
+{
   "NEVEN": {
     "functionsDirectory": "C:\\NEVEN\\functions",
     "graphicsDirectory": "C:\\NEVEN\\graphics",
@@ -43,7 +43,7 @@
     "provider": "azure",
     "apiKey": "TU_AZURE_OPENAI_API_KEY_AQUI",
     "model": "gpt-4.1",
-    "endpoint": "https://gmo-prod-azure-ai-eastus2-0001.openai.azure.com",
+    "endpoint": "TU_AZURE_OPENAI_ENDPOINT_AQUI",
     "apiVersion": "2025-01-01-preview",
     "maxTokens": 2000,
     "temperature": 0.3,

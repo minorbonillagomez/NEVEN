@@ -82,8 +82,9 @@ BERTModule_*.gz
 *.pem
 *.p12
 *.pfx
+# neven-config.json contiene credenciales reales en produccion.
+# NUNCA commitear el config real — usar neven-config.template.json como referencia.
 neven-config.json
-!Install/neven-config.json
 crashes/
 
 # ─── Temporary/generated files ───────────────────────────────
