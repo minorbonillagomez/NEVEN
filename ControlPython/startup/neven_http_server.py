@@ -810,14 +810,13 @@ class NEVENHandler(BaseHTTPRequestHandler):
 
         _run_hint = (
             "Cuando sugieras un nuevo análisis o corrección metodológica, "
-            "incluye un bloque ```neven-run con el JSON de la llamada. "
-            "El schema EXACTO es: "
-            "{\"function_id\": string, \"language\": \"r\"|\"python\"|\"julia\", "
-            "\"column_roles\": {\"Y\": [...], \"X\": [...], \"Z\": [...]}, "
-            "\"parameters\": {}, \"context_note\": string}. "
-            "Usa EXACTAMENTE uno de los function_id del catálogo — no inventes nombres. "
-            "Cuando sea más apropiado usar una función XLL directamente, incluye también "
-            "la fórmula Excel exacta con los nombres de columna reales del contexto. "
+            "incluye la fórmula Excel exacta con convención NevenX v4: "
+            "=NevenX.R(\"NombreFuncion\", Y, X, TipoOutput) donde TipoOutput es el número en posición 4. "
+            "Usa EXACTAMENTE uno de los xll_name del catálogo — no inventes nombres. "
+            "Ejemplo: =NevenX.R(\"MR_Lineal\", A1:A100, B1:D100, 1) para OLS, "
+            "=NevenX.R(\"MR_Lineal\",,, 0) para ver la ayuda de parámetros. "
+            "Convención de posiciones: Pos2=Y, Pos3=X, Pos4=TipoOutput, Pos5=Escala, "
+            "Pos6=Filtro, Pos7=Constante, Pos8+=rangos libres (ej: instrumentos Z). "
             "\n\n"
             "Si la función que necesitas NO existe en el catálogo, puedes crearla. "
             "SOLO bajo solicitud o aprobación explícita del usuario, incluye un bloque "
@@ -826,7 +825,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "\"language\": \"r\", "
             "\"description\": \"descripción breve\", "
             "\"code\": \"<código R completo siguiendo el protocolo NEVEN>\", "
-            "\"excel_usage\": \"=NEVEN.r(\\\"NombreFuncion\\\", Y, X, TipoOutput=1)\"}. "
+            "\"excel_usage\": \"=NevenX.R(\\\"NombreFuncion\\\", Y, X, 1)\"}. "
             "El código DEBE seguir el protocolo de C:\\\\NEVEN\\\\functions\\\\: "
             "función con SetDatosY/SetDatosX como primeros parámetros, "
             "primera fila de cada rango = nombres de columnas, "
@@ -1102,7 +1101,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 "message":  (
                     f"Función guardada en {dest_path}. "
                     f"Reinicia NEVEN Studio para que aparezca en DataLab, "
-                    f"o usa =NEVEN.r(\"{filename.replace('.R','').replace('R4XCL-RG-','MR_').replace('R4XCL-','')}\", ...) "
+                    f"o usa =NevenX.R(\"{filename.replace('.R','').replace('R4XCL-RG-','MR_').replace('R4XCL-','')}\", Y, X, 1) "
                     f"desde Excel directamente."
                 ),
             })
