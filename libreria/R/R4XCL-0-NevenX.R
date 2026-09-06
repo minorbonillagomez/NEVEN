@@ -1,5 +1,5 @@
 # =============================================================================
-# NEVEN NevenX -- Dispatcher generico de procesos v5
+# NEVEN NevenX -- Dispatcher generico de procesos v6
 # =============================================================================
 # CONVENCION UNIVERSAL DE POSICIONES (verificada empiricamente):
 #   Pos 1  (proceso) : Metodo
@@ -20,17 +20,16 @@
 #   Retorna DOS tablas desde el sidecar JSON del proceso:
 #   Tabla 1: parametros de entrada (posicion, nombre, descripcion, tipo, default)
 #   Tabla 2: TipoOutputs disponibles (id, descripcion)
+#
+# DEPRECACION .NEVENX_THIRD_ROLE:
+#   Los nombres de rangos libres (a6/a7/a8) y de Y (a0) se leen del sidecar
+#   JSON (campo nevenx_positions). .NEVENX_THIRD_ROLE es el fallback para
+#   procesos sin sidecar. Se eliminara cuando todos los procesos tengan sidecar.
 # =============================================================================
 
-.NEVENX_THIRD_ROLE <- list(
-  "MR_2SLS"         = list(a6 = "SetInstrumentos", a7 = "SetDatosExo"),
-  "RG_2SLS"         = list(a6 = "data_Instru",     a7 = "data_Exo"),
-  "MR_PanelData"    = list(a6 = "Variable_i",      a7 = "Variable_t"),
-  "MR_PanelData.C"  = list(a6 = "Variable_i",      a7 = "Variable_t"),
-  "RG_DatosPanel"   = list(a6 = "data_I",          a7 = "data_T"),
-  "ST_VAR"          = list(a0 = "data_Series"),
-  "ST_ECM"          = list(a0 = "data_Series")
-)
+# .NEVENX_THIRD_ROLE eliminado en v6 -- reemplazado por nevenx_positions en los sidecars JSON.
+# Si un proceso necesita mapeo especial de rangos libres (a6/a7/a8) o de Y (a0),
+# debe tener un sidecar con el campo nevenx_positions correspondiente.
 
 .NEVENX_POS_LABELS <- list(
   a0  = list(name="SetDatosY",  label="Variable dependiente Y",               type="range",   default="requerido"),
@@ -236,7 +235,7 @@
     a1 <- NULL
   }
 
-  # Nombres de Y y X segun tipo de funcion
+  # Nombres de Y y X segun tipo de funcion (default)
   y_name <- "SetDatosY"
   x_name <- "SetDatosX"
   if (grepl("\\.Studio$|^RG_|^ST_|^AD_", proceso)) {
@@ -244,24 +243,41 @@
     x_name <- "data_X"
   }
 
-  # Nombres para rangos libres (fallback hardcodeado)
+  # Nombres para rangos libres -- PRIORIDAD: sidecar > THIRD_ROLE > defaults
   libre_map <- list(a6="Libre_1", a7="Libre_2", a8="Libre_3")
-  if (proceso %in% names(.NEVENX_THIRD_ROLE)) {
-    overrides <- .NEVENX_THIRD_ROLE[[proceso]]
-    for (nm in names(overrides)) {
-      libre_map[[nm]] <- overrides[[nm]]
-    }
-    if (!is.null(overrides[["a0"]])) {
-      y_name <- overrides[["a0"]]
+
+  # Paso 1: leer sidecar una vez (se reutiliza en TipoOutput=0 y flujo normal)
+  sidecar <- tryCatch(.nevenx_load_sidecar(proceso), error=function(e) NULL)
+
+  # Paso 2: si el sidecar tiene nevenx_positions, extraer nombres de a6/a7/a0
+  if (!is.null(sidecar)) {
+    np <- sidecar[["nevenx_positions"]]
+    if (!is.null(np)) {
+      # Sobreescribir nombres de rangos libres desde sidecar
+      for (slot in c("a6","a7","a8")) {
+        entry <- np[[slot]]
+        if (!is.null(entry) && !is.null(entry[["name"]])) {
+          libre_map[[slot]] <- entry[["name"]]
+        }
+      }
+      # Sobreescribir nombre de Y si sidecar lo redefine en a0
+      entry_a0 <- np[["a0"]]
+      if (!is.null(entry_a0) && !is.null(entry_a0[["name"]])) {
+        y_name <- entry_a0[["name"]]
+      }
+      # Sobreescribir nombre de X si sidecar lo redefine en a1
+      entry_a1 <- np[["a1"]]
+      if (!is.null(entry_a1) && !is.null(entry_a1[["name"]])) {
+        x_name <- entry_a1[["name"]]
+      }
     }
   }
 
-  # TipoOutput=0 -- retornar ayuda desde sidecar
+  # Paso 3: fallback eliminado -- THIRD_ROLE deprecated en v6.
+  # Si un proceso llega aqui sin sidecar, libre_map usa los defaults genericos.
+
+  # TipoOutput=0 -- retornar ayuda desde sidecar (ya cargado arriba)
   if (isTRUE(TipoOutput == 0L)) {
-    sidecar <- tryCatch(
-      .nevenx_load_sidecar(proceso),
-      error = function(e) NULL
-    )
     resultado <- tryCatch(
       .nevenx_ayuda(proceso, sidecar, libre_map),
       error = function(e) data.frame(
@@ -338,9 +354,8 @@ if (exists("NEVEN", envir=globalenv(), inherits=FALSE) &&
     is.environment(get("NEVEN", envir=globalenv(), inherits=FALSE))) {
   neven_env <- get("NEVEN", envir=globalenv(), inherits=FALSE)
   assign(".nevenx_dispatch",      .nevenx_dispatch,      envir=neven_env)
-  assign(".NEVENX_THIRD_ROLE",    .NEVENX_THIRD_ROLE,    envir=neven_env)
   assign(".nevenx_load_sidecar",  .nevenx_load_sidecar,  envir=neven_env)
   assign(".nevenx_ayuda",         .nevenx_ayuda,         envir=neven_env)
 }
 
-cat("[NevenX] Dispatcher v5 listo -- TipoOutput=0 con sidecar unificado\n")
+cat("[NevenX] Dispatcher v6 listo -- sidecar como fuente primaria, THIRD_ROLE como fallback\n")
