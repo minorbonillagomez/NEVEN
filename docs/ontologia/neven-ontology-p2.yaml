@@ -1,0 +1,796 @@
+# =============================================================================
+# NEVEN — Ontologia del Proyecto — Paquete 2
+# =============================================================================
+# Componentes de alto uso en desarrollo diario:
+#   6. dispatcher_nevenx  — R4XCL-0-NevenX.R
+#   7. studio_backend     — neven_http_server.py + datalab_handler.py
+#   8. sidecars_json      — Install/functions/*.json
+#   9. libreria_r         — libreria/R/*.R (~90 funciones)
+# =============================================================================
+
+meta:
+  version: "1.0"
+  paquete: 2
+  descripcion: "Componentes de alto uso en desarrollo diario"
+  ultima_actualizacion: "2026-08-19"
+  autor: "Minor Bonilla / Kiro"
+  referencia_p1: "docs/ontologia/neven-ontology-p1.yaml"
+
+componentes:
+
+  # ---------------------------------------------------------------------------
+  - id: dispatcher_nevenx
+    nombre: "R4XCL-0-NevenX.R (Dispatcher NevenX v5)"
+    prioridad: 6
+    descripcion: >
+      Dispatcher generico que permite llamar cualquier funcion R/Julia/Python
+      desde Excel con sintaxis uniforme =NevenX.R("proceso", Y, X, TipoOutput).
+      Cargado por startup.r via source(). Registra funciones en el entorno NEVEN.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/libreria/R/R4XCL-0-NevenX.R"
+
+    produccion:
+      ruta: "C:/NEVEN/functions/R4XCL-0-NevenX.R"
+      log_error: "C:/NEVEN/nevenx_startup.log"  # se crea si falla la carga
+
+    dependencias:
+      - startup_r       # lo carga via source()
+      - sidecars_json   # .nevenx_load_sidecar() escanea C:/NEVEN/functions/*.json
+      - common_lib      # el archivo es cargado por LanguageService::ReadSourceFile
+
+    funciones_principales:
+      ".nevenx_dispatch":
+        descripcion: "Funcion central. Recibe proceso (string) + a0..a14."
+        flujo:
+          1: "Busca proceso en globalenv() y env NEVEN"
+          2: "Extrae TipoOutput de a2 (pos 4)"
+          3: "EXCEPCION compresion Excel: si a0 es escalar numerico -> TipoOutput=a0, a0=NULL"
+          4: "Si TipoOutput==0: llama .nevenx_load_sidecar + .nevenx_ayuda, retorna tabla"
+          5: "Flujo normal: construye args con mapeo semantico, filtra por formals(fn), do.call"
+
+      ".nevenx_load_sidecar":
+        descripcion: >
+          Escanea C:/NEVEN/functions/*.json con jsonlite::fromJSON.
+          Retorna el primer sidecar donde function_name_xll == proceso, o NULL.
+
+      ".nevenx_ayuda":
+        descripcion: >
+          Construye data.frame de 5 columnas (Posicion, Nombre, Descripcion, Tipo, Default)
+          con dos bloques: parametros de entrada + TipoOutputs disponibles.
+          Lee nevenx_positions del sidecar si existe.
+
+    convencion_posiciones_v5:
+      nota: "VERIFICADA EMPIRICAMENTE. Excel comprime comas vacias al primer slot disponible."
+      posiciones:
+        1:  { arg: "proceso",  nombre: "Metodo",      tipo: "string"  }
+        2:  { arg: "a0",       nombre: "SetDatosY",   tipo: "range",   default: null    }
+        3:  { arg: "a1",       nombre: "SetDatosX",   tipo: "range",   default: null    }
+        4:  { arg: "a2",       nombre: "TipoOutput",  tipo: "entero",  default: 1, CRITICO: true }
+        5:  { arg: "a3",       nombre: "Escala",      tipo: "boolean", default: 0       }
+        6:  { arg: "a4",       nombre: "Filtro",      tipo: "range",   default: null    }
+        7:  { arg: "a5",       nombre: "Constante",   tipo: "boolean", default: 1       }
+        8:  { arg: "a6",       nombre: "Libre_1",     tipo: "range",   default: null    }
+        9:  { arg: "a7",       nombre: "Libre_2",     tipo: "range",   default: null    }
+        10: { arg: "a8",       nombre: "Libre_3",     tipo: "range",   default: null    }
+        11: { arg: "a9",       nombre: "Param_1",     tipo: "scalar",  default: null    }
+        12: { arg: "a10",      nombre: "Param_2",     tipo: "scalar",  default: null    }
+        13: { arg: "a11",      nombre: "Param_3",     tipo: "scalar",  default: null    }
+      excepcion_compresion: >
+        Excel comprime comas vacias al final de la formula. Si el usuario escribe
+        =NevenX.R("MR_Lineal",,, 0), el 0 llega en a0 (no en a2).
+        DETECCION: if (!is.null(a0) && !is.data.frame(a0) && is.numeric(a0) && length(a0)==1)
+        ACCION: TipoOutput <- as.integer(a0); a0 <- NULL; a1 <- NULL
+
+    third_role_map:
+      descripcion: >
+        Sobreescribe nombres de a6/a7 (y a veces a0) para funciones con rangos especiales.
+      entradas:
+        MR_2SLS:      { a6: "SetInstrumentos", a7: "SetDatosExo" }
+        RG_2SLS:      { a6: "data_Instru",     a7: "data_Exo" }
+        MR_PanelData: { a6: "Variable_i",      a7: "Variable_t" }
+        MR_PanelData.C: { a6: "Variable_i",    a7: "Variable_t" }
+        RG_DatosPanel:  { a6: "data_I",         a7: "data_T" }
+        ST_VAR:       { a0: "data_Series" }
+        ST_ECM:       { a0: "data_Series" }
+
+    registro_en_neven:
+      descripcion: >
+        Al final del script, si existe env NEVEN en globalenv(), asigna:
+        .nevenx_dispatch, .NEVENX_THIRD_ROLE, .nevenx_load_sidecar, .nevenx_ayuda
+      codigo: >
+        neven_env <- get("NEVEN", envir=globalenv(), inherits=FALSE)
+        assign(".nevenx_dispatch", .nevenx_dispatch, envir=neven_env)
+
+    invariantes:
+      - id: INV-NX-01
+        descripcion: >
+          ASCII PURO, SIN BOM. ControlR carga el archivo con ReadSourceFile(),
+          que envia las lineas una a una por Named Pipe. BOM (EF BB BF) rompe
+          la primera linea con 'unexpected invalid token'.
+        como_verificar: >
+          $bytes = [System.IO.File]::ReadAllBytes('C:/NEVEN/functions/R4XCL-0-NevenX.R')
+          $bytes[0..2]  # no debe ser 239 187 191
+          ($bytes | Where-Object { $_ -gt 127 }).Count  # debe ser 0
+
+      - id: INV-NX-02
+        descripcion: >
+          Llaves {} balanceadas. Un error de parsing hace que ControlR retorne
+          error en la celda Excel en lugar del resultado.
+        como_verificar: >
+          $c = Get-Content '...R4XCL-0-NevenX.R' -Raw
+          $open = ([regex]::Matches($c, '\{')).Count
+          $close = ([regex]::Matches($c, '\}')).Count
+          $open -eq $close  # debe ser True
+
+      - id: INV-NX-03
+        descripcion: >
+          TipoOutput SIEMPRE en posicion a2 (pos 4 del usuario).
+          La excepcion de compresion es la unica excepcion documentada y ya
+          esta implementada en .nevenx_dispatch.
+        como_verificar: "Leer codigo de .nevenx_dispatch: TipoOutput <- .nevenx_as_scalar(a2, ...)"
+
+      - id: INV-NX-04
+        descripcion: >
+          La funcion R destino DEBE existir en globalenv() o en env NEVEN.
+          El dispatcher hace exists(proceso, envir=env) antes de llamar.
+          Si no existe, retorna data.frame(R4XCL_Error=...) con sugerencias agrep.
+        como_verificar: >
+          En R: exists("MR_Lineal", envir=globalenv())  # debe ser TRUE
+          Si FALSE: el archivo R4XCL-RG-Lineal.R no se cargo correctamente
+
+    deploy:
+      metodo: "UTF-8 sin BOM (identico a startup.r)"
+      comando: >
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        $c = [System.IO.File]::ReadAllText($src, $utf8NoBom)
+        [System.IO.File]::WriteAllText('C:/NEVEN/functions/R4XCL-0-NevenX.R', $c, $utf8NoBom)
+      verificacion: >
+        Test-Path 'C:/NEVEN/nevenx_startup.log'  # si NO existe tras reiniciar Excel = OK
+
+    errores:
+      - sintoma: "nevenx_startup.log existe con 'unexpected invalid token en linea 1: ï»'"
+        causa: "Archivo desplegado con BOM (WriteAllText con ::UTF8)"
+        fix: "Usar New-Object System.Text.UTF8Encoding($false)"
+
+      - sintoma: "NevenX ['MR_Lineal']: argument SetDatosX is missing"
+        causa: >
+          TipoOutput=0 sin datos Y/X: el bloque if(TipoOutput==0L) no se ejecuta
+          porque a0 no llega como escalar (posiblemente Excel no comprimio las comas).
+        diagnostico: "Verificar con log de diagnostico que a2_raw o a0_raw tiene el valor esperado"
+
+      - sintoma: "PARSE ERROR en celda Excel"
+        causa: >
+          El dispatcher fallo al cargarse (startup.r llama source() que falla).
+          Ver nevenx_startup.log para el error exacto.
+
+  # ---------------------------------------------------------------------------
+  - id: studio_backend
+    nombre: "NEVEN Studio Backend (neven_http_server.py + datalab_handler.py)"
+    prioridad: 7
+    descripcion: >
+      Servidor HTTP que corre dentro de ControlPython.exe en un daemon thread.
+      Sirve la UI del Task Pane (taskpane.html) y expone endpoints REST para
+      DuckDB, DataLab, agente IA, scripts R/Python/Julia, y gestion de archivos.
+
+    fuentes:
+      repo:
+        - "ControlPython/startup/neven_http_server.py"   # servidor HTTP principal
+        - "ControlPython/startup/datalab_handler.py"     # logica DataLab
+        - "TaskPane/start_studio.py"                     # punto de entrada, singleton
+        - "TaskPane/pipe_client.py"                      # cliente Named Pipe
+
+    produccion:
+      neven_http_server: "C:/NEVEN/startup/neven_http_server.py"
+      datalab_handler:   "C:/NEVEN/startup/datalab_handler.py"
+      start_studio:      "C:/NEVEN/taskpane/start_studio.py"
+      pipe_client:       "C:/NEVEN/taskpane/pipe_client.py"
+      static_dir:        "C:/NEVEN/taskpane/"
+      puerto_primario:   5555
+      puerto_fallback:   5556
+
+    dependencias:
+      - controlr_exe      # pipe_client_factory["r"] → Named Pipe neven_r
+      - controlpython_exe # propio proceso, startup.py es el entry point
+      - sidecars_json     # DataLabHandler.handle_catalog() escanea functions/*.json
+      - libreria_r        # handle_run() llama funciones .Studio en ControlR
+
+    inicio:
+      punto_entrada: "TaskPane/start_studio.py"
+      singleton_mutex: "Global\\NEVEN_Studio_Launcher"  # Named Mutex Windows
+      flujo:
+        1: "_acquire_instance_lock() — crea mutex; si ya existe, sys.exit(1)"
+        2: "Levanta ControlR, ControlJulia, ControlPython via subprocess"
+        3: "Polling Named Pipes hasta readiness (timeout configurable)"
+        4: "Construye pipe_client_factory: {lang: Callable[[], PipeClient]}"
+        5: "neven_http_server.start_server(config) — bind 127.0.0.1:5555"
+        6: "Serve en daemon thread"
+
+    endpoints:
+      GET:
+        "/health":                "Estado servidor, version, puerto"
+        "/taskpane.html":         "UI principal desde staticDir"
+        "/assets/*":              "Archivos estaticos CSS/JS/iconos"
+        "/api/datalab/catalog":   "Escanea functions/*.json, retorna catalogo lang->family->cards"
+        "/api/engines":           "Sondea Named Pipes via win32file.CreateFile"
+        "/api/functions":         "Lista funciones registradas por lenguaje"
+        "/api/bridge/pull":       "Lee bridge/{key}.json (datos de Excel via NEVEN.IA.Contexto)"
+        "/api/ai/config":         "Lee seccion AI de neven-config.json"
+        "/api/ai/context/pending":"Consume (y borra) contexto Excel pendiente — UNA SOLA LECTURA"
+        "/api/packages/status":   "Estado paquetes R/Python/Julia"
+
+      POST:
+        "/api/analyze":           "Estadisticas descriptivas DuckDB sobre tabla dataset"
+        "/api/groupby":           "GROUP BY con metrica validada"
+        "/api/query":             "SQL SELECT arbitrario (timeout 30s, paginado)"
+        "/api/load":              "Crea/reemplaza tabla dataset en DuckDB"
+        "/api/r":                 "Ejecuta codigo R via Named Pipe"
+        "/api/python":            "Ejecuta codigo Python via Named Pipe"
+        "/api/julia":             "Ejecuta codigo Julia via Named Pipe"
+        "/api/datalab/run":       "DataLabHandler.handle_run() — flujo completo DataLab"
+        "/api/save_script":       "Guarda .R/.py/.jl en disco (UTF-8 sin BOM)"
+        "/api/db_connect":        "Conecta DB externa (postgresql, mysql, sqlite, sqlserver)"
+        "/api/ai/chat":           "Proxea mensaje al LLM (LM Studio, Ollama, OpenAI, Azure)"
+        "/api/ai/context":        "Recibe contexto de =NEVEN.IA.Contexto() desde Excel"
+        "/api/functions/create":  "Guarda nueva funcion .R/.py/.jl en functions_dir"
+
+    flujo_datalab_run:
+      descripcion: "POST /api/datalab/run — flujo completo de ejecucion"
+      pasos:
+        1: "Validar body: function_id, language, column_roles, parameters"
+        2: "Verificar paquetes R requeridos (advertencia silenciosa, no bloquea)"
+        3: "Construir lista de columnas desde column_roles (deduplicada)"
+        4: "Query DuckDB: SELECT columnas FROM dataset WHERE filter_clause"
+        5: "Serializar rows a JSON escaped para pasar a R"
+        6: "Escanear functions/*.json para encontrar sidecar por function_id"
+        7: "_build_r_script(): source() del wrapper + assigns data_Y/data_X + llamada .Studio()"
+        8: "get_pipe_client('r') → enviar r_lines a ControlR via Named Pipe"
+        9: "_parse_slots_from_variable(raw) → lista de slots {name,label,type,value,tier}"
+        10: "Enriquecer slots warning_pedagogy con OntologyEngine si disponible"
+        11: "Retornar {status, slots, execution_time_ms}"
+
+    parse_slots_formatos:
+      descripcion: >
+        _parse_slots_from_variable() soporta dos formatos de data.frame de ControlR.
+      formato_flatten:
+        descripcion: >
+          N slots x 5 campos. flat[slot_i + field_j * N] es el valor del campo j del slot i.
+          Usado por la mayoria de funciones .Studio.
+        deteccion: "n_rows > 1 o type_in_row0 no es tipo conocido"
+      formato_directo:
+        descripcion: >
+          1 fila = 1 slot completo. Usado por BoxPlot y algunas funciones simples.
+        deteccion: "n_rows==1 AND row[type_idx] in {html, table, scalar, vector, plotly, ...}"
+
+    invariantes:
+      - id: INV-SB-01
+        descripcion: >
+          SINGLETON via Named Mutex 'Global\NEVEN_Studio_Launcher'.
+          Solo puede haber UNA instancia de NEVEN Studio por maquina.
+          Si start_studio.py detecta el mutex activo, imprime error y sys.exit(1).
+        como_verificar: "Get-Process python | Where-Object { $_.MainWindowTitle -match 'NEVEN' }"
+
+      - id: INV-SB-02
+        descripcion: >
+          _handle_save_script() y _handle_function_create() usan
+          open(path, 'w', encoding='utf-8', newline='\n') — UTF-8 SIN BOM.
+          Los archivos .R guardados desde Studio se despliegan directamente a
+          C:/NEVEN/functions/ y los carga ControlR. Un BOM romperia la carga.
+        como_verificar: >
+          grep -n "open.*utf-8" ControlPython/startup/neven_http_server.py
+          # debe mostrar encoding='utf-8' en _handle_save_script y _handle_function_create
+
+      - id: INV-SB-03
+        descripcion: >
+          /api/query solo acepta SELECT/WITH/SHOW/DESCRIBE.
+          La validacion filtra lineas que empiezan con '--' antes de verificar.
+          Cualquier otro statement retorna HTTP 400.
+        como_verificar: "Ver _handle_query() en neven_http_server.py"
+
+      - id: INV-SB-04
+        descripcion: >
+          Rate limiter: max 300 requests por 60 segundos (token bucket).
+          Retorna HTTP 429 si se supera. Protege contra bucles accidentales.
+        como_verificar: "Ver RateLimiter class: max_requests=300, window_sec=60"
+
+      - id: INV-SB-05
+        descripcion: >
+          /api/ai/context/pending es CONSUMIBLE — al leerlo, borra _excel_context_pending.
+          Si el Tab IA llama este endpoint dos veces seguidas, la segunda retorna 'empty'.
+          Es intencional: el contexto se consume una sola vez.
+        como_verificar: "Ver do_GET path='api/ai/context/pending': _excel_context_pending = None"
+
+    deploy:
+      metodo: >
+        [System.IO.File]::Copy() para copiar sin recodificar.
+        Los archivos .py son UTF-8 y pueden tener caracteres no-ASCII en strings/comentarios.
+      prerequisito: "NEVEN Studio debe estar detenido antes de reemplazar los .py"
+      comando: >
+        [System.IO.File]::Copy($src, $dst, $true)
+      nota: >
+        NUNCA usar Copy-Item (puede recodificar). Para archivos .py usar ::Copy directo.
+        No hay BOM en Python (el interprete no lo requiere), pero ::Copy preserva el encoding.
+
+    errores:
+      - sintoma: "NEVEN Studio no abre o cierra inmediatamente"
+        causa: "Instancia anterior activa (mutex). Matar proceso python con el servidor."
+        fix: "Stop-Process -Name python -Force (cuidado: mata TODOS los Python)"
+
+      - sintoma: "POST /api/datalab/run retorna ENGINE_UNAVAILABLE"
+        causa: "ControlR.exe no esta activo o el Named Pipe no esta disponible"
+        diagnostico: "GET /api/engines para ver estado de cada motor"
+
+      - sintoma: "raw= en lugar de slots en DataLab"
+        causa: "_parse_slots_from_variable() no reconocio el formato del data.frame"
+        diagnostico: >
+          La funcion .Studio retorno un formato no estandar.
+          Verificar que retorna data.frame con columnas name/label/type/value/tier
+          via r_object_to_slots() o Extraer_outputs()
+
+  # ---------------------------------------------------------------------------
+  - id: sidecars_json
+    nombre: "Sidecars JSON (Install/functions/*.json)"
+    prioridad: 8
+    descripcion: >
+      Archivos JSON que describen cada funcion analitica para dos canales:
+      DataLab (NEVEN Studio) y NevenX (funciones XLL directas).
+      Son la fuente de verdad unica para parametros, roles, TipoOutputs y
+      metadatos de cada proceso.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/Install/functions/*.json"
+      cantidad: "~47 sidecars al 2026-08-19"
+
+    produccion:
+      ruta: "C:/NEVEN/functions/*.json"
+      nota: "En produccion coexisten con los archivos .R y .Studio.R de las funciones"
+
+    dependencias:
+      - studio_backend   # DataLabHandler.handle_catalog() y handle_run() los leen
+      - dispatcher_nevenx # .nevenx_load_sidecar() los escanea en runtime
+
+    estructura_completa:
+      campos_obligatorios:
+        - id             # "RG_Lineal" — ID unico, usado como function_id en DataLab
+        - family         # "RG", "ST", "AD", "GR", "DS", "TM"
+        - family_label   # "Regresion", "Series de Tiempo", etc.
+        - name           # nombre legible
+        - description    # descripcion completa de la funcion
+        - languages      # ["r"] | ["julia"] | ["python"] | combinaciones
+        - function_name  # nombre de la funcion .Studio: "RG_Lineal.Studio"
+        - file           # basename del archivo Studio: "R4XCL-RG-Lineal.Studio.R"
+        - variable_roles # roles de columnas para el UI (ver abajo)
+        - parameters     # parametros del formulario Studio (ver abajo)
+
+      campos_opcionales:
+        function_name_xll: >
+          Nombre de la funcion tal como existe en R globalenv y como se
+          pasa a =NevenX.R("..."). Debe coincidir EXACTAMENTE con el nombre
+          de la funcion definida en el archivo .R de libreria/R/.
+          Sin este campo, el dispatcher NevenX no puede encontrar el sidecar.
+        nevenx_positions: >
+          Mapa de slots a0-a11 a nombres semanticos para la ayuda de TipoOutput=0.
+          Cada entrada: { name, label, type, required, default }
+          Sobreescribe .NEVENX_POS_LABELS en .nevenx_ayuda().
+        tipo_outputs: >
+          Lista de { id, label } que describe cada TipoOutput disponible.
+          id=0 es RESERVADO para la ayuda (siempre debe estar).
+        wikipedia_url:   "URL opcional para documentacion"
+        dependencies:    "{ R: [...], Julia: [...], Python: [...] } — paquetes requeridos"
+
+      estructura_variable_roles:
+        descripcion: >
+          Define los roles de columnas en el UI de DataLab.
+          Cada key es un role_key (Y, X, Z, i, t, etc.).
+        ejemplo:
+          Y: { label: "Variable dependiente", types: ["numeric"], multiple: false, required: true }
+          X: { label: "Variables independientes", types: ["numeric"], multiple: true, required: true }
+        notas:
+          - "types puede ser: numeric, character, date, any"
+          - "multiple: true permite asignar varias columnas al mismo rol"
+          - "El orden de las keys en variable_roles define el orden de los args en _build_r_script()"
+
+      estructura_parameters:
+        descripcion: >
+          Define los parametros del formulario de opciones en DataLab.
+          Cada parametro tiene: name, label, type, default, tier.
+        tipos_soportados:
+          boolean: "checkbox"
+          select:  "dropdown — REQUIERE campo 'options' con [{value, label}]"
+          number:  "input numerico"
+          text:    "input de texto"
+          palette: "selector visual de paleta de colores (tipo especial NEVEN)"
+        tier:
+          1: "Visible siempre (opciones principales)"
+          2: "Visible en modo avanzado"
+
+    validacion_catalog:
+      descripcion: >
+        DataLabHandler.handle_catalog() valida cada sidecar al escanear.
+        Un sidecar invalido genera advertencia pero NO bloquea el catalogo.
+      validaciones:
+        - "Campos obligatorios presentes (REQUIRED_SIDECAR_FIELDS)"
+        - "Si type=='select': options debe tener value y label"
+        - "Si file existe: el archivo .Studio.R existe en functions_dir (solo advertencia)"
+      timeout: "2000ms — si el escaneo tarda mas, se interrumpe con advertencia"
+
+    invariantes:
+      - id: INV-SJ-01
+        descripcion: >
+          JSON VALIDO. Un JSON malformado genera advertencia en handle_catalog() y
+          se omite del catalogo DataLab. En .nevenx_load_sidecar() el error se
+          silencia via tryCatch — el sidecar simplemente no se carga.
+        como_verificar: >
+          $c = Get-Content 'ruta.json' -Raw; $c | ConvertFrom-Json  # no debe dar error
+
+      - id: INV-SJ-02
+        descripcion: >
+          function_name_xll DEBE coincidir EXACTAMENTE con el nombre de la funcion
+          R en globalenv(). El dispatcher hace exists(proceso, envir=env). Si el
+          nombre tiene .C al final (ej: MR_Binario.C), debe incluirlo en el sidecar.
+        como_verificar: >
+          En R: exists("MR_Lineal", envir=globalenv())  # debe ser TRUE para usar NevenX.R
+
+      - id: INV-SJ-03
+        descripcion: >
+          tipo_outputs[].id == 0 es RESERVADO para la ayuda y siempre debe estar.
+          Si se omite, .nevenx_ayuda() genera la tabla pero la Tabla 2 dira "Sin sidecar".
+        como_verificar: "jq '.tipo_outputs[] | select(.id==0)' sidecar.json  # debe existir"
+
+      - id: INV-SJ-04
+        descripcion: >
+          El campo 'file' debe ser SOLO el basename (no ruta absoluta).
+          DataLabHandler resuelve: os.path.join(functions_dir, file_basename).
+          Si se pone ruta absoluta, la funcion no se encontrara en otro sistema.
+        como_verificar: "jq '.file' sidecar.json  # debe ser solo nombre, ej: 'R4XCL-RG-Lineal.Studio.R'"
+
+      - id: INV-SJ-05
+        descripcion: >
+          La clave 'id' debe ser UNICA entre todos los sidecars.
+          DataLabHandler busca por id==function_id. Si hay duplicados,
+          se usara el primero encontrado (orden del sistema de archivos).
+        como_verificar: >
+          Get-ChildItem 'C:/NEVEN/functions/*.json' | ForEach-Object {
+            (Get-Content $_ | ConvertFrom-Json).id
+          } | Group-Object | Where-Object { $_.Count -gt 1 }
+
+    deploy:
+      metodo: "[System.IO.File]::Copy() — JSON es ASCII/UTF-8, no hay BOM issue"
+      comando: >
+        [System.IO.File]::Copy(
+          'F:/ANTIGRAVITY/2026/NEVEN/NEVEN/Install/functions/archivo.json',
+          'C:/NEVEN/functions/archivo.json', $true)
+      nota: >
+        No requiere reiniciar ControlR ni Excel. DataLabHandler escanea los JSON
+        en cada llamada a /api/datalab/catalog y /api/datalab/run.
+        El dispatcher NevenX los escanea en cada llamada a TipoOutput=0.
+
+    errores:
+      - sintoma: "Funcion no aparece en DataLab"
+        causa_1: "JSON invalido — ver warnings en /api/datalab/catalog"
+        causa_2: "Campos obligatorios faltantes"
+        causa_3: "Archivo .Studio.R no existe en functions_dir"
+        diagnostico: "GET /api/datalab/catalog y revisar campo 'warnings' en la respuesta"
+
+      - sintoma: "=NevenX.R('MR_X',,, 0) retorna 'Sin sidecar'"
+        causa: "function_name_xll no coincide con el nombre de la funcion"
+        diagnostico: >
+          En R: ls(globalenv()) | grep 'MR_X'  -- verificar nombre exacto
+          Comparar con field function_name_xll en el sidecar
+
+  # ---------------------------------------------------------------------------
+  - id: libreria_r
+    nombre: "libreria/R (~90 funciones, 32+ archivos .R)"
+    prioridad: 9
+    descripcion: >
+      Coleccion de funciones analiticas R que se cargan en C:/NEVEN/functions/
+      al inicio de ControlR. Cada funcion sigue un protocolo estandar de
+      entrada (rangos Excel con header) y salida (data.frame con prefijo R4XCL_).
+      Incluye funciones XLL directas (MR_*, AD_*, etc.) y wrappers Studio (*.Studio.R).
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/libreria/R/"
+      cantidad: "~61 archivos .R en el directorio al 2026-08-19"
+
+    produccion:
+      ruta: "C:/NEVEN/functions/*.R"
+      carga: "LanguageService::ReadSourceFile() durante xlAutoOpen para cada .R en functions/"
+
+    dependencias:
+      - startup_r      # crea el entorno NEVEN y helpers base
+      - common_lib     # SecurityService.VerifyScriptIntegrity() antes de cargar
+
+    estructura_funcion_tipica:
+      descripcion: "Patron canonico de MR_Lineal en R4XCL-RG-Lineal.R"
+      patron: |
+        NombreFuncion <- function(
+            SetDatosY,          # Rango Excel: fila 1=headers, resto=datos
+            SetDatosX,          # Igual
+            Parametro1=default, # parametros con defaults
+            TipoOutput=1
+        ) {
+          # [1] Preparacion con helpers internos
+          FX  <- R4XCL_INT_FUNCION(SetDatosX, SetDatosY)   # construye formula "y ~ x1+x2"
+          DT  <- R4XCL_INT_DATOS(SetDatosY=..., SetDatosX=..., Filtro=..., ...)
+          
+          # [2] Procedimiento analitico
+          Modelo <- lm(formula=FX, data=DT)
+          
+          # [3] Switch por TipoOutput
+          if (TipoOutput == 1) {
+            OutPut <- data.frame("R4XCL_NombreDescriptivo" = ...)
+          } else if (TipoOutput == 2) { ... }
+          
+          # [4] Retorno
+          return(OutPut)
+        }
+        
+        # Metadatos para NEVEN$list.functions() y el Ribbon
+        DialogosXCL <- R4XCL_INT_DIALOGOS()
+        attr(NombreFuncion, DialogosXCL$Descripcion) = list(
+          param1 = DialogosXCL$SetDatosY,
+          param2 = DialogosXCL$SetDatosX,
+          ...
+        )
+
+    protocolo_rangos:
+      descripcion: >
+        INVARIANTE UNIVERSAL. Todos los rangos Excel que llegan como parametros
+        tienen la primera fila como header de columnas y el resto como datos.
+      implementacion: >
+        Los helpers R4XCL_INT_DATOS(), R4XCL_INT_FUNCION() aplican [-1,] para
+        quitar el header antes de procesar. Las funciones NO deben quitar el
+        header manualmente.
+      ejemplo:
+        SetDatosY_raw:  "data.frame de 51 filas (1 header + 50 datos)"
+        SetDatosY_limpio: "data.frame de 50 filas (despues de R4XCL_INT_DATOS)"
+
+    protocolo_retorno:
+      descripcion: >
+        Cada TipoOutput retorna un data.frame cuyo nombre de columna tiene
+        el prefijo R4XCL_ seguido de un descriptor semantico.
+      prefijos_conocidos:
+        R4XCL_ModeloEstimado:              "tabla de regresion (stargazer)"
+        R4XCL_PrediccionDentroDeMuestra:   "vector de predicciones in-sample"
+        R4XCL_PrediccionFueraDeMuestra:    "vector de predicciones out-of-sample"
+        R4XCL_EfectosMarginales:           "efectos marginales"
+        R4XCL_InflacionDeVarianza:         "VIF"
+        R4XCL_Heterocedasticidad:          "test Breusch-Pagan"
+        R4XCL_ObservacionesDeInfluencia:   "Cook distance, leverage"
+        R4XCL_Residuos:                    "vector de residuos"
+        R4XCL_Error:                       "SENAL DE ERROR — ControlR lo propaga"
+      nota: >
+        ControlR serializa el data.frame como Variable Protobuf.
+        _parse_slots_from_variable() en Python lo convierte a slots
+        {name, label, type, value, tier} para el UI.
+
+    categorias:
+      infraestructura:
+        archivos: ["R4XCL-0-Interno-1.R", "R4XCL-0-Interno-2.R", "R4XCL-0-Interno-3.R"]
+        contiene: >
+          R4XCL_INT_FUNCION (construye formula),
+          R4XCL_INT_DATOS (limpia rangos, aplica Filtro/Escala),
+          R4XCL_INT_DIALOGOS (metadatos para Ribbon),
+          R4XCL_INT_PROCEDIMIENTOS (lista de TipoOutputs),
+          Extraer_outputs (serializer para TipoOutput=13),
+          r_object_to_slots (serializer para DataLab)
+
+      regresion:
+        prefijo: "R4XCL-RG-*"
+        funciones: >
+          MR_Lineal, MR_Binario.C, MR_Poisson.C, MR_Tobit.C, MR_PanelData.C,
+          MR_Logit, RG_2SLS, RG_HECKIT, RG_Newey_West, RG_FGLS, RG_RESET
+
+      series_tiempo:
+        prefijo: "R4XCL-ST-*"
+        funciones: "ST_VAR, ST_ECM, ST_ADF, ST_Arima"
+
+      analisis_datos:
+        prefijo: "R4XCL-AD-*"
+        funciones: "AD_ACP.C, AD_KMedias.C, AD_Pivot, AD_NonParRolCor, AD_D3"
+
+      graficos:
+        prefijo: "R4XCL-GR-*, GR_*.Studio.R"
+        funciones: >
+          GR_Lineas, GR_Barras, GR_BoxPlot, GR_Histograma, GR_Scatter,
+          GR_EjemploBasico, GR_EjemploAvanzado, GR_Correlaciones, GR_Mapa,
+          GR_SeriesTiempo
+
+      wrappers_studio:
+        sufijo: "*.Studio.R"
+        descripcion: >
+          Version de las funciones optimizada para DataLab. Usa r_object_to_slots()
+          internamente para retornar en formato de slots. Nombre: FuncionID.Studio()
+
+    helpers_internos_criticos:
+      R4XCL_INT_DATOS:
+        descripcion: >
+          Limpia y prepara el data.frame de entrada.
+          Aplica: quitar header ([-1,]), Filtro (Datos[Filtro==0,]),
+          Escala (scale()), conversion numerica.
+        invariante: >
+          Filtro=0 significa INCLUIR la observacion.
+          Filtro=1 significa EXCLUIR. El vector de filtro debe tener nrow(Y)-1 elementos
+          (sin contar el header). El dispatcher NevenX recorta automaticamente si es mayor.
+
+      R4XCL_INT_FUNCION:
+        descripcion: >
+          Construye la formula string "y ~ x1 + x2 + ..." usando los nombres
+          de la primera fila de SetDatosX y SetDatosY.
+
+      R4XCL_INT_PROCEDIMIENTOS:
+        descripcion: >
+          Retorna un list con los TipoOutputs disponibles para cada funcion.
+          Usado por TipoOutput<=0 en funciones legacy.
+          En el dispatcher moderno, esto se reemplaza por TipoOutput=0 via sidecar.
+
+    invariantes:
+      - id: INV-LR-01
+        descripcion: >
+          PRIMERA FILA = HEADER en todos los rangos (SetDatosY, SetDatosX,
+          SetInstrumentos, Variable_i, Variable_t, etc.).
+          Los helpers R4XCL_INT_* aplican [-1,] automaticamente.
+          Si la funcion manipula el rango directamente (sin usar el helper),
+          DEBE aplicar [-1,] manualmente.
+        como_verificar: >
+          En Excel: el rango A1:A51 donde A1 es el header y A2:A51 son 50 datos.
+          La funcion recibe 51 filas y debe retornar resultados para 50 observaciones.
+
+      - id: INV-LR-02
+        descripcion: >
+          SIN library() en nivel top-level del archivo.
+          Si un library() falla (paquete no instalado), mata el proceso R durante
+          el startup o deja funciones sin definir.
+          PATRON CORRECTO: requireNamespace("pkg", quietly=TRUE) dentro del cuerpo
+          de la funcion O library(pkg) condicionado a if(requireNamespace("pkg")).
+        como_verificar: >
+          Select-String -Path 'C:/NEVEN/functions/*.R' -Pattern '^library\(' |
+          Select-Object Path, Line  # debe retornar 0 resultados
+
+      - id: INV-LR-03
+        descripcion: >
+          RETORNO SIEMPRE data.frame con prefijo R4XCL_ en el nombre de columna.
+          ControlR serializa el ultimo valor evaluado de la funcion. Si retorna
+          algo que no es data.frame (ej: lista, vector raw), la serializacion
+          puede fallar o retornar formato inesperado a _parse_slots_from_variable().
+        como_verificar: >
+          Revisar cada case del switch TipoOutput: todos deben terminar con
+          OutPut <- data.frame("R4XCL_..." = ...) y return(OutPut)
+
+      - id: INV-LR-04
+        descripcion: >
+          attr(NombreFuncion, DialogosXCL$Descripcion) debe existir al final
+          de cada archivo .R. NEVEN$list.functions() en startup.r extrae estos
+          atributos para el Ribbon. Sin el attr, la funcion no aparece en Excel.
+        como_verificar: >
+          Select-String -Path 'archivo.R' -Pattern 'attr\(.*DialogosXCL'
+          # debe dar 1 resultado por funcion definida
+
+    deploy:
+      metodo: "UTF-8 sin BOM (igual que startup.r y dispatcher)"
+      comando: >
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        $c = [System.IO.File]::ReadAllText($src, $utf8NoBom)
+        [System.IO.File]::WriteAllText($dst, $c, $utf8NoBom)
+      hot_reload: >
+        FileWatchService detecta cambios en C:/NEVEN/functions/ y llama
+        LanguageService::ReadSourceFile() automaticamente. No requiere
+        reiniciar Excel ni ControlR para funciones existentes.
+        Para NUEVAS funciones (nuevo nombre), se necesita reiniciar Excel
+        para que MapFunctions() + RegisterFunctions() las registren.
+      nota_studio: >
+        Las funciones *.Studio.R tambien se hot-reload via FileWatchService,
+        PERO DataLabHandler._build_r_script() ya hace source() del archivo en
+        cada ejecucion, por lo que cambios se reflejan sin reiniciar Studio.
+
+    errores:
+      - sintoma: "Funcion retorna R4XCL_Error: argument X is missing"
+        causa: "El dispatcher no mapeo el argumento correctamente (nombre incorrecto)"
+        diagnostico: >
+          Verificar que el nombre del parametro en la funcion R coincide con
+          el nombre en .NEVENX_THIRD_ROLE o la convencion por defecto (SetDatosY, SetDatosX)
+
+      - sintoma: "Funcion retorna R4XCL_Error: (NULL) o resultado vacio"
+        causa: "library() fallido en el cuerpo de la funcion (paquete no instalado)"
+        diagnostico: "Ver C:/NEVEN/controlr.log por mensajes 'Error in library(...)'"
+
+      - sintoma: "Funcion no aparece en Excel despues de agregarla"
+        causa: >
+          Funciones nuevas requieren MapFunctions() + RegisterFunctions() en xlAutoOpen.
+          El hot-reload recarga el codigo pero NO re-registra la funcion en Excel.
+        fix: "Reiniciar Excel para que xlAutoOpen registre la nueva funcion"
+
+# =============================================================================
+# FLUJOS DE DEPLOY — PAQUETE 2
+# =============================================================================
+
+flujos_deploy:
+
+  - id: DEPLOY-NEVENX
+    nombre: "Desplegar R4XCL-0-NevenX.R (dispatcher)"
+    prerequisitos:
+      - "ASCII puro (0 chars > 127 en codigo activo)"
+      - "Sin BOM (primeros bytes != EF BB BF)"
+      - "Llaves balanceadas"
+    pasos:
+      1: "Verificar invariantes INV-NX-01 y INV-NX-02"
+      2: >
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        $c = [System.IO.File]::ReadAllText($src, $utf8NoBom)
+        [System.IO.File]::WriteAllText('C:/NEVEN/functions/R4XCL-0-NevenX.R', $c, $utf8NoBom)
+    validacion: >
+      Remove-Item 'C:/NEVEN/nevenx_startup.log' -ErrorAction SilentlyContinue
+      # Reiniciar Excel
+      Test-Path 'C:/NEVEN/nevenx_startup.log'  # debe ser False = carga exitosa
+
+  - id: DEPLOY-SIDECAR
+    nombre: "Desplegar sidecar JSON nuevo o actualizado"
+    prerequisitos:
+      - "JSON valido: $c | ConvertFrom-Json"
+      - "Campo 'id' unico entre todos los sidecars"
+      - "Campo 'function_name_xll' coincide con nombre funcion R real"
+      - "Campo 'file' es solo basename (no ruta absoluta)"
+    pasos:
+      1: "Verificar JSON valido y campos obligatorios"
+      2: "[System.IO.File]::Copy($src, 'C:/NEVEN/functions/nombre.json', $true)"
+    validacion: >
+      # No requiere reiniciar. Verificar via Studio:
+      # GET /api/datalab/catalog — verificar que 'warnings' esta vacio para este sidecar
+
+  - id: DEPLOY-FUNCION-R
+    nombre: "Desplegar nueva funcion .R o actualizar existente"
+    prerequisitos:
+      - "ASCII puro o UTF-8 sin BOM"
+      - "Sin library() en top-level"
+      - "Retorna data.frame con prefijo R4XCL_"
+      - "attr(NombreFuncion, DialogosXCL$Descripcion) al final"
+    pasos:
+      1: "Verificar invariantes INV-LR-01 a INV-LR-04"
+      2: >
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        $c = [System.IO.File]::ReadAllText($src, $utf8NoBom)
+        [System.IO.File]::WriteAllText('C:/NEVEN/functions/archivo.R', $c, $utf8NoBom)
+    validacion:
+      funcion_existente: >
+        FileWatchService hace hot-reload automatico.
+        Probar desde Excel sin reiniciar.
+      funcion_nueva: >
+        Requiere reiniciar Excel para que xlAutoOpen registre la nueva funcion.
+        Verificar que aparece en el IntelliSense de Excel.
+
+# =============================================================================
+# REGLAS DEL AGENTE VALIDADOR — PAQUETE 2
+# =============================================================================
+
+reglas_validador:
+
+  - id: REGLA-P2-01
+    trigger: "Deploy de R4XCL-0-NevenX.R a C:/NEVEN/functions/"
+    verificar_antes:
+      - "INV-NX-01: ASCII puro (sin chars > 127)"
+      - "INV-NX-01: Sin BOM (primeros 3 bytes != 239 187 191)"
+      - "INV-NX-02: Llaves balanceadas (contar { y } en el archivo)"
+      - "INV-NX-04: jsonlite disponible en R para .nevenx_load_sidecar()"
+
+  - id: REGLA-P2-02
+    trigger: "Crear o modificar sidecar JSON en Install/functions/"
+    verificar_antes:
+      - "INV-SJ-01: JSON valido ($c | ConvertFrom-Json no da error)"
+      - "INV-SJ-02: function_name_xll coincide con nombre funcion R (si aplica)"
+      - "INV-SJ-04: campo 'file' es solo basename"
+      - "INV-SJ-05: campo 'id' unico entre todos los sidecars"
+      - "Si tipo_outputs presente: verificar que id=0 existe"
+
+  - id: REGLA-P2-03
+    trigger: "Deploy de archivo .R a C:/NEVEN/functions/ (libreria)"
+    verificar_antes:
+      - "INV-LR-02: grep '^library(' archivo.R debe dar 0 resultados"
+      - "ASCII puro (aplica INV-NX-01 de forma identica)"
+      - "INV-LR-03: todos los TipoOutput retornan data.frame con R4XCL_"
+
+  - id: REGLA-P2-04
+    trigger: "Modificacion de neven_http_server.py o datalab_handler.py"
+    verificar_antes:
+      - "INV-SB-02: _handle_save_script usa encoding='utf-8' (sin BOM)"
+      - "INV-SB-03: _handle_query valida que SQL es SELECT/WITH/SHOW/DESCRIBE"
+      - "NEVEN Studio debe estar detenido antes de reemplazar los .py"
