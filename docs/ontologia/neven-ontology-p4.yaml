@@ -1,0 +1,774 @@
+# =============================================================================
+# NEVEN — Ontologia del Proyecto — Paquete 4
+# =============================================================================
+# Componentes de soporte (rara vez se tocan directamente):
+#   13. build_cmake          — CMakeLists.txt raiz + build.ps1
+#   14. tests                — tests/ (342 tests GTest + rapidcheck)
+#   15. install_scripts      — Install/ (Install-NEVEN.ps1, neven-config.template)
+#   16. creador_presentaciones — CreadorPresentaciones/ (editor Impress.js)
+# =============================================================================
+
+meta:
+  version: "1.0"
+  paquete: 4
+  descripcion: "Componentes de soporte: build, tests, instalacion, presentaciones"
+  ultima_actualizacion: "2026-08-19"
+  autor: "Minor Bonilla / Kiro"
+  referencia_p1: "docs/ontologia/neven-ontology-p1.yaml"
+  referencia_p2: "docs/ontologia/neven-ontology-p2.yaml"
+  referencia_p3: "docs/ontologia/neven-ontology-p3.yaml"
+
+componentes:
+
+  # ---------------------------------------------------------------------------
+  - id: build_cmake
+    nombre: "Build/CMake (CMakeLists.txt + build.ps1)"
+    prioridad: 13
+    descripcion: >
+      Sistema de build del proyecto. CMakeLists.txt raiz configura C++17, runtime
+      estatico /MT, flags de seguridad globales, y FetchContent de dependencias.
+      build.ps1 automatiza el ciclo completo: configure, build, test, package.
+
+    fuentes:
+      repo:
+        - "CMakeLists.txt"           # raiz — configuracion maestra
+        - "Addin/CMakeLists.txt"     # packaging a Build/Dist/
+        - "Core/CMakeLists.txt"      # target NEVEN_Core + NEVEN_Core_Objects
+        - "Ribbon/CMakeLists.txt"    # target NEVENRibbon
+        - "ControlR/CMakeLists.txt"
+        - "ControlJulia/CMakeLists.txt"
+        - "ControlPython/CMakeLists.txt"
+        - "NEVEN-SIM/CMakeLists.txt" # guarded por BUILD_NEVEN_SIM=ON
+        - "tests/CMakeLists.txt"
+        - "build.ps1"                # automatizacion PowerShell
+        - "REBUILD_CHECKLIST.md"     # checklist de rebuild completo
+
+    targets_cmake:
+      NEVEN_Core:
+        tipo: "SHARED library"
+        salida: "NEVEN64.dll  (renombrada a NEVEN64.xll por Addin)"
+        flags: "/DEF:src/rj2xcl.def, linkeado con Common/PB/libprotobuf/WebView2"
+        nota: "Genera tambien NEVEN_Core_Objects como OBJECT library para los tests"
+
+      NEVENRibbon:
+        tipo: "SHARED library (COM)"
+        salida: "NEVENRibbon.dll"
+
+      ControlR:
+        tipo: "Executable"
+        salida: "ControlR.exe"
+        condicion: "NOT SKIP_LANGUAGE_TARGETS"
+
+      ControlJulia:
+        tipo: "Executable"
+        salida: "ControlJulia.exe"
+        condicion: "NOT SKIP_LANGUAGE_TARGETS"
+
+      ControlPython:
+        tipo: "Executable"
+        salida: "ControlPython.exe"
+        condicion: "NEVEN_ENABLE_PYTHON=ON (default ON)"
+
+      NEVEN_XLL:
+        tipo: "Custom target (ALL)"
+        salida: "Orquestador de copia hacia Build/Dist/"
+        post_build_copies:
+          - "NEVEN64.dll -> Dist/NEVEN64.xll"
+          - "ControlR.exe -> Dist/ControlR.exe"
+          - "ControlJulia.exe -> Dist/ControlJulia.exe"
+          - "ControlPython.exe -> Dist/ControlPython.exe"
+          - "NEVENRibbon.dll -> Dist/NEVENRibbon.dll"
+          - "Install/neven-config.json -> Dist/neven-config.json"
+          - "Install/neven-languages.json -> Dist/neven-languages.json"
+          - "startup/startup.r|.jl|.py -> Dist/startup/"
+          - "Ejemplos/ -> Dist/examples/"
+          - "CreadorPresentaciones/ -> Dist/taskpane/presentaciones/"
+
+      NEVEN_SIM:
+        tipo: "SHARED library (XLL separado)"
+        salida: "NEVEN-SIM.xll"
+        condicion: "BUILD_NEVEN_SIM=ON (default OFF)"
+
+      rj2xcl_tests:
+        tipo: "Executable"
+        salida: "rj2xcl_tests.exe + mock_engine_backend.exe"
+        nota: "Usa NEVEN_Core_Objects — corre sin DLL ni Excel"
+
+    flags_globales:
+      runtime: "MultiThreaded (/MT Release, /MTd Debug) — sin dependencia de MSVCRT.dll"
+      standard: "C++17 (CMAKE_CXX_STANDARD 17)"
+      seguridad_compilacion: "/GS (stack canaries), /guard:cf (Control Flow Guard)"
+      seguridad_linkeo: "/DYNAMICBASE (ASLR), /NXCOMPAT (DEP), /CETCOMPAT (Intel CET Shadow Stack)"
+      nota: >
+        Estos flags son INVARIANTES DE SEGURIDAD verificados por build_verification_tests.cc.
+        Si se eliminan del CMakeLists.txt, los tests de build verification fallan.
+
+    fetch_content:
+      protobuf:
+        version: "v21.12 (protobuf-cpp-3.21.12)"
+        fuente: "URL zip de GitHub releases"
+        flags: "protobuf_MSVC_STATIC_RUNTIME ON"
+      googletest:
+        version: "v1.14.0"
+        fuente: "GIT_TAG v1.14.0 de github.com/google/googletest"
+        flags: "gtest_force_shared_crt OFF"
+      rapidcheck:
+        version: "master"
+        fuente: "github.com/emil-e/rapidcheck"
+        flags: "RC_ENABLE_GTEST ON"
+      webview2:
+        version: "1.0.2903.40"
+        fuente: "NuGet package como ZIP"
+        paths: "WEBVIEW2_INCLUDE_DIR, WEBVIEW2_LOADER_DIR (x64)"
+
+    opciones_cmake:
+      SKIP_LANGUAGE_TARGETS: "OFF (default) — ON para CI sin R/Julia/Python"
+      NEVEN_ENABLE_PYTHON: "ON (default) — activa ControlPython"
+      BUILD_NEVEN_SIM: "OFF (default) — activa NEVEN-SIM XLL separado"
+
+    comandos_build:
+      basico: >
+        cmake -S . -B Build -A x64 -DCMAKE_BUILD_TYPE=Release
+        cmake --build Build --config Release --parallel
+      via_script: ".\build.ps1"
+      debug: ".\build.ps1 -Config Debug"
+      con_tests: ".\build.ps1 -Test"
+      package: ".\build.ps1 -Package"
+      clean_completo: ".\build.ps1 -Clean -Test -Package"
+      con_sim: >
+        cmake -S . -B Build -A x64 -DBUILD_NEVEN_SIM=ON
+        cmake --build Build --config Release --parallel
+      ci_sin_motores: >
+        cmake -S . -B Build -A x64 -DSKIP_LANGUAGE_TARGETS=ON
+        cmake --build Build --config Release --parallel
+        cd Build && ctest -C Release --output-on-failure
+
+    rebuild_checklist:
+      descripcion: >
+        REBUILD_CHECKLIST.md documenta los 8 pasos de un rebuild completo.
+        Verificado al 18/05/2026 (build estable).
+      pasos_criticos:
+        1: "Verificar rj2xcl.cc (zombie killer ANTES del file watcher Start())"
+        2: "Regenerar libjulia.lib desde dumpbin/exports -> .def -> .lib (154,878 bytes)"
+        3: "Build limpio (NEVEN64.dll ~2.45MB, ControlR.exe ~1.53MB)"
+        4: "Generar sysimage neven_julia.dll via PackageCompiler (~414MB)"
+        5: "Config entorno (neven-config.json sin BOM, startup scripts)"
+        6: "Deploy a C:/NEVEN/"
+        7: "Test funcional (R, Python, WebView2)"
+        8: "Backup a Dist_STABLE_NEVEN_YYYYMMDD"
+      tamanos_referencia:
+        NEVEN64.dll: "~2,450,944 bytes (~2.45MB)"
+        ControlR.exe: "~1,528,320 bytes (~1.53MB)"
+        ControlJulia.exe: "~1,298,432 bytes (~1.3MB)"
+        ControlPython.exe: "~1,298,944 bytes (~1.3MB)"
+        neven_julia.dll: "~414MB"
+
+    invariantes:
+      - id: INV-BLD-01
+        descripcion: >
+          /MT (MultiThreaded static runtime) es OBLIGATORIO para todos los targets.
+          Si se usa /MD (dynamic CRT), el XLL puede cargar una version diferente
+          de MSVCRT.dll que la de Excel, causando crashes de memoria.
+          CMAKE_MSVC_RUNTIME_LIBRARY = "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+        como_verificar: >
+          build_verification_tests.cc verifica esto automaticamente.
+          Manual: dumpbin /imports Build/Dist/NEVEN64.xll | findstr MSVCR  # no debe aparecer
+
+      - id: INV-BLD-02
+        descripcion: >
+          Los flags de seguridad /GS /guard:cf /DYNAMICBASE /NXCOMPAT /CETCOMPAT
+          DEBEN estar presentes en todos los binarios. Son invariantes de seguridad
+          verificados por build_verification_tests.cc.
+        como_verificar: >
+          build_verification_tests.cc comprueba que estan en CMakeLists.txt.
+          dumpbin /headers Build/Dist/NEVEN64.xll | findstr "DLL characteristics"
+
+      - id: INV-BLD-03
+        descripcion: >
+          Build/Dist/ es el directorio de distribucion generado por el build.
+          NUNCA commitear binarios de Build/Dist/ al repo (.gitignore ya lo excluye).
+          Solo se suben releases etiquetados via GitHub Releases.
+        como_verificar: "cat .gitignore | grep 'Build/\|Dist/'"
+
+      - id: INV-BLD-04
+        descripcion: >
+          Addin/CMakeLists.txt copia Install/neven-config.json (no el template) a Dist/.
+          Desde la correccion de seguridad (2026-08-19), Install/neven-config.json
+          fue reemplazado por Install/neven-config.template.json y removido del repo.
+          El build.ps1 -Package copiara el template. El instalador debe renombrarlo.
+        como_verificar: >
+          Get-Item 'Install/neven-config.json'  # debe NO existir en el repo
+          Get-Item 'Install/neven-config.template.json'  # debe existir
+
+    errores:
+      - sintoma: "CMake configuration failed — error al resolver FetchContent"
+        causa: "Sin internet o URL de descarga cambio"
+        fix: "Verificar conectividad. URLs de FetchContent son pinned a versiones especificas."
+
+      - sintoma: "NEVEN64.xll not found in Dist"
+        causa: "Build fallo silenciosamente o NEVEN_Core no se compilo"
+        fix: ".\build.ps1 -Clean -Config Release y revisar errores de MSVC"
+
+      - sintoma: "Error C2039 o LNK2019 en ControlJulia"
+        causa: "libjulia.lib no actualizado para la version de Julia actual"
+        fix: >
+          Regenerar libjulia.lib:
+          1. dumpbin /exports julia.exe > julia_exports.txt
+          2. Generar julia.def desde los exports
+          3. lib /def:julia.def /out:ControlJulia/lib/libjulia.lib /machine:x64
+
+  # ---------------------------------------------------------------------------
+  - id: tests_suite
+    nombre: "tests/ (Suite GTest + rapidcheck)"
+    prioridad: 14
+    descripcion: >
+      342 tests C++ con Google Test v1.14.0, GMock y rapidcheck (property-based).
+      Corren sin Excel, sin R, sin Julia via NEVEN_Core_Objects y mock_engine_backend.
+      Cubren seguridad, IPC, conversion de tipos, sandbox, funciones XLL y mas.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/tests/"
+      archivos_test:
+        cpp:
+          - "common_tests.cc"
+          - "raii_xloper_tests.cc"
+          - "callback_dispatcher_tests.cc"
+          - "callback_behavior_tests.cc"
+          - "discovery_tests.cc"
+          - "security_tests.cc"        # SecurityService, SHA-256, hash mismatch
+          - "sandbox_tests.cc"
+          - "config_service_tests.cc"
+          - "type_conversion_tests.cc"
+          - "basic_functions_tests.cc"
+          - "new_functions_tests.cc"
+          - "com_object_map_tests.cc"
+          - "language_service_tests.cc"
+          - "integration_tests.cc"     # IPC e2e con mock_engine_backend
+          - "reliability_tests.cc"
+          - "reliability_pbt.cc"
+          - "build_verification_tests.cc"  # verifica flags CMake
+          - "repo_hygiene_tests.cc"        # .gitignore, codigo muerto
+          - "input_sanitizer_tests.cc"
+          - "input_sanitizer_pbt.cc"
+          - "sandbox_path_pbt.cc"
+          - "sandbox_blocklist_pbt.cc"
+          - "protobuf_ipc_pbt.cc"
+          - "pipe_lifecycle_tests.cc"
+          - "r_library_tests.cc"
+          - "env_lookup_pbt.cc"
+          - "webview2_pbt.cc"
+          - "viewer_professional_tests.cc"
+          - "e2e_tests.cc"
+          - "python_reactivation_exploration_pbt.cc"
+          - "python_reactivation_preservation_pbt.cc"
+          - "python_sandbox_pbt.cc"
+          - "mock_engine_backend.cc"   # proceso auxiliar de IPC
+        python:
+          - "test_datalab_handler.py"
+          - "test_package_manager_service.py"
+        r:
+          - "run_studio_tests.R"
+          - "test_ad_funciones.R"
+          - "test_gr_funciones.R"
+          - "test_rg_avanzado.R"
+          - "test_rg_basico.R"
+          - "test_rg_econometrico.R"
+          - "test_r_object_to_slots.R"
+
+    conteo: 342  # verificado con grep TEST( tests/**/*.cc | wc -l
+
+    como_corren_sin_excel:
+      neven_core_objects: >
+        Core/CMakeLists.txt define NEVEN_Core_Objects como target OBJECT.
+        Los tests linkean $<TARGET_OBJECTS:NEVEN_Core_Objects> directamente,
+        sin necesitar NEVEN64.dll cargado en Excel.
+      mock_engine_backend: >
+        mock_engine_backend.exe simula el protocolo Named Pipe de ControlR/Julia.
+        integration_tests.cc lo lanza como proceso hijo real para probar IPC.
+        POST_BUILD lo copia junto al ejecutable de tests.
+      mock_headers: >
+        Include/mock_R.h, Include/mock_Julia.h, Include/xlcall_mock.h permiten
+        compilar sin los SDKs reales de R, Julia y Excel.
+
+    comandos_ejecucion:
+      via_script: ".\build.ps1 -Test"
+      via_ctest: >
+        cd Build
+        ctest --output-on-failure -C Release --test-dir .
+      directo: >
+        .\Build\tests\Release\rj2xcl_tests.exe
+        .\Build\tests\Release\rj2xcl_tests.exe --gtest_filter="SecurityServiceTest.*"
+      python: >
+        python -m pytest tests/test_datalab_handler.py -v
+      r: >
+        Rscript tests/run_studio_tests.R
+
+    tests_criticos_para_deploy:
+      descripcion: >
+        Antes de cualquier deploy a produccion, deben pasar todos los tests.
+        Los mas criticos por categoria:
+      seguridad:
+        - "BuildVerificationTests.*  — flags /GS /DYNAMICBASE /NXCOMPAT /CETCOMPAT"
+        - "SecurityServiceTest.*     — integridad SHA-256 de scripts"
+        - "InputSanitizerTest.*      — sanitizacion de codigo R/Julia/Python"
+        - "SandboxTests.*            — sandbox de rutas y blocklist"
+      ipc:
+        - "IPCIntegrationTest.*      — protocolo Named Pipe funcional"
+        - "PipeLifecycleTests.*      — ciclo de vida de pipes"
+        - "ProtobufIPCPBT.*          — serializacion Protobuf"
+      funcionalidad:
+        - "BasicFunctionsTest.*      — funciones XLL core"
+        - "LanguageServiceTest.*     — estados de LanguageService"
+        - "TypeConversionTest.*      — Excel <-> Protobuf"
+
+    invariantes:
+      - id: INV-TEST-01
+        descripcion: >
+          build_verification_tests.cc verifica que CMakeLists.txt declare
+          /GS, /guard:cf, /DYNAMICBASE, /NXCOMPAT, /CETCOMPAT.
+          Si se eliminan del CMakeLists.txt, este test falla y bloquea el deploy.
+        como_verificar: >
+          .\Build\tests\Release\rj2xcl_tests.exe --gtest_filter="BuildVerification*"
+
+      - id: INV-TEST-02
+        descripcion: >
+          mock_engine_backend.exe DEBE copiarse junto a rj2xcl_tests.exe.
+          Si no existe en el mismo directorio, integration_tests.cc falla
+          al intentar lanzarlo como proceso hijo.
+        como_verificar: >
+          Test-Path 'Build/tests/Release/mock_engine_backend.exe'  # debe ser True
+
+      - id: INV-TEST-03
+        descripcion: >
+          Los tests no requieren Excel, R, Julia ni Python instalados.
+          Si un test falla por dependencia de runtime externo, es un bug del test.
+          Usar SKIP_LANGUAGE_TARGETS=ON para CI en entornos sin runtimes.
+        como_verificar: >
+          cmake -S . -B Build -DSKIP_LANGUAGE_TARGETS=ON
+          cmake --build Build --config Release
+          cd Build && ctest -C Release  # debe pasar 100%
+
+    errores:
+      - sintoma: "LinkError: unresolved external symbol en rj2xcl_tests"
+        causa: "NEVEN_Core_Objects no esta incluido en el link"
+        fix: "Ver tests/CMakeLists.txt: $<TARGET_OBJECTS:NEVEN_Core_Objects>"
+
+      - sintoma: "integration_tests FAIL: mock_engine_backend not found"
+        causa: "POST_BUILD de mock_engine_backend no corrio"
+        fix: >
+          cmake --build Build --config Release --target mock_engine_backend
+          Verificar: Test-Path 'Build/tests/Release/mock_engine_backend.exe'
+
+  # ---------------------------------------------------------------------------
+  - id: install_scripts
+    nombre: "Install/ (instalador + config template)"
+    prioridad: 15
+    descripcion: >
+      Install-NEVEN.ps1 es el instalador completo en 6 fases. Auto-detecta R, Julia
+      y Python, registra el XLL y el COM Add-in en el registro de Windows, genera
+      certificado HTTPS auto-firmado, instala paquetes, y genera el desinstalador.
+      neven-config.template.json es la plantilla publica de configuracion (SIN credenciales).
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/Install/"
+      archivos:
+        - "Install-NEVEN.ps1"           # instalador principal (6 fases)
+        - "Install-NEVEN.cmd"           # launcher de doble-click
+        - "Uninstall-NEVEN.ps1"         # desinstalador generado por el instalador
+        - "neven-config.template.json"  # plantilla SIN credenciales (en repo)
+        - "neven-languages.json"        # descriptores de funciones por lenguaje
+        - "packages-manifest.json"      # manifiesto de paquetes
+        - "Build-Installers.ps1"        # genera .exe desde los .ps1
+        - "functions/*.json"            # sidecars pre-instalados
+        - "README.md"
+
+    config_template:
+      descripcion: >
+        neven-config.template.json es la plantilla publica (en repo).
+        El archivo real neven-config.json con credenciales SOLO existe en produccion
+        (C:/NEVEN/neven-config.json) y esta en .gitignore.
+      campos_criticos:
+        callTimeoutMs: "600000 (10 min) — NO bajar: funciones estadisticas pesadas"
+        useJobObject: "true — cleanup automatico de procesos hijo"
+        sandboxEnabled: "true — seguridad de scripts"
+        auto_load_xll: "true — XLL carga automaticamente al abrir Excel"
+        motores_default:
+          R: "enabled: true"
+          Julia: "enabled: false  (usuario activa desde Ribbon)"
+          Python: "enabled: false (usuario activa desde Ribbon)"
+      credenciales_en_template:
+        apiKey: "TU_AZURE_OPENAI_API_KEY_AQUI  — placeholder"
+        endpoint: "TU_AZURE_OPENAI_ENDPOINT_AQUI — placeholder"
+        nota: >
+          NUNCA commitear el archivo con credenciales reales.
+          La clave real vive solo en C:/NEVEN/neven-config.json (local, no en repo).
+
+    fases_instalador:
+      fase_1_preflight:
+        descripcion: "Verificacion de prerequisitos"
+        detecta:
+          windows: "Build >= 10240, 64-bit"
+          powershell: ">= 5.1"
+          r: "Registry HKLM/SOFTWARE/R-core/R, PATH, filesystem. Min: 4.4.1"
+          julia: "PATH (excluye WindowsApps), LocalAppData, C:/Julia. Min: 1.12.6"
+          python: "PATH (excluye WindowsApps), Registry, LocalAppData. Min: 3.10. Requiere python3.dll"
+          excel: "HKCU/Software/Microsoft/Office/{15.0|16.0}/Excel/Options"
+
+      fase_2_choices:
+        descripcion: "Opciones del usuario (o defaults en modo -Silent)"
+        opciones: ["InstallDir (default C:/NEVEN)", "ContinueWithoutR", "InstallRPackages", "CreateShortcut", "IsUpdate (modo actualizacion)"]
+
+      fase_3_files:
+        descripcion: "Despliegue de archivos"
+        criticos: ["NEVEN64.xll", "ControlR.exe", "ControlJulia.exe", "ControlPython.exe", "NEVENRibbon.dll"]
+        otros: ["neven-config.json", "neven-languages.json", "startup/*.r|.jl|.py", "examples/"]
+        update: "Hace backup neven-config.json -> .bak antes de sobreescribir"
+
+      fase_4_registration:
+        Register_XLL:
+          descripcion: "Registra NEVEN64.xll en el registro de Excel"
+          clave: "HKCU/Software/Microsoft/Office/{ver}/Excel/Options"
+          valor: "OPEN|OPEN1|OPEN2... = /R \"C:/NEVEN/NEVEN64.xll\""
+          logica: "Busca entrada existente con 'NEVEN' y la actualiza; si no existe crea OPEN{N+1}"
+        Register_RibbonCOM:
+          descripcion: "Registra NEVENRibbon.dll como COM Add-in"
+          comando: "regsvr32 /s C:/NEVEN/NEVENRibbon.dll"
+          reintentos: "Si falla, reintenta con elevacion UAC (runas)"
+          clave: "HKCU/Software/Microsoft/Office/Excel/Addins/NEVENRibbon.Connect"
+          valores: "FriendlyName=NEVEN, LoadBehavior=3 (DWORD)"
+        Register_TrustedLocation:
+          clave: "HKCU/Software/Microsoft/Office/{ver}/Excel/Security/Trusted Locations/Location{N}"
+          valores: "Path=C:/NEVEN/, AllowSubFolders=1"
+        Cert_HTTPS:
+          descripcion: "Genera certificado auto-firmado para localhost (5 anos)"
+          salida: "C:/NEVEN/certs/localhost.crt y localhost.key"
+          nota: "Agrega a Trusted Root Authorities de Windows"
+
+      fase_5_user_setup:
+        descripcion: "Setup del entorno de usuario"
+        directorios: ["functions/", "graphics/", "prompts/", "notebooks/"]
+        paquetes_r: "~64 paquetes en 4 batches (stargazer, lmtest, ggplot2, plotly, randomForest, etc.)"
+        paquetes_julia: "Distributions.jl + verificacion de stdlib"
+        paquetes_python: "scikit-learn, numpy, PyPDF2, python-docx, folium, duckdb"
+
+      fase_6_verification:
+        descripcion: "Verifica artefactos criticos y genera desinstalador"
+        verifica: ["NEVEN64.xll existe", "neven-config.json existe", "ejecutables existen"]
+        genera: "Uninstall-NEVEN.ps1 parametrizado"
+
+    comandos_instalacion:
+      normal: >
+        cd Install\Dist
+        .\Install-NEVEN.ps1
+      silencioso: >
+        .\Install-NEVEN.ps1 -Silent -InstallDir C:\NEVEN
+      directorio_personalizado: >
+        .\Install-NEVEN.ps1 -InstallDir D:\NEVEN
+      desde_distdir: >
+        .\Install-NEVEN.ps1 -DistDir .\Build\Dist
+
+    invariantes:
+      - id: INV-INS-01
+        descripcion: >
+          NUNCA commitear neven-config.json con credenciales reales.
+          El repo solo tiene neven-config.template.json con placeholders.
+          El instalador copia el template a C:/NEVEN/neven-config.json
+          y el usuario completa sus credenciales manualmente.
+        como_verificar: >
+          git status -- Install/neven-config.json  # debe mostrar "??" o no aparecer
+          cat .gitignore | grep "neven-config.json"  # debe estar listado
+
+      - id: INV-INS-02
+        descripcion: >
+          Register-RibbonCOM debe crear la clave LoadBehavior=3 (DWORD).
+          Si queda en 2, el Ribbon no carga automaticamente en Excel.
+          El instalador verifica esto despues del regsvr32.
+        como_verificar: >
+          (Get-ItemProperty 'HKCU:/Software/Microsoft/Office/Excel/Addins/NEVENRibbon.Connect').LoadBehavior
+          # debe ser 3
+
+      - id: INV-INS-03
+        descripcion: >
+          En modo actualizacion (-IsUpdate), el instalador hace backup de
+          neven-config.json -> neven-config.json.bak ANTES de sobreescribir.
+          Las credenciales del usuario se preservan en el backup.
+        como_verificar: >
+          # Despues de actualizar:
+          Test-Path 'C:/NEVEN/neven-config.json.bak'  # debe ser True
+
+      - id: INV-INS-04
+        descripcion: >
+          Todos los archivos JSON desplegados (neven-config.json,
+          neven-languages.json) deben ser UTF-8 sin BOM.
+          El REBUILD_CHECKLIST lo documenta explicitamente.
+          El instalador usa Copy-Item (no garantiza encoding) -- verificar
+          con primeros bytes si hay problemas.
+        como_verificar: >
+          $b = [System.IO.File]::ReadAllBytes('C:/NEVEN/neven-config.json')
+          $b[0..2]  # no debe ser 239 187 191 (EF BB BF = BOM)
+
+    errores:
+      - sintoma: "regsvr32 fallo con codigo de error"
+        causa: "Permisos insuficientes o DLL no encontrada"
+        fix: "Ejecutar Install-NEVEN.ps1 como administrador o aceptar el UAC prompt"
+
+      - sintoma: "Excel no muestra tab NEVEN despues de instalar"
+        causa: "LoadBehavior != 3 o regsvr32 no corrio"
+        fix: >
+          Verificar: (Get-ItemProperty $ribbonKey).LoadBehavior
+          Si no es 3: regsvr32 /s 'C:/NEVEN/NEVENRibbon.dll'
+          Crear manualmente: HKCU/.../NEVENRibbon.Connect con LoadBehavior=3
+
+  # ---------------------------------------------------------------------------
+  - id: creador_presentaciones
+    nombre: "CreadorPresentaciones (editor Impress.js)"
+    prioridad: 16
+    descripcion: >
+      Editor visual de presentaciones 3D basado en Impress.js 1.1.0.
+      JavaScript ES6 vanilla sin frameworks. Integrado en NEVEN Studio via iframe
+      y postMessage. Permite crear presentaciones con slides en espacio 3D, recibir
+      graficos de DataLab, y exportar a HTML standalone.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/CreadorPresentaciones/"
+      archivos:
+        - "index.html"   # interfaz 3 paneles: lista, canvas, propiedades
+        - "script.js"    # clase PresentationEditor + postMessage receptor
+        - "styles.css"   # dark theme, CSS Grid/Flexbox
+        - "preview.html" # vista previa fullscreen (recibe slides via postMessage)
+        - "Demo.html"    # presentacion de ejemplo exportada
+
+    produccion:
+      ruta: "C:/NEVEN/taskpane/presentaciones/"
+      servido_por: "neven_http_server.py en https://localhost:5555/presentaciones/index.html"
+      copia_automatica: "Addin/CMakeLists.txt (post-build) y Install-NEVEN.ps1"
+
+    dependencias:
+      - studio_backend      # servido por el servidor HTTP de Studio
+      - taskpane_frontend   # relay postMessage en taskpane.html
+
+    clase_principal:
+      nombre: "PresentationEditor"
+      propiedades:
+        slides: "Array de objetos slide (cada slide tiene text, type, x, y, z, rotate, scale)"
+        currentSlide: "Slide seleccionado actualmente"
+        history: "Array para undo/redo ilimitado"
+        _dragAbort: "AbortController para drag listeners (evita memory leaks)"
+        title: "Titulo de la presentacion (editable)"
+      tipos_slide:
+        texto: "Texto con formato **negrita** *italic*"
+        titulo: "Titulo grande"
+        imagen: "URL de imagen externa"
+        iframe: "URL web embebida"
+        iframe_srcdoc: "HTML inline embebido (tablas, resultados DataLab)"
+        plotly: "Grafico Plotly nativo (desde DataLab)"
+        grafico: "Grafico Chart.js (desde datos Excel)"
+        pizarra: "Canvas de dibujo libre"
+      seguridad:
+        xss: "escapeHtml() sanitiza TODO texto antes de inyectar en HTML"
+        markdown: "formatSlideText() permite solo **negrita** e *italic* via regex"
+        origen: "postMessage valida event.origin === window.location.origin"
+
+    flujo_postmessage:
+      descripcion: >
+        Flujo de 3 pasos para enviar un grafico de DataLab a una presentacion.
+      paso_1_datalab:
+        archivo: "TaskPane/datalab.js"
+        codigo: >
+          window.parent.postMessage({
+            type: 'NEVEN_ADD_SLIDE',
+            plotlyData: JSON.parse(jsonStr),
+            slideTitle: slot.label
+          }, '*')
+      paso_2_relay_taskpane:
+        archivo: "TaskPane/taskpane.html"
+        logica: >
+          Recibe el mensaje, valida origin.
+          Si iframe presentaciones no cargado: lo carga y espera 'load' + 300ms antes de reenviar.
+          Si ya cargado: reenvio directo via frame.contentWindow.postMessage().
+          Muestra toast 'Slide agregado a Presentaciones' sin cambiar de tab.
+      paso_3_editor:
+        archivo: "CreadorPresentaciones/script.js"
+        logica: >
+          Recibe mensaje, valida origin.
+          Si plotlyData: crea slide tipo 'plotly' con _plotlyData.
+          Si no: crea slide tipo 'iframe' con _srcdoc = slideHtml.
+          Posicion X = ultimo_slide.x + 1400 (apila a la derecha).
+          Actualiza lista, selecciona el nuevo slide, guarda estado, flash dorado.
+
+    export_html:
+      descripcion: >
+        'Exportar' genera un HTML standalone con Impress.js embebido.
+        Todos los slides se serializan como divs con atributos data-x/y/z/rotate/scale.
+        Plotly y Chart.js se incluyen via CDN — requiere conexion a internet en la presentacion.
+      nota: "El export no funciona offline si hay slides de tipo plotly o grafico (CDN requerido)"
+
+    invariantes:
+      - id: INV-CP-01
+        descripcion: >
+          script.js debe ser JavaScript ES6 valido — se sirve directamente sin transpilacion.
+          Un SyntaxError impide que PresentationEditor se instancie y todos los botones
+          quedan sin binding (experiencia documentada en sesion 2026-08-01).
+        como_verificar: "node --check CreadorPresentaciones/script.js  # exit 0"
+
+      - id: INV-CP-02
+        descripcion: >
+          window._editor DEBE existir antes de que llegue el primer postMessage NEVEN_ADD_SLIDE.
+          El relay en taskpane.html usa un timeout de 300ms despues del 'load' del iframe
+          para dar tiempo al constructor de PresentationEditor.
+          Si el editor no esta listo, el mensaje se pierde con warning en console.
+        como_verificar: >
+          En consola del iframe: window._editor !== undefined  # debe ser true
+
+      - id: INV-CP-03
+        descripcion: >
+          VALIDACION DE ORIGEN en postMessage: event.origin debe coincidir con
+          window.location.origin. Si se cambia el puerto del servidor (5555 -> otro),
+          los mensajes son rechazados silenciosamente.
+        como_verificar: >
+          En consola: window.location.origin  # debe coincidir con el origen del emisor
+
+    deploy:
+      metodo: "[System.IO.File]::Copy() para archivos JS/HTML/CSS"
+      hot_reload: >
+        El servidor sirve archivos desde disco en cada request.
+        Ctrl+Shift+R en el iframe de presentaciones recarga sin reiniciar Studio.
+      nota: >
+        Addin/CMakeLists.txt hace copy_directory CreadorPresentaciones/ -> Dist/taskpane/presentaciones/
+        en cada build. NO requiere accion manual de despliegue si se usa build.ps1.
+
+    errores:
+      - sintoma: "Botones del editor sin efecto al hacer clic"
+        causa: "SyntaxError en script.js impidio la instanciacion de PresentationEditor"
+        fix: "node --check CreadorPresentaciones/script.js para identificar el error"
+
+      - sintoma: "Grafico de DataLab no aparece como slide"
+        causa_1: "Race condition: editor no listo cuando llego el mensaje (ver INV-CP-02)"
+        causa_2: "Origin mismatch: servidor en puerto diferente al esperado"
+        diagnostico: >
+          Abrir DevTools en el iframe de presentaciones.
+          Verificar console.warn '[NEVEN Presentaciones] Editor no inicializado'
+
+      - sintoma: "Export HTML no muestra graficos en presentacion final"
+        causa: "Sin conexion a internet — CDNs de Plotly/Chart.js no disponibles"
+        fix: "Agregar scripts de Plotly/Chart.js inline al export (mejora futura pendiente)"
+
+# =============================================================================
+# FLUJOS DE DESPLIEGUE — PAQUETE 4
+# =============================================================================
+
+flujos_deploy:
+
+  - id: DEPLOY-BUILD-RELEASE
+    nombre: "Build completo de Release"
+    prerequisitos:
+      - "Visual Studio 2022 con C++ workload instalado"
+      - "CMake disponible (via VS o standalone)"
+      - "Git con historial limpio (sin cambios pendientes)"
+    pasos:
+      1: ".\build.ps1 -Clean -Config Release"
+      2: "Verificar que Build/Dist/NEVEN64.xll existe y tiene ~2.45MB"
+      3: "Verificar que Build/Dist/ControlR.exe, ControlJulia.exe, ControlPython.exe existen"
+    validacion: >
+      (Get-Item 'Build/Dist/NEVEN64.xll').Length -gt 2000000  # debe ser True
+
+  - id: DEPLOY-BUILD-TEST
+    nombre: "Build + Tests antes de deploy"
+    pasos:
+      1: ".\build.ps1 -Test"
+      2: "Verificar: 'All tests passed' en la salida"
+    validacion: >
+      Si algun test falla, NO desplegar a produccion.
+      Revisar el output de ctest para identificar el test fallido.
+
+  - id: DEPLOY-NUEVA-INSTALACION
+    nombre: "Instalacion desde cero en maquina nueva"
+    prerequisitos:
+      - "R >= 4.4.1 instalado"
+      - "Excel instalado"
+      - "Build/Dist/ generado por build.ps1"
+    pasos:
+      1: "cd Install"
+      2: ".\Install-NEVEN.ps1"
+      3: "Seguir las instrucciones interactivas"
+      4: "Configurar credenciales en C:/NEVEN/neven-config.json (AI.apiKey, AI.endpoint)"
+    validacion: >
+      Abrir Excel -> verificar tab NEVEN en Ribbon
+      =NEVEN.r("1+1") debe retornar 2
+
+  - id: DEPLOY-PRESENTACIONES
+    nombre: "Actualizar CreadorPresentaciones"
+    prerequisitos:
+      - "INV-CP-01: node --check script.js retorna exit 0"
+    pasos:
+      1: "node --check CreadorPresentaciones/script.js"
+      2: "[System.IO.File]::Copy('CreadorPresentaciones/script.js', 'C:/NEVEN/taskpane/presentaciones/script.js', $true)"
+    validacion: "Ctrl+Shift+R en iframe presentaciones, abrir DevTools y verificar 0 errores"
+
+# =============================================================================
+# REGLAS DEL AGENTE VALIDADOR — PAQUETE 4
+# =============================================================================
+
+reglas_validador:
+
+  - id: REGLA-P4-01
+    trigger: "cmake --build, build.ps1, MSBuild en targets principales"
+    verificar_antes:
+      - "INV-BLD-04: Install/neven-config.json NO existe en repo (solo template)"
+      - "Git working tree limpio antes de un build de Release para distribucion"
+    verificar_despues:
+      - "INV-BLD-01: MSVCRT.dll no en dumpbin /imports del XLL"
+      - "Build/Dist/NEVEN64.xll existe y tiene ~2.45MB"
+
+  - id: REGLA-P4-02
+    trigger: "Modificacion de CMakeLists.txt (raiz o cualquier subdirectorio)"
+    verificar:
+      - "INV-BLD-02: flags /GS /guard:cf /DYNAMICBASE /NXCOMPAT /CETCOMPAT presentes"
+      - "BUILD_NEVEN_SIM permanece OFF (default) a menos que se pida explicitamente"
+      - "CMAKE_MSVC_RUNTIME_LIBRARY sigue siendo MultiThreaded (no MultiThreadedDLL)"
+
+  - id: REGLA-P4-03
+    trigger: "Commitear cualquier archivo en Install/"
+    verificar_antes:
+      - "INV-INS-01: NO commitear neven-config.json con credenciales reales"
+      - "Si se modifica neven-config.template.json: apiKey y endpoint son PLACEHOLDERS"
+      - "git grep 'apiKey.*:.*[A-Za-z0-9]{40,}' Install/ debe retornar VACIO"
+
+  - id: REGLA-P4-04
+    trigger: "Modificacion de CreadorPresentaciones/script.js"
+    verificar_antes:
+      - "INV-CP-01: node --check CreadorPresentaciones/script.js retorna exit 0"
+      - "escapeHtml() se usa en TODA inyeccion de texto en HTML (no bypass de XSS)"
+
+# =============================================================================
+# INDICE CONSOLIDADO — LOS 16 COMPONENTES
+# =============================================================================
+
+indice_completo:
+  descripcion: >
+    Referencia rapida de los 16 componentes en los 4 paquetes.
+    Para detalles completos, ver el archivo YAML del paquete correspondiente.
+
+  paquete_1_criticos:
+    1:  { id: core_xll,     nombre: "NEVEN64.xll",           archivo: "neven-ontology-p1.yaml" }
+    2:  { id: ribbon_dll,   nombre: "NEVENRibbon.dll",        archivo: "neven-ontology-p1.yaml" }
+    3:  { id: controlr_exe, nombre: "ControlR.exe",           archivo: "neven-ontology-p1.yaml" }
+    4:  { id: common_lib,   nombre: "Common.lib",             archivo: "neven-ontology-p1.yaml" }
+    5:  { id: startup_r,    nombre: "startup/startup.r",      archivo: "neven-ontology-p1.yaml" }
+
+  paquete_2_activos:
+    6:  { id: dispatcher_nevenx, nombre: "R4XCL-0-NevenX.R", archivo: "neven-ontology-p2.yaml" }
+    7:  { id: studio_backend,    nombre: "neven_http_server.py", archivo: "neven-ontology-p2.yaml" }
+    8:  { id: sidecars_json,     nombre: "Install/functions/*.json", archivo: "neven-ontology-p2.yaml" }
+    9:  { id: libreria_r,        nombre: "libreria/R/*.R",    archivo: "neven-ontology-p2.yaml" }
+
+  paquete_3_ocasionales:
+    10: { id: controljulia_exe,      nombre: "ControlJulia.exe",     archivo: "neven-ontology-p3.yaml" }
+    11: { id: agent_service,         nombre: "AgentService (FastAPI)", archivo: "neven-ontology-p3.yaml" }
+    12: { id: taskpane_frontend,     nombre: "TaskPane HTML/JS",     archivo: "neven-ontology-p3.yaml" }
+
+  paquete_4_soporte:
+    13: { id: build_cmake,           nombre: "CMakeLists.txt + build.ps1", archivo: "neven-ontology-p4.yaml" }
+    14: { id: tests_suite,           nombre: "tests/ (342 GTest)",   archivo: "neven-ontology-p4.yaml" }
+    15: { id: install_scripts,       nombre: "Install-NEVEN.ps1",    archivo: "neven-ontology-p4.yaml" }
+    16: { id: creador_presentaciones, nombre: "CreadorPresentaciones", archivo: "neven-ontology-p4.yaml" }
