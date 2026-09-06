@@ -30,6 +30,190 @@
 typedef IDispatchImpl<IRibbonExtensibility, &__uuidof(IRibbonExtensibility), &LIBID_Office, /* wMajor = */ 2, /* wMinor = */ 4> RIBBON_INTERFACE;
 typedef int(*SetPointersProcedure)(ULONG_PTR, ULONG_PTR);
 
+// ─── Helpers para neven-config.json ──────────────────────────────────────────
+
+// Lee el campo "auto_load_xll" de C:\NEVEN\neven-config.json.
+// Retorna true si el campo es true o si no existe (default = carga automatica).
+static bool ReadAutoLoadConfig() {
+  FILE* f = nullptr;
+  fopen_s(&f, "C:\\NEVEN\\neven-config.json", "rb");
+  if (!f) return true; // default: cargar automaticamente
+  fseek(f, 0, SEEK_END);
+  long sz = ftell(f);
+  rewind(f);
+  if (sz <= 0 || sz > 65536) { fclose(f); return true; }
+  std::string buf(sz, '\0');
+  fread(&buf[0], 1, sz, f);
+  fclose(f);
+  // Buscar "auto_load_xll": false (simple parse sin dependencias)
+  auto pos = buf.find("\"auto_load_xll\"");
+  if (pos == std::string::npos) return true; // campo no existe → default true
+  auto colon = buf.find(':', pos);
+  if (colon == std::string::npos) return true;
+  auto val_start = buf.find_first_not_of(" \t\r\n", colon + 1);
+  if (val_start == std::string::npos) return true;
+  return buf.substr(val_start, 5) != "false";
+}
+
+// Escribe "auto_load_xll": value en neven-config.json reemplazando el campo existente.
+static void WriteAutoLoadConfig(bool value) {
+  FILE* f = nullptr;
+  fopen_s(&f, "C:\\NEVEN\\neven-config.json", "rb");
+  if (!f) return;
+  fseek(f, 0, SEEK_END);
+  long sz = ftell(f);
+  rewind(f);
+  if (sz <= 0 || sz > 65536) { fclose(f); return; }
+  std::string buf(sz, '\0');
+  fread(&buf[0], 1, sz, f);
+  fclose(f);
+
+  const std::string new_val = value ? "true" : "false";
+  auto pos = buf.find("\"auto_load_xll\"");
+  if (pos != std::string::npos) {
+    // Reemplazar valor existente
+    auto colon = buf.find(':', pos);
+    if (colon == std::string::npos) return;
+    auto val_start = buf.find_first_not_of(" \t\r\n", colon + 1);
+    if (val_start == std::string::npos) return;
+    // Encontrar fin del valor (hasta coma, newline o })
+    auto val_end = buf.find_first_of(",\r\n}", val_start);
+    if (val_end == std::string::npos) return;
+    buf.replace(val_start, val_end - val_start, new_val);
+  } else {
+    // Insertar antes del ultimo }
+    auto last = buf.rfind('}');
+    if (last == std::string::npos) return;
+    // Buscar si hay coma antes — agregar coma si necesario
+    auto prev = buf.find_last_not_of(" \t\r\n", last - 1);
+    std::string insert = ",\n  \"auto_load_xll\": " + new_val + "\n";
+    if (prev != std::string::npos && buf[prev] == ',') insert = "\n  \"auto_load_xll\": " + new_val + "\n";
+    buf.insert(last, insert);
+  }
+
+  fopen_s(&f, "C:\\NEVEN\\neven-config.json", "wb");
+  if (!f) return;
+  fwrite(buf.c_str(), 1, buf.size(), f);
+  fclose(f);
+}
+
+// Helper: leer si un motor especifico esta enabled en neven-config.json
+// language: "R", "Julia" o "Python"
+static bool ReadMotorEnabled(const std::string& language) {
+  FILE* f = nullptr;
+  fopen_s(&f, "C:\\NEVEN\\neven-config.json", "rb");
+  if (!f) return true;
+  fseek(f, 0, SEEK_END);
+  long sz = ftell(f);
+  rewind(f);
+  if (sz <= 0 || sz > 65536) { fclose(f); return true; }
+  std::string buf(sz, '\0');
+  fread(&buf[0], 1, sz, f);
+  fclose(f);
+  // Buscar bloque del lenguaje: "R": { ... "enabled": false ... }
+  auto lang_pos = buf.find("\"" + language + "\"");
+  if (lang_pos == std::string::npos) return true;
+  auto brace = buf.find('{', lang_pos);
+  if (brace == std::string::npos) return true;
+  auto end_brace = buf.find('}', brace);
+  if (end_brace == std::string::npos) return true;
+  std::string block = buf.substr(brace, end_brace - brace);
+  auto pos = block.find("\"enabled\"");
+  if (pos == std::string::npos) return true;
+  auto colon = block.find(':', pos);
+  if (colon == std::string::npos) return true;
+  auto val_start = block.find_first_not_of(" \t\r\n", colon + 1);
+  if (val_start == std::string::npos) return true;
+  return block.substr(val_start, 5) != "false";
+}
+
+// Helper: escribir el flag enabled de un motor en neven-config.json
+static void WriteMotorEnabled(const std::string& language, bool value) {
+  FILE* f = nullptr;
+  fopen_s(&f, "C:\\NEVEN\\neven-config.json", "rb");
+  if (!f) return;
+  fseek(f, 0, SEEK_END);
+  long sz = ftell(f);
+  rewind(f);
+  if (sz <= 0 || sz > 65536) { fclose(f); return; }
+  std::string buf(sz, '\0');
+  fread(&buf[0], 1, sz, f);
+  fclose(f);
+
+  const std::string new_val = value ? "true" : "false";
+  auto lang_pos = buf.find("\"" + language + "\"");
+  if (lang_pos == std::string::npos) { fclose(f); return; }
+  auto brace = buf.find('{', lang_pos);
+  if (brace == std::string::npos) return;
+  auto end_brace = buf.find('}', brace);
+  if (end_brace == std::string::npos) return;
+
+  auto pos = buf.find("\"enabled\"", brace);
+  if (pos != std::string::npos && pos < end_brace) {
+    // Reemplazar valor existente
+    auto colon = buf.find(':', pos);
+    auto val_start = buf.find_first_not_of(" \t\r\n", colon + 1);
+    auto val_end = buf.find_first_of(",\r\n}", val_start);
+    buf.replace(val_start, val_end - val_start, new_val);
+  } else {
+    // Insertar antes del cierre del bloque
+    std::string insert = ",\n      \"enabled\": " + new_val;
+    buf.insert(end_brace, insert);
+  }
+
+  fopen_s(&f, "C:\\NEVEN\\neven-config.json", "wb");
+  if (!f) return;
+  fwrite(buf.c_str(), 1, buf.size(), f);
+  fclose(f);
+}
+static void SetXllRegistryAutoLoad(bool enable) {
+  const char* xll_path = "/R \"C:\\NEVEN\\NEVEN64.xll\"";
+  const char* versions[] = { "16.0", "15.0", nullptr };
+  for (int v = 0; versions[v]; v++) {
+    std::string reg_path = "Software\\Microsoft\\Office\\";
+    reg_path += versions[v];
+    reg_path += "\\Excel\\Options";
+    HKEY hKey = nullptr;
+    if (RegOpenKeyExA(HKEY_CURRENT_USER, reg_path.c_str(), 0, KEY_READ | KEY_WRITE, &hKey) != ERROR_SUCCESS)
+      continue;
+    if (enable) {
+      // Buscar slot OPEN libre o actualizar existente
+      char val_name[32], val_data[MAX_PATH];
+      DWORD name_sz, data_sz, type;
+      bool found = false;
+      int max_idx = -1;
+      for (DWORD i = 0; ; i++) {
+        name_sz = sizeof(val_name); data_sz = sizeof(val_data);
+        if (RegEnumValueA(hKey, i, val_name, &name_sz, nullptr, &type, (LPBYTE)val_data, &data_sz) != ERROR_SUCCESS)
+          break;
+        if (strncmp(val_name, "OPEN", 4) == 0) {
+          int idx = (strlen(val_name) == 4) ? 0 : atoi(val_name + 4);
+          if (idx > max_idx) max_idx = idx;
+          if (strstr(val_data, "NEVEN")) { found = true; break; }
+        }
+      }
+      if (!found) {
+        std::string new_key = (max_idx < 0) ? "OPEN" : ("OPEN" + std::to_string(max_idx + 1));
+        RegSetValueExA(hKey, new_key.c_str(), 0, REG_SZ, (LPBYTE)xll_path, (DWORD)strlen(xll_path) + 1);
+      }
+    } else {
+      // Borrar todas las claves OPEN que apunten a NEVEN
+      char val_name[32], val_data[MAX_PATH];
+      DWORD name_sz, data_sz, type;
+      std::vector<std::string> to_delete;
+      for (DWORD i = 0; ; i++) {
+        name_sz = sizeof(val_name); data_sz = sizeof(val_data);
+        if (RegEnumValueA(hKey, i, val_name, &name_sz, nullptr, &type, (LPBYTE)val_data, &data_sz) != ERROR_SUCCESS)
+          break;
+      if (strncmp(val_name, "OPEN", 4) == 0 && strstr(val_data, "NEVEN") && strstr(val_data, ".xll"))
+          to_delete.push_back(val_name);
+      }
+      for (auto& k : to_delete) RegDeleteValueA(hKey, k.c_str());
+    }
+    RegCloseKey(hKey);
+  }
+}
+
 typedef enum {
 
   ShowConsole = 1001,
@@ -90,6 +274,22 @@ typedef enum {
 
   // NEVEN v3.0 Presentaciones
   OnPresentacionesCommand,
+
+  // NEVEN v3.1 Carga bajo demanda
+  OnActivateNEVENCommand,
+  OnAutoLoadCommand,
+  GetAutoLoadPressed,
+
+  // NEVEN v3.1 Toggles de motores
+  OnEnableRCommand,
+  GetEnableRPressed,
+  GetEnableRLabel,
+  OnEnableJuliaCommand,
+  GetEnableJuliaPressed,
+  GetEnableJuliaLabel,
+  OnEnablePythonCommand,
+  GetEnablePythonPressed,
+  GetEnablePythonLabel,
 
 } DispIds;
 
@@ -200,6 +400,18 @@ public:
       else if (!wcscmp(rgszNames[0], L"OnAboutCommand")) disp_id = DispIds::OnAboutCommand;
       else if (!wcscmp(rgszNames[0], L"OnTaskPaneCommand")) disp_id = DispIds::OnTaskPaneCommand;
       else if (!wcscmp(rgszNames[0], L"OnPresentacionesCommand")) disp_id = DispIds::OnPresentacionesCommand;
+      else if (!wcscmp(rgszNames[0], L"OnActivateNEVENCommand")) disp_id = DispIds::OnActivateNEVENCommand;
+      else if (!wcscmp(rgszNames[0], L"OnAutoLoadCommand"))     disp_id = DispIds::OnAutoLoadCommand;
+      else if (!wcscmp(rgszNames[0], L"GetAutoLoadPressed"))    disp_id = DispIds::GetAutoLoadPressed;
+      else if (!wcscmp(rgszNames[0], L"OnEnableRCommand"))      disp_id = DispIds::OnEnableRCommand;
+      else if (!wcscmp(rgszNames[0], L"GetEnableRPressed"))     disp_id = DispIds::GetEnableRPressed;
+      else if (!wcscmp(rgszNames[0], L"GetEnableRLabel"))       disp_id = DispIds::GetEnableRLabel;
+      else if (!wcscmp(rgszNames[0], L"OnEnableJuliaCommand"))  disp_id = DispIds::OnEnableJuliaCommand;
+      else if (!wcscmp(rgszNames[0], L"GetEnableJuliaPressed")) disp_id = DispIds::GetEnableJuliaPressed;
+      else if (!wcscmp(rgszNames[0], L"GetEnableJuliaLabel"))   disp_id = DispIds::GetEnableJuliaLabel;
+      else if (!wcscmp(rgszNames[0], L"OnEnablePythonCommand")) disp_id = DispIds::OnEnablePythonCommand;
+      else if (!wcscmp(rgszNames[0], L"GetEnablePythonPressed"))disp_id = DispIds::GetEnablePythonPressed;
+      else if (!wcscmp(rgszNames[0], L"GetEnablePythonLabel"))  disp_id = DispIds::GetEnablePythonLabel;
     }
 
     if (disp_id > 0)
@@ -784,6 +996,181 @@ public:
                        missing, missing, missing, missing, missing, missing, missing, missing,
                        missing, missing, missing, missing, missing, missing, missing, 1033, &result);
       }
+      return S_OK;
+    }
+
+    case DispIds::OnActivateNEVENCommand:
+    {
+      // Carga NEVEN64.xll bajo demanda via RegisterXLL.
+      // SetPointers retorna 0 si el XLL ya esta cargado en el proceso, -1 si no.
+      int status = SetPointers(
+          reinterpret_cast<ULONG_PTR>(m_pApplication.p),
+          reinterpret_cast<ULONG_PTR>(this));
+
+      if (status == 0) {
+          MessageBoxA(NULL,
+              "NEVEN ya esta activo.\nLos motores R, Julia y Python estan disponibles.",
+              "NEVEN", MB_OK | MB_ICONINFORMATION);
+          return S_OK;
+      }
+
+      // XLL no cargado -- intentar carga bajo demanda
+      CComQIPtr<Excel::_Application> pApp(m_pApplication);
+      if (pApp) {
+          _bstr_t bstrPath(L"C:\\NEVEN\\NEVEN64.xll");
+          VARIANT_BOOL vb = VARIANT_FALSE;
+          HRESULT hr = pApp->RegisterXLL(bstrPath, 1033, &vb);
+
+          if (SUCCEEDED(hr) && vb) {
+              // Registrar punteros tras carga exitosa
+              SetPointers(
+                  reinterpret_cast<ULONG_PTR>(m_pApplication.p),
+                  reinterpret_cast<ULONG_PTR>(this));
+              MessageBoxA(NULL,
+                  "NEVEN activado correctamente.\nR, Julia y Python estan disponibles.",
+                  "NEVEN", MB_OK | MB_ICONINFORMATION);
+          } else {
+              MessageBoxA(NULL,
+                  "No se pudo cargar NEVEN64.xll.\n"
+                  "Verifique que el archivo existe en C:\\NEVEN\\",
+                  "NEVEN - Error", MB_OK | MB_ICONERROR);
+          }
+      }
+      return S_OK;
+    }
+
+    case DispIds::OnAutoLoadCommand:
+    {
+      // toggleButton: pdispparams->rgvarg[1] = IRibbonControl, rgvarg[0] = VARIANT_BOOL pressed
+      VARIANT_BOOL pressed = VARIANT_FALSE;
+      if (pdispparams->cArgs >= 2 && pdispparams->rgvarg[0].vt == VT_BOOL)
+          pressed = pdispparams->rgvarg[0].boolVal;
+      bool enable = (pressed == VARIANT_TRUE);
+      WriteAutoLoadConfig(enable);
+      SetXllRegistryAutoLoad(enable);
+      // Garantizar que el Ribbon siempre tenga LoadBehavior=3
+      HKEY hKey = nullptr;
+      if (RegOpenKeyExA(HKEY_CURRENT_USER,
+          "Software\\Microsoft\\Office\\Excel\\Addins\\NEVENRibbon.Connect",
+          0, KEY_WRITE, &hKey) == ERROR_SUCCESS) {
+          DWORD lb = 3;
+          RegSetValueExA(hKey, "LoadBehavior", 0, REG_DWORD, (LPBYTE)&lb, sizeof(lb));
+          RegCloseKey(hKey);
+      }
+      if (m_pRibbonUI) m_pRibbonUI->InvalidateControl(CComBSTR(L"btnAutoLoad"));
+      return S_OK;
+    }
+
+    case DispIds::GetAutoLoadPressed:
+    {
+      // Retorna el estado actual del toggle (true = inicio automatico activo)
+      FILE* dbg = nullptr;
+      fopen_s(&dbg, "C:\\NEVEN\\ribbon_debug.log", "a");
+      if (dbg) { fprintf(dbg, "GetAutoLoadPressed called\n"); fclose(dbg); }
+      bool val = ReadAutoLoadConfig();
+      CComVariant v(val ? VARIANT_TRUE : VARIANT_FALSE);
+      v.Detach(pvarResult);
+      return S_OK;
+    }
+
+    // ─── Toggles de motores R / Julia / Python ────────────────────────────────
+
+    case DispIds::OnEnableRCommand:
+    {
+      VARIANT_BOOL pressed = VARIANT_FALSE;
+      if (pdispparams->cArgs >= 2 && pdispparams->rgvarg[0].vt == VT_BOOL)
+        pressed = pdispparams->rgvarg[0].boolVal;
+      WriteMotorEnabled("R", pressed == VARIANT_TRUE);
+      if (m_pRibbonUI) {
+        m_pRibbonUI->InvalidateControl(CComBSTR(L"btnEnableR"));
+      }
+      MessageBoxA(NULL,
+        pressed == VARIANT_TRUE
+          ? "Motor R activado.\nEfectivo al proxima vez que abra Excel."
+          : "Motor R desactivado.\nEfectivo la proxima vez que abra Excel.",
+        "NEVEN", MB_OK | MB_ICONINFORMATION);
+      return S_OK;
+    }
+
+    case DispIds::GetEnableRPressed:
+    {
+      bool val = ReadMotorEnabled("R");
+      CComVariant v(val ? VARIANT_TRUE : VARIANT_FALSE);
+      v.Detach(pvarResult);
+      return S_OK;
+    }
+
+    case DispIds::GetEnableRLabel:
+    {
+      bool val = ReadMotorEnabled("R");
+      CComVariant v(val ? "R: ON" : "R: OFF");
+      v.Detach(pvarResult);
+      return S_OK;
+    }
+
+    case DispIds::OnEnableJuliaCommand:
+    {
+      VARIANT_BOOL pressed = VARIANT_FALSE;
+      if (pdispparams->cArgs >= 2 && pdispparams->rgvarg[0].vt == VT_BOOL)
+        pressed = pdispparams->rgvarg[0].boolVal;
+      WriteMotorEnabled("Julia", pressed == VARIANT_TRUE);
+      if (m_pRibbonUI) {
+        m_pRibbonUI->InvalidateControl(CComBSTR(L"btnEnableJulia"));
+      }
+      MessageBoxA(NULL,
+        pressed == VARIANT_TRUE
+          ? "Motor Julia activado.\nEfectivo la proxima vez que abra Excel."
+          : "Motor Julia desactivado.\nEfectivo la proxima vez que abra Excel.",
+        "NEVEN", MB_OK | MB_ICONINFORMATION);
+      return S_OK;
+    }
+
+    case DispIds::GetEnableJuliaPressed:
+    {
+      bool val = ReadMotorEnabled("Julia");
+      CComVariant v(val ? VARIANT_TRUE : VARIANT_FALSE);
+      v.Detach(pvarResult);
+      return S_OK;
+    }
+
+    case DispIds::GetEnableJuliaLabel:
+    {
+      bool val = ReadMotorEnabled("Julia");
+      CComVariant v(val ? "Julia: ON" : "Julia: OFF");
+      v.Detach(pvarResult);
+      return S_OK;
+    }
+
+    case DispIds::OnEnablePythonCommand:
+    {
+      VARIANT_BOOL pressed = VARIANT_FALSE;
+      if (pdispparams->cArgs >= 2 && pdispparams->rgvarg[0].vt == VT_BOOL)
+        pressed = pdispparams->rgvarg[0].boolVal;
+      WriteMotorEnabled("Python", pressed == VARIANT_TRUE);
+      if (m_pRibbonUI) {
+        m_pRibbonUI->InvalidateControl(CComBSTR(L"btnEnablePython"));
+      }
+      MessageBoxA(NULL,
+        pressed == VARIANT_TRUE
+          ? "Motor Python activado.\nEfectivo la proxima vez que abra Excel."
+          : "Motor Python desactivado.\nEfectivo la proxima vez que abra Excel.",
+        "NEVEN", MB_OK | MB_ICONINFORMATION);
+      return S_OK;
+    }
+
+    case DispIds::GetEnablePythonPressed:
+    {
+      bool val = ReadMotorEnabled("Python");
+      CComVariant v(val ? VARIANT_TRUE : VARIANT_FALSE);
+      v.Detach(pvarResult);
+      return S_OK;
+    }
+
+    case DispIds::GetEnablePythonLabel:
+    {
+      bool val = ReadMotorEnabled("Python");
+      CComVariant v(val ? "Python: ON" : "Python: OFF");
+      v.Detach(pvarResult);
       return S_OK;
     }
 

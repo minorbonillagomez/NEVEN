@@ -1,20 +1,20 @@
 /**
- * Copyright (c) 2026 RJ2XCL Project
+ * Copyright (c) 2026 NEVEN Project
  * 
- * This file is part of RJ2XCL.
+ * This file is part of NEVEN.
  *
- * RJ2XCL is free software: you can redistribute it and/or modify
+ * NEVEN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * RJ2XCL is distributed in the hope that it will be useful,
+ * NEVEN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with RJ2XCL.  If not, see <http://www.gnu.org/licenses/>.
+ * along with NEVEN.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "stdafx.h"
@@ -34,6 +34,11 @@ bool GetRegistryString(std::string &result_value, HKEY base_key, const char *key
 
 STDMETHODIMP CConnect::GetCustomUI(BSTR RibbonID, BSTR *pbstrRibbonXML)
 {
+  // Log para diagnostico
+  FILE* dbg = nullptr;
+  fopen_s(&dbg, "C:\\NEVEN\\ribbon_debug.log", "a");
+  if (dbg) { fprintf(dbg, "GetCustomUI called\n"); fclose(dbg); }
+
   HRSRC hRsrc = ::FindResource(_AtlBaseModule.m_hInstResource, MAKEINTRESOURCE(IDR_XML2), L"XML");
   if (hRsrc)
   {
@@ -61,54 +66,74 @@ void __stdcall RJ2XCLRibbon_LookupFunction(void) {}
 // CConnect
 STDMETHODIMP CConnect::OnConnection(IDispatch *pApplication, AddInDesignerObjects::ext_ConnectMode /*ConnectMode*/, IDispatch *pAddInInst, SAFEARRAY ** /*custom*/)
 {
-  char path[MAX_PATH];
-
-  GetModuleFileNameA(_AtlBaseModule.m_hInst, path, sizeof(path));
-  PathRemoveFileSpecA(path); // deprecated, but the replacement is windows 8+ only
-
-  std::string xll_path = path;
-  xll_path.append("\\"); // is there a win32 constant for path separator?
-
-#ifdef _DEBUG 
-#ifdef _WIN64
-  xll_path.append("RJ2XCL64D.xll");
-#else
-  xll_path.append("RJ2XCL32D.xll");
-#endif
-#else
-#ifdef _WIN64
-  xll_path.append("RJ2XCL64.xll");
-#else
-  xll_path.append("RJ2XCL32.xll");
-#endif
-#endif
+  // CRITICO: OnConnection SIEMPRE debe retornar S_OK sin excepciones.
+  // Si falla, Excel baja LoadBehavior a 2 y el Ribbon desaparece en la proxima sesion.
+  // Diseno: el Ribbon funciona independientemente de si el XLL esta cargado.
+  // El XLL se carga aqui solo si auto_load_xll=true en neven-config.json.
+  // Si auto_load_xll=false, el usuario usa el boton "Activar NEVEN" del Ribbon.
 
   pApplication->QueryInterface(__uuidof(IDispatch), (LPVOID*)&m_pApplication);
   pAddInInst->QueryInterface(__uuidof(IDispatch), (LPVOID*)&m_pAddInInstance);
 
-  CComQIPtr<Excel::_Application> app(m_pApplication);
-  if (app) {
+  // Log para diagnostico
+  FILE* dbg = nullptr;
+  fopen_s(&dbg, "C:\\NEVEN\\ribbon_debug.log", "a");
+  if (dbg) {
+    bool autoLoad = ReadAutoLoadConfig();
+    fprintf(dbg, "OnConnection called -- auto_load_xll=%s\n", autoLoad ? "true" : "false");
+    fclose(dbg);
+  }
 
-    int result = SetPointers(reinterpret_cast<ULONG_PTR>(m_pApplication.p), reinterpret_cast<ULONG_PTR>(this));
-    if (result) {
+  try {
+    char path[MAX_PATH];
+    GetModuleFileNameA(_AtlBaseModule.m_hInst, path, sizeof(path));
+    PathRemoveFileSpecA(path);
 
-      _bstr_t bstrPath(xll_path.c_str());
-      VARIANT_BOOL vb = VARIANT_FALSE;
-      HRESULT hr = app->RegisterXLL(bstrPath, 1033, &vb);
+    std::string xll_path = path;
+    xll_path.append("\\");
+#ifdef _DEBUG
+  #ifdef _WIN64
+    xll_path.append("RJ2XCL64D.xll");
+  #else
+    xll_path.append("RJ2XCL32D.xll");
+  #endif
+#else
+  #ifdef _WIN64
+    xll_path.append("RJ2XCL64.xll");
+  #else
+    xll_path.append("RJ2XCL32.xll");
+  #endif
+#endif
 
-      if (SUCCEEDED(hr)) {
-        if (vb) {
-          result = SetPointers(reinterpret_cast<ULONG_PTR>(m_pApplication.p), reinterpret_cast<ULONG_PTR>(this));
-          // ATLTRACE("register loaded xll OK");
-        }
-        else {
-          ATLTRACE("register call succeeded but load returned false\n");
-        }
+    CComQIPtr<Excel::_Application> app(m_pApplication);
+    if (app) {
+      // Si auto_load_xll=false: NO intentar cargar ni conectar con el XLL.
+      // El XLL no esta activo y cualquier llamada a SetPointers o RegisterXLL
+      // puede colgar Excel si los motores (R/Julia/Python) no estan iniciados.
+      if (!ReadAutoLoadConfig()) {
+        // Ribbon listo. Usuario usa boton "Activar NEVEN" para cargar el XLL.
+        return S_OK;
       }
-      else {
-        ATLTRACE("register failed with 0x%x\n", hr);
+
+      // Verificar si el XLL ya esta cargado (via clave OPEN del registro)
+      int result = SetPointers(
+          reinterpret_cast<ULONG_PTR>(m_pApplication.p),
+          reinterpret_cast<ULONG_PTR>(this));
+
+      if (result != 0) {
+        // XLL no cargado -- cargarlo ahora (auto_load_xll=true)
+        _bstr_t bstrPath(xll_path.c_str());
+        VARIANT_BOOL vb = VARIANT_FALSE;
+        HRESULT hr = app->RegisterXLL(bstrPath, 1033, &vb);
+        if (SUCCEEDED(hr) && vb) {
+          SetPointers(
+              reinterpret_cast<ULONG_PTR>(m_pApplication.p),
+              reinterpret_cast<ULONG_PTR>(this));
+        }
       }
     }
+  } catch (...) {
+    // Nunca propagar -- preservar el Ribbon activo
   }
 
   return S_OK;
@@ -143,8 +168,6 @@ STDMETHODIMP CConnect::OnBeginShutdown(SAFEARRAY ** /*custom*/)
  */
 STDMETHODIMP CConnect::GetImage(int32_t image_id, VARIANT *result)
 {
-  // NOTE: Consider high-dpi image variant for 4K displays
-
   HRESULT hr = S_OK;
   PICTDESC pd;
 
@@ -201,4 +224,3 @@ STDMETHODIMP CConnect::GetImage(int32_t image_id, VARIANT *result)
 
   return hr;
 }
-

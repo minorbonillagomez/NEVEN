@@ -5,13 +5,21 @@
 
         <!-- Grupo: Motores de Lenguaje -->
         <group id="grpEngines" label="Motores">
+          <button id="btnActivateNEVEN"
+                  label="Activar NEVEN"
+                  size="large"
+                  onAction="OnActivateNEVENCommand"
+                  imageMso="ServerConnect"
+                  screentip="Activar motores NEVEN"
+                  supertip="Carga NEVEN64.xll bajo demanda: inicia los motores activos sin reiniciar Excel." />
+
           <button id="btnReloadFunctions"
                   label="Actualizar"
                   size="large"
                   onAction="OnReloadCommand"
                   imageMso="Refresh"
                   screentip="Recargar funciones de usuario"
-                  supertip="Recarga todos los archivos .R, .jl y .py de C:\NEVEN\functions\ sin reiniciar Excel. Use despues de agregar nuevas funciones." />
+                  supertip="Recarga todos los archivos .R, .jl y .py de C:\NEVEN\functions\ sin reiniciar Excel." />
 
           <button id="btnEngineStatus"
                   label="Estado"
@@ -20,6 +28,35 @@
                   imageMso="ServerConnection"
                   screentip="Estado de los motores"
                   supertip="Muestra el estado de conexion de R, Julia y Python." />
+
+          <separator id="sepMotores" />
+
+          <toggleButton id="btnEnableR"
+                  label="R"
+                  size="normal"
+                  onAction="OnEnableRCommand"
+                  getPressed="GetEnableRPressed"
+                  imageMso="TableStylesGallery"
+                  screentip="Motor R al inicio"
+                  supertip="Activa o desactiva el motor R al arrancar Excel. Desactivarlo reduce el tiempo de inicio si no necesita funciones R en esta sesion." />
+
+          <toggleButton id="btnEnableJulia"
+                  label="Julia"
+                  size="normal"
+                  onAction="OnEnableJuliaCommand"
+                  getPressed="GetEnableJuliaPressed"
+                  imageMso="ChartColumnClustered"
+                  screentip="Motor Julia al inicio"
+                  supertip="Activa o desactiva el motor Julia al arrancar Excel." />
+
+          <toggleButton id="btnEnablePython"
+                  label="Python"
+                  size="normal"
+                  onAction="OnEnablePythonCommand"
+                  getPressed="GetEnablePythonPressed"
+                  imageMso="FieldInsert"
+                  screentip="Motor Python al inicio"
+                  supertip="Activa o desactiva el motor Python al arrancar Excel." />
         </group>
 
         <!-- Grupo: Analisis (nuevos viewers) -->
@@ -108,7 +145,7 @@
                   onAction="OnPresentacionesCommand"
                   imageMso="SlideshowFromBeginning"
                   screentip="Creador de Presentaciones NEVEN"
-                  supertip="Abre el editor visual de presentaciones Impress.js. Crea slides con texto, graficos de Excel, pizarras interactivas y sitios web embebidos. Exporta a HTML standalone." />
+                  supertip="Abre el editor visual de presentaciones Impress.js. Exporta a HTML standalone." />
         </group>
 
         <!-- Grupo: Ayuda -->
@@ -119,7 +156,7 @@
                   onAction="OnDocsCommand"
                   imageMso="Help"
                   screentip="Documentacion NEVEN"
-                  supertip="Abre la documentacion completa de NEVEN (13 capitulos) en el visor." />
+                  supertip="Abre la documentacion completa de NEVEN en el visor." />
 
           <button id="btnAbout"
                   label="Acerca de"
@@ -127,7 +164,7 @@
                   onAction="OnAboutCommand"
                   imageMso="Info"
                   screentip="Acerca de NEVEN"
-                  supertip="NEVEN v2.1 — Open Source. Construyendo comunidad." />
+                  supertip="NEVEN v2.1 -- Open Source." />
         </group>
 
       </tab>

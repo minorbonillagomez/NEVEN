@@ -1,4 +1,4 @@
-{
+﻿{
   "NEVEN": {
     "functionsDirectory": "C:\\NEVEN\\functions",
     "graphicsDirectory": "C:\\NEVEN\\graphics",
@@ -10,20 +10,21 @@
     "sandboxEnabled": true,
     "R": {
       "home": "",
+      "enabled": true,
       "minMajor": 3,
       "minMinor": 5,
       "maxMajor": 99
     },
     "Julia": {
       "home": "",
-      "enabled": true,
+      "enabled": false,
       "minMajor": 1,
       "minMinor": 6,
       "maxMajor": 99
     },
     "Python": {
       "home": "",
-      "enabled": true,
+      "enabled": false,
       "minMajor": 3,
       "minMinor": 10,
       "maxMajor": 99
@@ -35,19 +36,15 @@
     "maxMemoryMB": 512
   },
   "Pluto": {
-    "port": 1235
+    "port": 1234
   },
   "AI": {
-    "enabled": false,
-    "_comment_providers": "Proveedores soportados: lmstudio, ollama, openai, openrouter, azure",
-    "_comment_lmstudio": "LM Studio local: provider=lmstudio, endpoint=http://localhost:PUERTO/v1/chat/completions, apiKey vacío",
-    "_comment_openrouter": "OpenRouter (modelos gratuitos): provider=openrouter, endpoint=https://openrouter.ai/api/v1/chat/completions, apiKey=sk-or-v1-...",
-    "_comment_azure": "Azure OpenAI: provider=azure, endpoint=https://RECURSO.openai.azure.com, model=NOMBRE-DEPLOYMENT, apiKey=TU-KEY",
-    "provider": "lmstudio",
-    "apiKey": "",
-    "model": "local-model",
-    "endpoint": "http://localhost:1234/v1/chat/completions",
-    "apiVersion": "",
+    "enabled": true,
+    "provider": "azure",
+    "apiKey": "TU_AZURE_OPENAI_API_KEY_AQUI",
+    "model": "gpt-4.1",
+    "endpoint": "https://gmo-prod-azure-ai-eastus2-0001.openai.azure.com",
+    "apiVersion": "2025-01-01-preview",
     "maxTokens": 2000,
     "temperature": 0.3,
     "timeout": 120,
@@ -69,5 +66,6 @@
     "startupDir": "C:\\NEVEN\\startup\\",
     "staticDir": "C:\\NEVEN\\taskpane\\",
     "functionsDir": "C:\\NEVEN\\functions\\"
-  }
+  },
+  "auto_load_xll": true
 }
