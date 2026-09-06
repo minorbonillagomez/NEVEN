@@ -1,60 +1,66 @@
 {
-  "id": "GR_Correlaciones",
-  "family": "GR",
-  "family_label": "Gráficos",
-  "name": "Mapa de Correlaciones",
-  "description": "Heatmap de la matriz de correlaciones entre variables numéricas. Muestra la fuerza y dirección de las relaciones lineales (o de rango).",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Coeficiente_de_correlaci%C3%B3n_de_Pearson",
-  "languages": [
-    "r"
-  ],
-  "function_name": "GR_Correlaciones.Studio",
-  "file": "GR_Correlaciones.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Variables numéricas (mínimo 2 columnas)",
-      "types": [
-        "numeric"
-      ],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "Metodo",
-      "label": "Método de correlación",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        {
-          "value": 1,
-          "label": "Pearson (lineal)"
-        },
-        {
-          "value": 2,
-          "label": "Spearman (rangos)"
-        },
-        {
-          "value": 3,
-          "label": "Kendall (tau)"
-        }
-      ]
-    },
-    {
-      "name": "MostrarValores",
-      "label": "Mostrar valores en celdas",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    },
-    {
-      "name": "Paleta",
-      "label": "Paleta de colores",
-      "type": "palette",
-      "default": 1,
-      "tier": 1
-    }
-  ]
+    "id":  "GR_Correlaciones",
+    "family":  "GR",
+    "family_label":  "GrÃ¡ficos",
+    "name":  "Mapa de Correlaciones",
+    "description":  "Heatmap de la matriz de correlaciones entre variables numÃ©ricas. Muestra la fuerza y direcciÃ³n de las relaciones lineales (o de rango).",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Coeficiente_de_correlaci%C3%B3n_de_Pearson",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "GR_Correlaciones.Studio",
+    "file":  "GR_Correlaciones.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Variables numÃ©ricas (mÃ­nimo 2 columnas)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "Metodo",
+                           "label":  "MÃ©todo de correlaciÃ³n",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Pearson (lineal)"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Spearman (rangos)"
+                                           },
+                                           {
+                                               "value":  3,
+                                               "label":  "Kendall (tau)"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "MostrarValores",
+                           "label":  "Mostrar valores en celdas",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "Paleta",
+                           "label":  "Paleta de colores",
+                           "type":  "palette",
+                           "default":  1,
+                           "tier":  1
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Mapa de calor de correlaciones Plotly"
+                         }
+                     ]
 }

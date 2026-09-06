@@ -1,47 +1,53 @@
 {
-  "id": "GR_EjemploBasico",
-  "family": "GR",
-  "family_label": "Gráficos",
-  "name": "Ejemplo Básico (Scatter Mínimo)",
-  "description": "Plantilla mínima para crear gráficos en Data Lab. Muestra el patrón básico: 2 roles X e Y, parámetros simples, y retorno con r_object_to_slots. Cópialo como punto de partida para tu propio tipo de gráfico.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Diagrama_de_dispersi%C3%B3n",
-  "languages": [
-    "r"
-  ],
-  "function_name": "GR_EjemploBasico.Studio",
-  "file": "GR_EjemploBasico.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Eje X (variable numérica)",
-      "types": [
-        "numeric"
-      ],
-      "multiple": false,
-      "required": true
-    },
-    "Y": {
-      "label": "Eje Y (variable numérica)",
-      "types": [
-        "numeric"
-      ],
-      "multiple": false,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "MostrarLeyenda",
-      "label": "Mostrar leyenda",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    },
-    {
-      "name": "Paleta",
-      "label": "Paleta de colores",
-      "type": "palette",
-      "default": 1,
-      "tier": 1
-    }
-  ]
+    "id":  "GR_EjemploBasico",
+    "family":  "GR",
+    "family_label":  "GrÃ¡ficos",
+    "name":  "Ejemplo BÃ¡sico (Scatter MÃ­nimo)",
+    "description":  "Plantilla mÃ­nima para crear grÃ¡ficos en Data Lab. Muestra el patrÃ³n bÃ¡sico: 2 roles X e Y, parÃ¡metros simples, y retorno con r_object_to_slots. CÃ³pialo como punto de partida para tu propio tipo de grÃ¡fico.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Diagrama_de_dispersi%C3%B3n",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "GR_EjemploBasico.Studio",
+    "file":  "GR_EjemploBasico.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Eje X (variable numÃ©rica)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "Y":  {
+                                     "label":  "Eje Y (variable numÃ©rica)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "MostrarLeyenda",
+                           "label":  "Mostrar leyenda",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "Paleta",
+                           "label":  "Paleta de colores",
+                           "type":  "palette",
+                           "default":  1,
+                           "tier":  1
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Scatter plot interactivo Plotly (X vs Y)"
+                         }
+                     ]
 }

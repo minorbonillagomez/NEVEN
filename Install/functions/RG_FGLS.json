@@ -1,39 +1,110 @@
 {
-  "id": "RG_FGLS",
-  "family": "RG",
-  "family_label": "Regresión",
-  "name": "FGLS — Mínimos Cuadrados Generalizados Factibles",
-  "description": "Corrección eficiente de heterocedasticidad cuando su estructura depende de los regresores. A diferencia de Newey-West (que solo corrige EE), FGLS produce coeficientes más eficientes. Implementado como WLS ponderado por varianza estimada. Wooldridge Cap. 8.",
-  "wikipedia_url": "https://en.wikipedia.org/wiki/Generalized_least_squares",
-  "languages": ["r"],
-  "function_name": "RG_FGLS.Studio",
-  "file": "RG_FGLS.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable dependiente (Y)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X": {
-      "label": "Variables independientes (X)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "NivelAlpha",
-      "label": "Nivel de significancia (alpha)",
-      "type": "select",
-      "default": 0.05,
-      "tier": 1,
-      "options": [
-        {"value": 0.01, "label": "1%"},
-        {"value": 0.05, "label": "5% (estándar)"},
-        {"value": 0.10, "label": "10%"}
-      ]
-    }
-  ]
+    "id":  "RG_FGLS",
+    "family":  "RG",
+    "family_label":  "RegresiÃ³n",
+    "name":  "FGLS â€” MÃ­nimos Cuadrados Generalizados Factibles",
+    "description":  "CorrecciÃ³n eficiente de heterocedasticidad cuando su estructura depende de los regresores. A diferencia de Newey-West (que solo corrige EE), FGLS produce coeficientes mÃ¡s eficientes. Implementado como WLS ponderado por varianza estimada. Wooldridge Cap. 8.",
+    "wikipedia_url":  "https://en.wikipedia.org/wiki/Generalized_least_squares",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "RG_FGLS.Studio",
+    "file":  "RG_FGLS.Studio.R",
+    "variable_roles":  {
+                           "Y":  {
+                                     "label":  "Variable dependiente (Y)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "X":  {
+                                     "label":  "Variables independientes (X)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "NivelAlpha",
+                           "label":  "Nivel de significancia (alpha)",
+                           "type":  "select",
+                           "default":  0.05,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  0.01,
+                                               "label":  "1%"
+                                           },
+                                           {
+                                               "value":  0.05,
+                                               "label":  "5% (estÃ¡ndar)"
+                                           },
+                                           {
+                                               "value":  0.10,
+                                               "label":  "10%"
+                                           }
+                                       ]
+                       }
+                   ],
+    "function_name_xll":  "MR_FGLS",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosY",
+                                        "label":  "Variable dependiente Y",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a1":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Variables independientes X",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a3":  {
+                                        "name":  "Escala",
+                                        "label":  "Estandarizar variables (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  0
+                                    },
+                             "a4":  {
+                                        "name":  "Filtro",
+                                        "label":  "Excluir observaciones (0=incluir)",
+                                        "type":  "range",
+                                        "required":  false,
+                                        "default":  null
+                                    },
+                             "a5":  {
+                                        "name":  "Constante",
+                                        "label":  "Incluir intercepto (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  1
+                                    }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Tabla FGLS estimada"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Prediccion dentro de muestra"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Metricas estructuradas"
+                         }
+                     ]
 }

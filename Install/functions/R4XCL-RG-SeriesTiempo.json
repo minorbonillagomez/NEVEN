@@ -1,48 +1,130 @@
 {
-  "id": "RG_SeriesTiempo",
-  "family": "ST",
-  "family_label": "Series de Tiempo",
-  "name": "Analisis de Series de Tiempo",
-  "description": "Analiza una serie temporal univariada o con variables exogenas (Y_t ~ X_t): estadisticas descriptivas, prueba de raiz unitaria Augmented Dickey-Fuller (ADF), funcion de autocorrelacion (ACF/PACF) y grafico interactivo. Si se asignan variables X, estima adicionalmente una regresion dinamica con tabla Stargazer.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Serie_temporal",
-  "languages": ["r"],
-  "function_name": "RG_SeriesTiempo.Studio",
-  "file": "R4XCL-RG-SeriesTiempo.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Serie temporal (Y_t)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X": {
-      "label": "Variables externas X_t (opcional)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": false
-    }
-  },
-  "parameters": [
-    {
-      "name": "Periodicidad",
-      "label": "Periodicidad",
-      "type": "select",
-      "default": 3,
-      "tier": 1,
-      "options": [
-        { "value": 1, "label": "Anual" },
-        { "value": 2, "label": "Trimestral" },
-        { "value": 3, "label": "Mensual" },
-        { "value": 4, "label": "Semanal" },
-        { "value": 5, "label": "Diaria" }
-      ]
-    },
-    {
-      "name": "Rezagos",
-      "label": "Rezagos ACF/PACF",
-      "type": "integer",
-      "default": 12,
-      "tier": 2
-    }
-  ]
+    "id":  "RG_SeriesTiempo",
+    "family":  "ST",
+    "family_label":  "Series de Tiempo",
+    "name":  "Analisis de Series de Tiempo",
+    "description":  "Analiza una serie temporal univariada o con variables exogenas (Y_t ~ X_t): estadisticas descriptivas, prueba de raiz unitaria Augmented Dickey-Fuller (ADF), funcion de autocorrelacion (ACF/PACF) y grafico interactivo. Si se asignan variables X, estima adicionalmente una regresion dinamica con tabla Stargazer.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Serie_temporal",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "RG_SeriesTiempo.Studio",
+    "file":  "R4XCL-RG-SeriesTiempo.Studio.R",
+    "variable_roles":  {
+                           "Y":  {
+                                     "label":  "Serie temporal (Y_t)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "X":  {
+                                     "label":  "Variables externas X_t (opcional)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  false
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "Periodicidad",
+                           "label":  "Periodicidad",
+                           "type":  "select",
+                           "default":  3,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Anual"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Trimestral"
+                                           },
+                                           {
+                                               "value":  3,
+                                               "label":  "Mensual"
+                                           },
+                                           {
+                                               "value":  4,
+                                               "label":  "Semanal"
+                                           },
+                                           {
+                                               "value":  5,
+                                               "label":  "Diaria"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "Rezagos",
+                           "label":  "Rezagos ACF/PACF",
+                           "type":  "integer",
+                           "default":  12,
+                           "tier":  2
+                       }
+                   ],
+    "function_name_xll":  "ST_AutoRegresivos",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Series de tiempo (rango con header)",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a9":  {
+                                        "name":  "Periodicidad",
+                                        "label":  "Periodicidad (1=anual, 4=trimestral, 12=mensual)",
+                                        "type":  "scalar",
+                                        "required":  false,
+                                        "default":  1
+                                    },
+                             "a10":  {
+                                         "name":  "OrdenP",
+                                         "label":  "Orden AR (p) para ARMA/ARIMA",
+                                         "type":  "scalar",
+                                         "required":  false,
+                                         "default":  null
+                                     },
+                             "a11":  {
+                                         "name":  "OrdenD",
+                                         "label":  "Orden de diferenciacion (d) para ARIMA",
+                                         "type":  "scalar",
+                                         "required":  false,
+                                         "default":  null
+                                     }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Resumen modelo ARMA(p,q)"
+                         },
+                         {
+                             "id":  1.1,
+                             "label":  "Prediccion ARMA (6 periodos adelante)"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Resumen modelo ARIMA(p,d,q)"
+                         },
+                         {
+                             "id":  2.1,
+                             "label":  "Prediccion ARIMA (6 periodos adelante)"
+                         },
+                         {
+                             "id":  4,
+                             "label":  "Resumen modelo GARCH(p,q)"
+                         },
+                         {
+                             "id":  4.1,
+                             "label":  "Prediccion GARCH (6 periodos adelante)"
+                         }
+                     ]
 }

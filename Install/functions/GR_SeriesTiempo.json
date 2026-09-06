@@ -1,72 +1,93 @@
 {
-  "id": "GR_SeriesTiempo",
-  "family": "GR",
-  "family_label": "Gráficos",
-  "name": "Serie de Tiempo",
-  "description": "Gráfico de líneas para series temporales. Permite visualizar la evolución de una o más métricas en el tiempo, con opción de línea de tendencia.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Serie_temporal",
-  "languages": ["r"],
-  "function_name": "GR_SeriesTiempo.Studio",
-  "file": "GR_SeriesTiempo.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Eje de tiempo (fecha, período o índice — opcional, usa 1,2,...N si no se asigna)",
-      "types": ["numeric", "text"],
-      "multiple": false,
-      "required": false
-    },
-    "Y": {
-      "label": "Valores / Métrica",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "Color": {
-      "label": "Series múltiples (opcional)",
-      "types": ["text"],
-      "multiple": false,
-      "required": false
-    }
-  },
-  "parameters": [
-    {
-      "name": "MostrarLeyenda",
-      "label": "Mostrar leyenda",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    },
-    {
-      "name": "MostrarTendencia",
-      "label": "Agregar línea de tendencia",
-      "type": "boolean",
-      "default": false,
-      "tier": 1
-    },
-    {
-      "name": "TipoTendencia",
-      "label": "Tipo de tendencia",
-      "type": "select",
-      "default": 1,
-      "tier": 2,
-      "options": [
-        { "value": 1, "label": "Lineal" },
-        { "value": 2, "label": "Polinómica (grado 2)" }
-      ]
-    },
-    {
-      "name": "AnchoLinea",
-      "label": "Ancho de línea",
-      "type": "integer",
-      "default": 2,
-      "tier": 2
-    },
-    {
-      "name": "Paleta",
-      "label": "Paleta de colores",
-      "type": "palette",
-      "default": 1,
-      "tier": 1
-    }
-  ]
+    "id":  "GR_SeriesTiempo",
+    "family":  "GR",
+    "family_label":  "GrÃ¡ficos",
+    "name":  "Serie de Tiempo",
+    "description":  "GrÃ¡fico de lÃ­neas para series temporales. Permite visualizar la evoluciÃ³n de una o mÃ¡s mÃ©tricas en el tiempo, con opciÃ³n de lÃ­nea de tendencia.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Serie_temporal",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "GR_SeriesTiempo.Studio",
+    "file":  "GR_SeriesTiempo.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Eje de tiempo (fecha, perÃ­odo o Ã­ndice â€” opcional, usa 1,2,...N si no se asigna)",
+                                     "types":  [
+                                                   "numeric",
+                                                   "text"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  false
+                                 },
+                           "Y":  {
+                                     "label":  "Valores / MÃ©trica",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "Color":  {
+                                         "label":  "Series mÃºltiples (opcional)",
+                                         "types":  [
+                                                       "text"
+                                                   ],
+                                         "multiple":  false,
+                                         "required":  false
+                                     }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "MostrarLeyenda",
+                           "label":  "Mostrar leyenda",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "MostrarTendencia",
+                           "label":  "Agregar lÃ­nea de tendencia",
+                           "type":  "boolean",
+                           "default":  false,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "TipoTendencia",
+                           "label":  "Tipo de tendencia",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  2,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Lineal"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "PolinÃ³mica (grado 2)"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "AnchoLinea",
+                           "label":  "Ancho de lÃ­nea",
+                           "type":  "integer",
+                           "default":  2,
+                           "tier":  2
+                       },
+                       {
+                           "name":  "Paleta",
+                           "label":  "Paleta de colores",
+                           "type":  "palette",
+                           "default":  1,
+                           "tier":  1
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Serie de tiempo interactiva Plotly (multiple Y, eje X temporal)"
+                         }
+                     ]
 }

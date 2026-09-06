@@ -1,51 +1,116 @@
 {
-  "id": "RG_HECKIT",
-  "family": "RG",
-  "family_label": "Regresión",
-  "name": "Heckman (Heckit) — Corrección de Sesgo de Selección",
-  "description": "Corrige el sesgo cuando la muestra no es aleatoria (ej: solo observamos salarios de quienes trabajan). Modelo en 2 etapas: Probit de selección → MCO con Razón de Mills Inversa (λ). Si λ es significativa, hay sesgo de selección. Wooldridge Cap. 17.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Modelo_de_Heckman",
-  "languages": ["r"],
-  "function_name": "RG_HECKIT.Studio",
-  "file": "RG_HECKIT.Studio.R",
-  "variable_roles": {
-    "Y_obs": {
-      "label": "Variable de resultado (solo observada cuando S=1)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X_outcome": {
-      "label": "Regresores de la ecuación de resultado",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    },
-    "S_binary": {
-      "label": "Indicador de selección (0=censurado, 1=observado)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X_selection": {
-      "label": "Regresores adicionales de selección (opcional — exclusión recomendada)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": false
-    }
-  },
-  "parameters": [
-    {
-      "name": "NivelAlpha",
-      "label": "Nivel de significancia (alpha)",
-      "type": "select",
-      "default": 0.05,
-      "tier": 1,
-      "options": [
-        {"value": 0.01, "label": "1%"},
-        {"value": 0.05, "label": "5% (estándar)"},
-        {"value": 0.10, "label": "10%"}
-      ]
-    }
-  ]
+    "id":  "RG_HECKIT",
+    "family":  "RG",
+    "family_label":  "RegresiÃ³n",
+    "name":  "Heckman (Heckit) â€” CorrecciÃ³n de Sesgo de SelecciÃ³n",
+    "description":  "Corrige el sesgo cuando la muestra no es aleatoria (ej: solo observamos salarios de quienes trabajan). Modelo en 2 etapas: Probit de selecciÃ³n â†’ MCO con RazÃ³n de Mills Inversa (Î»). Si Î» es significativa, hay sesgo de selecciÃ³n. Wooldridge Cap. 17.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Modelo_de_Heckman",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "RG_HECKIT.Studio",
+    "file":  "RG_HECKIT.Studio.R",
+    "variable_roles":  {
+                           "Y_obs":  {
+                                         "label":  "Variable de resultado (solo observada cuando S=1)",
+                                         "types":  [
+                                                       "numeric"
+                                                   ],
+                                         "multiple":  false,
+                                         "required":  true
+                                     },
+                           "X_outcome":  {
+                                             "label":  "Regresores de la ecuaciÃ³n de resultado",
+                                             "types":  [
+                                                           "numeric"
+                                                       ],
+                                             "multiple":  true,
+                                             "required":  true
+                                         },
+                           "S_binary":  {
+                                            "label":  "Indicador de selecciÃ³n (0=censurado, 1=observado)",
+                                            "types":  [
+                                                          "numeric"
+                                                      ],
+                                            "multiple":  false,
+                                            "required":  true
+                                        },
+                           "X_selection":  {
+                                               "label":  "Regresores adicionales de selecciÃ³n (opcional â€” exclusiÃ³n recomendada)",
+                                               "types":  [
+                                                             "numeric"
+                                                         ],
+                                               "multiple":  true,
+                                               "required":  false
+                                           }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "NivelAlpha",
+                           "label":  "Nivel de significancia (alpha)",
+                           "type":  "select",
+                           "default":  0.05,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  0.01,
+                                               "label":  "1%"
+                                           },
+                                           {
+                                               "value":  0.05,
+                                               "label":  "5% (estÃ¡ndar)"
+                                           },
+                                           {
+                                               "value":  0.10,
+                                               "label":  "10%"
+                                           }
+                                       ]
+                       }
+                   ],
+    "function_name_xll":  "MR_HECKIT",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosY_obs",
+                                        "label":  "Variable de seleccion (0/1 observado)",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a1":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Variables explicativas ecuacion seleccion",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a6":  {
+                                        "name":  "SetDatosY",
+                                        "label":  "Variable dependiente (ecuacion resultado)",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Tabla HECKIT (ecuacion seleccion + resultado)"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Coeficientes ecuacion de seleccion (Probit)"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Ratio de Mills (lambda) por observacion"
+                         },
+                         {
+                             "id":  4,
+                             "label":  "Metricas estructuradas"
+                         }
+                     ]
 }

@@ -1,43 +1,93 @@
 {
-  "id": "TM_TextAnalysis",
-  "family": "TM",
-  "family_label": "Text Mining",
-  "name": "Analisis de Texto (PDF/TXT/DOCX)",
-  "description": "Analiza un documento desde archivo PDF, TXT o DOCX. Escribe la ruta completa del archivo y obtiene: estadisticas lexicas, sentimiento, resumen extractivo automatico y frecuencia de palabras con grafico interactivo. No requiere dataset previo.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Miner%C3%ADa_de_textos",
-  "languages": ["python"],
-  "function_name": "TM_TextAnalysis",
-  "file": "TM_TextAnalysis.Studio.py",
-  "variable_roles": {},
-  "parameters": [
-    {
-      "name": "Ruta_Archivo",
-      "label": "Ruta del documento",
-      "type": "text",
-      "default": "",
-      "placeholder": "C:\\ruta\\al\\archivo.pdf",
-      "tier": 1
-    },
-    {
-      "name": "Max_Paginas",
-      "label": "Max. paginas PDF (0=todas)",
-      "type": "integer",
-      "default": 0,
-      "tier": 1
-    },
-    {
-      "name": "N_Resumen",
-      "label": "Oraciones en resumen",
-      "type": "integer",
-      "default": 5,
-      "tier": 2
-    },
-    {
-      "name": "N_Palabras",
-      "label": "Top palabras frecuentes",
-      "type": "integer",
-      "default": 25,
-      "tier": 2
-    }
-  ]
+    "id":  "TM_TextAnalysis",
+    "family":  "TM",
+    "family_label":  "Text Mining",
+    "name":  "Analisis de Texto (PDF/TXT/DOCX)",
+    "description":  "Analiza un documento desde archivo PDF, TXT o DOCX. Escribe la ruta completa del archivo y obtiene: estadisticas lexicas, sentimiento, resumen extractivo automatico y frecuencia de palabras con grafico interactivo. No requiere dataset previo.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Miner%C3%ADa_de_textos",
+    "languages":  [
+                      "python"
+                  ],
+    "function_name":  "TM_TextAnalysis",
+    "file":  "TM_TextAnalysis.Studio.py",
+    "variable_roles":  {
+
+                       },
+    "parameters":  [
+                       {
+                           "name":  "Ruta_Archivo",
+                           "label":  "Ruta del documento",
+                           "type":  "text",
+                           "default":  "",
+                           "placeholder":  "C:\\ruta\\al\\archivo.pdf",
+                           "tier":  1
+                       },
+                       {
+                           "name":  "Max_Paginas",
+                           "label":  "Max. paginas PDF (0=todas)",
+                           "type":  "integer",
+                           "default":  0,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "N_Resumen",
+                           "label":  "Oraciones en resumen",
+                           "type":  "integer",
+                           "default":  5,
+                           "tier":  2
+                       },
+                       {
+                           "name":  "N_Palabras",
+                           "label":  "Top palabras frecuentes",
+                           "type":  "integer",
+                           "default":  25,
+                           "tier":  2
+                       }
+                   ],
+    "function_name_xll":  "TM_TextMining",
+    "nevenx_positions":  {
+                             "a9":  {
+                                        "name":  "MAXWORDS",
+                                        "label":  "Numero maximo de palabras en Word Cloud",
+                                        "type":  "scalar",
+                                        "required":  false,
+                                        "default":  200
+                                    },
+                             "a10":  {
+                                         "name":  "QPALABRASRESUMEN",
+                                         "label":  "Cantidad de palabras para resumen",
+                                         "type":  "scalar",
+                                         "required":  false,
+                                         "default":  100
+                                     },
+                             "a11":  {
+                                         "name":  "IDIOMA",
+                                         "label":  "Idioma stopwords (1=espanol, 2=ingles)",
+                                         "type":  "scalar",
+                                         "required":  false,
+                                         "default":  1
+                                     }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Word Cloud (nube de palabras)"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Tabla de frecuencias de palabras (top N)"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Grafico de barras top 10 palabras"
+                         },
+                         {
+                             "id":  4,
+                             "label":  "Terminos frecuentes (lowfreq \u003e= 4)"
+                         }
+                     ]
 }

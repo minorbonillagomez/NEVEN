@@ -1,41 +1,119 @@
 {
-  "id": "RG_Poisson",
-  "family": "RG",
-  "family_label": "Regresion",
-  "name": "Regresion de Poisson",
-  "description": "Modela variables de conteo usando la distribucion de Poisson con enlace logaritmico. Incluye prueba de sobredispersion y retorna IRR (Incidence Rate Ratios) ademas de los coeficientes estandar.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Regresi%C3%B3n_de_Poisson",
-  "languages": ["r"],
-  "function_name": "RG_Poisson.Studio",
-  "file": "R4XCL-RG-Poisson.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable de conteo (Y >= 0)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X": {
-      "label": "Variables independientes (X)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "Escala",
-      "label": "Escalar variables X",
-      "type": "boolean",
-      "default": false,
-      "tier": 1
-    },
-    {
-      "name": "Constante",
-      "label": "Incluir constante",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    }
-  ]
+    "id":  "RG_Poisson",
+    "family":  "RG",
+    "family_label":  "Regresion",
+    "name":  "Regresion de Poisson",
+    "description":  "Modela variables de conteo usando la distribucion de Poisson con enlace logaritmico. Incluye prueba de sobredispersion y retorna IRR (Incidence Rate Ratios) ademas de los coeficientes estandar.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Regresi%C3%B3n_de_Poisson",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "RG_Poisson.Studio",
+    "file":  "R4XCL-RG-Poisson.Studio.R",
+    "variable_roles":  {
+                           "Y":  {
+                                     "label":  "Variable de conteo (Y \u003e= 0)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "X":  {
+                                     "label":  "Variables independientes (X)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "Escala",
+                           "label":  "Escalar variables X",
+                           "type":  "boolean",
+                           "default":  false,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "Constante",
+                           "label":  "Incluir constante",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       }
+                   ],
+    "function_name_xll":  "MR_Poisson.C",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosY",
+                                        "label":  "Variable dependiente Y",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a1":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Variables independientes X",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a3":  {
+                                        "name":  "Escala",
+                                        "label":  "Estandarizar variables (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  0
+                                    },
+                             "a4":  {
+                                        "name":  "Filtro",
+                                        "label":  "Excluir observaciones (0=incluir)",
+                                        "type":  "range",
+                                        "required":  false,
+                                        "default":  null
+                                    },
+                             "a5":  {
+                                        "name":  "Constante",
+                                        "label":  "Incluir intercepto (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  1
+                                    }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Tabla Poisson con stargazer (IC 95%)"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Prediccion dentro de muestra"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Prediccion dentro/fuera de muestra"
+                         },
+                         {
+                             "id":  4,
+                             "label":  "Efectos marginales"
+                         },
+                         {
+                             "id":  5,
+                             "label":  "Test bondad de ajuste chi-cuadrado (devianza residual)"
+                         },
+                         {
+                             "id":  7,
+                             "label":  "Informacion de ejecucion (formula, N, variables)"
+                         },
+                         {
+                             "id":  8,
+                             "label":  "Metricas estructuradas (Seccion, Parametro, Metrica, Valor)"
+                         }
+                     ]
 }

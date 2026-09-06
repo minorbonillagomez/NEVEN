@@ -1,45 +1,118 @@
 {
-  "id": "RG_Davidson_MacKinnon",
-  "family": "RG",
-  "family_label": "Regresión",
-  "name": "J-Test Davidson-MacKinnon",
-  "description": "Selección entre dos modelos lineales NO anidados (modelos alternativos con diferentes especificaciones). Indica cuál modelo captura mejor la variación de Y. Wooldridge Cap. 9.",
-  "wikipedia_url": "https://en.wikipedia.org/wiki/Davidson%E2%80%93MacKinnon_test",
-  "languages": ["r"],
-  "function_name": "RG_Davidson_MacKinnon.Studio",
-  "file": "RG_Davidson_MacKinnon.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable dependiente (Y)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X_A": {
-      "label": "Variables del Modelo A",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    },
-    "X_B": {
-      "label": "Variables del Modelo B (alternativo)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "NivelAlpha",
-      "label": "Nivel de significancia (alpha)",
-      "type": "select",
-      "default": 0.05,
-      "tier": 1,
-      "options": [
-        {"value": 0.01, "label": "1%"},
-        {"value": 0.05, "label": "5% (estándar)"},
-        {"value": 0.10, "label": "10%"}
-      ]
-    }
-  ]
+    "id":  "RG_Davidson_MacKinnon",
+    "family":  "RG",
+    "family_label":  "RegresiÃ³n",
+    "name":  "J-Test Davidson-MacKinnon",
+    "description":  "SelecciÃ³n entre dos modelos lineales NO anidados (modelos alternativos con diferentes especificaciones). Indica cuÃ¡l modelo captura mejor la variaciÃ³n de Y. Wooldridge Cap. 9.",
+    "wikipedia_url":  "https://en.wikipedia.org/wiki/Davidson%E2%80%93MacKinnon_test",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "RG_Davidson_MacKinnon.Studio",
+    "file":  "RG_Davidson_MacKinnon.Studio.R",
+    "variable_roles":  {
+                           "Y":  {
+                                     "label":  "Variable dependiente (Y)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "X_A":  {
+                                       "label":  "Variables del Modelo A",
+                                       "types":  [
+                                                     "numeric"
+                                                 ],
+                                       "multiple":  true,
+                                       "required":  true
+                                   },
+                           "X_B":  {
+                                       "label":  "Variables del Modelo B (alternativo)",
+                                       "types":  [
+                                                     "numeric"
+                                                 ],
+                                       "multiple":  true,
+                                       "required":  true
+                                   }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "NivelAlpha",
+                           "label":  "Nivel de significancia (alpha)",
+                           "type":  "select",
+                           "default":  0.05,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  0.01,
+                                               "label":  "1%"
+                                           },
+                                           {
+                                               "value":  0.05,
+                                               "label":  "5% (estÃ¡ndar)"
+                                           },
+                                           {
+                                               "value":  0.10,
+                                               "label":  "10%"
+                                           }
+                                       ]
+                       }
+                   ],
+    "function_name_xll":  "MR_Davidson_MacKinnon",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosY",
+                                        "label":  "Variable dependiente Y",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a1":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Variables independientes X",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a3":  {
+                                        "name":  "Escala",
+                                        "label":  "Estandarizar variables (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  0
+                                    },
+                             "a4":  {
+                                        "name":  "Filtro",
+                                        "label":  "Excluir observaciones (0=incluir)",
+                                        "type":  "range",
+                                        "required":  false,
+                                        "default":  null
+                                    },
+                             "a5":  {
+                                        "name":  "Constante",
+                                        "label":  "Incluir intercepto (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  1
+                                    }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Test J Davidson-MacKinnon entre dos modelos"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Comparacion de modelos no anidados"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Metricas estructuradas"
+                         }
+                     ]
 }

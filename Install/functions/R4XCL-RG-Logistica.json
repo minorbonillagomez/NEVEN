@@ -1,45 +1,133 @@
 {
-  "id": "RG_Logistica",
-  "family": "RG",
-  "family_label": "Regresion",
-  "name": "Regresion Logistica",
-  "description": "Modela la probabilidad de un evento binario (0/1) usando los modelos Logit o Probit. Retorna coeficientes, Odds Ratios, metricas de ajuste (McFadden R2, exactitud) y curva de probabilidades.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Regresi%C3%B3n_log%C3%ADstica",
-  "languages": ["r"],
-  "function_name": "RG_Logistica.Studio",
-  "file": "R4XCL-RG-Logistica.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable binaria dependiente (0/1)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X": {
-      "label": "Variables independientes (X)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "TipoModelo",
-      "label": "Modelo",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        { "value": 1, "label": "Logit" },
-        { "value": 2, "label": "Probit" }
-      ]
-    },
-    {
-      "name": "Escala",
-      "label": "Escalar variables X",
-      "type": "boolean",
-      "default": false,
-      "tier": 1
-    }
-  ]
+    "id":  "RG_Logistica",
+    "family":  "RG",
+    "family_label":  "Regresion",
+    "name":  "Regresion Logistica",
+    "description":  "Modela la probabilidad de un evento binario (0/1) usando los modelos Logit o Probit. Retorna coeficientes, Odds Ratios, metricas de ajuste (McFadden R2, exactitud) y curva de probabilidades.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Regresi%C3%B3n_log%C3%ADstica",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "RG_Logistica.Studio",
+    "file":  "R4XCL-RG-Logistica.Studio.R",
+    "variable_roles":  {
+                           "Y":  {
+                                     "label":  "Variable binaria dependiente (0/1)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "X":  {
+                                     "label":  "Variables independientes (X)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "TipoModelo",
+                           "label":  "Modelo",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Logit"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Probit"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "Escala",
+                           "label":  "Escalar variables X",
+                           "type":  "boolean",
+                           "default":  false,
+                           "tier":  1
+                       }
+                   ],
+    "function_name_xll":  "MR_Binario.C",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosY",
+                                        "label":  "Variable dependiente Y",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a1":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Variables independientes X",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a3":  {
+                                        "name":  "Escala",
+                                        "label":  "Estandarizar variables (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  0
+                                    },
+                             "a4":  {
+                                        "name":  "Filtro",
+                                        "label":  "Excluir observaciones (0=incluir)",
+                                        "type":  "range",
+                                        "required":  false,
+                                        "default":  null
+                                    },
+                             "a5":  {
+                                        "name":  "Constante",
+                                        "label":  "Incluir intercepto (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  1
+                                    }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Tabla Logit/Probit con stargazer (IC 95%)"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Prediccion dentro de muestra (probabilidades)"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Prediccion dentro/fuera de muestra"
+                         },
+                         {
+                             "id":  4,
+                             "label":  "Test de bondad de ajuste Hosmer-Lemeshow"
+                         },
+                         {
+                             "id":  5,
+                             "label":  "Efectos marginales"
+                         },
+                         {
+                             "id":  6,
+                             "label":  "ANOVA chi-cuadrado"
+                         },
+                         {
+                             "id":  8,
+                             "label":  "Informacion de ejecucion (formula, N, variables)"
+                         },
+                         {
+                             "id":  9,
+                             "label":  "Metricas estructuradas (Seccion, Parametro, Metrica, Valor)"
+                         }
+                     ]
 }

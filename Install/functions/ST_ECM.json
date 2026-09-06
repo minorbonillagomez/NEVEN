@@ -1,64 +1,134 @@
 {
-  "id": "ST_ECM",
-  "family": "ST",
-  "family_label": "Series de Tiempo",
-  "name": "ECM / VECM — Modelo de Corrección de Error",
-  "description": "Detecta cointegración y estima la velocidad de ajuste al equilibrio de largo plazo. Flujo completo: ADF para raíces unitarias → Johansen para cointegración → VECM si hay cointegración, VAR en diferencias si no. Wooldridge Cap. 18.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Modelo_de_corrección_de_error",
-  "languages": ["r"],
-  "function_name": "ST_ECM.Studio",
-  "file": "ST_ECM.Studio.R",
-  "variable_roles": {
-    "Series": {
-      "label": "Series de tiempo (mínimo 2 columnas numéricas)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "MaxRezagos",
-      "label": "Máximo de rezagos VAR a evaluar",
-      "type": "integer",
-      "default": 8,
-      "tier": 1
-    },
-    {
-      "name": "CriterioSel",
-      "label": "Criterio de selección de rezagos",
-      "type": "select",
-      "default": 2,
-      "tier": 1,
-      "options": [
-        {"value": 1, "label": "AIC (Akaike)"},
-        {"value": 2, "label": "BIC/SC (Schwarz — recomendado para ECM)"},
-        {"value": 3, "label": "HQ (Hannan-Quinn)"},
-        {"value": 4, "label": "FPE"}
-      ]
-    },
-    {
-      "name": "NivelCoint",
-      "label": "Nivel de significancia para Johansen",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        {"value": 1, "label": "10% (más permisivo)"},
-        {"value": 2, "label": "5% (estándar)"},
-        {"value": 3, "label": "1% (más restrictivo)"}
-      ]
-    },
-    {
-      "name": "TipoPrueba",
-      "label": "Estadístico de Johansen",
-      "type": "select",
-      "default": 1,
-      "tier": 2,
-      "options": [
-        {"value": 1, "label": "Traza (Trace)"},
-        {"value": 2, "label": "Valor propio máximo (Max-Eigen)"}
-      ]
-    }
-  ]
+    "id":  "ST_ECM",
+    "family":  "ST",
+    "family_label":  "Series de Tiempo",
+    "name":  "ECM / VECM â€” Modelo de CorrecciÃ³n de Error",
+    "description":  "Detecta cointegraciÃ³n y estima la velocidad de ajuste al equilibrio de largo plazo. Flujo completo: ADF para raÃ­ces unitarias â†’ Johansen para cointegraciÃ³n â†’ VECM si hay cointegraciÃ³n, VAR en diferencias si no. Wooldridge Cap. 18.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Modelo_de_correcciÃ³n_de_error",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "ST_ECM.Studio",
+    "file":  "ST_ECM.Studio.R",
+    "variable_roles":  {
+                           "Series":  {
+                                          "label":  "Series de tiempo (mÃ­nimo 2 columnas numÃ©ricas)",
+                                          "types":  [
+                                                        "numeric"
+                                                    ],
+                                          "multiple":  true,
+                                          "required":  true
+                                      }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "MaxRezagos",
+                           "label":  "MÃ¡ximo de rezagos VAR a evaluar",
+                           "type":  "integer",
+                           "default":  8,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "CriterioSel",
+                           "label":  "Criterio de selecciÃ³n de rezagos",
+                           "type":  "select",
+                           "default":  2,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "AIC (Akaike)"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "BIC/SC (Schwarz â€” recomendado para ECM)"
+                                           },
+                                           {
+                                               "value":  3,
+                                               "label":  "HQ (Hannan-Quinn)"
+                                           },
+                                           {
+                                               "value":  4,
+                                               "label":  "FPE"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "NivelCoint",
+                           "label":  "Nivel de significancia para Johansen",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "10% (mÃ¡s permisivo)"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "5% (estÃ¡ndar)"
+                                           },
+                                           {
+                                               "value":  3,
+                                               "label":  "1% (mÃ¡s restrictivo)"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "TipoPrueba",
+                           "label":  "EstadÃ­stico de Johansen",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  2,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Traza (Trace)"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Valor propio mÃ¡ximo (Max-Eigen)"
+                                           }
+                                       ]
+                       }
+                   ],
+    "function_name_xll":  "ST_ECM",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "data_Series",
+                                        "label":  "Series de tiempo multivariadas (rango con header)",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a9":  {
+                                        "name":  "Rezagos",
+                                        "label":  "Numero de rezagos del modelo",
+                                        "type":  "scalar",
+                                        "required":  false,
+                                        "default":  2
+                                    }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Resumen modelo ECM (Vector de Correccion de Error)"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Test de cointegración Johansen"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Relacion de largo plazo (vector cointegrante)"
+                         },
+                         {
+                             "id":  4,
+                             "label":  "Metricas estructuradas"
+                         }
+                     ]
 }

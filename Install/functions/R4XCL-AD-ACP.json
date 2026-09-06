@@ -1,35 +1,128 @@
 {
-  "id": "AD_ACP",
-  "family": "AD",
-  "family_label": "Análisis de Datos",
-  "name": "Componentes Principales",
-  "description": "Reduce la dimensionalidad del dataset proyectando las variables en componentes principales ortogonales que maximizan la varianza explicada. Ideal para explorar estructura, eliminar multicolinealidad y visualizar datos multivariados.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/An%C3%A1lisis_de_componentes_principales",
-  "languages": ["r"],
-  "function_name": "AD_ACP.Studio",
-  "file": "R4XCL-AD-ACP.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Variables activas",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "Escala",
-      "label": "Escalar variables",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    },
-    {
-      "name": "N_Componentes",
-      "label": "Número de componentes",
-      "type": "integer",
-      "default": 0,
-      "tier": 1
-    }
-  ]
+    "id":  "AD_ACP",
+    "family":  "AD",
+    "family_label":  "AnÃ¡lisis de Datos",
+    "name":  "Componentes Principales",
+    "description":  "Reduce la dimensionalidad del dataset proyectando las variables en componentes principales ortogonales que maximizan la varianza explicada. Ideal para explorar estructura, eliminar multicolinealidad y visualizar datos multivariados.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/An%C3%A1lisis_de_componentes_principales",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "AD_ACP.Studio",
+    "file":  "R4XCL-AD-ACP.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Variables activas",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "Escala",
+                           "label":  "Escalar variables",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "N_Componentes",
+                           "label":  "NÃºmero de componentes",
+                           "type":  "integer",
+                           "default":  0,
+                           "tier":  1
+                       }
+                   ],
+    "function_name_xll":  "AD_ACP.C",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Variables para ACP (rango con header)",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a3":  {
+                                        "name":  "Escala",
+                                        "label":  "Estandarizar variables (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  0
+                                    },
+                             "a4":  {
+                                        "name":  "Filtro",
+                                        "label":  "Excluir observaciones (0=incluir)",
+                                        "type":  "range",
+                                        "required":  false,
+                                        "default":  null
+                                    },
+                             "a6":  {
+                                        "name":  "SetDatosPredecir",
+                                        "label":  "Nuevas observaciones para proyectar",
+                                        "type":  "range",
+                                        "required":  false,
+                                        "default":  null
+                                    }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Matriz de correlaciones"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Matriz de covarianzas"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Grafico de correlaciones (PerformanceAnalytics)"
+                         },
+                         {
+                             "id":  4,
+                             "label":  "Cargas (loadings) + varianza explicada por componente"
+                         },
+                         {
+                             "id":  5,
+                             "label":  "Coordenadas de individuos (scores)"
+                         },
+                         {
+                             "id":  6,
+                             "label":  "COS2 de individuos"
+                         },
+                         {
+                             "id":  7,
+                             "label":  "Contribucion de individuos a componentes"
+                         },
+                         {
+                             "id":  8,
+                             "label":  "Valores propios y varianza acumulada"
+                         },
+                         {
+                             "id":  9,
+                             "label":  "COS2 de variables"
+                         },
+                         {
+                             "id":  10,
+                             "label":  "Contribucion de variables a componentes"
+                         },
+                         {
+                             "id":  11,
+                             "label":  "Prediccion/proyeccion fuera de muestra"
+                         },
+                         {
+                             "id":  12,
+                             "label":  "Biplot (componentes principales)"
+                         },
+                         {
+                             "id":  13,
+                             "label":  "Metricas estructuradas (Seccion, Parametro, Metrica, Valor)"
+                         }
+                     ]
 }

@@ -1,52 +1,144 @@
 {
-  "id": "RG_ArbolDecision",
-  "family": "RG",
-  "family_label": "Regresion",
-  "name": "Arbol de Decision",
-  "description": "Construye un arbol de decision para clasificacion o regresion usando el algoritmo CART. Muestra la importancia de variables, metricas de desempeno y las reglas del arbol.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/%C3%81rbol_de_decisi%C3%B3n",
-  "languages": ["r"],
-  "function_name": "RG_ArbolDecision.Studio",
-  "file": "R4XCL-RG-ArbolDecision.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable objetivo (Y)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X": {
-      "label": "Variables predictoras (X)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "TipoModelo",
-      "label": "Tipo de arbol",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        { "value": 1, "label": "Clasificacion" },
-        { "value": 2, "label": "Regresion" }
-      ]
-    },
-    {
-      "name": "MaxProf",
-      "label": "Profundidad maxima",
-      "type": "integer",
-      "default": 5,
-      "tier": 1
-    },
-    {
-      "name": "MinObs",
-      "label": "Min. obs. por nodo",
-      "type": "integer",
-      "default": 10,
-      "tier": 2
-    }
-  ]
+    "id":  "RG_ArbolDecision",
+    "family":  "RG",
+    "family_label":  "Regresion",
+    "name":  "Arbol de Decision",
+    "description":  "Construye un arbol de decision para clasificacion o regresion usando el algoritmo CART. Muestra la importancia de variables, metricas de desempeno y las reglas del arbol.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/%C3%81rbol_de_decisi%C3%B3n",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "RG_ArbolDecision.Studio",
+    "file":  "R4XCL-RG-ArbolDecision.Studio.R",
+    "variable_roles":  {
+                           "Y":  {
+                                     "label":  "Variable objetivo (Y)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "X":  {
+                                     "label":  "Variables predictoras (X)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "TipoModelo",
+                           "label":  "Tipo de arbol",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Clasificacion"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Regresion"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "MaxProf",
+                           "label":  "Profundidad maxima",
+                           "type":  "integer",
+                           "default":  5,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "MinObs",
+                           "label":  "Min. obs. por nodo",
+                           "type":  "integer",
+                           "default":  10,
+                           "tier":  2
+                       }
+                   ],
+    "function_name_xll":  "AD_ArbolDeDecision.C",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosY",
+                                        "label":  "Variable dependiente Y",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a1":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Variables independientes X",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a3":  {
+                                        "name":  "Escala",
+                                        "label":  "Estandarizar variables (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  0
+                                    },
+                             "a4":  {
+                                        "name":  "Filtro",
+                                        "label":  "Excluir observaciones (0=incluir)",
+                                        "type":  "range",
+                                        "required":  false,
+                                        "default":  null
+                                    },
+                             "a5":  {
+                                        "name":  "Constante",
+                                        "label":  "Incluir intercepto (0=No, 1=Si)",
+                                        "type":  "boolean",
+                                        "required":  false,
+                                        "default":  1
+                                    }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Grafico del arbol de decision (rpart.plot)"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Tabla de divisiones del arbol"
+                         },
+                         {
+                             "id":  3,
+                             "label":  "Divisiones categoricas"
+                         },
+                         {
+                             "id":  4,
+                             "label":  "Tabla de parametros de complejidad (CP)"
+                         },
+                         {
+                             "id":  5,
+                             "label":  "Marco del arbol -- nodos y ramas"
+                         },
+                         {
+                             "id":  6,
+                             "label":  "Asignacion de nodo por observacion"
+                         },
+                         {
+                             "id":  7,
+                             "label":  "Parametros de control (minsplit, cp, maxdepth)"
+                         },
+                         {
+                             "id":  8,
+                             "label":  "Prediccion dentro/fuera de muestra"
+                         },
+                         {
+                             "id":  9,
+                             "label":  "Metricas estructuradas (Seccion, Parametro, Metrica, Valor)"
+                         }
+                     ]
 }

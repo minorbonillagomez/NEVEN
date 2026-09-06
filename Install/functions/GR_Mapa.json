@@ -1,51 +1,77 @@
 {
-  "id": "GR_Mapa",
-  "family": "GR",
-  "family_label": "Gráficos",
-  "name": "Mapa Interactivo (Leaflet)",
-  "description": "Mapa interactivo con Leaflet.js usando tiles CartoDB oscuros. Soporta marcadores con popup, mapa de calor e intensidad, y círculos proporcionales a un valor.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Leaflet_(software)",
-  "languages": ["r"],
-  "function_name": "GR_Mapa.Studio",
-  "file": "GR_Mapa.Studio.R",
-  "variable_roles": {
-    "Lat": {
-      "label": "Latitud (decimal, ej: 9.93)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "Lon": {
-      "label": "Longitud (decimal, ej: -84.08)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "Etiqueta": {
-      "label": "Etiqueta o popup de cada punto (opcional)",
-      "types": ["numeric", "text"],
-      "multiple": false,
-      "required": false
-    },
-    "Valor": {
-      "label": "Valor numérico para heatmap o círculos proporcionales (opcional)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": false
-    }
-  },
-  "parameters": [
-    {
-      "name": "TipoMapa",
-      "label": "Tipo de visualización",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        { "value": 1, "label": "Marcadores con popup" },
-        { "value": 2, "label": "Mapa de calor (heatmap)" },
-        { "value": 3, "label": "Círculos proporcionales" }
-      ]
-    }
-  ]
+    "id":  "GR_Mapa",
+    "family":  "GR",
+    "family_label":  "GrÃ¡ficos",
+    "name":  "Mapa Interactivo (Leaflet)",
+    "description":  "Mapa interactivo con Leaflet.js usando tiles CartoDB oscuros. Soporta marcadores con popup, mapa de calor e intensidad, y cÃ­rculos proporcionales a un valor.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Leaflet_(software)",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "GR_Mapa.Studio",
+    "file":  "GR_Mapa.Studio.R",
+    "variable_roles":  {
+                           "Lat":  {
+                                       "label":  "Latitud (decimal, ej: 9.93)",
+                                       "types":  [
+                                                     "numeric"
+                                                 ],
+                                       "multiple":  false,
+                                       "required":  true
+                                   },
+                           "Lon":  {
+                                       "label":  "Longitud (decimal, ej: -84.08)",
+                                       "types":  [
+                                                     "numeric"
+                                                 ],
+                                       "multiple":  false,
+                                       "required":  true
+                                   },
+                           "Etiqueta":  {
+                                            "label":  "Etiqueta o popup de cada punto (opcional)",
+                                            "types":  [
+                                                          "numeric",
+                                                          "text"
+                                                      ],
+                                            "multiple":  false,
+                                            "required":  false
+                                        },
+                           "Valor":  {
+                                         "label":  "Valor numÃ©rico para heatmap o cÃ­rculos proporcionales (opcional)",
+                                         "types":  [
+                                                       "numeric"
+                                                   ],
+                                         "multiple":  false,
+                                         "required":  false
+                                     }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "TipoMapa",
+                           "label":  "Tipo de visualizaciÃ³n",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Marcadores con popup"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Mapa de calor (heatmap)"
+                                           },
+                                           {
+                                               "value":  3,
+                                               "label":  "CÃ­rculos proporcionales"
+                                           }
+                                       ]
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Mapa interactivo con marcadores Plotly/Mapbox"
+                         }
+                     ]
 }

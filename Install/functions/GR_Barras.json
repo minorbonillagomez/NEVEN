@@ -1,79 +1,115 @@
 {
-  "id": "GR_Barras",
-  "family": "GR",
-  "family_label": "Gráficos",
-  "name": "Gráfico de Barras",
-  "description": "Gráfico de barras con soporte para modo agrupado, apilado, horizontal y vertical. Permite mostrar etiquetas de valores y ordenar las categorías.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_barras",
-  "languages": ["r"],
-  "function_name": "GR_Barras.Studio",
-  "file": "GR_Barras.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Eje X / Categorías (opcional — usa índice 1,2,...N si no se asigna)",
-      "types": ["numeric", "text"],
-      "multiple": false,
-      "required": false
-    },
-    "Y": {
-      "label": "Eje Y / Valores (puede asignar varias columnas numéricas)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    },
-    "Color": {
-      "label": "Agrupación (opcional — activa barras agrupadas o apiladas)",
-      "types": ["text"],
-      "multiple": false,
-      "required": false
-    }
-  },
-  "parameters": [
-    {
-      "name": "Modo",
-      "label": "Modo de barras",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        { "value": 1, "label": "▐▐ Vertical agrupado" },
-        { "value": 2, "label": "═ Horizontal agrupado" },
-        { "value": 3, "label": "▐ Vertical apilado" },
-        { "value": 4, "label": "▬ Horizontal apilado" }
-      ]
-    },
-    {
-      "name": "Ordenar",
-      "label": "Ordenar categorías",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        { "value": 1, "label": "Original" },
-        { "value": 2, "label": "Mayor a menor" },
-        { "value": 3, "label": "Menor a mayor" }
-      ]
-    },
-    {
-      "name": "MostrarValores",
-      "label": "Mostrar valores sobre barras",
-      "type": "boolean",
-      "default": false,
-      "tier": 1
-    },
-    {
-      "name": "MostrarLeyenda",
-      "label": "Mostrar leyenda",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    },
-    {
-      "name": "Paleta",
-      "label": "Paleta de colores",
-      "type": "palette",
-      "default": 1,
-      "tier": 1
-    }
-  ]
+    "id":  "GR_Barras",
+    "family":  "GR",
+    "family_label":  "GrÃ¡ficos",
+    "name":  "GrÃ¡fico de Barras",
+    "description":  "GrÃ¡fico de barras con soporte para modo agrupado, apilado, horizontal y vertical. Permite mostrar etiquetas de valores y ordenar las categorÃ­as.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_barras",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "GR_Barras.Studio",
+    "file":  "GR_Barras.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Eje X / CategorÃ­as (opcional â€” usa Ã­ndice 1,2,...N si no se asigna)",
+                                     "types":  [
+                                                   "numeric",
+                                                   "text"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  false
+                                 },
+                           "Y":  {
+                                     "label":  "Eje Y / Valores (puede asignar varias columnas numÃ©ricas)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 },
+                           "Color":  {
+                                         "label":  "AgrupaciÃ³n (opcional â€” activa barras agrupadas o apiladas)",
+                                         "types":  [
+                                                       "text"
+                                                   ],
+                                         "multiple":  false,
+                                         "required":  false
+                                     }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "Modo",
+                           "label":  "Modo de barras",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "â–â– Vertical agrupado"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "â• Horizontal agrupado"
+                                           },
+                                           {
+                                               "value":  3,
+                                               "label":  "â– Vertical apilado"
+                                           },
+                                           {
+                                               "value":  4,
+                                               "label":  "â–¬ Horizontal apilado"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "Ordenar",
+                           "label":  "Ordenar categorÃ­as",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Original"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Mayor a menor"
+                                           },
+                                           {
+                                               "value":  3,
+                                               "label":  "Menor a mayor"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "MostrarValores",
+                           "label":  "Mostrar valores sobre barras",
+                           "type":  "boolean",
+                           "default":  false,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "MostrarLeyenda",
+                           "label":  "Mostrar leyenda",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "Paleta",
+                           "label":  "Paleta de colores",
+                           "type":  "palette",
+                           "default":  1,
+                           "tier":  1
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Grafico de barras interactivo Plotly (agrupado/apilado/horizontal)"
+                         }
+                     ]
 }

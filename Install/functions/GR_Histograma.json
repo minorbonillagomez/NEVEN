@@ -1,46 +1,52 @@
 {
-  "id": "GR_Histograma",
-  "family": "GR",
-  "family_label": "Gráficos",
-  "name": "Histograma",
-  "description": "Distribución de frecuencias de una variable numérica. Muestra la forma de la distribución, moda y dispersión.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Histograma",
-  "languages": [
-    "r"
-  ],
-  "function_name": "GR_Histograma.Studio",
-  "file": "GR_Histograma.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Variable numérica a distribuir",
-      "types": [
-        "numeric"
-      ],
-      "multiple": false,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "Bins",
-      "label": "Número de intervalos (bins)",
-      "type": "integer",
-      "default": 30,
-      "tier": 1
-    },
-    {
-      "name": "MostrarDensidad",
-      "label": "Mostrar curva de densidad",
-      "type": "boolean",
-      "default": false,
-      "tier": 2
-    },
-    {
-      "name": "Paleta",
-      "label": "Paleta de colores",
-      "type": "palette",
-      "default": 1,
-      "tier": 1
-    }
-  ]
+    "id":  "GR_Histograma",
+    "family":  "GR",
+    "family_label":  "GrÃ¡ficos",
+    "name":  "Histograma",
+    "description":  "DistribuciÃ³n de frecuencias de una variable numÃ©rica. Muestra la forma de la distribuciÃ³n, moda y dispersiÃ³n.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Histograma",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "GR_Histograma.Studio",
+    "file":  "GR_Histograma.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Variable numÃ©rica a distribuir",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "Bins",
+                           "label":  "NÃºmero de intervalos (bins)",
+                           "type":  "integer",
+                           "default":  30,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "MostrarDensidad",
+                           "label":  "Mostrar curva de densidad",
+                           "type":  "boolean",
+                           "default":  false,
+                           "tier":  2
+                       },
+                       {
+                           "name":  "Paleta",
+                           "label":  "Paleta de colores",
+                           "type":  "palette",
+                           "default":  1,
+                           "tier":  1
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Histograma interactivo Plotly con curva de densidad"
+                         }
+                     ]
 }

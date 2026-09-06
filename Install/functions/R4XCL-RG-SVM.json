@@ -1,65 +1,141 @@
 {
-  "id": "RG_SVM",
-  "family": "RG",
-  "family_label": "Regresion",
-  "name": "Maquinas de Soporte Vectorial",
-  "description": "Aplica SVM para clasificacion binaria o regresion. Soporta kernels Lineal, Polinomial, RBF y Sigmoide. Requiere el paquete e1071.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/M%C3%A1quinas_de_vectores_de_soporte",
-  "languages": ["r"],
-  "function_name": "RG_SVM.Studio",
-  "file": "R4XCL-RG-SVM.Studio.R",
-  "variable_roles": {
-    "Y": {
-      "label": "Variable objetivo (Y)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "X": {
-      "label": "Variables predictoras (X)",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "TipoModelo",
-      "label": "Tipo",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        { "value": 1, "label": "Clasificacion" },
-        { "value": 2, "label": "Regresion" }
-      ]
-    },
-    {
-      "name": "Kernel",
-      "label": "Kernel",
-      "type": "select",
-      "default": 3,
-      "tier": 1,
-      "options": [
-        { "value": 1, "label": "Lineal" },
-        { "value": 2, "label": "Polinomial" },
-        { "value": 3, "label": "RBF (recomendado)" },
-        { "value": 4, "label": "Sigmoide" }
-      ]
-    },
-    {
-      "name": "Escala",
-      "label": "Escalar variables",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    },
-    {
-      "name": "Costo",
-      "label": "Costo (C)",
-      "type": "integer",
-      "default": 1,
-      "tier": 2
-    }
-  ]
+    "id":  "RG_SVM",
+    "family":  "RG",
+    "family_label":  "Regresion",
+    "name":  "Maquinas de Soporte Vectorial",
+    "description":  "Aplica SVM para clasificacion binaria o regresion. Soporta kernels Lineal, Polinomial, RBF y Sigmoide. Requiere el paquete e1071.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/M%C3%A1quinas_de_vectores_de_soporte",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "RG_SVM.Studio",
+    "file":  "R4XCL-RG-SVM.Studio.R",
+    "variable_roles":  {
+                           "Y":  {
+                                     "label":  "Variable objetivo (Y)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "X":  {
+                                     "label":  "Variables predictoras (X)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "TipoModelo",
+                           "label":  "Tipo",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Clasificacion"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Regresion"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "Kernel",
+                           "label":  "Kernel",
+                           "type":  "select",
+                           "default":  3,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "Lineal"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Polinomial"
+                                           },
+                                           {
+                                               "value":  3,
+                                               "label":  "RBF (recomendado)"
+                                           },
+                                           {
+                                               "value":  4,
+                                               "label":  "Sigmoide"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "Escala",
+                           "label":  "Escalar variables",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "Costo",
+                           "label":  "Costo (C)",
+                           "type":  "integer",
+                           "default":  1,
+                           "tier":  2
+                       }
+                   ],
+    "function_name_xll":  "MR_SVM",
+    "nevenx_positions":  {
+                             "a0":  {
+                                        "name":  "SetDatosY",
+                                        "label":  "Variable dependiente Y",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a1":  {
+                                        "name":  "SetDatosX",
+                                        "label":  "Variables independientes X",
+                                        "type":  "range",
+                                        "required":  true,
+                                        "default":  null
+                                    },
+                             "a4":  {
+                                        "name":  "Filtro",
+                                        "label":  "Excluir observaciones (0=incluir)",
+                                        "type":  "range",
+                                        "required":  false,
+                                        "default":  null
+                                    },
+                             "a9":  {
+                                        "name":  "pkernel",
+                                        "label":  "Kernel SVM (radial, linear, polynomial, sigmoid)",
+                                        "type":  "scalar",
+                                        "required":  false,
+                                        "default":  null
+                                    },
+                             "a10":  {
+                                         "name":  "ptype",
+                                         "label":  "Tipo SVM (C-classification, nu-classification, eps-regression)",
+                                         "type":  "scalar",
+                                         "required":  false,
+                                         "default":  null
+                                     }
+                         },
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ayuda -- parametros y outputs disponibles"
+                         },
+                         {
+                             "id":  1,
+                             "label":  "Prediccion en muestra (Y estimado)"
+                         },
+                         {
+                             "id":  2,
+                             "label":  "Metricas estructuradas (Seccion, Parametro, Metrica, Valor)"
+                         }
+                     ]
 }

@@ -1,47 +1,61 @@
 {
-  "id": "GR_BoxPlot",
-  "family": "GR",
-  "family_label": "Gráficos",
-  "name": "Box Plot (Diagrama de Caja)",
-  "description": "Diagrama de caja y bigotes. Muestra la distribución estadística (mediana, cuartiles, outliers) por grupo o categoría.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Diagrama_de_caja",
-  "languages": ["r"],
-  "function_name": "GR_BoxPlot.Studio",
-  "file": "GR_BoxPlot.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Grupos / Categorías (eje X)",
-      "types": ["text"],
-      "multiple": false,
-      "required": true
-    },
-    "Y": {
-      "label": "Valores numéricos (eje Y)",
-      "types": ["numeric"],
-      "multiple": false,
-      "required": true
-    },
-    "Color": {
-      "label": "Agrupación adicional (opcional)",
-      "types": ["text"],
-      "multiple": false,
-      "required": false
-    }
-  },
-  "parameters": [
-    {
-      "name": "MostrarLeyenda",
-      "label": "Mostrar leyenda",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    },
-    {
-      "name": "MostrarPuntos",
-      "label": "Mostrar puntos individuales",
-      "type": "boolean",
-      "default": false,
-      "tier": 2
-    }
-  ]
+    "id":  "GR_BoxPlot",
+    "family":  "GR",
+    "family_label":  "GrÃ¡ficos",
+    "name":  "Box Plot (Diagrama de Caja)",
+    "description":  "Diagrama de caja y bigotes. Muestra la distribuciÃ³n estadÃ­stica (mediana, cuartiles, outliers) por grupo o categorÃ­a.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Diagrama_de_caja",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "GR_BoxPlot.Studio",
+    "file":  "GR_BoxPlot.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Grupos / CategorÃ­as (eje X)",
+                                     "types":  [
+                                                   "text"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "Y":  {
+                                     "label":  "Valores numÃ©ricos (eje Y)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "Color":  {
+                                         "label":  "AgrupaciÃ³n adicional (opcional)",
+                                         "types":  [
+                                                       "text"
+                                                   ],
+                                         "multiple":  false,
+                                         "required":  false
+                                     }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "MostrarLeyenda",
+                           "label":  "Mostrar leyenda",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "MostrarPuntos",
+                           "label":  "Mostrar puntos individuales",
+                           "type":  "boolean",
+                           "default":  false,
+                           "tier":  2
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "BoxPlot interactivo Plotly por grupos"
+                         }
+                     ]
 }

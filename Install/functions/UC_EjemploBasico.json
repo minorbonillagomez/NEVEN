@@ -1,28 +1,38 @@
 {
-  "id": "UC_EjemploBasico",
-  "family": "UC",
-  "family_label": "Mis Funciones",
-  "name": "Ejemplo Basico (Estadisticas)",
-  "description": "Funcion de ejemplo: calcula estadisticas descriptivas para cualquier conjunto de columnas numericas. Sirve como punto de partida para crear tus propias funciones en Data Lab.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Estad%C3%ADstica_descriptiva",
-  "languages": ["r"],
-  "function_name": "UC_EjemploBasico.Studio",
-  "file": "UC_EjemploBasico.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Variables a analizar",
-      "types": ["numeric"],
-      "multiple": true,
-      "required": true
-    }
-  },
-  "parameters": [
-    {
-      "name": "Precision",
-      "label": "Decimales",
-      "type": "integer",
-      "default": 2,
-      "tier": 1
-    }
-  ]
+    "id":  "UC_EjemploBasico",
+    "family":  "UC",
+    "family_label":  "Mis Funciones",
+    "name":  "Ejemplo Basico (Estadisticas)",
+    "description":  "Funcion de ejemplo: calcula estadisticas descriptivas para cualquier conjunto de columnas numericas. Sirve como punto de partida para crear tus propias funciones en Data Lab.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Estad%C3%ADstica_descriptiva",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "UC_EjemploBasico.Studio",
+    "file":  "UC_EjemploBasico.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Variables a analizar",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  true,
+                                     "required":  true
+                                 }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "Precision",
+                           "label":  "Decimales",
+                           "type":  "integer",
+                           "default":  2,
+                           "tier":  1
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Ejemplo basico de funcion de usuario R"
+                         }
+                     ]
 }

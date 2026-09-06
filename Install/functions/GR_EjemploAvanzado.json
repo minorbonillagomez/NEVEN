@@ -1,88 +1,94 @@
 {
-  "id": "GR_EjemploAvanzado",
-  "family": "GR",
-  "family_label": "Gráficos",
-  "name": "Ejemplo Avanzado (Gráfico de Burbujas)",
-  "description": "Plantilla completa para gráficos en Data Lab. Muestra el patrón avanzado: 4 roles (2 opcionales), hovertemplate personalizado, escala de tamaño, parámetros tier 1 y tier 2. Cópialo para crear gráficos con más complejidad.",
-  "wikipedia_url": "https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_burbujas",
-  "languages": [
-    "r"
-  ],
-  "function_name": "GR_EjemploAvanzado.Studio",
-  "file": "GR_EjemploAvanzado.Studio.R",
-  "variable_roles": {
-    "X": {
-      "label": "Eje X (variable numérica)",
-      "types": [
-        "numeric"
-      ],
-      "multiple": false,
-      "required": true
-    },
-    "Y": {
-      "label": "Eje Y (variable numérica)",
-      "types": [
-        "numeric"
-      ],
-      "multiple": false,
-      "required": true
-    },
-    "Color": {
-      "label": "Color / Agrupación (opcional)",
-      "types": [
-        "text",
-        "numeric"
-      ],
-      "multiple": false,
-      "required": false
-    },
-    "Tamano": {
-      "label": "Tamaño de burbujas (opcional, numérico)",
-      "types": [
-        "numeric"
-      ],
-      "multiple": false,
-      "required": false
-    }
-  },
-  "parameters": [
-    {
-      "name": "MostrarLeyenda",
-      "label": "Mostrar leyenda",
-      "type": "boolean",
-      "default": true,
-      "tier": 1
-    },
-    {
-      "name": "ModoHover",
-      "label": "Información en hover",
-      "type": "select",
-      "default": 1,
-      "tier": 1,
-      "options": [
-        {
-          "value": 1,
-          "label": "Básico (X e Y)"
-        },
-        {
-          "value": 2,
-          "label": "Completo (X, Y, grupo, tamaño)"
-        }
-      ]
-    },
-    {
-      "name": "Paleta",
-      "label": "Paleta de colores",
-      "type": "palette",
-      "default": 1,
-      "tier": 1
-    },
-    {
-      "name": "Opacidad",
-      "label": "Opacidad de burbujas (0-100)",
-      "type": "integer",
-      "default": 80,
-      "tier": 2
-    }
-  ]
+    "id":  "GR_EjemploAvanzado",
+    "family":  "GR",
+    "family_label":  "GrÃ¡ficos",
+    "name":  "Ejemplo Avanzado (GrÃ¡fico de Burbujas)",
+    "description":  "Plantilla completa para grÃ¡ficos en Data Lab. Muestra el patrÃ³n avanzado: 4 roles (2 opcionales), hovertemplate personalizado, escala de tamaÃ±o, parÃ¡metros tier 1 y tier 2. CÃ³pialo para crear grÃ¡ficos con mÃ¡s complejidad.",
+    "wikipedia_url":  "https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_burbujas",
+    "languages":  [
+                      "r"
+                  ],
+    "function_name":  "GR_EjemploAvanzado.Studio",
+    "file":  "GR_EjemploAvanzado.Studio.R",
+    "variable_roles":  {
+                           "X":  {
+                                     "label":  "Eje X (variable numÃ©rica)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "Y":  {
+                                     "label":  "Eje Y (variable numÃ©rica)",
+                                     "types":  [
+                                                   "numeric"
+                                               ],
+                                     "multiple":  false,
+                                     "required":  true
+                                 },
+                           "Color":  {
+                                         "label":  "Color / AgrupaciÃ³n (opcional)",
+                                         "types":  [
+                                                       "text",
+                                                       "numeric"
+                                                   ],
+                                         "multiple":  false,
+                                         "required":  false
+                                     },
+                           "Tamano":  {
+                                          "label":  "TamaÃ±o de burbujas (opcional, numÃ©rico)",
+                                          "types":  [
+                                                        "numeric"
+                                                    ],
+                                          "multiple":  false,
+                                          "required":  false
+                                      }
+                       },
+    "parameters":  [
+                       {
+                           "name":  "MostrarLeyenda",
+                           "label":  "Mostrar leyenda",
+                           "type":  "boolean",
+                           "default":  true,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "ModoHover",
+                           "label":  "InformaciÃ³n en hover",
+                           "type":  "select",
+                           "default":  1,
+                           "tier":  1,
+                           "options":  [
+                                           {
+                                               "value":  1,
+                                               "label":  "BÃ¡sico (X e Y)"
+                                           },
+                                           {
+                                               "value":  2,
+                                               "label":  "Completo (X, Y, grupo, tamaÃ±o)"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "Paleta",
+                           "label":  "Paleta de colores",
+                           "type":  "palette",
+                           "default":  1,
+                           "tier":  1
+                       },
+                       {
+                           "name":  "Opacidad",
+                           "label":  "Opacidad de burbujas (0-100)",
+                           "type":  "integer",
+                           "default":  80,
+                           "tier":  2
+                       }
+                   ],
+    "tipo_outputs":  [
+                         {
+                             "id":  0,
+                             "label":  "Grafico de burbujas interactivo Plotly (X, Y, Tamano, Color)"
+                         }
+                     ]
 }
