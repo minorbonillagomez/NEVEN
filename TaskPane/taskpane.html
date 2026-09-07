@@ -2309,7 +2309,15 @@ function _aiCallLLM(extra) {
     headers: {'Content-Type': 'application/json'},
     body:    JSON.stringify(payload),
   })
-    .then(function(r){ return r.json(); })
+    .then(function(r){
+      if (!r.ok) {
+        return r.text().then(function(t) {
+          try { return JSON.parse(t); }
+          catch(e) { return {status:'error', message:'Error HTTP ' + r.status + (t ? ': ' + t.substring(0,200) : '')}; }
+        });
+      }
+      return r.json();
+    })
     .then(function(data) {
       spinner.style.display = 'none';
       sendBtn.disabled = false;
