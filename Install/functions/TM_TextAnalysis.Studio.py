@@ -340,11 +340,14 @@ def _build_llm_summary(texto: str, nombre_archivo: str) -> dict | None:
         req = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
 
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+            raw = resp.read().decode("utf-8").strip()
+            if not raw:
+                raise ValueError("El LLM retorno respuesta vacia. Verifique el modelo y la configuracion.")
+            data = json.loads(raw)
             contenido = data["choices"][0]["message"]["content"].strip()
 
         if not contenido:
-            contenido = "[El modelo no generó respuesta. Verifique que el modelo esté cargado en LMStudio y tenga suficiente contexto.]"
+            contenido = "[El modelo no genero respuesta. Verifique que el modelo este cargado y tenga suficiente contexto.]"
 
         # ── Convertir Markdown a HTML ────────────────────────────────────
         import re as _re
@@ -438,7 +441,10 @@ def _debug_llm() -> str:
             endpoint, data=body,
             headers={"Content-Type": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+            raw = resp.read().decode("utf-8").strip()
+            if not raw:
+                return "EXCEPCION: respuesta vacia del LLM"
+            data = json.loads(raw)
             content = data["choices"][0]["message"]["content"]
             return (f"OK endpoint={endpoint} model={model} max_tokens={max_tok}\n"
                     f"Respuesta prueba: '{content}'\n"
