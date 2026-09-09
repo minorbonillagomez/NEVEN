@@ -249,3 +249,33 @@ def _startup():
 
 # Execute startup
 _startup()
+
+# ============================================================
+# NevenX Dispatcher para Python
+# El XLL llama "nevenx_dispatch" desde NevenX_P().
+# Se define como funcion global en __main__.
+# ============================================================
+def nevenx_dispatch(proceso, *args):
+    """Dispatcher generico de procesos Python para NevenX.P()"""
+    proceso = str(proceso).strip()
+    if not proceso:
+        return "NevenX.P: nombre del proceso vacio."
+
+    # Buscar la funcion en __main__
+    fn = globals().get(proceso)
+    if fn is None or not callable(fn):
+        available = [n for n in globals() if not n.startswith("_") and callable(globals()[n])]
+        similar = [n for n in available if proceso.lower() in n.lower() or n.lower() in proceso.lower()]
+        sug = f" Quisiste decir: {', '.join(similar[:3])}?" if similar else ""
+        return f"NevenX.P: proceso '{proceso}' no encontrado.{sug}"
+
+    # Filtrar argumentos None (xltypeMissing llega como None)
+    valid_args = [a for a in args if a is not None]
+
+    try:
+        return fn(*valid_args) if valid_args else fn()
+    except Exception as e:
+        return f"NevenX.P ['{proceso}']: {type(e).__name__}: {e}"
+
+import sys as _sys
+print("[NEVEN] NevenX.P dispatcher registrado como nevenx_dispatch", file=_sys.stderr)

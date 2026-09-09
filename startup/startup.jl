@@ -1,6 +1,6 @@
 module NEVEN
 
-export ReadScriptFile, InstallApplicationPointer, ListFunctions, DisplayError, SetCallbacks, CreateCOMType
+export ReadScriptFile, InstallApplicationPointer, ListFunctions, DisplayError, SetCallbacks, CreateCOMType, nevenx_dispatch
 
 # Internal state
 const _application_pointer = Ref{UInt64}(0)
@@ -335,6 +335,45 @@ function export_data(name::String, data; headers=nothing)
 end
 
 export set_data, get_data, get_data_version, list_data, export_data
+
+# ═══════════════════════════════════════════════════════════════════════════
+# NevenX Dispatcher para Julia
+# Llamado por =NevenX.J("proceso", a0, a1, ..., TipoOutput)
+# Busca la funcion en Main, la llama con los argumentos no-missing.
+# ═══════════════════════════════════════════════════════════════════════════
+function nevenx_dispatch(proceso, args...)
+    # Buscar la funcion en Main
+    fn_sym = Symbol(proceso)
+    if !isdefined(Main, fn_sym)
+        return "NevenX.J: proceso '$proceso' no encontrado. Funciones disponibles: " *
+               join([string(n) for n in names(Main) if isdefined(Main, n) && getfield(Main, n) isa Function && !startswith(string(n), "_")], ", ")
+    end
+    fn = getfield(Main, fn_sym)
+    if !(fn isa Function)
+        return "NevenX.J: '$proceso' no es una funcion."
+    end
+
+    # Filtrar argumentos no-missing (xltypeMissing llega como nothing o 0x7FF en Julia)
+    # El XLL convierte xltypeMissing a nothing o al valor vacio
+    valid_args = []
+    for a in args
+        if a === nothing || (a isa Number && isnan(Float64(a))) 
+            break  # primer missing = fin de argumentos
+        end
+        push!(valid_args, a)
+    end
+
+    # Llamar la funcion con los argumentos validos
+    try
+        if isempty(valid_args)
+            return fn()
+        else
+            return fn(valid_args...)
+        end
+    catch e
+        return "NevenX.J ['$proceso']: $(sprint(showerror, e))"
+    end
+end
 
 # Register the display
 function __init__()

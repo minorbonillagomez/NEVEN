@@ -1963,22 +1963,32 @@ static bool     g_nevenx_init_done = false;
 
 extern "C" void NevenX_InitGlobals() {
     if (g_nevenx_init_done) return;
-    // Usar la funcion interna que no pone xlbitDLLFree
-    g_nevenx_disp_R.xltype = xltypeStr;
-    std::wstring disp_name = L"NEVEN$.nevenx_dispatch";
-    // Formato string Excel: primer byte = longitud, resto = caracteres
+
+    // R:      NEVEN$.nevenx_dispatch  (accede al env NEVEN via $ operator)
+    // Julia:  NEVEN.nevenx_dispatch   (accede al modulo NEVEN via . operator)
+    // Python: nevenx_dispatch         (funcion global en __main__)
     static wchar_t disp_buf_R[32] = {};
     static wchar_t disp_buf_J[32] = {};
     static wchar_t disp_buf_P[32] = {};
-    disp_buf_R[0] = (wchar_t)disp_name.size();
-    disp_buf_J[0] = (wchar_t)disp_name.size();
-    disp_buf_P[0] = (wchar_t)disp_name.size();
-    for (size_t i = 0; i < disp_name.size(); ++i) {
-        disp_buf_R[i+1] = disp_buf_J[i+1] = disp_buf_P[i+1] = disp_name[i];
-    }
+
+    // R dispatcher name
+    std::wstring disp_name_R = L"NEVEN$.nevenx_dispatch";
+    disp_buf_R[0] = (wchar_t)disp_name_R.size();
+    for (size_t i = 0; i < disp_name_R.size(); ++i) disp_buf_R[i+1] = disp_name_R[i];
     g_nevenx_disp_R.xltype = xltypeStr; g_nevenx_disp_R.val.str = disp_buf_R;
+
+    // Julia dispatcher name: NEVEN.nevenx_dispatch (modulo NEVEN, funcion nevenx_dispatch)
+    std::wstring disp_name_J = L"NEVEN.nevenx_dispatch";
+    disp_buf_J[0] = (wchar_t)disp_name_J.size();
+    for (size_t i = 0; i < disp_name_J.size(); ++i) disp_buf_J[i+1] = disp_name_J[i];
     g_nevenx_disp_J.xltype = xltypeStr; g_nevenx_disp_J.val.str = disp_buf_J;
+
+    // Python dispatcher name: nevenx_dispatch (funcion global en __main__)
+    std::wstring disp_name_P = L"nevenx_dispatch";
+    disp_buf_P[0] = (wchar_t)disp_name_P.size();
+    for (size_t i = 0; i < disp_name_P.size(); ++i) disp_buf_P[i+1] = disp_name_P[i];
     g_nevenx_disp_P.xltype = xltypeStr; g_nevenx_disp_P.val.str = disp_buf_P;
+
     g_nevenx_init_done = true;
 }
 
