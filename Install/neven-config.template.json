@@ -17,7 +17,7 @@
     },
     "Julia": {
       "home": "",
-      "enabled": false,
+      "enabled": true,
       "minMajor": 1,
       "minMinor": 6,
       "maxMajor": 99
