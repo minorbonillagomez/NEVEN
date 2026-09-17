@@ -374,11 +374,16 @@
         onfocus="this.style.borderColor='var(--accent)'"
         onblur="this.style.borderColor='var(--border)'"
       ></textarea>
-      <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">
         <button class="btn btn-primary" id="ai-send-btn">Enviar</button>
         <button class="btn btn-secondary" id="ai-use-dataset-btn"
                 title="Incluir resumen del dataset activo como contexto">
           + Dataset
+        </button>
+        <button class="btn btn-secondary" id="ai-analyze-sheet-btn"
+                title="Analizar fórmulas de la hoja activa (modo Consultor Excel)"
+                style="background:rgba(100,180,100,0.15);border-color:rgba(100,180,100,0.4)">
+          📊 Analizar Hoja
         </button>
         <button class="btn btn-secondary" id="ai-clear-btn">Limpiar</button>
         <span id="ai-spinner" style="display:none;font-size:11px;color:var(--text-secondary)">⏳ pensando…</span>
@@ -2167,6 +2172,7 @@ function initAITab() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _aiSend(); }
   });
   document.getElementById('ai-use-dataset-btn').addEventListener('click', _aiAttachDataset);
+  document.getElementById('ai-analyze-sheet-btn').addEventListener('click', _aiAnalyzeSheet);
   document.getElementById('ai-clear-btn').addEventListener('click', _aiClear);
   document.getElementById('ai-clear-context').addEventListener('click', function() {
     _aiState.context = '';
@@ -2295,6 +2301,25 @@ function _aiAttachDataset() {
     .catch(function(e) {
       showToast('Sin dataset activo — cargue datos primero');
     });
+}
+
+async function _aiAnalyzeSheet() {
+  // Llamar a la función definida en taskpane.js
+  if (typeof analyzeSheetForAI === 'function') {
+    var btn = document.getElementById('ai-analyze-sheet-btn');
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Analizando...';
+    
+    try {
+      await analyzeSheetForAI();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  } else {
+    showToast('Error: analyzeSheetForAI no disponible');
+  }
 }
 
 function _aiCallLLM(extra) {
