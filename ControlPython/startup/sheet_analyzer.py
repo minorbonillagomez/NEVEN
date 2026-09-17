@@ -23,6 +23,19 @@ import yaml
 from collections import defaultdict
 from typing import Dict, List, Tuple, Any, Optional
 
+# ─── Language normalization ───────────────────────────────────────────────────
+try:
+    from excel_translations import normalize_formula, detect_language_from_formula
+    _TRANSLATIONS_AVAILABLE = True
+except ImportError:
+    _TRANSLATIONS_AVAILABLE = False
+    
+    def normalize_formula(formula: str, language: str = "es") -> str:
+        return formula
+    
+    def detect_language_from_formula(formula: str) -> Optional[str]:
+        return None
+
 # ─── Regex patterns for Excel formula parsing ─────────────────────────────────
 
 # Matches Excel function names: =SUM(, =VLOOKUP(, =IF(, etc.
@@ -492,6 +505,7 @@ def analyze_sheet(body: Dict[str, Any]) -> Dict[str, Any]:
           - formulas: List[{address, formula}] — Formula cells from JS
           - total_cells: int — Total cell count in used range (optional)
           - include_graph: bool — Whether to include Mermaid graph (default: True)
+          - language: str — Excel language code (auto-detected if not provided)
     
     Returns:
         Structured metadata for AI agent consumption
@@ -500,6 +514,7 @@ def analyze_sheet(body: Dict[str, Any]) -> Dict[str, Any]:
     sheet_name = body.get("sheet_name", "Sheet1")
     total_cells = body.get("total_cells", 0)
     include_graph = body.get("include_graph", True)
+    language = body.get("language", None)
     
     if not formulas:
         return {
@@ -518,17 +533,39 @@ def analyze_sheet(body: Dict[str, Any]) -> Dict[str, Any]:
             "complexity": {"score": 0, "level": "empty", "details": {}},
         }
     
-    # Run all analyses
-    function_counts = extract_functions(formulas)
-    patterns = normalize_patterns(formulas)
-    dependencies = build_dependency_graph(formulas)
-    inputs, outputs = identify_io_cells(formulas, dependencies)
-    complexity = calculate_complexity(formulas)
+    # Detect language if not provided
+    detected_language = language
+    if not detected_language and _TRANSLATIONS_AVAILABLE:
+        # Sample first few formulas to detect language
+        for item in formulas[:10]:
+            detected = detect_language_from_formula(item.get("formula", ""))
+            if detected:
+                detected_language = detected
+                break
+    
+    # Normalize formulas to English if needed
+    normalized_formulas = formulas
+    if detected_language and detected_language != "en" and _TRANSLATIONS_AVAILABLE:
+        normalized_formulas = []
+        for item in formulas:
+            normalized_formulas.append({
+                "address": item.get("address", ""),
+                "formula": normalize_formula(item.get("formula", ""), detected_language),
+                "original_formula": item.get("formula", "")  # Keep original for reference
+            })
+    
+    # Run all analyses on normalized formulas
+    function_counts = extract_functions(normalized_formulas)
+    patterns = normalize_patterns(normalized_formulas)
+    dependencies = build_dependency_graph(normalized_formulas)
+    inputs, outputs = identify_io_cells(normalized_formulas, dependencies)
+    complexity = calculate_complexity(normalized_formulas)
     enriched_functions = enrich_with_ontology(function_counts)
     
     result = {
         "status": "ok",
         "sheet_name": sheet_name,
+        "detected_language": detected_language,
         "summary": {
             "total_formulas": len(formulas),
             "total_cells": total_cells,
