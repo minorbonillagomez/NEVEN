@@ -1380,3 +1380,169 @@ async function getSheetAnalysisSummary() {
 // Expose to global scope for use from console or other modules
 window.captureSheetForAnalysis = captureSheetForAnalysis;
 window.getSheetAnalysisSummary = getSheetAnalysisSummary;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Excel Consultant — AI Integration
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Analyze the current sheet and inject the analysis as AI context.
+ * This enables "Excel Consultant" mode in the IA tab.
+ * 
+ * @param {Object} options - Same options as captureSheetForAnalysis
+ * @returns {Promise<boolean>} True if context was injected successfully
+ */
+async function analyzeSheetForAI(options = {}) {
+  try {
+    const analysis = await captureSheetForAnalysis(options);
+    
+    if (analysis.status === 'error') {
+      showToast('Error: ' + analysis.message);
+      return false;
+    }
+    
+    if (!analysis.summary || analysis.summary.total_formulas === 0) {
+      showToast('La hoja no tiene fórmulas para analizar');
+      return false;
+    }
+    
+    // Format analysis as context for AI
+    const contextText = formatAnalysisForAI(analysis);
+    
+    // Inject into AI state (same pattern as _aiAttachDataset)
+    if (typeof _aiState !== 'undefined') {
+      _aiState.context = contextText;
+      
+      // Update context card
+      const ctxCard = document.getElementById('ai-context-card');
+      const ctxSummary = document.getElementById('ai-context-summary');
+      if (ctxCard && ctxSummary) {
+        ctxCard.style.display = '';
+        ctxSummary.textContent = `📊 ${analysis.sheet_name}: ${analysis.summary.total_formulas} fórmulas`;
+      }
+      
+      // Add system message to chat history
+      const history = document.getElementById('ai-chat-history');
+      if (history) {
+        const div = document.createElement('div');
+        div.style.cssText = 'margin:8px 0;padding:7px 10px;background:rgba(100,180,100,0.08);' +
+          'border-left:3px solid #6b6;border-radius:4px;font-size:11px;color:var(--text-secondary)';
+        div.innerHTML = `<span style="color:#6b6;font-weight:600">Modo Consultor Excel activado</span>` +
+          ` — Hoja "${analysis.sheet_name}": ${analysis.summary.total_formulas} fórmulas, ` +
+          `complejidad ${analysis.complexity?.level || 'N/A'}. Pregunta lo que necesites.`;
+        history.appendChild(div);
+        history.scrollTop = history.scrollHeight;
+      }
+      
+      showToast('✓ Análisis de hoja cargado — Modo Consultor activo');
+      return true;
+    }
+    
+    return false;
+    
+  } catch (error) {
+    console.error('[NEVEN] analyzeSheetForAI error:', error);
+    showToast('Error al analizar: ' + error.message);
+    return false;
+  }
+}
+
+/**
+ * Format sheet analysis as structured text for AI context.
+ */
+function formatAnalysisForAI(analysis) {
+  const lines = ['=== SHEET ANALYSIS ==='];
+  lines.push(`Hoja: ${analysis.sheet_name}`);
+  
+  if (analysis.detected_language) {
+    lines.push(`Idioma Excel detectado: ${analysis.detected_language === 'es' ? 'Español' : 'Inglés'}`);
+  }
+  
+  // Summary
+  const s = analysis.summary || {};
+  lines.push('');
+  lines.push('## Resumen');
+  lines.push(`- Total fórmulas: ${s.total_formulas || 0}`);
+  lines.push(`- Celdas totales: ${s.total_cells || 0}`);
+  lines.push(`- Densidad de fórmulas: ${s.formula_density || 0}%`);
+  lines.push(`- Patrones únicos: ${s.unique_patterns || 0}`);
+  lines.push(`- Funciones distintas: ${s.functions_used || 0}`);
+  lines.push(`- Complejidad: ${s.complexity_level || 'N/A'}`);
+  
+  // Functions used
+  if (analysis.functions && analysis.functions.length > 0) {
+    lines.push('');
+    lines.push('## Funciones utilizadas');
+    analysis.functions.slice(0, 15).forEach(f => {
+      let line = `- ${f.name}: ${f.count}x`;
+      if (f.category) line += ` [${f.category}]`;
+      if (f.description) line += ` — ${f.description}`;
+      lines.push(line);
+    });
+    if (analysis.functions.length > 15) {
+      lines.push(`- ... y ${analysis.functions.length - 15} funciones más`);
+    }
+  }
+  
+  // Patterns
+  if (analysis.patterns && analysis.patterns.length > 0) {
+    lines.push('');
+    lines.push('## Patrones de fórmulas (top 10)');
+    analysis.patterns.slice(0, 10).forEach(p => {
+      lines.push(`- "${p.pattern}" (${p.count}x) — ejemplo: ${p.example || 'N/A'}`);
+    });
+  }
+  
+  // Critical cells
+  if (analysis.critical_cells) {
+    const inputs = analysis.critical_cells.inputs || [];
+    const outputs = analysis.critical_cells.outputs || [];
+    
+    if (inputs.length > 0 || outputs.length > 0) {
+      lines.push('');
+      lines.push('## Celdas críticas');
+      
+      if (inputs.length > 0) {
+        lines.push(`Inputs (celdas referenciadas sin fórmula): ${inputs.slice(0, 10).join(', ')}`);
+        if (inputs.length > 10) lines.push(`  ... y ${inputs.length - 10} más`);
+      }
+      
+      if (outputs.length > 0) {
+        lines.push(`Outputs (fórmulas no referenciadas): ${outputs.slice(0, 10).join(', ')}`);
+        if (outputs.length > 10) lines.push(`  ... y ${outputs.length - 10} más`);
+      }
+    }
+  }
+  
+  // Complexity details
+  if (analysis.complexity) {
+    const c = analysis.complexity;
+    lines.push('');
+    lines.push('## Métricas de complejidad');
+    lines.push(`- Nivel: ${c.level || 'N/A'}`);
+    lines.push(`- Score: ${c.score || 0}/100`);
+    
+    if (c.details) {
+      if (c.details.max_nesting) lines.push(`- Anidamiento máximo: ${c.details.max_nesting} niveles`);
+      if (c.details.avg_functions) lines.push(`- Funciones promedio por fórmula: ${c.details.avg_functions.toFixed(1)}`);
+      if (c.details.volatile_count) lines.push(`- Funciones volátiles: ${c.details.volatile_count}`);
+    }
+  }
+  
+  // Dependency stats
+  if (analysis.dependencies && analysis.dependencies.stats) {
+    const d = analysis.dependencies.stats;
+    lines.push('');
+    lines.push('## Dependencias');
+    lines.push(`- Total conexiones: ${d.total_edges || 0}`);
+    lines.push(`- Referencias externas: ${d.external_refs || 0}`);
+    if (d.max_in_degree) lines.push(`- Celda más referenciada: grado ${d.max_in_degree}`);
+  }
+  
+  return lines.join('\n');
+}
+
+// Expose to global scope
+window.analyzeSheetForAI = analyzeSheetForAI;
+window.formatAnalysisForAI = formatAnalysisForAI;
