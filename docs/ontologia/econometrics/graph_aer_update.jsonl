@@ -1,0 +1,9 @@
+{"op":"create","entity":{"id":"rfunc_dispersiontest","type":"RFunction","properties":{"name":"dispersiontest","package":"AER"}}}
+{"op":"create","entity":{"id":"rfunc_tobit","type":"RFunction","properties":{"name":"tobit","package":"AER"}}}
+{"op":"create","entity":{"id":"concept_overdispersion","type":"Concept","properties":{"name":"Overdispersion","definition":"Variance is greater than the mean, violating Poisson assumptions"}}}
+{"op":"create","entity":{"id":"method_poisson","type":"Method","properties":{"name":"Poisson Regression","description":"Model for count data assuming mean equals variance"}}}
+{"op":"create","entity":{"id":"method_tobit","type":"Method","properties":{"name":"Tobit Regression","description":"Model for censored dependent variables"}}}
+{"op":"relate","from":"method_poisson","rel":"uses_r_function","to":"rfunc_dispersiontest"}
+{"op":"relate","from":"method_poisson","rel":"adjusts_for","to":"concept_overdispersion"}
+{"op":"relate","from":"method_tobit","rel":"uses_r_function","to":"rfunc_tobit"}
+{"op":"relate","from":"method_tobit","rel":"implemented_in_r_package","to":"rpkg_aer"}

@@ -19,6 +19,7 @@
 #   POST /api/rpivot       → RPivot table generation via R (task 7.3)
 #   GET  /api/engines      → Pipe-probe each language engine (task 7.1)
 #   GET  /api/functions    → List registered functions per language (task 7.2)
+#   POST /api/sheet/analyze→ Extract formula metadata for AI (hybrid JS+Python)
 
 import os
 import sys
@@ -66,6 +67,16 @@ try:
     _DATALAB_AVAILABLE = True
 except ImportError:
     _DATALAB_AVAILABLE = False
+
+# Sheet Analyzer — extrae metadatos de fórmulas Excel para el agente IA
+try:
+    from sheet_analyzer import analyze_sheet as _analyze_sheet  # type: ignore
+    _SHEET_ANALYZER_AVAILABLE = True
+except ImportError:
+    _SHEET_ANALYZER_AVAILABLE = False
+
+    def _analyze_sheet(body):  # type: ignore[misc]
+        return {"status": "error", "message": "Sheet analyzer not available"}
 
 # Package Manager Service
 try:
@@ -626,6 +637,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_db_connect(body)
         elif path == 'api/save_script':
             self._handle_save_script(body)
+        elif path == 'api/sheet/analyze':
+            self._handle_sheet_analyze(body)
         elif path == 'api/ai/chat':
             self._handle_ai_chat(body)
         elif path == 'api/ai/context':
@@ -1107,6 +1120,37 @@ class NEVENHandler(BaseHTTPRequestHandler):
             })
         except Exception as exc:
             self._send_error_json(f"No se pudo guardar '{filename}': {exc}", 500)
+
+    def _handle_sheet_analyze(self, body: dict):
+        """POST /api/sheet/analyze — Analiza fórmulas Excel y retorna metadatos estructurados.
+
+        Body:
+            sheet_name    : str — Nombre de la hoja
+            formulas      : List[{address, formula}] — Celdas con fórmulas desde Office.js
+            total_cells   : int — Total de celdas en UsedRange (opcional)
+            include_graph : bool — Incluir grafo Mermaid (default: True)
+
+        Returns:
+            {
+                status, sheet_name, summary, functions, patterns,
+                dependencies, critical_cells, complexity, mermaid_graph?
+            }
+
+        Usado por el sistema híbrido JS+Python para análisis de hojas:
+        1. JavaScript (Office.js) captura range.formulas interactivamente
+        2. Python (este endpoint) procesa, normaliza y construye metadatos
+        3. El agente IA interpreta los metadatos con la ontología Excel
+        """
+        if not _SHEET_ANALYZER_AVAILABLE:
+            self._send_error_json("Sheet analyzer module not available", 503)
+            return
+
+        try:
+            result = _analyze_sheet(body)
+            status_code = 200 if result.get("status") == "ok" else 400
+            self._send_json(result, status_code)
+        except Exception as exc:
+            self._send_error_json(f"Error analyzing sheet: {exc}", 500)
 
     def _handle_save_script(self, body):
         """POST /api/save_script — guarda contenido en un archivo del filesystem.
