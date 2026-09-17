@@ -1418,3 +1418,155 @@ La sección `"AI"` controla la integración con LMStudio para resumen contextual
 ---
 
 *Manual actualizado: 30 de julio de 2026 — Team Vikingos ⚔️*
+
+
+------------------------------------------------------------------------
+
+## 18. Sistema de Ontologías (Agosto 2026)
+
+### Ubicación de las ontologías
+
+Las ontologías viven FUERA del repositorio git, en la carpeta `ONTOLOGIA/` del workspace:
+
+```
+F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\
+├── LIBROS EXCEL\              # Funciones nativas de Excel
+│   ├── *.pdf                   # Libros fuente (CFI, Curso Práctico, Excel Bible)
+│   └── memory\ontology\
+│       ├── schema.yaml         # Tipos: ExcelFunction, Technique, Pattern...
+│       └── graph.jsonl         # 113 funciones documentadas
+│
+├── NEVEN\                     # Funciones propias de NEVEN
+│   └── memory\ontology\
+│       ├── schema.yaml         # Tipos: NEVENFunction, RFunction, JuliaFunction
+│       └── graph.jsonl         # 40+ funciones (dinámico)
+│
+└── LIBROS\                    # Econometría teórica
+    └── memory\ontology\
+        ├── schema.yaml
+        └── graph.jsonl
+```
+
+### Deploy de ontologías a producción
+
+Las ontologías deben copiarse a `C:\NEVEN\ONTOLOGIA\`:
+
+```powershell
+# Copiar ontologías
+Copy-Item "F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA" "C:\NEVEN\ONTOLOGIA" -Recurse -Force
+```
+
+### Formato graph.jsonl
+
+Cada línea es un JSON independiente:
+
+```jsonl
+{"op": "create", "entity": {"id": "func_sum", "type": "ExcelFunction", "properties": {...}}}
+{"op": "relate", "from": "func_sum", "rel": "part_of", "to": "domain_math"}
+```
+
+**Reglas:**
+- Una línea = una operación (create o relate)
+- APPEND only — nunca modificar líneas existentes
+- IDs únicos con prefijo de tipo: `func_`, `r_`, `j_`, `concept_`, `technique_`
+
+### Agregar nuevas funciones a la ontología NEVEN
+
+Cuando el agente crea una función R/Julia/Python, debe:
+
+1. **Crear el archivo** en `C:\NEVEN\libreria\{R|JULIA|PYTHON}\`
+2. **Agregar entidad** al final de `ONTOLOGIA\NEVEN\memory\ontology\graph.jsonl`:
+   ```json
+   {"op": "create", "entity": {"id": "r_fx_var", "type": "RFunction", "properties": {"name": "R.FX_VaR", ...}}}
+   ```
+3. **Agregar relación**:
+   ```json
+   {"op": "relate", "from": "r_fx_var", "rel": "belongs_to", "to": "cat_fx"}
+   ```
+
+### Categorías de funciones NEVEN
+
+| Código | Nombre | Descripción |
+|:---|:---|:---|
+| AD | Análisis de Datos | PCA, clustering, text mining |
+| BD | Base de Datos | Conectividad, extracción |
+| DS | Datasets | Conjuntos de datos de ejemplo |
+| FX | Funciones Extra | Cálculos auxiliares, aleatorios |
+| GR | Gráficos | Visualizaciones |
+| ML | Machine Learning | Algoritmos de ML |
+| MT | Matemáticas | Álgebra lineal, cálculo |
+| OP | Optimización | Programación lineal, etc. |
+| RG | Regresión | Modelos econométricos |
+| UT | Utilidades | Ayuda, instalación |
+
+### Verificar ontología
+
+```powershell
+# Contar funciones
+(Get-Content "C:\NEVEN\ONTOLOGIA\NEVEN\memory\ontology\graph.jsonl" | Where-Object { $_ -match '"type":\s*"RFunction"' }).Count
+
+# Validar JSON (cada línea debe ser JSON válido)
+Get-Content "graph.jsonl" | ForEach-Object { $_ | ConvertFrom-Json } | Out-Null
+```
+
+------------------------------------------------------------------------
+
+## 19. Excel Consultant (Agosto 2026)
+
+### Qué es
+
+El Excel Consultant es un modo especializado del agente AI para auditar, documentar y optimizar hojas de cálculo.
+
+### Activación
+
+Se activa cuando el usuario hace clic en **"Analizar Hoja"** en el TaskPane.
+
+### Archivos involucrados
+
+| Archivo | Función |
+|:---|:---|
+| `TaskPane/taskpane.js` | `captureSheetForAnalysis()` — extrae análisis de la hoja |
+| `AgentService/neven_ai_service.py` | `_EXCEL_CONSULTANT_PROMPT` — prompt del consultor |
+| `ControlPython/startup/sheet_analyzer.py` | Funciones de análisis |
+| `ControlPython/startup/excel_translations.py` | 482 mappings español↔inglés |
+
+### Capacidades
+
+1. **Auditoría** — errores, fórmulas frágiles, hardcoding
+2. **Documentación** — explicar qué hace la hoja
+3. **Optimización** — sugerir fórmulas mejores
+4. **Educación** — enseñar sobre funciones
+5. **Creación** — escribir funciones R/Julia/Python
+6. **Expansión** — procesar libros PDF para ontologías
+
+### Deploy del Excel Consultant
+
+```powershell
+# Copiar archivos del TaskPane
+Copy-Item "TaskPane\taskpane.js" "C:\NEVEN\taskpane\taskpane.js" -Force
+
+# Copiar AgentService
+Copy-Item "AgentService\neven_ai_service.py" "C:\NEVEN\startup\neven_ai_service.py" -Force
+
+# Copiar analizadores
+Copy-Item "ControlPython\startup\sheet_analyzer.py" "C:\NEVEN\startup\sheet_analyzer.py" -Force
+Copy-Item "ControlPython\startup\excel_translations.py" "C:\NEVEN\startup\excel_translations.py" -Force
+```
+
+### Troubleshooting
+
+**El botón "Analizar Hoja" no hace nada:**
+- Verificar que `taskpane.js` tiene la función `captureSheetForAnalysis()`
+- Verificar que el botón llama a `window.captureSheetForAnalysis()`
+
+**El análisis no incluye funciones con metadata:**
+- Verificar que `graph.jsonl` existe en `ONTOLOGIA/LIBROS EXCEL/memory/ontology/`
+- Verificar que `sheet_analyzer.py` puede cargar la ontología
+
+**Error al procesar libros:**
+- Solo PDFs se pueden procesar (no DOCX, EPUB)
+- El agente parafrasea, no copia verbatim (compliance)
+
+------------------------------------------------------------------------
+
+*Manual actualizado: 20 de agosto de 2026 — Sistema de Ontologías y Excel Consultant*

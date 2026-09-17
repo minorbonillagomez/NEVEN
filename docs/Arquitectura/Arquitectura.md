@@ -496,3 +496,176 @@ C:\NEVEN\
 ```
 
 *Documento actualizado: 30 de julio de 2026 — Post NEVEN Studio Standalone y Data Lab V1.*
+
+
+------------------------------------------------------------------------
+
+## Sistema de Ontologías Dinámicas (Agosto 2026)
+
+NEVEN incorpora un **sistema de conocimiento autoevolutivo** basado en ontologías JSONL que el agente puede consultar y expandir.
+
+### Arquitectura del Sistema de Conocimiento
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Sistema de Ontologías NEVEN                       │
+│                                                                       │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐      │
+│  │  LIBROS EXCEL   │  │     NEVEN       │  │    LIBROS       │      │
+│  │  (113 funciones)│  │  (40 funciones) │  │  (Econometría)  │      │
+│  │  Excel nativo   │  │  R/Julia/Python │  │  Teórica        │      │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘      │
+│           │                    │                    │                │
+│           └────────────────────┼────────────────────┘                │
+│                                │                                     │
+│                        ┌───────▼───────┐                             │
+│                        │    AGENTE     │                             │
+│                        │   AI (LLM)    │                             │
+│                        └───────┬───────┘                             │
+│                                │                                     │
+│         ┌──────────────────────┼──────────────────────┐              │
+│         ▼                      ▼                      ▼              │
+│  ┌─────────────┐       ┌─────────────┐       ┌─────────────┐        │
+│  │  Consulta   │       │   Crea      │       │  Procesa    │        │
+│  │  ontología  │       │  funciones  │       │   libros    │        │
+│  └─────────────┘       └─────────────┘       └─────────────┘        │
+│                                │                      │              │
+│                                ▼                      ▼              │
+│                        ┌──────────────────────────────┐              │
+│                        │  Actualiza graph.jsonl      │              │
+│                        │  (APPEND only)              │              │
+│                        └──────────────────────────────┘              │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Estructura de Directorios
+
+```
+ONTOLOGIA/
+├── LIBROS EXCEL/                 # Funciones nativas de Excel
+│   ├── *.pdf                       # CFI Excel, Curso Práctico, Excel Bible
+│   └── memory/ontology/
+│       ├── schema.yaml             # ExcelFunction, Technique, Pattern, etc.
+│       └── graph.jsonl             # 113 funciones con metadata
+│
+├── NEVEN/                        # Funciones propias de NEVEN
+│   └── memory/ontology/
+│       ├── schema.yaml             # NEVENFunction, RFunction, JuliaFunction
+│       └── graph.jsonl             # 40+ entidades dinámicas
+│
+└── LIBROS/                       # Econometría teórica
+    ├── *.pdf                       # Wooldridge, Greene, Hamilton
+    └── memory/ontology/
+        ├── schema.yaml
+        └── graph.jsonl
+```
+
+### Formato JSONL
+
+Cada archivo `graph.jsonl` contiene entidades y relaciones en formato JSON Lines:
+
+```jsonl
+{"op": "create", "entity": {"id": "func_vlookup", "type": "ExcelFunction", "properties": {...}}}
+{"op": "create", "entity": {"id": "r_ad_acp", "type": "RFunction", "properties": {...}}}
+{"op": "relate", "from": "r_ad_acp", "rel": "implements", "to": "concept_pca"}
+```
+
+### Tipos de Entidades por Ontología
+
+| Ontología | Tipos de Entidad |
+|:---|:---|
+| LIBROS EXCEL | ExcelFunction, Technique, Pattern, BestPractice, CommonError |
+| NEVEN | NEVENFunction, RFunction, JuliaFunction, PythonFunction, FunctionCategory |
+| LIBROS | Concept, Technique, Model, Assumption, Test |
+
+### Relaciones Cross-Ontology
+
+El sistema permite relaciones entre ontologías:
+- `implements` — RFunction implementa un Concept econométrico
+- `extends` — RFunction extiende capacidades de una ExcelFunction
+- `alternative_to` — JuliaFunction es alternativa a RFunction
+
+### Ciclo Evolutivo
+
+1. **Usuario pide funcionalidad** que Excel nativo no tiene
+2. **Agente busca** en ontología NEVEN → no existe
+3. **Agente crea** código R/Julia/Python en `libreria/`
+4. **Agente actualiza** `ONTOLOGIA/NEVEN/memory/ontology/graph.jsonl`
+5. **Próxima sesión** — la función ya está documentada y es descubrible
+
+### Procesamiento de Libros
+
+El usuario puede agregar PDFs a cualquier carpeta `ONTOLOGIA/` y solicitar al agente que:
+1. Extraiga conceptos, técnicas y best practices
+2. Estructure el conocimiento según el schema
+3. Agregue entidades al graph.jsonl correspondiente
+
+Esto permite **personalizar NEVEN** según el dominio del usuario (actuaría, finanzas, ML, etc.).
+
+------------------------------------------------------------------------
+
+## Excel Consultant (Agosto 2026)
+
+El Excel Consultant es un modo especializado del agente AI que actúa como auditor, documentador y asesor de hojas de cálculo.
+
+### Activación
+
+Se activa cuando el usuario hace clic en "Analizar Hoja" en el TaskPane. La función `captureSheetForAnalysis()` extrae:
+- Fórmulas y funciones usadas
+- Grafo de dependencias entre celdas
+- Patrones detectados (hardcoding, volatilidad)
+- Métricas de complejidad
+
+### Capacidades
+
+| # | Capacidad | Descripción |
+|:---|:---|:---|
+| 1 | **Auditoría** | Detectar errores, fórmulas frágiles, hardcoding excesivo |
+| 2 | **Documentación** | Explicar qué hace la hoja, flujo de datos |
+| 3 | **Optimización** | Sugerir fórmulas mejores (BUSCARV→BUSCARX) |
+| 4 | **Educación** | Enseñar sobre funciones y best practices |
+| 5 | **Creación** | Escribir funciones R/Julia/Python cuando Excel no alcanza |
+| 6 | **Expansión** | Procesar libros PDF para expandir ontologías |
+
+### Flujo de Datos
+
+```
+Excel Sheet
+     │
+     ▼
+captureSheetForAnalysis() [taskpane.js]
+     │
+     ▼
+POST /api/chat (context = sheet analysis)
+     │
+     ▼
+_build_excel_consultant_prompt() [neven_ai_service.py]
+     │
+     ▼
+LLM con sistema de conocimiento (3 ontologías)
+     │
+     ▼
+Respuesta: auditoría + recomendaciones + código (si aplica)
+```
+
+### Archivos Clave
+
+| Archivo | Responsabilidad |
+|:---|:---|
+| `TaskPane/taskpane.js` | `captureSheetForAnalysis()` — extrae análisis de la hoja |
+| `AgentService/neven_ai_service.py` | `_EXCEL_CONSULTANT_PROMPT` — system prompt especializado |
+| `ControlPython/startup/sheet_analyzer.py` | `_load_excel_ontology()` — carga ontología para análisis |
+| `ControlPython/startup/excel_translations.py` | 482 mappings español↔inglés de funciones |
+
+### Protocolos Embebidos en el Prompt
+
+El system prompt incluye dos protocolos detallados:
+
+1. **Protocolo de Creación de Funciones** — Pasos exactos para crear función + actualizar ontología NEVEN
+2. **Protocolo de Procesamiento de Libros** — Pasos para extraer conocimiento de PDFs y expandir ontologías
+
+Ambos protocolos son prescriptivos (no ejemplos) para garantizar consistencia en las actualizaciones de ontología.
+
+------------------------------------------------------------------------
+
+*Documento actualizado: 20 de agosto de 2026 — Sistema de Ontologías Dinámicas y Excel Consultant.*

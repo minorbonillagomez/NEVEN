@@ -15,6 +15,7 @@ const sidebars = {
     'diccionario-funciones',
     'simulacion-montecarlo',
     'neven-studio',
+    'ontologias-excel-consultant',
   ],
 };
 

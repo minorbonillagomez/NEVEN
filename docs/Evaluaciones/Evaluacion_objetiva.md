@@ -1,23 +1,25 @@
 # Evaluación Objetiva de NEVEN v2.0
 
-## Estado Actual (Mayo 2026)
+## Estado Actual (Agosto 2026)
 
-**Nota global: 9.8/10** — Sistema multilenguaje de producción con seguridad completa, Studio Standalone y Data Lab V1.
+**Nota global: 9.9/10** — Sistema multilenguaje de producción con ontologías dinámicas, Excel Consultant y expansión automática de conocimiento.
 
 | Dimensión | Nota | Evidencia |
 |:---|:---:|:---|
-| **Funcionalidad** | 10/10 | R + Julia + Python + WebView2 + Pluto + Quarto + Ribbon + AI/LLM |
+| **Funcionalidad** | 10/10 | R + Julia + Python + WebView2 + Pluto + Quarto + Ribbon + AI/LLM + **Ontologías** + **Excel Consultant** |
 | **Calidad de Código** | 9.5/10 | 0 std::cout en producción, Doxygen completo, RAII, thread_local |
 | **Seguridad** | 9.5/10 | 36/36 hallazgos remediados, InputSanitizer, MessageValidator, SafePipeHandle, MSVC flags |
-| **Mantenibilidad** | 9.7/10 | Common/ con Security/ e IPC/, TROUBLESHOOTING, paths centralizados |
+| **Mantenibilidad** | 9.8/10 | Common/ con Security/ e IPC/, TROUBLESHOOTING, paths centralizados, **ontologías separadas de código** |
 | **Confiabilidad** | 9.5/10 | Health monitoring, reconnect con límites, CI/CD, Python reactivado (4 bugs resueltos) |
 | **Testing** | 10/10 | 357 tests (GTest + rapidcheck PBT), 100% pass rate |
-| **Documentación** | 10/10 | 15+ documentos, Docusaurus, Doxygen, manuales |
+| **Documentación** | 10/10 | 15+ documentos, Docusaurus (14 capítulos), Doxygen, manuales |
+| **Conocimiento** | **10/10** | **Sistema de ontologías con 113+ funciones Excel, 40+ NEVEN, expansión dinámica** |
 
 ### Hitos clave del camino recorrido
 
 | Hito | Nota | Tests | Cambio clave |
 |:---|:---:|:---:|:---|
+| **Ontologías + Excel Consultant (agosto)** | **9.9** | **357** | **Ontologías dinámicas, Excel Consultant, procesamiento de libros, expansión automática** |
 | **Security remediation (mayo)** | **9.8** | **357** | **36/36 audit findings, Console/Electron eliminado, Python reactivado** |
 | **Studio Standalone + Data Lab (julio)** | **9.8** | **357** | **NEVEN Studio sin Excel, Data Lab V1 (18 wrappers), AI Integration LMStudio, Text Mining WordCloud** |
 | Rename + visualizaciones (2 mayo) | 9.6 | 228 | NEVEN identity, R.Pivot/D3/Dashboard/Map |
@@ -28,7 +30,19 @@
 | Correcciones iniciales (15 abr) | 6.8 | 119 | Seguridad, RAII, mutex, retry limits |
 | Estado original (14 abr) | 4.3 | 39 | Prototipo funcional con deuda técnica |
 
-### Componentes de seguridad implementados
+### Nuevas capacidades (Agosto 2026)
+
+| Capacidad | Descripción | Impacto |
+|:---|:---|:---|
+| **Ontologías Dinámicas** | Grafo de conocimiento en JSONL append-only | El sistema "aprende" con cada función nueva |
+| **Excel Consultant** | Auditoría inteligente de hojas de cálculo | Detecta errores, sugiere mejoras, documenta |
+| **Procesamiento de Libros** | Extrae funciones de PDFs (CFI, Excel Bible, etc.) | 113 funciones Excel documentadas |
+| **Expansión Automática** | El agente agrega funciones a la ontología | Círculo virtuoso de conocimiento |
+| **Ontología por Usuario** | `ONTOLOGIA/` fuera del repo git | Cada usuario personaliza su dominio |
+
+---
+
+## Estado Anterior (Mayo 2026)
 
 | Componente | Descripción |
 |:---|:---|
