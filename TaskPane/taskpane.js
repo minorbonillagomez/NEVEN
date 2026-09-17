@@ -1435,6 +1435,9 @@ async function analyzeSheetForAI(options = {}) {
         history.scrollTop = history.scrollHeight;
       }
       
+      // Show Excel Consultant chips
+      showExcelConsultantChips(analysis);
+      
       showToast('✓ Análisis de hoja cargado — Modo Consultor activo');
       return true;
     }
@@ -1546,3 +1549,103 @@ function formatAnalysisForAI(analysis) {
 // Expose to global scope
 window.analyzeSheetForAI = analyzeSheetForAI;
 window.formatAnalysisForAI = formatAnalysisForAI;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Excel Consultant — Contextual Chips
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Predefined prompts for Excel Consultant mode.
+ * Each chip sends a specific question to the AI.
+ */
+const EXCEL_CONSULTANT_CHIPS = [
+  { label: '¿Qué hace esta hoja?', prompt: 'Explica qué hace esta hoja de cálculo. Describe el propósito general, el flujo de datos y las principales operaciones que realiza.' },
+  { label: 'Auditar errores', prompt: 'Audita esta hoja en busca de errores potenciales: fórmulas frágiles, referencias hardcodeadas, funciones obsoletas, riesgos de #REF o #N/A.' },
+  { label: 'Optimizar fórmulas', prompt: 'Sugiere optimizaciones para las fórmulas de esta hoja: funciones más eficientes, reducción de volatilidad, patrones modernos (BUSCARX, LET, LAMBDA).' },
+  { label: 'Documentar', prompt: 'Genera documentación técnica de esta hoja: inputs, outputs, fórmulas clave, dependencias entre celdas y notas importantes para quien la mantenga.' },
+  { label: 'Celdas críticas', prompt: 'Identifica las celdas más críticas de esta hoja: inputs principales que afectan muchos cálculos y outputs finales que son el resultado del modelo.' },
+  { label: 'Simplificar', prompt: '¿Hay fórmulas demasiado complejas que podrían simplificarse? Muestra ejemplos de fórmulas anidadas y cómo reescribirlas más claramente.' },
+];
+
+/**
+ * Show the Excel Consultant chips card with contextual prompts.
+ * @param {Object} analysis - The sheet analysis result
+ */
+function showExcelConsultantChips(analysis) {
+  const card = document.getElementById('ai-excel-consultant-card');
+  const chipsContainer = document.getElementById('ai-excel-chips');
+  
+  if (!card || !chipsContainer) return;
+  
+  // Clear previous chips
+  chipsContainer.innerHTML = '';
+  
+  // Create chips
+  EXCEL_CONSULTANT_CHIPS.forEach(chip => {
+    const btn = document.createElement('button');
+    btn.textContent = chip.label;
+    btn.title = chip.prompt.substring(0, 100) + '...';
+    btn.style.cssText = 
+      'background:rgba(100,180,100,0.1);' +
+      'border:1px solid rgba(100,180,100,0.3);' +
+      'color:#6a6;' +
+      'border-radius:12px;' +
+      'padding:4px 10px;' +
+      'font-size:10px;' +
+      'cursor:pointer;' +
+      'transition:all 0.15s;';
+    
+    btn.onmouseover = function() {
+      this.style.background = 'rgba(100,180,100,0.2)';
+      this.style.borderColor = 'rgba(100,180,100,0.5)';
+      this.style.color = '#8c8';
+    };
+    btn.onmouseout = function() {
+      this.style.background = 'rgba(100,180,100,0.1)';
+      this.style.borderColor = 'rgba(100,180,100,0.3)';
+      this.style.color = '#6a6';
+    };
+    
+    btn.addEventListener('click', function() {
+      sendExcelConsultantPrompt(chip.prompt);
+    });
+    
+    chipsContainer.appendChild(btn);
+  });
+  
+  // Show the card
+  card.style.display = '';
+}
+
+/**
+ * Send a predefined prompt to the AI chat.
+ * @param {string} promptText - The prompt to send
+ */
+function sendExcelConsultantPrompt(promptText) {
+  // Add as user message and call LLM
+  if (typeof _aiAddMessage === 'function' && typeof _aiCallLLM === 'function') {
+    _aiAddMessage('user', promptText);
+    _aiCallLLM();
+  } else {
+    // Fallback: put in input and let user send
+    const input = document.getElementById('ai-input');
+    if (input) {
+      input.value = promptText;
+      input.focus();
+    }
+  }
+}
+
+/**
+ * Hide the Excel Consultant chips (call when clearing context).
+ */
+function hideExcelConsultantChips() {
+  const card = document.getElementById('ai-excel-consultant-card');
+  if (card) card.style.display = 'none';
+}
+
+// Expose to global scope
+window.showExcelConsultantChips = showExcelConsultantChips;
+window.hideExcelConsultantChips = hideExcelConsultantChips;
+window.sendExcelConsultantPrompt = sendExcelConsultantPrompt;
