@@ -1210,3 +1210,173 @@ function filterFunctions() {
     el.style.display = match ? '' : 'none';
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Sheet Analyzer — Excel Consultant Feature
+// ═══════════════════════════════════════════════════════════════════════════════
+// Captures formulas from the active sheet and sends them to Python for analysis.
+// The AI agent can then act as consultant/auditor/documentator.
+
+/**
+ * Capture all formulas from the active worksheet and send to /api/sheet/analyze.
+ * 
+ * @param {Object} options - Optional configuration
+ * @param {boolean} options.selectedOnly - If true, only capture from selection (default: false = entire used range)
+ * @param {boolean} options.includeGraph - Include Mermaid dependency graph (default: true)
+ * @returns {Promise<Object>} Analysis result from Python backend
+ */
+async function captureSheetForAnalysis(options = {}) {
+  const { selectedOnly = false, includeGraph = true } = options;
+  
+  try {
+    // Capture data from Excel
+    const sheetData = await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      sheet.load('name');
+      
+      // Get Excel's display language for formula localization
+      const app = context.workbook.application;
+      app.load('calculationMode'); // We can't get displayLanguage directly, but we'll detect from formulas
+      
+      // Determine which range to analyze
+      let range;
+      if (selectedOnly) {
+        range = context.workbook.getSelectedRange();
+      } else {
+        range = sheet.getUsedRange();
+      }
+      
+      // Load both values and formulas
+      range.load(['address', 'formulas', 'rowCount', 'columnCount', 'cellCount']);
+      
+      await context.sync();
+      
+      // Extract formula cells (cells where formula !== value shown)
+      const formulas = [];
+      const formulaGrid = range.formulas;
+      const startAddress = range.address; // e.g., "Sheet1!A1:Z100"
+      
+      // Parse starting cell from address
+      const match = startAddress.match(/!?([A-Z]+)(\d+)/i);
+      const startCol = match ? columnToNumber(match[1]) : 1;
+      const startRow = match ? parseInt(match[2], 10) : 1;
+      
+      for (let r = 0; r < formulaGrid.length; r++) {
+        for (let c = 0; c < formulaGrid[r].length; c++) {
+          const cellFormula = formulaGrid[r][c];
+          // Only include cells that have formulas (start with =)
+          if (typeof cellFormula === 'string' && cellFormula.startsWith('=')) {
+            formulas.push({
+              address: numberToColumn(startCol + c) + (startRow + r),
+              formula: cellFormula
+            });
+          }
+        }
+      }
+      
+      return {
+        sheet_name: sheet.name,
+        formulas: formulas,
+        total_cells: range.cellCount,
+        range_address: startAddress
+      };
+    });
+    
+    // If no formulas found, return early
+    if (sheetData.formulas.length === 0) {
+      return {
+        status: 'ok',
+        sheet_name: sheetData.sheet_name,
+        summary: {
+          total_formulas: 0,
+          message: 'No formulas found in ' + (selectedOnly ? 'selection' : 'the sheet')
+        }
+      };
+    }
+    
+    // Send to Python backend for analysis
+    const response = await fetch(API_BASE + '/api/sheet/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sheet_name: sheetData.sheet_name,
+        formulas: sheetData.formulas,
+        total_cells: sheetData.total_cells,
+        include_graph: includeGraph
+        // language will be auto-detected by Python from formula patterns
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const analysis = await response.json();
+    
+    // Store for AI context (can be used by the IA tab)
+    window._lastSheetAnalysis = analysis;
+    
+    return analysis;
+    
+  } catch (error) {
+    console.error('[NEVEN] captureSheetForAnalysis error:', error);
+    return {
+      status: 'error',
+      message: error.message || 'Failed to analyze sheet'
+    };
+  }
+}
+
+/**
+ * Convert column letter(s) to number (A=1, B=2, ..., Z=26, AA=27, etc.)
+ */
+function columnToNumber(col) {
+  let num = 0;
+  for (let i = 0; i < col.length; i++) {
+    num = num * 26 + (col.charCodeAt(i) - 64);
+  }
+  return num;
+}
+
+/**
+ * Convert column number to letter(s) (1=A, 2=B, ..., 26=Z, 27=AA, etc.)
+ */
+function numberToColumn(num) {
+  let col = '';
+  while (num > 0) {
+    const mod = (num - 1) % 26;
+    col = String.fromCharCode(65 + mod) + col;
+    num = Math.floor((num - 1) / 26);
+  }
+  return col;
+}
+
+/**
+ * Quick analysis: Get a summary suitable for AI context.
+ * Returns a condensed string for the AI prompt.
+ */
+async function getSheetAnalysisSummary() {
+  const analysis = await captureSheetForAnalysis({ includeGraph: false });
+  
+  if (analysis.status === 'error') {
+    return `Error analyzing sheet: ${analysis.message}`;
+  }
+  
+  if (!analysis.summary || analysis.summary.total_formulas === 0) {
+    return `Sheet "${analysis.sheet_name}" has no formulas.`;
+  }
+  
+  const s = analysis.summary;
+  const funcs = (analysis.functions || []).slice(0, 10).map(f => f.name).join(', ');
+  const complexity = analysis.complexity?.level || 'unknown';
+  
+  return `Sheet "${analysis.sheet_name}": ${s.total_formulas} formulas, ` +
+         `${s.unique_patterns} patterns, complexity: ${complexity}. ` +
+         `Top functions: ${funcs || 'none'}. ` +
+         `Inputs: ${(analysis.critical_cells?.inputs || []).length}, ` +
+         `Outputs: ${(analysis.critical_cells?.outputs || []).length}.`;
+}
+
+// Expose to global scope for use from console or other modules
+window.captureSheetForAnalysis = captureSheetForAnalysis;
+window.getSheetAnalysisSummary = getSheetAnalysisSummary;
