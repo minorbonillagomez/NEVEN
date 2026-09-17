@@ -19,7 +19,7 @@
 
 import re
 import os
-import yaml
+import json
 from collections import defaultdict
 from typing import Dict, List, Tuple, Any, Optional
 
@@ -59,56 +59,110 @@ RANGE_PATTERN = re.compile(
 NAMED_REF_PATTERN = re.compile(r'\b([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[[^\]]+\])?', re.IGNORECASE)
 
 
-# ─── Ontology loader (cached) ─────────────────────────────────────────────────
+# ─── Excel Ontology loader (graph.jsonl) ──────────────────────────────────────
+# NOTE: This loads ONLY the Excel ontology (LIBROS EXCEL).
+# The econometric ontology (LIBROS) is separate and used by other modules.
 
-_ontology_cache: Optional[Dict[str, Any]] = None
-_ONTOLOGY_PATH = r"C:\NEVEN\docs\ontologia\excel-functions\excel-functions-ontology.yaml"
+_excel_ontology_cache: Optional[Dict[str, Dict[str, Any]]] = None
 
+# Paths to try for the EXCEL ontology specifically
+_EXCEL_ONTOLOGY_PATHS = [
+    # Production path
+    r"C:\NEVEN\ontologia\LIBROS EXCEL\memory\ontology\graph.jsonl",
+    # Development path (from NEVEN/ControlPython/startup/ → ONTOLOGIA/LIBROS EXCEL/)
+    # __file__ is sheet_analyzer.py in startup/
+    # Need: startup → ControlPython → NEVEN → NEVEN(root) → ONTOLOGIA
+]
 
-def _load_ontology() -> Dict[str, Any]:
-    """Load Excel functions ontology from YAML. Cached after first load."""
-    global _ontology_cache
-    if _ontology_cache is not None:
-        return _ontology_cache
+def _get_ontology_paths():
+    """Get possible paths to the Excel ontology file."""
+    paths = [r"C:\NEVEN\ontologia\LIBROS EXCEL\memory\ontology\graph.jsonl"]
     
-    # Try production path first, then dev path
-    paths_to_try = [
-        _ONTOLOGY_PATH,
-        os.path.join(os.path.dirname(__file__), "..", "..", "..", "docs", "ontologia", 
-                     "excel-functions", "excel-functions-ontology.yaml"),
-    ]
+    # Calculate development path relative to this file
+    try:
+        this_dir = os.path.dirname(os.path.abspath(__file__))
+        # Go up: startup → ControlPython → NEVEN → project root
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(this_dir)))
+        dev_path = os.path.join(project_root, "ONTOLOGIA", "LIBROS EXCEL", 
+                                "memory", "ontology", "graph.jsonl")
+        paths.append(dev_path)
+    except:
+        pass
     
-    for path in paths_to_try:
+    return paths
+
+
+def _load_excel_ontology() -> Dict[str, Dict[str, Any]]:
+    """
+    Load Excel ontology from graph.jsonl. Cached after first load.
+    
+    This loads ONLY the Excel functions ontology, not the econometric one.
+    
+    Returns:
+        Dict mapping function names (uppercase) to their ontology data:
+        {
+            "VLOOKUP": {"category": "Lookup", "description": "...", ...},
+            "IF": {"category": "Logical", "description": "...", ...},
+        }
+    """
+    global _excel_ontology_cache
+    if _excel_ontology_cache is not None:
+        return _excel_ontology_cache
+    
+    _excel_ontology_cache = {}
+    
+    for path in _get_ontology_paths():
         if os.path.isfile(path):
             try:
                 with open(path, 'r', encoding='utf-8') as f:
-                    _ontology_cache = yaml.safe_load(f)
-                return _ontology_cache
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            entry = json.loads(line)
+                            # Only process ExcelFunction entities
+                            if entry.get("op") == "create":
+                                entity = entry.get("entity", {})
+                                if entity.get("type") == "ExcelFunction":
+                                    props = entity.get("properties", {})
+                                    func_name = props.get("name", "").upper()
+                                    if func_name:
+                                        _excel_ontology_cache[func_name] = {
+                                            "id": entity.get("id"),
+                                            "category": props.get("category", ""),
+                                            "description": props.get("description", ""),
+                                            "syntax": props.get("syntax", ""),
+                                            "best_practices": props.get("best_practices", []),
+                                            "common_errors": props.get("common_errors", []),
+                                        }
+                                # Also extract patterns for reference
+                                elif entity.get("type") == "Pattern":
+                                    props = entity.get("properties", {})
+                                    # Store patterns by functions_used
+                                    for func in props.get("functions_used", []):
+                                        func_upper = func.upper()
+                                        if func_upper in _excel_ontology_cache:
+                                            if "patterns" not in _excel_ontology_cache[func_upper]:
+                                                _excel_ontology_cache[func_upper]["patterns"] = []
+                                            _excel_ontology_cache[func_upper]["patterns"].append({
+                                                "name": props.get("name"),
+                                                "description": props.get("description"),
+                                            })
+                        except json.JSONDecodeError:
+                            continue
+                # Successfully loaded, break
+                break
             except Exception:
                 continue
     
-    # Return empty structure if not found
-    _ontology_cache = {"metadata": {}, "categories": []}
-    return _ontology_cache
+    return _excel_ontology_cache
 
 
 def _get_function_info(func_name: str) -> Optional[Dict[str, Any]]:
-    """Lookup a function in the ontology by name."""
-    ontology = _load_ontology()
-    func_upper = func_name.upper()
-    
-    for category in ontology.get("categories", []):
-        for func in category.get("functions", []):
-            if func.get("name", "").upper() == func_upper:
-                return {
-                    "name": func.get("name"),
-                    "category": category.get("name"),
-                    "description": func.get("description", ""),
-                    "syntax": func.get("syntax", ""),
-                    "complexity": func.get("complexity", "basic"),
-                    "common_errors": func.get("common_errors", []),
-                }
-    return None
+    """Lookup a function in the Excel ontology by name."""
+    ontology = _load_excel_ontology()
+    return ontology.get(func_name.upper())
 
 
 # ─── Core analysis functions ──────────────────────────────────────────────────
@@ -405,6 +459,11 @@ def enrich_with_ontology(function_counts: Dict[str, int]) -> List[Dict[str, Any]
     """
     Enrich function counts with metadata from the Excel ontology.
     
+    Uses the LIBROS EXCEL ontology (graph.jsonl) to add:
+    - category, description, syntax
+    - best_practices, common_errors
+    - related patterns
+    
     Args:
         function_counts: Dict from extract_functions()
     
@@ -417,28 +476,53 @@ def enrich_with_ontology(function_counts: Dict[str, int]) -> List[Dict[str, Any]
         info = _get_function_info(func_name)
         
         if info:
-            enriched.append({
+            entry = {
                 "name": func_name,
                 "count": count,
                 "category": info.get("category", "Unknown"),
                 "description": info.get("description", ""),
-                "complexity": info.get("complexity", "unknown"),
                 "syntax": info.get("syntax", ""),
-                "common_errors": info.get("common_errors", [])[:3],  # Limit errors
-            })
+                "best_practices": info.get("best_practices", [])[:3],  # Limit to 3
+                "common_errors": info.get("common_errors", [])[:3],    # Limit to 3
+            }
+            # Include patterns if available
+            if info.get("patterns"):
+                entry["patterns"] = [p.get("name") for p in info["patterns"][:2]]
+            enriched.append(entry)
         else:
-            # Function not in ontology (might be custom or misspelled)
+            # Function not in ontology (might be custom, newer, or misspelled)
             enriched.append({
                 "name": func_name,
                 "count": count,
-                "category": "Unknown",
-                "description": f"Function '{func_name}' not found in ontology",
-                "complexity": "unknown",
+                "category": _guess_category(func_name),
+                "description": "",
                 "syntax": "",
+                "best_practices": [],
                 "common_errors": [],
             })
     
     return enriched
+
+
+def _guess_category(func_name: str) -> str:
+    """Guess category for functions not in ontology based on name patterns."""
+    fn = func_name.upper()
+    
+    # Common prefixes that indicate category
+    if fn.startswith(("SUM", "COUNT", "AVERAGE", "MAX", "MIN", "LARGE", "SMALL")):
+        return "Math & Stats"
+    if fn.startswith(("VLOOKUP", "HLOOKUP", "XLOOKUP", "INDEX", "MATCH", "LOOKUP")):
+        return "Lookup"
+    if fn.startswith(("IF", "AND", "OR", "NOT", "XOR", "TRUE", "FALSE", "SWITCH")):
+        return "Logical"
+    if fn.startswith(("DATE", "TIME", "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "TODAY", "NOW")):
+        return "Date and Time"
+    if fn.startswith(("TEXT", "CONCAT", "LEFT", "RIGHT", "MID", "LEN", "TRIM", "UPPER", "LOWER")):
+        return "Text"
+    if fn.startswith(("PV", "FV", "PMT", "NPV", "IRR", "RATE", "XNPV", "XIRR")):
+        return "Financial"
+    
+    return "Unknown"
 
 
 def generate_mermaid_graph(dependency_graph: Dict[str, Any], max_edges: int = 50) -> str:
