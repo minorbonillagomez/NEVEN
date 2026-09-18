@@ -129,3 +129,11 @@ ControlJulia/lib/*.exp
 
 # ─── Private evaluations ─────────────────────────────────────
 docs/Evaluaciones/EVALUACION_MIBOGO.md
+
+# ─── PDF Books (intellectual property protection) ─────────────
+# Los libros PDF en ONTOLOGIA/ son material con copyright.
+# Solo se sube el conocimiento extraído (graph.jsonl), no los PDFs originales.
+*.pdf
+*.PDF
+ONTOLOGIA/**/*.pdf
+ONTOLOGIA/**/*.PDF

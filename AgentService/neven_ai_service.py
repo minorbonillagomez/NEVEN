@@ -329,6 +329,91 @@ Leer el PDF y extraer:
 Responde siempre basándote en los datos reales de la hoja del usuario, no en abstracto.
 """
 
+# =============================================================================
+# Chart Generation Mode — System Prompt
+# =============================================================================
+
+_CHART_GENERATION_PROMPT = """Eres un experto en visualización de datos. Tu tarea es generar código HTML autocontenido con gráficos interactivos.
+
+## LIBRERÍAS DISPONIBLES (elige la más apropiada):
+
+| Librería | CDN | Mejor para |
+|:---------|:----|:-----------|
+| **Plotly.js** | https://cdn.plot.ly/plotly-2.27.0.min.js | Científicos, 3D, heatmaps, estadísticos |
+| **Chart.js** | https://cdn.jsdelivr.net/npm/chart.js | Simples, elegantes (barras, líneas, pastel) |
+| **ECharts** | https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js | Dashboards, grandes volúmenes |
+| **ApexCharts** | https://cdn.jsdelivr.net/npm/apexcharts | Modernos, responsivos |
+| **D3.js** | https://d3js.org/d3.v7.min.js | Personalizados, grafos, diagramas de flujo |
+| **Leaflet** | https://unpkg.com/leaflet@1.9.4/dist/leaflet.js | Mapas geográficos (incluir CSS) |
+| **Vega-Lite** | https://cdn.jsdelivr.net/npm/vega-lite@5 | Declarativo, gramática visual |
+
+## REGLAS DE SELECCIÓN INTELIGENTE:
+
+1. **Mapas geográficos** (lat/lon, ubicaciones) → Leaflet
+2. **Grafos, redes, Sankey** → D3.js
+3. **3D, superficies, scatter3d** → Plotly
+4. **Heatmaps, boxplots, científicos** → Plotly
+5. **Gráficos simples** (barras, líneas, pastel, <1000 puntos) → Chart.js
+6. **Datos grandes** (>5000 puntos) → ECharts
+7. **Dashboards multi-gráfico** → ECharts
+8. **Default** (balance features/simplicidad) → ApexCharts
+
+## REGLAS OBLIGATORIAS DE GENERACIÓN:
+
+1. Genera HTML COMPLETO (<!DOCTYPE html> hasta </html>)
+2. Incluye el CDN correcto en <script src="...">
+3. Datos EMBEBIDOS en el código (const data = [...])
+4. INTERACTIVO (hover, tooltips, zoom si aplica)
+5. Incluye título descriptivo y leyenda
+6. Colores profesionales y accesibles
+7. Contenedor: width: 100%; height: 100vh
+8. NO incluyas explicaciones, SOLO el HTML
+9. Para Leaflet, incluir también el CSS: https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
+
+## DATOS DEL USUARIO:
+
+Rango: {range_address}
+Headers: {headers}
+Filas: {row_count}
+Columnas: {col_count}
+
+Datos (JSON):
+```json
+{data_json}
+```
+
+## SOLICITUD DEL USUARIO:
+
+{user_prompt}
+
+## RESPUESTA:
+
+Genera SOLO el código HTML completo, sin explicaciones antes ni después:
+"""
+
+_CHART_KEYWORDS = {
+    "line": r"línea|linea|line|tendencia|serie|temporal",
+    "bar": r"barra|bar|columna|column",
+    "pie": r"pastel|pie|torta|circular|proporción",
+    "scatter": r"dispersión|scatter|puntos|correlación",
+    "heatmap": r"calor|heat|matriz",
+    "map": r"mapa|map|ubicación|geográfico|coordenadas|latitud|longitud",
+    "histogram": r"histograma|distribución|frecuencia",
+    "boxplot": r"caja|box|bigotes|whisker|outlier",
+    "network": r"red|network|grafo|nodos|conexiones",
+    "sankey": r"flujo|sankey|flow",
+    "treemap": r"árbol|treemap|jerárquico",
+    "radar": r"radar|araña|spider",
+    "funnel": r"embudo|funnel|conversión",
+    "gauge": r"medidor|gauge|velocímetro",
+    "surface": r"superficie|3d|tridimensional",
+    "area": r"área|area|apilado|stacked",
+    "bubble": r"burbuja|bubble",
+    "candlestick": r"vela|candlestick|ohlc|bolsa",
+}
+
+_CHART_GENERIC_PATTERN = r"gráfico|grafico|gráfica|grafica|chart|visualiza|dibuja|muestra|plot|representa"
+
 
 def _build_excel_consultant_prompt(context: str) -> str:
     """
@@ -336,6 +421,55 @@ def _build_excel_consultant_prompt(context: str) -> str:
     Recibe el análisis estructural de la hoja de cálculo.
     """
     return _EXCEL_CONSULTANT_PROMPT.format(context=context)
+
+
+def _build_chart_prompt(
+    range_address: str,
+    headers: list[str] | None,
+    data: list[list],
+    user_prompt: str
+) -> str:
+    """
+    Construye el system prompt para generación de gráficos IA.
+    """
+    import re
+    
+    headers_str = ", ".join(headers) if headers else "(sin headers)"
+    row_count = len(data)
+    col_count = len(data[0]) if data else 0
+    
+    # Limitar datos a 500 filas para el prompt (evitar tokens excesivos)
+    data_sample = data[:500] if len(data) > 500 else data
+    data_json = json.dumps(data_sample, ensure_ascii=False, indent=2)
+    
+    return _CHART_GENERATION_PROMPT.format(
+        range_address=range_address,
+        headers=headers_str,
+        row_count=row_count,
+        col_count=col_count,
+        data_json=data_json,
+        user_prompt=user_prompt
+    )
+
+
+def _detect_chart_intent(prompt: str) -> str | None:
+    """
+    Detecta si el prompt del usuario solicita un gráfico.
+    Retorna el tipo de gráfico detectado o None si no es una solicitud de gráfico.
+    """
+    import re
+    
+    # Primero verificar si es una solicitud de gráfico en general
+    if not re.search(_CHART_GENERIC_PATTERN, prompt, re.IGNORECASE):
+        return None
+    
+    # Detectar tipo específico
+    for chart_type, pattern in _CHART_KEYWORDS.items():
+        if re.search(pattern, prompt, re.IGNORECASE):
+            return chart_type
+    
+    # Es una solicitud de gráfico pero sin tipo específico
+    return "auto"
 
 
 def _build_system_prompt(context: str) -> str:
@@ -698,6 +832,124 @@ async def ai_chat(request: Request) -> JSONResponse:
         "tokens_used": result["tokens_used"],
         "session_id":  session_id,
     })
+
+
+# =============================================================================
+# POST /api/ai/chart  —  generación de gráficos IA
+# =============================================================================
+
+@app.post("/api/ai/chart")
+async def ai_chart(request: Request) -> JSONResponse:
+    """
+    Genera un gráfico HTML interactivo basado en datos y prompt del usuario.
+
+    Body JSON:
+        session_id     : str (opcional)
+        range_address  : str — dirección del rango (ej: "Sheet1!A1:D50")
+        headers        : [str] | null — nombres de columnas
+        data           : [[...]] — datos en formato row-major
+        prompt         : str — solicitud del usuario (ej: "gráfico de barras")
+
+    Returns:
+        {status, html, chart_type, library, model, tokens_used}
+    """
+    ai = _config.get("AI", {})
+    if not ai.get("enabled", False):
+        raise HTTPException(503, "AI.enabled=false en neven-config.json")
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Body JSON inválido")
+
+    session_id    = (body.get("session_id") or
+                     request.headers.get("X-Session-Id") or
+                     "default")
+    range_address = body.get("range_address", "Desconocido")
+    headers       = body.get("headers")  # puede ser None
+    data          = body.get("data", [])
+    user_prompt   = body.get("prompt", "").strip()
+
+    _touch_session(session_id)
+
+    if not data:
+        raise HTTPException(400, "El campo 'data' no puede estar vacío")
+    if not user_prompt:
+        raise HTTPException(400, "El campo 'prompt' no puede estar vacío")
+
+    # Detectar tipo de gráfico solicitado
+    chart_type = _detect_chart_intent(user_prompt)
+    if chart_type is None:
+        # No parece una solicitud de gráfico, pero igual intentamos
+        chart_type = "auto"
+
+    # Construir prompt especializado para gráficos
+    system_content = _build_chart_prompt(
+        range_address=range_address,
+        headers=headers,
+        data=data,
+        user_prompt=user_prompt
+    )
+
+    messages = [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": user_prompt}
+    ]
+
+    # Llamar al LLM
+    try:
+        result = _call_llm(messages, ai)
+    except RuntimeError as exc:
+        log.error(f"[{session_id}] Chart LLM error: {exc}")
+        raise HTTPException(502, str(exc))
+
+    # Extraer HTML de la respuesta
+    reply = result["reply"]
+    html_content = reply.strip()
+
+    # Si el LLM envolvió el HTML en bloques de código, extraerlo
+    if html_content.startswith("```html"):
+        html_content = html_content[7:]
+    if html_content.startswith("```"):
+        html_content = html_content[3:]
+    if html_content.endswith("```"):
+        html_content = html_content[:-3]
+    html_content = html_content.strip()
+
+    # Detectar qué librería usó el LLM
+    library = "unknown"
+    if "plotly" in html_content.lower():
+        library = "Plotly"
+    elif "chart.js" in html_content.lower() or "new Chart(" in html_content:
+        library = "Chart.js"
+    elif "echarts" in html_content.lower():
+        library = "ECharts"
+    elif "apexcharts" in html_content.lower():
+        library = "ApexCharts"
+    elif "d3.js" in html_content.lower() or "d3.v7" in html_content:
+        library = "D3.js"
+    elif "leaflet" in html_content.lower():
+        library = "Leaflet"
+    elif "vega" in html_content.lower():
+        library = "Vega-Lite"
+    elif "three.js" in html_content.lower():
+        library = "Three.js"
+
+    log.info(
+        f"[{session_id}] chart ok — {chart_type} / {library} — "
+        f"{result['tokens_used']} tokens ({result['model']})"
+    )
+
+    return JSONResponse({
+        "status":      "ok",
+        "html":        html_content,
+        "chart_type":  chart_type,
+        "library":     library,
+        "model":       result["model"],
+        "tokens_used": result["tokens_used"],
+        "session_id":  session_id,
+    })
+
 
 # =============================================================================
 # POST /api/ai/context  —  recibir contexto de Excel

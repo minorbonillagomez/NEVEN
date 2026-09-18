@@ -1649,3 +1649,481 @@ function hideExcelConsultantChips() {
 window.showExcelConsultantChips = showExcelConsultantChips;
 window.hideExcelConsultantChips = hideExcelConsultantChips;
 window.sendExcelConsultantPrompt = sendExcelConsultantPrompt;
+
+// =============================================================================
+// AI Chart Generation System — Multi-Library Support
+// =============================================================================
+
+/**
+ * Keywords para detectar tipo de gráfico solicitado
+ */
+const CHART_KEYWORDS = {
+  line: /línea|linea|line|tendencia|serie|temporal/i,
+  bar: /barra|bar|columna|column/i,
+  pie: /pastel|pie|torta|circular|proporción/i,
+  scatter: /dispersión|scatter|puntos|correlación/i,
+  heatmap: /calor|heat|matriz/i,
+  map: /mapa|map|ubicación|geográfico|coordenadas|latitud|longitud/i,
+  histogram: /histograma|distribución|frecuencia/i,
+  boxplot: /caja|box|bigotes|whisker|outlier/i,
+  network: /red|network|grafo|nodos|conexiones/i,
+  sankey: /flujo|sankey|flow/i,
+  treemap: /árbol|treemap|jerárquico/i,
+  radar: /radar|araña|spider/i,
+  funnel: /embudo|funnel|conversión/i,
+  gauge: /medidor|gauge|velocímetro/i,
+  surface: /superficie|3d|tridimensional/i,
+  area: /área|area|apilado|stacked/i,
+  bubble: /burbuja|bubble/i,
+  candlestick: /vela|candlestick|ohlc|bolsa/i
+};
+
+const CHART_GENERIC_PATTERN = /gráfico|grafico|gráfica|grafica|chart|visualiza|dibuja|muestra|plot|representa/i;
+
+/**
+ * Captura el rango seleccionado en Excel para generación de gráficos.
+ * Incluye detección automática de headers y tipado de datos.
+ * 
+ * @returns {Promise<{address, headers, data, columns, rows, types}>}
+ */
+async function captureSelectedRangeForChart() {
+  return await Excel.run(async (context) => {
+    const selection = context.workbook.getSelectedRange();
+    selection.load(['values', 'address', 'columnCount', 'rowCount']);
+    await context.sync();
+
+    const values = selection.values;
+    if (!values || values.length === 0) {
+      return { error: 'No hay datos seleccionados' };
+    }
+
+    // Detectar si primera fila son headers
+    const hasHeaders = _detectHeaders(values[0]);
+    const headers = hasHeaders ? values[0] : null;
+    const data = hasHeaders ? values.slice(1) : values;
+
+    // Detectar tipos de columnas
+    const types = _detectColumnTypes(data, headers ? headers.length : values[0].length);
+
+    return {
+      address: selection.address,
+      headers: headers,
+      data: data,
+      columns: selection.columnCount,
+      rows: data.length,
+      types: types
+    };
+  });
+}
+
+/**
+ * Detecta si la primera fila contiene headers (más strings que números)
+ */
+function _detectHeaders(firstRow) {
+  if (!firstRow || firstRow.length === 0) return false;
+  const strings = firstRow.filter(v => typeof v === 'string' && isNaN(parseFloat(v))).length;
+  return strings > firstRow.length / 2;
+}
+
+/**
+ * Detecta el tipo de cada columna: 'numeric', 'text', 'date', 'geo'
+ */
+function _detectColumnTypes(data, numCols) {
+  const types = [];
+  for (let c = 0; c < numCols; c++) {
+    const colValues = data.map(row => row[c]).filter(v => v !== null && v !== '');
+    types.push(_inferColumnType(colValues));
+  }
+  return types;
+}
+
+/**
+ * Infiere el tipo de una columna basándose en sus valores
+ */
+function _inferColumnType(values) {
+  if (values.length === 0) return 'text';
+
+  let numericCount = 0;
+  let dateCount = 0;
+  let geoCount = 0;
+
+  for (const v of values.slice(0, 50)) { // Sample primeros 50
+    if (typeof v === 'number') {
+      numericCount++;
+      // Detectar coordenadas geográficas
+      if (v >= -180 && v <= 180) geoCount++;
+    } else if (typeof v === 'string') {
+      // Intentar parsear como fecha
+      const d = new Date(v);
+      if (!isNaN(d.getTime()) && v.match(/\d{4}|\d{1,2}\/\d{1,2}/)) {
+        dateCount++;
+      }
+    }
+  }
+
+  const total = values.slice(0, 50).length;
+  if (numericCount / total > 0.8) {
+    // Si parece coordenada geográfica
+    if (geoCount / numericCount > 0.8) return 'geo';
+    return 'numeric';
+  }
+  if (dateCount / total > 0.5) return 'date';
+  return 'text';
+}
+
+/**
+ * Detecta si el prompt del usuario solicita un gráfico.
+ * @param {string} prompt - Texto del usuario
+ * @returns {string|null} - Tipo de gráfico o null si no es solicitud de gráfico
+ */
+function detectChartIntent(prompt) {
+  if (!CHART_GENERIC_PATTERN.test(prompt)) {
+    return null;
+  }
+
+  for (const [type, regex] of Object.entries(CHART_KEYWORDS)) {
+    if (regex.test(prompt)) {
+      return type;
+    }
+  }
+
+  return 'auto'; // Es solicitud de gráfico pero sin tipo específico
+}
+
+/**
+ * Genera un gráfico usando el endpoint de IA.
+ * @param {string} prompt - Solicitud del usuario
+ * @param {object} rangeData - Datos capturados con captureSelectedRangeForChart()
+ * @returns {Promise<{html, chart_type, library}>}
+ */
+async function generateChart(prompt, rangeData) {
+  if (!rangeData || rangeData.error) {
+    throw new Error(rangeData?.error || 'No hay datos para graficar');
+  }
+
+  const response = await fetch(API_BASE + '/api/ai/chart', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      range_address: rangeData.address,
+      headers: rangeData.headers,
+      data: rangeData.data,
+      prompt: prompt
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Error ${response.status}: ${errorText}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Renderiza un gráfico HTML en el contenedor de preview.
+ * @param {string} htmlContent - HTML completo del gráfico
+ * @param {string} title - Título para mostrar
+ * @param {string} library - Nombre de la librería usada
+ */
+function renderChartInPreview(htmlContent, title = 'Gráfico generado', library = '') {
+  // Buscar o crear contenedor de preview
+  let previewContainer = document.getElementById('chart-preview-container');
+  if (!previewContainer) {
+    previewContainer = document.createElement('div');
+    previewContainer.id = 'chart-preview-container';
+    previewContainer.style.cssText = `
+      margin: 10px 0;
+      border: 1px solid #444;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #1e1e1e;
+    `;
+    // Insertar en el área de respuesta del chat
+    const chatArea = document.getElementById('ai-response-area') || 
+                     document.getElementById('ai-chat-messages');
+    if (chatArea) {
+      chatArea.appendChild(previewContainer);
+    }
+  }
+
+  // Header con título y librería
+  const header = document.createElement('div');
+  header.style.cssText = `
+    padding: 8px 12px;
+    background: #2d2d2d;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  `;
+  header.innerHTML = `
+    <span style="font-weight: 500; color: #e0e0e0;">${title}</span>
+    <span style="font-size: 11px; color: #888;">${library}</span>
+  `;
+
+  // Iframe sandboxed para el gráfico
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = `
+    width: 100%;
+    height: 400px;
+    border: none;
+    background: white;
+  `;
+  iframe.sandbox = 'allow-scripts allow-same-origin';
+
+  // Botones de acción
+  const actions = document.createElement('div');
+  actions.style.cssText = `
+    padding: 8px 12px;
+    background: #2d2d2d;
+    border-top: 1px solid #444;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  `;
+
+  // Botón: Enviar a Slide
+  const btnSlide = _createChartActionButton('📊 Enviar a Slide', () => {
+    sendChartToPresentation(htmlContent, title);
+  });
+
+  // Botón: Guardar PNG
+  const btnPng = _createChartActionButton('💾 Guardar PNG', () => {
+    _exportChartAsPng(iframe, title);
+  });
+
+  // Botón: Copiar HTML
+  const btnCopy = _createChartActionButton('📋 Copiar HTML', () => {
+    navigator.clipboard.writeText(htmlContent).then(() => {
+      showToast('HTML copiado al portapapeles');
+    });
+  });
+
+  // Botón: Expandir
+  const btnExpand = _createChartActionButton('🔍 Expandir', () => {
+    _openChartInNewWindow(htmlContent, title);
+  });
+
+  actions.appendChild(btnSlide);
+  actions.appendChild(btnPng);
+  actions.appendChild(btnCopy);
+  actions.appendChild(btnExpand);
+
+  // Limpiar y armar contenedor
+  previewContainer.innerHTML = '';
+  previewContainer.appendChild(header);
+  previewContainer.appendChild(iframe);
+  previewContainer.appendChild(actions);
+
+  // Escribir HTML en el iframe
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(htmlContent);
+  doc.close();
+
+  // Guardar referencia para uso posterior
+  previewContainer._chartHtml = htmlContent;
+  previewContainer._chartTitle = title;
+
+  // Scroll al gráfico
+  previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/**
+ * Crea un botón de acción para el gráfico
+ */
+function _createChartActionButton(text, onClick) {
+  const btn = document.createElement('button');
+  btn.textContent = text;
+  btn.style.cssText = `
+    background: rgba(100, 180, 255, 0.1);
+    border: 1px solid rgba(100, 180, 255, 0.3);
+    color: #6af;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  `;
+  btn.onmouseover = function() {
+    this.style.background = 'rgba(100, 180, 255, 0.2)';
+    this.style.borderColor = 'rgba(100, 180, 255, 0.5)';
+  };
+  btn.onmouseout = function() {
+    this.style.background = 'rgba(100, 180, 255, 0.1)';
+    this.style.borderColor = 'rgba(100, 180, 255, 0.3)';
+  };
+  btn.onclick = onClick;
+  return btn;
+}
+
+/**
+ * Exporta el gráfico como PNG usando html2canvas (si disponible)
+ */
+async function _exportChartAsPng(iframe, title) {
+  try {
+    // Intentar usar html2canvas si está disponible
+    if (typeof html2canvas === 'function') {
+      const canvas = await html2canvas(iframe.contentDocument.body);
+      const link = document.createElement('a');
+      link.download = `${title.replace(/[^a-z0-9]/gi, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } else {
+      // Fallback: abrir en nueva ventana para captura manual
+      showToast('Abre el gráfico y usa captura de pantalla');
+      _openChartInNewWindow(iframe.srcdoc || iframe.contentDocument.documentElement.outerHTML, title);
+    }
+  } catch (e) {
+    console.error('[NEVEN] Error exportando PNG:', e);
+    showToast('Error al exportar PNG');
+  }
+}
+
+/**
+ * Abre el gráfico en una nueva ventana
+ */
+function _openChartInNewWindow(htmlContent, title) {
+  const win = window.open('', '_blank', 'width=1000,height=700');
+  if (win) {
+    win.document.write(htmlContent);
+    win.document.title = title;
+    win.document.close();
+  }
+}
+
+/**
+ * Envía el gráfico al Creador de Presentaciones (Impress.js)
+ * @param {string} htmlContent - HTML del gráfico
+ * @param {string} title - Título del slide
+ */
+function sendChartToPresentation(htmlContent, title = 'Gráfico') {
+  // Crear objeto de slide
+  const slideObject = {
+    type: 'chart',
+    content: htmlContent,
+    title: title,
+    timestamp: new Date().toISOString()
+  };
+
+  // Intentar enviar al tab de Presentaciones vía postMessage
+  window.postMessage({
+    action: 'addSlideObject',
+    payload: slideObject
+  }, '*');
+
+  // Si existe la función global del creador de presentaciones, usarla
+  if (typeof window.addChartToPresentation === 'function') {
+    window.addChartToPresentation(slideObject);
+  }
+
+  // Guardar en localStorage para persistencia
+  try {
+    const pending = JSON.parse(localStorage.getItem('neven_pending_slides') || '[]');
+    pending.push(slideObject);
+    localStorage.setItem('neven_pending_slides', JSON.stringify(pending));
+  } catch (e) {
+    console.warn('[NEVEN] No se pudo guardar en localStorage:', e);
+  }
+
+  // Cambiar a la pestaña de Presentaciones si existe
+  const presTab = document.querySelector('[data-tab="presentations"]');
+  if (presTab) {
+    presTab.click();
+  }
+
+  showToast('📊 Gráfico enviado a la presentación');
+}
+
+/**
+ * Procesa un mensaje del chat para detectar y manejar solicitudes de gráficos.
+ * Llama automáticamente cuando se detecta intención de gráfico.
+ * 
+ * @param {string} userPrompt - Mensaje del usuario
+ * @returns {Promise<boolean>} - true si se procesó como gráfico, false si no
+ */
+async function processChartRequest(userPrompt) {
+  const chartIntent = detectChartIntent(userPrompt);
+  
+  if (!chartIntent) {
+    return false; // No es una solicitud de gráfico
+  }
+
+  try {
+    // Mostrar indicador de carga
+    showToast('📊 Capturando datos y generando gráfico...');
+
+    // Capturar datos seleccionados
+    const rangeData = await captureSelectedRangeForChart();
+    
+    if (rangeData.error) {
+      showToast('⚠️ ' + rangeData.error);
+      return false;
+    }
+
+    if (!rangeData.data || rangeData.data.length === 0) {
+      showToast('⚠️ Selecciona un rango de datos primero');
+      return false;
+    }
+
+    // Generar gráfico
+    const result = await generateChart(userPrompt, rangeData);
+
+    if (result.status === 'ok' && result.html) {
+      // Renderizar gráfico
+      const title = `Gráfico ${result.chart_type || 'generado'}`;
+      renderChartInPreview(result.html, title, result.library);
+      
+      showToast(`✅ Gráfico generado con ${result.library}`);
+      return true;
+    } else {
+      throw new Error(result.error || 'Error desconocido');
+    }
+
+  } catch (error) {
+    console.error('[NEVEN] Error generando gráfico:', error);
+    showToast('❌ Error: ' + error.message);
+    return false;
+  }
+}
+
+/**
+ * Muestra indicador de rango seleccionado para gráficos
+ */
+function showChartRangeIndicator(rangeData) {
+  let indicator = document.getElementById('chart-range-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'chart-range-indicator';
+    indicator.style.cssText = `
+      padding: 8px 12px;
+      background: rgba(100, 200, 100, 0.1);
+      border: 1px solid rgba(100, 200, 100, 0.3);
+      border-radius: 6px;
+      margin: 8px 0;
+      font-size: 12px;
+      color: #8c8;
+    `;
+    const chatInput = document.getElementById('ai-input-area');
+    if (chatInput) {
+      chatInput.parentNode.insertBefore(indicator, chatInput);
+    }
+  }
+
+  const headers = rangeData.headers ? rangeData.headers.join(', ') : '(sin headers)';
+  indicator.innerHTML = `
+    📊 <strong>Rango seleccionado:</strong> ${rangeData.address} 
+    (${rangeData.rows} filas × ${rangeData.columns} columnas)<br>
+    <small>Headers: ${headers}</small>
+  `;
+}
+
+// Exponer funciones al scope global
+window.captureSelectedRangeForChart = captureSelectedRangeForChart;
+window.detectChartIntent = detectChartIntent;
+window.generateChart = generateChart;
+window.renderChartInPreview = renderChartInPreview;
+window.sendChartToPresentation = sendChartToPresentation;
+window.processChartRequest = processChartRequest;
+window.showChartRangeIndicator = showChartRangeIndicator;

@@ -2261,10 +2261,175 @@ function _aiSend() {
   var text  = (input.value || '').trim();
   if (!text) return;
 
+  // Detectar si es una solicitud de gráfico
+  if (typeof detectChartIntent === 'function' && detectChartIntent(text)) {
+    _aiAddMessage('user', text);
+    input.value = '';
+    input.style.height = '';
+    _aiHandleChartRequest(text);
+    return;
+  }
+
   _aiAddMessage('user', text);
   input.value = '';
   input.style.height = '';
   _aiCallLLM();
+}
+
+/**
+ * Maneja solicitudes de gráficos usando el sistema de IA multi-librería
+ */
+async function _aiHandleChartRequest(prompt) {
+  var spinner   = document.getElementById('ai-spinner');
+  var sendBtn   = document.getElementById('ai-send-btn');
+  var tokenInfo = document.getElementById('ai-token-info');
+  var history   = document.getElementById('ai-chat-history');
+
+  spinner.style.display = '';
+  sendBtn.disabled = true;
+
+  try {
+    // Capturar datos seleccionados en Excel
+    var rangeData = await captureSelectedRangeForChart();
+    
+    if (rangeData.error || !rangeData.data || rangeData.data.length === 0) {
+      _aiAddMessage('assistant', 
+        '📊 Para generar un gráfico, primero **selecciona un rango de datos** en Excel.\n\n' +
+        'Ejemplo: Selecciona A1:D50 con tus datos y vuelve a pedirme el gráfico.'
+      );
+      spinner.style.display = 'none';
+      sendBtn.disabled = false;
+      return;
+    }
+
+    // Mostrar indicador de rango
+    _aiAddMessage('assistant', 
+      '📊 Capturado: **' + rangeData.address + '** (' + 
+      rangeData.rows + ' filas × ' + rangeData.columns + ' columnas)\n\n' +
+      '_Generando gráfico..._'
+    );
+
+    // Llamar al endpoint de gráficos
+    var response = await fetch(API + '/api/ai/chart', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        range_address: rangeData.address,
+        headers: rangeData.headers,
+        data: rangeData.data,
+        prompt: prompt
+      })
+    });
+
+    var result = await response.json();
+
+    spinner.style.display = 'none';
+    sendBtn.disabled = false;
+
+    if (result.status !== 'ok' || !result.html) {
+      _aiAddMessage('error', result.message || 'Error generando el gráfico');
+      return;
+    }
+
+    // Actualizar tokens
+    _aiState.tokenAccum += (result.tokens_used || 0);
+    if (_aiState.tokenAccum > 0) {
+      tokenInfo.textContent = _aiState.tokenAccum.toLocaleString() + ' tokens usados';
+    }
+
+    // Renderizar el gráfico en el chat
+    _aiRenderChartInChat(result.html, result.chart_type, result.library);
+
+  } catch (err) {
+    spinner.style.display = 'none';
+    sendBtn.disabled = false;
+    _aiAddMessage('error', 'Error: ' + err.message);
+  }
+}
+
+/**
+ * Renderiza un gráfico HTML directamente en el historial del chat
+ */
+function _aiRenderChartInChat(htmlContent, chartType, library) {
+  var history = document.getElementById('ai-chat-history');
+  
+  // Contenedor del gráfico
+  var container = document.createElement('div');
+  container.style.cssText = [
+    'max-width:100%;margin:8px 0;border-radius:12px;overflow:hidden;',
+    'background:var(--bg-secondary);border:1px solid var(--border);',
+    'align-self:flex-start;'
+  ].join('');
+
+  // Header
+  var header = document.createElement('div');
+  header.style.cssText = 'padding:8px 12px;background:var(--bg-tertiary);display:flex;justify-content:space-between;align-items:center;';
+  header.innerHTML = '<span style="font-weight:500;font-size:12px;">📊 Gráfico ' + (chartType || '') + '</span>' +
+                     '<span style="font-size:10px;color:var(--text-secondary);">' + (library || '') + '</span>';
+
+  // Iframe para el gráfico
+  var iframe = document.createElement('iframe');
+  iframe.style.cssText = 'width:100%;height:350px;border:none;background:white;';
+  iframe.sandbox = 'allow-scripts allow-same-origin';
+
+  // Botones de acción
+  var actions = document.createElement('div');
+  actions.style.cssText = 'padding:8px 12px;background:var(--bg-tertiary);display:flex;gap:8px;flex-wrap:wrap;';
+
+  // Botón: Enviar a Slide
+  var btnSlide = document.createElement('button');
+  btnSlide.className = 'btn btn-secondary';
+  btnSlide.style.cssText = 'font-size:11px;padding:4px 10px;';
+  btnSlide.textContent = '📊 Enviar a Slide';
+  btnSlide.onclick = function() {
+    if (typeof sendChartToPresentation === 'function') {
+      sendChartToPresentation(htmlContent, 'Gráfico ' + (chartType || 'IA'));
+    }
+  };
+
+  // Botón: Copiar HTML
+  var btnCopy = document.createElement('button');
+  btnCopy.className = 'btn btn-secondary';
+  btnCopy.style.cssText = 'font-size:11px;padding:4px 10px;';
+  btnCopy.textContent = '📋 Copiar HTML';
+  btnCopy.onclick = function() {
+    navigator.clipboard.writeText(htmlContent).then(function() {
+      showToast('HTML copiado');
+    });
+  };
+
+  // Botón: Expandir
+  var btnExpand = document.createElement('button');
+  btnExpand.className = 'btn btn-secondary';
+  btnExpand.style.cssText = 'font-size:11px;padding:4px 10px;';
+  btnExpand.textContent = '🔍 Expandir';
+  btnExpand.onclick = function() {
+    var win = window.open('', '_blank', 'width=1000,height=700');
+    if (win) {
+      win.document.write(htmlContent);
+      win.document.title = 'Gráfico NEVEN';
+      win.document.close();
+    }
+  };
+
+  actions.appendChild(btnSlide);
+  actions.appendChild(btnCopy);
+  actions.appendChild(btnExpand);
+
+  // Ensamblar
+  container.appendChild(header);
+  container.appendChild(iframe);
+  container.appendChild(actions);
+  history.appendChild(container);
+
+  // Escribir HTML en el iframe
+  var doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(htmlContent);
+  doc.close();
+
+  // Scroll al gráfico
+  history.scrollTop = history.scrollHeight;
 }
 
 function _aiSendPrompt(promptId) {
