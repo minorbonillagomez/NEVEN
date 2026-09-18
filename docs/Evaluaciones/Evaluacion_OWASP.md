@@ -341,3 +341,94 @@ Para la tesis, esta evaluacion demuestra que el proyecto fue desarrollado con se
 *Evaluacion basada en OWASP Top 10 (2021) adaptada para aplicaciones de escritorio.*
 *NEVEN v2.0 — Universidad de Costa Rica*
 *5 de mayo de 2026*
+
+
+---
+
+## ACTUALIZACIÓN — Setiembre de 2026 (NEVEN v2.5)
+
+### Nuevos componentes a evaluar
+
+Con la adición del Sistema de Ontologías y el Excel Consultant, hay nuevas superficies de seguridad que considerar.
+
+### Sistema de Ontologías — Evaluación de seguridad
+
+| Aspecto | Riesgo | Mitigación | Calificación |
+|:---|:---|:---|:---:|
+| **Ubicación de archivos** | Bajo | Ontologías en `ONTOLOGIA/` fuera del repo — no ejecutables | 9/10 |
+| **Formato JSONL** | Bajo | Append-only, solo datos estructurados — no código ejecutable | 10/10 |
+| **Procesamiento de PDFs** | Medio | Solo extracción de texto, parafraseo — no ejecución de contenido embebido | 8/10 |
+| **Expansión dinámica** | Medio | Solo el agente puede escribir a graph.jsonl — no input directo del usuario | 8/10 |
+
+**Análisis:**
+- Las ontologías son archivos de datos (JSONL), no código ejecutable
+- El formato append-only previene modificación accidental de entradas previas
+- El procesamiento de PDFs es read-only: extrae texto, no ejecuta macros ni scripts embebidos
+- El agente actúa como intermediario de confianza entre el usuario y la ontología
+
+**Riesgo residual:** Un PDF malicioso podría contener texto diseñado para confundir al agente. Mitigación: el agente parafrasea contenido, no lo copia verbatim.
+
+### Excel Consultant — Evaluación de seguridad
+
+| Aspecto | Riesgo | Mitigación | Calificación |
+|:---|:---|:---|:---:|
+| **Acceso a hojas** | Bajo | Solo lectura de metadatos de la hoja activa | 9/10 |
+| **Creación de funciones** | Medio | Funciones creadas pasan por sandbox de NEVEN | 9/10 |
+| **Prompt injection** | Medio | El Excel Consultant tiene prompt fijo, no acepta instrucciones arbitrarias | 8/10 |
+
+**Análisis:**
+- El Excel Consultant lee la estructura de la hoja (fórmulas, rangos, tipos) pero no ejecuta código
+- Cuando crea funciones R/Julia/Python, éstas pasan por el mismo sandbox de 5 mecanismos
+- El prompt del Consultant está controlado en el código, no es configurable por el usuario
+
+**Riesgo residual:** Una hoja maliciosa podría contener contenido en celdas diseñado para prompt injection. Mitigación: el prompt del Consultant tiene instrucciones fijas que priorizan la estructura sobre el contenido.
+
+### Actualización de calificaciones
+
+| Categoría OWASP | Mayo 2026 | Setiembre 2026 | Cambio |
+|:---|:---:|:---:|:---|
+| A01: Broken Access Control | 9/10 | 9/10 | Sin cambio — ontologías no requieren control de acceso |
+| A02: Cryptographic Failures | 7/10 | 7/10 | Sin cambio |
+| A03: Injection | 9.5/10 | **9.5/10** | Sin cambio — JSONL no es ejecutable |
+| A04: Insecure Design | 9/10 | **9.2/10** | +0.2: Ontologías append-only es diseño seguro |
+| A05: Security Misconfiguration | 8/10 | 8/10 | Sin cambio |
+| A06: Vulnerable Components | 9.5/10 | 9.5/10 | Sin cambio |
+| A07: Auth Failures | 8/10 | 8/10 | Sin cambio |
+| A08: Data Integrity Failures | 8/10 | **8.2/10** | +0.2: JSONL append-only previene corrupción |
+| A09: Logging & Monitoring | 9/10 | 9/10 | Sin cambio |
+| A10: SSRF | 8/10 | 8/10 | Sin cambio |
+
+**Calificación global de seguridad actualizada: 8.9/10** (↑ de 8.8)
+
+### Nuevos riesgos identificados
+
+| Riesgo | Probabilidad | Impacto | Mitigación actual |
+|:---|:---|:---|:---|
+| PDF malicioso con payload en texto | Baja | Bajo | Parafraseo, no copia directa |
+| Prompt injection en hojas de Excel | Media | Bajo | Prompt fijo, estructura sobre contenido |
+| Corrupción de graph.jsonl | Muy baja | Medio | Append-only, validación JSON por línea |
+
+### Nuevas recomendaciones
+
+| Prioridad | Recomendación | Impacto | Esfuerzo |
+|:---|:---|:---|:---|
+| Baja | Validar JSON de cada línea al cargar ontología | Detecta corrupción temprano | Bajo (1 hora) |
+| Baja | Limitar tamaño de PDFs procesables | Previene DoS por PDF gigante | Bajo (30 min) |
+| Baja | Sanitizar contenido de celdas antes de enviar al Consultant | Reduce riesgo de prompt injection | Medio (4 horas) |
+
+---
+
+## Conclusión actualizada
+
+La adición de ontologías y Excel Consultant **no introduce nuevos riesgos críticos** porque:
+1. Las ontologías son datos estructurados (JSONL), no código ejecutable
+2. El formato append-only previene modificación maliciosa de entradas previas
+3. Las funciones creadas por el Consultant pasan por el sandbox existente
+4. El procesamiento de PDFs es read-only, con parafraseo obligatorio
+
+La calificación global sube ligeramente de 8.8/10 a **8.9/10** por las mejoras en integridad de datos (append-only) y diseño seguro de las ontologías.
+
+---
+
+*Actualización de evaluación: Setiembre de 2026*
+*NEVEN v2.5 — Sistema de Ontologías y Excel Consultant*
