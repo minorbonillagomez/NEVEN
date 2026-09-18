@@ -1,0 +1,116 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEVEN Functions Ontology Schema
+# ═══════════════════════════════════════════════════════════════════════════════
+# Defines entity types for NEVEN's custom functions that extend Excel.
+# These functions bridge Excel with R, Julia, and Python capabilities.
+#
+# Cross-references:
+#   - LIBROS EXCEL: Native Excel functions
+#   - LIBROS: Econometric concepts (theoretical foundation)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # ─── Core NEVEN Functions ───────────────────────────────────────────────────
+  
+  NEVENFunction:
+    description: "Core NEVEN function available in Excel (NEVEN.r, NEVEN.julia, etc.)"
+    required: [name, description, language]
+    optional: [syntax, parameters, returns, example, since_version]
+  
+  RFunction:
+    description: "R function exposed to Excel via NEVEN (R.AD_ACP, R.ARIMA, etc.)"
+    required: [name, description, category]
+    optional: [syntax, parameters, returns, r_package, source_file, example, implements]
+  
+  JuliaFunction:
+    description: "Julia function exposed to Excel via NEVEN"
+    required: [name, description, category]
+    optional: [syntax, parameters, returns, source_file, example, implements]
+  
+  PythonFunction:
+    description: "Python function exposed to Excel via NEVEN"
+    required: [name, description, category]
+    optional: [syntax, parameters, returns, source_file, example, implements]
+  
+  # ─── Supporting Entities ────────────────────────────────────────────────────
+  
+  FunctionCategory:
+    description: "Category grouping related functions (AD=Analysis, RG=Regression, etc.)"
+    required: [code, name, description]
+    optional: [icon]
+  
+  RPackage:
+    description: "R package used by NEVEN functions"
+    required: [name, description]
+    optional: [cran_url, version, license]
+  
+  StudioTemplate:
+    description: "Interactive Studio template for guided analysis"
+    required: [name, description, function_ref]
+    optional: [parameters, outputs, screenshot]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Relations
+# ═══════════════════════════════════════════════════════════════════════════════
+
+relations:
+  # ─── Implementation Relations ───────────────────────────────────────────────
+  
+  implements:
+    description: "Function implements a theoretical concept from econometric ontology"
+    from_types: [RFunction, JuliaFunction, PythonFunction]
+    to_types: [external:Concept, external:Technique]
+    notes: "Cross-ontology reference to LIBROS (econometrics)"
+  
+  uses_package:
+    description: "Function depends on an R package"
+    from_types: [RFunction]
+    to_types: [RPackage]
+  
+  # ─── Organizational Relations ───────────────────────────────────────────────
+  
+  belongs_to:
+    description: "Function belongs to a category"
+    from_types: [RFunction, JuliaFunction, PythonFunction, NEVENFunction]
+    to_types: [FunctionCategory]
+  
+  has_studio:
+    description: "Function has an interactive Studio template"
+    from_types: [RFunction, JuliaFunction]
+    to_types: [StudioTemplate]
+  
+  # ─── Functional Relations ───────────────────────────────────────────────────
+  
+  requires:
+    description: "Function requires another function or capability"
+    from_types: [RFunction, JuliaFunction, PythonFunction, StudioTemplate]
+    to_types: [RFunction, JuliaFunction, PythonFunction, NEVENFunction, RPackage]
+  
+  alternative_to:
+    description: "Function is an alternative to another (e.g., Julia vs R implementation)"
+    from_types: [RFunction, JuliaFunction, PythonFunction]
+    to_types: [RFunction, JuliaFunction, PythonFunction]
+  
+  extends:
+    description: "Function extends Excel's native capabilities"
+    from_types: [RFunction, JuliaFunction, PythonFunction, NEVENFunction]
+    to_types: [external:ExcelFunction]
+    notes: "Cross-ontology reference to LIBROS EXCEL"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Category Codes (from file naming convention)
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# AD = Análisis de Datos (Data Analysis)
+# BD = Base de Datos (Database)
+# CN = Conectividad (Connectivity)
+# DS = Datasets
+# FX = Funciones Extra (Extra Functions)
+# GR = Gráficos (Graphics)
+# ML = Machine Learning
+# MT = Matemáticas (Mathematics)
+# OP = Optimización (Optimization)
+# RG = Regresión (Regression)
+# UT = Utilidades (Utilities)
+#
+# ═══════════════════════════════════════════════════════════════════════════════

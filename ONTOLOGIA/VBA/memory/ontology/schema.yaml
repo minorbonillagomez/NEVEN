@@ -1,0 +1,130 @@
+# NEVEN VBA Ontology Schema
+# Propósito: Automatización de hojas de cálculo, NO estadística
+# VBA complementa a NEVEN (R/Julia/Python), no compite
+
+version: "1.0"
+domain: "VBA_Automation"
+description: |
+  Ontología de patrones y rutinas VBA para automatización de Excel.
+  Cubre: UserForms, iteración, eventos, formateo, integración Office.
+  NO cubre: Cálculos estadísticos (eso lo hace NEVEN con R/Julia/Python).
+
+types:
+  VBARoutine:
+    description: "Rutina VBA completa y funcional"
+    properties:
+      id:
+        type: string
+        required: true
+        pattern: "^vba_[a-z_]+$"
+      name:
+        type: string
+        required: true
+      category:
+        type: enum
+        values:
+          - UserForms        # Formularios de entrada, diálogos personalizados
+          - Iteration        # Recorrer rangos, bucles, transformaciones
+          - Automation       # Formateo, protección, filtros programáticos
+          - Events           # Botones, eventos de hoja, triggers
+          - Office_Integration  # Outlook, Word, PowerPoint desde Excel
+          - Navigation       # Ir a celdas, buscar, seleccionar
+      purpose:
+        type: string
+        required: true
+        description: "Qué problema resuelve esta rutina"
+      code:
+        type: string
+        required: true
+        description: "Código VBA completo, listo para copiar y pegar"
+      parameters:
+        type: list
+        items:
+          type: object
+          properties:
+            name: string
+            type: string
+            description: string
+            default: string
+      returns:
+        type: string
+        description: "Qué retorna o qué efecto tiene"
+      requires:
+        type: list
+        description: "Referencias COM o librerías necesarias"
+      example_usage:
+        type: string
+        description: "Ejemplo de cómo llamar la rutina"
+      complexity:
+        type: enum
+        values: [basic, intermediate, advanced]
+      
+  VBAPattern:
+    description: "Patrón reutilizable con placeholders"
+    properties:
+      id:
+        type: string
+        required: true
+        pattern: "^pattern_[a-z_]+$"
+      name:
+        type: string
+        required: true
+      category:
+        type: enum
+        values:
+          - Loop             # For Each, Do While, etc.
+          - Dialog           # MsgBox, InputBox, UserForm
+          - Format           # Colores, fuentes, bordes
+          - Protection       # Proteger/desproteger hojas y rangos
+          - Navigation       # Selección, búsqueda, filtros
+          - Error_Handling   # On Error, manejo de excepciones
+          - File_IO          # Leer/escribir archivos externos
+      template:
+        type: string
+        required: true
+        description: "Código con placeholders {{PLACEHOLDER}}"
+      placeholders:
+        type: list
+        items:
+          type: object
+          properties:
+            name: string
+            description: string
+            example: string
+      when_to_use:
+        type: string
+        description: "Cuándo aplicar este patrón"
+
+  VBAConcept:
+    description: "Concepto o técnica de VBA"
+    properties:
+      id:
+        type: string
+        pattern: "^concept_[a-z_]+$"
+      name:
+        type: string
+      explanation:
+        type: string
+      related_patterns:
+        type: list
+        items:
+          type: ref
+
+relations:
+  - name: uses_pattern
+    from: VBARoutine
+    to: VBAPattern
+    description: "La rutina usa este patrón"
+    
+  - name: requires_concept
+    from: VBARoutine
+    to: VBAConcept
+    description: "La rutina requiere entender este concepto"
+    
+  - name: related_to
+    from: VBAPattern
+    to: VBAPattern
+    description: "Patrones relacionados"
+
+# Nota: Esta ontología NO incluye funciones estadísticas.
+# Para estadística, usar ONTOLOGIA/NEVEN/ con funciones R/Julia/Python.

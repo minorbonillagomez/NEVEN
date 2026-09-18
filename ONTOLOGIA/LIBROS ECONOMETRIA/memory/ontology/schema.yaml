@@ -1,0 +1,68 @@
+types:
+  Method:
+    required: [name, description]
+    optional: [reference, r_syntax, dataset, interpretation_guide]
+  Concept:
+    required: [name, definition]
+    optional: [reference, interpretation_guide]
+  StatisticalTest:
+    description: "Test estadístico con hipótesis nula y alternativa"
+    required: [name, description, null_hypothesis]
+    optional: [alternative_hypothesis, test_statistic, r_function, r_syntax, assumptions, interpretation_guide, reference]
+  Assumption:
+    required: [name, definition]
+    optional: [reference]
+  Framework:
+    required: [name, description]
+    optional: [reference]
+  RPackage:
+    required: [name, purpose]
+    optional: [reference]
+  RFunction:
+    required: [name, package, description]
+    optional: [reference, r_syntax, interpretation_guide]
+  Dataset:
+    required: [name, package, description]
+    optional: [reference, variables, target]
+
+relations:
+  requires:
+    from_types: [Method, Framework, StatisticalTest]
+    to_types: [Assumption, Concept]
+  
+  adjusts_for:
+    from_types: [Method]
+    to_types: [Concept]
+    
+  produces_bias_if_adjusted:
+    from_types: [Method]
+    to_types: [Concept]
+
+  evaluates:
+    from_types: [RFunction, Method, StatisticalTest]
+    to_types: [Assumption, Concept]
+
+  tests_for:
+    from_types: [StatisticalTest]
+    to_types: [Assumption, Concept]
+    description: "El test evalúa esta hipótesis o supuesto"
+
+  alternative_to:
+    from_types: [Method, StatisticalTest]
+    to_types: [Method, StatisticalTest]
+
+  implemented_in_r_package:
+    from_types: [Method, RFunction, Dataset]
+    to_types: [RPackage]
+    
+  uses_r_function:
+    from_types: [Method]
+    to_types: [RFunction]
+
+  uses_dataset:
+    from_types: [Method, RFunction]
+    to_types: [Dataset]
+    
+  part_of:
+    from_types: [Concept, Method, Assumption, RPackage, RFunction, Dataset]
+    to_types: [Framework, Concept]
