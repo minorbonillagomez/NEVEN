@@ -385,3 +385,78 @@ El nucleo tecnico esta. La pregunta no es "¿funciona?" — funciona. La pregunt
 | Flujo end-to-end | Datos → Análisis → Gráficos | Datos → Análisis → Gráficos → Presentación |
 | Diferenciación vs. PyXLL/xlwings | R+Julia+Python+visualización | + Presentaciones interactivas generadas desde datos |
 | Propuesta para el demo de ventas | Dashboard en 3 clics | Dashboard + Presentación lista en 5 clics |
+
+
+---
+
+## ACTUALIZACIÓN — Setiembre de 2026 (NEVEN v2.3)
+
+### Nuevas fortalezas comerciales
+
+**17. Sistema de Ontologías Dinámicas.** NEVEN ahora incluye un grafo de conocimiento estructurado en formato JSONL (append-only) que documenta 113+ funciones de Excel nativas y 40+ funciones propias de NEVEN. Las ontologías viven fuera del repositorio git (`ONTOLOGIA/`) permitiendo personalización por usuario sin afectar el código base.
+
+**Relevancia comercial:**
+- El sistema "aprende" con cada función nueva que el agente crea
+- Cada usuario puede expandir su dominio de conocimiento procesando libros PDF
+- Diferenciador único: ningún competidor tiene un sistema de conocimiento que crece con el uso
+
+**18. Excel Consultant (modo especializado de IA).** El agente AI ahora tiene un modo "Excel Consultant" que puede:
+- **Auditar** hojas de cálculo (detectar errores, fórmulas frágiles, hardcoding)
+- **Documentar** qué hace cada sección de una hoja
+- **Optimizar** sugiriendo fórmulas más eficientes
+- **Educar** explicando funciones desconocidas
+- **Crear** funciones R/Julia/Python nuevas bajo demanda
+
+Se activa desde el botón "Analizar Hoja" en NEVEN Studio.
+
+**Relevancia comercial:**
+- Resuelve el problema de "heredé esta hoja y no sé qué hace"
+- El Excel Consultant es consultable en lenguaje natural, no requiere comandos especiales
+- Cierra el círculo: el agente usa la ontología para dar respuestas precisas sobre funciones
+
+**19. Procesamiento de Libros para Ontologías.** El usuario puede colocar PDFs en `ONTOLOGIA/{dominio}/` y pedirle al agente: *"procesa el libro CursoPractico.pdf"*. El agente extrae funciones, las parafrasea (compliance de derechos de autor) y las agrega al grafo de conocimiento.
+
+**Libros procesados a la fecha:**
+| Libro | Funciones extraídas |
+|:---|:---|
+| CFI Excel Book.pdf | 45 funciones |
+| Curso Práctico Excel.pdf | 38 funciones |
+| Excel Bible 2021.pdf | 30 funciones |
+
+**Relevancia comercial:**
+- El usuario personaliza NEVEN para su dominio específico (finanzas, actuaría, econometría)
+- El conocimiento es acumulativo y persistente
+- Ningún competidor ofrece un sistema de expansión de conocimiento controlado por el usuario
+
+### Impacto en viabilidad comercial (revisado)
+
+| Aspecto | NEVEN v2.2 | NEVEN v2.3 |
+|:---|:---|:---|
+| Flujo end-to-end | Datos → Análisis → Presentación | Datos → Análisis → Presentación + **Auditoría de hojas** |
+| Sistema de conocimiento | Estático (funciones hardcoded) | **Dinámico** (ontologías que crecen) |
+| Diferenciación vs. competencia | R+Julia+Python+Presentaciones | + **Consultoría IA + Conocimiento expansible** |
+| Propuesta para el demo | Dashboard + Presentación en 5 clics | + "Explícame qué hace esta hoja" → respuesta inteligente |
+
+### Nuevo posicionamiento comercial
+
+Con las ontologías y el Excel Consultant, NEVEN ya no es solo "R/Julia/Python en Excel". Ahora es:
+
+> **NEVEN: El asistente inteligente que entiende tus hojas de cálculo, las documenta, las audita, y las mejora — mientras aprende de tu dominio.**
+
+Este posicionamiento es radicalmente diferente a PyXLL/xlwings (que solo ejecutan código) y a Python in Excel de Microsoft (que no tiene ontologías ni auditoría).
+
+### Actualización de precios recomendada
+
+| Tier | Precio anterior | Precio revisado | Justificación |
+|:---|:---|:---|:---|
+| NEVEN Free | Gratis | Gratis | Sin cambio |
+| NEVEN Academic | Gratis | Gratis | Sin cambio |
+| NEVEN Studio | $299/año | **$349/año** | +Excel Consultant +Ontologías |
+| NEVEN Studio Pro | $499/año | **$549/año** | +Soporte prioritario +Personalización de ontologías |
+
+El incremento de $50/año se justifica porque el Excel Consultant y las ontologías resuelven problemas que antes requerían contratar un consultor humano.
+
+---
+
+*Actualizado: Setiembre de 2026*
+*NEVEN v2.3 — Sistema de Ontologías y Excel Consultant*
