@@ -125,3 +125,7 @@ docs/Contexto/Explicacion_NEVEN_v2.md
 # Keep .def and rebuild script, exclude generated binaries
 ControlJulia/lib/*.lib
 ControlJulia/lib/*.exp
+
+
+# ─── Private evaluations ─────────────────────────────────────
+docs/Evaluaciones/EVALUACION_MIBOGO.md
