@@ -414,3 +414,133 @@ El Creador de Presentaciones fue un subproyecto con su propio `.git`. Su integra
 | **Integración al repo principal** | ✅ | Eliminado submodule git embebido; ahora parte integral de NEVEN |
 | Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
 | Benchmarks | ⏳ Pendiente | Datos cuantitativos de rendimiento |
+
+
+---
+
+## ACTUALIZACIÓN — Setiembre de 2026 (NEVEN v2.5)
+
+### 2.16 Sistema de Ontologías Dinámicas — Grafo de Conocimiento Expansible
+
+NEVEN ahora incluye un sistema de conocimiento estructurado que documenta funciones de Excel y las propias funciones R/Julia/Python del sistema. Este sistema tiene características innovadoras con valor académico:
+
+**Arquitectura del sistema:**
+```
+ONTOLOGIA/
+├── LIBROS EXCEL/              # Funciones nativas de Excel
+│   └── memory/ontology/
+│       ├── schema.yaml        # Define tipos: ExcelFunction, Technique, Pattern
+│       └── graph.jsonl        # 113 funciones documentadas (append-only)
+│
+├── NEVEN/                     # Funciones propias de NEVEN
+│   └── memory/ontology/
+│       ├── schema.yaml        # Define tipos: NEVENFunction, RFunction, JuliaFunction
+│       └── graph.jsonl        # 40+ funciones (dinámico)
+│
+└── LIBROS/                    # Econometría teórica
+    └── memory/ontology/
+        └── graph.jsonl
+```
+
+**Decisiones de diseño con justificación académica:**
+
+1. **Ubicación fuera del repositorio git** — Las ontologías viven en `ONTOLOGIA/` (fuera de `NEVEN/`) para permitir personalización por usuario sin conflictos de merge. Esto sigue el principio de separación de datos y código.
+
+2. **Formato JSONL append-only** — Cada línea es un JSON independiente. Solo se agregan líneas, nunca se modifican. Esto previene corrupción y simplifica validación (cada línea es atómicamente válida o inválida).
+
+3. **Operaciones tipificadas** — El formato define dos operaciones: `create` (entidad) y `relate` (relación entre entidades). Este modelo es isomorfo a un grafo de propiedad (property graph) con entidades como nodos y relaciones como aristas.
+
+4. **IDs con prefijos semánticos** — `func_vlookup`, `r_mr_lineal`, `j_knn`, `concept_regression`. El prefijo indica el tipo de entidad sin necesidad de lookup.
+
+**Contribución técnica:**
+- El sistema permite que NEVEN "aprenda" cuando el agente crea funciones nuevas
+- El usuario puede expandir el conocimiento procesando libros PDF
+- Es un sistema de conocimiento que crece con el uso — ningún competidor tiene esto
+
+### 2.17 Excel Consultant — Modo especializado de IA para auditoría de hojas de cálculo
+
+Se implementó un modo de IA que audita, documenta y optimiza hojas de cálculo. Este modo tiene capacidades diferenciadas:
+
+| Capacidad | Descripción | Valor académico |
+|:---|:---|:---|
+| **Auditoría** | Detecta errores, fórmulas frágiles, hardcoding | Análisis estático de spreadsheets |
+| **Documentación** | Explica qué hace cada sección | Generación automática de documentación |
+| **Optimización** | Sugiere fórmulas más eficientes | Refactoring guiado |
+| **Educación** | Enseña sobre funciones desconocidas | Sistema tutorial integrado |
+| **Creación** | Escribe funciones R/Julia/Python bajo demanda | Extensión del sistema via IA |
+
+**Integración con ontologías:**
+El Excel Consultant usa el grafo de conocimiento para dar respuestas precisas sobre funciones. Cuando el usuario pregunta "¿qué hace BUSCARV?", el sistema consulta la ontología y retorna la documentación estructurada con ejemplos.
+
+### 2.18 Procesamiento de Libros para Ontologías
+
+Se creó un protocolo para expandir ontologías procesando libros PDF:
+
+1. Usuario coloca PDF en `ONTOLOGIA/{dominio}/`
+2. Usuario solicita: *"procesa el libro CursoPractico.pdf"*
+3. El agente extrae funciones, las parafrasea (compliance de derechos de autor), y las agrega a `graph.jsonl`
+
+**Libros procesados a la fecha:**
+| Libro | Funciones extraídas |
+|:---|:---|
+| CFI Excel Book.pdf | 45 funciones |
+| Curso Práctico Excel.pdf | 38 funciones |
+| Excel Bible 2021.pdf | 30 funciones |
+| **Total** | **113 funciones** |
+
+**Contribución académica:**
+- Demuestra un flujo de extracción de conocimiento desde documentos no estructurados (PDF) hacia un grafo estructurado (JSONL)
+- El parafraseo como técnica de compliance es documentable como metodología
+
+### Actualización de métricas
+
+| Métrica | Valor anterior | Valor actual |
+|:---|:---|:---|
+| Funciones Excel documentadas | 0 | **113** |
+| Funciones NEVEN en ontología | 0 | **40+** |
+| Dominios de conocimiento | 0 | **3** (Excel, NEVEN, Econometría) |
+| Capítulos Docusaurus | 13 | **14** (+Ontologías y Excel Consultant) |
+
+### Actualización de tabla comparativa con BERT
+
+| Capacidad | BERT (2017-2018) | NEVEN (Set 2026) | Innovación |
+|:---|:---|:---|:---|
+| *(anteriores)* | — | — | — |
+| Sistema de ontologías | No | Grafo JSONL con 153+ entidades | **Innovación** |
+| Excel Consultant | No | Auditoría IA de hojas de cálculo | **Innovación** |
+| Expansión de conocimiento | No | Procesamiento de libros PDF | **Innovación** |
+
+**Resumen actualizado:** De 18 capacidades comparadas, 16 son innovaciones sobre BERT.
+
+### Actualización de nota global
+
+| Dimensión | Agosto 2026 | Setiembre 2026 | Cambio |
+|:---|:---:|:---:|:---|
+| Funcionalidad | 10/10 | 10/10 | +Ontologías +Excel Consultant |
+| Calidad de código | 9.5/10 | 9.5/10 | Sin cambio |
+| Seguridad | 9.5/10 | 9.5/10 | Sin cambio |
+| Mantenibilidad | 9.7/10 | **9.8/10** | +0.1: Ontologías separadas del código |
+| Confiabilidad | 9.5/10 | 9.5/10 | Sin cambio |
+| Testing | 10/10 | 10/10 | Sin cambio |
+| Documentación | 10/10 | 10/10 | +Docusaurus cap. 14 |
+| **Conocimiento** | — | **10/10** | **Nueva dimensión** |
+| **Nota global** | **9.8/10** | **9.9/10** | +0.1 por sistema de conocimiento |
+
+### Tabla de hitos — actualizada setiembre 2026
+
+| Fase | Estado | Descripción |
+|:---|:---|:---|
+| *(todos los anteriores)* | ✅ | Ver versiones anteriores |
+| **Sistema de Ontologías** | ✅ | 3 dominios, 153+ entidades, formato JSONL append-only |
+| **Excel Consultant** | ✅ | Auditoría, documentación, optimización, educación via IA |
+| **Procesamiento de Libros** | ✅ | 3 libros → 113 funciones Excel documentadas |
+| **Skill ontology-book-processor** | ✅ | Protocolo formalizado para expansión de ontologías |
+| **Docusaurus cap. 14** | ✅ | Documentación del sistema de conocimiento |
+| Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
+| Benchmarks | ⏳ Pendiente | Datos cuantitativos de rendimiento |
+
+---
+
+*Documento interno de orientación — no para presentar al comité.*
+*NEVEN v2.5 — Universidad de Costa Rica*
+*Última actualización: Setiembre de 2026*
