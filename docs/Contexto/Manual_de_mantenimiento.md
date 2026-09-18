@@ -1422,7 +1422,7 @@ La sección `"AI"` controla la integración con LMStudio para resumen contextual
 
 ------------------------------------------------------------------------
 
-## 18. Sistema de Ontologías (Agosto 2026)
+## 18. Sistema de Ontologías (Setiembre 2026)
 
 ### Ubicación de las ontologías
 
@@ -1511,7 +1511,7 @@ Get-Content "graph.jsonl" | ForEach-Object { $_ | ConvertFrom-Json } | Out-Null
 
 ------------------------------------------------------------------------
 
-## 19. Excel Consultant (Agosto 2026)
+## 19. Excel Consultant (Setiembre 2026)
 
 ### Qué es
 
@@ -1569,4 +1569,4 @@ Copy-Item "ControlPython\startup\excel_translations.py" "C:\NEVEN\startup\excel_
 
 ------------------------------------------------------------------------
 
-*Manual actualizado: 20 de agosto de 2026 — Sistema de Ontologías y Excel Consultant*
+*Manual actualizado: Setiembre 2026 — Sistema de Ontologías y Excel Consultant*

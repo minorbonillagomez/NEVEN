@@ -7,7 +7,7 @@ sidebar_position: 14
 
 # Capitulo 14: Sistema de Ontologías y Excel Consultant
 
-**Disponible desde:** Agosto 2026
+**Disponible desde:** Setiembre 2026
 
 NEVEN incluye un sistema de conocimiento estructurado basado en **ontologías dinámicas** y un modo especializado de IA llamado **Excel Consultant** que permite auditar, documentar y optimizar hojas de cálculo.
 
@@ -155,4 +155,4 @@ Esto significa que **la ontología crece con el uso**.
 
 ---
 
-*Documentación actualizada: 20 de agosto de 2026*
+*Documentación actualizada: Setiembre 2026*

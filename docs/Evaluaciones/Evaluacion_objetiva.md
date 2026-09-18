@@ -1,6 +1,6 @@
 # Evaluación Objetiva de NEVEN v2.0
 
-## Estado Actual (Agosto 2026)
+## Estado Actual (Setiembre 2026)
 
 **Nota global: 9.9/10** — Sistema multilenguaje de producción con ontologías dinámicas, Excel Consultant y expansión automática de conocimiento.
 
@@ -19,7 +19,7 @@
 
 | Hito | Nota | Tests | Cambio clave |
 |:---|:---:|:---:|:---|
-| **Ontologías + Excel Consultant (agosto)** | **9.9** | **357** | **Ontologías dinámicas, Excel Consultant, procesamiento de libros, expansión automática** |
+| **Ontologías + Excel Consultant (setiembre)** | **9.9** | **357** | **Ontologías dinámicas, Excel Consultant, procesamiento de libros, expansión automática** |
 | **Security remediation (mayo)** | **9.8** | **357** | **36/36 audit findings, Console/Electron eliminado, Python reactivado** |
 | **Studio Standalone + Data Lab (julio)** | **9.8** | **357** | **NEVEN Studio sin Excel, Data Lab V1 (18 wrappers), AI Integration LMStudio, Text Mining WordCloud** |
 | Rename + visualizaciones (2 mayo) | 9.6 | 228 | NEVEN identity, R.Pivot/D3/Dashboard/Map |
@@ -30,7 +30,7 @@
 | Correcciones iniciales (15 abr) | 6.8 | 119 | Seguridad, RAII, mutex, retry limits |
 | Estado original (14 abr) | 4.3 | 39 | Prototipo funcional con deuda técnica |
 
-### Nuevas capacidades (Agosto 2026)
+### Nuevas capacidades (Setiembre 2026)
 
 | Capacidad | Descripción | Impacto |
 |:---|:---|:---|
