@@ -62,12 +62,12 @@
         <!-- Grupo: Analisis (nuevos viewers) -->
         <group id="grpAnalysis" label="Analisis">
           <button id="btnAIAssistant"
-                  label="AI Assistant"
+                  label="Agente IA"
                   size="large"
                   onAction="OnAIAssistantCommand"
                   imageMso="BlogHomePage"
-                  screentip="AI Assistant (LM Studio)"
-                  supertip="Abre el asistente de IA conectado a LM Studio local. Resume, traduce, analiza y responde preguntas sobre sus datos." />
+                  screentip="Agente IA (NEVEN Studio)"
+                  supertip="Abre NEVEN Studio con el Agente IA. Usa el proveedor configurado en neven-config.json (Azure OpenAI, OpenAI, Ollama, etc.)." />
 
           <button id="btnTextAnalysis"
                   label="Texto"

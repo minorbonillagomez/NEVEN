@@ -880,18 +880,10 @@ public:
 
     case DispIds::OnAIAssistantCommand:
     {
-      // Open AI Assistant HTML in WebView2 viewer
-      CComQIPtr<Excel::_Application> pApp(m_pApplication);
-      if (pApp) {
-          CComVariant runCmd(L"NEVEN.View");
-          CComVariant docPath("C:/NEVEN/workspace/ai-assistant.html");
-          CComVariant result;
-          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
-          pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,
-                       missing, missing, missing, missing, missing, missing, missing, missing,
-                       missing, missing, missing, missing, missing, missing, missing, missing,
-                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
-      }
+      // Launch NEVEN Studio via VBS script
+      ShellExecuteW(NULL, L"open", L"wscript.exe", 
+                    L"\"C:\\NEVEN\\NEVEN Studio.vbs\"", 
+                    L"C:\\NEVEN", SW_HIDE);
       return S_OK;
     }
 
