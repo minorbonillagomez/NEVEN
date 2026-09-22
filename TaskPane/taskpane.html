@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEVEN Studio</title>
   <link rel="stylesheet" href="taskpane.css?v=8">
+  <!-- Office.js para integración con Excel -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <!-- Auto-detect HTTP vs HTTPS server when opened as local file -->
   <script>
     (function() {
@@ -16,6 +18,9 @@
     })();
   </script>
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <!-- Leaflet para mapas -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- KaTeX para renderizado de formulas matematicas en el Tab IA -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -77,6 +82,7 @@
       <div class="controls">
         <button class="btn btn-primary" id="btn-load" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Abrir archivo</button>
         <button class="btn btn-primary" id="btn-bridge-read" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg> Leer de Excel</button>
+        <button class="btn btn-primary" id="btn-paste-excel" style="background:#5c8c5c" title="Pega datos copiados de Excel (Ctrl+V)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Pegar de Excel</button>
         <button class="btn btn-primary" id="btn-db-connect" style="background:#ad945c"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> Conectar DB</button>
         <input type="file" id="file-picker" accept=".csv,.tsv,.json,.parquet" style="display:none">
       </div>
@@ -95,6 +101,71 @@
     <div style="margin-top:6px">
       <button class="btn btn-secondary" id="btn-pivot" style="display:none">Abrir Pivot</button>
     </div>
+    <!-- Gráfico Rápido (sin IA) -->
+    <div class="card" id="quickchart-card" style="display:none">
+      <div class="card-title">📊 Gráfico Rápido</div>
+      <div class="controls" style="flex-wrap:wrap;gap:6px;align-items:flex-start">
+        <select id="qc-type" style="min-width:120px">
+          <optgroup label="Básicos">
+            <option value="bar">Barras</option>
+            <option value="line">Líneas</option>
+            <option value="scatter">Dispersión</option>
+            <option value="pie">Pastel</option>
+            <option value="area">Área</option>
+          </optgroup>
+          <optgroup label="Estadísticos">
+            <option value="histogram">Histograma</option>
+            <option value="boxplot">Box Plot</option>
+            <option value="heatmap">Heatmap</option>
+          </optgroup>
+          <optgroup label="Geoespacial">
+            <option value="map">🗺️ Mapa (Lat/Lon)</option>
+          </optgroup>
+          <optgroup label="Avanzados">
+            <option value="bubble">Burbujas</option>
+            <option value="radar">Radar</option>
+            <option value="treemap">Treemap</option>
+            <option value="funnel">Embudo</option>
+          </optgroup>
+        </select>
+        <select id="qc-x" title="Eje X"></select>
+        <!-- Multiselect personalizado para Eje Y -->
+        <div id="qc-y-multiselect" class="multiselect-container" style="position:relative;min-width:140px">
+          <div id="qc-y-btn" class="multiselect-btn" onclick="_toggleMultiselect()" 
+               style="background:var(--bg-secondary);border:1px solid #555;border-radius:4px;
+                      padding:4px 8px;font-size:11px;cursor:pointer;display:flex;
+                      justify-content:space-between;align-items:center;min-height:24px">
+            <span id="qc-y-label">— Eje Y —</span>
+            <span style="margin-left:6px">▼</span>
+          </div>
+          <div id="qc-y-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;
+               background:var(--bg-secondary);border:1px solid #555;border-radius:4px;
+               max-height:180px;overflow-y:auto;z-index:100;margin-top:2px;
+               box-shadow:0 4px 12px rgba(0,0,0,0.3)">
+            <!-- Opciones se llenan dinámicamente -->
+          </div>
+        </div>
+        <!-- Selector de paleta de colores -->
+        <select id="qc-palette" title="Paleta de colores" style="min-width:100px">
+          <option value="neven">NEVEN</option>
+          <option value="viridis">Viridis</option>
+          <option value="plasma">Plasma</option>
+          <option value="rainbow">Rainbow</option>
+          <option value="pastel">Pastel</option>
+          <option value="dark">Dark</option>
+          <option value="ocean">Ocean</option>
+          <option value="earth">Earth</option>
+        </select>
+        <button class="btn btn-primary" id="btn-quickchart" style="background:#4a7c4a">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
+          Generar
+        </button>
+      </div>
+      <!-- Preview de la paleta seleccionada -->
+      <div id="qc-palette-preview" style="display:flex;gap:2px;margin-top:4px;height:12px"></div>
+      <div id="qc-output" style="margin-top:8px"></div>
+    </div>
+
     <div class="card" id="groupby-card" style="display:none">
       <div class="card-title">GROUP BY</div>
       <div class="controls">
@@ -867,9 +938,86 @@ document.getElementById('btn-pivot').addEventListener('click', function(){
   }).catch(function(e){ self.textContent='Abrir Pivot'; });
 });
 
-// --- Leer de Excel ---
-document.getElementById('btn-bridge-read').addEventListener('click', function(){
-  document.getElementById('data-info').innerHTML='<span class="spinner"></span> Leyendo bridge...';
+// --- Leer de Excel (usando Office.js si disponible) ---
+document.getElementById('btn-bridge-read').addEventListener('click', async function(){
+  var dataInfo = document.getElementById('data-info');
+  dataInfo.innerHTML='<span class="spinner"></span> Leyendo de Excel...';
+  
+  // ═══ DEBUG: Mostrar estado de Office.js ═══
+  console.log('[NEVEN] btn-bridge-read clicked');
+  console.log('[NEVEN] Office defined:', typeof Office !== 'undefined');
+  console.log('[NEVEN] Excel defined:', typeof Excel !== 'undefined');
+  console.log('[NEVEN] _officeReady:', window._officeReady);
+  
+  // ═══ Estrategia 1: Usar Office.js si está disponible ═══
+  if (typeof Office !== 'undefined' && typeof Excel !== 'undefined' && window._officeReady) {
+    console.log('[NEVEN] Intentando Office.js...');
+    try {
+      await Excel.run(async function(context) {
+        console.log('[NEVEN] Dentro de Excel.run');
+        var selection = context.workbook.getSelectedRange();
+        selection.load(['values', 'address', 'columnCount', 'rowCount']);
+        await context.sync();
+        
+        console.log('[NEVEN] Selection address:', selection.address);
+        console.log('[NEVEN] Selection rows:', selection.rowCount);
+        
+        var values = selection.values;
+        if (!values || values.length === 0) {
+          dataInfo.textContent = 'No hay datos seleccionados en Excel';
+          return;
+        }
+        
+        // Detectar headers (primera fila con más texto que números)
+        var firstRow = values[0];
+        var stringCount = firstRow.filter(function(v) { 
+          return typeof v === 'string' && isNaN(parseFloat(v)); 
+        }).length;
+        var hasHeaders = stringCount > firstRow.length / 2;
+        
+        var cols = hasHeaders ? firstRow : firstRow.map(function(_, i) { return 'Col' + (i+1); });
+        var rows = hasHeaders ? values.slice(1) : values;
+        
+        // Detectar tipos
+        var types = {};
+        cols.forEach(function(c, i) {
+          var sample = rows.slice(0, 50).map(function(r) { return r[i]; });
+          var numCount = sample.filter(function(v) { 
+            return typeof v === 'number' || !isNaN(parseFloat(v)); 
+          }).length;
+          types[c] = numCount > sample.length * 0.5 ? 'numeric' : 'text';
+        });
+        
+        // Mostrar preview
+        dataInfo.textContent = rows.length + ' filas × ' + cols.length + ' cols (desde Excel: ' + selection.address + ')';
+        showPreview(cols, rows.slice(0, 20));
+        populateGroupBy(cols, types);
+        
+        // Cargar en DuckDB
+        console.log('[NEVEN] Cargando en DuckDB...');
+        fetch(API + '/api/load', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({columns: cols, types: types, data: rows})
+        }).then(function(r) { return r.json(); }).then(function(result) {
+          console.log('[NEVEN] Load result:', result);
+          if (result.status === 'ok') {
+            showToast('✓ ' + result.rows_loaded + ' filas cargadas desde Excel');
+          }
+        });
+      });
+      console.log('[NEVEN] Excel.run completado');
+      return; // Éxito con Office.js, no continuar con fallback
+    } catch (e) {
+      console.error('[NEVEN] Error con Office.js:', e);
+      dataInfo.innerHTML='<span class="spinner"></span> Fallback al bridge...';
+    }
+  } else {
+    console.log('[NEVEN] Office.js no disponible, usando fallback');
+  }
+  
+  // ═══ Estrategia 2: Fallback al bridge (datos empujados previamente) ═══
+  console.log('[NEVEN] Usando bridge fallback');
   fetch(API+'/api/bridge/pull?key=geolive')
   .then(function(r){return r.json()})
   .then(function(result){
@@ -877,16 +1025,104 @@ document.getElementById('btn-bridge-read').addEventListener('click', function(){
     if(!data){return fetch(API+'/api/bridge/pull?key=default').then(function(r){return r.json()}).then(function(r2){data=(r2.status==='ok'&&r2.data)?r2.data:null;return data;});}
     return data;
   }).then(function(data){
-    if(!data){document.getElementById('data-info').textContent='No hay datos en el bridge';return;}
+    if(!data){document.getElementById('data-info').textContent='No hay datos en el bridge. Selecciona datos en Excel y vuelve a intentar.';return;}
     var cols,rows;
     if(data.points){cols=data.columns;rows=data.points.map(function(p){return cols.map(function(c){return p[c]!==undefined?p[c]:'';});});}
     else{cols=data.columns;rows=data.rows||[];}
     var types={};cols.forEach(function(c,i){var s=rows.slice(0,50).map(function(r){return r[i];});var n=s.filter(function(v){return typeof v==='number'||!isNaN(parseFloat(v));}).length;types[c]=n>s.length*0.5?'numeric':'text';});
-    document.getElementById('data-info').textContent=rows.length+' filas x '+cols.length+' cols';
+    document.getElementById('data-info').textContent=rows.length+' filas x '+cols.length+' cols (desde bridge)';
     showPreview(cols,rows.slice(0,20));
     populateGroupBy(cols,types);
     fetch(API+'/api/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({columns:cols,types:types,data:rows})});
   }).catch(function(e){document.getElementById('data-info').textContent='Error: '+e;});
+});
+
+// --- Pegar de Excel (Clipboard API) ---
+document.getElementById('btn-paste-excel').addEventListener('click', async function(){
+  var dataInfo = document.getElementById('data-info');
+  dataInfo.innerHTML='<span class="spinner"></span> Leyendo del portapapeles...';
+  
+  try {
+    // Leer del clipboard
+    var clipText = await navigator.clipboard.readText();
+    
+    if (!clipText || !clipText.trim()) {
+      dataInfo.textContent = 'El portapapeles está vacío. Copia datos en Excel (Ctrl+C) primero.';
+      return;
+    }
+    
+    console.log('[NEVEN] Clipboard text length:', clipText.length);
+    
+    // Excel copia como TSV (tabs entre columnas, newlines entre filas)
+    var lines = clipText.trim().split(/\r?\n/);
+    if (lines.length === 0) {
+      dataInfo.textContent = 'No se encontraron datos en el portapapeles.';
+      return;
+    }
+    
+    // Parsear TSV
+    var allRows = lines.map(function(line) {
+      return line.split('\t').map(function(cell) {
+        // Intentar convertir a número si es posible
+        var trimmed = cell.trim();
+        var num = parseFloat(trimmed);
+        return !isNaN(num) && trimmed !== '' ? num : trimmed;
+      });
+    });
+    
+    // Detectar headers (primera fila con más texto que números)
+    var firstRow = allRows[0];
+    var stringCount = firstRow.filter(function(v) { 
+      return typeof v === 'string' && v !== '' && isNaN(parseFloat(v)); 
+    }).length;
+    var hasHeaders = stringCount > firstRow.length / 2;
+    
+    var cols = hasHeaders 
+      ? firstRow.map(function(v) { return String(v); })
+      : firstRow.map(function(_, i) { return 'Col' + (i+1); });
+    var rows = hasHeaders ? allRows.slice(1) : allRows;
+    
+    if (rows.length === 0) {
+      dataInfo.textContent = 'Solo hay una fila (headers). Copia más datos.';
+      return;
+    }
+    
+    // Detectar tipos
+    var types = {};
+    cols.forEach(function(c, i) {
+      var sample = rows.slice(0, 50).map(function(r) { return r[i]; });
+      var numCount = sample.filter(function(v) { 
+        return typeof v === 'number'; 
+      }).length;
+      types[c] = numCount > sample.length * 0.5 ? 'numeric' : 'text';
+    });
+    
+    // Mostrar preview
+    dataInfo.textContent = rows.length + ' filas × ' + cols.length + ' cols (pegado desde Excel)';
+    showPreview(cols, rows.slice(0, 20));
+    populateGroupBy(cols, types);
+    
+    // Cargar en DuckDB
+    console.log('[NEVEN] Cargando', rows.length, 'filas en DuckDB...');
+    var loadResult = await fetch(API + '/api/load', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({columns: cols, types: types, data: rows})
+    }).then(function(r) { return r.json(); });
+    
+    console.log('[NEVEN] Load result:', loadResult);
+    if (loadResult.status === 'ok') {
+      showToast('✓ ' + loadResult.rows_loaded + ' filas pegadas desde Excel');
+    }
+    
+  } catch (e) {
+    console.error('[NEVEN] Error pegando:', e);
+    if (e.name === 'NotAllowedError') {
+      dataInfo.textContent = 'Permiso denegado. Permite acceso al portapapeles en el navegador.';
+    } else {
+      dataInfo.textContent = 'Error: ' + e.message;
+    }
+  }
 });
 
 // --- Cargar Viewer ---
@@ -1011,7 +1247,438 @@ function populateGroupBy(cols,types){
   gc.innerHTML='';gv.innerHTML='';
   cols.forEach(function(c){if(types[c]==='text')gc.innerHTML+='<option>'+c+'</option>';if(types[c]==='numeric')gv.innerHTML+='<option>'+c+'</option>';});
   document.getElementById('groupby-card').style.display=(gc.options.length>0&&gv.options.length>0)?'block':'none';
+  
+  // También poblar QuickChart
+  _populateQuickChart(cols, types);
 }
+
+// --- GRÁFICO RÁPIDO (sin IA) ---
+var _qcColTypes = {}; // Almacena tipos de columnas para Quick Chart
+var _qcSelectedY = []; // Columnas Y seleccionadas
+
+function _populateQuickChart(cols, types) {
+  var qcX = document.getElementById('qc-x');
+  var dropdown = document.getElementById('qc-y-dropdown');
+  _qcColTypes = types;
+  _qcSelectedY = [];
+  
+  qcX.innerHTML = '<option value="">— Eje X —</option>';
+  dropdown.innerHTML = '';
+  
+  var numericCols = [];
+  cols.forEach(function(c) {
+    var label = c + (types[c]==='numeric'?' (num)':' (cat)');
+    qcX.innerHTML += '<option value="' + c + '">' + label + '</option>';
+    if (types[c] === 'numeric') {
+      numericCols.push(c);
+    }
+  });
+  
+  // Poblar dropdown con checkboxes
+  numericCols.forEach(function(c) {
+    var item = document.createElement('label');
+    item.style.cssText = 'display:flex;align-items:center;padding:6px 10px;cursor:pointer;gap:6px;font-size:11px;border-bottom:1px solid #333';
+    item.innerHTML = '<input type="checkbox" value="' + c + '" onchange="_updateYSelection(this)" style="accent-color:#a8e600">' +
+                     '<span>' + c + '</span>';
+    item.onmouseover = function() { this.style.background = 'rgba(168,230,0,0.1)'; };
+    item.onmouseout = function() { this.style.background = ''; };
+    dropdown.appendChild(item);
+  });
+  
+  _updateYLabel();
+  document.getElementById('quickchart-card').style.display = cols.length > 0 ? 'block' : 'none';
+}
+
+function _toggleMultiselect() {
+  var dropdown = document.getElementById('qc-y-dropdown');
+  dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+function _updateYSelection(checkbox) {
+  if (checkbox.checked) {
+    if (_qcSelectedY.indexOf(checkbox.value) === -1) {
+      _qcSelectedY.push(checkbox.value);
+    }
+  } else {
+    _qcSelectedY = _qcSelectedY.filter(function(v) { return v !== checkbox.value; });
+  }
+  _updateYLabel();
+}
+
+function _updateYLabel() {
+  var label = document.getElementById('qc-y-label');
+  if (_qcSelectedY.length === 0) {
+    label.textContent = '— Eje Y —';
+    label.style.color = 'var(--text-secondary)';
+  } else if (_qcSelectedY.length === 1) {
+    label.textContent = _qcSelectedY[0];
+    label.style.color = 'var(--accent)';
+  } else {
+    label.textContent = _qcSelectedY.length + ' variables';
+    label.style.color = 'var(--accent)';
+  }
+}
+
+// Cerrar dropdown al hacer click fuera
+document.addEventListener('click', function(e) {
+  var container = document.getElementById('qc-y-multiselect');
+  if (container && !container.contains(e.target)) {
+    document.getElementById('qc-y-dropdown').style.display = 'none';
+  }
+});
+
+// --- PALETAS DE COLORES ---
+var _COLOR_PALETTES = {
+  neven:   ['#a8e600', '#ff6b6b', '#4ecdc4', '#ffa502', '#a29bfe', '#fd79a8', '#74b9ff', '#55efc4'],
+  viridis: ['#440154', '#482878', '#3e4989', '#31688e', '#26828e', '#1f9e89', '#35b779', '#6ece58', '#b5de2b', '#fde725'],
+  plasma:  ['#0d0887', '#46039f', '#7201a8', '#9c179e', '#bd3786', '#d8576b', '#ed7953', '#fb9f3a', '#fdca26', '#f0f921'],
+  rainbow: ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6', '#e91e63'],
+  pastel:  ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e0bbff', '#ffc8dd', '#bde0fe'],
+  dark:    ['#2c3e50', '#34495e', '#7f8c8d', '#95a5a6', '#bdc3c7', '#1abc9c', '#16a085', '#27ae60'],
+  ocean:   ['#0077b6', '#00b4d8', '#90e0ef', '#caf0f8', '#03045e', '#023e8a', '#0096c7', '#48cae4'],
+  earth:   ['#8b4513', '#a0522d', '#cd853f', '#deb887', '#d2b48c', '#f5deb3', '#556b2f', '#6b8e23']
+};
+
+function _getSelectedPalette() {
+  var paletteName = document.getElementById('qc-palette').value;
+  return _COLOR_PALETTES[paletteName] || _COLOR_PALETTES.neven;
+}
+
+function _updatePalettePreview() {
+  var colors = _getSelectedPalette();
+  var preview = document.getElementById('qc-palette-preview');
+  preview.innerHTML = '';
+  colors.forEach(function(c) {
+    var swatch = document.createElement('div');
+    swatch.style.cssText = 'flex:1;background:' + c + ';border-radius:2px;min-width:12px';
+    swatch.title = c;
+    preview.appendChild(swatch);
+  });
+}
+
+// Actualizar preview al cambiar paleta
+document.getElementById('qc-palette').addEventListener('change', _updatePalettePreview);
+
+// Inicializar preview
+setTimeout(_updatePalettePreview, 100);
+
+// Handler del botón Generar Gráfico Rápido
+document.getElementById('btn-quickchart').addEventListener('click', async function() {
+  var chartType = document.getElementById('qc-type').value;
+  var colX = document.getElementById('qc-x').value;
+  var outputEl = document.getElementById('qc-output');
+  
+  // Usar las columnas Y seleccionadas del multiselect
+  var colsY = _qcSelectedY.slice(); // Copia del array
+  
+  // Validaciones según tipo de gráfico
+  if (chartType === 'map') {
+    if (!colX) {
+      outputEl.innerHTML = '<div class="msg-error">Selecciona columna de Latitud en Eje X</div>';
+      return;
+    }
+  } else if (!colX && !['histogram', 'heatmap'].includes(chartType)) {
+    outputEl.innerHTML = '<div class="msg-error">Selecciona columna X</div>';
+    return;
+  }
+  
+  if (colsY.length === 0 && ['scatter', 'line', 'bar', 'area', 'bubble'].includes(chartType)) {
+    outputEl.innerHTML = '<div class="msg-error">Selecciona al menos una columna Y</div>';
+    return;
+  }
+  
+  outputEl.innerHTML = '<span class="spinner"></span> Generando...';
+  
+  try {
+    // Construir query con todas las columnas necesarias
+    var allCols = [colX];
+    if (colsY.length > 0) allCols = allCols.concat(colsY);
+    var sql = 'SELECT ' + allCols.join(', ') + ' FROM dataset LIMIT 5000';
+    
+    var response = await fetch(API + '/api/query', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({sql: sql, page: 1, page_size: 5000})
+    });
+    var result = await response.json();
+    
+    if (result.status !== 'ok' || !result.rows || result.rows.length === 0) {
+      outputEl.innerHTML = '<div class="msg-error">No hay datos. Carga un archivo primero.</div>';
+      return;
+    }
+    
+    // Extraer datos
+    var xData = result.rows.map(function(r) { return r[0]; });
+    var yDataArrays = colsY.map(function(_, i) {
+      return result.rows.map(function(r) { return r[i + 1]; });
+    });
+    
+    // Generar gráfico según tipo
+    if (chartType === 'map') {
+      _renderQuickChartMap(colX, colsY, xData, yDataArrays, outputEl, result.rows);
+    } else {
+      _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, outputEl);
+    }
+    
+  } catch (e) {
+    outputEl.innerHTML = '<div class="msg-error">Error: ' + e.message + '</div>';
+  }
+});
+
+function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, outputEl) {
+  var traces = [];
+  var layout = {
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#888', size: 10 },
+    margin: { t: 30, r: 20, b: 40, l: 50 },
+    xaxis: { title: colX, gridcolor: 'rgba(255,255,255,0.05)' },
+    yaxis: { title: colsY.join(', ') || 'Frecuencia', gridcolor: 'rgba(255,255,255,0.08)' },
+    showlegend: colsY.length > 1
+  };
+  
+  // Usar paleta seleccionada por el usuario
+  var colors = _getSelectedPalette();
+  
+  // Para tipos que soportan múltiples series
+  var yData = yDataArrays.length > 0 ? yDataArrays[0] : null;
+  
+  switch (chartType) {
+    case 'bar':
+      // Múltiples series de barras
+      colsY.forEach(function(colY, i) {
+        traces.push({ 
+          x: xData, 
+          y: yDataArrays[i], 
+          type: 'bar', 
+          name: colY,
+          marker: { color: colors[i % colors.length] } 
+        });
+      });
+      if (colsY.length > 1) layout.barmode = 'group';
+      break;
+      
+    case 'line':
+      // Múltiples líneas
+      colsY.forEach(function(colY, i) {
+        traces.push({ 
+          x: xData, 
+          y: yDataArrays[i], 
+          type: 'scatter', 
+          mode: 'lines+markers',
+          name: colY,
+          line: { color: colors[i % colors.length], width: 2 }, 
+          marker: { size: 4 } 
+        });
+      });
+      break;
+      
+    case 'scatter':
+      // Múltiples series de dispersión
+      colsY.forEach(function(colY, i) {
+        traces.push({ 
+          x: xData, 
+          y: yDataArrays[i], 
+          type: 'scatter', 
+          mode: 'markers',
+          name: colY,
+          marker: { color: colors[i % colors.length], size: 8, opacity: 0.7 } 
+        });
+      });
+      break;
+      
+    case 'area':
+      // Múltiples áreas apiladas
+      colsY.forEach(function(colY, i) {
+        traces.push({ 
+          x: xData, 
+          y: yDataArrays[i], 
+          type: 'scatter', 
+          mode: 'lines', 
+          fill: i === 0 ? 'tozeroy' : 'tonexty',
+          name: colY,
+          line: { color: colors[i % colors.length] }
+        });
+      });
+      break;
+      
+    case 'pie':
+      var pieData = {};
+      xData.forEach(function(v, i) {
+        var key = String(v);
+        pieData[key] = (pieData[key] || 0) + (yData ? yData[i] : 1);
+      });
+      traces = [{ labels: Object.keys(pieData), values: Object.values(pieData), type: 'pie',
+                  marker: { colors: colors }, textinfo: 'label+percent' }];
+      layout.xaxis = {}; layout.yaxis = {}; layout.showlegend = true;
+      break;
+      
+    case 'histogram':
+      traces = [{ x: xData, type: 'histogram', marker: { color: colors[0] } }];
+      layout.yaxis.title = 'Frecuencia';
+      break;
+      
+    case 'boxplot':
+      // Box plot para cada columna Y seleccionada
+      if (colsY.length > 0) {
+        colsY.forEach(function(colY, i) {
+          traces.push({ y: yDataArrays[i], type: 'box', name: colY, marker: { color: colors[i % colors.length] } });
+        });
+      } else {
+        traces = [{ y: xData, type: 'box', name: colX, marker: { color: colors[0] } }];
+      }
+      break;
+      
+    case 'heatmap':
+      outputEl.innerHTML = '<div class="msg-info">Heatmap requiere múltiples columnas numéricas. Usa Tab IA para este tipo.</div>';
+      return;
+      
+    case 'bubble':
+      var sizes = yData ? yData.map(function(v) { return Math.abs(v) / Math.max.apply(null, yData.map(Math.abs)) * 30 + 5; }) : 15;
+      traces = [{ x: xData, y: yData, type: 'scatter', mode: 'markers',
+                  marker: { size: sizes, color: colors[0], opacity: 0.6 } }];
+      break;
+      
+    case 'radar':
+      outputEl.innerHTML = '<div class="msg-info">Radar requiere configuración especial. Usa Tab IA para este tipo.</div>';
+      return;
+      
+    case 'treemap':
+      outputEl.innerHTML = '<div class="msg-info">Treemap requiere datos jerárquicos. Usa Tab IA para este tipo.</div>';
+      return;
+      
+    case 'funnel':
+      traces = [{ type: 'funnel', y: xData, x: yData || xData.map(function(_,i) { return xData.length - i; }),
+                  marker: { color: colors } }];
+      break;
+      
+    default:
+      traces = [{ x: xData, y: yData, type: 'bar', marker: { color: colors[0] } }];
+  }
+  
+  // Crear contenedor para el gráfico
+  outputEl.innerHTML = '<div id="qc-plot" style="height:280px"></div>';
+  
+  Plotly.newPlot('qc-plot', traces, layout, { responsive: true, displayModeBar: true });
+  
+  // Agregar botón para expandir
+  var expandBtn = document.createElement('button');
+  expandBtn.className = 'btn btn-secondary';
+  expandBtn.style.cssText = 'margin-top:6px;font-size:10px;margin-right:6px';
+  expandBtn.innerHTML = '↗ Expandir en ventana';
+  expandBtn.onclick = function() {
+    var win = window.open('', '_blank', 'width=900,height=600');
+    win.document.write('<html><head><title>Gráfico NEVEN</title><script src="https://cdn.plot.ly/plotly-2.32.0.min.js"><\/script></head><body style="margin:0;background:#1a1a1a"><div id="chart" style="width:100%;height:100%"></div><script>Plotly.newPlot("chart",' + JSON.stringify(traces) + ',' + JSON.stringify(Object.assign({}, layout, {paper_bgcolor:'#1a1a1a', plot_bgcolor:'#1a1a1a', font:{color:'#e0e0e0'}})) + ');<\/script></body></html>');
+    win.document.close();
+  };
+  outputEl.appendChild(expandBtn);
+  
+  // Agregar botón Enviar a Slide
+  var yLabel = colsY.length > 0 ? colsY.join(', ') : '';
+  _addSendToSlideBtn(outputEl, chartType + ': ' + colX + (yLabel ? ' vs ' + yLabel : ''), function() {
+    return { plotly: { data: traces, layout: Object.assign({}, layout, {paper_bgcolor:'#1a1a1a', plot_bgcolor:'#1a1a1a', font:{color:'#e0e0e0'}}) } };
+  });
+}
+
+// Renderizar mapa con Leaflet
+function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, rawRows) {
+  // Intentar detectar columna de longitud automáticamente
+  var lonColName = null;
+  var lonPatterns = ['lon', 'lng', 'long', 'longitude', 'longitud'];
+  
+  // Buscar en colsY si hay una columna de longitud
+  for (var i = 0; i < colsY.length; i++) {
+    var colLower = colsY[i].toLowerCase();
+    for (var j = 0; j < lonPatterns.length; j++) {
+      if (colLower.indexOf(lonPatterns[j]) !== -1) {
+        lonColName = colsY[i];
+        break;
+      }
+    }
+    if (lonColName) break;
+  }
+  
+  // Si no encontramos lon en Y, usar la primera columna Y como lon
+  if (!lonColName && colsY.length > 0) {
+    lonColName = colsY[0];
+  }
+  
+  if (!lonColName) {
+    outputEl.innerHTML = '<div class="msg-error">Selecciona columna de Longitud en Eje Y</div>';
+    return;
+  }
+  
+  var lonIdx = colsY.indexOf(lonColName);
+  var lonData = yDataArrays[lonIdx];
+  
+  // Filtrar puntos válidos
+  var points = [];
+  for (var i = 0; i < latData.length; i++) {
+    var lat = parseFloat(latData[i]);
+    var lon = parseFloat(lonData[i]);
+    if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      points.push({ lat: lat, lon: lon, idx: i });
+    }
+  }
+  
+  if (points.length === 0) {
+    outputEl.innerHTML = '<div class="msg-error">No se encontraron coordenadas válidas. Verifica que Lat esté entre -90 y 90, Lon entre -180 y 180.</div>';
+    return;
+  }
+  
+  // Calcular centro del mapa
+  var avgLat = points.reduce(function(s, p) { return s + p.lat; }, 0) / points.length;
+  var avgLon = points.reduce(function(s, p) { return s + p.lon; }, 0) / points.length;
+  
+  // Crear contenedor del mapa
+  outputEl.innerHTML = '<div id="qc-map" style="height:300px;border-radius:6px;overflow:hidden"></div>';
+  
+  // Inicializar mapa Leaflet
+  var map = L.map('qc-map').setView([avgLat, avgLon], 10);
+  
+  // Capa de tiles (OpenStreetMap)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+  
+  // Agregar marcadores
+  points.forEach(function(p) {
+    L.circleMarker([p.lat, p.lon], {
+      radius: 6,
+      fillColor: '#a8e600',
+      color: '#1a1a1a',
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
+    }).addTo(map).bindPopup('Lat: ' + p.lat.toFixed(4) + '<br>Lon: ' + p.lon.toFixed(4));
+  });
+  
+  // Ajustar zoom para ver todos los puntos
+  if (points.length > 1) {
+    var bounds = L.latLngBounds(points.map(function(p) { return [p.lat, p.lon]; }));
+    map.fitBounds(bounds, { padding: [20, 20] });
+  }
+  
+  // Info del mapa
+  var infoDiv = document.createElement('div');
+  infoDiv.style.cssText = 'font-size:10px;color:var(--text-secondary);margin-top:6px';
+  infoDiv.textContent = '🗺️ ' + points.length + ' puntos mapeados (' + colLat + ' / ' + lonColName + ')';
+  outputEl.appendChild(infoDiv);
+  
+  // Botón expandir
+  var expandBtn = document.createElement('button');
+  expandBtn.className = 'btn btn-secondary';
+  expandBtn.style.cssText = 'margin-top:6px;font-size:10px';
+  expandBtn.innerHTML = '↗ Expandir en ventana';
+  expandBtn.onclick = function() {
+    var win = window.open('', '_blank', 'width=900,height=600');
+    var pointsJson = JSON.stringify(points);
+    win.document.write('<html><head><title>Mapa NEVEN</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script></head><body style="margin:0"><div id="map" style="width:100%;height:100%"></div><script>var points=' + pointsJson + ';var map=L.map("map").setView([' + avgLat + ',' + avgLon + '],10);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);points.forEach(function(p){L.circleMarker([p.lat,p.lon],{radius:8,fillColor:"#a8e600",color:"#1a1a1a",weight:1,fillOpacity:0.8}).addTo(map).bindPopup("Lat: "+p.lat+"<br>Lon: "+p.lon);});if(points.length>1){map.fitBounds(points.map(function(p){return[p.lat,p.lon]}));}<\/script></body></html>');
+    win.document.close();
+  };
+  outputEl.appendChild(expandBtn);
+}
+
 ['grp-col','grp-metric','grp-val'].forEach(function(id){
   document.getElementById(id).addEventListener('change',function(){
     var gc=document.getElementById('grp-col').value,gm=document.getElementById('grp-metric').value,gv=document.getElementById('grp-val').value;
@@ -2277,7 +2944,96 @@ function _aiSend() {
 }
 
 /**
- * Maneja solicitudes de gráficos usando el sistema de IA multi-librería
+ * Lee datos del clipboard (formato TSV de Excel) y los carga a DuckDB.
+ * Retorna información sobre los datos cargados o null si no hay datos.
+ * Esta función es SILENCIOSA - no muestra mensajes al usuario.
+ * @returns {Promise<{cols, rows, count}|null>}
+ */
+async function _loadClipboardToDuckDB() {
+  try {
+    // Verificar si el navegador soporta Clipboard API
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      console.log('[NEVEN] Clipboard API no disponible');
+      return null;
+    }
+    
+    // Leer del clipboard
+    var clipText = await navigator.clipboard.readText();
+    
+    if (!clipText || !clipText.trim()) {
+      console.log('[NEVEN] Clipboard vacío');
+      return null;
+    }
+    
+    console.log('[NEVEN] Auto-leyendo clipboard:', clipText.length, 'chars');
+    
+    // Excel copia como TSV (tabs entre columnas, newlines entre filas)
+    var lines = clipText.trim().split(/\r?\n/);
+    if (lines.length === 0) {
+      return null;
+    }
+    
+    // Parsear TSV
+    var allRows = lines.map(function(line) {
+      return line.split('\t').map(function(cell) {
+        var trimmed = cell.trim();
+        var num = parseFloat(trimmed);
+        return !isNaN(num) && trimmed !== '' ? num : trimmed;
+      });
+    });
+    
+    // Detectar headers (primera fila con más texto que números)
+    var firstRow = allRows[0];
+    var stringCount = firstRow.filter(function(v) { 
+      return typeof v === 'string' && v !== '' && isNaN(parseFloat(v)); 
+    }).length;
+    var hasHeaders = stringCount > firstRow.length / 2;
+    
+    var cols = hasHeaders 
+      ? firstRow.map(function(v) { return String(v); })
+      : firstRow.map(function(_, i) { return 'Col' + (i+1); });
+    var rows = hasHeaders ? allRows.slice(1) : allRows;
+    
+    if (rows.length === 0) {
+      return null;
+    }
+    
+    // Detectar tipos
+    var types = {};
+    cols.forEach(function(c, i) {
+      var sample = rows.slice(0, 50).map(function(r) { return r[i]; });
+      var numCount = sample.filter(function(v) { 
+        return typeof v === 'number'; 
+      }).length;
+      types[c] = numCount > sample.length * 0.5 ? 'numeric' : 'text';
+    });
+    
+    // Cargar en DuckDB
+    console.log('[NEVEN] Cargando', rows.length, 'filas del clipboard a DuckDB...');
+    var loadResult = await fetch(API + '/api/load', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({columns: cols, types: types, data: rows})
+    }).then(function(r) { return r.json(); });
+    
+    if (loadResult.status === 'ok') {
+      console.log('[NEVEN] Clipboard cargado:', loadResult.rows_loaded, 'filas');
+      return { cols: cols, rows: rows, count: loadResult.rows_loaded };
+    }
+    
+    return null;
+  } catch (e) {
+    // Silenciar errores de permisos - el usuario verá el mensaje de "no hay datos"
+    console.log('[NEVEN] Clipboard no accesible:', e.message);
+    return null;
+  }
+}
+
+/**
+ * Maneja solicitudes de gráficos usando el sistema de IA multi-librería.
+ * FLUJO ACTUALIZADO: 
+ * 1. Intenta leer del clipboard automáticamente (datos frescos de Excel)
+ * 2. Si no hay clipboard, usa datos ya cargados en DuckDB
  */
 async function _aiHandleChartRequest(prompt) {
   var spinner   = document.getElementById('ai-spinner');
@@ -2289,22 +3045,37 @@ async function _aiHandleChartRequest(prompt) {
   sendBtn.disabled = true;
 
   try {
-    // Capturar datos seleccionados en Excel
+    // ═══ PASO 1: Intentar leer datos frescos del clipboard ═══
+    var clipboardLoaded = await _loadClipboardToDuckDB();
+    var dataSource = 'DuckDB';
+    
+    if (clipboardLoaded) {
+      dataSource = 'Clipboard (datos frescos)';
+      console.log('[NEVEN] Usando datos del clipboard:', clipboardLoaded.count, 'filas');
+    }
+    
+    // ═══ PASO 2: Capturar datos (ahora DuckDB tiene datos frescos si había clipboard) ═══
     var rangeData = await captureSelectedRangeForChart();
     
     if (rangeData.error || !rangeData.data || rangeData.data.length === 0) {
-      _aiAddMessage('assistant', 
-        '📊 Para generar un gráfico, primero **selecciona un rango de datos** en Excel.\n\n' +
-        'Ejemplo: Selecciona A1:D50 con tus datos y vuelve a pedirme el gráfico.'
-      );
+      // Mensaje más claro indicando que debe copiar datos
+      var msg = '📊 **No hay datos para graficar.**\n\n' +
+          '**Flujo recomendado:**\n' +
+          '1. En Excel, selecciona tus datos (incluyendo headers)\n' +
+          '2. Copia con **Ctrl+C**\n' +
+          '3. Vuelve aquí y pide el gráfico\n\n' +
+          '_NEVEN leerá el clipboard automáticamente._';
+      
+      _aiAddMessage('assistant', msg);
       spinner.style.display = 'none';
       sendBtn.disabled = false;
       return;
     }
 
-    // Mostrar indicador de rango
+    // ═══ PASO 3: Mostrar indicador con fuente de datos ═══
+    var sourceLabel = clipboardLoaded ? '📋 Clipboard' : '💾 ' + rangeData.address;
     _aiAddMessage('assistant', 
-      '📊 Capturado: **' + rangeData.address + '** (' + 
+      '📊 Datos: **' + sourceLabel + '** (' + 
       rangeData.rows + ' filas × ' + rangeData.columns + ' columnas)\n\n' +
       '_Generando gráfico..._'
     );
@@ -2349,11 +3120,20 @@ async function _aiHandleChartRequest(prompt) {
 
 /**
  * Renderiza un gráfico HTML directamente en el historial del chat
+ * Y lo expande automáticamente en una ventana separada
  */
 function _aiRenderChartInChat(htmlContent, chartType, library) {
   var history = document.getElementById('ai-chat-history');
   
-  // Contenedor del gráfico
+  // ═══ AUTO-EXPANDIR: Abrir el gráfico en ventana nueva inmediatamente ═══
+  var win = window.open('', '_blank', 'width=1000,height=700');
+  if (win) {
+    win.document.write(htmlContent);
+    win.document.title = 'Gráfico NEVEN — ' + (chartType || 'IA');
+    win.document.close();
+  }
+  
+  // ═══ También mostrar miniatura en el chat como referencia ═══
   var container = document.createElement('div');
   container.style.cssText = [
     'max-width:100%;margin:8px 0;border-radius:12px;overflow:hidden;',
@@ -2364,12 +3144,12 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
   // Header
   var header = document.createElement('div');
   header.style.cssText = 'padding:8px 12px;background:var(--bg-tertiary);display:flex;justify-content:space-between;align-items:center;';
-  header.innerHTML = '<span style="font-weight:500;font-size:12px;">📊 Gráfico ' + (chartType || '') + '</span>' +
+  header.innerHTML = '<span style="font-weight:500;font-size:12px;">📊 Gráfico ' + (chartType || '') + ' (expandido en nueva ventana)</span>' +
                      '<span style="font-size:10px;color:var(--text-secondary);">' + (library || '') + '</span>';
 
-  // Iframe para el gráfico
+  // Iframe para miniatura del gráfico
   var iframe = document.createElement('iframe');
-  iframe.style.cssText = 'width:100%;height:350px;border:none;background:white;';
+  iframe.style.cssText = 'width:100%;height:200px;border:none;background:white;';
   iframe.sandbox = 'allow-scripts allow-same-origin';
 
   // Botones de acción
@@ -2398,7 +3178,7 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
     });
   };
 
-  // Botón: Expandir
+  // Botón: Expandir de nuevo
   var btnExpand = document.createElement('button');
   btnExpand.className = 'btn btn-secondary';
   btnExpand.style.cssText = 'font-size:11px;padding:4px 10px;';
@@ -2422,7 +3202,7 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
   container.appendChild(actions);
   history.appendChild(container);
 
-  // Escribir HTML en el iframe
+  // Escribir HTML en el iframe (miniatura)
   var doc = iframe.contentDocument || iframe.contentWindow.document;
   doc.open();
   doc.write(htmlContent);
@@ -2660,6 +3440,33 @@ window._renderCreateFunctionBlock = function(jsonStr) {
       '</button></div>';
   } catch(e) { return '<pre><code>' + jsonStr + '</code></pre>'; }
 };</script>
+
+<!-- Chart generation functions from taskpane.js -->
+<script src="taskpane.js?v=20260819"></script>
+
+<!-- Inicialización de Office.js (si está disponible) -->
+<script>
+(function() {
+  // Intentar inicializar Office.js
+  if (typeof Office !== 'undefined') {
+    Office.onReady(function(info) {
+      console.log('[NEVEN] Office.js inicializado. Host:', info.host, 'Platform:', info.platform);
+      window._officeReady = true;
+      window._officeHost = info.host;
+      
+      // Mostrar indicador de conexión con Excel
+      var indicator = document.createElement('div');
+      indicator.id = 'office-indicator';
+      indicator.style.cssText = 'position:fixed;bottom:4px;right:4px;font-size:9px;color:#4a8;padding:2px 6px;background:rgba(68,170,136,0.1);border-radius:3px;';
+      indicator.textContent = '✓ Excel conectado';
+      document.body.appendChild(indicator);
+    });
+  } else {
+    console.log('[NEVEN] Office.js no disponible — usando modo standalone');
+    window._officeReady = false;
+  }
+})();
+</script>
 
 </body>
 </html>
