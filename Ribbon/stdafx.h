@@ -58,6 +58,7 @@
 #include <atlstr.h>
 
 #include <Psapi.h>
+#include <winhttp.h>  // Para WinHttpOpen, WinHttpConnect, etc. (AGENTE IA button)
 #include <string>
 
 #pragma warning( disable : 4278 )

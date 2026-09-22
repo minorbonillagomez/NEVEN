@@ -880,10 +880,108 @@ public:
 
     case DispIds::OnAIAssistantCommand:
     {
-      // Launch NEVEN Studio via VBS script
-      ShellExecuteW(NULL, L"open", L"wscript.exe", 
-                    L"\"C:\\NEVEN\\NEVEN Studio.vbs\"", 
-                    L"C:\\NEVEN", SW_HIDE);
+      // NEVEN Studio - Start server and open Add-in TaskPane
+      // Step 1: Check if server is running (quick HTTP ping)
+      auto _studio_alive = []() -> bool {
+          HINTERNET hT = WinHttpOpen(L"NEVEN-Ribbon/3.0",
+                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                      WINHTTP_NO_PROXY_NAME,
+                                      WINHTTP_NO_PROXY_BYPASS, 0);
+          if (!hT) return false;
+          DWORD t = 300;
+          WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
+          WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
+          WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
+          bool alive = false;
+          HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
+          if (hC) {
+              HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
+                                                 nullptr, WINHTTP_NO_REFERER,
+                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+              if (hR) {
+                  alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                             nullptr, 0, 0, 0) &&
+                          WinHttpReceiveResponse(hR, nullptr);
+                  WinHttpCloseHandle(hR);
+              }
+              WinHttpCloseHandle(hC);
+          }
+          WinHttpCloseHandle(hT);
+          return alive;
+      };
+
+      // Step 2: Start server if not running
+      if (!_studio_alive()) {
+          std::wstring python_exe = L"C:\\NEVEN\\python\\python.exe";
+          DWORD attrs = GetFileAttributesW(python_exe.c_str());
+          if (attrs == INVALID_FILE_ATTRIBUTES)
+              python_exe = L"python";
+
+          std::wstring cmd = python_exe +
+              L" \"C:\\NEVEN\\taskpane\\start_studio.py\" --no-browser";
+
+          STARTUPINFOW si{};
+          si.cb          = sizeof(si);
+          si.dwFlags     = STARTF_USESHOWWINDOW;
+          si.wShowWindow = SW_HIDE;
+          PROCESS_INFORMATION pi{};
+
+          CreateProcessW(nullptr,
+                         const_cast<LPWSTR>(cmd.c_str()),
+                         nullptr, nullptr, FALSE,
+                         CREATE_NO_WINDOW,
+                         nullptr,
+                         L"C:\\NEVEN\\taskpane\\",
+                         &si, &pi);
+          if (pi.hThread)  CloseHandle(pi.hThread);
+          if (pi.hProcess) CloseHandle(pi.hProcess);
+
+          // Wait up to 15 seconds for server to start
+          for (int i = 0; i < 30 && !_studio_alive(); i++)
+              Sleep(500);
+      }
+
+      // Step 3: Send signal to show TaskPane via HTTP POST
+      // The Add-in listens for this and calls Office.addin.showAsTaskpane()
+      {
+          HINTERNET hT = WinHttpOpen(L"NEVEN-Ribbon/3.0",
+                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                      WINHTTP_NO_PROXY_NAME,
+                                      WINHTTP_NO_PROXY_BYPASS, 0);
+          if (hT) {
+              HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
+              if (hC) {
+                  HINTERNET hR = WinHttpOpenRequest(hC, L"POST", L"/api/show-taskpane",
+                                                     nullptr, WINHTTP_NO_REFERER,
+                                                     WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+                  if (hR) {
+                      WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                         nullptr, 0, 0, 0);
+                      WinHttpReceiveResponse(hR, nullptr);
+                      WinHttpCloseHandle(hR);
+                  }
+                  WinHttpCloseHandle(hC);
+              }
+              WinHttpCloseHandle(hT);
+          }
+      }
+
+      // Step 4: Notify user to click Add-in button if TaskPane doesn't auto-show
+      // (Some Office versions require user interaction to show TaskPane)
+      if (_studio_alive()) {
+          MessageBoxW(NULL,
+              L"NEVEN Studio está listo.\n\n"
+              L"El panel debería abrirse automáticamente.\n"
+              L"Si no aparece, haz clic en el botón 'NEVEN Studio'\n"
+              L"en la pestaña Inicio del Ribbon.",
+              L"NEVEN Studio", MB_OK | MB_ICONINFORMATION);
+      } else {
+          MessageBoxW(NULL,
+              L"No se pudo iniciar NEVEN Studio.\n\n"
+              L"Verifica que Python esté instalado correctamente.",
+              L"NEVEN Studio - Error", MB_OK | MB_ICONERROR);
+      }
+
       return S_OK;
     }
 

@@ -62,12 +62,12 @@
         <!-- Grupo: Analisis (nuevos viewers) -->
         <group id="grpAnalysis" label="Analisis">
           <button id="btnAIAssistant"
-                  label="Agente IA"
+                  label="NEVEN Studio"
                   size="large"
                   onAction="OnAIAssistantCommand"
                   imageMso="BlogHomePage"
-                  screentip="Agente IA (NEVEN Studio)"
-                  supertip="Abre NEVEN Studio con el Agente IA. Usa el proveedor configurado en neven-config.json (Azure OpenAI, OpenAI, Ollama, etc.)." />
+                  screentip="NEVEN Studio"
+                  supertip="Abre NEVEN Studio — análisis interactivo con R, Python, Julia, DuckDB y asistente IA." />
 
           <button id="btnTextAnalysis"
                   label="Texto"

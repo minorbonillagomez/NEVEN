@@ -2,6 +2,10 @@
 // NEVEN Studio — Task Pane JavaScript (Office.js + API Client)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Si ya existe API (definida en el HTML inline), solo exponer funciones de gráficos
+// y no reinicializar la app
+const _TASKPANE_JS_LOADED_FOR_CHARTS_ONLY = typeof API !== 'undefined';
+
 const API_BASE = window.location.protocol === 'file:'
   ? (window._NEVEN_API_BASE || 'http://localhost:5555')
   : window.location.origin;
@@ -14,7 +18,10 @@ let lastSqlQuery = '';
 // ─── Initialization ──────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function() {
-  initializeApp();
+  // Solo inicializar si este archivo es el principal (no cargado como complemento)
+  if (!_TASKPANE_JS_LOADED_FOR_CHARTS_ONLY) {
+    initializeApp();
+  }
 });
 
 function initializeApp() {
@@ -60,6 +67,42 @@ function initializeApp() {
 
   // Run Script tab
   initRunScriptTab();
+
+  // Start polling for show-taskpane signal from Ribbon
+  startShowTaskpanePolling();
+}
+
+// ─── Show TaskPane Polling ───────────────────────────────────────────────────
+// El Ribbon (C++) envía POST /api/show-taskpane cuando el usuario hace clic
+// en el botón AGENTE IA. Este polling detecta la señal y llama a
+// Office.addin.showAsTaskpane() para mostrar el panel.
+
+let _showTaskpanePollingId = null;
+
+function startShowTaskpanePolling() {
+  // Solo polling si estamos en el contexto de Office Add-in
+  if (typeof Office === 'undefined' || !Office.addin) {
+    console.log('[ShowTaskpane] Office.addin no disponible - polling desactivado');
+    return;
+  }
+
+  // Poll cada 500ms
+  _showTaskpanePollingId = setInterval(async () => {
+    try {
+      const resp = await fetch(API_BASE + '/api/show-taskpane/poll');
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.shouldShow) {
+          console.log('[ShowTaskpane] Señal recibida - mostrando TaskPane');
+          Office.addin.showAsTaskpane().catch(err => {
+            console.warn('[ShowTaskpane] Error en showAsTaskpane:', err);
+          });
+        }
+      }
+    } catch (err) {
+      // Ignorar errores de red (servidor puede no estar listo)
+    }
+  }, 500);
 }
 
 // ─── Tab Switching ───────────────────────────────────────────────────────────
@@ -1395,14 +1438,18 @@ window.getSheetAnalysisSummary = getSheetAnalysisSummary;
  */
 async function analyzeSheetForAI(options = {}) {
   try {
+    console.log('[NEVEN] analyzeSheetForAI: iniciando captura...');
     const analysis = await captureSheetForAnalysis(options);
+    console.log('[NEVEN] analyzeSheetForAI: resultado =', analysis);
     
     if (analysis.status === 'error') {
+      console.error('[NEVEN] analyzeSheetForAI: error =', analysis.message);
       showToast('Error: ' + analysis.message);
       return false;
     }
     
     if (!analysis.summary || analysis.summary.total_formulas === 0) {
+      console.warn('[NEVEN] analyzeSheetForAI: no hay fórmulas en la hoja');
       showToast('La hoja no tiene fórmulas para analizar');
       return false;
     }
@@ -1413,6 +1460,8 @@ async function analyzeSheetForAI(options = {}) {
     // Inject into AI state (same pattern as _aiAttachDataset)
     if (typeof _aiState !== 'undefined') {
       _aiState.context = contextText;
+      console.log('[NEVEN] analyzeSheetForAI: contexto inyectado, longitud =', contextText.length);
+      console.log('[NEVEN] analyzeSheetForAI: primeros 500 chars =', contextText.substring(0, 500));
       
       // Update context card
       const ctxCard = document.getElementById('ai-context-card');
@@ -1681,57 +1730,135 @@ const CHART_KEYWORDS = {
 const CHART_GENERIC_PATTERN = /gráfico|grafico|gráfica|grafica|chart|visualiza|dibuja|muestra|plot|representa/i;
 
 /**
- * Captura el rango seleccionado en Excel para generación de gráficos.
- * Incluye detección automática de headers y tipado de datos.
+ * Captura datos para generación de gráficos.
+ * Estrategia:
+ * 1. Si Office.js está disponible (Excel Add-in), captura la selección directamente
+ * 2. Si no, usa datos cargados en DuckDB (fallback)
  * 
- * @returns {Promise<{address, headers, data, columns, rows, types}>}
+ * @returns {Promise<{address, headers, data, columns, rows, types, error?}>}
  */
 async function captureSelectedRangeForChart() {
-  return await Excel.run(async (context) => {
-    const selection = context.workbook.getSelectedRange();
-    selection.load(['values', 'address', 'columnCount', 'rowCount']);
-    await context.sync();
+  const apiBase = typeof API !== 'undefined' ? API : API_BASE;
+  
+  // ═══ Estrategia 1: Usar Office.js si está disponible ═══
+  if (typeof Office !== 'undefined' && typeof Excel !== 'undefined') {
+    try {
+      const result = await Excel.run(async (context) => {
+        const selection = context.workbook.getSelectedRange();
+        selection.load(['values', 'address', 'columnCount', 'rowCount']);
+        await context.sync();
 
-    const values = selection.values;
-    if (!values || values.length === 0) {
-      return { error: 'No hay datos seleccionados' };
+        const values = selection.values;
+        if (!values || values.length === 0) {
+          return { error: 'No hay datos seleccionados en Excel' };
+        }
+
+        // Detectar si primera fila son headers
+        const hasHeaders = _detectHeadersFromValues(values[0]);
+        const headers = hasHeaders ? values[0] : null;
+        const data = hasHeaders ? values.slice(1) : values;
+
+        // Detectar tipos de columnas
+        const types = _detectColumnTypesFromData(data, headers ? headers.length : values[0].length);
+
+        return {
+          address: selection.address,
+          headers: headers,
+          data: data,
+          columns: selection.columnCount,
+          rows: data.length,
+          types: types
+        };
+      });
+      
+      // Si Office.js funcionó, retornar el resultado
+      if (result && !result.error && result.data && result.data.length > 0) {
+        console.log('[NEVEN] Datos capturados via Office.js:', result.address);
+        return result;
+      }
+    } catch (e) {
+      console.warn('[NEVEN] Office.js no disponible o error:', e.message);
+      // Continuar con fallback
     }
+  }
 
-    // Detectar si primera fila son headers
-    const hasHeaders = _detectHeaders(values[0]);
-    const headers = hasHeaders ? values[0] : null;
-    const data = hasHeaders ? values.slice(1) : values;
+  // ═══ Estrategia 2: Fallback a DuckDB ═══
+  try {
+    const response = await fetch(apiBase + '/api/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sql: 'SELECT * FROM dataset LIMIT 2000', page: 1, page_size: 2000 })
+    });
+    const result = await response.json();
+    
+    if (result.status === 'ok' && result.rows && result.rows.length > 0) {
+      const headers = result.columns || [];
+      const data = result.rows;
+      const types = _detectColumnTypesFromData(data, headers.length);
+      
+      console.log('[NEVEN] Datos capturados via DuckDB:', headers.length, 'columnas,', data.length, 'filas');
+      return {
+        address: 'DuckDB (Data Studio)',
+        headers: headers,
+        data: data,
+        columns: headers.length,
+        rows: data.length,
+        types: types
+      };
+    }
+  } catch (e) {
+    console.warn('[NEVEN] DuckDB query failed:', e);
+  }
 
-    // Detectar tipos de columnas
-    const types = _detectColumnTypes(data, headers ? headers.length : values[0].length);
+  // ═══ Estrategia 3: Fallback al bridge ═══
+  try {
+    const response = await fetch(apiBase + '/api/bridge/pull?key=default');
+    const result = await response.json();
+    
+    if (result.status === 'ok' && result.data) {
+      const bridgeData = result.data;
+      const headers = bridgeData.columns || [];
+      const rows = bridgeData.rows || [];
+      
+      if (rows.length > 0) {
+        const types = _detectColumnTypesFromData(rows, headers.length);
+        console.log('[NEVEN] Datos capturados via Bridge');
+        return {
+          address: 'Excel Bridge',
+          headers: headers,
+          data: rows,
+          columns: headers.length,
+          rows: rows.length,
+          types: types
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('[NEVEN] Bridge pull failed:', e);
+  }
 
-    return {
-      address: selection.address,
-      headers: headers,
-      data: data,
-      columns: selection.columnCount,
-      rows: data.length,
-      types: types
-    };
-  });
+  // ═══ Sin datos disponibles ═══
+  return { 
+    error: 'No hay datos disponibles. Selecciona datos en Excel o carga un archivo.' 
+  };
 }
 
 /**
  * Detecta si la primera fila contiene headers (más strings que números)
  */
-function _detectHeaders(firstRow) {
+function _detectHeadersFromValues(firstRow) {
   if (!firstRow || firstRow.length === 0) return false;
   const strings = firstRow.filter(v => typeof v === 'string' && isNaN(parseFloat(v))).length;
   return strings > firstRow.length / 2;
 }
 
 /**
- * Detecta el tipo de cada columna: 'numeric', 'text', 'date', 'geo'
+ * Detecta tipos de columnas a partir de datos ya cargados
  */
-function _detectColumnTypes(data, numCols) {
+function _detectColumnTypesFromData(data, numCols) {
   const types = [];
   for (let c = 0; c < numCols; c++) {
-    const colValues = data.map(row => row[c]).filter(v => v !== null && v !== '');
+    const colValues = data.map(row => row[c]).filter(v => v !== null && v !== undefined && v !== '');
     types.push(_inferColumnType(colValues));
   }
   return types;

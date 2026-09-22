@@ -158,6 +158,11 @@ _config = {}
 _excel_context_lock    = threading.Lock()
 _excel_context_pending = None   # {text, timestamp, source, columns, n_rows}
 
+# ── Señal de show-taskpane (desde Ribbon) ─────────────────────────────────
+# Se activa via POST /api/show-taskpane y se consume via GET /api/show-taskpane/poll
+_show_taskpane_lock    = threading.Lock()
+_show_taskpane_signal  = False   # True cuando el Ribbon solicita mostrar el TaskPane
+
 DEFAULT_CONFIG = {
     "enabled": True,
     "port": 5555,
@@ -445,7 +450,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
         # Bridge pull (TaskPane reads data that Excel pushed)
         if path == 'api/bridge/pull':
             key = unquote(parsed.query.split('=')[1]) if '=' in (parsed.query or '') else 'default'
-            bridge_dir = os.path.join(os.path.dirname(_config.get("staticDir", "C:\\NEVEN\\taskpane")), "bridge")
+            static_dir = _config.get("staticDir", "C:\\NEVEN\\taskpane").rstrip('/\\')
+            bridge_dir = os.path.join(os.path.dirname(static_dir), "bridge")
             filepath = os.path.join(bridge_dir, f"{key}.json")
             if os.path.isfile(filepath):
                 with open(filepath, 'r', encoding='utf-8') as f:
@@ -457,7 +463,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
 
         # Bridge status (list all keys in buffer)
         if path == 'api/bridge/status':
-            bridge_dir = os.path.join(os.path.dirname(_config.get("staticDir", "C:\\NEVEN\\taskpane")), "bridge")
+            static_dir = _config.get("staticDir", "C:\\NEVEN\\taskpane").rstrip('/\\')
+            bridge_dir = os.path.join(os.path.dirname(static_dir), "bridge")
             keys = []
             if os.path.isdir(bridge_dir):
                 keys = [f[:-5] for f in os.listdir(bridge_dir) if f.endswith('.json')]
@@ -497,8 +504,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
 
         # ── AI config ─────────────────────────────────────────────────────────
         if path == 'api/ai/config':
+            static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
             config_path = os.path.join(
-                os.path.dirname(_config.get("staticDir", r"C:\NEVEN\taskpane")), "..",
+                os.path.dirname(static_dir), "..",
                 "neven-config.json"
             )
             if not os.path.isfile(config_path):
@@ -539,11 +547,59 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 self._send_json({"status": "empty"})
             return
 
+        # ── Show TaskPane polling — GET consume la señal del Ribbon ───────────
+        if path == 'api/show-taskpane/poll':
+            global _show_taskpane_signal
+            with _show_taskpane_lock:
+                should_show = _show_taskpane_signal
+                _show_taskpane_signal = False   # consumible — se borra al leerse
+            self._send_json({"shouldShow": should_show})
+            return
+
         # Serve viewers
         if path.startswith('viewers/'):
             viewers_dir = _config.get("viewersDir", "C:\\NEVEN\\workspace")
             file_path = os.path.join(viewers_dir, path[8:])
             self._serve_file(file_path)
+            return
+
+        # ── Office Add-in Catalog ─────────────────────────────────────────────
+        # Serve manifest.xml for Office Add-in registration
+        # Users can add http://localhost:5555/catalog/ as trusted catalog in Excel
+        if path == 'catalog/' or path == 'catalog':
+            # Return catalog listing (for Office to discover add-ins)
+            catalog_dir = _config.get("catalogDir", r"C:\NEVEN\catalog")
+            manifests = []
+            if os.path.isdir(catalog_dir):
+                for f in os.listdir(catalog_dir):
+                    if f.endswith('.xml'):
+                        manifests.append(f)
+            # Return simple HTML listing
+            html = '<!DOCTYPE html><html><head><title>NEVEN Add-in Catalog</title></head><body>'
+            html += '<h1>NEVEN Office Add-in Catalog</h1><ul>'
+            for m in manifests:
+                html += f'<li><a href="/catalog/{m}">{m}</a></li>'
+            html += '</ul></body></html>'
+            self.send_response(200)
+            self._add_cors_headers()
+            self.send_header('Content-Type', 'text/html')
+            self.send_header('Content-Length', str(len(html)))
+            self.end_headers()
+            self.wfile.write(html.encode('utf-8'))
+            return
+
+        if path.startswith('catalog/'):
+            catalog_dir = _config.get("catalogDir", r"C:\NEVEN\catalog")
+            manifest_name = path[8:]  # Remove 'catalog/' prefix
+            file_path = os.path.join(catalog_dir, manifest_name)
+            if os.path.isfile(file_path):
+                self._serve_file(file_path, content_type='application/xml')
+            else:
+                self.send_response(404)
+                self._add_cors_headers()
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b'Manifest not found')
             return
 
         # Serve static files (taskpane, assets)
@@ -553,7 +609,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
         file_path = os.path.join(static_dir, path)
         self._serve_file(file_path)
 
-    def _serve_file(self, file_path):
+    def _serve_file(self, file_path, content_type=None):
         """Serve a file from disk."""
         if not os.path.isfile(file_path):
             self.send_response(404)
@@ -568,9 +624,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
         content_types = {
             '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',
             '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml',
-            '.ico': 'image/x-icon'
+            '.ico': 'image/x-icon', '.xml': 'application/xml'
         }
-        ctype = content_types.get(ext, 'application/octet-stream')
+        ctype = content_type or content_types.get(ext, 'application/octet-stream')
 
         with open(file_path, 'rb') as f:
             content = f.read()
@@ -643,10 +699,15 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_ai_chat(body)
         elif path == 'api/ai/context':
             self._handle_ai_context(body)
+        elif path == 'api/ai/chart':
+            self._handle_ai_chart(body)
         elif path == 'api/functions/create':
             self._handle_function_create(body)
         elif path == 'api/packages/install':
             self._handle_pkg_install(body)
+        elif path == 'api/show-taskpane':
+            # Signal from Ribbon to show TaskPane (client polls this via GET)
+            self._handle_show_taskpane()
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
 
@@ -736,8 +797,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
         import urllib.request as _url_req
 
         # ── Load AI config from neven-config.json ────────────────────────────
+        static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
         config_path = os.path.join(
-            os.path.dirname(_config.get("staticDir", r"C:\NEVEN\taskpane")), "..",
+            os.path.dirname(static_dir), "..",
             "neven-config.json"
         )
         # Fallback to canonical production path
@@ -997,6 +1059,17 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "tokens_used": tokens,
         })
 
+    def _handle_show_taskpane(self):
+        """POST /api/show-taskpane — señal del Ribbon para mostrar el TaskPane.
+
+        El Add-in hace polling a GET /api/show-taskpane/poll y cuando recibe
+        shouldShow=true, llama a Office.addin.showAsTaskpane().
+        """
+        global _show_taskpane_signal
+        with _show_taskpane_lock:
+            _show_taskpane_signal = True
+        self._send_json({"status": "ok", "message": "Signal sent"})
+
     def _handle_ai_context(self, body: dict):
         """POST /api/ai/context — recibe contexto de Excel para el Tab IA.
 
@@ -1044,6 +1117,228 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "status":  "ok",
             "message": f"Contexto almacenado ({len(context_text)} chars)",
         })
+
+    def _handle_ai_chart(self, body: dict):
+        """POST /api/ai/chart — genera un gráfico HTML interactivo.
+
+        Body:
+            range_address : str — dirección del rango (ej: "Sheet1!A1:D50")
+            headers       : [str] | null — nombres de columnas
+            data          : [[...]] — datos en formato row-major
+            prompt        : str — solicitud del usuario (ej: "gráfico de barras")
+
+        Returns:
+            {status, html, chart_type, library, tokens_used}
+        """
+        import urllib.request as _url_req
+
+        # Cargar config de AI
+        static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
+        config_path = os.path.join(os.path.dirname(static_dir), "neven-config.json")
+
+        ai_config = {}
+        if os.path.isfile(config_path):
+            try:
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    full_config = json.load(f)
+                ai_config = full_config.get("AI", {})
+            except Exception as e:
+                self._send_error_json(f"Error leyendo config: {e}", 500)
+                return
+
+        if not ai_config.get("enabled", False):
+            self._send_error_json("AI.enabled=false en neven-config.json", 503)
+            return
+
+        # Extraer campos del body
+        range_address = body.get("range_address", "Desconocido")
+        headers = body.get("headers")  # puede ser None o lista
+        data = body.get("data", [])
+        user_prompt = body.get("prompt", "").strip()
+
+        if not data:
+            self._send_error_json("El campo 'data' no puede estar vacío", 400)
+            return
+        if not user_prompt:
+            self._send_error_json("El campo 'prompt' no puede estar vacío", 400)
+            return
+
+        # Detectar tipo de gráfico
+        chart_type = self._detect_chart_type(user_prompt)
+
+        # Construir prompt para generación de gráfico
+        system_prompt = self._build_chart_system_prompt(
+            range_address=range_address,
+            headers=headers,
+            data=data,
+            chart_type=chart_type
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+
+        # Llamar al LLM
+        try:
+            provider = ai_config.get("provider", "azure").lower()
+            endpoint = ai_config.get("endpoint", "")
+            api_key = ai_config.get("apiKey", "")
+            model = ai_config.get("model", "gpt-4")
+            max_tokens = ai_config.get("maxTokens", 4000)
+            temperature = ai_config.get("temperature", 0.3)
+            timeout = ai_config.get("timeout", 120)
+
+            if provider == "azure":
+                api_version = ai_config.get("apiVersion", "2024-02-15-preview")
+                url = f"{endpoint}/openai/deployments/{model}/chat/completions?api-version={api_version}"
+                headers_req = {
+                    "Content-Type": "application/json",
+                    "api-key": api_key
+                }
+            else:
+                url = endpoint if endpoint else "https://api.openai.com/v1/chat/completions"
+                headers_req = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}"
+                }
+
+            payload = {
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "temperature": temperature
+            }
+            if provider != "azure":
+                payload["model"] = model
+
+            req = _url_req.Request(
+                url,
+                data=json.dumps(payload).encode('utf-8'),
+                headers=headers_req,
+                method='POST'
+            )
+
+            with _url_req.urlopen(req, timeout=timeout) as resp:
+                result = json.loads(resp.read().decode('utf-8'))
+
+            reply = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+            tokens_used = result.get("usage", {}).get("total_tokens", 0)
+
+        except Exception as e:
+            self._send_error_json(f"Error llamando al LLM: {e}", 502)
+            return
+
+        # Limpiar respuesta (quitar bloques de código markdown)
+        html_content = reply.strip()
+        if html_content.startswith("```html"):
+            html_content = html_content[7:]
+        if html_content.startswith("```"):
+            html_content = html_content[3:]
+        if html_content.endswith("```"):
+            html_content = html_content[:-3]
+        html_content = html_content.strip()
+
+        # Detectar librería usada
+        library = "unknown"
+        html_lower = html_content.lower()
+        if "plotly" in html_lower:
+            library = "Plotly"
+        elif "chart.js" in html_lower or "new chart(" in html_lower:
+            library = "Chart.js"
+        elif "echarts" in html_lower:
+            library = "ECharts"
+        elif "apexcharts" in html_lower:
+            library = "ApexCharts"
+        elif "leaflet" in html_lower:
+            library = "Leaflet"
+        elif "d3" in html_lower:
+            library = "D3.js"
+
+        self._send_json({
+            "status": "ok",
+            "html": html_content,
+            "chart_type": chart_type,
+            "library": library,
+            "tokens_used": tokens_used
+        })
+
+    def _detect_chart_type(self, prompt: str) -> str:
+        """Detecta el tipo de gráfico solicitado en el prompt."""
+        prompt_lower = prompt.lower()
+        
+        chart_patterns = {
+            "bar": ["barra", "barras", "bar chart", "bar graph"],
+            "line": ["línea", "linea", "line chart", "tendencia", "serie temporal"],
+            "pie": ["pastel", "torta", "pie chart", "circular"],
+            "scatter": ["dispersión", "dispersion", "scatter", "puntos"],
+            "histogram": ["histograma", "histogram", "distribución"],
+            "box": ["caja", "boxplot", "box plot", "bigotes"],
+            "heatmap": ["calor", "heatmap", "heat map", "mapa de calor"],
+            "area": ["área", "area chart", "apilado"],
+            "map": ["mapa", "geográfico", "geografico", "ubicación", "lat", "lon"],
+        }
+        
+        for chart_type, patterns in chart_patterns.items():
+            for pattern in patterns:
+                if pattern in prompt_lower:
+                    return chart_type
+        
+        return "auto"
+
+    def _build_chart_system_prompt(self, range_address: str, headers, data: list, chart_type: str) -> str:
+        """Construye el prompt de sistema para generación de gráficos."""
+        
+        # Limitar datos para el prompt (máximo 50 filas de muestra)
+        sample_data = data[:50] if len(data) > 50 else data
+        total_rows = len(data)
+        
+        # Formatear headers
+        if headers:
+            header_str = ", ".join(str(h) for h in headers)
+        else:
+            header_str = f"Columna 1 a Columna {len(data[0]) if data else 0}"
+        
+        # Detectar si hay coordenadas geográficas
+        has_geo = False
+        if headers:
+            headers_lower = [str(h).lower() for h in headers]
+            has_geo = any(h in headers_lower for h in ['lat', 'lon', 'latitude', 'longitude', 'latitud', 'longitud'])
+        
+        prompt = f"""Eres un experto en visualización de datos. Tu tarea es generar código HTML completo y auto-contenido que muestre un gráfico interactivo.
+
+## Datos disponibles
+- **Rango:** {range_address}
+- **Columnas:** {header_str}
+- **Total filas:** {total_rows}
+- **Muestra de datos (primeras {len(sample_data)} filas):**
+
+{json.dumps(sample_data[:10], indent=2, ensure_ascii=False)}
+
+## Tipo de gráfico solicitado: {chart_type}
+
+## Instrucciones críticas:
+
+1. **Genera HTML COMPLETO** con todo el código necesario (CSS, JavaScript, datos).
+2. **Usa una de estas librerías** (en orden de preferencia):
+   - **Plotly.js** (preferido para gráficos interactivos)
+   - **Chart.js** (alternativa ligera)
+   - **Leaflet** (si hay datos geográficos lat/lon)
+   
+3. **Incluye los CDN** de las librerías en el HTML.
+
+4. **Incrusta los datos** directamente en el JavaScript (no uses fetch ni archivos externos).
+
+5. **El gráfico debe ser interactivo**: hover, zoom, tooltips.
+
+6. **Tamaño responsivo**: usa width: 100% y height: 400px.
+
+7. **Tema oscuro**: fondo #1e1e1e, texto #e0e0e0, colores vibrantes para datos.
+
+8. **NO incluyas** explicaciones, solo el código HTML completo.
+
+{"IMPORTANTE: Los datos contienen coordenadas geográficas (lat/lon). Usa Leaflet para un mapa interactivo." if has_geo else ""}
+"""
+        return prompt
 
     def _handle_function_create(self, body: dict):
         """POST /api/functions/create — guarda una nueva función en C:\\NEVEN\\functions\\
@@ -1415,7 +1710,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if not columns:
             self._send_error_json("Missing 'columns'")
             return
-        bridge_dir = os.path.join(os.path.dirname(_config.get("staticDir", "C:\\NEVEN\\taskpane")), "bridge")
+        static_dir = _config.get("staticDir", "C:\\NEVEN\\taskpane").rstrip('/\\')
+        bridge_dir = os.path.join(os.path.dirname(static_dir), "bridge")
         os.makedirs(bridge_dir, exist_ok=True)
         filepath = os.path.join(bridge_dir, f"{key}.json")
         data = {"columns": columns, "rows": rows, "timestamp": time.time(), "source": "excel"}
@@ -1430,7 +1726,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if data is None:
             self._send_error_json("Missing 'data'")
             return
-        bridge_dir = os.path.join(os.path.dirname(_config.get("staticDir", "C:\\NEVEN\\taskpane")), "bridge")
+        static_dir = _config.get("staticDir", "C:\\NEVEN\\taskpane").rstrip('/\\')
+        bridge_dir = os.path.join(os.path.dirname(static_dir), "bridge")
         os.makedirs(bridge_dir, exist_ok=True)
         filepath = os.path.join(bridge_dir, f"{key}.json")
         payload = {"data": data, "timestamp": time.time(), "source": "taskpane"}

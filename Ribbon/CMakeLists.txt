@@ -51,6 +51,7 @@ target_link_libraries(NEVENRibbon PRIVATE
     gdiplus
     shlwapi
     psapi
+    winhttp
 )
 
 # Module definition file for COM exports

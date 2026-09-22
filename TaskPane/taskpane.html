@@ -3294,6 +3294,14 @@ function _aiCallLLM(extra) {
   };
   if (extra.prompt_id) { payload.prompt_id = extra.prompt_id; }
 
+  // DEBUG: Log del payload antes de enviar
+  console.log('[NEVEN] _aiCallLLM payload:', {
+    messagesCount: payload.messages.length,
+    contextLength: (payload.context || '').length,
+    contextPreview: (payload.context || '').substring(0, 200),
+    hasSheetAnalysis: (payload.context || '').includes('=== SHEET ANALYSIS ===')
+  });
+
   fetch(API + '/api/ai/chat', {
     method:  'POST',
     headers: {'Content-Type': 'application/json'},

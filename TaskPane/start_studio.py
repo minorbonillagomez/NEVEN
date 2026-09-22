@@ -847,16 +847,18 @@ def start_server(
     pipe_clients.update(factory)
 
     standalone = config.get("Standalone", {})
+    taskpane = config.get("TaskPane", {})
     server_config = {
         "enabled": True,
-        "port": standalone.get("port", 5555),
-        "fallbackPort": standalone.get("fallbackPort", 5556),
-        "certPath": standalone.get("certPath", ""),
-        "keyPath":  standalone.get("keyPath", ""),
-        "staticDir":   standalone.get("staticDir",   r"C:\NEVEN\taskpane"),
-        "viewersDir":  standalone.get("viewersDir",  r"C:\NEVEN\workspace"),
-        "queryTimeoutSec": standalone.get("queryTimeoutSec", 30),
-        "maxPayloadMB":    standalone.get("maxPayloadMB", 50),
+        "port": standalone.get("port", taskpane.get("port", 5555)),
+        "fallbackPort": standalone.get("fallbackPort", taskpane.get("fallbackPort", 5556)),
+        "certPath": standalone.get("certPath", taskpane.get("certPath", "")),
+        "keyPath":  standalone.get("keyPath", taskpane.get("keyPath", "")),
+        "staticDir":   standalone.get("staticDir",   taskpane.get("staticDir", r"C:\NEVEN\taskpane")),
+        "viewersDir":  standalone.get("viewersDir",  taskpane.get("viewersDir", r"C:\NEVEN\workspace")),
+        "catalogDir":  standalone.get("catalogDir",  taskpane.get("catalogDir", r"C:\NEVEN\catalog")),
+        "queryTimeoutSec": standalone.get("queryTimeoutSec", taskpane.get("queryTimeoutSec", 30)),
+        "maxPayloadMB":    standalone.get("maxPayloadMB", taskpane.get("maxPayloadMB", 50)),
         "pipe_client_factory": pipe_clients,  # same object — live updates visible
     }
 
