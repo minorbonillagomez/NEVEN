@@ -267,3 +267,179 @@ table.data-table tr:hover td { background: var(--accent-dim); }
 #ai-chat-history a          { color: var(--accent); text-decoration: underline; }
 /* KaTeX display en el chat */
 #ai-chat-history .katex-display { margin: 8px 0; overflow-x: auto; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAB AYUDA — Diccionario de Funciones NevenX
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Familias (categorías colapsables) ────────────────────────────────────── */
+.ayuda-familia {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+
+.ayuda-familia-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  list-style: none;
+  user-select: none;
+}
+
+.ayuda-familia-header::-webkit-details-marker { display: none; }
+
+.ayuda-familia[open] .ayuda-familia-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.ayuda-familia-label::before {
+  content: '▶ ';
+  font-size: 8px;
+  margin-right: 6px;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+
+.ayuda-familia[open] .ayuda-familia-label::before {
+  transform: rotate(90deg);
+}
+
+.ayuda-familia-count {
+  background: rgba(215, 165, 56, 0.15);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ─── Lista de funciones dentro de una familia ─────────────────────────────── */
+.ayuda-funciones-lista {
+  padding: 6px;
+}
+
+.ayuda-funcion-item {
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.ayuda-funcion-item:hover {
+  border-color: var(--accent);
+  background: rgba(215, 165, 56, 0.05);
+}
+
+.ayuda-funcion-item:last-child {
+  margin-bottom: 0;
+}
+
+.ayuda-funcion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ayuda-funcion-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.ayuda-funcion-nombre {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.ayuda-funcion-xll {
+  background: #111;
+  color: var(--accent);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: Consolas, monospace;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+
+.ayuda-funcion-desc {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ─── Tablas de parámetros, outputs y roles ────────────────────────────────── */
+.ayuda-params-table,
+.ayuda-outputs-table,
+.ayuda-roles-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.ayuda-params-table th,
+.ayuda-outputs-table th,
+.ayuda-roles-table th {
+  background: #333;
+  color: var(--accent);
+  padding: 4px 6px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #444;
+}
+
+.ayuda-params-table td,
+.ayuda-outputs-table td,
+.ayuda-roles-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #333;
+  color: var(--text-primary);
+  vertical-align: top;
+}
+
+.ayuda-params-table tr:hover td,
+.ayuda-outputs-table tr:hover td,
+.ayuda-roles-table tr:hover td {
+  background: rgba(215, 165, 56, 0.05);
+}
+
+/* ─── Panel de detalle ─────────────────────────────────────────────────────── */
+#ayuda-detalle {
+  animation: ayuda-slide-in 0.2s ease-out;
+}
+
+@keyframes ayuda-slide-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#ayuda-detalle details {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+#ayuda-detalle details summary {
+  margin-bottom: 6px;
+}
+
+#ayuda-detalle details[open] summary {
+  margin-bottom: 8px;
+}

@@ -58,6 +58,7 @@
     <div class="tab" data-tab="data-lab">Data Lab</div>
     <div class="tab" data-tab="presentaciones">Presentaciones</div>
     <div class="tab" data-tab="ai">IA</div>
+    <div class="tab" data-tab="ayuda">Ayuda</div>
   </div>
 
   <!-- Tab: Viewers -->
@@ -489,6 +490,98 @@
     </div>
 
   </div><!-- /tab ai -->
+
+  <!-- Tab: Ayuda / Diccionario de Funciones -->
+  <div class="tab-content" id="ayuda">
+    
+    <!-- Encabezado con botón de recarga -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">Diccionario de Funciones NEVEN</div>
+        <div style="font-size:10px;color:var(--text-secondary)">
+          Funciones disponibles desde celdas de Excel con <code style="background:#333;padding:1px 4px;border-radius:2px">=NEVEN.R()</code>, 
+          <code style="background:#333;padding:1px 4px;border-radius:2px">=NEVEN.P()</code>, 
+          <code style="background:#333;padding:1px 4px;border-radius:2px">=NEVEN.J()</code>
+        </div>
+      </div>
+      <button class="btn btn-secondary" id="ayuda-reload-btn" title="Recargar catálogo" style="padding:4px 8px">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="card" style="padding:8px">
+      <input type="text" id="ayuda-search" placeholder="Buscar función por nombre o descripción..."
+             style="width:100%;background:var(--bg-primary);color:var(--text-primary);
+                    border:1px solid var(--border);border-radius:4px;padding:6px 10px;
+                    font-size:11px;outline:none"
+             onfocus="this.style.borderColor='var(--accent)'"
+             onblur="this.style.borderColor='var(--border)'">
+    </div>
+
+    <!-- Estado de carga -->
+    <div id="ayuda-loading" class="msg-info" style="display:none">
+      <span class="spinner"></span> Cargando catálogo de funciones...
+    </div>
+    <div id="ayuda-error" class="msg-error" style="display:none"></div>
+
+    <!-- Contenedor de familias/categorías -->
+    <div id="ayuda-catalogo"></div>
+
+    <!-- Panel de detalle de función (oculto por defecto) -->
+    <div id="ayuda-detalle" class="card" style="display:none">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div id="ayuda-detalle-nombre" class="card-title" style="margin-bottom:2px;font-size:13px"></div>
+          <div id="ayuda-detalle-familia" style="font-size:9px;color:var(--text-secondary);text-transform:uppercase"></div>
+        </div>
+        <button class="btn btn-secondary" id="ayuda-detalle-cerrar" style="padding:2px 8px;font-size:10px">✕ Cerrar</button>
+      </div>
+      
+      <div id="ayuda-detalle-desc" style="font-size:11px;color:var(--text-primary);margin-bottom:10px;line-height:1.5"></div>
+      
+      <!-- Sintaxis copiable -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Sintaxis</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <code id="ayuda-detalle-sintaxis" style="flex:1;background:#111;color:var(--accent);padding:6px 10px;
+                border-radius:4px;font-family:Consolas,monospace;font-size:11px;overflow-x:auto"></code>
+          <button class="btn btn-primary" id="ayuda-copiar-sintaxis" style="padding:4px 10px;font-size:10px"
+                  title="Copiar sintaxis al portapapeles">Copiar</button>
+        </div>
+      </div>
+      
+      <!-- Parámetros (nevenx_positions) -->
+      <details open style="margin-bottom:10px">
+        <summary style="cursor:pointer;font-size:10px;font-weight:600;color:var(--accent);
+                 text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Parámetros</summary>
+        <div id="ayuda-detalle-params" style="font-size:10px"></div>
+      </details>
+      
+      <!-- TipoOutputs -->
+      <details open style="margin-bottom:10px">
+        <summary style="cursor:pointer;font-size:10px;font-weight:600;color:var(--accent);
+                 text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Tipos de Output (TipoOutput)</summary>
+        <div id="ayuda-detalle-outputs" style="font-size:10px"></div>
+      </details>
+      
+      <!-- Roles de variables -->
+      <details id="ayuda-detalle-roles-section" style="margin-bottom:10px">
+        <summary style="cursor:pointer;font-size:10px;font-weight:600;color:var(--accent);
+                 text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Roles de Variables</summary>
+        <div id="ayuda-detalle-roles" style="font-size:10px"></div>
+      </details>
+      
+      <!-- Link Wikipedia -->
+      <div id="ayuda-detalle-wiki" style="display:none;margin-top:8px">
+        <a id="ayuda-detalle-wiki-link" href="#" target="_blank" rel="noopener"
+           style="font-size:10px;color:var(--accent);text-decoration:none">
+          📖 Ver más en Wikipedia
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /tab ayuda -->
 
   <!-- Modal: Conectar DB -->
   <div id="modal-db" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);
@@ -3757,7 +3850,359 @@ window._renderCreateFunctionBlock = function(jsonStr) {
         'Guardar en C:\\NEVEN\\functions\\' +
       '</button></div>';
   } catch(e) { return '<pre><code>' + jsonStr + '</code></pre>'; }
-};</script>
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB AYUDA — Diccionario de Funciones NevenX
+// ═══════════════════════════════════════════════════════════════════════════
+
+var _ayudaCatalogo = null;  // Cache del catálogo cargado
+var _ayudaFunciones = {};   // Mapa id → función para acceso rápido
+
+// Cargar catálogo desde el servidor
+function _ayudaLoadCatalogo() {
+  var loading = document.getElementById('ayuda-loading');
+  var errorEl = document.getElementById('ayuda-error');
+  var catalogo = document.getElementById('ayuda-catalogo');
+  var detalle = document.getElementById('ayuda-detalle');
+  
+  loading.style.display = 'block';
+  errorEl.style.display = 'none';
+  catalogo.innerHTML = '';
+  detalle.style.display = 'none';
+  
+  fetch(API + '/api/ayuda/funciones')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      loading.style.display = 'none';
+      
+      if (data.status !== 'ok') {
+        errorEl.textContent = data.error || 'Error desconocido';
+        errorEl.style.display = 'block';
+        return;
+      }
+      
+      _ayudaCatalogo = data;
+      _ayudaFunciones = {};
+      
+      // Construir mapa de funciones para acceso rápido
+      Object.keys(data.familias).forEach(function(fam) {
+        data.familias[fam].funciones.forEach(function(fn) {
+          _ayudaFunciones[fn.id] = fn;
+          _ayudaFunciones[fn.id]._familia = fam;
+          _ayudaFunciones[fn.id]._familiaLabel = data.familias[fam].label;
+        });
+      });
+      
+      _ayudaRenderCatalogo(data);
+    })
+    .catch(function(e) {
+      loading.style.display = 'none';
+      errorEl.textContent = 'Error de conexión: ' + e.message;
+      errorEl.style.display = 'block';
+    });
+}
+
+// Renderizar el catálogo completo (familias colapsables)
+function _ayudaRenderCatalogo(data, filtro) {
+  var catalogo = document.getElementById('ayuda-catalogo');
+  catalogo.innerHTML = '';
+  
+  var familias = Object.keys(data.familias).sort();
+  var totalVisible = 0;
+  
+  familias.forEach(function(famId) {
+    var familia = data.familias[famId];
+    var funciones = familia.funciones;
+    
+    // Filtrar si hay búsqueda activa
+    if (filtro) {
+      var f = filtro.toLowerCase();
+      funciones = funciones.filter(function(fn) {
+        return fn.name.toLowerCase().indexOf(f) !== -1 ||
+               fn.description.toLowerCase().indexOf(f) !== -1 ||
+               fn.function_name_xll.toLowerCase().indexOf(f) !== -1;
+      });
+    }
+    
+    if (funciones.length === 0) return;
+    totalVisible += funciones.length;
+    
+    // Crear sección colapsable para la familia
+    var details = document.createElement('details');
+    details.className = 'ayuda-familia';
+    details.open = !filtro;  // Expandido por defecto, colapsado si hay filtro
+    
+    var summary = document.createElement('summary');
+    summary.className = 'ayuda-familia-header';
+    summary.innerHTML = '<span class="ayuda-familia-label">' + familia.label + '</span>' +
+                        '<span class="ayuda-familia-count">' + funciones.length + '</span>';
+    details.appendChild(summary);
+    
+    var lista = document.createElement('div');
+    lista.className = 'ayuda-funciones-lista';
+    
+    funciones.forEach(function(fn) {
+      var item = document.createElement('div');
+      item.className = 'ayuda-funcion-item';
+      item.setAttribute('data-fn-id', fn.id);
+      
+      // Determinar el lenguaje para el ícono
+      var langIcon = '🔷';  // Default
+      if (fn.languages && fn.languages.length > 0) {
+        var lang = fn.languages[0].toLowerCase();
+        if (lang === 'r') langIcon = '📊';
+        else if (lang === 'python') langIcon = '🐍';
+        else if (lang === 'julia') langIcon = '⚡';
+      }
+      
+      item.innerHTML = 
+        '<div class="ayuda-funcion-header">' +
+          '<span class="ayuda-funcion-icon">' + langIcon + '</span>' +
+          '<span class="ayuda-funcion-nombre">' + fn.name + '</span>' +
+          '<code class="ayuda-funcion-xll">' + fn.function_name_xll + '</code>' +
+        '</div>' +
+        '<div class="ayuda-funcion-desc">' + _truncate(fn.description, 100) + '</div>';
+      
+      item.onclick = function() { _ayudaMostrarDetalle(fn.id); };
+      lista.appendChild(item);
+    });
+    
+    details.appendChild(lista);
+    catalogo.appendChild(details);
+  });
+  
+  // Mostrar mensaje si no hay resultados
+  if (totalVisible === 0 && filtro) {
+    catalogo.innerHTML = '<div class="msg-info" style="margin-top:10px">No se encontraron funciones para "' + filtro + '"</div>';
+  }
+}
+
+// Truncar texto con elipsis
+function _truncate(text, maxLen) {
+  if (!text) return '';
+  return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
+}
+
+// Mostrar detalle de una función
+function _ayudaMostrarDetalle(fnId) {
+  var fn = _ayudaFunciones[fnId];
+  if (!fn) return;
+  
+  var detalle = document.getElementById('ayuda-detalle');
+  
+  // Nombre y familia
+  document.getElementById('ayuda-detalle-nombre').textContent = fn.name;
+  document.getElementById('ayuda-detalle-familia').textContent = fn._familiaLabel + ' (' + fn._familia + ')';
+  
+  // Descripción
+  document.getElementById('ayuda-detalle-desc').textContent = fn.description || '';
+  
+  // Sintaxis
+  var sintaxis = _ayudaBuildSintaxis(fn);
+  document.getElementById('ayuda-detalle-sintaxis').textContent = sintaxis;
+  
+  // Parámetros (nevenx_positions)
+  var paramsHtml = _ayudaRenderParams(fn.nevenx_positions);
+  document.getElementById('ayuda-detalle-params').innerHTML = paramsHtml;
+  
+  // TipoOutputs
+  var outputsHtml = _ayudaRenderOutputs(fn.tipo_outputs);
+  document.getElementById('ayuda-detalle-outputs').innerHTML = outputsHtml;
+  
+  // Roles de variables
+  var rolesSection = document.getElementById('ayuda-detalle-roles-section');
+  if (fn.variable_roles && Object.keys(fn.variable_roles).length > 0) {
+    var rolesHtml = _ayudaRenderRoles(fn.variable_roles);
+    document.getElementById('ayuda-detalle-roles').innerHTML = rolesHtml;
+    rolesSection.style.display = 'block';
+  } else {
+    rolesSection.style.display = 'none';
+  }
+  
+  // Wikipedia
+  var wikiDiv = document.getElementById('ayuda-detalle-wiki');
+  if (fn.wikipedia_url) {
+    document.getElementById('ayuda-detalle-wiki-link').href = fn.wikipedia_url;
+    wikiDiv.style.display = 'block';
+  } else {
+    wikiDiv.style.display = 'none';
+  }
+  
+  detalle.style.display = 'block';
+  detalle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Construir sintaxis de la función
+function _ayudaBuildSintaxis(fn) {
+  var xll = fn.function_name_xll;
+  var params = fn.nevenx_positions || {};
+  
+  // Ordenar parámetros por posición (a0, a1, a2, ...)
+  var positions = Object.keys(params).sort(function(a, b) {
+    var numA = parseInt(a.replace('a', ''), 10);
+    var numB = parseInt(b.replace('a', ''), 10);
+    return numA - numB;
+  });
+  
+  var paramList = positions.map(function(pos) {
+    var p = params[pos];
+    var name = p.name || pos;
+    return p.required ? name : '[' + name + ']';
+  });
+  
+  // Determinar el motor según el lenguaje
+  var motor = 'R';  // Default
+  if (fn.languages && fn.languages.length > 0) {
+    var lang = fn.languages[0].toLowerCase();
+    if (lang === 'python') motor = 'P';
+    else if (lang === 'julia') motor = 'J';
+  }
+  
+  return '=NEVEN.' + motor + '("' + xll + '", ' + paramList.join(', ') + ', TipoOutput)';
+}
+
+// Renderizar tabla de parámetros
+function _ayudaRenderParams(params) {
+  if (!params || Object.keys(params).length === 0) {
+    return '<div style="color:var(--text-muted);font-style:italic">Sin parámetros adicionales</div>';
+  }
+  
+  var positions = Object.keys(params).sort(function(a, b) {
+    var numA = parseInt(a.replace('a', ''), 10);
+    var numB = parseInt(b.replace('a', ''), 10);
+    return numA - numB;
+  });
+  
+  var html = '<table class="ayuda-params-table">' +
+    '<tr><th>Pos</th><th>Nombre</th><th>Descripción</th><th>Tipo</th><th>Req</th><th>Default</th></tr>';
+  
+  positions.forEach(function(pos) {
+    var p = params[pos];
+    var req = p.required ? '✓' : '';
+    var def = p.default !== null && p.default !== undefined ? String(p.default) : '—';
+    html += '<tr>' +
+      '<td style="color:var(--accent)">' + pos + '</td>' +
+      '<td><strong>' + (p.name || '—') + '</strong></td>' +
+      '<td>' + (p.label || '—') + '</td>' +
+      '<td>' + (p.type || '—') + '</td>' +
+      '<td style="text-align:center">' + req + '</td>' +
+      '<td>' + def + '</td>' +
+    '</tr>';
+  });
+  
+  html += '</table>';
+  return html;
+}
+
+// Renderizar lista de TipoOutputs
+function _ayudaRenderOutputs(outputs) {
+  if (!outputs || outputs.length === 0) {
+    return '<div style="color:var(--text-muted);font-style:italic">Sin tipos de output definidos</div>';
+  }
+  
+  var html = '<table class="ayuda-outputs-table">' +
+    '<tr><th style="width:40px">ID</th><th>Descripción</th></tr>';
+  
+  outputs.forEach(function(o) {
+    html += '<tr>' +
+      '<td style="color:var(--accent);font-weight:600;text-align:center">' + o.id + '</td>' +
+      '<td>' + o.label + '</td>' +
+    '</tr>';
+  });
+  
+  html += '</table>';
+  return html;
+}
+
+// Renderizar roles de variables
+function _ayudaRenderRoles(roles) {
+  var html = '<table class="ayuda-roles-table">' +
+    '<tr><th>Rol</th><th>Descripción</th><th>Tipos</th><th>Múltiple</th><th>Req</th></tr>';
+  
+  Object.keys(roles).forEach(function(rolId) {
+    var r = roles[rolId];
+    var tipos = (r.types || []).join(', ');
+    var multi = r.multiple ? '✓' : '';
+    var req = r.required ? '✓' : '';
+    html += '<tr>' +
+      '<td style="color:var(--accent);font-weight:600">' + rolId + '</td>' +
+      '<td>' + (r.label || '—') + '</td>' +
+      '<td>' + (tipos || '—') + '</td>' +
+      '<td style="text-align:center">' + multi + '</td>' +
+      '<td style="text-align:center">' + req + '</td>' +
+    '</tr>';
+  });
+  
+  html += '</table>';
+  return html;
+}
+
+// Event listeners para el tab Ayuda
+(function initAyudaTab() {
+  // Botón recargar
+  var reloadBtn = document.getElementById('ayuda-reload-btn');
+  if (reloadBtn) {
+    reloadBtn.onclick = function() { _ayudaLoadCatalogo(); };
+  }
+  
+  // Búsqueda con debounce
+  var searchInput = document.getElementById('ayuda-search');
+  var searchTimeout = null;
+  if (searchInput) {
+    searchInput.oninput = function() {
+      clearTimeout(searchTimeout);
+      var val = searchInput.value.trim();
+      searchTimeout = setTimeout(function() {
+        if (_ayudaCatalogo) {
+          _ayudaRenderCatalogo(_ayudaCatalogo, val || null);
+        }
+      }, 250);
+    };
+  }
+  
+  // Cerrar detalle
+  var cerrarBtn = document.getElementById('ayuda-detalle-cerrar');
+  if (cerrarBtn) {
+    cerrarBtn.onclick = function() {
+      document.getElementById('ayuda-detalle').style.display = 'none';
+    };
+  }
+  
+  // Copiar sintaxis
+  var copiarBtn = document.getElementById('ayuda-copiar-sintaxis');
+  if (copiarBtn) {
+    copiarBtn.onclick = function() {
+      var sintaxis = document.getElementById('ayuda-detalle-sintaxis').textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(sintaxis).then(function() {
+          showToast('✓ Sintaxis copiada al portapapeles');
+        });
+      } else {
+        // Fallback para navegadores antiguos
+        var ta = document.createElement('textarea');
+        ta.value = sintaxis;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('✓ Sintaxis copiada al portapapeles');
+      }
+    };
+  }
+  
+  // Lazy-load al primer clic en el tab
+  document.querySelectorAll('.tab').forEach(function(t) {
+    if (t.dataset.tab === 'ayuda') {
+      t.addEventListener('click', function() {
+        if (!_ayudaCatalogo) {
+          _ayudaLoadCatalogo();
+        }
+      });
+    }
+  });
+})();
+</script>
 
 <!-- Chart generation functions from taskpane.js -->
 <script src="taskpane.js?v=20260819"></script>

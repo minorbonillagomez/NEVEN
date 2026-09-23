@@ -23,6 +23,7 @@
 #   GET  /api/ontology/domains → List available ontology domains
 #   GET  /api/ontology/domain/{id}/stats → Get domain statistics
 #   GET  /api/ontology/search?q=term&domain=excel → Search knowledge graph
+#   GET  /api/ayuda/funciones → Diccionario dinámico de funciones NevenX
 
 import os
 import sys
@@ -566,6 +567,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if path.startswith('api/ontology/search'):
             # GET /api/ontology/search?q=VLOOKUP&domain=excel
             self._handle_ontology_search()
+            return
+
+        # ── Ayuda / Diccionario de Funciones NevenX ───────────────────────────
+        if path == 'api/ayuda/funciones':
+            self._handle_ayuda_funciones()
             return
 
         # ── Show TaskPane polling — GET consume la señal del Ribbon ───────────
@@ -1780,6 +1786,93 @@ class NEVENHandler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             self._send_error_json(f"Search error: {e}")
+
+    def _handle_ayuda_funciones(self):
+        """GET /api/ayuda/funciones — Diccionario dinámico de funciones NevenX.
+        
+        Lee todos los archivos JSON de C:\\NEVEN\\functions\\ y filtra solo
+        aquellas funciones que tienen 'function_name_xll' (usables desde Excel).
+        
+        Retorna estructura organizada por familia (categoría) con toda la
+        información necesaria para el Diccionario de Funciones del TaskPane.
+        """
+        functions_dir = r"C:\NEVEN\functions"
+        result = {
+            "status": "ok",
+            "familias": {},   # { "RG": { label, funciones: [...] } }
+            "total": 0
+        }
+        
+        # Mapeo de family → label (fallback si no está en el JSON)
+        family_labels = {
+            "RG": "Regresión",
+            "AD": "Análisis de Datos", 
+            "GR": "Gráficos",
+            "ML": "Machine Learning",
+            "DS": "Data Science",
+            "ST": "Series de Tiempo",
+            "TM": "Text Mining",
+            "UC": "Casos de Uso"
+        }
+        
+        try:
+            if not os.path.isdir(functions_dir):
+                self._send_json(result)
+                return
+            
+            for filename in os.listdir(functions_dir):
+                if not filename.endswith('.json'):
+                    continue
+                
+                filepath = os.path.join(functions_dir, filename)
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        sidecar = json.load(f)
+                    
+                    # Solo funciones con function_name_xll (usables en Excel)
+                    xll_name = sidecar.get('function_name_xll')
+                    if not xll_name:
+                        continue
+                    
+                    family = sidecar.get('family', 'UC')
+                    family_label = sidecar.get('family_label', family_labels.get(family, family))
+                    
+                    # Crear familia si no existe
+                    if family not in result['familias']:
+                        result['familias'][family] = {
+                            "label": family_label,
+                            "funciones": []
+                        }
+                    
+                    # Extraer información relevante para el diccionario
+                    func_info = {
+                        "id": sidecar.get('id', filename.replace('.json', '')),
+                        "name": sidecar.get('name', xll_name),
+                        "description": sidecar.get('description', ''),
+                        "function_name_xll": xll_name,
+                        "languages": sidecar.get('languages', []),
+                        "wikipedia_url": sidecar.get('wikipedia_url'),
+                        "nevenx_positions": sidecar.get('nevenx_positions', {}),
+                        "tipo_outputs": sidecar.get('tipo_outputs', []),
+                        "variable_roles": sidecar.get('variable_roles', {})
+                    }
+                    
+                    result['familias'][family]['funciones'].append(func_info)
+                    result['total'] += 1
+                    
+                except Exception as e:
+                    # Log error pero continuar con otros archivos
+                    print(f"[AYUDA] Error leyendo {filename}: {e}")
+                    continue
+            
+            # Ordenar funciones dentro de cada familia por nombre
+            for fam in result['familias'].values():
+                fam['funciones'].sort(key=lambda x: x['name'])
+            
+            self._send_json(result)
+            
+        except Exception as e:
+            self._send_error_json(f"Error cargando funciones: {e}", 500)
 
     def _handle_analyze(self, body):
         """Analyze the loaded dataset."""
