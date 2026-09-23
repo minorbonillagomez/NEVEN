@@ -326,6 +326,18 @@ Leer el PDF y extraer:
 ## Contexto del análisis
 {context}
 
+## REGLA CRÍTICA: Usa el contexto para respuestas precisas
+Cuando el usuario pregunte sobre una columna por nombre (ej: "totaliza SALARIOS"), SIEMPRE:
+1. Busca en "## Estructura de columnas" qué columna tiene ese nombre
+2. Usa el rango exacto mostrado (ej: D2:D13) para tu fórmula
+3. NUNCA pidas más información si ya la tienes en el contexto
+
+Ejemplo:
+- Contexto dice: Columna D = "SALARIOS" → datos en D2:D13
+- Usuario pregunta: "totaliza salarios"
+- Respuesta correcta: =SUMA(D2:D13)
+- Respuesta INCORRECTA: "¿En qué rango están los salarios?"
+
 Responde siempre basándote en los datos reales de la hoja del usuario, no en abstracto.
 """
 
@@ -482,7 +494,12 @@ def _build_system_prompt(context: str) -> str:
     has_results = "=== RESULTADOS DEL ANÁLISIS ===" in context
     has_history = "=== HISTORIAL DE MODELOS ===" in context
     has_excel   = "=== DATOS DE EXCEL ===" in context
-    has_sheet_analysis = "=== SHEET ANALYSIS ===" in context or "sheet_name" in context
+    has_sheet_analysis = (
+        "=== SHEET ANALYSIS ===" in context or 
+        "=== ANÁLISIS DE HOJA EXCEL ===" in context or
+        "## Estructura de columnas" in context or
+        "sheet_name" in context
+    )
 
     run_hint = _RUN_HINT_TEMPLATE if (has_results or has_history) else ""
 
