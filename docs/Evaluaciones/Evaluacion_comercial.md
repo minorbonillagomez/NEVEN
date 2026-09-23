@@ -460,3 +460,44 @@ El incremento de $50/año se justifica porque el Excel Consultant y las ontolog�
 
 *Actualizado: Setiembre de 2026*
 *NEVEN v2.3 — Sistema de Ontologías y Excel Consultant*
+
+
+---
+
+## ACTUALIZACIÓN — 19 de agosto de 2026 (NEVEN v2.4)
+
+### Nuevas fortalezas comerciales
+
+**20. Data Binding Reactivo (Excel → NEVEN Studio).** Cuando el usuario carga datos desde Excel con "Leer de Excel", NEVEN Studio ahora **escucha cambios en tiempo real**. Si el usuario modifica una celda o presiona F9 (recálculo de fórmulas), los gráficos GROUP BY y Quick Chart se actualizan automáticamente sin intervención manual.
+
+**Implementación técnica:**
+- `sheet.onChanged` — detecta edición manual de celdas
+- `sheet.onCalculated` — detecta F9 y recálculo de fórmulas
+- `_lastGroupByConfig` / `_lastQuickChartConfig` — guardan la configuración del último gráfico
+- `_rerunGroupBy()` / `_rerunQuickChart()` — re-ejecutan los gráficos con datos actualizados
+- Toast de confirmación: "📊 Quick Chart actualizado"
+
+**Relevancia comercial:**
+- **Flujo de trabajo en vivo:** El analista puede tener Excel y NEVEN Studio lado a lado, modificar hipótesis en Excel, y ver el impacto inmediato en los gráficos sin repetir pasos.
+- **Demostración impactante:** En una presentación de ventas, el presentador cambia un número en Excel y el gráfico se actualiza en tiempo real frente a la audiencia.
+- **Diferenciador único:** Ningún competidor (PyXLL, xlwings, Python in Excel) ofrece actualización reactiva de visualizaciones. Todos requieren re-ejecutar manualmente.
+
+### Impacto en viabilidad comercial
+
+| Aspecto | NEVEN v2.3 | NEVEN v2.4 |
+|:---|:---|:---|
+| Flujo de datos | Excel → Studio (una vez) | Excel ↔ Studio (reactivo, bidireccional) |
+| Actualización de gráficos | Manual (re-ejecutar) | **Automática** (cambio en Excel → gráfico se actualiza) |
+| Demo de ventas | "Mira este gráfico" | "Cambia ese número y mira qué pasa" (wow factor) |
+| Propuesta de valor | Análisis + Presentación | Análisis **en vivo** + Presentación |
+
+### Nuevo posicionamiento (revisado)
+
+> **NEVEN: El único sistema donde tus gráficos se actualizan solos cuando cambias los datos en Excel.**
+
+Este es un mensaje de una línea que cualquier usuario de Excel entiende inmediatamente. La reactividad es el diferenciador más visible y demostrable.
+
+---
+
+*Actualizado: 19 de agosto de 2026*
+*NEVEN v2.4 — Data Binding Reactivo*

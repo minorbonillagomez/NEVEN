@@ -621,3 +621,96 @@ Si un revisor solicita benchmarks de rendimiento, la respuesta técnicamente cor
 
 *Actualización: Setiembre de 2026*
 *Validación CIMPA + Argumento de benchmarks*
+
+
+---
+
+## ACTUALIZACIÓN — 19 de agosto de 2026 (NEVEN v2.4)
+
+### 2.19 Data Binding Reactivo — Sincronización en Tiempo Real Excel → NEVEN Studio
+
+Se implementó un sistema de sincronización reactiva que mantiene los gráficos de NEVEN Studio actualizados automáticamente cuando los datos cambian en Excel.
+
+**Arquitectura del sistema:**
+
+```
+Excel (celda modificada)
+    ↓ Office.js: sheet.onChanged
+    ↓ Office.js: sheet.onCalculated (F9)
+    ↓
+_nevenDataBinding._handleChange()
+    ↓
+Re-lee rango vinculado
+    ↓
+Actualiza DuckDB (/api/load)
+    ↓
+_rerunGroupBy() + _rerunQuickChart()
+    ↓
+Plotly.newPlot() con datos frescos
+    ↓
+Toast: "📊 Quick Chart actualizado"
+```
+
+**Componentes implementados:**
+
+| Componente | Función | Ubicación |
+|:---|:---|:---|
+| `_nevenDataBinding` | Objeto singleton que gestiona el binding | `taskpane.html` |
+| `bindRange(address, sheet, callback)` | Registra listeners de Office.js | `taskpane.html` |
+| `sheet.onChanged` | Detecta edición manual de celdas | Office.js API |
+| `sheet.onCalculated` | Detecta F9 y recálculo de fórmulas | Office.js API |
+| `_lastGroupByConfig` | Guarda configuración del último GROUP BY | `taskpane.html` |
+| `_lastQuickChartConfig` | Guarda configuración del último Quick Chart | `taskpane.html` |
+| `_rerunGroupBy()` | Re-ejecuta GROUP BY con datos actualizados | `taskpane.html` |
+| `_rerunQuickChart()` | Re-ejecuta Quick Chart con datos actualizados | `taskpane.html` |
+
+**Decisiones de diseño con justificación técnica:**
+
+1. **`sheet.onCalculated` en Worksheet, no en Workbook** — La API de Office.js expone `onCalculated` a nivel de hoja, no de libro. Esto requirió investigación porque la documentación no es explícita. El primer intento con `workbook.onCalculated` falló silenciosamente.
+
+2. **Hash de datos para evitar actualizaciones redundantes** — `lastDataHash = JSON.stringify(values).length + '_' + rowCount`. Esto previene re-renderizado cuando el evento se dispara pero los datos no cambiaron realmente (común en recálculos parciales).
+
+3. **Timeouts escalonados** — `_rerunGroupBy` a 100ms, `_rerunQuickChart` a 150ms. Esto evita race conditions cuando ambos gráficos necesitan actualizarse simultáneamente.
+
+4. **`window.showToast` global** — La función `showToast` estaba definida localmente en un event listener. El callback del binding no tenía acceso a ella. Se movió a scope global para permitir notificaciones desde cualquier contexto.
+
+**Contribución técnica:**
+
+- Demuestra integración profunda con Office.js Event Model
+- Documenta limitaciones no documentadas de la API (onCalculated solo en Worksheet)
+- Implementa patrón de sincronización reactiva comparable a frameworks modernos (React, Vue)
+
+**Relevancia académica:**
+
+El Data Binding Reactivo transforma NEVEN de una herramienta de análisis estático a un sistema de **análisis en vivo**. El usuario puede:
+- Modificar hipótesis en Excel
+- Ver el impacto inmediato en los gráficos
+- Iterar rápidamente sin repetir pasos manuales
+
+Este flujo de trabajo es análogo al "live coding" en entornos de desarrollo modernos y al "reactive programming" en frameworks de UI.
+
+### Actualización de tabla comparativa con BERT
+
+| Capacidad | BERT (2017-2018) | NEVEN (Ago 2026) | Innovación |
+|:---|:---|:---|:---|
+| *(anteriores)* | — | — | — |
+| Data Binding Reactivo | No | Excel → Studio en tiempo real | **Innovación** |
+| Detección de F9 | No | `sheet.onCalculated` | **Innovación** |
+| Auto-actualización de gráficos | No | GROUP BY + Quick Chart reactivos | **Innovación** |
+
+**Resumen actualizado:** De 21 capacidades comparadas, 19 son innovaciones sobre BERT.
+
+### Tabla de hitos — actualizada agosto 2026
+
+| Fase | Estado | Descripción |
+|:---|:---|:---|
+| *(todos los anteriores)* | ✅ | Ver versiones anteriores |
+| **Data Binding Reactivo** | ✅ | `sheet.onChanged` + `sheet.onCalculated` → gráficos se actualizan solos |
+| **`window.showToast` global** | ✅ | Fix de scope para notificaciones desde callbacks |
+| Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
+| Benchmarks | ⏳ Pendiente | Datos cuantitativos de rendimiento |
+
+---
+
+*Actualización: 19 de agosto de 2026*
+*NEVEN v2.4 — Data Binding Reactivo*
