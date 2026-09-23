@@ -1289,30 +1289,46 @@ async function captureSheetForAnalysis(options = {}) {
         range = sheet.getUsedRange();
       }
       
-      // Load both values and formulas
-      range.load(['address', 'formulas', 'rowCount', 'columnCount', 'cellCount']);
+      // Load formulas AND values (values needed for input cells like parameters)
+      range.load(['address', 'formulas', 'values', 'rowCount', 'columnCount', 'cellCount']);
       
       await context.sync();
       
-      // Extract formula cells (cells where formula !== value shown)
+      // Extract formula cells and build a values map for non-formula cells
       const formulas = [];
+      const cellValues = {};  // Map of address -> value for non-formula cells
       const formulaGrid = range.formulas;
+      const valueGrid = range.values;
       const startAddress = range.address; // e.g., "Sheet1!A1:Z100"
       
       // Parse starting cell from address
-      const match = startAddress.match(/!?([A-Z]+)(\d+)/i);
+      // FIX: The previous regex captured sheet name (e.g., "Hoja1") as column
+      // causing impossible addresses like "IVQH10" (column 173506)
+      // Solution: Split on "!" first, then parse the cell reference part
+      let cellRefPart = startAddress;
+      if (startAddress.includes('!')) {
+        cellRefPart = startAddress.split('!').pop();  // Take part after "!"
+      }
+      // Match cell reference: optional $, 1-3 letters, optional $, digits
+      const match = cellRefPart.match(/\$?([A-Z]{1,3})\$?(\d+)/i);
       const startCol = match ? columnToNumber(match[1]) : 1;
       const startRow = match ? parseInt(match[2], 10) : 1;
       
       for (let r = 0; r < formulaGrid.length; r++) {
         for (let c = 0; c < formulaGrid[r].length; c++) {
           const cellFormula = formulaGrid[r][c];
+          const cellValue = valueGrid[r][c];
+          const cellAddress = numberToColumn(startCol + c) + (startRow + r);
+          
           // Only include cells that have formulas (start with =)
           if (typeof cellFormula === 'string' && cellFormula.startsWith('=')) {
             formulas.push({
-              address: numberToColumn(startCol + c) + (startRow + r),
+              address: cellAddress,
               formula: cellFormula
             });
+          } else if (cellValue !== null && cellValue !== '' && cellValue !== undefined) {
+            // Store non-formula cell values (potential input parameters)
+            cellValues[cellAddress] = cellValue;
           }
         }
       }
@@ -1320,6 +1336,7 @@ async function captureSheetForAnalysis(options = {}) {
       return {
         sheet_name: sheet.name,
         formulas: formulas,
+        cell_values: cellValues,  // NEW: Map of input cell values
         total_cells: range.cellCount,
         range_address: startAddress
       };
@@ -1344,6 +1361,7 @@ async function captureSheetForAnalysis(options = {}) {
       body: JSON.stringify({
         sheet_name: sheetData.sheet_name,
         formulas: sheetData.formulas,
+        cell_values: sheetData.cell_values,  // NEW: Include cell values for input cells
         total_cells: sheetData.total_cells,
         include_graph: includeGraph
         // language will be auto-detected by Python from formula patterns
@@ -1522,6 +1540,72 @@ function formatAnalysisForAI(analysis) {
   lines.push(`- Funciones distintas: ${s.functions_used || 0}`);
   lines.push(`- Complejidad: ${s.complexity_level || 'N/A'}`);
   
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NEW: Cell Map — Shows content and relationships clearly
+  // ═══════════════════════════════════════════════════════════════════════════
+  const inputValues = (analysis.critical_cells && analysis.critical_cells.input_values) || {};
+  const inputs = (analysis.critical_cells && analysis.critical_cells.inputs) || [];
+  const outputs = (analysis.critical_cells && analysis.critical_cells.outputs) || [];
+  const edges = (analysis.dependencies && analysis.dependencies.edges) || [];
+  const nodes = (analysis.dependencies && analysis.dependencies.nodes) || {};
+  
+  // Build reverse dependency map: cell -> list of cells that reference it
+  const referencedBy = {};
+  edges.forEach(e => {
+    const src = e.source;
+    if (!referencedBy[src]) referencedBy[src] = [];
+    referencedBy[src].push(e.target);
+  });
+  
+  // Show input cells (constants/parameters) with their values and who uses them
+  if (inputs.length > 0) {
+    lines.push('');
+    lines.push('## Celdas de entrada (parámetros y constantes)');
+    inputs.slice(0, 15).forEach(addr => {
+      const value = inputValues[addr];
+      const usedBy = referencedBy[addr] || [];
+      let line = `- ${addr}`;
+      if (value !== undefined) {
+        line += ` = ${value}`;
+      }
+      if (usedBy.length > 0) {
+        const sample = usedBy.slice(0, 5).join(', ');
+        line += ` → usado por: ${sample}`;
+        if (usedBy.length > 5) line += ` (+${usedBy.length - 5} más)`;
+      }
+      lines.push(line);
+    });
+    if (inputs.length > 15) lines.push(`  ... y ${inputs.length - 15} inputs más`);
+  }
+  
+  // Show formula cells with their formulas and dependencies
+  const formulaCells = Object.keys(nodes);
+  if (formulaCells.length > 0) {
+    lines.push('');
+    lines.push('## Celdas con fórmulas (primeras 20)');
+    formulaCells.slice(0, 20).forEach(addr => {
+      const node = nodes[addr];
+      const formula = node.formula || '';
+      // Extract dependencies from edges
+      const deps = edges.filter(e => e.target === addr).map(e => e.source);
+      let line = `- ${addr} = ${formula}`;
+      if (deps.length > 0) {
+        line += ` | depende de: ${deps.slice(0, 5).join(', ')}`;
+        if (deps.length > 5) line += ` (+${deps.length - 5} más)`;
+      }
+      lines.push(line);
+    });
+    if (formulaCells.length > 20) lines.push(`  ... y ${formulaCells.length - 20} fórmulas más`);
+  }
+  
+  // Show output cells (final results)
+  if (outputs.length > 0) {
+    lines.push('');
+    lines.push('## Celdas de salida (resultados finales)');
+    lines.push(`Celdas que no son referenciadas por otras fórmulas: ${outputs.slice(0, 10).join(', ')}`);
+    if (outputs.length > 10) lines.push(`  ... y ${outputs.length - 10} más`);
+  }
+  
   // Functions used
   if (analysis.functions && analysis.functions.length > 0) {
     lines.push('');
@@ -1542,29 +1626,8 @@ function formatAnalysisForAI(analysis) {
     lines.push('');
     lines.push('## Patrones de fórmulas (top 10)');
     analysis.patterns.slice(0, 10).forEach(p => {
-      lines.push(`- "${p.pattern}" (${p.count}x) — ejemplo: ${p.example || 'N/A'}`);
+      lines.push(`- "${p.pattern}" (${p.count}x) — ejemplos: ${(p.examples || []).slice(0, 3).join(', ')}`);
     });
-  }
-  
-  // Critical cells
-  if (analysis.critical_cells) {
-    const inputs = analysis.critical_cells.inputs || [];
-    const outputs = analysis.critical_cells.outputs || [];
-    
-    if (inputs.length > 0 || outputs.length > 0) {
-      lines.push('');
-      lines.push('## Celdas críticas');
-      
-      if (inputs.length > 0) {
-        lines.push(`Inputs (celdas referenciadas sin fórmula): ${inputs.slice(0, 10).join(', ')}`);
-        if (inputs.length > 10) lines.push(`  ... y ${inputs.length - 10} más`);
-      }
-      
-      if (outputs.length > 0) {
-        lines.push(`Outputs (fórmulas no referenciadas): ${outputs.slice(0, 10).join(', ')}`);
-        if (outputs.length > 10) lines.push(`  ... y ${outputs.length - 10} más`);
-      }
-    }
   }
   
   // Complexity details
@@ -1576,9 +1639,8 @@ function formatAnalysisForAI(analysis) {
     lines.push(`- Score: ${c.score || 0}/100`);
     
     if (c.details) {
-      if (c.details.max_nesting) lines.push(`- Anidamiento máximo: ${c.details.max_nesting} niveles`);
-      if (c.details.avg_functions) lines.push(`- Funciones promedio por fórmula: ${c.details.avg_functions.toFixed(1)}`);
-      if (c.details.volatile_count) lines.push(`- Funciones volátiles: ${c.details.volatile_count}`);
+      if (c.details.max_nesting_depth) lines.push(`- Anidamiento máximo: ${c.details.max_nesting_depth} niveles`);
+      if (c.details.unique_functions) lines.push(`- Funciones únicas: ${c.details.unique_functions}`);
     }
   }
   
@@ -1586,10 +1648,10 @@ function formatAnalysisForAI(analysis) {
   if (analysis.dependencies && analysis.dependencies.stats) {
     const d = analysis.dependencies.stats;
     lines.push('');
-    lines.push('## Dependencias');
+    lines.push('## Estadísticas de dependencias');
     lines.push(`- Total conexiones: ${d.total_edges || 0}`);
-    lines.push(`- Referencias externas: ${d.external_refs || 0}`);
-    if (d.max_in_degree) lines.push(`- Celda más referenciada: grado ${d.max_in_degree}`);
+    if (d.max_in_degree) lines.push(`- Celda más referenciada: grado de entrada ${d.max_in_degree}`);
+    if (d.max_out_degree) lines.push(`- Celda con más dependencias: grado de salida ${d.max_out_degree}`);
   }
   
   return lines.join('\n');
