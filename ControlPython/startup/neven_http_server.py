@@ -895,6 +895,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
 
         has_excel_context   = "=== DATOS DE EXCEL ===" in context
         has_results_context = "=== RESULTADOS DEL ANÁLISIS ===" in context
+        has_sheet_analysis  = (
+            "=== SHEET ANALYSIS ===" in context or
+            "=== ANÁLISIS DE HOJA EXCEL ===" in context or
+            "## Estructura de columnas" in context
+        )
 
         _fmt = (
             "Responde siempre en español a menos que el usuario escriba en otro idioma. "
@@ -936,7 +941,30 @@ class NEVENHandler(BaseHTTPRequestHandler):
         )
 
         if context or catalog_section:
-            if has_results_context and has_excel_context:
+            if has_sheet_analysis:
+                # ═══════════════════════════════════════════════════════════════
+                # Excel Consultant Mode — Uses sheet structure for precise answers
+                # ═══════════════════════════════════════════════════════════════
+                sys_content = (
+                    "Eres un **Consultor Excel experto** integrado en NEVEN.\n\n"
+                    "## Tu rol\n"
+                    "Actúas como auditor, documentador y asesor de hojas de cálculo. "
+                    "Tienes acceso al análisis estructural de la hoja activa del usuario.\n\n"
+                    "## REGLA CRÍTICA: Usa el contexto para respuestas precisas\n"
+                    "Cuando el usuario pregunte sobre una columna por nombre (ej: 'totaliza SALARIOS'), SIEMPRE:\n"
+                    "1. Busca en '## Estructura de columnas' qué columna tiene ese nombre\n"
+                    "2. Usa el rango exacto mostrado (ej: D2:D13) para tu fórmula\n"
+                    "3. NUNCA pidas más información si ya la tienes en el contexto\n\n"
+                    "Ejemplo:\n"
+                    "- Contexto dice: Columna D = 'SALARIOS' → datos en D2:D13\n"
+                    "- Usuario pregunta: 'totaliza salarios'\n"
+                    "- Respuesta correcta: =SUMA(D2:D13)\n"
+                    "- Respuesta INCORRECTA: '¿En qué rango están los salarios?'\n\n"
+                    f"## Contexto del análisis de la hoja:\n\n{context}\n\n"
+                    "Responde siempre basándote en los datos reales de la hoja del usuario, no en abstracto.\n\n"
+                    + _fmt
+                )
+            elif has_results_context and has_excel_context:
                 sys_content = (
                     "Eres NEVEN Assistant, un econometrista experto. "
                     "Tienes acceso a los datos reales y los resultados del análisis del usuario. "
