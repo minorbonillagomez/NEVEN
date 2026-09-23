@@ -7,6 +7,23 @@
   <link rel="stylesheet" href="taskpane.css?v=8">
   <!-- Office.js para integración con Excel -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <!-- Office.js initialization with auto-open -->
+  <script>
+    Office.onReady(function(info) {
+      console.log('Office.onReady - Host:', info.host, 'Platform:', info.platform);
+      window._officeHost = info.host;
+      window._officePlatform = info.platform;
+      window._officeReady = true;  // Flag para indicar que Office.js está listo
+      
+      // Configurar auto-open para que el TaskPane se abra automaticamente
+      // cuando se abre un documento que lo tuvo abierto anteriormente
+      if (Office.addin && Office.addin.setStartupBehavior) {
+        Office.addin.setStartupBehavior(Office.StartupBehavior.load)
+          .then(function() { console.log('Auto-open configured'); })
+          .catch(function(e) { console.log('Auto-open not supported:', e); });
+      }
+    });
+  </script>
   <!-- Auto-detect HTTP vs HTTPS server when opened as local file -->
   <script>
     (function() {
@@ -30,6 +47,7 @@
   <div class="header">
     <h1>NEVEN Studio</h1>
     <span class="version">v3.0</span>
+    <span id="server-status" style="margin-left:auto;font-size:10px;padding:2px 6px;border-radius:4px;background:#333;color:#888">⏳</span>
   </div>
 
   <div class="tabs">
@@ -596,6 +614,161 @@
 <script>
 var API = window.location.origin;
 
+// --- Verificación de estado del servidor ---
+(function checkServerStatus() {
+  var statusEl = document.getElementById('server-status');
+  if (!statusEl) return;
+  
+  function updateStatus(ok) {
+    if (ok) {
+      statusEl.textContent = '● Conectado';
+      statusEl.style.background = 'rgba(100,200,100,0.2)';
+      statusEl.style.color = '#8f8';
+    } else {
+      statusEl.textContent = '● Desconectado';
+      statusEl.style.background = 'rgba(255,100,100,0.2)';
+      statusEl.style.color = '#f88';
+    }
+  }
+  
+  function check() {
+    fetch(API + '/api/engines', { method: 'GET' })
+      .then(function(r) { updateStatus(r.ok); })
+      .catch(function() { updateStatus(false); });
+  }
+  
+  // Verificar inmediatamente y cada 30 segundos
+  check();
+  setInterval(check, 30000);
+})();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FUNCIÓN GLOBAL showToast — notificación temporal sin cambiar de tab
+// ═══════════════════════════════════════════════════════════════════════════
+window.showToast = function(text) {
+  var t = document.getElementById('neven-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'neven-toast';
+    t.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);' +
+      'background:#373434;color:var(--accent,#d7a538);border:1px solid var(--accent,#d7a538);' +
+      'border-radius:6px;padding:8px 18px;font-size:11px;font-weight:600;z-index:9999;' +
+      'pointer-events:none;transition:opacity 0.3s;opacity:0';
+    document.body.appendChild(t);
+  }
+  t.textContent = text;
+  t.style.opacity = '1';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function(){ t.style.opacity='0'; }, 2500);
+};
+
+// Alias para compatibilidad con código existente
+var showToast = window.showToast;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SISTEMA DE DATA BINDING REACTIVO (Excel → NEVEN Studio)
+// ═══════════════════════════════════════════════════════════════════════════
+var _nevenDataBinding = {
+  rangeAddress: null,      // Dirección del rango vinculado (ej: "Sheet1!A1:D100")
+  sheetName: null,         // Nombre de la hoja
+  eventHandler: null,      // Referencia al handler registrado
+  lastDataHash: null,      // Hash de los últimos datos para detectar cambios reales
+  onDataChange: null,      // Callback cuando los datos cambian
+  
+  // Vincular un rango de Excel para seguimiento de cambios
+  bindRange: async function(address, sheetName, callback) {
+    var self = this;
+    self.rangeAddress = address;
+    self.sheetName = sheetName;
+    self.onDataChange = callback;
+    
+    console.log('[NEVEN Binding] bindRange llamado con:', address, sheetName);
+    console.log('[NEVEN Binding] typeof Excel:', typeof Excel);
+    console.log('[NEVEN Binding] _officeReady:', window._officeReady);
+    
+    if (typeof Excel === 'undefined' || !window._officeReady) {
+      console.log('[NEVEN Binding] ❌ Office.js no disponible, binding desactivado');
+      return false;
+    }
+    
+    try {
+      await Excel.run(async function(context) {
+        console.log('[NEVEN Binding] Dentro de Excel.run, obteniendo hoja:', sheetName);
+        var sheet = context.workbook.worksheets.getItem(sheetName);
+        
+        // Registrar evento onChanged en la hoja (edición manual)
+        console.log('[NEVEN Binding] Registrando evento onChanged...');
+        sheet.onChanged.add(function(eventArgs) {
+          console.log('[NEVEN Binding] 🔔 onChanged - Cambio en:', eventArgs.address);
+          self._handleChange(eventArgs);
+        });
+        
+        // Registrar evento onCalculated en la HOJA (F9, recálculo de fórmulas)
+        // Nota: onCalculated está en Worksheet, no en Workbook
+        console.log('[NEVEN Binding] Registrando evento onCalculated en worksheet...');
+        sheet.onCalculated.add(function(eventArgs) {
+          console.log('[NEVEN Binding] 🔄 onCalculated - Recálculo detectado en:', eventArgs.address);
+          self._handleChange({ address: eventArgs.address || 'calculation', type: 'Calculated' });
+        });
+        
+        await context.sync();
+        console.log('[NEVEN Binding] ✅ Listeners registrados (onChanged + onCalculated) para hoja:', sheetName);
+      });
+      
+      return true;
+    } catch (e) {
+      console.error('[NEVEN Binding] ❌ Error registrando listener:', e);
+      return false;
+    }
+  },
+  
+  // Manejar cambio en la hoja
+  _handleChange: async function(eventArgs) {
+    var self = this;
+    if (!self.rangeAddress || !self.onDataChange) return;
+    
+    // Verificar si el cambio afecta nuestro rango
+    // Por simplicidad, re-leemos si hay cualquier cambio en la hoja
+    console.log('[NEVEN Binding] Re-leyendo datos del rango:', self.rangeAddress);
+    
+    try {
+      await Excel.run(async function(context) {
+        var range = context.workbook.worksheets.getItem(self.sheetName)
+                          .getRange(self.rangeAddress.split('!')[1] || self.rangeAddress);
+        range.load(['values', 'rowCount', 'columnCount']);
+        await context.sync();
+        
+        // Calcular hash simple para detectar cambios reales
+        var newHash = JSON.stringify(range.values).length + '_' + range.rowCount;
+        if (newHash === self.lastDataHash) {
+          console.log('[NEVEN Binding] Datos sin cambios reales, ignorando');
+          return;
+        }
+        self.lastDataHash = newHash;
+        
+        console.log('[NEVEN Binding] Datos actualizados, notificando callback');
+        if (self.onDataChange) {
+          self.onDataChange(range.values, self.rangeAddress);
+        }
+      });
+    } catch (e) {
+      console.error('[NEVEN Binding] Error re-leyendo datos:', e);
+    }
+  },
+  
+  // Desvincular (limpiar listener)
+  unbind: function() {
+    this.rangeAddress = null;
+    this.sheetName = null;
+    this.onDataChange = null;
+    this.lastDataHash = null;
+    console.log('[NEVEN Binding] Desvinculado');
+  }
+};
+
+// Exponer globalmente
+window._nevenDataBinding = _nevenDataBinding;
+
 // --- Tabs ---
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click', function(){
@@ -956,11 +1129,14 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
       await Excel.run(async function(context) {
         console.log('[NEVEN] Dentro de Excel.run');
         var selection = context.workbook.getSelectedRange();
+        var sheet = context.workbook.worksheets.getActiveWorksheet();
         selection.load(['values', 'address', 'columnCount', 'rowCount']);
+        sheet.load(['name']);
         await context.sync();
         
         console.log('[NEVEN] Selection address:', selection.address);
         console.log('[NEVEN] Selection rows:', selection.rowCount);
+        console.log('[NEVEN] Sheet name:', sheet.name);
         
         var values = selection.values;
         if (!values || values.length === 0) {
@@ -978,6 +1154,14 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
         var cols = hasHeaders ? firstRow : firstRow.map(function(_, i) { return 'Col' + (i+1); });
         var rows = hasHeaders ? values.slice(1) : values;
         
+        // Guardar metadata para binding reactivo
+        window._nevenCurrentData = {
+          columns: cols,
+          hasHeaders: hasHeaders,
+          rangeAddress: selection.address,
+          sheetName: sheet.name
+        };
+        
         // Detectar tipos
         var types = {};
         cols.forEach(function(c, i) {
@@ -988,8 +1172,8 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
           types[c] = numCount > sample.length * 0.5 ? 'numeric' : 'text';
         });
         
-        // Mostrar preview
-        dataInfo.textContent = rows.length + ' filas × ' + cols.length + ' cols (desde Excel: ' + selection.address + ')';
+        // Mostrar preview con indicador de binding
+        dataInfo.innerHTML = rows.length + ' filas × ' + cols.length + ' cols <span style="color:#8f8;font-size:9px">(🔗 vinculado: ' + selection.address + ')</span>';
         showPreview(cols, rows.slice(0, 20));
         populateGroupBy(cols, types);
         
@@ -1005,6 +1189,57 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
             showToast('✓ ' + result.rows_loaded + ' filas cargadas desde Excel');
           }
         });
+        
+        // ═══ REGISTRAR BINDING REACTIVO ═══
+        console.log('[NEVEN] Intentando registrar binding reactivo...');
+        console.log('[NEVEN] _nevenDataBinding existe:', !!window._nevenDataBinding);
+        console.log('[NEVEN] _officeReady:', window._officeReady);
+        console.log('[NEVEN] Excel definido:', typeof Excel !== 'undefined');
+        
+        if (window._nevenDataBinding) {
+          window._nevenDataBinding.bindRange(selection.address, sheet.name, function(newValues, address) {
+            console.log('[NEVEN] ✅ CALLBACK EJECUTADO - Datos actualizados desde Excel:', address);
+            
+            // Re-procesar datos
+            var newRows = window._nevenCurrentData.hasHeaders ? newValues.slice(1) : newValues;
+            var cols = window._nevenCurrentData.columns;
+            
+            // Detectar tipos de nuevo
+            var types = {};
+            cols.forEach(function(c, i) {
+              var sample = newRows.slice(0, 50).map(function(r) { return r[i]; });
+              var numCount = sample.filter(function(v) { 
+                return typeof v === 'number' || !isNaN(parseFloat(v)); 
+              }).length;
+              types[c] = numCount > sample.length * 0.5 ? 'numeric' : 'text';
+            });
+            
+            // Actualizar preview
+            dataInfo.innerHTML = newRows.length + ' filas × ' + cols.length + ' cols <span style="color:#0f0;font-size:9px">(🔄 actualizado)</span>';
+            showPreview(cols, newRows.slice(0, 20));
+            
+            // Recargar en DuckDB
+            fetch(API + '/api/load', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({columns: cols, types: types, data: newRows})
+            }).then(function(r) { return r.json(); }).then(function(result) {
+              if (result.status === 'ok') {
+                showToast('🔄 Datos actualizados: ' + result.rows_loaded + ' filas');
+                
+                // Re-ejecutar gráficos activos con los nuevos datos
+                if (window._lastGroupByConfig && window._rerunGroupBy) {
+                  console.log('[NEVEN] Re-ejecutando GROUP BY con nuevos datos...');
+                  setTimeout(window._rerunGroupBy, 100);
+                }
+                if (window._lastQuickChartConfig && window._rerunQuickChart) {
+                  console.log('[NEVEN] Re-ejecutando Quick Chart con nuevos datos...');
+                  setTimeout(window._rerunQuickChart, 150);
+                }
+              }
+            });
+          });
+        }
       });
       console.log('[NEVEN] Excel.run completado');
       return; // Éxito con Office.js, no continuar con fallback
@@ -1387,6 +1622,14 @@ document.getElementById('btn-quickchart').addEventListener('click', async functi
     return;
   }
   
+  // Guardar configuración para re-ejecución automática cuando cambian los datos
+  window._lastQuickChartConfig = {
+    chartType: chartType,
+    colX: colX,
+    colsY: colsY.slice(),
+    palette: document.getElementById('qc-palette') ? document.getElementById('qc-palette').value : 'neven'
+  };
+  
   outputEl.innerHTML = '<span class="spinner"></span> Generando...';
   
   try {
@@ -1424,6 +1667,46 @@ document.getElementById('btn-quickchart').addEventListener('click', async functi
     outputEl.innerHTML = '<div class="msg-error">Error: ' + e.message + '</div>';
   }
 });
+
+// Función para re-ejecutar Quick Chart (llamada cuando los datos cambian)
+window._rerunQuickChart = async function() {
+  if (!window._lastQuickChartConfig) return;
+  var cfg = window._lastQuickChartConfig;
+  console.log('[NEVEN] Re-ejecutando Quick Chart con config:', cfg);
+  
+  var outputEl = document.getElementById('qc-output');
+  if (!outputEl) return;
+  
+  try {
+    var allCols = [cfg.colX];
+    if (cfg.colsY.length > 0) allCols = allCols.concat(cfg.colsY);
+    var sql = 'SELECT ' + allCols.join(', ') + ' FROM dataset LIMIT 5000';
+    
+    var response = await fetch(API + '/api/query', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({sql: sql, page: 1, page_size: 5000})
+    });
+    var result = await response.json();
+    
+    if (result.status !== 'ok' || !result.rows || result.rows.length === 0) return;
+    
+    var xData = result.rows.map(function(r) { return r[0]; });
+    var yDataArrays = cfg.colsY.map(function(_, i) {
+      return result.rows.map(function(r) { return r[i + 1]; });
+    });
+    
+    if (cfg.chartType === 'map') {
+      _renderQuickChartMap(cfg.colX, cfg.colsY, xData, yDataArrays, outputEl, result.rows);
+    } else {
+      _renderQuickChartPlotly(cfg.chartType, cfg.colX, cfg.colsY, xData, yDataArrays, outputEl);
+    }
+    
+    showToast('📊 Quick Chart actualizado');
+  } catch (e) {
+    console.error('[NEVEN] Error re-ejecutando Quick Chart:', e);
+  }
+};
 
 function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, outputEl) {
   var traces = [];
@@ -1683,6 +1966,10 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
   document.getElementById(id).addEventListener('change',function(){
     var gc=document.getElementById('grp-col').value,gm=document.getElementById('grp-metric').value,gv=document.getElementById('grp-val').value;
     if(!gc||!gv)return;
+    
+    // Guardar configuración para re-ejecución automática cuando cambian los datos
+    window._lastGroupByConfig = { group_column: gc, value_column: gv, metric: gm };
+    
     fetch(API+'/api/groupby',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group_column:gc,value_column:gv,metric:gm})})
     .then(function(r){return r.json()}).then(function(d){
       if(d.status==='ok'){
@@ -1708,6 +1995,29 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
     });
   });
 });
+
+// Función para re-ejecutar GROUP BY (llamada cuando los datos cambian)
+window._rerunGroupBy = function() {
+  if (!window._lastGroupByConfig) return;
+  var cfg = window._lastGroupByConfig;
+  console.log('[NEVEN] Re-ejecutando GROUP BY con config:', cfg);
+  fetch(API+'/api/groupby',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)})
+  .then(function(r){return r.json()}).then(function(d){
+    if(d.status==='ok'){
+      var labels=d.results.map(function(r){return r.group;}),vals=d.results.map(function(r){return r.value;});
+      if(typeof Plotly!=='undefined'){
+        var traces=[{x:labels,y:vals,type:'bar',marker:{color:'rgba(168,230,0,0.7)'}}];
+        var layout={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#888',size:9},margin:{t:8,r:10,b:35,l:50}};
+        Plotly.newPlot('grp-chart',traces,layout,{responsive:true,displayModeBar:false});
+      }
+      var html='<table class="data-table"><tr><th>'+cfg.group_column+'</th><th>'+cfg.metric+'('+cfg.value_column+')</th></tr>';
+      d.results.forEach(function(r){html+='<tr><td>'+r.group+'</td><td>'+r.value.toFixed(2)+'</td></tr>';});
+      html+='</table>';
+      document.getElementById('grp-table').innerHTML=html;
+      showToast('📊 Gráfico actualizado con nuevos datos');
+    }
+  });
+};
 
 // --- Helper: Enviar contenido a Slide en Presentaciones ---
 function _nevenSendToSlide(title, htmlContent, plotlyFig) {
