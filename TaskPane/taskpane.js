@@ -1314,6 +1314,27 @@ async function captureSheetForAnalysis(options = {}) {
       const startCol = match ? columnToNumber(match[1]) : 1;
       const startRow = match ? parseInt(match[2], 10) : 1;
       
+      // ═══════════════════════════════════════════════════════════════════════
+      // NEW: Extract column headers (first row) and build column name map
+      // This allows the AI to understand "SALARIOS" = column D
+      // ═══════════════════════════════════════════════════════════════════════
+      const columnHeaders = {};  // Map: column letter -> header name
+      const headerRow = valueGrid[0];  // First row = headers
+      if (headerRow) {
+        for (let c = 0; c < headerRow.length; c++) {
+          const headerValue = headerRow[c];
+          if (headerValue && typeof headerValue === 'string' && headerValue.trim()) {
+            const colLetter = numberToColumn(startCol + c);
+            columnHeaders[colLetter] = headerValue.trim();
+          }
+        }
+      }
+      
+      // Build data range info (excluding header row)
+      const dataRowCount = Math.max(0, range.rowCount - 1);
+      const dataStartRow = startRow + 1;  // Data starts after header
+      const dataEndRow = startRow + range.rowCount - 1;
+      
       for (let r = 0; r < formulaGrid.length; r++) {
         for (let c = 0; c < formulaGrid[r].length; c++) {
           const cellFormula = formulaGrid[r][c];
@@ -1336,7 +1357,14 @@ async function captureSheetForAnalysis(options = {}) {
       return {
         sheet_name: sheet.name,
         formulas: formulas,
-        cell_values: cellValues,  // NEW: Map of input cell values
+        cell_values: cellValues,
+        column_headers: columnHeaders,  // NEW: Map of column letter -> header name
+        data_range: {
+          start_row: dataStartRow,
+          end_row: dataEndRow,
+          row_count: dataRowCount,
+          columns: Object.keys(columnHeaders).length
+        },
         total_cells: range.cellCount,
         range_address: startAddress
       };
@@ -1522,11 +1550,37 @@ async function analyzeSheetForAI(options = {}) {
  * Format sheet analysis as structured text for AI context.
  */
 function formatAnalysisForAI(analysis) {
-  const lines = ['=== SHEET ANALYSIS ==='];
+  const lines = ['=== ANÁLISIS DE HOJA EXCEL ==='];
   lines.push(`Hoja: ${analysis.sheet_name}`);
   
   if (analysis.detected_language) {
-    lines.push(`Idioma Excel detectado: ${analysis.detected_language === 'es' ? 'Español' : 'Inglés'}`);
+    lines.push(`Idioma Excel: ${analysis.detected_language === 'es' ? 'Español' : 'Inglés'}`);
+  }
+  
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COLUMN STRUCTURE — Critical for AI to understand data layout
+  // Shows: column letter = header name (data range)
+  // ═══════════════════════════════════════════════════════════════════════════
+  const columnHeaders = analysis.column_headers || {};
+  const dataRange = analysis.data_range || {};
+  
+  if (Object.keys(columnHeaders).length > 0) {
+    lines.push('');
+    lines.push('## Estructura de columnas');
+    lines.push(`Datos en filas ${dataRange.start_row || 2} a ${dataRange.end_row || '?'} (${dataRange.row_count || '?'} filas de datos)`);
+    lines.push('');
+    
+    // Sort columns by letter (A, B, C, ...)
+    const sortedCols = Object.keys(columnHeaders).sort((a, b) => {
+      return columnToNumber(a) - columnToNumber(b);
+    });
+    
+    sortedCols.forEach(colLetter => {
+      const headerName = columnHeaders[colLetter];
+      const dataStart = `${colLetter}${dataRange.start_row || 2}`;
+      const dataEnd = `${colLetter}${dataRange.end_row || '?'}`;
+      lines.push(`- Columna ${colLetter} = "${headerName}" → datos en ${dataStart}:${dataEnd}`);
+    });
   }
   
   // Summary
@@ -1541,7 +1595,7 @@ function formatAnalysisForAI(analysis) {
   lines.push(`- Complejidad: ${s.complexity_level || 'N/A'}`);
   
   // ═══════════════════════════════════════════════════════════════════════════
-  // NEW: Cell Map — Shows content and relationships clearly
+  // Cell Map — Shows content and relationships clearly
   // ═══════════════════════════════════════════════════════════════════════════
   const inputValues = (analysis.critical_cells && analysis.critical_cells.input_values) || {};
   const inputs = (analysis.critical_cells && analysis.critical_cells.inputs) || [];
