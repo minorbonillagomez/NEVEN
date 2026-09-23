@@ -20,6 +20,9 @@
 #   GET  /api/engines      → Pipe-probe each language engine (task 7.1)
 #   GET  /api/functions    → List registered functions per language (task 7.2)
 #   POST /api/sheet/analyze→ Extract formula metadata for AI (hybrid JS+Python)
+#   GET  /api/ontology/domains → List available ontology domains
+#   GET  /api/ontology/domain/{id}/stats → Get domain statistics
+#   GET  /api/ontology/search?q=term&domain=excel → Search knowledge graph
 
 import os
 import sys
@@ -545,6 +548,24 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 self._send_json({"status": "ok", "context": ctx})
             else:
                 self._send_json({"status": "empty"})
+            return
+
+        # ── Ontology endpoints — Multi-domain knowledge graph ─────────────────
+        if path == 'api/ontology/domains':
+            self._handle_ontology_domains()
+            return
+        
+        if path.startswith('api/ontology/domain/'):
+            # GET /api/ontology/domain/{domain_id}/stats
+            parts = path.split('/')
+            if len(parts) >= 5 and parts[4] == 'stats':
+                domain_id = parts[3]
+                self._handle_ontology_stats(domain_id)
+                return
+
+        if path.startswith('api/ontology/search'):
+            # GET /api/ontology/search?q=VLOOKUP&domain=excel
+            self._handle_ontology_search()
             return
 
         # ── Show TaskPane polling — GET consume la señal del Ribbon ───────────
@@ -1659,6 +1680,78 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_json({"status": "ok", "rows_loaded": n_rows, "columns": columns, "types": types})
         except Exception as e:
             self._send_error_json(f"Load file error: {e}")
+
+    # ── Ontology handlers ─────────────────────────────────────────────────────
+    
+    def _handle_ontology_domains(self):
+        """GET /api/ontology/domains — List available ontology domains."""
+        try:
+            from ontology_manager import get_manager
+            manager = get_manager()
+            domains = manager.list_domains()
+            self._send_json({
+                "status": "ok",
+                "domains": domains,
+                "total": len(domains)
+            })
+        except ImportError:
+            self._send_json({
+                "status": "ok",
+                "domains": [],
+                "total": 0,
+                "warning": "ontology_manager not available"
+            })
+        except Exception as e:
+            self._send_error_json(f"Ontology error: {e}")
+    
+    def _handle_ontology_stats(self, domain_id: str):
+        """GET /api/ontology/domain/{domain_id}/stats — Get domain statistics."""
+        try:
+            from ontology_manager import get_manager
+            manager = get_manager()
+            stats = manager.get_domain_stats(domain_id)
+            if "error" in stats:
+                self._send_error_json(stats["error"], 404)
+            else:
+                self._send_json({"status": "ok", **stats})
+        except ImportError:
+            self._send_error_json("ontology_manager not available", 503)
+        except Exception as e:
+            self._send_error_json(f"Ontology stats error: {e}")
+    
+    def _handle_ontology_search(self):
+        """GET /api/ontology/search?q=term&domain=excel — Search knowledge graph."""
+        from urllib.parse import urlparse, parse_qs
+        query_params = parse_qs(urlparse(self.path).query)
+        
+        q = query_params.get("q", [""])[0]
+        domain = query_params.get("domain", [None])[0]
+        limit = int(query_params.get("limit", ["50"])[0])
+        
+        if not q:
+            self._send_error_json("Missing 'q' parameter", 400)
+            return
+        
+        try:
+            from ontology_manager import search_knowledge
+            results = search_knowledge(q, domain=domain)[:limit]
+            self._send_json({
+                "status": "ok",
+                "query": q,
+                "domain": domain,
+                "results": results,
+                "count": len(results)
+            })
+        except ImportError:
+            self._send_json({
+                "status": "ok",
+                "query": q,
+                "results": [],
+                "count": 0,
+                "warning": "ontology_manager not available"
+            })
+        except Exception as e:
+            self._send_error_json(f"Search error: {e}")
 
     def _handle_analyze(self, body):
         """Analyze the loaded dataset."""

@@ -59,110 +59,32 @@ RANGE_PATTERN = re.compile(
 NAMED_REF_PATTERN = re.compile(r'\b([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[[^\]]+\])?', re.IGNORECASE)
 
 
-# ─── Excel Ontology loader (graph.jsonl) ──────────────────────────────────────
-# NOTE: This loads ONLY the Excel ontology (LIBROS EXCEL).
-# The econometric ontology (LIBROS) is separate and used by other modules.
+# ─── Ontology Integration ─────────────────────────────────────────────────────
+# Uses the multi-domain ontology_manager for Excel function lookups.
+# Supports: excel, econometrics, and future domains.
 
-_excel_ontology_cache: Optional[Dict[str, Dict[str, Any]]] = None
-
-# Paths to try for the EXCEL ontology specifically
-_EXCEL_ONTOLOGY_PATHS = [
-    # Production path
-    r"C:\NEVEN\ontologia\LIBROS EXCEL\memory\ontology\graph.jsonl",
-    # Development path (from NEVEN/ControlPython/startup/ → ONTOLOGIA/LIBROS EXCEL/)
-    # __file__ is sheet_analyzer.py in startup/
-    # Need: startup → ControlPython → NEVEN → NEVEN(root) → ONTOLOGIA
-]
-
-def _get_ontology_paths():
-    """Get possible paths to the Excel ontology file."""
-    paths = [r"C:\NEVEN\ontologia\LIBROS EXCEL\memory\ontology\graph.jsonl"]
+try:
+    from ontology_manager import get_manager, get_excel_function
+    _ONTOLOGY_AVAILABLE = True
+except ImportError:
+    _ONTOLOGY_AVAILABLE = False
     
-    # Calculate development path relative to this file
-    try:
-        this_dir = os.path.dirname(os.path.abspath(__file__))
-        # Go up: startup → ControlPython → NEVEN → project root
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(this_dir)))
-        dev_path = os.path.join(project_root, "ONTOLOGIA", "LIBROS EXCEL", 
-                                "memory", "ontology", "graph.jsonl")
-        paths.append(dev_path)
-    except:
-        pass
-    
-    return paths
-
-
-def _load_excel_ontology() -> Dict[str, Dict[str, Any]]:
-    """
-    Load Excel ontology from graph.jsonl. Cached after first load.
-    
-    This loads ONLY the Excel functions ontology, not the econometric one.
-    
-    Returns:
-        Dict mapping function names (uppercase) to their ontology data:
-        {
-            "VLOOKUP": {"category": "Lookup", "description": "...", ...},
-            "IF": {"category": "Logical", "description": "...", ...},
-        }
-    """
-    global _excel_ontology_cache
-    if _excel_ontology_cache is not None:
-        return _excel_ontology_cache
-    
-    _excel_ontology_cache = {}
-    
-    for path in _get_ontology_paths():
-        if os.path.isfile(path):
-            try:
-                with open(path, 'r', encoding='utf-8') as f:
-                    for line in f:
-                        line = line.strip()
-                        if not line:
-                            continue
-                        try:
-                            entry = json.loads(line)
-                            # Only process ExcelFunction entities
-                            if entry.get("op") == "create":
-                                entity = entry.get("entity", {})
-                                if entity.get("type") == "ExcelFunction":
-                                    props = entity.get("properties", {})
-                                    func_name = props.get("name", "").upper()
-                                    if func_name:
-                                        _excel_ontology_cache[func_name] = {
-                                            "id": entity.get("id"),
-                                            "category": props.get("category", ""),
-                                            "description": props.get("description", ""),
-                                            "syntax": props.get("syntax", ""),
-                                            "best_practices": props.get("best_practices", []),
-                                            "common_errors": props.get("common_errors", []),
-                                        }
-                                # Also extract patterns for reference
-                                elif entity.get("type") == "Pattern":
-                                    props = entity.get("properties", {})
-                                    # Store patterns by functions_used
-                                    for func in props.get("functions_used", []):
-                                        func_upper = func.upper()
-                                        if func_upper in _excel_ontology_cache:
-                                            if "patterns" not in _excel_ontology_cache[func_upper]:
-                                                _excel_ontology_cache[func_upper]["patterns"] = []
-                                            _excel_ontology_cache[func_upper]["patterns"].append({
-                                                "name": props.get("name"),
-                                                "description": props.get("description"),
-                                            })
-                        except json.JSONDecodeError:
-                            continue
-                # Successfully loaded, break
-                break
-            except Exception:
-                continue
-    
-    return _excel_ontology_cache
+    def get_excel_function(name: str) -> Optional[Dict[str, Any]]:
+        """Fallback when ontology_manager not available."""
+        return None
 
 
 def _get_function_info(func_name: str) -> Optional[Dict[str, Any]]:
-    """Lookup a function in the Excel ontology by name."""
-    ontology = _load_excel_ontology()
-    return ontology.get(func_name.upper())
+    """
+    Lookup a function in the Excel ontology by name.
+    
+    Uses the multi-domain ontology system via ontology_manager.
+    Returns dict with category, description, syntax, best_practices, common_errors.
+    """
+    if not _ONTOLOGY_AVAILABLE:
+        return None
+    
+    return get_excel_function(func_name)
 
 
 # ─── Core analysis functions ──────────────────────────────────────────────────
