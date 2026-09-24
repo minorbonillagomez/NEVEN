@@ -223,12 +223,45 @@ Cuando crees una nueva función R, Julia o Python, DEBES seguir este protocolo E
 {{"op": "relate", "from": "{{id_funcion}}", "rel": "belongs_to", "to": "cat_{{categoria_minusculas}}"}}
 ```
 
+### PASO 4: Crear sidecar JSON para el Diccionario de Funciones
+Si la función debe aparecer en el Diccionario de Funciones del Task Pane (callable desde Excel):
+- **Archivo**: `C:\\NEVEN\\functions\\{{ID}}.json`
+- **Documentación completa**: Ver `C:\\NEVEN\\functions\\SIDECAR_FORMAT.md` y `AGENT_INSTRUCTIONS.md`
+- **Campos requeridos para XLL**:
+  - `function_name_xll`: Nombre para `=NEVEN.R("nombre", ...)`
+  - `nevenx_positions`: Mapeo de argumentos a0, a1, ... a9
+  - `tipo_outputs`: Lista de outputs disponibles
+
+Ejemplo mínimo de sidecar XLL-callable:
+```json
+{{
+  "id": "RG_MiFuncion",
+  "family": "RG",
+  "family_label": "Regresion",
+  "name": "Mi Funcion",
+  "description": "Descripcion de la funcion",
+  "languages": ["r"],
+  "function_name": "RG_MiFuncion.Studio",
+  "function_name_xll": "MR_MiFuncion",
+  "file": "RG_MiFuncion.Studio.R",
+  "nevenx_positions": {{
+    "a0": {{ "name": "SetDatosY", "label": "Variable Y", "type": "range", "required": true, "default": null }},
+    "a1": {{ "name": "SetDatosX", "label": "Variables X", "type": "range", "required": true, "default": null }}
+  }},
+  "tipo_outputs": [
+    {{ "id": 0, "label": "Ayuda" }},
+    {{ "id": 1, "label": "Resultado principal" }}
+  ]
+}}
+```
+
 ### REGLAS OBLIGATORIAS:
 - `id` único con formato: `r_fx_var`, `j_mt_svd`, `py_ml_lstm` (prefijo_categoria_nombre)
 - `category` DEBE ser uno de: AD, BD, DS, FX, GR, ML, MT, OP, RG, UT
 - `type` DEBE ser exactamente: RFunction, JuliaFunction, o PythonFunction
 - SIEMPRE agregar la relación belongs_to después de la entidad
 - NUNCA modificar ni eliminar entradas existentes en graph.jsonl
+- SIEMPRE crear sidecar JSON si la función debe ser callable desde Excel
 
 ### Categorías disponibles:
 - AD = Análisis de Datos (PCA, clustering, text mining)
