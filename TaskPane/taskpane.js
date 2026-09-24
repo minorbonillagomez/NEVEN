@@ -1484,9 +1484,7 @@ window.getSheetAnalysisSummary = getSheetAnalysisSummary;
  */
 async function analyzeSheetForAI(options = {}) {
   try {
-    console.log('[NEVEN] analyzeSheetForAI: iniciando captura...');
     const analysis = await captureSheetForAnalysis(options);
-    console.log('[NEVEN] analyzeSheetForAI: resultado =', analysis);
     
     if (analysis.status === 'error') {
       console.error('[NEVEN] analyzeSheetForAI: error =', analysis.message);
@@ -1506,8 +1504,6 @@ async function analyzeSheetForAI(options = {}) {
     // Inject into AI state (same pattern as _aiAttachDataset)
     if (typeof _aiState !== 'undefined') {
       _aiState.context = contextText;
-      console.log('[NEVEN] analyzeSheetForAI: contexto inyectado, longitud =', contextText.length);
-      console.log('[NEVEN] analyzeSheetForAI: primeros 500 chars =', contextText.substring(0, 500));
       
       // Update context card
       const ctxCard = document.getElementById('ai-context-card');
@@ -1889,7 +1885,6 @@ async function captureSelectedRangeForChart() {
       
       // Si Office.js funcionó, retornar el resultado
       if (result && !result.error && result.data && result.data.length > 0) {
-        console.log('[NEVEN] Datos capturados via Office.js:', result.address);
         return result;
       }
     } catch (e) {
@@ -1912,7 +1907,6 @@ async function captureSelectedRangeForChart() {
       const data = result.rows;
       const types = _detectColumnTypesFromData(data, headers.length);
       
-      console.log('[NEVEN] Datos capturados via DuckDB:', headers.length, 'columnas,', data.length, 'filas');
       return {
         address: 'DuckDB (Data Studio)',
         headers: headers,
@@ -1938,7 +1932,6 @@ async function captureSelectedRangeForChart() {
       
       if (rows.length > 0) {
         const types = _detectColumnTypesFromData(rows, headers.length);
-        console.log('[NEVEN] Datos capturados via Bridge');
         return {
           address: 'Excel Bridge',
           headers: headers,
