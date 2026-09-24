@@ -94,7 +94,7 @@ function _ayudaRenderCatalogo(data, filtro) {
     
     var details = document.createElement('details');
     details.className = 'ayuda-familia';
-    details.open = !filtro;
+    details.open = false;  // Cerrado por defecto, usuario decide abrir
     
     var summary = document.createElement('summary');
     summary.className = 'ayuda-familia-header';

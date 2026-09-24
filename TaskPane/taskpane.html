@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEVEN Studio</title>
   <link rel="stylesheet" href="taskpane.css?v=9">
-  <!-- Office.js para integración con Excel -->
+  <!-- Office.js para integraciÃ³n con Excel -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <!-- Office.js initialization with auto-open -->
   <script>
@@ -13,7 +13,7 @@
       console.log('Office.onReady - Host:', info.host, 'Platform:', info.platform);
       window._officeHost = info.host;
       window._officePlatform = info.platform;
-      window._officeReady = true;  // Flag para indicar que Office.js está listo
+      window._officeReady = true;  // Flag para indicar que Office.js estÃ¡ listo
       
       // Configurar auto-open para que el TaskPane se abra automaticamente
       // cuando se abre un documento que lo tuvo abierto anteriormente
@@ -47,7 +47,7 @@
   <div class="header">
     <h1>NEVEN Studio</h1>
     <span class="version">v3.0</span>
-    <span id="server-status" style="margin-left:auto;font-size:10px;padding:2px 6px;border-radius:4px;background:#333;color:#888">⏳</span>
+    <span id="server-status" style="margin-left:auto;font-size:10px;padding:2px 6px;border-radius:4px;background:#333;color:#888">â³</span>
   </div>
 
   <div class="tabs">
@@ -83,9 +83,9 @@
         <select id="sql-examples" style="background:var(--bg-secondary);color:var(--text-secondary);
                 border:1px solid #555;border-radius:4px;font-size:10px;padding:4px 6px;cursor:pointer">
           <option value="">Cargar ejemplo...</option>
-          <option value="duck1">DuckDB — Resumen estadístico</option>
-          <option value="duck2">DuckDB — Análisis agrupado</option>
-          <option value="ext">DB externa — PostgreSQL (guía)</option>
+          <option value="duck1">DuckDB â€” Resumen estadÃ­stico</option>
+          <option value="duck2">DuckDB â€” AnÃ¡lisis agrupado</option>
+          <option value="ext">DB externa â€” PostgreSQL (guÃ­a)</option>
         </select>
         <span id="sql-status"></span>
       </div>
@@ -120,25 +120,25 @@
     <div style="margin-top:6px">
       <button class="btn btn-secondary" id="btn-pivot" style="display:none">Abrir Pivot</button>
     </div>
-    <!-- Gráfico Rápido (sin IA) -->
+    <!-- GrÃ¡fico RÃ¡pido (sin IA) -->
     <div class="card" id="quickchart-card" style="display:none">
-      <div class="card-title">📊 Gráfico Rápido</div>
+      <div class="card-title">ðŸ“Š GrÃ¡fico RÃ¡pido</div>
       <div class="controls" style="flex-wrap:wrap;gap:6px;align-items:flex-start">
         <select id="qc-type" style="min-width:120px">
-          <optgroup label="Básicos">
+          <optgroup label="BÃ¡sicos">
             <option value="bar">Barras</option>
-            <option value="line">Líneas</option>
-            <option value="scatter">Dispersión</option>
+            <option value="line">LÃ­neas</option>
+            <option value="scatter">DispersiÃ³n</option>
             <option value="pie">Pastel</option>
-            <option value="area">Área</option>
+            <option value="area">Ãrea</option>
           </optgroup>
-          <optgroup label="Estadísticos">
+          <optgroup label="EstadÃ­sticos">
             <option value="histogram">Histograma</option>
             <option value="boxplot">Box Plot</option>
             <option value="heatmap">Heatmap</option>
           </optgroup>
           <optgroup label="Geoespacial">
-            <option value="map">🗺️ Mapa (Lat/Lon)</option>
+            <option value="map">ðŸ—ºï¸ Mapa (Lat/Lon)</option>
           </optgroup>
           <optgroup label="Avanzados">
             <option value="bubble">Burbujas</option>
@@ -154,14 +154,14 @@
                style="background:var(--bg-secondary);border:1px solid #555;border-radius:4px;
                       padding:4px 8px;font-size:11px;cursor:pointer;display:flex;
                       justify-content:space-between;align-items:center;min-height:24px">
-            <span id="qc-y-label">— Eje Y —</span>
-            <span style="margin-left:6px">▼</span>
+            <span id="qc-y-label">â€” Eje Y â€”</span>
+            <span style="margin-left:6px">â–¼</span>
           </div>
           <div id="qc-y-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;
                background:var(--bg-secondary);border:1px solid #555;border-radius:4px;
                max-height:180px;overflow-y:auto;z-index:100;margin-top:2px;
                box-shadow:0 4px 12px rgba(0,0,0,0.3)">
-            <!-- Opciones se llenan dinámicamente -->
+            <!-- Opciones se llenan dinÃ¡micamente -->
           </div>
         </div>
         <!-- Selector de paleta de colores -->
@@ -214,9 +214,9 @@
           <option value="python">Python</option>
           <option value="julia">Julia</option>
         </select>
-        <span id="engine-status-r"      class="engine-dot" title="R">●</span>
-        <span id="engine-status-python" class="engine-dot" title="Python">●</span>
-        <span id="engine-status-julia"  class="engine-dot" title="Julia">●</span>
+        <span id="engine-status-r"      class="engine-dot" title="R">â—</span>
+        <span id="engine-status-python" class="engine-dot" title="Python">â—</span>
+        <span id="engine-status-julia"  class="engine-dot" title="Julia">â—</span>
       </div>
 
       <!-- Nombre del archivo activo -->
@@ -227,7 +227,7 @@
               background:#888;flex-shrink:0"></span>
         <span id="script-filename-text" style="font-size:10px;color:var(--text-secondary);
               font-family:Consolas,monospace;flex:1;overflow:hidden;text-overflow:ellipsis;
-              white-space:nowrap">sin título</span>
+              white-space:nowrap">sin tÃ­tulo</span>
       </div>
 
       <!-- Editor -->
@@ -243,7 +243,7 @@
         <button class="btn btn-secondary" id="btn-script-save"
                 title="Guardar (Ctrl+S)" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>
         <button class="btn btn-secondary" id="btn-script-save-as"
-                title="Guardar como…"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Guardar como</button>
+                title="Guardar comoâ€¦"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Guardar como</button>
         <button class="btn btn-secondary" id="btn-script-new"
                 title="Nuevo script (limpia el editor)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Nuevo</button>
         <button class="btn btn-secondary" id="btn-open-rpivot">RPivot</button>
@@ -253,19 +253,19 @@
                        padding:4px 6px;cursor:pointer">
           <option value="">Ejemplos...</option>
           <optgroup label="R">
-            <option value="r_estadistica">R — Estadística descriptiva</option>
-            <option value="r_regresion">R — Regresión lineal</option>
-            <option value="r_grafico">R — Gráfico con Plotly</option>
+            <option value="r_estadistica">R â€” EstadÃ­stica descriptiva</option>
+            <option value="r_regresion">R â€” RegresiÃ³n lineal</option>
+            <option value="r_grafico">R â€” GrÃ¡fico con Plotly</option>
           </optgroup>
           <optgroup label="Python">
-            <option value="py_datos">Python — Pandas básico</option>
-            <option value="py_ml">Python — Scikit-learn</option>
-            <option value="py_grafico">Python — Matplotlib</option>
+            <option value="py_datos">Python â€” Pandas bÃ¡sico</option>
+            <option value="py_ml">Python â€” Scikit-learn</option>
+            <option value="py_grafico">Python â€” Matplotlib</option>
           </optgroup>
           <optgroup label="Julia">
-            <option value="jl_estadistica">Julia — Estadística</option>
-            <option value="jl_algebra">Julia — Álgebra lineal</option>
-            <option value="jl_grafico">Julia — Gráfico básico</option>
+            <option value="jl_estadistica">Julia â€” EstadÃ­stica</option>
+            <option value="jl_algebra">Julia â€” Ãlgebra lineal</option>
+            <option value="jl_grafico">Julia â€” GrÃ¡fico bÃ¡sico</option>
           </optgroup>
         </select>
         <span id="script-status" style="font-size:10px;color:var(--text-secondary)"></span>
@@ -285,7 +285,7 @@
         <div class="card-title" style="margin-bottom:0">Output</div>
         <button onclick="document.getElementById('script-output-card').style.display='none'"
                 style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px"
-                title="Cerrar">×</button>
+                title="Cerrar">Ã—</button>
       </div>
       <iframe id="script-iframe"  style="width:100%;height:400px;display:none;border:0"></iframe>
       <div    id="script-table"   style="display:none"></div>
@@ -306,17 +306,17 @@
   <div class="tab-content" id="data-lab">
     <!-- Sin dataset -->
     <div id="dl-no-dataset" class="msg-info" style="display:none">
-      Cargue datos primero desde la pestaña <strong>Data Studio</strong> o el <strong>Excel Bridge</strong>.
+      Cargue datos primero desde la pestaÃ±a <strong>Data Studio</strong> o el <strong>Excel Bridge</strong>.
     </div>
 
-    <!-- Selector de función -->
+    <!-- Selector de funciÃ³n -->
     <div id="dl-selector-card" class="card">
-      <div class="card-title">Seleccionar función</div>
+      <div class="card-title">Seleccionar funciÃ³n</div>
       <div class="controls" style="gap:6px">
         <select id="dl-family-select" disabled style="min-width:160px">
-          <option value="">— Familia —</option>
+          <option value="">â€” Familia â€”</option>
         </select>
-        <span id="dl-catalog-spinner" style="display:none">⏳</span>
+        <span id="dl-catalog-spinner" style="display:none">â³</span>
         <button class="btn btn-secondary" id="dl-pkg-check-btn" title="Verificar paquetes instalados"
                 style="margin-left:auto;font-size:10px">Verificar paquetes</button>
       </div>
@@ -325,7 +325,7 @@
         <button class="btn btn-secondary" id="dl-retry-catalog" style="margin-left:6px">Reintentar</button>
       </div>
       <div id="dl-function-list" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
-      <!-- Selector de idioma (visible solo si hay múltiples idiomas) -->
+      <!-- Selector de idioma (visible solo si hay mÃºltiples idiomas) -->
       <div id="dl-language-row" style="display:none;margin-top:6px">
         <label style="font-size:12px;margin-right:4px">Idioma:</label>
         <select id="dl-language-select"></select>
@@ -343,7 +343,7 @@
 
     <!-- Panel de columnas -->
     <div id="dl-column-panel" style="display:none" class="card">
-      <div class="card-title">Asignación de columnas</div>
+      <div class="card-title">AsignaciÃ³n de columnas</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
         <div style="flex:1;min-width:160px">
           <div style="font-size:11px;color:#888;margin-bottom:4px">Columnas del dataset</div>
@@ -356,12 +356,12 @@
       </div>
     </div>
 
-    <!-- Formulario de parámetros -->
+    <!-- Formulario de parÃ¡metros -->
     <div id="dl-param-card" style="display:none" class="card">
-      <div class="card-title">Parámetros</div>
+      <div class="card-title">ParÃ¡metros</div>
       <div id="dl-param-tier1"></div>
       <details id="dl-param-advanced" style="margin-top:6px">
-        <summary style="cursor:pointer;font-size:12px;color:#888">Parámetros avanzados</summary>
+        <summary style="cursor:pointer;font-size:12px;color:#888">ParÃ¡metros avanzados</summary>
         <div id="dl-param-tier2" style="margin-top:6px"></div>
       </details>
     </div>
@@ -388,10 +388,10 @@
       </div>
     </div>
 
-    <!-- Botón Ejecutar -->
+    <!-- BotÃ³n Ejecutar -->
     <div id="dl-run-row" style="display:none;margin-top:8px">
-      <button class="btn btn-primary" id="dl-run-btn" disabled>Ejecutar análisis</button>
-      <span id="dl-run-spinner" style="display:none;margin-left:8px">⏳</span>
+      <button class="btn btn-primary" id="dl-run-btn" disabled>Ejecutar anÃ¡lisis</button>
+      <span id="dl-run-spinner" style="display:none;margin-left:8px">â³</span>
     </div>
 
     <!-- Panel de resultados -->
@@ -424,24 +424,24 @@
         </div>
       </div>
       <div id="ai-offline-msg" class="msg-error" style="display:none;margin-top:6px">
-        LLM no disponible. Verifique que LMStudio esté activo y tenga un modelo cargado.
+        LLM no disponible. Verifique que LMStudio estÃ© activo y tenga un modelo cargado.
       </div>
     </div>
 
     <!-- Contexto del dataset -->
     <div class="card" id="ai-context-card" style="display:none">
       <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:10px;color:var(--text-secondary)">📊 Contexto:</span>
+        <span style="font-size:10px;color:var(--text-secondary)">ðŸ“Š Contexto:</span>
         <span id="ai-context-summary" style="font-size:10px;color:var(--accent)"></span>
         <button id="ai-clear-context"
                 style="margin-left:auto;background:none;border:none;color:#666;
-                       cursor:pointer;font-size:11px;padding:0 2px" title="Quitar contexto">×</button>
+                       cursor:pointer;font-size:11px;padding:0 2px" title="Quitar contexto">Ã—</button>
       </div>
     </div>
 
-    <!-- Prompts rápidos -->
+    <!-- Prompts rÃ¡pidos -->
     <div class="card" id="ai-prompts-card" style="display:none">
-      <div class="card-title" style="margin-bottom:4px">Prompts guía</div>
+      <div class="card-title" style="margin-bottom:4px">Prompts guÃ­a</div>
       <div id="ai-prompt-chips" style="display:flex;flex-wrap:wrap;gap:4px"></div>
     </div>
 
@@ -460,10 +460,10 @@
       <!-- mensajes insertados por JS -->
     </div>
 
-    <!-- Área de entrada -->
+    <!-- Ãrea de entrada -->
     <div class="card" style="padding:8px">
       <textarea id="ai-input"
-        placeholder="Escribe tu pregunta… (Enter envía, Shift+Enter nueva línea)"
+        placeholder="Escribe tu preguntaâ€¦ (Enter envÃ­a, Shift+Enter nueva lÃ­nea)"
         style="width:100%;box-sizing:border-box;min-height:64px;max-height:160px;
                background:var(--bg-primary);color:var(--text-primary);
                border:1px solid var(--border);border-radius:4px;
@@ -479,12 +479,12 @@
           + Dataset
         </button>
         <button class="btn btn-secondary" id="ai-analyze-sheet-btn"
-                title="Analizar fórmulas de la hoja activa (modo Consultor Excel)"
+                title="Analizar fÃ³rmulas de la hoja activa (modo Consultor Excel)"
                 style="background:rgba(100,180,100,0.15);border-color:rgba(100,180,100,0.4)">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M14 15l2 2 4-4"/></svg> Analizar Hoja
         </button>
         <button class="btn btn-secondary" id="ai-clear-btn">Limpiar</button>
-        <span id="ai-spinner" style="display:none;font-size:11px;color:var(--text-secondary)">⏳ pensando…</span>
+        <span id="ai-spinner" style="display:none;font-size:11px;color:var(--text-secondary)">â³ pensandoâ€¦</span>
         <span id="ai-token-info" style="margin-left:auto;font-size:9px;color:#555"></span>
       </div>
     </div>
@@ -494,7 +494,7 @@
   <!-- Tab: Ayuda / Diccionario de Funciones -->
   <div class="tab-content" id="ayuda">
     
-    <!-- Encabezado con botón de recarga -->
+    <!-- Encabezado con botÃ³n de recarga -->
     <div class="card" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px">
       <div>
         <div class="card-title" style="margin-bottom:2px">Diccionario de Funciones NEVEN</div>
@@ -504,14 +504,14 @@
           <code style="background:#333;padding:1px 4px;border-radius:2px">=NEVEN.J()</code>
         </div>
       </div>
-      <button class="btn btn-secondary" id="ayuda-reload-btn" title="Recargar catálogo" style="padding:4px 8px">
+      <button class="btn btn-secondary" id="ayuda-reload-btn" title="Recargar catÃ¡logo" style="padding:4px 8px">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       </button>
     </div>
 
-    <!-- Búsqueda -->
+    <!-- BÃºsqueda -->
     <div class="card" style="padding:8px">
-      <input type="text" id="ayuda-search" placeholder="Buscar función por nombre o descripción..."
+      <input type="text" id="ayuda-search" placeholder="Buscar funciÃ³n por nombre o descripciÃ³n..."
              style="width:100%;background:var(--bg-primary);color:var(--text-primary);
                     border:1px solid var(--border);border-radius:4px;padding:6px 10px;
                     font-size:11px;outline:none"
@@ -521,21 +521,21 @@
 
     <!-- Estado de carga -->
     <div id="ayuda-loading" class="msg-info" style="display:none">
-      <span class="spinner"></span> Cargando catálogo de funciones...
+      <span class="spinner"></span> Cargando catÃ¡logo de funciones...
     </div>
     <div id="ayuda-error" class="msg-error" style="display:none"></div>
 
-    <!-- Contenedor de familias/categorías -->
+    <!-- Contenedor de familias/categorÃ­as -->
     <div id="ayuda-catalogo"></div>
 
-    <!-- Panel de detalle de función (oculto por defecto) -->
+    <!-- Panel de detalle de funciÃ³n (oculto por defecto) -->
     <div id="ayuda-detalle" class="card" style="display:none">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
         <div>
           <div id="ayuda-detalle-nombre" class="card-title" style="margin-bottom:2px;font-size:13px"></div>
           <div id="ayuda-detalle-familia" style="font-size:9px;color:var(--text-secondary);text-transform:uppercase"></div>
         </div>
-        <button class="btn btn-secondary" id="ayuda-detalle-cerrar" style="padding:2px 8px;font-size:10px">✕ Cerrar</button>
+        <button class="btn btn-secondary" id="ayuda-detalle-cerrar" style="padding:2px 8px;font-size:10px">âœ• Cerrar</button>
       </div>
       
       <div id="ayuda-detalle-desc" style="font-size:11px;color:var(--text-primary);margin-bottom:10px;line-height:1.5"></div>
@@ -551,10 +551,10 @@
         </div>
       </div>
       
-      <!-- Parámetros (nevenx_positions) -->
+      <!-- ParÃ¡metros (nevenx_positions) -->
       <details open style="margin-bottom:10px">
         <summary style="cursor:pointer;font-size:10px;font-weight:600;color:var(--accent);
-                 text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Parámetros</summary>
+                 text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">ParÃ¡metros</summary>
         <div id="ayuda-detalle-params" style="font-size:10px"></div>
       </details>
       
@@ -576,7 +576,7 @@
       <div id="ayuda-detalle-wiki" style="display:none;margin-top:8px">
         <a id="ayuda-detalle-wiki-link" href="#" target="_blank" rel="noopener"
            style="font-size:10px;color:var(--accent);text-decoration:none">
-          📖 Ver más en Wikipedia
+          ðŸ“– Ver mÃ¡s en Wikipedia
         </a>
       </div>
     </div>
@@ -648,7 +648,7 @@
           </div>
         </div>
 
-        <!-- Base de datos / Usuario / Contraseña (oculto para SQLite) -->
+        <!-- Base de datos / Usuario / ContraseÃ±a (oculto para SQLite) -->
         <div id="db-creds-row">
           <div style="margin-bottom:8px">
             <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
@@ -667,7 +667,7 @@
             </div>
             <div style="flex:1">
               <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
-                     text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Contraseña</label>
+                     text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">ContraseÃ±a</label>
               <input id="db-password" type="password"
                      style="width:100%;background:var(--bg-primary);color:var(--text-primary);
                             border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
@@ -701,24 +701,24 @@
   </div>
 
   <div class="status-bar">
-    <span id="status-server">●</span>
+    <span id="status-server">â—</span>
   </div>
 
 <script>
 var API = window.location.origin;
 
-// --- Verificación de estado del servidor ---
+// --- VerificaciÃ³n de estado del servidor ---
 (function checkServerStatus() {
   var statusEl = document.getElementById('server-status');
   if (!statusEl) return;
   
   function updateStatus(ok) {
     if (ok) {
-      statusEl.textContent = '● Conectado';
+      statusEl.textContent = 'â— Conectado';
       statusEl.style.background = 'rgba(100,200,100,0.2)';
       statusEl.style.color = '#8f8';
     } else {
-      statusEl.textContent = '● Desconectado';
+      statusEl.textContent = 'â— Desconectado';
       statusEl.style.background = 'rgba(255,100,100,0.2)';
       statusEl.style.color = '#f88';
     }
@@ -735,9 +735,9 @@ var API = window.location.origin;
   setInterval(check, 30000);
 })();
 
-// ═══════════════════════════════════════════════════════════════════════════
-// FUNCIÓN GLOBAL showToast — notificación temporal sin cambiar de tab
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// FUNCIÃ“N GLOBAL showToast â€” notificaciÃ³n temporal sin cambiar de tab
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.showToast = function(text) {
   var t = document.getElementById('neven-toast');
   if (!t) {
@@ -755,17 +755,17 @@ window.showToast = function(text) {
   t._tid = setTimeout(function(){ t.style.opacity='0'; }, 2500);
 };
 
-// Alias para compatibilidad con código existente
+// Alias para compatibilidad con cÃ³digo existente
 var showToast = window.showToast;
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SISTEMA DE DATA BINDING REACTIVO (Excel → NEVEN Studio)
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// SISTEMA DE DATA BINDING REACTIVO (Excel â†’ NEVEN Studio)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 var _nevenDataBinding = {
-  rangeAddress: null,      // Dirección del rango vinculado (ej: "Sheet1!A1:D100")
+  rangeAddress: null,      // DirecciÃ³n del rango vinculado (ej: "Sheet1!A1:D100")
   sheetName: null,         // Nombre de la hoja
   eventHandler: null,      // Referencia al handler registrado
-  lastDataHash: null,      // Hash de los últimos datos para detectar cambios reales
+  lastDataHash: null,      // Hash de los Ãºltimos datos para detectar cambios reales
   onDataChange: null,      // Callback cuando los datos cambian
   
   // Vincular un rango de Excel para seguimiento de cambios
@@ -780,7 +780,7 @@ var _nevenDataBinding = {
     console.log('[NEVEN Binding] _officeReady:', window._officeReady);
     
     if (typeof Excel === 'undefined' || !window._officeReady) {
-      console.log('[NEVEN Binding] ❌ Office.js no disponible, binding desactivado');
+      console.log('[NEVEN Binding] âŒ Office.js no disponible, binding desactivado');
       return false;
     }
     
@@ -789,28 +789,28 @@ var _nevenDataBinding = {
         console.log('[NEVEN Binding] Dentro de Excel.run, obteniendo hoja:', sheetName);
         var sheet = context.workbook.worksheets.getItem(sheetName);
         
-        // Registrar evento onChanged en la hoja (edición manual)
+        // Registrar evento onChanged en la hoja (ediciÃ³n manual)
         console.log('[NEVEN Binding] Registrando evento onChanged...');
         sheet.onChanged.add(function(eventArgs) {
-          console.log('[NEVEN Binding] 🔔 onChanged - Cambio en:', eventArgs.address);
+          console.log('[NEVEN Binding] ðŸ”” onChanged - Cambio en:', eventArgs.address);
           self._handleChange(eventArgs);
         });
         
-        // Registrar evento onCalculated en la HOJA (F9, recálculo de fórmulas)
-        // Nota: onCalculated está en Worksheet, no en Workbook
+        // Registrar evento onCalculated en la HOJA (F9, recÃ¡lculo de fÃ³rmulas)
+        // Nota: onCalculated estÃ¡ en Worksheet, no en Workbook
         console.log('[NEVEN Binding] Registrando evento onCalculated en worksheet...');
         sheet.onCalculated.add(function(eventArgs) {
-          console.log('[NEVEN Binding] 🔄 onCalculated - Recálculo detectado en:', eventArgs.address);
+          console.log('[NEVEN Binding] ðŸ”„ onCalculated - RecÃ¡lculo detectado en:', eventArgs.address);
           self._handleChange({ address: eventArgs.address || 'calculation', type: 'Calculated' });
         });
         
         await context.sync();
-        console.log('[NEVEN Binding] ✅ Listeners registrados (onChanged + onCalculated) para hoja:', sheetName);
+        console.log('[NEVEN Binding] âœ… Listeners registrados (onChanged + onCalculated) para hoja:', sheetName);
       });
       
       return true;
     } catch (e) {
-      console.error('[NEVEN Binding] ❌ Error registrando listener:', e);
+      console.error('[NEVEN Binding] âŒ Error registrando listener:', e);
       return false;
     }
   },
@@ -883,7 +883,7 @@ document.querySelectorAll('.tab').forEach(function(t){
   });
 });
 
-// --- Relay postMessage: DataLab → Presentaciones iframe ---
+// --- Relay postMessage: DataLab â†’ Presentaciones iframe ---
 window.addEventListener('message', function(event) {
   if (event.origin !== window.location.origin) return;
   if (!event.data || event.data.type !== 'NEVEN_ADD_SLIDE') return;
@@ -893,7 +893,7 @@ window.addEventListener('message', function(event) {
 
   var msg = event.data;
 
-  // Función de toast — confirma sin cambiar de tab
+  // FunciÃ³n de toast â€” confirma sin cambiar de tab
   function showToast(text) {
     var t = document.getElementById('neven-toast');
     if (!t) {
@@ -911,23 +911,23 @@ window.addEventListener('message', function(event) {
     t._tid = setTimeout(function(){ t.style.opacity='0'; }, 2500);
   }
 
-  // Cargar el iframe de presentaciones en background si no está cargado aún
+  // Cargar el iframe de presentaciones en background si no estÃ¡ cargado aÃºn
   if (!frame.src || frame.src === window.location.href || frame.src === 'about:blank') {
     frame.src = API + '/presentaciones/index.html';
     frame.addEventListener('load', function onLoad() {
       frame.removeEventListener('load', onLoad);
       setTimeout(function() {
         frame.contentWindow.postMessage(msg, window.location.origin);
-        showToast('✓ Slide agregado a Presentaciones');
+        showToast('âœ“ Slide agregado a Presentaciones');
       }, 300);
     });
   } else {
     frame.contentWindow.postMessage(msg, window.location.origin);
-    showToast('✓ Slide agregado a Presentaciones');
+    showToast('âœ“ Slide agregado a Presentaciones');
   }
 });
 
-// --- Cargar archivo (FileReader — Opcion A) ---
+// --- Cargar archivo (FileReader â€” Opcion A) ---
 var _RECENT_KEY = 'neven_recent_files';
 var _MAX_RECENT = 8;
 
@@ -967,7 +967,7 @@ function _renderRecentFiles() {
     nameSpan.style.cssText = 'font-size:10px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px';
 
     var metaSpan = document.createElement('span');
-    metaSpan.textContent = item.rows + ' × ' + item.cols;
+    metaSpan.textContent = item.rows + ' Ã— ' + item.cols;
     metaSpan.style.cssText = 'font-size:9px;color:var(--text-secondary);margin-left:8px;white-space:nowrap';
 
     btn.appendChild(nameSpan);
@@ -1004,7 +1004,7 @@ function _loadFromContent(name, content) {
   try {
     if (lower.endsWith('.json')) {
       var arr = JSON.parse(content);
-      if (!Array.isArray(arr) || arr.length === 0) throw new Error('JSON vacío o no es array');
+      if (!Array.isArray(arr) || arr.length === 0) throw new Error('JSON vacÃ­o o no es array');
       parsed = { headers: Object.keys(arr[0]), rows: arr };
     } else {
       var delim = lower.endsWith('.tsv') ? '\t' : ',';
@@ -1042,7 +1042,7 @@ function _loadFromContent(name, content) {
   .then(function(r){ return r.json(); })
   .then(function(d) {
     if (d.status === 'ok') {
-      info.textContent = rows.length + ' filas × ' + headers.length + ' cols — ' + name;
+      info.textContent = rows.length + ' filas Ã— ' + headers.length + ' cols â€” ' + name;
       _addRecentFile(name, content, rows.length, headers.length);
       populateGroupBy(headers, types);
       // Auto-analyze
@@ -1154,10 +1154,10 @@ _renderRecentFiles();
     .then(function(d) {
       btn.disabled = false;
       if (d.status === 'ok') {
-        statusEl.innerHTML = '<span style="color:var(--success)">✓ ' + d.rows_loaded +
-          ' filas × ' + d.columns.length + ' cols cargadas</span>';
+        statusEl.innerHTML = '<span style="color:var(--success)">âœ“ ' + d.rows_loaded +
+          ' filas Ã— ' + d.columns.length + ' cols cargadas</span>';
         document.getElementById('data-info').textContent =
-          d.rows_loaded + ' filas × ' + d.columns.length + ' cols — ' +
+          d.rows_loaded + ' filas Ã— ' + d.columns.length + ' cols â€” ' +
           (eng === 'sqlite' ? body.sqlite_path.split(/[\\/]/).pop() : body.database + ' (' + eng + ')');
         populateGroupBy(d.columns, d.types);
         fetch(API+'/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
@@ -1173,7 +1173,7 @@ _renderRecentFiles();
         var msg = d.message || 'Error desconocido';
         statusEl.innerHTML = '<span style="color:var(--error)">' + msg + '</span>';
         if (d.code === 'MISSING_PACKAGE') {
-          statusEl.innerHTML += '<br><span style="font-size:9px;color:#888">Instale el paquete desde Run Script → Python</span>';
+          statusEl.innerHTML += '<br><span style="font-size:9px;color:#888">Instale el paquete desde Run Script â†’ Python</span>';
         }
       }
     })
@@ -1209,13 +1209,13 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
   var dataInfo = document.getElementById('data-info');
   dataInfo.innerHTML='<span class="spinner"></span> Leyendo de Excel...';
   
-  // ═══ DEBUG: Mostrar estado de Office.js ═══
+  // â•â•â• DEBUG: Mostrar estado de Office.js â•â•â•
   console.log('[NEVEN] btn-bridge-read clicked');
   console.log('[NEVEN] Office defined:', typeof Office !== 'undefined');
   console.log('[NEVEN] Excel defined:', typeof Excel !== 'undefined');
   console.log('[NEVEN] _officeReady:', window._officeReady);
   
-  // ═══ Estrategia 1: Usar Office.js si está disponible ═══
+  // â•â•â• Estrategia 1: Usar Office.js si estÃ¡ disponible â•â•â•
   if (typeof Office !== 'undefined' && typeof Excel !== 'undefined' && window._officeReady) {
     console.log('[NEVEN] Intentando Office.js...');
     try {
@@ -1237,7 +1237,7 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
           return;
         }
         
-        // Detectar headers (primera fila con más texto que números)
+        // Detectar headers (primera fila con mÃ¡s texto que nÃºmeros)
         var firstRow = values[0];
         var stringCount = firstRow.filter(function(v) { 
           return typeof v === 'string' && isNaN(parseFloat(v)); 
@@ -1266,7 +1266,7 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
         });
         
         // Mostrar preview con indicador de binding
-        dataInfo.innerHTML = rows.length + ' filas × ' + cols.length + ' cols <span style="color:#8f8;font-size:9px">(🔗 vinculado: ' + selection.address + ')</span>';
+        dataInfo.innerHTML = rows.length + ' filas Ã— ' + cols.length + ' cols <span style="color:#8f8;font-size:9px">(ðŸ”— vinculado: ' + selection.address + ')</span>';
         showPreview(cols, rows.slice(0, 20));
         populateGroupBy(cols, types);
         
@@ -1279,11 +1279,11 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
         }).then(function(r) { return r.json(); }).then(function(result) {
           console.log('[NEVEN] Load result:', result);
           if (result.status === 'ok') {
-            showToast('✓ ' + result.rows_loaded + ' filas cargadas desde Excel');
+            showToast('âœ“ ' + result.rows_loaded + ' filas cargadas desde Excel');
           }
         });
         
-        // ═══ REGISTRAR BINDING REACTIVO ═══
+        // â•â•â• REGISTRAR BINDING REACTIVO â•â•â•
         console.log('[NEVEN] Intentando registrar binding reactivo...');
         console.log('[NEVEN] _nevenDataBinding existe:', !!window._nevenDataBinding);
         console.log('[NEVEN] _officeReady:', window._officeReady);
@@ -1291,7 +1291,7 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
         
         if (window._nevenDataBinding) {
           window._nevenDataBinding.bindRange(selection.address, sheet.name, function(newValues, address) {
-            console.log('[NEVEN] ✅ CALLBACK EJECUTADO - Datos actualizados desde Excel:', address);
+            console.log('[NEVEN] âœ… CALLBACK EJECUTADO - Datos actualizados desde Excel:', address);
             
             // Re-procesar datos
             var newRows = window._nevenCurrentData.hasHeaders ? newValues.slice(1) : newValues;
@@ -1308,7 +1308,7 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
             });
             
             // Actualizar preview
-            dataInfo.innerHTML = newRows.length + ' filas × ' + cols.length + ' cols <span style="color:#0f0;font-size:9px">(🔄 actualizado)</span>';
+            dataInfo.innerHTML = newRows.length + ' filas Ã— ' + cols.length + ' cols <span style="color:#0f0;font-size:9px">(ðŸ”„ actualizado)</span>';
             showPreview(cols, newRows.slice(0, 20));
             
             // Recargar en DuckDB
@@ -1318,9 +1318,9 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
               body: JSON.stringify({columns: cols, types: types, data: newRows})
             }).then(function(r) { return r.json(); }).then(function(result) {
               if (result.status === 'ok') {
-                showToast('🔄 Datos actualizados: ' + result.rows_loaded + ' filas');
+                showToast('ðŸ”„ Datos actualizados: ' + result.rows_loaded + ' filas');
                 
-                // Re-ejecutar gráficos activos con los nuevos datos
+                // Re-ejecutar grÃ¡ficos activos con los nuevos datos
                 if (window._lastGroupByConfig && window._rerunGroupBy) {
                   console.log('[NEVEN] Re-ejecutando GROUP BY con nuevos datos...');
                   setTimeout(window._rerunGroupBy, 100);
@@ -1335,7 +1335,7 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
         }
       });
       console.log('[NEVEN] Excel.run completado');
-      return; // Éxito con Office.js, no continuar con fallback
+      return; // Ã‰xito con Office.js, no continuar con fallback
     } catch (e) {
       console.error('[NEVEN] Error con Office.js:', e);
       dataInfo.innerHTML='<span class="spinner"></span> Fallback al bridge...';
@@ -1344,7 +1344,7 @@ document.getElementById('btn-bridge-read').addEventListener('click', async funct
     console.log('[NEVEN] Office.js no disponible, usando fallback');
   }
   
-  // ═══ Estrategia 2: Fallback al bridge (datos empujados previamente) ═══
+  // â•â•â• Estrategia 2: Fallback al bridge (datos empujados previamente) â•â•â•
   console.log('[NEVEN] Usando bridge fallback');
   fetch(API+'/api/bridge/pull?key=geolive')
   .then(function(r){return r.json()})
@@ -1375,7 +1375,7 @@ document.getElementById('btn-paste-excel').addEventListener('click', async funct
     var clipText = await navigator.clipboard.readText();
     
     if (!clipText || !clipText.trim()) {
-      dataInfo.textContent = 'El portapapeles está vacío. Copia datos en Excel (Ctrl+C) primero.';
+      dataInfo.textContent = 'El portapapeles estÃ¡ vacÃ­o. Copia datos en Excel (Ctrl+C) primero.';
       return;
     }
     
@@ -1391,14 +1391,14 @@ document.getElementById('btn-paste-excel').addEventListener('click', async funct
     // Parsear TSV
     var allRows = lines.map(function(line) {
       return line.split('\t').map(function(cell) {
-        // Intentar convertir a número si es posible
+        // Intentar convertir a nÃºmero si es posible
         var trimmed = cell.trim();
         var num = parseFloat(trimmed);
         return !isNaN(num) && trimmed !== '' ? num : trimmed;
       });
     });
     
-    // Detectar headers (primera fila con más texto que números)
+    // Detectar headers (primera fila con mÃ¡s texto que nÃºmeros)
     var firstRow = allRows[0];
     var stringCount = firstRow.filter(function(v) { 
       return typeof v === 'string' && v !== '' && isNaN(parseFloat(v)); 
@@ -1411,7 +1411,7 @@ document.getElementById('btn-paste-excel').addEventListener('click', async funct
     var rows = hasHeaders ? allRows.slice(1) : allRows;
     
     if (rows.length === 0) {
-      dataInfo.textContent = 'Solo hay una fila (headers). Copia más datos.';
+      dataInfo.textContent = 'Solo hay una fila (headers). Copia mÃ¡s datos.';
       return;
     }
     
@@ -1426,7 +1426,7 @@ document.getElementById('btn-paste-excel').addEventListener('click', async funct
     });
     
     // Mostrar preview
-    dataInfo.textContent = rows.length + ' filas × ' + cols.length + ' cols (pegado desde Excel)';
+    dataInfo.textContent = rows.length + ' filas Ã— ' + cols.length + ' cols (pegado desde Excel)';
     showPreview(cols, rows.slice(0, 20));
     populateGroupBy(cols, types);
     
@@ -1440,7 +1440,7 @@ document.getElementById('btn-paste-excel').addEventListener('click', async funct
     
     console.log('[NEVEN] Load result:', loadResult);
     if (loadResult.status === 'ok') {
-      showToast('✓ ' + loadResult.rows_loaded + ' filas pegadas desde Excel');
+      showToast('âœ“ ' + loadResult.rows_loaded + ' filas pegadas desde Excel');
     }
     
   } catch (e) {
@@ -1495,13 +1495,13 @@ document.getElementById('sql-input').addEventListener('keydown',function(e){if(e
 // --- Ejemplos SQL ---
 var _SQL_EXAMPLES = {
   duck1: [
-    '-- Ejemplo 1: Resumen estadístico del dataset activo',
+    '-- Ejemplo 1: Resumen estadÃ­stico del dataset activo',
     '-- Primero carga un archivo en Data Studio, luego ejecuta esta consulta',
     '',
     'SELECT',
     '  COUNT(*)                        AS total_filas,',
     '  COUNT(DISTINCT *)               AS filas_unicas,',
-    '  -- Reemplaza "columna_num" con el nombre de tu columna numérica',
+    '  -- Reemplaza "columna_num" con el nombre de tu columna numÃ©rica',
     '  MIN(columna_num)                AS minimo,',
     '  MAX(columna_num)                AS maximo,',
     '  ROUND(AVG(columna_num), 2)      AS promedio,',
@@ -1513,8 +1513,8 @@ var _SQL_EXAMPLES = {
   ].join('\n'),
 
   duck2: [
-    '-- Ejemplo 2: Análisis agrupado',
-    '-- Agrupa por una categoría y calcula métricas por grupo',
+    '-- Ejemplo 2: AnÃ¡lisis agrupado',
+    '-- Agrupa por una categorÃ­a y calcula mÃ©tricas por grupo',
     '-- Reemplaza "categoria" y "valor" con tus columnas reales',
     '',
     'SELECT',
@@ -1532,11 +1532,11 @@ var _SQL_EXAMPLES = {
   ].join('\n'),
 
   ext: [
-    '-- Ejemplo 3: Conexión a base de datos externa (guía paso a paso)',
+    '-- Ejemplo 3: ConexiÃ³n a base de datos externa (guÃ­a paso a paso)',
     '--',
     '-- PASO 1: Ve al tab "Data Studio" y haz clic en "Conectar DB"',
     '-- PASO 2: Selecciona el motor (PostgreSQL, MySQL, SQLite, SQL Server)',
-    '-- PASO 3: Completa los parámetros de conexión:',
+    '-- PASO 3: Completa los parÃ¡metros de conexiÃ³n:',
     '--   Host:     tu-servidor.ejemplo.com',
     '--   Puerto:   5432  (PostgreSQL) / 3306 (MySQL)',
     '--   Base:     nombre_de_tu_base',
@@ -1556,8 +1556,8 @@ var _SQL_EXAMPLES = {
     'LIMIT 100',
     '',
     '-- PASO 5: Haz clic en "Conectar y cargar"',
-    '-- Los datos quedarán disponibles aquí como tabla "dataset"',
-    '-- y podrás consultarlos con SQL normal de DuckDB.'
+    '-- Los datos quedarÃ¡n disponibles aquÃ­ como tabla "dataset"',
+    '-- y podrÃ¡s consultarlos con SQL normal de DuckDB.'
   ].join('\n')
 };
 
@@ -1576,11 +1576,11 @@ function populateGroupBy(cols,types){
   cols.forEach(function(c){if(types[c]==='text')gc.innerHTML+='<option>'+c+'</option>';if(types[c]==='numeric')gv.innerHTML+='<option>'+c+'</option>';});
   document.getElementById('groupby-card').style.display=(gc.options.length>0&&gv.options.length>0)?'block':'none';
   
-  // También poblar QuickChart
+  // TambiÃ©n poblar QuickChart
   _populateQuickChart(cols, types);
 }
 
-// --- GRÁFICO RÁPIDO (sin IA) ---
+// --- GRÃFICO RÃPIDO (sin IA) ---
 var _qcColTypes = {}; // Almacena tipos de columnas para Quick Chart
 var _qcSelectedY = []; // Columnas Y seleccionadas
 
@@ -1590,7 +1590,7 @@ function _populateQuickChart(cols, types) {
   _qcColTypes = types;
   _qcSelectedY = [];
   
-  qcX.innerHTML = '<option value="">— Eje X —</option>';
+  qcX.innerHTML = '<option value="">â€” Eje X â€”</option>';
   dropdown.innerHTML = '';
   
   var numericCols = [];
@@ -1636,7 +1636,7 @@ function _updateYSelection(checkbox) {
 function _updateYLabel() {
   var label = document.getElementById('qc-y-label');
   if (_qcSelectedY.length === 0) {
-    label.textContent = '— Eje Y —';
+    label.textContent = 'â€” Eje Y â€”';
     label.style.color = 'var(--text-secondary)';
   } else if (_qcSelectedY.length === 1) {
     label.textContent = _qcSelectedY[0];
@@ -1690,7 +1690,7 @@ document.getElementById('qc-palette').addEventListener('change', _updatePaletteP
 // Inicializar preview
 setTimeout(_updatePalettePreview, 100);
 
-// Handler del botón Generar Gráfico Rápido
+// Handler del botÃ³n Generar GrÃ¡fico RÃ¡pido
 document.getElementById('btn-quickchart').addEventListener('click', async function() {
   var chartType = document.getElementById('qc-type').value;
   var colX = document.getElementById('qc-x').value;
@@ -1699,7 +1699,7 @@ document.getElementById('btn-quickchart').addEventListener('click', async functi
   // Usar las columnas Y seleccionadas del multiselect
   var colsY = _qcSelectedY.slice(); // Copia del array
   
-  // Validaciones según tipo de gráfico
+  // Validaciones segÃºn tipo de grÃ¡fico
   if (chartType === 'map') {
     if (!colX) {
       outputEl.innerHTML = '<div class="msg-error">Selecciona columna de Latitud en Eje X</div>';
@@ -1715,7 +1715,7 @@ document.getElementById('btn-quickchart').addEventListener('click', async functi
     return;
   }
   
-  // Guardar configuración para re-ejecución automática cuando cambian los datos
+  // Guardar configuraciÃ³n para re-ejecuciÃ³n automÃ¡tica cuando cambian los datos
   window._lastQuickChartConfig = {
     chartType: chartType,
     colX: colX,
@@ -1749,7 +1749,7 @@ document.getElementById('btn-quickchart').addEventListener('click', async functi
       return result.rows.map(function(r) { return r[i + 1]; });
     });
     
-    // Generar gráfico según tipo
+    // Generar grÃ¡fico segÃºn tipo
     if (chartType === 'map') {
       _renderQuickChartMap(colX, colsY, xData, yDataArrays, outputEl, result.rows);
     } else {
@@ -1761,7 +1761,7 @@ document.getElementById('btn-quickchart').addEventListener('click', async functi
   }
 });
 
-// Función para re-ejecutar Quick Chart (llamada cuando los datos cambian)
+// FunciÃ³n para re-ejecutar Quick Chart (llamada cuando los datos cambian)
 window._rerunQuickChart = async function() {
   if (!window._lastQuickChartConfig) return;
   var cfg = window._lastQuickChartConfig;
@@ -1795,7 +1795,7 @@ window._rerunQuickChart = async function() {
       _renderQuickChartPlotly(cfg.chartType, cfg.colX, cfg.colsY, xData, yDataArrays, outputEl);
     }
     
-    showToast('📊 Quick Chart actualizado');
+    showToast('ðŸ“Š Quick Chart actualizado');
   } catch (e) {
     console.error('[NEVEN] Error re-ejecutando Quick Chart:', e);
   }
@@ -1816,12 +1816,12 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
   // Usar paleta seleccionada por el usuario
   var colors = _getSelectedPalette();
   
-  // Para tipos que soportan múltiples series
+  // Para tipos que soportan mÃºltiples series
   var yData = yDataArrays.length > 0 ? yDataArrays[0] : null;
   
   switch (chartType) {
     case 'bar':
-      // Múltiples series de barras
+      // MÃºltiples series de barras
       colsY.forEach(function(colY, i) {
         traces.push({ 
           x: xData, 
@@ -1835,7 +1835,7 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
       break;
       
     case 'line':
-      // Múltiples líneas
+      // MÃºltiples lÃ­neas
       colsY.forEach(function(colY, i) {
         traces.push({ 
           x: xData, 
@@ -1850,7 +1850,7 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
       break;
       
     case 'scatter':
-      // Múltiples series de dispersión
+      // MÃºltiples series de dispersiÃ³n
       colsY.forEach(function(colY, i) {
         traces.push({ 
           x: xData, 
@@ -1864,7 +1864,7 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
       break;
       
     case 'area':
-      // Múltiples áreas apiladas
+      // MÃºltiples Ã¡reas apiladas
       colsY.forEach(function(colY, i) {
         traces.push({ 
           x: xData, 
@@ -1906,7 +1906,7 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
       break;
       
     case 'heatmap':
-      outputEl.innerHTML = '<div class="msg-info">Heatmap requiere múltiples columnas numéricas. Usa Tab IA para este tipo.</div>';
+      outputEl.innerHTML = '<div class="msg-info">Heatmap requiere mÃºltiples columnas numÃ©ricas. Usa Tab IA para este tipo.</div>';
       return;
       
     case 'bubble':
@@ -1916,11 +1916,11 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
       break;
       
     case 'radar':
-      outputEl.innerHTML = '<div class="msg-info">Radar requiere configuración especial. Usa Tab IA para este tipo.</div>';
+      outputEl.innerHTML = '<div class="msg-info">Radar requiere configuraciÃ³n especial. Usa Tab IA para este tipo.</div>';
       return;
       
     case 'treemap':
-      outputEl.innerHTML = '<div class="msg-info">Treemap requiere datos jerárquicos. Usa Tab IA para este tipo.</div>';
+      outputEl.innerHTML = '<div class="msg-info">Treemap requiere datos jerÃ¡rquicos. Usa Tab IA para este tipo.</div>';
       return;
       
     case 'funnel':
@@ -1932,24 +1932,24 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
       traces = [{ x: xData, y: yData, type: 'bar', marker: { color: colors[0] } }];
   }
   
-  // Crear contenedor para el gráfico
+  // Crear contenedor para el grÃ¡fico
   outputEl.innerHTML = '<div id="qc-plot" style="height:280px"></div>';
   
   Plotly.newPlot('qc-plot', traces, layout, { responsive: true, displayModeBar: true });
   
-  // Agregar botón para expandir
+  // Agregar botÃ³n para expandir
   var expandBtn = document.createElement('button');
   expandBtn.className = 'btn btn-secondary';
   expandBtn.style.cssText = 'margin-top:6px;font-size:10px;margin-right:6px';
-  expandBtn.innerHTML = '↗ Expandir en ventana';
+  expandBtn.innerHTML = 'â†— Expandir en ventana';
   expandBtn.onclick = function() {
     var win = window.open('', '_blank', 'width=900,height=600');
-    win.document.write('<html><head><title>Gráfico NEVEN</title><script src="https://cdn.plot.ly/plotly-2.32.0.min.js"><\/script></head><body style="margin:0;background:#1a1a1a"><div id="chart" style="width:100%;height:100%"></div><script>Plotly.newPlot("chart",' + JSON.stringify(traces) + ',' + JSON.stringify(Object.assign({}, layout, {paper_bgcolor:'#1a1a1a', plot_bgcolor:'#1a1a1a', font:{color:'#e0e0e0'}})) + ');<\/script></body></html>');
+    win.document.write('<html><head><title>GrÃ¡fico NEVEN</title><script src="https://cdn.plot.ly/plotly-2.32.0.min.js"><\/script></head><body style="margin:0;background:#1a1a1a"><div id="chart" style="width:100%;height:100%"></div><script>Plotly.newPlot("chart",' + JSON.stringify(traces) + ',' + JSON.stringify(Object.assign({}, layout, {paper_bgcolor:'#1a1a1a', plot_bgcolor:'#1a1a1a', font:{color:'#e0e0e0'}})) + ');<\/script></body></html>');
     win.document.close();
   };
   outputEl.appendChild(expandBtn);
   
-  // Agregar botón Enviar a Slide
+  // Agregar botÃ³n Enviar a Slide
   var yLabel = colsY.length > 0 ? colsY.join(', ') : '';
   _addSendToSlideBtn(outputEl, chartType + ': ' + colX + (yLabel ? ' vs ' + yLabel : ''), function() {
     return { plotly: { data: traces, layout: Object.assign({}, layout, {paper_bgcolor:'#1a1a1a', plot_bgcolor:'#1a1a1a', font:{color:'#e0e0e0'}}) } };
@@ -1958,7 +1958,7 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
 
 // Renderizar mapa con Leaflet
 function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, rawRows) {
-  // Intentar detectar columna de longitud automáticamente
+  // Intentar detectar columna de longitud automÃ¡ticamente
   var lonColName = null;
   var lonPatterns = ['lon', 'lng', 'long', 'longitude', 'longitud'];
   
@@ -1987,7 +1987,7 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
   var lonIdx = colsY.indexOf(lonColName);
   var lonData = yDataArrays[lonIdx];
   
-  // Filtrar puntos válidos
+  // Filtrar puntos vÃ¡lidos
   var points = [];
   for (var i = 0; i < latData.length; i++) {
     var lat = parseFloat(latData[i]);
@@ -1998,7 +1998,7 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
   }
   
   if (points.length === 0) {
-    outputEl.innerHTML = '<div class="msg-error">No se encontraron coordenadas válidas. Verifica que Lat esté entre -90 y 90, Lon entre -180 y 180.</div>';
+    outputEl.innerHTML = '<div class="msg-error">No se encontraron coordenadas vÃ¡lidas. Verifica que Lat estÃ© entre -90 y 90, Lon entre -180 y 180.</div>';
     return;
   }
   
@@ -2014,7 +2014,7 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
   
   // Capa de tiles (OpenStreetMap)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
+    attribution: 'Â© OpenStreetMap'
   }).addTo(map);
   
   // Agregar marcadores
@@ -2038,14 +2038,14 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
   // Info del mapa
   var infoDiv = document.createElement('div');
   infoDiv.style.cssText = 'font-size:10px;color:var(--text-secondary);margin-top:6px';
-  infoDiv.textContent = '🗺️ ' + points.length + ' puntos mapeados (' + colLat + ' / ' + lonColName + ')';
+  infoDiv.textContent = 'ðŸ—ºï¸ ' + points.length + ' puntos mapeados (' + colLat + ' / ' + lonColName + ')';
   outputEl.appendChild(infoDiv);
   
-  // Botón expandir
+  // BotÃ³n expandir
   var expandBtn = document.createElement('button');
   expandBtn.className = 'btn btn-secondary';
   expandBtn.style.cssText = 'margin-top:6px;font-size:10px';
-  expandBtn.innerHTML = '↗ Expandir en ventana';
+  expandBtn.innerHTML = 'â†— Expandir en ventana';
   expandBtn.onclick = function() {
     var win = window.open('', '_blank', 'width=900,height=600');
     var pointsJson = JSON.stringify(points);
@@ -2060,7 +2060,7 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
     var gc=document.getElementById('grp-col').value,gm=document.getElementById('grp-metric').value,gv=document.getElementById('grp-val').value;
     if(!gc||!gv)return;
     
-    // Guardar configuración para re-ejecución automática cuando cambian los datos
+    // Guardar configuraciÃ³n para re-ejecuciÃ³n automÃ¡tica cuando cambian los datos
     window._lastGroupByConfig = { group_column: gc, value_column: gv, metric: gm };
     
     fetch(API+'/api/groupby',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group_column:gc,value_column:gv,metric:gm})})
@@ -2071,7 +2071,7 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
           var traces=[{x:labels,y:vals,type:'bar',marker:{color:'rgba(168,230,0,0.7)'}}];
           var layout={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#888',size:9},margin:{t:8,r:10,b:35,l:50}};
           Plotly.newPlot('grp-chart',traces,layout,{responsive:true,displayModeBar:false});
-          // Boton Enviar a Slide para el gráfico GROUP BY
+          // Boton Enviar a Slide para el grÃ¡fico GROUP BY
           var grpChartEl = document.getElementById('grp-chart');
           _addSendToSlideBtn(grpChartEl, gc+' / '+gm+'('+gv+')', function(){
             return { plotly: {data:traces, layout:Object.assign({},layout,{paper_bgcolor:'#1a1a1a',plot_bgcolor:'#1a1a1a',font:{color:'#e0e0e0'}})} };
@@ -2089,7 +2089,7 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
   });
 });
 
-// Función para re-ejecutar GROUP BY (llamada cuando los datos cambian)
+// FunciÃ³n para re-ejecutar GROUP BY (llamada cuando los datos cambian)
 window._rerunGroupBy = function() {
   if (!window._lastGroupByConfig) return;
   var cfg = window._lastGroupByConfig;
@@ -2107,7 +2107,7 @@ window._rerunGroupBy = function() {
       d.results.forEach(function(r){html+='<tr><td>'+r.group+'</td><td>'+r.value.toFixed(2)+'</td></tr>';});
       html+='</table>';
       document.getElementById('grp-table').innerHTML=html;
-      showToast('📊 Gráfico actualizado con nuevos datos');
+      showToast('ðŸ“Š GrÃ¡fico actualizado con nuevos datos');
     }
   });
 };
@@ -2135,7 +2135,7 @@ function _addSendToSlideBtn(containerEl, title, getContent) {
   btn.addEventListener('click', function() {
     var payload = getContent();
     _nevenSendToSlide(title, payload.html || null, payload.plotly || null);
-    btn.textContent = '✓ Enviado';
+    btn.textContent = 'âœ“ Enviado';
     btn.style.color = 'var(--accent)';
     setTimeout(function(){ btn.textContent='Enviar a Slide'; btn.style.color=''; }, 2000);
   });
@@ -2233,19 +2233,19 @@ function showStats(result){
   html+='</table>';
   var area = document.getElementById('preview-area');
   area.innerHTML = html;
-  _addSendToSlideBtn(area, 'Estadísticas descriptivas', function(){
+  _addSendToSlideBtn(area, 'EstadÃ­sticas descriptivas', function(){
     return { html: '<html><head><meta charset="UTF-8"><style>body{background:#1a1a1a;color:#e0e0e0;font-family:Segoe UI,sans-serif;font-size:10px;padding:12px;overflow:auto}table{border-collapse:collapse;width:100%}th{background:#373434;color:#d7a538;padding:4px 6px;border-bottom:1px solid #444;white-space:nowrap;position:sticky;top:0}td{padding:3px 6px;border-bottom:1px solid #333;background:#373434;white-space:nowrap;text-align:right}td:first-child,td:nth-child(2){text-align:left}</style></head><body>'+html+'</body></html>' };
   });
 }
 </script>
 
 <script>
-// ─── Run Script Tab — engine dots + execution ────────────────────────────────
+// â”€â”€â”€ Run Script Tab â€” engine dots + execution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // (Complementa el script principal inline; no duplica handlers existentes)
 
 const API_BASE_RS = window.location.origin;
 
-// Activar dots al entrar a la pestaña Run Script
+// Activar dots al entrar a la pestaÃ±a Run Script
 document.querySelectorAll('.tab').forEach(function(tab) {
   tab.addEventListener('click', function() {
     if (tab.dataset.tab === 'run-script') {
@@ -2269,7 +2269,7 @@ async function refreshEngineStatusRS() {
       var dot = document.getElementById('engine-status-' + lang);
       if (dot) {
         dot.className = 'engine-dot ' + (data[lang] ? 'available' : 'unavailable');
-        dot.title = lang.toUpperCase() + ': ' + (data[lang] ? 'running ✓' : 'stopped ✗');
+        dot.title = lang.toUpperCase() + ': ' + (data[lang] ? 'running âœ“' : 'stopped âœ—');
       }
     });
   } catch(err) {
@@ -2288,7 +2288,7 @@ var _snippets = {
   julia:  '# Julia\nprintln("NEVEN Julia OK")\n'
 };
 document.getElementById('script-lang').addEventListener('change', function() {
-  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Continuar?')) { this.value = _scriptLang; return; }
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. Â¿Continuar?')) { this.value = _scriptLang; return; }
   _scriptLang = this.value;
   var ta = document.getElementById('script-input');
   ta.value = _snippets[this.value] || '';
@@ -2296,7 +2296,7 @@ document.getElementById('script-lang').addEventListener('change', function() {
 });
 document.getElementById('script-input').value = _snippets['r'];
 
-// ── Editor de scripts — estado ────────────────────────────────────
+// â”€â”€ Editor de scripts â€” estado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 var _scriptFilePath = null;   // ruta del archivo abierto (o null)
 var _scriptFileName = null;   // nombre visible
 var _scriptDirty    = false;  // cambios sin guardar
@@ -2335,9 +2335,9 @@ document.getElementById('script-input').addEventListener('input', function() {
   if (!_scriptDirty) _markDirty();
 });
 
-// ── Abrir script ──────────────────────────────────────────────────
+// â”€â”€ Abrir script â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('btn-script-open').addEventListener('click', function() {
-  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Abrir otro archivo?')) return;
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. Â¿Abrir otro archivo?')) return;
   document.getElementById('script-file-picker').click();
 });
 
@@ -2360,7 +2360,7 @@ document.getElementById('script-file-picker').addEventListener('change', functio
   e.target.value = '';
 });
 
-// ── Guardar (solo si tenemos path real del servidor) ──────────────
+// â”€â”€ Guardar (solo si tenemos path real del servidor) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('btn-script-save').addEventListener('click', _saveScript);
 
 function _saveScript() {
@@ -2377,7 +2377,7 @@ function _saveScript() {
       _scriptDirty = false;
       _updateScriptBar();
       var st = document.getElementById('script-status');
-      st.textContent = '✓ Guardado';
+      st.textContent = 'âœ“ Guardado';
       st.style.color = 'var(--success)';
       setTimeout(function(){ st.textContent = ''; }, 2000);
     } else {
@@ -2387,7 +2387,7 @@ function _saveScript() {
   .catch(function(e){ alert('Error: ' + e); });
 }
 
-// ── Guardar como (File System Access API o fallback descarga) ─────
+// â”€â”€ Guardar como (File System Access API o fallback descarga) â”€â”€â”€â”€â”€
 document.getElementById('btn-script-save-as').addEventListener('click', _saveScriptAs);
 
 async function _saveScriptAs() {
@@ -2413,7 +2413,7 @@ async function _saveScriptAs() {
       _updateScriptBar();
       return;
     } catch(e) {
-      if (e.name === 'AbortError') return; // usuario canceló
+      if (e.name === 'AbortError') return; // usuario cancelÃ³
     }
   }
 
@@ -2428,21 +2428,21 @@ async function _saveScriptAs() {
   _updateScriptBar();
 }
 
-// ── Nuevo script ──────────────────────────────────────────────────
+// â”€â”€ Nuevo script â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('btn-script-new').addEventListener('click', function() {
-  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Crear nuevo script?')) return;
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. Â¿Crear nuevo script?')) return;
   var lang = document.getElementById('script-lang').value;
   document.getElementById('script-input').value = _snippets[lang] || '';
   _setScriptFile(null);
 });
 
-// ── Ejemplos ──────────────────────────────────────────────────────
+// â”€â”€ Ejemplos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 var _EXAMPLES = {
 
   r_estadistica: { lang: 'r', name: 'ejemplo_estadistica.R', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo R: Estadística descriptiva
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo R: EstadÃ­stica descriptiva
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # Datos de ejemplo: ingresos y gastos de 20 personas
 ingresos <- c(800000,1200000,950000,1800000,2200000,
               600000,3000000,2000000,880000,1400000,
@@ -2454,15 +2454,15 @@ gastos <- c(650000,900000,750000,1200000,1500000,
             2000000,1900000,680000,1100000,1600000,
             2100000,820000,1300000,530000,1700000)
 
-# Estadísticas básicas
+# EstadÃ­sticas bÃ¡sicas
 cat("=== Ingresos ===\\n")
 cat("Media:   ", mean(ingresos), "\\n")
 cat("Mediana: ", median(ingresos), "\\n")
 cat("Std Dev: ", sd(ingresos), "\\n")
 cat("Rango:   ", range(ingresos), "\\n")
 
-# Correlación
-cat("\\nCorrelación ingreso-gasto:", cor(ingresos, gastos), "\\n")
+# CorrelaciÃ³n
+cat("\\nCorrelaciÃ³n ingreso-gasto:", cor(ingresos, gastos), "\\n")
 
 # Retornar tabla resumen serializable
 data.frame(
@@ -2476,9 +2476,9 @@ data.frame(
 `},
 
   r_regresion: { lang: 'r', name: 'ejemplo_regresion.R', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo R: Regresión lineal simple
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo R: RegresiÃ³n lineal simple
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 set.seed(42)
 n <- 50
 edad    <- round(runif(n, 22, 60))
@@ -2487,18 +2487,18 @@ ingreso <- 500000 + edad * 40000 + rnorm(n, 0, 200000)
 # Ajustar modelo
 modelo <- lm(ingreso ~ edad)
 
-# Predicción para edad = 35
+# PredicciÃ³n para edad = 35
 pred35 <- round(predict(modelo, newdata = data.frame(edad = 35)))
 
-cat("=== Regresión lineal: ingreso ~ edad ===\\n")
+cat("=== RegresiÃ³n lineal: ingreso ~ edad ===\\n")
 cat("Intercepto:", round(coef(modelo)[1]), "\\n")
-cat("Pendiente: ", round(coef(modelo)[2]), "por año\\n")
-cat("R²:        ", round(summary(modelo)$r.squared, 4), "\\n")
+cat("Pendiente: ", round(coef(modelo)[2]), "por aÃ±o\\n")
+cat("RÂ²:        ", round(summary(modelo)$r.squared, 4), "\\n")
 cat("Pred. edad=35:", pred35, "\\n")
 
 # Retornar tabla de resultados serializable
 data.frame(
-  Metrica     = c("Intercepto", "Pendiente (por año)", "R²", "RMSE", "Pred. edad=35"),
+  Metrica     = c("Intercepto", "Pendiente (por aÃ±o)", "RÂ²", "RMSE", "Pred. edad=35"),
   Valor       = c(
     round(coef(modelo)[1]),
     round(coef(modelo)[2]),
@@ -2510,9 +2510,9 @@ data.frame(
 `},
 
   r_grafico: { lang: 'r', name: 'ejemplo_grafico.R', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo R: Gráfico interactivo con Plotly
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo R: GrÃ¡fico interactivo con Plotly
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 if (!require("jsonlite", quietly=TRUE)) install.packages("jsonlite")
 
 x <- c(1,2,3,4,5,6,7,8,9,10)
@@ -2528,7 +2528,7 @@ fig <- list(
   layout = list(
     paper_bgcolor = "#373434", plot_bgcolor = "#373434",
     font   = list(color = "#888"),
-    xaxis  = list(title = "Período", color = "#888", gridcolor = "#333"),
+    xaxis  = list(title = "PerÃ­odo", color = "#888", gridcolor = "#333"),
     yaxis  = list(title = "Valor",   color = "#888", gridcolor = "#333"),
     title  = list(text = "Serie de ejemplo", font = list(color = "#e0e0e0"))
   )
@@ -2542,12 +2542,12 @@ html
 `},
 
   py_datos: { lang: 'python', name: 'ejemplo_datos.py', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Python: Pandas básico
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo Python: Pandas bÃ¡sico
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 # Datos de ejemplo
-nombres  = ["Ana","Luis","María","Carlos","Sofía"]
+nombres  = ["Ana","Luis","MarÃ­a","Carlos","SofÃ­a"]
 edades   = [25, 32, 28, 45, 38]
 salarios = [800000, 1200000, 950000, 1800000, 1400000]
 
@@ -2557,7 +2557,7 @@ media_salario = sum(salarios) / n
 
 print("=== Resumen del dataset ===")
 print(f"Registros: {n}")
-print(f"Edad promedio: {media_edad:.1f} años")
+print(f"Edad promedio: {media_edad:.1f} aÃ±os")
 print(f"Salario promedio: {media_salario:,.0f}")
 
 # Retornar tabla serializable
@@ -2567,9 +2567,9 @@ print(f"Salario promedio: {media_salario:,.0f}")
 `},
 
   py_ml: { lang: 'python', name: 'ejemplo_ml.py', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Python: Regresión con scikit-learn
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo Python: RegresiÃ³n con scikit-learn
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 try:
     from sklearn.linear_model import LinearRegression
 
@@ -2581,14 +2581,14 @@ try:
     modelo.fit(experiencia, salario)
     r2 = modelo.score(experiencia, salario)
 
-    print("=== Regresión Lineal: Experiencia → Salario ===")
+    print("=== RegresiÃ³n Lineal: Experiencia â†’ Salario ===")
     print(f"Intercepto:  {modelo.intercept_:,.0f}")
-    print(f"Coeficiente: {modelo.coef_[0]:,.0f} por año")
-    print(f"R²:          {r2:.4f}")
+    print(f"Coeficiente: {modelo.coef_[0]:,.0f} por aÃ±o")
+    print(f"RÂ²:          {r2:.4f}")
 
-    # Predicciones para 5, 10 y 15 años
+    # Predicciones para 5, 10 y 15 aÃ±os
     preds = [1, 5, 10, 15, 20]
-    [{"años_exp": x,
+    [{"aÃ±os_exp": x,
       "salario_pred": round(float(modelo.predict([[x]])[0]))}
      for x in preds]
 
@@ -2598,9 +2598,9 @@ except ImportError:
 `},
 
   py_grafico: { lang: 'python', name: 'ejemplo_grafico.py', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Python: Gráfico con Plotly
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo Python: GrÃ¡fico con Plotly
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 import json, base64
 
 meses  = ["Ene","Feb","Mar","Abr","May","Jun",
@@ -2628,18 +2628,18 @@ html
 `},
 
   jl_estadistica: { lang: 'julia', name: 'ejemplo_estadistica.jl', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Julia: Estadística básica
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo Julia: EstadÃ­stica bÃ¡sica
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 datos = [23.5, 45.2, 67.8, 34.1, 56.7, 78.3, 89.1, 12.4, 55.6, 43.8,
          61.2, 72.5, 38.9, 51.3, 66.7, 29.8, 84.2, 47.6, 58.1, 35.4]
 
-println("=== Estadísticas descriptivas ===")
+println("=== EstadÃ­sticas descriptivas ===")
 println("N:       ", length(datos))
 println("Media:   ", round(sum(datos)/length(datos), digits=2))
-println("Mínimo:  ", minimum(datos))
-println("Máximo:  ", maximum(datos))
+println("MÃ­nimo:  ", minimum(datos))
+println("MÃ¡ximo:  ", maximum(datos))
 
 # Varianza manual
 media = sum(datos) / length(datos)
@@ -2650,29 +2650,29 @@ println("Std Dev: ", round(sqrt(varianza), digits=2))
 ordenados = sort(datos)
 n = length(ordenados)
 println("Mediana: ", n % 2 == 0 ?
-    (ordenados[n÷2] + ordenados[n÷2+1])/2 :
-    ordenados[(n+1)÷2])
+    (ordenados[nÃ·2] + ordenados[nÃ·2+1])/2 :
+    ordenados[(n+1)Ã·2])
 `},
 
   jl_algebra: { lang: 'julia', name: 'ejemplo_algebra.jl', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Julia: Álgebra lineal
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo Julia: Ãlgebra lineal
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 # Matriz de ejemplo
 A = [4.0 3.0; 6.0 3.0]
 b = [10.0; 12.0]
 
-println("=== Álgebra Lineal ===")
+println("=== Ãlgebra Lineal ===")
 println("Matriz A:")
 display(A)
 
 println("\\nVector b: ", b)
 
-# Solución del sistema Ax = b
+# SoluciÃ³n del sistema Ax = b
 x = A \\ b
-println("\\nSolución x = A\\\\b: ", round.(x, digits=4))
-println("Verificación Ax: ", round.(A * x, digits=4))
+println("\\nSoluciÃ³n x = A\\\\b: ", round.(x, digits=4))
+println("VerificaciÃ³n Ax: ", round.(A * x, digits=4))
 
 # Eigenvalores
 vals = eigvals(A)
@@ -2682,17 +2682,17 @@ println("\\nEigenvalores: ", round.(vals, digits=4))
 println("Determinante: ", round(det(A), digits=4))
 
 # Inversa
-println("\\nInversa A⁻¹:")
+println("\\nInversa Aâ»Â¹:")
 display(round.(inv(A), digits=4))
 `},
 
   jl_grafico: { lang: 'julia', name: 'ejemplo_grafico.jl', code:
-`# ══════════════════════════════════════════════
-# NEVEN Studio — Ejemplo Julia: Gráfico con Plotly JSON
-# ══════════════════════════════════════════════
+`# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NEVEN Studio â€” Ejemplo Julia: GrÃ¡fico con Plotly JSON
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 using JSON, Base64
 
-x = collect(0:0.2:2π)
+x = collect(0:0.2:2Ï€)
 y_sin = sin.(x)
 y_cos = cos.(x)
 
@@ -2710,7 +2710,7 @@ fig = Dict(
         "font"=>Dict("color"=>"#888"),
         "xaxis"=>Dict("title"=>"x","color"=>"#888","gridcolor"=>"#333"),
         "yaxis"=>Dict("title"=>"y","color"=>"#888","gridcolor"=>"#333"),
-        "title"=>Dict("text"=>"Funciones trigonométricas",
+        "title"=>Dict("text"=>"Funciones trigonomÃ©tricas",
                       "font"=>Dict("color"=>"#e0e0e0")),
         "legend"=>Dict("font"=>Dict("color"=>"#888"))
     )
@@ -2725,7 +2725,7 @@ html
 document.getElementById('script-examples').addEventListener('change', function() {
   var key = this.value;
   if (!key) return;
-  if (_scriptDirty && !confirm('Hay cambios sin guardar. ¿Cargar ejemplo?')) {
+  if (_scriptDirty && !confirm('Hay cambios sin guardar. Â¿Cargar ejemplo?')) {
     this.value = ''; return;
   }
   var ex = _EXAMPLES[key];
@@ -2742,7 +2742,7 @@ document.getElementById('script-examples').addEventListener('change', function()
   this.value = '';  // reset selector
 });
 
-// ── Ctrl+S para guardar ───────────────────────────────────────────
+// â”€â”€ Ctrl+S para guardar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('script-input').addEventListener('keydown', function(e) {
   if (e.ctrlKey && e.key === 's') { e.preventDefault(); _saveScript(); }
   if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); runScriptRS(); }
@@ -2760,7 +2760,7 @@ async function runScriptRS() {
   if (!code) return;
   var btn = document.getElementById('btn-run-script');
   var status = document.getElementById('script-status');
-  btn.disabled = true; status.textContent = '⏳';
+  btn.disabled = true; status.textContent = 'â³';
 
   // Timeout de 120 segundos
   var controller = new AbortController();
@@ -2779,7 +2779,7 @@ async function runScriptRS() {
   } catch(e) {
     clearTimeout(timeoutId);
     if (e.name === 'AbortError') {
-      showScriptErrorRS('Tiempo de espera agotado (120s). El script puede seguir ejecutándose en el motor.');
+      showScriptErrorRS('Tiempo de espera agotado (120s). El script puede seguir ejecutÃ¡ndose en el motor.');
     } else {
       showScriptErrorRS(e.message);
     }
@@ -2884,7 +2884,7 @@ function showScriptErrorRS(msg) {
 async function openRPivotRS() {
   var btn = document.getElementById('btn-run-script');
   var status = document.getElementById('script-status');
-  btn.disabled = true; status.textContent = '⏳';
+  btn.disabled = true; status.textContent = 'â³';
   try {
     var resp = await fetch(API_BASE_RS + '/api/rpivot', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     renderScriptResultRS(await resp.json());
@@ -2908,7 +2908,7 @@ async function loadAvailableFunctionsRS() {
         entry.className = 'func-entry';
         entry.dataset.name = fn.name || '';
         entry.dataset.desc = fn.description || '';
-        entry.innerHTML = '<code>' + fn.name + '</code> — ' + (fn.description || '');
+        entry.innerHTML = '<code>' + fn.name + '</code> â€” ' + (fn.description || '');
         sec.appendChild(entry);
       });
       list.appendChild(sec);
@@ -2923,14 +2923,14 @@ function filterFunctionsRS() {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Package Manager — Verificación y instalación de paquetes
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Package Manager â€” VerificaciÃ³n y instalaciÃ³n de paquetes
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 (function() {
   'use strict';
 
-  // ── Botón "Verificar paquetes" ──────────────────────────────────────────
+  // â”€â”€ BotÃ³n "Verificar paquetes" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   document.addEventListener('DOMContentLoaded', function() {
     var btn = document.getElementById('dl-pkg-check-btn');
     if (btn) btn.addEventListener('click', _pkgCheckAll);
@@ -2939,9 +2939,9 @@ function filterFunctionsRS() {
     if (btnInstall) btnInstall.addEventListener('click', _pkgInstallMissing);
   });
 
-  var _pkgMissingForFn = [];  // paquetes faltantes de la función seleccionada
+  var _pkgMissingForFn = [];  // paquetes faltantes de la funciÃ³n seleccionada
 
-  // Mostrar advertencia cuando hay paquetes faltantes para la función
+  // Mostrar advertencia cuando hay paquetes faltantes para la funciÃ³n
   window._pkgShowWarning = function(faltantes) {
     _pkgMissingForFn = faltantes || [];
     var div = document.getElementById('dl-pkg-warning');
@@ -2956,7 +2956,7 @@ function filterFunctionsRS() {
     div.style.display = '';
   };
 
-  // Verificar paquetes de la función seleccionada (llamado desde selectFunction)
+  // Verificar paquetes de la funciÃ³n seleccionada (llamado desde selectFunction)
   window._pkgCheckFunction = function(functionId, motor) {
     if (!functionId) return;
     fetch(API + '/api/packages/function/' + encodeURIComponent(functionId))
@@ -2968,7 +2968,7 @@ function filterFunctionsRS() {
       .catch(function(){ window._pkgShowWarning([]); });
   };
 
-  // Verificar todos los paquetes (botón manual — siempre en vivo)
+  // Verificar todos los paquetes (botÃ³n manual â€” siempre en vivo)
   function _pkgCheckAll() {
     var btn = document.getElementById('dl-pkg-check-btn');
     if (btn) { btn.textContent = 'Verificando...'; btn.disabled = true; }
@@ -2993,11 +2993,11 @@ function filterFunctionsRS() {
 
     var html = '<div style="padding:8px">';
     html += '<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px">';
-    html += 'Estado de paquetes — ' + paquetes.length + ' total';
+    html += 'Estado de paquetes â€” ' + paquetes.length + ' total';
     if (faltantes.length > 0) {
-      html += ' <span style="color:#f88;margin-left:6px">⚠ ' + faltantes.length + ' faltantes</span>';
+      html += ' <span style="color:#f88;margin-left:6px">âš  ' + faltantes.length + ' faltantes</span>';
     } else {
-      html += ' <span style="color:#8f8;margin-left:6px">✓ Todos instalados</span>';
+      html += ' <span style="color:#8f8;margin-left:6px">âœ“ Todos instalados</span>';
     }
     html += '</div>';
 
@@ -3006,7 +3006,7 @@ function filterFunctionsRS() {
       html += '<div style="font-size:10px;color:#f88;margin-bottom:4px">FALTANTES:</div>';
       faltantes.forEach(function(p) {
         html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">';
-        html += '<span style="font-size:10px;color:#f88">✗</span>';
+        html += '<span style="font-size:10px;color:#f88">âœ—</span>';
         html += '<span style="font-size:10px;font-family:Consolas,monospace">' + (p.paquete||'') + '</span>';
         html += '<span style="font-size:9px;color:#888">(' + (p.motor||'') + ')</span>';
         html += '<button onclick="window._pkgInstallOne(\'' + (p.paquete||'') + '\',\'' + (p.motor||'') + '\')" ';
@@ -3024,7 +3024,7 @@ function filterFunctionsRS() {
       html += '<details><summary style="font-size:10px;color:#888;cursor:pointer">Ver ' + instalados.length + ' instalados</summary>';
       html += '<div style="margin-top:4px">';
       instalados.forEach(function(p) {
-        html += '<div style="font-size:10px;color:#8f8;margin-bottom:2px">✓ ';
+        html += '<div style="font-size:10px;color:#8f8;margin-bottom:2px">âœ“ ';
         html += (p.paquete||'') + ' v' + (p.version_instalada||'?');
         html += ' <span style="color:#888">(' + (p.motor||'') + ')</span></div>';
       });
@@ -3033,7 +3033,7 @@ function filterFunctionsRS() {
     html += '</div>';
     container.innerHTML = html;
 
-    // Guardar faltantes para instalación masiva
+    // Guardar faltantes para instalaciÃ³n masiva
     window._pkgAllMissing = faltantes;
   }
 
@@ -3044,18 +3044,18 @@ function filterFunctionsRS() {
     _pkgDoInstall(faltantes.map(function(p){ return {motor: p.motor, nombre: p.paquete||p.nombre}; }));
   };
 
-  // Instalar un paquete específico
+  // Instalar un paquete especÃ­fico
   window._pkgInstallOne = function(nombre, motor) {
     _pkgDoInstall([{motor: motor, nombre: nombre}]);
   };
 
-  // Instalar paquetes faltantes de la función actual
+  // Instalar paquetes faltantes de la funciÃ³n actual
   function _pkgInstallMissing() {
     if (!_pkgMissingForFn.length) return;
     _pkgDoInstall(_pkgMissingForFn.map(function(p){ return {motor: p.motor, nombre: p.paquete||p.nombre}; }));
   }
 
-  // Enviar solicitud de instalación y mostrar progreso en Run Script
+  // Enviar solicitud de instalaciÃ³n y mostrar progreso en Run Script
   function _pkgDoInstall(items) {
     fetch(API + '/api/packages/install', {
       method: 'POST',
@@ -3107,7 +3107,7 @@ function filterFunctionsRS() {
     if (consolePre)  { consolePre.textContent = ''; }
   }
 
-  // Actualizar el panel con el progreso de instalación
+  // Actualizar el panel con el progreso de instalaciÃ³n
   function _pkgUpdateProgress(prog) {
     var scalar     = document.getElementById('script-scalar');
     var consolePre = document.getElementById('script-console');
@@ -3134,7 +3134,7 @@ function filterFunctionsRS() {
     }
   }
 
-  // Polling del progreso cada 2s — actualiza Run Script en tiempo real
+  // Polling del progreso cada 2s â€” actualiza Run Script en tiempo real
   function _pkgPollProgress() {
     var interval = setInterval(function() {
       fetch(API + '/api/packages/progress')
@@ -3152,11 +3152,11 @@ function filterFunctionsRS() {
                 ? 'Instalacion completada: ' + ok + ' paquete(s) OK.\nActualizando estado...'
                 : 'Instalacion terminada: ' + ok + ' OK, ' + errores + ' errores.\nRevise el log de la consola para detalles.';
             }
-            // Re-verificar en vivo para actualizar el caché
+            // Re-verificar en vivo para actualizar el cachÃ©
             fetch(API + '/api/packages/status?refresh=true')
               .then(function(r){ return r.json(); })
               .then(function(data) {
-                // Mostrar solo los que siguen faltando (instalación parcial o error)
+                // Mostrar solo los que siguen faltando (instalaciÃ³n parcial o error)
                 var aunFaltantes = (data.paquetes || []).filter(function(p){ return !p.instalado; });
                 window._pkgShowWarning(aunFaltantes);
                 if (msg) {
@@ -3174,12 +3174,12 @@ function filterFunctionsRS() {
 
 })();
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Tab IA — Chat con LLM
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Tab IA â€” Chat con LLM
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 var _aiState = {
-  messages:    [],      // [{role, content}] — historial de la conversación
+  messages:    [],      // [{role, content}] â€” historial de la conversaciÃ³n
   context:     '',      // resumen del dataset activo
   prompts:     [],      // IDs de prompts disponibles
   initialized: false,
@@ -3187,12 +3187,12 @@ var _aiState = {
 };
 
 function initAITab() {
-  // Forzar re-inicialización si la versión del código cambió
+  // Forzar re-inicializaciÃ³n si la versiÃ³n del cÃ³digo cambiÃ³
   var _AI_TAB_VERSION = '20260903-2';
   if (window._aiTabInitialized && window._aiTabVersion === _AI_TAB_VERSION) return;
   window._aiTabInitialized = true;
   window._aiTabVersion     = _AI_TAB_VERSION;
-  // Limpiar polling anterior si existía
+  // Limpiar polling anterior si existÃ­a
   if (window._aiContextPollInterval) {
     clearInterval(window._aiContextPollInterval);
     window._aiContextPollInterval = null;
@@ -3271,7 +3271,7 @@ function initAITab() {
     })
     .catch(function(){});
 
-  // Polling cada 3s — detecta =NEVEN.IA.Contexto() aunque el tab ya estuviera abierto
+  // Polling cada 3s â€” detecta =NEVEN.IA.Contexto() aunque el tab ya estuviera abierto
   window._aiContextPollInterval = setInterval(function() {
     var tab = document.getElementById('tab-ia');
     if (!tab || tab.style.display === 'none') return;
@@ -3308,7 +3308,7 @@ function _aiInjectExcelContext(ctx) {
     var label = ctxCard.querySelector('span') || ctxCard.querySelector('.ctx-label');
     if (label) {
       var dim = (ctx.n_rows ? ctx.n_rows + ' filas' : '') +
-                (ctx.columns && ctx.columns.length ? ' × ' + ctx.columns.length + ' cols' : '');
+                (ctx.columns && ctx.columns.length ? ' Ã— ' + ctx.columns.length + ' cols' : '');
       label.textContent = dim ? 'Excel: ' + dim : 'Contexto de Excel cargado';
     }
   }
@@ -3331,7 +3331,7 @@ function _aiSend() {
   var text  = (input.value || '').trim();
   if (!text) return;
 
-  // Detectar si es una solicitud de gráfico
+  // Detectar si es una solicitud de grÃ¡fico
   if (typeof detectChartIntent === 'function' && detectChartIntent(text)) {
     _aiAddMessage('user', text);
     input.value = '';
@@ -3348,8 +3348,8 @@ function _aiSend() {
 
 /**
  * Lee datos del clipboard (formato TSV de Excel) y los carga a DuckDB.
- * Retorna información sobre los datos cargados o null si no hay datos.
- * Esta función es SILENCIOSA - no muestra mensajes al usuario.
+ * Retorna informaciÃ³n sobre los datos cargados o null si no hay datos.
+ * Esta funciÃ³n es SILENCIOSA - no muestra mensajes al usuario.
  * @returns {Promise<{cols, rows, count}|null>}
  */
 async function _loadClipboardToDuckDB() {
@@ -3364,7 +3364,7 @@ async function _loadClipboardToDuckDB() {
     var clipText = await navigator.clipboard.readText();
     
     if (!clipText || !clipText.trim()) {
-      console.log('[NEVEN] Clipboard vacío');
+      console.log('[NEVEN] Clipboard vacÃ­o');
       return null;
     }
     
@@ -3385,7 +3385,7 @@ async function _loadClipboardToDuckDB() {
       });
     });
     
-    // Detectar headers (primera fila con más texto que números)
+    // Detectar headers (primera fila con mÃ¡s texto que nÃºmeros)
     var firstRow = allRows[0];
     var stringCount = firstRow.filter(function(v) { 
       return typeof v === 'string' && v !== '' && isNaN(parseFloat(v)); 
@@ -3426,16 +3426,16 @@ async function _loadClipboardToDuckDB() {
     
     return null;
   } catch (e) {
-    // Silenciar errores de permisos - el usuario verá el mensaje de "no hay datos"
+    // Silenciar errores de permisos - el usuario verÃ¡ el mensaje de "no hay datos"
     console.log('[NEVEN] Clipboard no accesible:', e.message);
     return null;
   }
 }
 
 /**
- * Maneja solicitudes de gráficos usando el sistema de IA multi-librería.
+ * Maneja solicitudes de grÃ¡ficos usando el sistema de IA multi-librerÃ­a.
  * FLUJO ACTUALIZADO: 
- * 1. Intenta leer del clipboard automáticamente (datos frescos de Excel)
+ * 1. Intenta leer del clipboard automÃ¡ticamente (datos frescos de Excel)
  * 2. Si no hay clipboard, usa datos ya cargados en DuckDB
  */
 async function _aiHandleChartRequest(prompt) {
@@ -3448,7 +3448,7 @@ async function _aiHandleChartRequest(prompt) {
   sendBtn.disabled = true;
 
   try {
-    // ═══ PASO 1: Intentar leer datos frescos del clipboard ═══
+    // â•â•â• PASO 1: Intentar leer datos frescos del clipboard â•â•â•
     var clipboardLoaded = await _loadClipboardToDuckDB();
     var dataSource = 'DuckDB';
     
@@ -3457,17 +3457,17 @@ async function _aiHandleChartRequest(prompt) {
       console.log('[NEVEN] Usando datos del clipboard:', clipboardLoaded.count, 'filas');
     }
     
-    // ═══ PASO 2: Capturar datos (ahora DuckDB tiene datos frescos si había clipboard) ═══
+    // â•â•â• PASO 2: Capturar datos (ahora DuckDB tiene datos frescos si habÃ­a clipboard) â•â•â•
     var rangeData = await captureSelectedRangeForChart();
     
     if (rangeData.error || !rangeData.data || rangeData.data.length === 0) {
-      // Mensaje más claro indicando que debe copiar datos
-      var msg = '📊 **No hay datos para graficar.**\n\n' +
+      // Mensaje mÃ¡s claro indicando que debe copiar datos
+      var msg = 'ðŸ“Š **No hay datos para graficar.**\n\n' +
           '**Flujo recomendado:**\n' +
           '1. En Excel, selecciona tus datos (incluyendo headers)\n' +
           '2. Copia con **Ctrl+C**\n' +
-          '3. Vuelve aquí y pide el gráfico\n\n' +
-          '_NEVEN leerá el clipboard automáticamente._';
+          '3. Vuelve aquÃ­ y pide el grÃ¡fico\n\n' +
+          '_NEVEN leerÃ¡ el clipboard automÃ¡ticamente._';
       
       _aiAddMessage('assistant', msg);
       spinner.style.display = 'none';
@@ -3475,15 +3475,15 @@ async function _aiHandleChartRequest(prompt) {
       return;
     }
 
-    // ═══ PASO 3: Mostrar indicador con fuente de datos ═══
-    var sourceLabel = clipboardLoaded ? '📋 Clipboard' : '💾 ' + rangeData.address;
+    // â•â•â• PASO 3: Mostrar indicador con fuente de datos â•â•â•
+    var sourceLabel = clipboardLoaded ? 'ðŸ“‹ Clipboard' : 'ðŸ’¾ ' + rangeData.address;
     _aiAddMessage('assistant', 
-      '📊 Datos: **' + sourceLabel + '** (' + 
-      rangeData.rows + ' filas × ' + rangeData.columns + ' columnas)\n\n' +
-      '_Generando gráfico..._'
+      'ðŸ“Š Datos: **' + sourceLabel + '** (' + 
+      rangeData.rows + ' filas Ã— ' + rangeData.columns + ' columnas)\n\n' +
+      '_Generando grÃ¡fico..._'
     );
 
-    // Llamar al endpoint de gráficos
+    // Llamar al endpoint de grÃ¡ficos
     var response = await fetch(API + '/api/ai/chart', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -3501,7 +3501,7 @@ async function _aiHandleChartRequest(prompt) {
     sendBtn.disabled = false;
 
     if (result.status !== 'ok' || !result.html) {
-      _aiAddMessage('error', result.message || 'Error generando el gráfico');
+      _aiAddMessage('error', result.message || 'Error generando el grÃ¡fico');
       return;
     }
 
@@ -3511,7 +3511,7 @@ async function _aiHandleChartRequest(prompt) {
       tokenInfo.textContent = _aiState.tokenAccum.toLocaleString() + ' tokens usados';
     }
 
-    // Renderizar el gráfico en el chat
+    // Renderizar el grÃ¡fico en el chat
     _aiRenderChartInChat(result.html, result.chart_type, result.library);
 
   } catch (err) {
@@ -3522,21 +3522,21 @@ async function _aiHandleChartRequest(prompt) {
 }
 
 /**
- * Renderiza un gráfico HTML directamente en el historial del chat
- * Y lo expande automáticamente en una ventana separada
+ * Renderiza un grÃ¡fico HTML directamente en el historial del chat
+ * Y lo expande automÃ¡ticamente en una ventana separada
  */
 function _aiRenderChartInChat(htmlContent, chartType, library) {
   var history = document.getElementById('ai-chat-history');
   
-  // ═══ AUTO-EXPANDIR: Abrir el gráfico en ventana nueva inmediatamente ═══
+  // â•â•â• AUTO-EXPANDIR: Abrir el grÃ¡fico en ventana nueva inmediatamente â•â•â•
   var win = window.open('', '_blank', 'width=1000,height=700');
   if (win) {
     win.document.write(htmlContent);
-    win.document.title = 'Gráfico NEVEN — ' + (chartType || 'IA');
+    win.document.title = 'GrÃ¡fico NEVEN â€” ' + (chartType || 'IA');
     win.document.close();
   }
   
-  // ═══ También mostrar miniatura en el chat como referencia ═══
+  // â•â•â• TambiÃ©n mostrar miniatura en el chat como referencia â•â•â•
   var container = document.createElement('div');
   container.style.cssText = [
     'max-width:100%;margin:8px 0;border-radius:12px;overflow:hidden;',
@@ -3547,50 +3547,50 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
   // Header
   var header = document.createElement('div');
   header.style.cssText = 'padding:8px 12px;background:var(--bg-tertiary);display:flex;justify-content:space-between;align-items:center;';
-  header.innerHTML = '<span style="font-weight:500;font-size:12px;">📊 Gráfico ' + (chartType || '') + ' (expandido en nueva ventana)</span>' +
+  header.innerHTML = '<span style="font-weight:500;font-size:12px;">ðŸ“Š GrÃ¡fico ' + (chartType || '') + ' (expandido en nueva ventana)</span>' +
                      '<span style="font-size:10px;color:var(--text-secondary);">' + (library || '') + '</span>';
 
-  // Iframe para miniatura del gráfico
+  // Iframe para miniatura del grÃ¡fico
   var iframe = document.createElement('iframe');
   iframe.style.cssText = 'width:100%;height:200px;border:none;background:white;';
   iframe.sandbox = 'allow-scripts allow-same-origin';
 
-  // Botones de acción
+  // Botones de acciÃ³n
   var actions = document.createElement('div');
   actions.style.cssText = 'padding:8px 12px;background:var(--bg-tertiary);display:flex;gap:8px;flex-wrap:wrap;';
 
-  // Botón: Enviar a Slide
+  // BotÃ³n: Enviar a Slide
   var btnSlide = document.createElement('button');
   btnSlide.className = 'btn btn-secondary';
   btnSlide.style.cssText = 'font-size:11px;padding:4px 10px;';
-  btnSlide.textContent = '📊 Enviar a Slide';
+  btnSlide.textContent = 'ðŸ“Š Enviar a Slide';
   btnSlide.onclick = function() {
     if (typeof sendChartToPresentation === 'function') {
-      sendChartToPresentation(htmlContent, 'Gráfico ' + (chartType || 'IA'));
+      sendChartToPresentation(htmlContent, 'GrÃ¡fico ' + (chartType || 'IA'));
     }
   };
 
-  // Botón: Copiar HTML
+  // BotÃ³n: Copiar HTML
   var btnCopy = document.createElement('button');
   btnCopy.className = 'btn btn-secondary';
   btnCopy.style.cssText = 'font-size:11px;padding:4px 10px;';
-  btnCopy.textContent = '📋 Copiar HTML';
+  btnCopy.textContent = 'ðŸ“‹ Copiar HTML';
   btnCopy.onclick = function() {
     navigator.clipboard.writeText(htmlContent).then(function() {
       showToast('HTML copiado');
     });
   };
 
-  // Botón: Expandir de nuevo
+  // BotÃ³n: Expandir de nuevo
   var btnExpand = document.createElement('button');
   btnExpand.className = 'btn btn-secondary';
   btnExpand.style.cssText = 'font-size:11px;padding:4px 10px;';
-  btnExpand.textContent = '🔍 Expandir';
+  btnExpand.textContent = 'ðŸ” Expandir';
   btnExpand.onclick = function() {
     var win = window.open('', '_blank', 'width=1000,height=700');
     if (win) {
       win.document.write(htmlContent);
-      win.document.title = 'Gráfico NEVEN';
+      win.document.title = 'GrÃ¡fico NEVEN';
       win.document.close();
     }
   };
@@ -3611,7 +3611,7 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
   doc.write(htmlContent);
   doc.close();
 
-  // Scroll al gráfico
+  // Scroll al grÃ¡fico
   history.scrollTop = history.scrollHeight;
 }
 
@@ -3640,14 +3640,14 @@ function _aiAttachDataset() {
       if (data.status !== 'ok') throw new Error(data.message || 'Sin datos');
 
       // Construir resumen compacto
-      var lines = ['Dataset: ' + data.row_count + ' filas × ' + data.col_count + ' columnas\n'];
+      var lines = ['Dataset: ' + data.row_count + ' filas Ã— ' + data.col_count + ' columnas\n'];
       (data.statistics || []).forEach(function(s) {
         if (s.numeric) {
           lines.push(s.column + ': media=' + (s.mean||0).toFixed(2) +
             ', std=' + (s.std||0).toFixed(2) +
             ', [' + (s.min||0).toFixed(2) + ', ' + (s.max||0).toFixed(2) + ']');
         } else {
-          lines.push(s.column + ': texto, ' + (s.unique||0) + ' valores únicos');
+          lines.push(s.column + ': texto, ' + (s.unique||0) + ' valores Ãºnicos');
         }
       });
       _aiState.context = lines.join('\n');
@@ -3655,21 +3655,21 @@ function _aiAttachDataset() {
       var ctxCard = document.getElementById('ai-context-card');
       var ctxSummary = document.getElementById('ai-context-summary');
       ctxCard.style.display = '';
-      ctxSummary.textContent = data.row_count + ' filas · ' + data.col_count + ' cols';
-      showToast('✓ Contexto del dataset adjuntado');
+      ctxSummary.textContent = data.row_count + ' filas Â· ' + data.col_count + ' cols';
+      showToast('âœ“ Contexto del dataset adjuntado');
     })
     .catch(function(e) {
-      showToast('Sin dataset activo — cargue datos primero');
+      showToast('Sin dataset activo â€” cargue datos primero');
     });
 }
 
 async function _aiAnalyzeSheet() {
-  // Llamar a la función definida en taskpane.js
+  // Llamar a la funciÃ³n definida en taskpane.js
   if (typeof analyzeSheetForAI === 'function') {
     var btn = document.getElementById('ai-analyze-sheet-btn');
     var originalText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = '⏳ Analizando...';
+    btn.textContent = 'â³ Analizando...';
     
     try {
       await analyzeSheetForAI();
@@ -3793,7 +3793,7 @@ function _aiClear() {
 
 </script>
 <script src="datalab.js?v=1785523931">
-// ── Handler: crear funcion nueva en C:\NEVEN\functions\ ──────────────────────
+// â”€â”€ Handler: crear funcion nueva en C:\NEVEN\functions\ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window._nevenCreateFunctions = window._nevenCreateFunctions || {};
 
 window._onCreateFunction = function(dataId) {
@@ -3832,7 +3832,7 @@ window._onCreateFunction = function(dataId) {
   });
 };
 
-// ── Renderer de bloque neven-create-function en el chat ───────────────────────
+// â”€â”€ Renderer de bloque neven-create-function en el chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Se llama desde _markdownToHtml cuando el agente genera este tipo de bloque
 window._renderCreateFunctionBlock = function(jsonStr) {
   try {
@@ -3852,16 +3852,16 @@ window._renderCreateFunctionBlock = function(jsonStr) {
   } catch(e) { return '<pre><code>' + jsonStr + '</code></pre>'; }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TAB AYUDA — Diccionario de Funciones NevenX
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// TAB AYUDA â€” Diccionario de Funciones NevenX
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-var _ayudaCatalogo = null;  // Cache del catálogo cargado
-var _ayudaFunciones = {};   // Mapa id → función para acceso rápido
+var _ayudaCatalogo = null;  // Cache del catÃ¡logo cargado
+var _ayudaFunciones = {};   // Mapa id â†’ funciÃ³n para acceso rÃ¡pido
 
-// Cargar catálogo desde el servidor
+// Cargar catÃ¡logo desde el servidor
 function _ayudaLoadCatalogo() {
-  console.log('[AYUDA] Iniciando carga de catálogo...');
+  console.log('[AYUDA] Iniciando carga de catÃ¡logo...');
   var loading = document.getElementById('ayuda-loading');
   var errorEl = document.getElementById('ayuda-error');
   var catalogo = document.getElementById('ayuda-catalogo');
@@ -3898,7 +3898,7 @@ function _ayudaLoadCatalogo() {
       _ayudaCatalogo = data;
       _ayudaFunciones = {};
       
-      // Construir mapa de funciones para acceso rápido
+      // Construir mapa de funciones para acceso rÃ¡pido
       Object.keys(data.familias).forEach(function(fam) {
         data.familias[fam].funciones.forEach(function(fn) {
           _ayudaFunciones[fn.id] = fn;
@@ -3913,12 +3913,12 @@ function _ayudaLoadCatalogo() {
     .catch(function(e) {
       console.error('[AYUDA] Error:', e);
       loading.style.display = 'none';
-      errorEl.textContent = 'Error de conexión: ' + e.message;
+      errorEl.textContent = 'Error de conexiÃ³n: ' + e.message;
       errorEl.style.display = 'block';
     });
 }
 
-// Renderizar el catálogo completo (familias colapsables)
+// Renderizar el catÃ¡logo completo (familias colapsables)
 function _ayudaRenderCatalogo(data, filtro) {
   var catalogo = document.getElementById('ayuda-catalogo');
   catalogo.innerHTML = '';
@@ -3930,17 +3930,17 @@ function _ayudaRenderCatalogo(data, filtro) {
     var familia = data.familias[famId];
     var funciones = familia.funciones;
     
-    // Filtrar si hay búsqueda activa
+    // Filtrar si hay bÃºsqueda activa
     if (filtro) {
       var f = filtro.toLowerCase();
       funciones = funciones.filter(function(fn) {
-        // Buscar en múltiples campos para máxima flexibilidad
+        // Buscar en mÃºltiples campos para mÃ¡xima flexibilidad
         // Usuario puede buscar: "ACP", "AD_ACP", "lineal", "regresion", etc.
         return fn.name.toLowerCase().indexOf(f) !== -1 ||
                fn.description.toLowerCase().indexOf(f) !== -1 ||
                fn.function_name_xll.toLowerCase().indexOf(f) !== -1 ||
                fn.id.toLowerCase().indexOf(f) !== -1 ||
-               // Búsqueda sin guiones bajos (usuario escribe "adacp" o "acp")
+               // BÃºsqueda sin guiones bajos (usuario escribe "adacp" o "acp")
                fn.id.toLowerCase().replace(/_/g, '').indexOf(f.replace(/[_.\s]/g, '')) !== -1 ||
                fn.function_name_xll.toLowerCase().replace(/[_.]/g, '').indexOf(f.replace(/[_.\s()]/g, '')) !== -1;
       });
@@ -3949,7 +3949,7 @@ function _ayudaRenderCatalogo(data, filtro) {
     if (funciones.length === 0) return;
     totalVisible += funciones.length;
     
-    // Crear sección colapsable para la familia
+    // Crear secciÃ³n colapsable para la familia
     var details = document.createElement('details');
     details.className = 'ayuda-familia';
     details.open = !filtro;  // Expandido por defecto, colapsado si hay filtro
@@ -3968,13 +3968,13 @@ function _ayudaRenderCatalogo(data, filtro) {
       item.className = 'ayuda-funcion-item';
       item.setAttribute('data-fn-id', fn.id);
       
-      // Determinar el lenguaje para el ícono
-      var langIcon = '🔷';  // Default
+      // Determinar el lenguaje para el Ã­cono
+      var langIcon = 'ðŸ”·';  // Default
       if (fn.languages && fn.languages.length > 0) {
         var lang = fn.languages[0].toLowerCase();
-        if (lang === 'r') langIcon = '📊';
-        else if (lang === 'python') langIcon = '🐍';
-        else if (lang === 'julia') langIcon = '⚡';
+        if (lang === 'r') langIcon = 'ðŸ“Š';
+        else if (lang === 'python') langIcon = 'ðŸ';
+        else if (lang === 'julia') langIcon = 'âš¡';
       }
       
       item.innerHTML = 
@@ -4005,7 +4005,7 @@ function _truncate(text, maxLen) {
   return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
 }
 
-// Mostrar detalle de una función
+// Mostrar detalle de una funciÃ³n
 function _ayudaMostrarDetalle(fnId) {
   var fn = _ayudaFunciones[fnId];
   if (!fn) return;
@@ -4016,14 +4016,14 @@ function _ayudaMostrarDetalle(fnId) {
   document.getElementById('ayuda-detalle-nombre').textContent = fn.name;
   document.getElementById('ayuda-detalle-familia').textContent = fn._familiaLabel + ' (' + fn._familia + ')';
   
-  // Descripción
+  // DescripciÃ³n
   document.getElementById('ayuda-detalle-desc').textContent = fn.description || '';
   
   // Sintaxis
   var sintaxis = _ayudaBuildSintaxis(fn);
   document.getElementById('ayuda-detalle-sintaxis').textContent = sintaxis;
   
-  // Parámetros (nevenx_positions)
+  // ParÃ¡metros (nevenx_positions)
   var paramsHtml = _ayudaRenderParams(fn.nevenx_positions);
   document.getElementById('ayuda-detalle-params').innerHTML = paramsHtml;
   
@@ -4054,12 +4054,12 @@ function _ayudaMostrarDetalle(fnId) {
   detalle.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Construir sintaxis de la función
+// Construir sintaxis de la funciÃ³n
 function _ayudaBuildSintaxis(fn) {
   var xll = fn.function_name_xll;
   var params = fn.nevenx_positions || {};
   
-  // Ordenar parámetros por posición (a0, a1, a2, ...)
+  // Ordenar parÃ¡metros por posiciÃ³n (a0, a1, a2, ...)
   var positions = Object.keys(params).sort(function(a, b) {
     var numA = parseInt(a.replace('a', ''), 10);
     var numB = parseInt(b.replace('a', ''), 10);
@@ -4072,7 +4072,7 @@ function _ayudaBuildSintaxis(fn) {
     return p.required ? name : '[' + name + ']';
   });
   
-  // Determinar el motor según el lenguaje
+  // Determinar el motor segÃºn el lenguaje
   var motor = 'R';  // Default
   if (fn.languages && fn.languages.length > 0) {
     var lang = fn.languages[0].toLowerCase();
@@ -4083,10 +4083,10 @@ function _ayudaBuildSintaxis(fn) {
   return '=NEVEN.' + motor + '("' + xll + '", ' + paramList.join(', ') + ', TipoOutput)';
 }
 
-// Renderizar tabla de parámetros
+// Renderizar tabla de parÃ¡metros
 function _ayudaRenderParams(params) {
   if (!params || Object.keys(params).length === 0) {
-    return '<div style="color:var(--text-muted);font-style:italic">Sin parámetros adicionales</div>';
+    return '<div style="color:var(--text-muted);font-style:italic">Sin parÃ¡metros adicionales</div>';
   }
   
   var positions = Object.keys(params).sort(function(a, b) {
@@ -4096,17 +4096,17 @@ function _ayudaRenderParams(params) {
   });
   
   var html = '<table class="ayuda-params-table">' +
-    '<tr><th>Pos</th><th>Nombre</th><th>Descripción</th><th>Tipo</th><th>Req</th><th>Default</th></tr>';
+    '<tr><th>Pos</th><th>Nombre</th><th>DescripciÃ³n</th><th>Tipo</th><th>Req</th><th>Default</th></tr>';
   
   positions.forEach(function(pos) {
     var p = params[pos];
-    var req = p.required ? '✓' : '';
-    var def = p.default !== null && p.default !== undefined ? String(p.default) : '—';
+    var req = p.required ? 'âœ“' : '';
+    var def = p.default !== null && p.default !== undefined ? String(p.default) : 'â€”';
     html += '<tr>' +
       '<td style="color:var(--accent)">' + pos + '</td>' +
-      '<td><strong>' + (p.name || '—') + '</strong></td>' +
-      '<td>' + (p.label || '—') + '</td>' +
-      '<td>' + (p.type || '—') + '</td>' +
+      '<td><strong>' + (p.name || 'â€”') + '</strong></td>' +
+      '<td>' + (p.label || 'â€”') + '</td>' +
+      '<td>' + (p.type || 'â€”') + '</td>' +
       '<td style="text-align:center">' + req + '</td>' +
       '<td>' + def + '</td>' +
     '</tr>';
@@ -4123,7 +4123,7 @@ function _ayudaRenderOutputs(outputs) {
   }
   
   var html = '<table class="ayuda-outputs-table">' +
-    '<tr><th style="width:40px">ID</th><th>Descripción</th></tr>';
+    '<tr><th style="width:40px">ID</th><th>DescripciÃ³n</th></tr>';
   
   outputs.forEach(function(o) {
     html += '<tr>' +
@@ -4139,17 +4139,17 @@ function _ayudaRenderOutputs(outputs) {
 // Renderizar roles de variables
 function _ayudaRenderRoles(roles) {
   var html = '<table class="ayuda-roles-table">' +
-    '<tr><th>Rol</th><th>Descripción</th><th>Tipos</th><th>Múltiple</th><th>Req</th></tr>';
+    '<tr><th>Rol</th><th>DescripciÃ³n</th><th>Tipos</th><th>MÃºltiple</th><th>Req</th></tr>';
   
   Object.keys(roles).forEach(function(rolId) {
     var r = roles[rolId];
     var tipos = (r.types || []).join(', ');
-    var multi = r.multiple ? '✓' : '';
-    var req = r.required ? '✓' : '';
+    var multi = r.multiple ? 'âœ“' : '';
+    var req = r.required ? 'âœ“' : '';
     html += '<tr>' +
       '<td style="color:var(--accent);font-weight:600">' + rolId + '</td>' +
-      '<td>' + (r.label || '—') + '</td>' +
-      '<td>' + (tipos || '—') + '</td>' +
+      '<td>' + (r.label || 'â€”') + '</td>' +
+      '<td>' + (tipos || 'â€”') + '</td>' +
       '<td style="text-align:center">' + multi + '</td>' +
       '<td style="text-align:center">' + req + '</td>' +
     '</tr>';
@@ -4161,13 +4161,13 @@ function _ayudaRenderRoles(roles) {
 
 // Event listeners para el tab Ayuda
 (function initAyudaTab() {
-  // Botón recargar
+  // BotÃ³n recargar
   var reloadBtn = document.getElementById('ayuda-reload-btn');
   if (reloadBtn) {
     reloadBtn.onclick = function() { _ayudaLoadCatalogo(); };
   }
   
-  // Búsqueda con debounce
+  // BÃºsqueda con debounce
   var searchInput = document.getElementById('ayuda-search');
   var searchTimeout = null;
   if (searchInput) {
@@ -4197,7 +4197,7 @@ function _ayudaRenderRoles(roles) {
       var sintaxis = document.getElementById('ayuda-detalle-sintaxis').textContent;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(sintaxis).then(function() {
-          showToast('✓ Sintaxis copiada al portapapeles');
+          showToast('âœ“ Sintaxis copiada al portapapeles');
         });
       } else {
         // Fallback para navegadores antiguos
@@ -4207,7 +4207,7 @@ function _ayudaRenderRoles(roles) {
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
-        showToast('✓ Sintaxis copiada al portapapeles');
+        showToast('âœ“ Sintaxis copiada al portapapeles');
       }
     };
   }
@@ -4217,25 +4217,25 @@ function _ayudaRenderRoles(roles) {
     if (t.dataset.tab === 'ayuda') {
       t.addEventListener('click', function() {
         if (!_ayudaCatalogo) {
-          console.log('[AYUDA] Cargando catálogo por click en tab...');
+          console.log('[AYUDA] Cargando catÃ¡logo por click en tab...');
           _ayudaLoadCatalogo();
         }
       });
     }
   });
   
-  // También verificar si el tab ya está activo al cargar
+  // TambiÃ©n verificar si el tab ya estÃ¡ activo al cargar
   setTimeout(function() {
     var ayudaTab = document.querySelector('.tab[data-tab="ayuda"]');
     var ayudaContent = document.getElementById('ayuda');
     if (ayudaTab && ayudaTab.classList.contains('active') && !_ayudaCatalogo) {
-      console.log('[AYUDA] Tab activo al cargar, cargando catálogo...');
+      console.log('[AYUDA] Tab activo al cargar, cargando catÃ¡logo...');
       _ayudaLoadCatalogo();
     }
   }, 500);
 })();
 
-// Función global para forzar recarga desde consola si es necesario
+// FunciÃ³n global para forzar recarga desde consola si es necesario
 window.recargarAyuda = function() {
   _ayudaCatalogo = null;
   _ayudaLoadCatalogo();
@@ -4246,9 +4246,9 @@ window.recargarAyuda = function() {
 <script src="taskpane.js?v=20260819"></script>
 
 <!-- Diccionario de Funciones - archivo separado para evitar cache -->
-<script src="ayuda.js?v=20260819191500"></script>
+<script src="ayuda.js?v=20260819202000"></script>
 
-<!-- Inicialización de Office.js (si está disponible) -->
+<!-- InicializaciÃ³n de Office.js (si estÃ¡ disponible) -->
 <script>
 (function() {
   // Intentar inicializar Office.js
@@ -4258,15 +4258,15 @@ window.recargarAyuda = function() {
       window._officeReady = true;
       window._officeHost = info.host;
       
-      // Mostrar indicador de conexión con Excel
+      // Mostrar indicador de conexiÃ³n con Excel
       var indicator = document.createElement('div');
       indicator.id = 'office-indicator';
       indicator.style.cssText = 'position:fixed;bottom:4px;right:4px;font-size:9px;color:#4a8;padding:2px 6px;background:rgba(68,170,136,0.1);border-radius:3px;';
-      indicator.textContent = '✓ Excel conectado';
+      indicator.textContent = 'âœ“ Excel conectado';
       document.body.appendChild(indicator);
     });
   } else {
-    console.log('[NEVEN] Office.js no disponible — usando modo standalone');
+    console.log('[NEVEN] Office.js no disponible â€” usando modo standalone');
     window._officeReady = false;
   }
 })();
