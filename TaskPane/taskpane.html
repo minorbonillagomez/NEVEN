@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEVEN Studio</title>
-  <link rel="stylesheet" href="taskpane.css?v=8">
+  <link rel="stylesheet" href="taskpane.css?v=9">
   <!-- Office.js para integración con Excel -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <!-- Office.js initialization with auto-open -->
@@ -3861,19 +3861,32 @@ var _ayudaFunciones = {};   // Mapa id → función para acceso rápido
 
 // Cargar catálogo desde el servidor
 function _ayudaLoadCatalogo() {
+  console.log('[AYUDA] Iniciando carga de catálogo...');
   var loading = document.getElementById('ayuda-loading');
   var errorEl = document.getElementById('ayuda-error');
   var catalogo = document.getElementById('ayuda-catalogo');
   var detalle = document.getElementById('ayuda-detalle');
+  
+  if (!loading || !catalogo) {
+    console.error('[AYUDA] Elementos DOM no encontrados');
+    return;
+  }
   
   loading.style.display = 'block';
   errorEl.style.display = 'none';
   catalogo.innerHTML = '';
   detalle.style.display = 'none';
   
-  fetch(API + '/api/ayuda/funciones')
-    .then(function(r) { return r.json(); })
+  var url = API + '/api/ayuda/funciones';
+  console.log('[AYUDA] Fetching:', url);
+  
+  fetch(url)
+    .then(function(r) { 
+      console.log('[AYUDA] Response status:', r.status);
+      return r.json(); 
+    })
     .then(function(data) {
+      console.log('[AYUDA] Data recibida:', data.status, 'Total:', data.total);
       loading.style.display = 'none';
       
       if (data.status !== 'ok') {
@@ -3894,9 +3907,11 @@ function _ayudaLoadCatalogo() {
         });
       });
       
+      console.log('[AYUDA] Renderizando', Object.keys(_ayudaFunciones).length, 'funciones');
       _ayudaRenderCatalogo(data);
     })
     .catch(function(e) {
+      console.error('[AYUDA] Error:', e);
       loading.style.display = 'none';
       errorEl.textContent = 'Error de conexión: ' + e.message;
       errorEl.style.display = 'block';
@@ -3919,9 +3934,15 @@ function _ayudaRenderCatalogo(data, filtro) {
     if (filtro) {
       var f = filtro.toLowerCase();
       funciones = funciones.filter(function(fn) {
+        // Buscar en múltiples campos para máxima flexibilidad
+        // Usuario puede buscar: "ACP", "AD_ACP", "lineal", "regresion", etc.
         return fn.name.toLowerCase().indexOf(f) !== -1 ||
                fn.description.toLowerCase().indexOf(f) !== -1 ||
-               fn.function_name_xll.toLowerCase().indexOf(f) !== -1;
+               fn.function_name_xll.toLowerCase().indexOf(f) !== -1 ||
+               fn.id.toLowerCase().indexOf(f) !== -1 ||
+               // Búsqueda sin guiones bajos (usuario escribe "adacp" o "acp")
+               fn.id.toLowerCase().replace(/_/g, '').indexOf(f.replace(/[_.\s]/g, '')) !== -1 ||
+               fn.function_name_xll.toLowerCase().replace(/[_.]/g, '').indexOf(f.replace(/[_.\s()]/g, '')) !== -1;
       });
     }
     
@@ -4196,16 +4217,36 @@ function _ayudaRenderRoles(roles) {
     if (t.dataset.tab === 'ayuda') {
       t.addEventListener('click', function() {
         if (!_ayudaCatalogo) {
+          console.log('[AYUDA] Cargando catálogo por click en tab...');
           _ayudaLoadCatalogo();
         }
       });
     }
   });
+  
+  // También verificar si el tab ya está activo al cargar
+  setTimeout(function() {
+    var ayudaTab = document.querySelector('.tab[data-tab="ayuda"]');
+    var ayudaContent = document.getElementById('ayuda');
+    if (ayudaTab && ayudaTab.classList.contains('active') && !_ayudaCatalogo) {
+      console.log('[AYUDA] Tab activo al cargar, cargando catálogo...');
+      _ayudaLoadCatalogo();
+    }
+  }, 500);
 })();
+
+// Función global para forzar recarga desde consola si es necesario
+window.recargarAyuda = function() {
+  _ayudaCatalogo = null;
+  _ayudaLoadCatalogo();
+};
 </script>
 
 <!-- Chart generation functions from taskpane.js -->
 <script src="taskpane.js?v=20260819"></script>
+
+<!-- Diccionario de Funciones - archivo separado para evitar cache -->
+<script src="ayuda.js?v=20260819191500"></script>
 
 <!-- Inicialización de Office.js (si está disponible) -->
 <script>
