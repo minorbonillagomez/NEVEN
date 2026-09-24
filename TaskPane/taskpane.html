@@ -111,6 +111,12 @@
         <div id="recent-files-list" style="display:flex;flex-direction:column;gap:3px"></div>
       </div>
       <div id="data-info" class="msg-info" style="margin-top:6px">Abra un archivo CSV, TSV o JSON</div>
+      <!-- Indicador de Data Binding -->
+      <div id="binding-indicator" style="display:none;margin-top:4px;padding:4px 8px;background:rgba(100,200,100,0.1);border-left:3px solid #6c6;border-radius:3px;font-size:10px">
+        <span style="color:#6c6;font-weight:600">Escuchando cambios</span>
+        <span id="binding-range" style="color:var(--text-secondary);margin-left:6px"></span>
+        <button id="binding-disconnect" style="float:right;background:none;border:none;color:#c66;cursor:pointer;font-size:9px;padding:0" title="Desconectar">[x]</button>
+      </div>
     </div>
     <div id="preview-area"></div>
     <div id="pivot-area" style="display:none;margin-top:8px;">
@@ -758,15 +764,63 @@ window.showToast = function(text) {
 // Alias para compatibilidad con cÃ³digo existente
 var showToast = window.showToast;
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// SISTEMA DE DATA BINDING REACTIVO (Excel â†’ NEVEN Studio)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════════════════
+// SISTEMA DE DATA BINDING REACTIVO (Excel → NEVEN Studio)
+// ═══════════════════════════════════════════════════════════════════════════
 var _nevenDataBinding = {
-  rangeAddress: null,      // DirecciÃ³n del rango vinculado (ej: "Sheet1!A1:D100")
+  rangeAddress: null,      // Dirección del rango vinculado (ej: "Sheet1!A1:D100")
   sheetName: null,         // Nombre de la hoja
   eventHandler: null,      // Referencia al handler registrado
-  lastDataHash: null,      // Hash de los Ãºltimos datos para detectar cambios reales
+  lastDataHash: null,      // Hash de los últimos datos para detectar cambios reales
   onDataChange: null,      // Callback cuando los datos cambian
+  isListening: false,      // Estado de escucha activa
+  _debounceTimer: null,    // Timer para debounce
+  _debounceMs: 300,        // Milisegundos de debounce (evita múltiples actualizaciones rápidas)
+  
+  // Guardar binding en localStorage para restaurar después
+  _saveToStorage: function() {
+    if (this.rangeAddress && this.sheetName) {
+      localStorage.setItem('neven_binding', JSON.stringify({
+        rangeAddress: this.rangeAddress,
+        sheetName: this.sheetName,
+        timestamp: Date.now()
+      }));
+    }
+  },
+  
+  // Cargar binding guardado de localStorage
+  _loadFromStorage: function() {
+    try {
+      var saved = localStorage.getItem('neven_binding');
+      if (saved) {
+        var data = JSON.parse(saved);
+        // Solo restaurar si es reciente (menos de 24 horas)
+        if (Date.now() - data.timestamp < 24 * 60 * 60 * 1000) {
+          return data;
+        }
+      }
+    } catch (e) {
+      console.warn('[NEVEN Binding] Error cargando de localStorage:', e);
+    }
+    return null;
+  },
+  
+  // Limpiar binding guardado
+  _clearStorage: function() {
+    localStorage.removeItem('neven_binding');
+  },
+  
+  // Actualizar indicador visual en la UI
+  _updateIndicator: function(show, rangeText) {
+    var indicator = document.getElementById('binding-indicator');
+    var rangeSpan = document.getElementById('binding-range');
+    if (indicator) {
+      indicator.style.display = show ? 'block' : 'none';
+      if (rangeSpan && rangeText) {
+        rangeSpan.textContent = rangeText;
+      }
+    }
+  },
   
   // Vincular un rango de Excel para seguimiento de cambios
   bindRange: async function(address, sheetName, callback) {
@@ -805,8 +859,10 @@ var _nevenDataBinding = {
         });
         
         await context.sync();
-        console.log('[NEVEN Binding] âœ… Listeners registrados (onChanged + onCalculated) para hoja:', sheetName);
-      });
+        console.log('[NEVEN Binding] Listeners registrados para hoja:', sheetName);
+        self.isListening = true;
+        self._updateIndicator(true, sheetName + '!' + address.split('!')[1]);
+        self._saveToStorage();
       
       return true;
     } catch (e) {
@@ -814,47 +870,58 @@ var _nevenDataBinding = {
       return false;
     }
   },
-  
-  // Manejar cambio en la hoja
-  _handleChange: async function(eventArgs) {
+  // Manejar cambio en la hoja (con debounce)
+  _handleChange: function(eventArgs) {
     var self = this;
     if (!self.rangeAddress || !self.onDataChange) return;
     
-    // Verificar si el cambio afecta nuestro rango
-    // Por simplicidad, re-leemos si hay cualquier cambio en la hoja
-    console.log('[NEVEN Binding] Re-leyendo datos del rango:', self.rangeAddress);
-    
-    try {
-      await Excel.run(async function(context) {
-        var range = context.workbook.worksheets.getItem(self.sheetName)
-                          .getRange(self.rangeAddress.split('!')[1] || self.rangeAddress);
-        range.load(['values', 'rowCount', 'columnCount']);
-        await context.sync();
-        
-        // Calcular hash simple para detectar cambios reales
-        var newHash = JSON.stringify(range.values).length + '_' + range.rowCount;
-        if (newHash === self.lastDataHash) {
-          console.log('[NEVEN Binding] Datos sin cambios reales, ignorando');
-          return;
-        }
-        self.lastDataHash = newHash;
-        
-        console.log('[NEVEN Binding] Datos actualizados, notificando callback');
-        if (self.onDataChange) {
-          self.onDataChange(range.values, self.rangeAddress);
-        }
-      });
-    } catch (e) {
-      console.error('[NEVEN Binding] Error re-leyendo datos:', e);
+    // Debounce: cancelar timer anterior y esperar antes de procesar
+    if (self._debounceTimer) {
+      clearTimeout(self._debounceTimer);
     }
+    
+    self._debounceTimer = setTimeout(async function() {
+      console.log('[NEVEN Binding] Procesando cambio (debounced):', eventArgs.address);
+      
+      try {
+        await Excel.run(async function(context) {
+          var range = context.workbook.worksheets.getItem(self.sheetName)
+                            .getRange(self.rangeAddress.split('!')[1] || self.rangeAddress);
+          range.load(['values', 'rowCount', 'columnCount']);
+          await context.sync();
+          
+          // Calcular hash simple para detectar cambios reales
+          var newHash = JSON.stringify(range.values).length + '_' + range.rowCount;
+          if (newHash === self.lastDataHash) {
+            console.log('[NEVEN Binding] Datos sin cambios reales, ignorando');
+            return;
+          }
+          self.lastDataHash = newHash;
+          
+          console.log('[NEVEN Binding] Datos actualizados, notificando callback');
+          if (self.onDataChange) {
+            self.onDataChange(range.values, self.rangeAddress);
+          }
+        });
+      } catch (e) {
+        console.error('[NEVEN Binding] Error re-leyendo datos:', e);
+      }
+    }, self._debounceMs);
   },
   
   // Desvincular (limpiar listener)
   unbind: function() {
+    if (this._debounceTimer) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = null;
+    }
     this.rangeAddress = null;
     this.sheetName = null;
     this.onDataChange = null;
     this.lastDataHash = null;
+    this.isListening = false;
+    this._updateIndicator(false);
+    this._clearStorage();
     console.log('[NEVEN Binding] Desvinculado');
   }
 };
@@ -862,6 +929,42 @@ var _nevenDataBinding = {
 // Exponer globalmente
 window._nevenDataBinding = _nevenDataBinding;
 
+
+// Listener para botón de desconectar binding
+document.addEventListener('DOMContentLoaded', function() {
+  var disconnectBtn = document.getElementById('binding-disconnect');
+  if (disconnectBtn) {
+    disconnectBtn.addEventListener('click', function() {
+      if (window._nevenDataBinding) {
+        window._nevenDataBinding.unbind();
+        window.showToast('Binding desconectado');
+      }
+    });
+  
+  // Intentar restaurar binding guardado cuando Office.js esté listo
+  if (typeof Office !== 'undefined') {
+    Office.onReady(function() {
+      setTimeout(function() {
+        var saved = window._nevenDataBinding._loadFromStorage();
+        if (saved && window._officeReady) {
+          console.log('[NEVEN Binding] Intentando restaurar binding:', saved);
+          // Mostrar indicador de que hay un binding guardado (pero no reconectar automáticamente)
+          // El usuario debe hacer "Leer de Excel" de nuevo para reconectar
+          var indicator = document.getElementById('binding-indicator');
+          if (indicator) {
+            indicator.style.display = 'block';
+            indicator.style.background = 'rgba(200,200,100,0.1)';
+            indicator.style.borderLeftColor = '#cc6';
+            indicator.innerHTML = '<span style="color:#cc6;font-weight:600">Binding previo</span>' +
+              '<span style="color:var(--text-secondary);margin-left:6px">' + saved.sheetName + '!' + (saved.rangeAddress.split('!')[1] || saved.rangeAddress) + '</span>' +
+              ' <span style="color:var(--text-muted);font-size:9px">(click Leer de Excel para reconectar)</span>';
+          }
+        }
+      }, 1500);
+    });
+  }
+  }
+});
 // --- Tabs ---
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click', function(){
