@@ -544,7 +544,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         """Serve static files and health endpoint."""
         if not _rate_limiter.allow():
-            self._send_error_json("Rate limit exceeded (60 req/min)", 429)
+            self._send_error_json("Rate limit exceeded (300 req/min)", 429)
             return
 
         parsed = urlparse(self.path)
@@ -781,7 +781,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         """Handle API endpoints."""
         if not _rate_limiter.allow():
-            self._send_error_json("Rate limit exceeded (60 req/min)", 429)
+            self._send_error_json("Rate limit exceeded (300 req/min)", 429)
             return
 
         # Check payload size
