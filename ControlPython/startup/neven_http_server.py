@@ -226,22 +226,19 @@ def _discover_pipe(lang: str) -> str | None:
 def _get_engine_status() -> dict:
     """Get availability status of all language engines.
 
-    First checks if a pipe_client_factory is registered (injected by start_studio.py),
-    then falls back to dynamic pipe discovery.
+    ALWAYS uses dynamic pipe discovery to verify engines are actually running.
+    Does not trust factory registration alone - the pipe must exist and respond.
 
     Returns:
         Dict with keys "r", "python", "julia" and boolean values indicating
-        whether each engine is available.
+        whether each engine is available (pipe exists and is responsive).
     """
-    factory = _config.get("pipe_client_factory", {})
     result = {}
     for lang in ("r", "python", "julia"):
-        if lang in factory:
-            # Factory registered — engine is available
-            result[lang] = True
-        else:
-            # Try dynamic discovery
-            result[lang] = _discover_pipe(lang) is not None
+        # Always verify via dynamic discovery - don't trust factory alone
+        # This handles Excel restarts, PID changes, and stale pipes
+        pipe_path = _discover_pipe(lang)
+        result[lang] = pipe_path is not None
     return result
 
 

@@ -206,10 +206,10 @@ table.data-table tr:hover td { background: var(--accent-dim); }
 .msg-success { color: var(--success); padding: 8px; font-size: 10px; }
 
 /* ─── Engine Dots ─────────────────────────────────────────────── */
-.engine-dot { font-size: 14px; margin: 0 2px; color: #555; }
-.engine-dot.available   { color: var(--success); }
-.engine-dot.unavailable { color: var(--error); }
-.engine-dot.checking    { color: #888; animation: pulse 1s infinite; }
+.engine-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 4px; background-color: #555; }
+.engine-dot.available   { background-color: var(--success); }
+.engine-dot.unavailable { background-color: var(--error); }
+.engine-dot.checking    { background-color: #888; animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.4 } }
 
 /* ─── Spinner ─────────────────────────────────────────────────── */

@@ -1534,12 +1534,12 @@ function buildSlotElement(slot) {
       } else {
         displayVal2 = String(slot.value !== undefined ? slot.value : '');
       }
-      // Always render as plain text in a styled pre block
+      // Always render as plain text in a styled pre block with scroll
       content = document.createElement('pre');
       content.style.cssText = 'background:#1e1e1e;border:1px solid var(--border);' +
         'border-radius:var(--radius);padding:12px 16px;font-family:Consolas,\'Cascadia Code\',monospace;' +
-        'font-size:11.5px;color:#d4d4d4;white-space:pre-wrap;line-height:1.5;' +
-        'max-height:520px;overflow-y:auto;overflow-x:auto;word-break:normal;margin:0';
+        'font-size:11.5px;color:#d4d4d4;white-space:pre;line-height:1.5;' +
+        'max-height:400px;overflow:auto;margin:0';
       content.textContent = displayVal2;
       break;
     }

@@ -704,6 +704,7 @@ int main(int argc, char** argv) {
 
   NextPipeInstance(true, State().pipename);
   NextPipeInstance(false, State().pipename);
+  NextPipeInstance(false, State().pipename);  // Extra instance for HTTP server
 
   char* args[] = { argv[0], "--no-save", "--no-restore", "--encoding=UTF-8" };
 
