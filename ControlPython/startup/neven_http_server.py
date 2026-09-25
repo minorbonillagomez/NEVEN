@@ -122,7 +122,7 @@ except ImportError:
 # ─── Pipe probe helper ────────────────────────────────────────────────────────
 
 def _probe_pipe(pipe_name: str) -> bool:
-    """Return True if the named pipe exists (CreateFile succeeds), False otherwise.
+    """Return True if the named pipe exists, False otherwise.
 
     On non-Windows (or when pywin32 is unavailable) always returns False.
 
@@ -130,25 +130,120 @@ def _probe_pipe(pipe_name: str) -> bool:
         pipe_name: Full pipe path, e.g. ``\\\\.\\pipe\\neven_r``.
 
     Returns:
-        True if a CreateFile call on the pipe succeeds; False on any exception
-        or on non-Windows platforms.
+        True if the pipe exists in the filesystem; False otherwise.
     """
     if not _WIN32_AVAILABLE:
         return False
     try:
+        # Try to open with FILE_FLAG_OVERLAPPED and no exclusive access
+        # This allows probing even if another client is connected
         handle = win32file.CreateFile(
             pipe_name,
             win32con.GENERIC_READ | win32con.GENERIC_WRITE,
             0,           # no sharing
             None,        # default security
             win32con.OPEN_EXISTING,
-            0,           # default attributes
+            win32con.FILE_FLAG_OVERLAPPED,  # non-blocking
             None,        # no template
         )
         win32file.CloseHandle(handle)
         return True
+    except pywintypes.error as e:
+        # Error 231 = All pipe instances are busy (pipe exists but all instances in use)
+        # This means the pipe EXISTS, just busy — return True
+        if e.winerror == 231:
+            return True
+        # Other errors (file not found, access denied, etc.) — pipe doesn't exist or inaccessible
+        return False
     except Exception:
         return False
+
+
+# ─── Dynamic pipe discovery ───────────────────────────────────────────────────
+
+# Cache for discovered pipe names: {"r": "\\.\pipe\RJ2XCL2-PIPE-R-12345", ...}
+_discovered_pipes: dict = {}
+_discovered_pipes_lock = threading.Lock()
+
+
+def _discover_pipe(lang: str) -> str | None:
+    """Discover the Named Pipe for a language engine dynamically.
+
+    Searches for pipes in two patterns:
+    1. Fixed names from start_studio.py: ``neven_r``, ``neven_python``, ``neven_julia``
+    2. Dynamic names from XLL: ``RJ2XCL2-PIPE-{LANG}-{PID}`` (e.g., ``RJ2XCL2-PIPE-R-214888``)
+
+    Args:
+        lang: Language identifier ("r", "python", "julia").
+
+    Returns:
+        Full pipe path if found, or ``None`` if no matching pipe exists.
+    """
+    lang_upper = lang.upper()
+    lang_lower = lang.lower()
+    
+    # Check cache first
+    with _discovered_pipes_lock:
+        if lang in _discovered_pipes:
+            cached = _discovered_pipes[lang]
+            # Verify cached pipe still exists
+            if _probe_pipe(cached):
+                return cached
+            # Cache invalid, clear it
+            del _discovered_pipes[lang]
+    
+    pipe_dir = r"\\.\pipe"
+    
+    # Strategy 1: Check fixed pipe name (start_studio.py style)
+    fixed_name = f"neven_{lang_lower}"
+    fixed_path = f"{pipe_dir}\\{fixed_name}"
+    if _probe_pipe(fixed_path):
+        with _discovered_pipes_lock:
+            _discovered_pipes[lang] = fixed_path
+        return fixed_path
+    
+    # Strategy 2: Enumerate dynamic pipes (XLL style)
+    pattern_prefix = f"RJ2XCL2-PIPE-{lang_upper}-"
+    
+    try:
+        import os
+        for name in os.listdir(pipe_dir):
+            # Match pattern: RJ2XCL2-PIPE-R-{PID} (without -CB or -M suffix)
+            if name.startswith(pattern_prefix) and not name.endswith(("-CB", "-M", "-STDOUT", "-STDERR")):
+                full_path = f"{pipe_dir}\\{name}"
+                if _probe_pipe(full_path):
+                    # Cache and return
+                    with _discovered_pipes_lock:
+                        _discovered_pipes[lang] = full_path
+                    return full_path
+    except OSError:
+        # Pipe directory enumeration failed
+        pass
+    
+    return None
+
+
+def _get_engine_status() -> dict:
+    """Get availability status of all language engines.
+
+    First checks if a pipe_client_factory is registered (injected by start_studio.py),
+    then falls back to dynamic pipe discovery.
+
+    Returns:
+        Dict with keys "r", "python", "julia" and boolean values indicating
+        whether each engine is available.
+    """
+    factory = _config.get("pipe_client_factory", {})
+    result = {}
+    for lang in ("r", "python", "julia"):
+        if lang in factory:
+            # Factory registered — engine is available
+            result[lang] = True
+        else:
+            # Try dynamic discovery
+            result[lang] = _discover_pipe(lang) is not None
+    return result
+
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -389,20 +484,41 @@ class NEVENHandler(BaseHTTPRequestHandler):
     def _get_pipe_client(self, lang: str):
         """Return a PipeClient for *lang* by calling the injected factory.
 
+        If no factory is registered, attempts to discover the pipe dynamically
+        by searching for pipes matching the pattern ``RJ2XCL2-PIPE-{LANG}-{PID}``.
+
         Args:
             lang: Language key — "r", "python", or "julia".
 
         Returns:
-            A PipeClient instance produced by the registered factory callable.
+            A PipeClient instance produced by the registered factory callable,
+            or a dynamically created PipeClient using the discovered pipe.
 
         Raises:
-            KeyError: If *lang* has no factory registered in ``pipe_client_factory``.
-                      Callers should map this to an HTTP 503 response.
+            KeyError: If *lang* has no factory registered and no pipe could be
+                      discovered. Callers should map this to an HTTP 503 response.
         """
         factory = _config.get("pipe_client_factory", {})
-        if lang not in factory:
-            raise KeyError(f"No pipe_client_factory registered for language: {lang!r}")
-        return factory[lang]()
+        if lang in factory:
+            return factory[lang]()
+        
+        # No factory registered — try dynamic discovery
+        pipe_path = _discover_pipe(lang)
+        if pipe_path is None:
+            raise KeyError(f"No pipe_client_factory registered and no pipe discovered for language: {lang!r}")
+        
+        # Import PipeClient and create instance with discovered pipe
+        if not _PIPE_CLIENT_AVAILABLE:
+            raise KeyError(f"pipe_client module not available for language: {lang!r}")
+        
+        # Import at call time to avoid circular imports
+        try:
+            from pipe_client import PipeClient  # type: ignore[import]
+            client = PipeClient(pipe_path)
+            client.connect()
+            return client
+        except Exception as exc:
+            raise KeyError(f"Failed to connect to discovered pipe for {lang!r}: {exc}") from exc
 
     def _send_json(self, data, status=200):
         body = json.dumps(data).encode('utf-8')
@@ -2239,19 +2355,18 @@ class NEVENHandler(BaseHTTPRequestHandler):
     def _handle_engines(self):
         """GET /api/engines — pipe-probe each language engine.
 
-        Probes each language's Named Pipe using :func:`_probe_pipe` and returns
+        Probes each language's Named Pipe using dynamic discovery and returns
         a JSON object reflecting real-time availability.
+
+        The discovery logic searches for pipes matching the pattern
+        ``RJ2XCL2-PIPE-{LANG}-{PID}`` created by the XLL, falling back to
+        the legacy fixed names ``neven_{lang}`` for compatibility.
 
         Returns:
             JSON ``{"r": bool, "python": bool, "julia": bool}`` where each value
-            is ``True`` iff a CreateFile probe on ``\\\\.\\pipe\\neven_{lang}``
-            succeeded (Requirements 8.1, 8.2).
+            is ``True`` iff a matching pipe was found and is accessible.
         """
-        self._send_json({
-            "r":      _probe_pipe(r"\\.\pipe\neven_r"),
-            "python": _probe_pipe(r"\\.\pipe\neven_python"),
-            "julia":  _probe_pipe(r"\\.\pipe\neven_julia"),
-        })
+        self._send_json(_get_engine_status())
 
     def _handle_functions(self):
         """GET /api/functions — list registered functions per language.
@@ -2428,3 +2543,39 @@ def stop_server():
         _server_instance.shutdown()
         _server_instance = None
         print("[NEVEN HTTP] Server stopped", file=sys.stderr)
+
+
+# ─── Standalone entry point ───────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    """Run the HTTP server standalone (not embedded in ControlPython.exe)."""
+    import signal
+    
+    print("[NEVEN HTTP] Starting standalone server...", file=sys.stderr)
+    
+    # Start server
+    result = start_server()
+    if result is None:
+        print("[NEVEN HTTP] Failed to start server", file=sys.stderr)
+        sys.exit(1)
+    
+    thread, port = result
+    print(f"[NEVEN HTTP] Standalone server running on http://127.0.0.1:{port}", file=sys.stderr)
+    
+    # Keep main thread alive until interrupted
+    def signal_handler(sig, frame):
+        print("\n[NEVEN HTTP] Shutting down...", file=sys.stderr)
+        stop_server()
+        sys.exit(0)
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    # Block forever (daemon thread will keep running)
+    try:
+        while True:
+            thread.join(timeout=1.0)
+            if not thread.is_alive():
+                break
+    except KeyboardInterrupt:
+        stop_server()
