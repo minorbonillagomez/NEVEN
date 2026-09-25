@@ -206,7 +206,7 @@
     <div class="card">
       <!-- Fila 1: lenguaje + dots -->
       <div class="controls" style="margin-bottom:4px">
-        <label style="font-size:9px;color:var(--text-secondary)">Lenguaje:</label>
+        <label for="script-lang" style="font-size:9px;color:var(--text-secondary)">Lenguaje:</label>
         <select id="script-lang">
           <option value="r" selected>R</option>
           <option value="python">Python</option>
@@ -325,7 +325,7 @@
       <div id="dl-function-list" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
       <!-- Selector de idioma (visible solo si hay multiples idiomas) -->
       <div id="dl-language-row" style="display:none;margin-top:6px">
-        <label style="font-size:12px;margin-right:4px">Idioma:</label>
+        <label for="dl-language-select" style="font-size:12px;margin-right:4px">Idioma:</label>
         <select id="dl-language-select"></select>
       </div>
     </div>
@@ -601,7 +601,7 @@
 
         <!-- Motor -->
         <div>
-          <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+          <label for="db-engine" style="font-size:9px;font-weight:600;color:var(--text-secondary);
                  text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Motor</label>
           <select id="db-engine" style="width:100%;background:var(--bg-primary);color:var(--text-primary);
                   border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
@@ -614,7 +614,7 @@
 
         <!-- SQLite path (solo para SQLite) -->
         <div id="db-sqlite-row">
-          <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+          <label for="db-sqlite-path" style="font-size:9px;font-weight:600;color:var(--text-secondary);
                  text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Archivo .db</label>
           <div style="display:flex;gap:6px">
             <input id="db-sqlite-path" type="text" placeholder="C:/ruta/base.db"
@@ -631,14 +631,14 @@
         <!-- Host / Puerto (oculto para SQLite) -->
         <div id="db-host-row" style="display:flex;gap:8px">
           <div style="flex:3">
-            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+            <label for="db-host" style="font-size:9px;font-weight:600;color:var(--text-secondary);
                    text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Host</label>
             <input id="db-host" type="text" value="localhost"
                    style="width:100%;background:var(--bg-primary);color:var(--text-primary);
                           border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
           </div>
           <div style="flex:1">
-            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+            <label for="db-port" style="font-size:9px;font-weight:600;color:var(--text-secondary);
                    text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Puerto</label>
             <input id="db-port" type="number" value="5432"
                    style="width:100%;background:var(--bg-primary);color:var(--text-primary);
@@ -649,7 +649,7 @@
         <!-- Base de datos / Usuario / Contrasena (oculto para SQLite) -->
         <div id="db-creds-row">
           <div style="margin-bottom:8px">
-            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+            <label for="db-database" style="font-size:9px;font-weight:600;color:var(--text-secondary);
                    text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Base de datos</label>
             <input id="db-database" type="text" placeholder="nombre_db"
                    style="width:100%;background:var(--bg-primary);color:var(--text-primary);
@@ -657,14 +657,14 @@
           </div>
           <div style="display:flex;gap:8px">
             <div style="flex:1">
-              <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+              <label for="db-user" style="font-size:9px;font-weight:600;color:var(--text-secondary);
                      text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Usuario</label>
               <input id="db-user" type="text"
                      style="width:100%;background:var(--bg-primary);color:var(--text-primary);
                             border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
             </div>
             <div style="flex:1">
-              <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+              <label for="db-password" style="font-size:9px;font-weight:600;color:var(--text-secondary);
                      text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Contrasena</label>
               <input id="db-password" type="password"
                      style="width:100%;background:var(--bg-primary);color:var(--text-primary);
@@ -675,7 +675,7 @@
 
         <!-- Query -->
         <div>
-          <label style="font-size:9px;font-weight:600;color:var(--text-secondary);
+          <label for="db-query" style="font-size:9px;font-weight:600;color:var(--text-secondary);
                  text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px">Query SQL</label>
           <textarea id="db-query" rows="4"
                     style="width:100%;background:#111;color:var(--accent);
