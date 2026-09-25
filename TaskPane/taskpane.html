@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -134,7 +134,7 @@
             <option value="heatmap">Heatmap</option>
           </optgroup>
           <optgroup label="Geoespacial">
-            <option value="map">ðŸ—ºï¸ Mapa (Lat/Lon)</option>
+            <option value="map">&#128506; Mapa (Lat/Lon)</option>
           </optgroup>
           <optgroup label="Avanzados">
             <option value="bubble">Burbujas</option>
@@ -283,7 +283,7 @@
         <div class="card-title" style="margin-bottom:0">Output</div>
         <button onclick="document.getElementById('script-output-card').style.display='none'"
                 style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px"
-                title="Cerrar">&#215;</button>
+                title="Cerrar">x</button>
       </div>
       <iframe id="script-iframe"  style="width:100%;height:400px;display:none;border:0"></iframe>
       <div    id="script-table"   style="display:none"></div>
@@ -2206,7 +2206,7 @@ function _renderQuickChartMap(colLat, colsY, latData, yDataArrays, outputEl, raw
   // Info del mapa
   var infoDiv = document.createElement('div');
   infoDiv.style.cssText = 'font-size:10px;color:var(--text-secondary);margin-top:6px';
-  infoDiv.textContent = 'ðŸ—ºï¸ ' + points.length + ' puntos mapeados (' + colLat + ' / ' + lonColName + ')';
+  infoDiv.textContent = '&#128506; ' + points.length + ' puntos mapeados (' + colLat + ' / ' + lonColName + ')';
   outputEl.appendChild(infoDiv);
   
   // Boton expandir
