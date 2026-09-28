@@ -24,6 +24,7 @@
 #include "rj2xcl.h"
 #include "basic_functions.h"
 #include "rj2xcl_version.h"
+#include "rj2xcl_graphics.h"
 #include "type_conversions.h"
 #include "string_utilities.h"
 #include "SandboxVerifier.h"
@@ -2026,6 +2027,347 @@ NevenX_P(LPXLOPER12 proceso,
     return RJ_Call_Generic(2, &g_nevenx_disp_P,
         proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }
+
+// =============================================================================
+// NEVEN.Chart.R/P/J -- Graficos embebidos en Excel como Shapes
+// Lee un rango de datos, genera codigo R/Python/Julia, ejecuta el grafico,
+// y crea/actualiza un Shape en Excel con la imagen resultante.
+// =============================================================================
+
+/**
+ * @brief Helper: Extrae datos de un rango XLOPER12 y construye vectores R.
+ * @param data_range Rango con datos (fila 1 = headers)
+ * @param headers Vector de nombres de columnas (output)
+ * @param columns Vector de strings con datos R para cada columna (output)
+ * @return true si exito, false si error
+ */
+static bool ExtractRangeForChart(LPXLOPER12 data_range,
+    std::vector<std::string>& headers,
+    std::vector<std::vector<std::string>>& columns) {
+    
+    if (!data_range || (data_range->xltype & ~(xlbitXLFree | xlbitDLLFree)) != xltypeMulti) {
+        return false;
+    }
+    
+    int rows = data_range->val.array.rows;
+    int cols = data_range->val.array.columns;
+    LPXLOPER12 cells = data_range->val.array.lparray;
+    
+    if (rows < 2 || cols < 1) return false;  // Need at least headers + 1 row
+    
+    // Extract headers (row 0)
+    headers.resize(cols);
+    for (int c = 0; c < cols; c++) {
+        LPXLOPER12 cell = &cells[c];
+        if (cell->xltype == xltypeStr) {
+            headers[c] = Convert::XLOPERToString(cell);
+        } else {
+            headers[c] = "Col" + std::to_string(c + 1);
+        }
+    }
+    
+    // Extract data (rows 1+)
+    columns.resize(cols);
+    for (int c = 0; c < cols; c++) {
+        columns[c].resize(rows - 1);
+        for (int r = 1; r < rows; r++) {
+            LPXLOPER12 cell = &cells[r * cols + c];
+            switch (cell->xltype & ~(xlbitXLFree | xlbitDLLFree)) {
+                case xltypeNum:
+                    columns[c][r - 1] = std::to_string(cell->val.num);
+                    break;
+                case xltypeInt:
+                    columns[c][r - 1] = std::to_string(cell->val.w);
+                    break;
+                case xltypeStr: {
+                    std::string s = Convert::XLOPERToString(cell);
+                    // Escape quotes for R/Python/Julia
+                    std::string escaped;
+                    for (char ch : s) {
+                        if (ch == '"') escaped += "\\\"";
+                        else if (ch == '\\') escaped += "\\\\";
+                        else escaped += ch;
+                    }
+                    columns[c][r - 1] = "\"" + escaped + "\"";
+                    break;
+                }
+                case xltypeBool:
+                    columns[c][r - 1] = cell->val.xbool ? "TRUE" : "FALSE";
+                    break;
+                default:
+                    columns[c][r - 1] = "NA";
+                    break;
+            }
+        }
+    }
+    
+    return true;
+}
+
+/**
+ * @brief Helper generico para NEVEN.Chart.*
+ * @param language_key 0=R, 1=Julia, 2=Python
+ * @param data_range Rango con datos
+ * @param chart_type Tipo de grafico (1-7)
+ * @param chart_name Nombre del Shape (opcional)
+ * @param width Ancho en pixeles (opcional, default 400)
+ * @param height Alto en pixeles (opcional, default 300)
+ */
+static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
+    LPXLOPER12 data_range, LPXLOPER12 chart_type,
+    LPXLOPER12 chart_name, LPXLOPER12 width, LPXLOPER12 height) {
+    
+    thread_local XLOPER12 rslt;
+    
+    // 1. Validate chart_type
+    int type = 1;
+    if (chart_type && chart_type->xltype == xltypeNum) {
+        type = (int)chart_type->val.num;
+    } else if (chart_type && chart_type->xltype == xltypeInt) {
+        type = chart_type->val.w;
+    }
+    if (type < 1 || type > 7) {
+        Convert::StringToXLOPER(&rslt, "Error: tipo debe ser 1-7 (1=barras, 2=lineas, 3=scatter, 4=area, 5=pastel, 6=histograma, 7=boxplot)", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    
+    // 2. Get chart name (auto-generate if not provided)
+    std::string name = "Chart";
+    if (chart_name && chart_name->xltype == xltypeStr) {
+        name = Convert::XLOPERToString(chart_name);
+    }
+    if (name.empty()) {
+        // Generate unique name based on calling cell address
+        static int chart_counter = 0;
+        name = "Chart_" + std::to_string(++chart_counter);
+    }
+    
+    // 3. Get dimensions
+    int w = 400, h = 300;
+    if (width && width->xltype == xltypeNum) w = (int)width->val.num;
+    else if (width && width->xltype == xltypeInt) w = width->val.w;
+    if (height && height->xltype == xltypeNum) h = (int)height->val.num;
+    else if (height && height->xltype == xltypeInt) h = height->val.w;
+    if (w < 100) w = 100;
+    if (h < 100) h = 100;
+    if (w > 2000) w = 2000;
+    if (h > 2000) h = 2000;
+    
+    // 4. Extract data from range
+    std::vector<std::string> headers;
+    std::vector<std::vector<std::string>> columns;
+    if (!ExtractRangeForChart(data_range, headers, columns)) {
+        Convert::StringToXLOPER(&rslt, "Error: rango invalido - debe tener headers en fila 1 y al menos 1 fila de datos", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    
+    // 5. Build code based on language and chart type
+    std::string code;
+    std::string temp_file = "C:\\NEVEN\\temp\\chart_" + name + ".png";
+    
+    const char* chart_types_r[] = {"bar", "line", "scatter", "area", "pie", "histogram", "boxplot"};
+    
+    if (language_key == 0) {  // R
+        // Build R code using ggplot2
+        code = "library(ggplot2)\n";
+        code += "library(tidyr)\n";
+        
+        // Create data.frame
+        code += "data <- data.frame(\n";
+        for (size_t c = 0; c < columns.size(); c++) {
+            code += "  `" + headers[c] + "` = c(";
+            for (size_t r = 0; r < columns[c].size(); r++) {
+                if (r > 0) code += ", ";
+                code += columns[c][r];
+            }
+            code += ")";
+            if (c < columns.size() - 1) code += ",";
+            code += "\n";
+        }
+        code += ")\n";
+        
+        // Generate plot based on type
+        std::string x_col = headers[0];
+        std::string y_col = headers.size() > 1 ? headers[1] : headers[0];
+        
+        switch (type) {
+            case 1:  // Bar
+                code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`)) +\n";
+                code += "  geom_bar(stat='identity', fill='steelblue') +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 2:  // Line
+                code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`, group=1)) +\n";
+                code += "  geom_line(color='steelblue', linewidth=1.2) +\n";
+                code += "  geom_point(color='steelblue', size=3) +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 3:  // Scatter
+                code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`)) +\n";
+                code += "  geom_point(color='steelblue', size=3) +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 4:  // Area
+                code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`)) +\n";
+                code += "  geom_area(fill='steelblue', alpha=0.6) +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 5:  // Pie
+                code += "p <- ggplot(data, aes(x='', y=`" + y_col + "`, fill=`" + x_col + "`)) +\n";
+                code += "  geom_bar(stat='identity', width=1) +\n";
+                code += "  coord_polar('y') +\n";
+                code += "  theme_void()\n";
+                break;
+            case 6:  // Histogram
+                code += "p <- ggplot(data, aes(x=`" + (headers.size() > 1 ? y_col : x_col) + "`)) +\n";
+                code += "  geom_histogram(fill='steelblue', color='white', bins=20) +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 7:  // BoxPlot
+                if (headers.size() > 1) {
+                    code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`)) +\n";
+                } else {
+                    code += "p <- ggplot(data, aes(y=`" + x_col + "`)) +\n";
+                }
+                code += "  geom_boxplot(fill='steelblue') +\n";
+                code += "  theme_minimal()\n";
+                break;
+        }
+        
+        code += "ggsave('" + temp_file + "', p, width=" + std::to_string(w) + "/96, height=" + std::to_string(h) + "/96, dpi=96)\n";
+        code += "'" + temp_file + "'";
+        
+    } else if (language_key == 2) {  // Python
+        // Build Python code using matplotlib
+        code = "import matplotlib.pyplot as plt\n";
+        code += "import numpy as np\n";
+        
+        // Create lists
+        for (size_t c = 0; c < columns.size(); c++) {
+            code += headers[c] + " = [";
+            for (size_t r = 0; r < columns[c].size(); r++) {
+                if (r > 0) code += ", ";
+                code += columns[c][r];
+            }
+            code += "]\n";
+        }
+        
+        code += "fig, ax = plt.subplots(figsize=(" + std::to_string(w/96.0) + ", " + std::to_string(h/96.0) + "))\n";
+        
+        std::string x_col = headers[0];
+        std::string y_col = headers.size() > 1 ? headers[1] : headers[0];
+        
+        switch (type) {
+            case 1: code += "ax.bar(" + x_col + ", " + y_col + ", color='steelblue')\n"; break;
+            case 2: code += "ax.plot(" + x_col + ", " + y_col + ", color='steelblue', marker='o')\n"; break;
+            case 3: code += "ax.scatter(" + x_col + ", " + y_col + ", color='steelblue')\n"; break;
+            case 4: code += "ax.fill_between(range(len(" + y_col + ")), " + y_col + ", color='steelblue', alpha=0.6)\n"; break;
+            case 5: code += "ax.pie(" + y_col + ", labels=" + x_col + ")\n"; break;
+            case 6: code += "ax.hist(" + y_col + ", bins=20, color='steelblue')\n"; break;
+            case 7: code += "ax.boxplot([" + y_col + "])\n"; break;
+        }
+        
+        code += "plt.tight_layout()\n";
+        code += "plt.savefig('" + temp_file + "', dpi=96)\n";
+        code += "plt.close()\n";
+        code += "print('" + temp_file + "')";
+        
+    } else {  // Julia
+        // Build Julia code using Plots.jl
+        code = "using Plots\n";
+        
+        // Create vectors
+        for (size_t c = 0; c < columns.size(); c++) {
+            code += headers[c] + " = [";
+            for (size_t r = 0; r < columns[c].size(); r++) {
+                if (r > 0) code += ", ";
+                code += columns[c][r];
+            }
+            code += "]\n";
+        }
+        
+        std::string x_col = headers[0];
+        std::string y_col = headers.size() > 1 ? headers[1] : headers[0];
+        
+        switch (type) {
+            case 1: code += "p = bar(" + x_col + ", " + y_col + ", legend=false)\n"; break;
+            case 2: code += "p = plot(" + x_col + ", " + y_col + ", legend=false, marker=:circle)\n"; break;
+            case 3: code += "p = scatter(" + x_col + ", " + y_col + ", legend=false)\n"; break;
+            case 4: code += "p = areaplot(" + x_col + ", " + y_col + ", legend=false)\n"; break;
+            case 5: code += "p = pie(" + y_col + ", " + x_col + ")\n"; break;
+            case 6: code += "p = histogram(" + y_col + ", legend=false)\n"; break;
+            case 7: code += "p = boxplot(" + y_col + ", legend=false)\n"; break;
+        }
+        
+        code += "savefig(p, \"" + temp_file + "\")\n";
+        code += "\"" + temp_file + "\"";
+    }
+    
+    // 6. Execute code via language service
+    RJ2XCLBuffers::CallResponse call, response;
+    call.set_wait(true);
+    auto message = call.mutable_code();
+    
+    std::vector<std::string> lines;
+    StringUtilities::Split(code, '\n', 0, lines, true);
+    for (const auto& line : lines) {
+        message->add_line(line);
+    }
+    
+    RJ2XCL_Engine::Instance()->CallLanguage(language_key, response, call);
+    
+    if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kErr) {
+        std::string err = "Error: " + response.err();
+        Convert::StringToXLOPER(&rslt, err, false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    
+    // 7. Verify the image file was created
+    DWORD attrs = GetFileAttributesA(temp_file.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        Convert::StringToXLOPER(&rslt, "Error: no se genero el archivo de imagen", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    
+    // 8. Create or update Shape in Excel using RJ2XCLGraphics
+    RJ2XCLBuffers::GraphicsUpdate graphics;
+    graphics.set_name(name);
+    graphics.set_path(temp_file);
+    graphics.set_width(w);
+    graphics.set_height(h);
+    
+    LPDISPATCH app_dispatch = RJ2XCL_Engine::Instance()->application_dispatch();
+    RJ2XCLGraphics::UpdateGraphics(graphics, app_dispatch);
+    
+    // 9. Return success message
+    std::string result = "Chart: " + name;
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+RJ_Chart_R(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+           LPXLOPER12 width, LPXLOPER12 height) {
+    return RJ_Chart_Generic(0, data_range, chart_type, chart_name, width, height);
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+RJ_Chart_P(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+           LPXLOPER12 width, LPXLOPER12 height) {
+    return RJ_Chart_Generic(2, data_range, chart_type, chart_name, width, height);
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+RJ_Chart_J(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+           LPXLOPER12 width, LPXLOPER12 height) {
+    return RJ_Chart_Generic(1, data_range, chart_type, chart_name, width, height);
+}
+
 BCALL(1000);
 BCALL(1001);
 BCALL(1002);

@@ -100,6 +100,12 @@ static LPWSTR funcTemplates[][16] = {
   { L"NevenX_R", L"UQQQQQQQQQQQQQQQQQ", L"NevenX.R", L"Proceso,A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15", L"1", L"NEVEN", L"", L"", L"Ejecuta un proceso R del catalogo NEVEN", L"Nombre del proceso (ej: MR_Lineal, MR_2SLS)", L"DatosY", L"DatosX", L"Datos3 (ej: instrumentos)", L"Datos4 (opcional)", L"Datos5 (opcional)", L"" },
   { L"NevenX_J", L"UQQQQQQQQQQQQQQQQQ", L"NevenX.J", L"Proceso,A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15", L"1", L"NEVEN", L"", L"", L"Ejecuta un proceso Julia del catalogo NEVEN", L"Nombre del proceso (ej: J_AD_Descriptiva)", L"DatosY", L"DatosX", L"Datos3 (opcional)", L"Datos4 (opcional)", L"Datos5 (opcional)", L"" },
   { L"NevenX_P", L"UQQQQQQQQQQQQQQQQQ", L"NevenX.P", L"Proceso,A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15", L"1", L"NEVEN", L"", L"", L"Ejecuta un proceso Python del catalogo NEVEN", L"Nombre del proceso (ej: TM_TextAnalysis)", L"DatosY", L"DatosX", L"Datos3 (opcional)", L"Datos4 (opcional)", L"Datos5 (opcional)", L"" },
+
+  // NEVEN.Chart -- Graficos embebidos en Excel como Shapes (desde rangos de datos)
+  { L"RJ_Chart_R", L"UQQQQQ", L"NEVEN.Chart.R", L"Datos, Tipo, Nombre, Ancho, Alto", L"1", L"NEVEN", L"", L"", L"Crear grafico embebido con R/ggplot2", L"Rango con datos (fila 1 = headers)", L"Tipo: 1=Barras 2=Lineas 3=Scatter 4=Area 5=Pastel 6=Histograma 7=BoxPlot", L"Nombre del grafico (opcional)", L"Ancho en pixeles (def: 400)", L"Alto en pixeles (def: 300)", L"" },
+  { L"RJ_Chart_P", L"UQQQQQ", L"NEVEN.Chart.P", L"Datos, Tipo, Nombre, Ancho, Alto", L"1", L"NEVEN", L"", L"", L"Crear grafico embebido con Python/matplotlib", L"Rango con datos (fila 1 = headers)", L"Tipo: 1=Barras 2=Lineas 3=Scatter 4=Area 5=Pastel 6=Histograma 7=BoxPlot", L"Nombre del grafico (opcional)", L"Ancho en pixeles (def: 400)", L"Alto en pixeles (def: 300)", L"" },
+  { L"RJ_Chart_J", L"UQQQQQ", L"NEVEN.Chart.J", L"Datos, Tipo, Nombre, Ancho, Alto", L"1", L"NEVEN", L"", L"", L"Crear grafico embebido con Julia/Plots.jl", L"Rango con datos (fila 1 = headers)", L"Tipo: 1=Barras 2=Lineas 3=Scatter 4=Area 5=Pastel 6=Histograma 7=BoxPlot", L"Nombre del grafico (opcional)", L"Ancho en pixeles (def: 400)", L"Alto en pixeles (def: 300)", L"" },
+
 	{ 0 }
 };
 
@@ -125,6 +131,17 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NevenX_P(LPXLOPER12 p,
   LPXLOPER12 a4=0,LPXLOPER12 a5=0,LPXLOPER12 a6=0,LPXLOPER12 a7=0,
   LPXLOPER12 a8=0,LPXLOPER12 a9=0,LPXLOPER12 a10=0,LPXLOPER12 a11=0,
   LPXLOPER12 a12=0,LPXLOPER12 a13=0,LPXLOPER12 a14=0,LPXLOPER12 a15=0);
+
+// NEVEN.Chart -- Graficos embebidos en Excel como Shapes
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Chart_R(
+  LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+  LPXLOPER12 width, LPXLOPER12 height);
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Chart_P(
+  LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+  LPXLOPER12 width, LPXLOPER12 height);
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Chart_J(
+  LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+  LPXLOPER12 width, LPXLOPER12 height);
 
 
 #define BCALL(num) \
