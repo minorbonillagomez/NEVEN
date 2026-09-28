@@ -2165,7 +2165,7 @@ static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
     
     // 5. Build code based on language and chart type
     std::string code;
-    std::string temp_file = "C:\\NEVEN\\temp\\chart_" + name + ".png";
+    std::string temp_file = "C:/NEVEN/temp/chart_" + name + ".png";
     
     const char* chart_types_r[] = {"bar", "line", "scatter", "area", "pie", "histogram", "boxplot"};
     
@@ -2340,7 +2340,7 @@ static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
     graphics.set_width(w);
     graphics.set_height(h);
     
-    LPDISPATCH app_dispatch = RJ2XCL_Engine::Instance()->application_dispatch();
+    LPDISPATCH app_dispatch = RJ2XCL_Engine::Instance()->GetApplicationDispatch();
     RJ2XCLGraphics::UpdateGraphics(graphics, app_dispatch);
     
     // 9. Return success message
