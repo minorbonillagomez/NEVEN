@@ -193,6 +193,113 @@
     a10=NULL, a11=NULL, a12=NULL, a13=NULL, a14=NULL) {
 
   proceso <- trimws(as.character(proceso))
+  
+
+  # ===========================================================================
+  # ALIAS DE FUNCIONES -- Nombres cortos para mejor UX
+  # ===========================================================================
+  # Con NEVEN.R(), NEVEN.P(), NEVEN.J() los prefijos AD_, RG_, GR_ son redundantes.
+  # Esta tabla permite usar nombres cortos manteniendo compatibilidad hacia atras.
+  # Ejemplo: =NEVEN.R("ACP", ...) equivale a =NEVEN.R("AD_ACP.C", ...)
+  # ---------------------------------------------------------------------------
+  .neven_aliases <- list(
+    # --- Analisis de Datos (AD_) ---
+    "ACP"           = "AD_ACP.C",
+    "PCA"           = "AD_ACP.C",
+    "KMeans"        = "AD_KMedias.C",
+    "KMedias"       = "AD_KMedias.C",
+    "Clustering"    = "AD_ClusteringJerarquico.C",
+    "HClust"        = "AD_ClusteringJerarquico.C",
+    "Correlacion"   = "AD_Correlacion.C",
+    "Cor"           = "AD_Correlacion.C",
+    "Arbol"         = "AD_ArbolDeDecision.C",
+    "DecisionTree"  = "AD_ArbolDeDecision.C",
+    "CART"          = "AD_ArbolDeDecision.C",
+    
+    # --- Regresion (MR_) ---
+    "Lineal"        = "MR_Lineal",
+    "LM"            = "MR_Lineal",
+    "OLS"           = "MR_Lineal",
+    "Logistica"     = "MR_Binario.C",
+    "Logit"         = "MR_Binario.C",
+    "Binario"       = "MR_Binario.C",
+    "Poisson"       = "MR_Poisson.C",
+    "Tobit"         = "MR_Tobit.C",
+    "IV"            = "MR_2SLS",
+    "2SLS"          = "MR_2SLS",
+    "Instrumentales" = "MR_2SLS",
+    "Panel"         = "MR_PanelData.C",
+    "PanelData"     = "MR_PanelData.C",
+    "NeweyWest"     = "MR_Newey_West",
+    "HAC"           = "MR_Newey_West",
+    "FGLS"          = "MR_FGLS",
+    "GLS"           = "MR_FGLS",
+    "Heckit"        = "MR_HECKIT",
+    "Heckman"       = "MR_HECKIT",
+    "SVM"           = "MR_SVM",
+    "SupportVector" = "MR_SVM",
+    "RESET"         = "MR_RESET",
+    "Davidson"      = "MR_Davidson_MacKinnon",
+    "MacKinnon"     = "MR_Davidson_MacKinnon",
+    
+    # --- Series de Tiempo (ST_) ---
+    "AR"            = "ST_AutoRegresivos",
+    "AutoRegresivo" = "ST_AutoRegresivos",
+    "ARIMA"         = "ST_AutoRegresivos",
+    "SeriesTiempo"  = "ST_AutoRegresivos",
+    "ECM"           = "ST_ECM",
+    "Cointegracion" = "ST_ECM",
+    "ErrorCorrection" = "ST_ECM",
+    "VAR"           = "ST_VAR",
+    "VectorAR"      = "ST_VAR",
+    
+    # --- Text Mining (TM_) ---
+    "TextMining"    = "TM_TextMining",
+    "NLP"           = "TM_TextMining",
+    "Texto"         = "TM_TextMining",
+    
+    # --- Graficos (GR_) ---
+    "Histograma"    = "GR_Histograma.C",
+    "Hist"          = "GR_Histograma.C",
+    "BoxPlot"       = "GR_BoxPlot.C",
+    "Box"           = "GR_BoxPlot.C",
+    "Scatter"       = "GR_Scatter.C",
+    "Dispersion"    = "GR_Scatter.C",
+    "Correlaciones" = "GR_Correlaciones.C",
+    "CorrPlot"      = "GR_Correlaciones.C"
+  )
+  
+  # Resolver alias (case-insensitive para mayor flexibilidad)
+  proceso_lower <- tolower(proceso)
+  alias_names_lower <- tolower(names(.neven_aliases))
+  alias_match <- match(proceso_lower, alias_names_lower)
+  if (!is.na(alias_match)) {
+    proceso <- .neven_aliases[[alias_match]]
+  }
+  
+  # DEBUG TEMPORAL: Si proceso es "DEBUG", retornar info de argumentos
+  if (proceso == "DEBUG") {
+    return(data.frame(
+      arg = c("a0", "a1", "a2", "a3", "a4"),
+      class = c(
+        paste(class(a0), collapse=","),
+        paste(class(a1), collapse=","),
+        paste(class(a2), collapse=","),
+        paste(class(a3), collapse=","),
+        paste(class(a4), collapse=",")
+      ),
+      is_null = c(is.null(a0), is.null(a1), is.null(a2), is.null(a3), is.null(a4)),
+      value = c(
+        if(is.null(a0)) "NULL" else if(is.data.frame(a0)) paste0("df[",nrow(a0),",",ncol(a0),"]") else as.character(a0[1]),
+        if(is.null(a1)) "NULL" else if(is.data.frame(a1)) paste0("df[",nrow(a1),",",ncol(a1),"]") else as.character(a1[1]),
+        if(is.null(a2)) "NULL" else if(is.data.frame(a2)) paste0("df[",nrow(a2),",",ncol(a2),"]") else as.character(a2[1]),
+        if(is.null(a3)) "NULL" else if(is.data.frame(a3)) paste0("df[",nrow(a3),",",ncol(a3),"]") else as.character(a3[1]),
+        if(is.null(a4)) "NULL" else if(is.data.frame(a4)) paste0("df[",nrow(a4),",",ncol(a4),"]") else as.character(a4[1])
+      ),
+      stringsAsFactors = FALSE
+    ))
+  }
+  
   if (nchar(proceso) == 0) {
     return(data.frame(R4XCL_Error = "NevenX: nombre del proceso vacio."))
   }

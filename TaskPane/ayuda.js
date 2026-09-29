@@ -123,6 +123,8 @@ function _ayudaRenderCatalogo(data, filtro) {
           '<span class="ayuda-funcion-icon">' + langIcon + '</span>' +
           '<span class="ayuda-funcion-nombre">' + fn.name + '</span>' +
           '<code class="ayuda-funcion-xll">' + fn.function_name_xll + '</code>' +
+          (fn.aliases && fn.aliases.length > 0 ? 
+            '<span class="ayuda-funcion-aliases" title="Nombres cortos disponibles">→ ' + fn.aliases.join(', ') + '</span>' : '') +
         '</div>' +
         '<div class="ayuda-funcion-desc">' + _truncate(fn.description, 100) + '</div>';
       
@@ -154,6 +156,18 @@ function _ayudaMostrarDetalle(fnId) {
   document.getElementById('ayuda-detalle-familia').textContent = fn._familiaLabel + ' (' + fn._familia + ')';
   document.getElementById('ayuda-detalle-desc').textContent = fn.description || '';
   
+  // Mostrar aliases si existen
+  var aliasesDiv = document.getElementById('ayuda-detalle-aliases');
+  if (aliasesDiv) {
+    if (fn.aliases && fn.aliases.length > 0) {
+      aliasesDiv.innerHTML = '<strong>Nombres cortos:</strong> ' + 
+        fn.aliases.map(function(a) { return '<code>' + a + '</code>'; }).join(', ');
+      aliasesDiv.style.display = 'block';
+    } else {
+      aliasesDiv.style.display = 'none';
+    }
+  }
+  
   var sintaxis = _ayudaBuildSintaxis(fn);
   document.getElementById('ayuda-detalle-sintaxis').textContent = sintaxis;
   
@@ -184,6 +198,9 @@ function _ayudaBuildSintaxis(fn) {
   var xll = fn.function_name_xll;
   var params = fn.nevenx_positions || {};
   
+  // Usar el primer alias si existe, sino el nombre completo
+  var functionName = (fn.aliases && fn.aliases.length > 0) ? fn.aliases[0] : xll;
+  
   var positions = Object.keys(params).sort(function(a, b) {
     return parseInt(a.replace('a', ''), 10) - parseInt(b.replace('a', ''), 10);
   });
@@ -201,7 +218,7 @@ function _ayudaBuildSintaxis(fn) {
     else if (lang === 'julia') motor = 'J';
   }
   
-  return '=NEVEN.' + motor + '("' + xll + '", ' + paramList.join(', ') + ', TipoOutput)';
+  return '=NEVEN.' + motor + '("' + functionName + '", ' + paramList.join(', ') + ', TipoOutput)';
 }
 
 function _ayudaRenderParams(params) {
