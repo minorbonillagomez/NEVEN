@@ -29,7 +29,7 @@ Invoke-ps2exe -inputFile (Join-Path $scriptDir "Install-NEVEN.ps1") `
               -description "NEVEN - R, Julia and Python to Excel" `
               -company "Universidad de Costa Rica" `
               -product "NEVEN" `
-              -version "2.0.0.0" `
+              -version "3.2.0.0" `
               -copyright "2026 Minor Bonilla Gomez - GPL v3" `
               -requireAdmin `
               -noConsole:$false
@@ -42,7 +42,7 @@ Invoke-ps2exe -inputFile (Join-Path $scriptDir "Uninstall-NEVEN.ps1") `
               -description "NEVEN Uninstaller" `
               -company "Universidad de Costa Rica" `
               -product "NEVEN" `
-              -version "2.0.0.0" `
+              -version "3.2.0.0" `
               -copyright "2026 Minor Bonilla Gomez - GPL v3" `
               -noConsole:$false
 

@@ -958,7 +958,7 @@ function New-QuartoJunction {
 }
 
 # ============================================================
-#  Phase 4b: Task Pane Deployment (NEVEN v3.0)
+#  Phase 4b: Task Pane Deployment (NEVEN v3.2)
 # ============================================================
 
 function Install-TaskPane {
@@ -1966,7 +1966,7 @@ function Update-NEVENConfig {
 
 Write-Host ''
 Write-Host '  ============================================' -ForegroundColor Cyan
-Write-Host '   NEVEN Installer' -ForegroundColor Cyan
+Write-Host '   NEVEN Installer v3.2' -ForegroundColor Cyan
 Write-Host '   R, Julia & Python to Excel' -ForegroundColor Cyan
 Write-Host '  ============================================' -ForegroundColor Cyan
 Write-Host ''
@@ -2101,7 +2101,7 @@ New-QuartoJunction
 
 # --- Phase 4b: Task Pane Deployment ---
 Write-Host ''
-Write-Host '  Phase 4b: Deploying Task Pane (NEVEN Studio v3.0)...' -ForegroundColor White
+Write-Host '  Phase 4b: Deploying Task Pane (NEVEN Studio v3.2)...' -ForegroundColor White
 Install-TaskPane -TargetDir $choices.InstallDir -SourceDir $DistDir
 Register-TaskPaneManifest -TargetDir $choices.InstallDir
 

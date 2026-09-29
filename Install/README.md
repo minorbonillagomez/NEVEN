@@ -1,79 +1,131 @@
-# Install Directory — RJ2XCL
+# NEVEN Installer — Directorio de Instalación
 
-This directory contains everything needed to build and distribute the RJ2XCL installer.
+Este directorio contiene todo lo necesario para construir y distribuir el instalador de NEVEN v3.2.
 
-## Contents
+## Contenido
 
-| File/Directory | Description |
-|---------------|-------------|
-| `InstaladorRJ2XCL.cs` | C# WinForms installer source (single-file, self-contained) |
-| `Desinstalador.cs` | C# uninstaller source |
-| `RJ2XCL_Setup.exe` | Compiled installer executable |
-| `RJ2XCL_Payload.zip` | Packaged payload (DLLs, configs, docs, examples) |
-| `build-installer.ps1` | Script to compile the C# installer with CSC |
-| `crear_instalador.ps1` | Script to create the full payload + installer package |
-| `install-script.nsi` | NSIS installer script (alternative to C# installer) |
-| `rj2xcl-config.json` | Default configuration template |
-| `rj2xcl-languages.json` | Default language paths template |
-| `rj2xcl.ico` | Application icon |
-| `rj2xcl_logo.png` | Application logo |
-| `license.txt` | GPL v3 full text |
-| `_staging/` | Staging directory used during payload creation |
-| `test_payload/` | Test payload for installer validation |
-| `verify_payload/` | Payload verification scripts |
+| Archivo/Directorio | Descripción |
+|-------------------|-------------|
+| `Install-NEVEN.ps1` | Script principal de instalación (PowerShell) |
+| `Install-NEVEN.exe` | Instalador ejecutable (generado con ps2exe) |
+| `Install-NEVEN.cmd` | Wrapper para ejecutar el instalador |
+| `Uninstall-NEVEN.ps1` | Script de desinstalación |
+| `Uninstall-NEVEN.exe` | Desinstalador ejecutable |
+| `Uninstall-NEVEN.cmd` | Wrapper para el desinstalador |
+| `Build-Installers.ps1` | Genera los .exe a partir de los .ps1 |
+| `Dist/` | Artefactos compilados para distribución |
+| `neven-config.json` | Plantilla de configuración por defecto |
+| `neven-languages.json` | Plantilla de rutas de lenguajes |
+| `packages-manifest.json` | Manifiesto de paquetes R/Julia/Python |
+| `functions/` | Sidecars JSON de funciones |
+| `prompts/` | Plantillas de prompts para IA |
+| `license.txt` | Licencia GPL v3 |
 
-## How to Build the Installer
+## Cómo Construir el Instalador
 
-### Prerequisites
-- .NET Framework SDK (csc.exe) — included with Visual Studio
-- The main project must be compiled first: `.\build.ps1 -Package`
-- (Optional) The Ribbon DLL: `.\scripts\build-ribbon.ps1`
+### Prerrequisitos
+- Windows 10/11 64-bit
+- PowerShell 5.1+
+- Visual Studio 2022 (para compilar los binarios)
+- ps2exe (se instala automáticamente)
 
-### Step 1: Build the project
+### Paso 1: Compilar el proyecto principal
 ```powershell
-# From the repository root
-.\build.ps1 -Clean -Test -Package
-.\scripts\build-ribbon.ps1
+# Desde la raíz del repositorio NEVEN/
+cmake --build build --config Release
 ```
 
-### Step 2: Create the payload
+### Paso 2: Crear el directorio Dist
+El directorio `Dist/` debe contener:
+- Binarios: `NEVEN64.xll`, `ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe`, `NEVENRibbon.dll`
+- Configs: `neven-config.json`, `neven-languages.json`
+- Carpetas: `startup/`, `taskpane/`, `examples/`, `docs/`, `functions/`, `libreria/`, `prompts/`
+
+### Paso 3: Generar los ejecutables
 ```powershell
-# This creates RJ2XCL_Payload.zip with all necessary files
-.\Install\crear_instalador.ps1
+cd Install
+.\Build-Installers.ps1
 ```
 
-### Step 3: Compile the installer
-```powershell
-.\Install\build-installer.ps1
+Esto genera `Install-NEVEN.exe` y `Uninstall-NEVEN.exe`.
+
+## Contenido de Dist/
+
+```
+Dist/
+├── NEVEN64.xll              # Add-in XLL principal
+├── ControlR.exe             # Motor R embebido
+├── ControlJulia.exe         # Motor Julia embebido
+├── ControlPython.exe        # Motor Python embebido
+├── NEVENRibbon.dll          # COM Add-in para Ribbon
+├── neven-config.json        # Configuración
+├── neven-languages.json     # Rutas de lenguajes
+├── packages-manifest.json   # Paquetes requeridos
+├── NEVEN Studio.vbs         # Launcher del Studio
+├── NEVEN_studio.ico         # Icono
+├── startup/                 # Scripts de inicio
+│   ├── startup.r
+│   ├── startup.jl
+│   ├── startup.py
+│   └── neven_http_server.py
+├── taskpane/                # NEVEN Studio (TaskPane)
+│   ├── taskpane.html
+│   ├── taskpane.js
+│   ├── taskpane.css
+│   ├── datalab.js
+│   ├── manifest.xml
+│   ├── start_studio.py
+│   └── presentaciones/
+├── docs/                    # Documentación
+│   └── neven-docs.html
+├── examples/                # Ejemplos por lenguaje
+├── functions/               # Sidecars JSON
+├── libreria/                # Funciones R/Julia/Python
+│   ├── R/
+│   ├── JULIA/
+│   └── PYTHON/
+├── prompts/                 # Templates IA
+└── notebooks/               # Notebooks Pluto
 ```
 
-The output is `Install/RJ2XCL_Setup.exe`.
+## Publicar una Release
 
-## What the Payload Contains
-
-The `RJ2XCL_Payload.zip` is a self-contained archive with:
-- `RJ2XCL.dll` — Core engine
-- `RJ2XCL64.xll` — Excel add-in entry point
-- `RJ2XCLRibbon2x64.dll` — Excel Ribbon COM component
-- `rj2xcl-config.json` — Default configuration
-- `rj2xcl-languages.json` — Language paths configuration
-- `rj2xcl_logo.png` — Application logo
-- `docs/` — User documentation
-- `examples/` — Sample R and Julia scripts
-- `console/` — Electron-based interactive console
-- `Desinstalar.exe` — Uninstaller
-
-## Publishing a Release
-
-1. Ensure all tests pass: `.\build.ps1 -Clean -Test`
-2. Update version number in:
+1. Verificar que el proyecto compila: `cmake --build build --config Release`
+2. Actualizar versión en:
    - `CMakeLists.txt` (project VERSION)
-   - `RJ2XCL/include/rj2xcl_version.h`
-   - `Install/InstaladorRJ2XCL.cs` (VERSION constant)
-3. Build the installer: `.\Install\crear_instalador.ps1`
-4. Test the installer on a clean Windows machine
-5. Create a GitHub Release with the `RJ2XCL_Setup.exe`
-6. Tag the commit: `git tag v2.0.0`
+   - `Install/Build-Installers.ps1` (-version parameter)
+   - `Install/Install-NEVEN.ps1` (banner)
+3. Crear/actualizar `Dist/` con los artefactos
+4. Generar ejecutables: `.\Build-Installers.ps1`
+5. Probar el instalador en una máquina limpia
+6. Crear ZIP de distribución
+
+## Uso del Instalador
+
+### Instalación interactiva
+```powershell
+.\Install-NEVEN.exe
+```
+
+### Instalación silenciosa
+```powershell
+.\Install-NEVEN.exe -Silent
+```
+
+### Instalación en directorio personalizado
+```powershell
+.\Install-NEVEN.ps1 -InstallDir "D:\MiNEVEN"
+```
+
+## Qué hace el Instalador
+
+1. **Pre-flight checks**: Verifica Windows 64-bit, PowerShell 5.1+, detecta R/Julia/Python
+2. **User choices**: Confirma directorio de instalación (default: C:\NEVEN)
+3. **File deployment**: Copia binarios, configs, scripts, ejemplos
+4. **Registration**: Registra XLL en Excel, registra Ribbon COM, configura TaskPane
+5. **User setup**: Crea directorios de usuario, accesos directos opcionales
+6. **Verification**: Genera desinstalador personalizado, muestra resumen
 
 ---
-*Directory documentation v1.0.0*
+*NEVEN v3.2 — Universidad de Costa Rica — Minor Bonilla Gómez*
+*Setiembre 2026*
