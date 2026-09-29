@@ -848,6 +848,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
         elif path == 'api/show-taskpane':
             # Signal from Ribbon to show TaskPane (client polls this via GET)
             self._handle_show_taskpane()
+        elif path == 'api/shutdown':
+            # Graceful shutdown requested from Ribbon "Detener Servidor" button
+            self._handle_shutdown()
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
 
@@ -1246,6 +1249,32 @@ class NEVENHandler(BaseHTTPRequestHandler):
         with _show_taskpane_lock:
             _show_taskpane_signal = True
         self._send_json({"status": "ok", "message": "Signal sent"})
+
+    def _handle_shutdown(self):
+        """POST /api/shutdown — apagado limpio solicitado desde el Ribbon.
+
+        Responde inmediatamente y luego agenda el shutdown en un thread separado
+        para que la respuesta HTTP llegue al cliente antes de cerrar.
+        """
+        import threading
+
+        def _shutdown_server():
+            import time
+            time.sleep(0.3)  # Dar tiempo a que la respuesta HTTP se envíe
+            log("Shutdown solicitado desde Ribbon — cerrando servidor...")
+            # Cerrar el socket directamente sin bloquear
+            global _server_instance
+            if _server_instance:
+                try:
+                    _server_instance.server_close()  # Cierra socket sin bloquear
+                except:
+                    pass
+            time.sleep(0.1)
+            import os
+            os._exit(0)
+
+        self._send_json({"status": "ok", "message": "Shutdown initiated"})
+        threading.Thread(target=_shutdown_server, daemon=True).start()
 
     def _handle_ai_context(self, body: dict):
         """POST /api/ai/context — recibe contexto de Excel para el Tab IA.
