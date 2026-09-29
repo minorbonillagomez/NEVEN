@@ -26,11 +26,13 @@ NEVEN tiene DOS tipos de documentación para agentes:
 | 2 | `INVARIANTES.md` | Reglas técnicas que NUNCA deben violarse |
 | 3 | `COMO_AGREGAR_FUNCIONES.md` | Proceso para agregar nueva funcionalidad |
 | 4 | `ALIASES.md` | Sistema de nombres cortos y cómo extenderlo |
+| 5 | `EXPANDIR_ONTOLOGIA.md` | Proceso para agregar PDFs a las ontologías |
 
 ### Según el tipo de tarea:
 
 | Si la tarea involucra... | Consultar también |
 |--------------------------|-------------------|
+| Agregar libro/PDF a ontología | `EXPANDIR_ONTOLOGIA.md` + schema del dominio |
 | Arquitectura C++, pipes, COM | `ontologia/neven-core/neven-ontology-p1.yaml` |
 | Dispatcher R, sidecars, HTTP server | `ontologia/neven-core/neven-ontology-p2.yaml` |
 | Julia, TaskPane frontend | `ontologia/neven-core/neven-ontology-p3.yaml` |
