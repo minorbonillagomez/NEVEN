@@ -139,6 +139,22 @@
                   screentip="NEVEN Studio (Task Pane)"
                   supertip="Abre el panel interactivo con DuckDB, GROUP BY, SQL y visualizaciones embebidas." />
 
+          <button id="btnStartServer"
+                  label="Iniciar Servidor"
+                  size="normal"
+                  onAction="OnStartServerCommand"
+                  imageMso="ServerConnection"
+                  screentip="Iniciar servidor HTTP"
+                  supertip="Inicia el servidor HTTP en el puerto 5555 si no está corriendo. Útil cuando el TaskPane muestra error de conexión." />
+
+          <button id="btnStopServer"
+                  label="Detener Servidor"
+                  size="normal"
+                  onAction="OnStopServerCommand"
+                  imageMso="RecordStop"
+                  screentip="Detener servidor HTTP"
+                  supertip="Detiene el servidor HTTP que corre en el puerto 5555. Libera recursos si no va a usar NEVEN Studio." />
+
           <button id="btnPresentaciones"
                   label="Presentaciones"
                   size="large"

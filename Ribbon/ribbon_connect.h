@@ -291,6 +291,10 @@ typedef enum {
   GetEnablePythonPressed,
   GetEnablePythonLabel,
 
+  // NEVEN v3.2 Iniciar/Detener servidor HTTP
+  OnStartServerCommand,
+  OnStopServerCommand,
+
 } DispIds;
 
 // CConnect
@@ -412,6 +416,8 @@ public:
       else if (!wcscmp(rgszNames[0], L"OnEnablePythonCommand")) disp_id = DispIds::OnEnablePythonCommand;
       else if (!wcscmp(rgszNames[0], L"GetEnablePythonPressed"))disp_id = DispIds::GetEnablePythonPressed;
       else if (!wcscmp(rgszNames[0], L"GetEnablePythonLabel"))  disp_id = DispIds::GetEnablePythonLabel;
+      else if (!wcscmp(rgszNames[0], L"OnStartServerCommand"))  disp_id = DispIds::OnStartServerCommand;
+      else if (!wcscmp(rgszNames[0], L"OnStopServerCommand"))   disp_id = DispIds::OnStopServerCommand;
     }
 
     if (disp_id > 0)
@@ -1261,6 +1267,184 @@ public:
       bool val = ReadMotorEnabled("Python");
       CComVariant v(val ? "Python: ON" : "Python: OFF");
       v.Detach(pvarResult);
+      return S_OK;
+    }
+
+    case DispIds::OnStartServerCommand:
+    {
+      // Iniciar servidor HTTP de NEVEN Studio (puerto 5555)
+      // Step 1: Check if server is running (quick HTTP ping)
+      auto _studio_alive = []() -> bool {
+          HINTERNET hT = WinHttpOpen(L"NEVEN-Ribbon/3.0",
+                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                      WINHTTP_NO_PROXY_NAME,
+                                      WINHTTP_NO_PROXY_BYPASS, 0);
+          if (!hT) return false;
+          DWORD t = 300;
+          WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
+          WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
+          WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
+          bool alive = false;
+          HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
+          if (hC) {
+              HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
+                                                 nullptr, WINHTTP_NO_REFERER,
+                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+              if (hR) {
+                  alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                             nullptr, 0, 0, 0) &&
+                          WinHttpReceiveResponse(hR, nullptr);
+                  WinHttpCloseHandle(hR);
+              }
+              WinHttpCloseHandle(hC);
+          }
+          WinHttpCloseHandle(hT);
+          return alive;
+      };
+
+      // Si ya está corriendo, notificar al usuario
+      if (_studio_alive()) {
+          MessageBoxW(NULL,
+              L"El servidor HTTP ya esta en ejecucion.\n\n"
+              L"Puerto: 5555\n"
+              L"Estado: Activo",
+              L"NEVEN Studio - Servidor", MB_OK | MB_ICONINFORMATION);
+          return S_OK;
+      }
+
+      // Step 2: Start server
+      std::wstring python_exe = L"C:\\NEVEN\\python\\python.exe";
+      DWORD attrs = GetFileAttributesW(python_exe.c_str());
+      if (attrs == INVALID_FILE_ATTRIBUTES)
+          python_exe = L"python";
+
+      std::wstring cmd = python_exe +
+          L" \"C:\\NEVEN\\taskpane\\start_studio.py\" --no-browser";
+
+      STARTUPINFOW si{};
+      si.cb          = sizeof(si);
+      si.dwFlags     = STARTF_USESHOWWINDOW;
+      si.wShowWindow = SW_HIDE;
+      PROCESS_INFORMATION pi{};
+
+      CreateProcessW(nullptr,
+                     const_cast<LPWSTR>(cmd.c_str()),
+                     nullptr, nullptr, FALSE,
+                     CREATE_NO_WINDOW,
+                     nullptr,
+                     L"C:\\NEVEN\\taskpane\\",
+                     &si, &pi);
+      if (pi.hThread)  CloseHandle(pi.hThread);
+      if (pi.hProcess) CloseHandle(pi.hProcess);
+
+      // Wait up to 15 seconds for server to start
+      for (int i = 0; i < 30 && !_studio_alive(); i++)
+          Sleep(500);
+
+      // Step 3: Notify result
+      if (_studio_alive()) {
+          MessageBoxW(NULL,
+              L"Servidor HTTP iniciado correctamente.\n\n"
+              L"Puerto: 5555\n"
+              L"Estado: Activo\n\n"
+              L"El TaskPane ahora puede conectarse.",
+              L"NEVEN Studio - Servidor", MB_OK | MB_ICONINFORMATION);
+      } else {
+          MessageBoxW(NULL,
+              L"No se pudo iniciar el servidor HTTP.\n\n"
+              L"Verifica que Python este instalado y que\n"
+              L"no haya otro proceso usando el puerto 5555.",
+              L"NEVEN Studio - Error", MB_OK | MB_ICONERROR);
+      }
+
+      return S_OK;
+    }
+
+    case DispIds::OnStopServerCommand:
+    {
+      // Detener servidor HTTP de NEVEN Studio (puerto 5555)
+      // Step 1: Check if server is running
+      auto _studio_alive = []() -> bool {
+          HINTERNET hT = WinHttpOpen(L"NEVEN-Ribbon/3.0",
+                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                      WINHTTP_NO_PROXY_NAME,
+                                      WINHTTP_NO_PROXY_BYPASS, 0);
+          if (!hT) return false;
+          DWORD t = 300;
+          WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
+          WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
+          WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
+          bool alive = false;
+          HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
+          if (hC) {
+              HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
+                                                 nullptr, WINHTTP_NO_REFERER,
+                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+              if (hR) {
+                  alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                             nullptr, 0, 0, 0) &&
+                          WinHttpReceiveResponse(hR, nullptr);
+                  WinHttpCloseHandle(hR);
+              }
+              WinHttpCloseHandle(hC);
+          }
+          WinHttpCloseHandle(hT);
+          return alive;
+      };
+
+      // Si no está corriendo, notificar al usuario
+      if (!_studio_alive()) {
+          MessageBoxW(NULL,
+              L"El servidor HTTP no esta en ejecucion.\n\n"
+              L"No hay nada que detener.",
+              L"NEVEN Studio - Servidor", MB_OK | MB_ICONINFORMATION);
+          return S_OK;
+      }
+
+      // Step 2: Send shutdown request via POST to /api/shutdown
+      HINTERNET hT = WinHttpOpen(L"NEVEN-Ribbon/3.0",
+                                  WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                  WINHTTP_NO_PROXY_NAME,
+                                  WINHTTP_NO_PROXY_BYPASS, 0);
+      bool shutdown_sent = false;
+      if (hT) {
+          DWORD timeout = 2000;
+          WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &timeout, sizeof(timeout));
+          WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &timeout, sizeof(timeout));
+          WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof(timeout));
+
+          HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
+          if (hC) {
+              HINTERNET hR = WinHttpOpenRequest(hC, L"POST", L"/api/shutdown",
+                                                 nullptr, WINHTTP_NO_REFERER,
+                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+              if (hR) {
+                  shutdown_sent = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                                      nullptr, 0, 0, 0) != 0;
+                  WinHttpCloseHandle(hR);
+              }
+              WinHttpCloseHandle(hC);
+          }
+          WinHttpCloseHandle(hT);
+      }
+
+      // Wait briefly for server to stop
+      Sleep(500);
+
+      // Step 3: Notify result
+      if (!_studio_alive()) {
+          MessageBoxW(NULL,
+              L"Servidor HTTP detenido correctamente.\n\n"
+              L"Puerto 5555 liberado.",
+              L"NEVEN Studio - Servidor", MB_OK | MB_ICONINFORMATION);
+      } else {
+          MessageBoxW(NULL,
+              L"El servidor no respondio a la solicitud de apagado.\n\n"
+              L"Puede cerrar el proceso manualmente desde\n"
+              L"el Administrador de Tareas (python.exe).",
+              L"NEVEN Studio - Advertencia", MB_OK | MB_ICONWARNING);
+      }
+
       return S_OK;
     }
 
