@@ -15,6 +15,7 @@ sidebar_position: 2
 | Microsoft Excel | 2016+ o Microsoft 365 | -- |
 | R | 4.4.1 | [cran.r-project.org](https://cran.r-project.org) |
 | Julia | 1.12.6 | [julialang.org](https://julialang.org) |
+| Python | 3.12+ | [python.org](https://python.org) |
 | Pandoc | 3.6 | [github.com/jgm/pandoc](https://github.com/jgm/pandoc/releases) |
 | Quarto | 1.9.18 | [quarto.org](https://quarto.org/docs/download) |
 | WebView2 Runtime | -- | Preinstalado en Windows 10/11 |
@@ -55,7 +56,7 @@ regsvr32 "C:\NEVEN\NEVENRibbon.dll"
 Despues de la instalacion, verificar en celdas de Excel:
 
 $
-\texttt{=NEVEN.r("1+1")} \rightarrow 2 \qquad \texttt{=NEVEN.j("sqrt(144)")} \rightarrow 12
+\texttt{=NEVEN.r("1+1")} \rightarrow 2 \qquad \texttt{=NEVEN.j("sqrt(144)")} \rightarrow 12 \qquad \texttt{=NEVEN.py("1+1")} \rightarrow 2
 $
 
 ## 2.4 Checklist completo
@@ -64,10 +65,11 @@ $
 |:---|:---|:---|:---|
 | 1 | R operativo | `=NEVEN.r("1+1")` | $2$ |
 | 2 | Julia operativa | `=NEVEN.j("1+1")` | $2$ |
-| 3 | WebView2 | `=NEVEN.v("<html><body>OK</body></html>")` | Ventana |
-| 4 | Pluto.jl | `=NEVEN.pluto.status()` | "stopped" |
-| 5 | Quarto | `=NEVEN.q("C:/NEVEN/quarto/test_report.qmd")` | Reporte |
-| 6 | Ribbon | Pestana NEVEN en cinta | 13 botones |
+| 3 | Python operativo | `=NEVEN.py("1+1")` | $2$ |
+| 4 | WebView2 | `=NEVEN.v("<html><body>OK</body></html>")` | Ventana |
+| 5 | Pluto.jl | `=NEVEN.pluto.status()` | "stopped" |
+| 6 | Quarto | `=NEVEN.q("C:/NEVEN/quarto/test_report.qmd")` | Reporte |
+| 7 | Ribbon | Pestana NEVEN en cinta | 6 grupos, ~15 botones |
 
 ## 2.5 NEVEN Studio Standalone
 
@@ -97,6 +99,16 @@ Se abre el navegador del sistema en `http://localhost:5555`.
 pip install duckdb pandas pyarrow pypdf python-docx
 ```
 
+### Troubleshooting del servidor
+
+Si el TaskPane muestra "ERROR DEL COMPLEMENTO" o no puede conectarse:
+
+1. En la pestana NEVEN → grupo **Studio** → clic en **"Iniciar Servidor"**
+2. Esperar mensaje de confirmacion (hasta 15 segundos)
+3. Recargar el TaskPane
+
+El boton "Iniciar Servidor" inicia el servidor HTTP en el puerto 5555 si no esta corriendo.
+
 ## 2.6 Estructura de directorios
 
 ```
@@ -105,8 +117,9 @@ C:\NEVEN\
 +-- NEVENRibbon.dll           # Ribbon COM
 +-- ControlR.exe               # Motor R
 +-- ControlJulia.exe           # Motor Julia
++-- ControlPython.exe          # Motor Python
 +-- neven-config.json         # Configuracion
-+-- neven-languages.json      # R + Julia
++-- neven-languages.json      # R + Julia + Python
 +-- startup\                   # Scripts de inicio
 +-- notebooks\                 # 15 notebooks Pluto
 +-- data\                      # Datasets Excel<-->Pluto
@@ -115,12 +128,13 @@ C:\NEVEN\
 +-- crashes\                   # Telemetria local
 +-- taskpane\                  # NEVEN Studio Standalone
 |   +-- taskpane.html          # UI web del Studio
-|   +-- taskpane.js            # Lógica UI
-|   +-- datalab.js             # Módulo Data Lab
+|   +-- taskpane.js            # Logica UI
+|   +-- datalab.js             # Modulo Data Lab
 |   +-- pipe_client.py         # Cliente Named Pipes
 |   +-- start_studio.py        # Arranque del Studio
 |   \-- NEVEN Studio.vbs       # Lanzador de doble clic
-+-- functions\                 # Catálogo Data Lab (18 funciones)
++-- functions\                 # Catalogo Data Lab (40+ funciones)
++-- docs\                      # Documentacion y ontologias
 +-- webview2-data\             # HTML temporales
 ```
 

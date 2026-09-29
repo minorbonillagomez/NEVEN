@@ -223,5 +223,59 @@ Ambos modos se instalan juntos — la misma instalación en `C:\NEVEN\` sirve pa
 
 ---
 
+## 13.9 Sistema de Aliases
+
+NEVEN permite invocar funciones usando nombres cortos (aliases) en lugar del nombre completo. Esto simplifica el uso desde Excel y el Studio.
+
+### Ejemplos de aliases
+
+| Alias | Funcion real | Uso |
+|:---|:---|:---|
+| `ACP` | `AD_ACP.C` | Analisis de Componentes Principales |
+| `KMeans` | `AD_KMeans.C` | Clustering K-Medias |
+| `RegLineal` | `RG_Lineal.C` | Regresion Lineal |
+| `Logistica` | `RG_Logistica.C` | Regresion Logistica |
+| `PanelData` | `RG_Panel.C` | Datos de Panel |
+
+### Uso en Excel
+
+```
+=NEVEN.R("ACP", A1:D20)           Equivale a =NEVEN.R("AD_ACP.C", A1:D20)
+=NevenX.R("KMeans", A1:D20, 3)    Equivale a =NevenX.R("AD_KMeans.C", A1:D20, 3)
+```
+
+### Uso en NEVEN Studio
+
+En el Data Lab, el dropdown de funciones muestra tanto el nombre completo como los aliases disponibles.
+
+### Donde se definen los aliases
+
+Los aliases se definen en dos lugares:
+
+1. **Dispatcher R:** `C:\NEVEN\functions\R4XCL-0-NevenX.R` → tabla `.neven_aliases`
+2. **Servidor HTTP:** `C:\NEVEN\startup\neven_http_server.py` → diccionario `_function_aliases`
+
+Para agregar un nuevo alias, modificar ambos archivos. Ver guia completa en:
+`C:\NEVEN\docs\agent-context\ALIASES.md`
+
+---
+
+## 13.10 Troubleshooting
+
+**El Studio no carga:**
+- Verificar que Python este instalado
+- Usar el boton "Iniciar Servidor" en el Ribbon (grupo Studio)
+
+**Data Lab no muestra funciones:**
+- Verificar que los archivos .json esten en `C:\NEVEN\functions\`
+- Reiniciar el servidor HTTP
+
+**Run Script no ejecuta:**
+- Verificar que el motor correspondiente este activo en `neven-config.json`
+
+---
+
+*Documentacion actualizada: Setiembre 2026*
+
 *NEVEN Studio Standalone — Julio 2026*
 *Universidad de Costa Rica — Tesis de Maestría*

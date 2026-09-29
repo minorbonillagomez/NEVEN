@@ -27,6 +27,7 @@ const CHAPTERS = [
   { file: 'docusaurus/11-diccionario-funciones.md', title: 'Diccionario de Funciones' },
   { file: 'docusaurus/12-simulacion-montecarlo.md', title: 'Simulacion Monte Carlo' },
   { file: 'docusaurus/13-neven-studio.md',          title: 'NEVEN Studio' },
+  { file: 'docusaurus/14-ontologias-excel-consultant.md', title: 'Ontologias y Excel Consultant' },
 ];
 
 const docsDir = __dirname;
@@ -53,7 +54,7 @@ parts.push('<!DOCTYPE html>');
 parts.push('<html lang="es">');
 parts.push('<head>');
 parts.push('<meta charset="UTF-8">');
-parts.push('<title>NEVEN v2.0 - Documentacion</title>');
+parts.push('<title>NEVEN v3.2 - Documentacion</title>');
 parts.push('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">');
 parts.push('<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></scr' + 'ipt>');
 parts.push('<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></scr' + 'ipt>');
@@ -98,7 +99,7 @@ parts.push('</head>');
 parts.push('<body>');
 parts.push('<div class="header">');
 parts.push('  <div class="brand">NEVEN</div>');
-parts.push('  <div class="subtitle">Documentacion v2.0 &mdash; Sistema Multilenguaje para Excel</div>');
+parts.push('  <div class="subtitle">Documentacion v3.2 &mdash; Sistema Multilenguaje para Excel</div>');
 parts.push('</div>');
 parts.push('<div class="layout">');
 parts.push('  <nav class="sidebar" id="sidebar">');
