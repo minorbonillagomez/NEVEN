@@ -382,6 +382,13 @@ table.data-table tr:hover td { background: var(--accent-dim); }
   line-height: 1.4;
 }
 
+.ayuda-funcion-aliases {
+  font-size: 9px;
+  color: #7dc97d;
+  margin-left: 6px;
+  font-weight: 500;
+}
+
 /* ─── Tablas de parámetros, outputs y roles ────────────────────────────────── */
 .ayuda-params-table,
 .ayuda-outputs-table,

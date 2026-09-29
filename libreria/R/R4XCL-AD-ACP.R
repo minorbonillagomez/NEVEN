@@ -185,7 +185,93 @@ AD_ACP.C <- function(
     
     OutPut <- Extraer_outputs(res.pca, "AD_ACP")
     
-  }else if(TipoOutput > 13){   
+  }else if(TipoOutput == 99){
+    # ═══════════════════════════════════════════════════════════════════════════
+    # TipoOutput=99: Gráfico embebido como Shape en Excel
+    # Genera biplot de ACP como PNG y retorna marcador especial para C++
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    tryCatch({
+      # Generar nombre único basado en timestamp
+      chart_name <- paste0("ACP_", format(Sys.time(), "%H%M%S"))
+      temp_file <- paste0("C:/NEVEN/temp/nevenx_", chart_name, ".png")
+      
+      # Dimensiones del gráfico
+      width_px <- 500
+      height_px <- 400
+      
+      # Generar biplot usando ggplot2 para mejor calidad
+      if (requireNamespace("ggplot2", quietly = TRUE)) {
+        library(ggplot2)
+        
+        # Extraer datos para el biplot
+        scores <- as.data.frame(res.pca$scores[, 1:2])
+        colnames(scores) <- c("PC1", "PC2")
+        scores$id <- seq_len(nrow(scores))
+        
+        loadings <- as.data.frame(unclass(res.pca$loadings)[, 1:2])
+        colnames(loadings) <- c("PC1", "PC2")
+        loadings$variable <- rownames(loadings)
+        
+        # Escalar loadings para visualización
+        scale_factor <- max(abs(scores$PC1), abs(scores$PC2)) / 
+                        max(abs(loadings$PC1), abs(loadings$PC2)) * 0.8
+        loadings$PC1 <- loadings$PC1 * scale_factor
+        loadings$PC2 <- loadings$PC2 * scale_factor
+        
+        # Varianza explicada
+        var_exp <- round(res.pca$sdev^2 / sum(res.pca$sdev^2) * 100, 1)
+        
+        # Crear biplot
+        p <- ggplot() +
+          # Puntos (individuos)
+          geom_point(data = scores, aes(x = PC1, y = PC2), 
+                     color = "#3498db", size = 2, alpha = 0.7) +
+          geom_text(data = scores, aes(x = PC1, y = PC2, label = id),
+                    vjust = -0.5, size = 2.5, color = "#2c3e50") +
+          # Flechas (variables)
+          geom_segment(data = loadings, 
+                       aes(x = 0, y = 0, xend = PC1, yend = PC2),
+                       arrow = arrow(length = unit(0.2, "cm")),
+                       color = "#e74c3c", linewidth = 0.8) +
+          geom_text(data = loadings, aes(x = PC1, y = PC2, label = variable),
+                    vjust = -0.3, hjust = 0.5, size = 3, color = "#c0392b", fontface = "bold") +
+          # Ejes y tema
+          geom_hline(yintercept = 0, linetype = "dashed", color = "gray50", linewidth = 0.3) +
+          geom_vline(xintercept = 0, linetype = "dashed", color = "gray50", linewidth = 0.3) +
+          labs(title = "Biplot ACP",
+               x = paste0("PC1 (", var_exp[1], "%)"),
+               y = paste0("PC2 (", var_exp[2], "%)")) +
+          theme_minimal() +
+          theme(
+            plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+            panel.grid.minor = element_blank()
+          )
+        
+        # Guardar como PNG
+        ggsave(temp_file, p, width = width_px/96, height = height_px/96, dpi = 96)
+        
+      } else {
+        # Fallback: usar biplot base de R
+        png(temp_file, width = width_px, height = height_px, res = 96)
+        biplot(res.pca, scale = 0, main = "Biplot ACP")
+        dev.off()
+      }
+      
+      # Retornar marcador especial que C++ detectará
+      OutPut <- data.frame(
+        NEVEN_EMBED_CHART = temp_file,
+        NEVEN_CHART_NAME = chart_name,
+        NEVEN_CHART_WIDTH = width_px,
+        NEVEN_CHART_HEIGHT = height_px,
+        stringsAsFactors = FALSE
+      )
+      
+    }, error = function(e) {
+      OutPut <<- data.frame(R4XCL_Error = paste0("Error generando gráfico: ", conditionMessage(e)))
+    })
+    
+  }else if(TipoOutput > 99){   
     
     OutPut <- "Revisar parámetros disponibles" 
     

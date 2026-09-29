@@ -1993,8 +1993,131 @@ extern "C" void NevenX_InitGlobals() {
     g_nevenx_init_done = true;
 }
 
+/**
+ * @brief Helper: Detecta si el resultado contiene marcador NEVEN_EMBED_CHART
+ *        y si es así, crea el Shape en Excel y retorna mensaje de éxito.
+ *        Usado por NevenX_R/J/P cuando TipoOutput=99.
+ * @param result Resultado del dispatcher NevenX
+ * @return nullptr si no hay marcador, o puntero a XLOPER12 con mensaje de éxito
+ */
+static LPXLOPER12 NevenX_HandleEmbedChart(LPXLOPER12 result) {
+    // DEBUG: Log para verificar que se llama
+    OutputDebugStringA("[NEVEN] NevenX_HandleEmbedChart called\n");
+    
+    if (!result) {
+        OutputDebugStringA("[NEVEN] result is NULL\n");
+        return nullptr;
+    }
+    
+    int raw_type = result->xltype;
+    int clean_type = raw_type & ~(xlbitXLFree | xlbitDLLFree);
+    char dbg[256];
+    sprintf_s(dbg, "[NEVEN] xltype raw=%d clean=%d (xltypeMulti=%d)\n", raw_type, clean_type, xltypeMulti);
+    OutputDebugStringA(dbg);
+    
+    if (clean_type != xltypeMulti) {
+        OutputDebugStringA("[NEVEN] Not xltypeMulti, returning nullptr\n");
+        return nullptr;
+    }
+    
+    int rows = result->val.array.rows;
+    int cols = result->val.array.columns;
+    LPXLOPER12 cells = result->val.array.lparray;
+    
+    sprintf_s(dbg, "[NEVEN] Array: rows=%d cols=%d\n", rows, cols);
+    OutputDebugStringA(dbg);
+    
+    if (rows < 2 || cols < 1) {
+        OutputDebugStringA("[NEVEN] rows<2 or cols<1, returning nullptr\n");
+        return nullptr;
+    }
+    
+    // Buscar columnas especiales en la primera fila (headers)
+    int chart_col = -1, name_col = -1, width_col = -1, height_col = -1;
+    
+    for (int c = 0; c < cols; c++) {
+        LPXLOPER12 cell = &cells[c];
+        int cell_type = cell->xltype & ~(xlbitXLFree | xlbitDLLFree);  // Limpiar flags
+        sprintf_s(dbg, "[NEVEN] Header col %d: xltype=%d clean=%d\n", c, cell->xltype, cell_type);
+        OutputDebugStringA(dbg);
+        if (cell_type == xltypeStr) {
+            std::string header = Convert::XLOPERToString(cell);
+            sprintf_s(dbg, "[NEVEN] Header col %d: '%s'\n", c, header.c_str());
+            OutputDebugStringA(dbg);
+            if (header == "NEVEN_EMBED_CHART") chart_col = c;
+            else if (header == "NEVEN_CHART_NAME") name_col = c;
+            else if (header == "NEVEN_CHART_WIDTH") width_col = c;
+            else if (header == "NEVEN_CHART_HEIGHT") height_col = c;
+        }
+    }
+    
+    sprintf_s(dbg, "[NEVEN] chart_col=%d name_col=%d width_col=%d height_col=%d\n", 
+              chart_col, name_col, width_col, height_col);
+    OutputDebugStringA(dbg);
+    
+    if (chart_col < 0) {
+        OutputDebugStringA("[NEVEN] NEVEN_EMBED_CHART not found, returning nullptr\n");
+        return nullptr;
+    }
+    
+    // Extraer datos
+    LPXLOPER12 path_cell = &cells[1 * cols + chart_col];
+    std::string png_path;
+    int path_type = path_cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+    if (path_type == xltypeStr) {
+        png_path = Convert::XLOPERToString(path_cell);
+    }
+    
+    std::string chart_name = "NevenX_Chart";
+    if (name_col >= 0) {
+        LPXLOPER12 name_cell = &cells[1 * cols + name_col];
+        int name_type = name_cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        if (name_type == xltypeStr) {
+            chart_name = Convert::XLOPERToString(name_cell);
+        }
+    }
+    
+    int width = 500, height = 400;
+    if (width_col >= 0) {
+        LPXLOPER12 w_cell = &cells[1 * cols + width_col];
+        int w_type = w_cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        if (w_type == xltypeNum) width = (int)w_cell->val.num;
+        else if (w_type == xltypeInt) width = w_cell->val.w;
+    }
+    if (height_col >= 0) {
+        LPXLOPER12 h_cell = &cells[1 * cols + height_col];
+        int h_type = h_cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        if (h_type == xltypeNum) height = (int)h_cell->val.num;
+        else if (h_type == xltypeInt) height = h_cell->val.w;
+    }
+    
+    // Verificar archivo
+    DWORD attrs = GetFileAttributesA(png_path.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES || png_path.empty()) {
+        return nullptr;
+    }
+    
+    // Crear Shape en Excel
+    RJ2XCLBuffers::GraphicsUpdate graphics;
+    graphics.set_name(chart_name);
+    graphics.set_path(png_path);
+    graphics.set_width(width);
+    graphics.set_height(height);
+    
+    LPDISPATCH app_dispatch = RJ2XCL_Engine::Instance()->GetApplicationDispatch();
+    RJ2XCLGraphics::UpdateGraphics(graphics, app_dispatch);
+    
+    // Retornar mensaje de éxito
+    thread_local XLOPER12 success_rslt;
+    std::string msg = "Chart: " + chart_name;
+    Convert::StringToXLOPER(&success_rslt, msg, false);
+    success_rslt.xltype |= xlbitDLLFree;
+    return &success_rslt;
+}
+
 // NevenX_R: firma identica a RJ_CallLanguage_ (func + 16 args opcionales = 17Q)
 // Excel pasa los no usados como xltypeMissing — nunca nullptr
+// TipoOutput=99: Si el resultado contiene marcador NEVEN_EMBED_CHART, crea Shape
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
 NevenX_R(LPXLOPER12 proceso,
   LPXLOPER12 a0, LPXLOPER12 a1, LPXLOPER12 a2, LPXLOPER12 a3,
@@ -2002,8 +2125,10 @@ NevenX_R(LPXLOPER12 proceso,
   LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
-    return RJ_Call_Generic(0, &g_nevenx_disp_R,
+    LPXLOPER12 result = RJ_Call_Generic(0, &g_nevenx_disp_R,
         proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+    LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
+    return embed_result ? embed_result : result;
 }
 
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
@@ -2013,8 +2138,10 @@ NevenX_J(LPXLOPER12 proceso,
   LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
-    return RJ_Call_Generic(1, &g_nevenx_disp_J,
+    LPXLOPER12 result = RJ_Call_Generic(1, &g_nevenx_disp_J,
         proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+    LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
+    return embed_result ? embed_result : result;
 }
 
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
@@ -2024,8 +2151,10 @@ NevenX_P(LPXLOPER12 proceso,
   LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
-    return RJ_Call_Generic(2, &g_nevenx_disp_P,
+    LPXLOPER12 result = RJ_Call_Generic(2, &g_nevenx_disp_P,
         proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+    LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
+    return embed_result ? embed_result : result;
 }
 
 // =============================================================================

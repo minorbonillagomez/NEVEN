@@ -58,6 +58,11 @@
     <div class="tab active" data-tab="data-studio">Data Studio</div>
     <div class="tab" data-tab="run-script">Run Script</div>
     <div class="tab" data-tab="data-lab">Data Lab</div>
+    <!-- TODO: Retomar Tab Excel cuando se resuelva el problema de pipes single-instance
+         El pipe de R de Excel solo permite una conexión, bloqueando al servidor HTTP.
+         Opciones: (1) start_studio.py con pipes dedicados, (2) fallback Office.js
+         Ver CHAT.md sesión 2026-08-19 para detalles completos -->
+    <!-- <div class="tab" data-tab="excel-analysis">Excel</div> -->
     <div class="tab" data-tab="presentaciones">Presentaciones</div>
     <div class="tab" data-tab="ai">IA</div>
     <div class="tab" data-tab="ayuda">Ayuda</div>
@@ -489,6 +494,93 @@
 
   </div><!-- /tab ai -->
 
+  <!-- Tab: Excel Analysis -->
+  <div class="tab-content" id="excel-analysis">
+    <div class="card">
+      <div class="card-title">Análisis desde Excel</div>
+      <div style="font-size:10px;color:var(--text-secondary);margin-bottom:12px">
+        Selecciona un rango en Excel y ejecuta análisis estadísticos con gráficos interactivos.
+      </div>
+      
+      <!-- Selector de rango -->
+      <div style="margin-bottom:12px">
+        <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:4px">Rango de datos (con headers)</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" id="excel-range-input" placeholder="Ej: A1:D20" 
+                 style="flex:1;background:var(--bg-primary);color:var(--text-primary);
+                        border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:11px">
+          <button class="btn btn-primary" id="excel-get-selection" style="padding:6px 10px;font-size:10px"
+                  title="Obtener selección actual de Excel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+            Selección
+          </button>
+        </div>
+      </div>
+      
+      <!-- Selector de análisis -->
+      <div style="margin-bottom:12px">
+        <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:4px">Tipo de Análisis</label>
+        <select id="excel-analysis-type" style="width:100%;background:var(--bg-primary);color:var(--text-primary);
+                border:1px solid var(--border);border-radius:4px;padding:8px 10px;font-size:11px">
+          <option value="">-- Seleccionar análisis --</option>
+          <optgroup label="Análisis Multivariado">
+            <option value="AD_ACP.Studio">Componentes Principales (ACP)</option>
+            <option value="AD_KMediass.Studio">K-Medias (Clustering)</option>
+            <option value="AD_ClusteringJerarquico.Studio">Clustering Jerárquico</option>
+          </optgroup>
+          <optgroup label="Regresión">
+            <option value="RG_Lineal.Studio">Regresión Lineal</option>
+            <option value="RG_Logistica.Studio">Regresión Logística</option>
+            <option value="RG_Poisson.Studio">Regresión Poisson</option>
+          </optgroup>
+          <optgroup label="Series de Tiempo">
+            <option value="RG_SeriesTiempo.Studio">ARIMA</option>
+            <option value="ST_VAR.Studio">VAR</option>
+          </optgroup>
+          <optgroup label="Gráficos">
+            <option value="GR_Correlaciones.Studio">Matriz de Correlaciones</option>
+            <option value="GR_Histograma.Studio">Histograma</option>
+            <option value="GR_BoxPlot.Studio">BoxPlot</option>
+            <option value="GR_Scatter.Studio">Scatter Plot</option>
+          </optgroup>
+        </select>
+      </div>
+      
+      <!-- Opciones adicionales (colapsable) -->
+      <details style="margin-bottom:12px">
+        <summary style="cursor:pointer;font-size:10px;color:var(--accent);margin-bottom:6px">Opciones avanzadas</summary>
+        <div style="padding:8px;background:var(--bg-primary);border-radius:4px">
+          <div style="margin-bottom:8px">
+            <label style="font-size:10px;color:var(--text-secondary);display:flex;align-items:center;gap:6px">
+              <input type="checkbox" id="excel-scale-data" checked> Escalar/estandarizar datos
+            </label>
+          </div>
+          <div style="margin-bottom:8px">
+            <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:4px">Variable Y (para regresión)</label>
+            <input type="text" id="excel-var-y" placeholder="Nombre de columna o índice (1-based)" 
+                   style="width:100%;background:var(--bg-secondary);color:var(--text-primary);
+                          border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:10px">
+          </div>
+        </div>
+      </details>
+      
+      <!-- Botón ejecutar -->
+      <button class="btn btn-primary" id="excel-run-analysis" style="width:100%;padding:10px;font-size:12px">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Ejecutar Análisis
+      </button>
+    </div>
+    
+    <!-- Estado -->
+    <div id="excel-status" class="msg-info" style="display:none">
+      <span class="spinner"></span> <span id="excel-status-text">Ejecutando análisis...</span>
+    </div>
+    <div id="excel-error" class="msg-error" style="display:none"></div>
+    
+    <!-- Resultados -->
+    <div id="excel-results"></div>
+  </div><!-- /tab excel-analysis -->
+
   <!-- Tab: Ayuda / Diccionario de Funciones -->
   <div class="tab-content" id="ayuda">
     
@@ -537,6 +629,9 @@
       </div>
       
       <div id="ayuda-detalle-desc" style="font-size:11px;color:var(--text-primary);margin-bottom:10px;line-height:1.5"></div>
+      
+      <!-- Aliases / Nombres cortos -->
+      <div id="ayuda-detalle-aliases" style="display:none;font-size:10px;color:var(--accent);margin-bottom:10px;padding:6px 10px;background:rgba(173,148,92,0.1);border-radius:4px"></div>
       
       <!-- Sintaxis copiable -->
       <div style="margin-bottom:10px">
@@ -703,7 +798,12 @@
   </div>
 
 <script>
-var API = window.location.origin;
+var API = window._NEVEN_API_BASE || window.location.origin;
+// Si el origin no es localhost, forzar localhost:5555
+if (API.indexOf('localhost') === -1 && API.indexOf('127.0.0.1') === -1) {
+  API = 'http://localhost:5555';
+}
+console.log('[NEVEN] API base:', API);
 
 // --- Verificacion de estado del servidor ---
 (function checkServerStatus() {
@@ -4374,6 +4474,329 @@ window._renderCreateFunctionBlock = function(jsonStr) {
 
 <!-- Diccionario de Funciones - archivo separado para evitar cache -->
 <script src="ayuda.js?v=20260819202000"></script>
+
+<!-- =============================================================================
+     Tab Excel Analysis - Handlers
+     ============================================================================= -->
+<script>
+(function() {
+  // Estado del tab Excel Analysis
+  window._excelAnalysis = {
+    rangeAddress: null,
+    sheetName: null,
+    columns: [],
+    rows: [],
+    dataLoaded: false
+  };
+
+  // Helper: Mostrar estado
+  function _excelShowStatus(msg, isError) {
+    var statusDiv = document.getElementById('excel-status');
+    var statusText = document.getElementById('excel-status-text');
+    var errorDiv = document.getElementById('excel-error');
+    
+    if (isError) {
+      statusDiv.style.display = 'none';
+      errorDiv.textContent = msg;
+      errorDiv.style.display = 'block';
+    } else {
+      errorDiv.style.display = 'none';
+      statusText.textContent = msg;
+      statusDiv.style.display = 'block';
+    }
+  }
+
+  function _excelHideStatus() {
+    document.getElementById('excel-status').style.display = 'none';
+    document.getElementById('excel-error').style.display = 'none';
+  }
+
+  // Handler: Obtener selección de Excel
+  document.getElementById('excel-get-selection').addEventListener('click', async function() {
+    var rangeInput = document.getElementById('excel-range-input');
+    
+    if (typeof Office === 'undefined' || typeof Excel === 'undefined' || !window._officeReady) {
+      _excelShowStatus('Office.js no disponible. Ingrese el rango manualmente.', true);
+      return;
+    }
+
+    try {
+      await Excel.run(async function(context) {
+        var selection = context.workbook.getSelectedRange();
+        var sheet = context.workbook.worksheets.getActiveWorksheet();
+        selection.load(['address']);
+        sheet.load(['name']);
+        await context.sync();
+        
+        // Extraer solo la parte del rango (sin nombre de hoja)
+        var addr = selection.address;
+        if (addr.indexOf('!') > -1) {
+          addr = addr.split('!')[1];
+        }
+        rangeInput.value = addr;
+        window._excelAnalysis.sheetName = sheet.name;
+        console.log('[Excel Tab] Selección obtenida:', addr, 'en hoja:', sheet.name);
+      });
+    } catch (e) {
+      console.error('[Excel Tab] Error obteniendo selección:', e);
+      _excelShowStatus('Error: ' + e.message, true);
+    }
+  });
+
+  // Handler: Ejecutar análisis
+  document.getElementById('excel-run-analysis').addEventListener('click', async function() {
+    var rangeInput = document.getElementById('excel-range-input').value.trim();
+    var analysisType = document.getElementById('excel-analysis-type').value;
+    var scaleData = document.getElementById('excel-scale-data').checked;
+    var varY = document.getElementById('excel-var-y').value.trim();
+    var resultsDiv = document.getElementById('excel-results');
+    
+    // Validar inputs
+    if (!rangeInput) {
+      _excelShowStatus('Ingrese un rango de datos (ej: A1:D20)', true);
+      return;
+    }
+    if (!analysisType) {
+      _excelShowStatus('Seleccione un tipo de análisis', true);
+      return;
+    }
+
+    _excelHideStatus();
+    _excelShowStatus('Leyendo datos de Excel...', false);
+    resultsDiv.innerHTML = '';
+
+    // Verificar Office.js
+    if (typeof Office === 'undefined' || typeof Excel === 'undefined' || !window._officeReady) {
+      _excelShowStatus('Office.js no disponible. Abra este panel desde Excel.', true);
+      return;
+    }
+
+    try {
+      // Paso 1: Leer datos del rango de Excel
+      var columns = [];
+      var rows = [];
+      var types = {};
+
+      await Excel.run(async function(context) {
+        var sheet = context.workbook.worksheets.getActiveWorksheet();
+        var range = sheet.getRange(rangeInput);
+        range.load(['values', 'columnCount', 'rowCount']);
+        await context.sync();
+
+        var values = range.values;
+        if (!values || values.length < 2) {
+          throw new Error('El rango debe tener al menos 2 filas (headers + datos)');
+        }
+
+        // Primera fila = headers
+        columns = values[0].map(function(h, i) {
+          return h ? String(h).trim() : 'Col' + (i + 1);
+        });
+        rows = values.slice(1);
+
+        // Detectar tipos
+        columns.forEach(function(c, i) {
+          var sample = rows.slice(0, 50).map(function(r) { return r[i]; });
+          var numCount = sample.filter(function(v) {
+            return typeof v === 'number' || (v !== null && v !== '' && !isNaN(parseFloat(v)));
+          }).length;
+          types[c] = numCount > sample.length * 0.5 ? 'numeric' : 'text';
+        });
+
+        console.log('[Excel Tab] Datos leídos:', rows.length, 'filas,', columns.length, 'cols');
+      });
+
+      // Paso 2: Cargar datos en DuckDB
+      _excelShowStatus('Cargando datos en DuckDB...', false);
+      var loadResp = await fetch(API + '/api/load', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ columns: columns, types: types, data: rows })
+      });
+      var loadResult = await loadResp.json();
+      
+      if (loadResult.status !== 'ok') {
+        throw new Error('Error cargando datos: ' + (loadResult.message || 'desconocido'));
+      }
+      console.log('[Excel Tab] Datos cargados en DuckDB:', loadResult.rows_loaded, 'filas');
+
+      // Paso 3: Preparar column_roles según el tipo de análisis
+      _excelShowStatus('Ejecutando ' + analysisType + '...', false);
+      
+      var columnRoles = {};
+      var parameters = {};
+
+      // Determinar columnas numéricas
+      var numericCols = columns.filter(function(c) { return types[c] === 'numeric'; });
+
+      // Configurar roles según el análisis
+      if (analysisType.indexOf('AD_ACP') === 0 || 
+          analysisType.indexOf('AD_KMedias') === 0 || 
+          analysisType.indexOf('AD_Clustering') === 0 ||
+          analysisType.indexOf('GR_Correlaciones') === 0) {
+        // Análisis multivariado: usar todas las columnas numéricas como X
+        columnRoles['X'] = numericCols;
+        if (analysisType.indexOf('AD_ACP') === 0) {
+          parameters['N_Componentes'] = Math.min(numericCols.length, 5);
+        }
+        if (analysisType.indexOf('AD_KMedias') === 0) {
+          parameters['K'] = 3;
+        }
+      } else if (analysisType.indexOf('RG_') === 0) {
+        // Regresión: necesita Y y X
+        var yCol = varY || (numericCols.length > 0 ? numericCols[0] : columns[0]);
+        var xCols = numericCols.filter(function(c) { return c !== yCol; });
+        columnRoles['Y'] = [yCol];
+        columnRoles['X'] = xCols.length > 0 ? xCols : [numericCols[1] || columns[1]];
+      } else if (analysisType.indexOf('ST_') === 0 || analysisType.indexOf('SeriesTiempo') > -1) {
+        // Series de tiempo
+        columnRoles['Y'] = [numericCols[0] || columns[0]];
+      } else if (analysisType.indexOf('GR_') === 0) {
+        // Gráficos
+        columnRoles['X'] = numericCols.slice(0, 2);
+      }
+
+      // Parámetro de escalado
+      if (scaleData) {
+        parameters['Escalar'] = true;
+      }
+
+      console.log('[Excel Tab] column_roles:', columnRoles);
+      console.log('[Excel Tab] parameters:', parameters);
+
+      // Paso 4: Llamar /api/datalab/run
+      var requestBody = {
+        function_id: analysisType,
+        language: 'r',
+        column_roles: columnRoles,
+        parameters: parameters,
+        filter_clause: ''
+      };
+      var jsonBody = JSON.stringify(requestBody);
+      console.log('[Excel Tab] Request body:', jsonBody);
+      
+      var runResp = await fetch(API + '/api/datalab/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: jsonBody
+      });
+      
+      var responseText = await runResp.text();
+      console.log('[Excel Tab] Response status:', runResp.status);
+      console.log('[Excel Tab] Response body:', responseText);
+      
+      var runResult;
+      try {
+        runResult = JSON.parse(responseText);
+      } catch (e) {
+        runResult = { status: 'error', message: responseText };
+      }
+
+      _excelHideStatus();
+
+      if (runResult.status === 'ok' && runResult.slots) {
+        // Usar renderResults de datalab.js si existe, sino renderizar básico
+        if (typeof renderResults === 'function') {
+          // Crear container temporal para renderResults
+          var tempDiv = document.createElement('div');
+          tempDiv.id = 'dl-results-content';
+          resultsDiv.innerHTML = '';
+          resultsDiv.appendChild(tempDiv);
+          renderResults(runResult.slots);
+        } else if (typeof buildSlotElement === 'function') {
+          // Fallback: usar buildSlotElement directamente
+          resultsDiv.innerHTML = '';
+          runResult.slots.forEach(function(slot) {
+            var el = buildSlotElement(slot);
+            if (el) resultsDiv.appendChild(el);
+          });
+        } else {
+          // Fallback mínimo
+          _excelRenderSlots(runResult.slots, resultsDiv);
+        }
+        
+        // Guardar referencia para el tab IA
+        window._excelLastSlots = runResult.slots;
+        window._excelLastAnalysis = analysisType;
+        
+        if (typeof showToast === 'function') {
+          showToast('✓ ' + analysisType + ' completado');
+        }
+      } else {
+        var errMsg = runResult.message || runResult.error || 'Error desconocido';
+        _excelShowStatus(errMsg, true);
+      }
+
+    } catch (e) {
+      console.error('[Excel Tab] Error:', e);
+      _excelShowStatus('Error: ' + e.message, true);
+    }
+  });
+
+  // Fallback renderer si buildSlotElement no está disponible
+  function _excelRenderSlots(slots, container) {
+    slots.forEach(function(slot) {
+      var div = document.createElement('div');
+      div.className = 'card';
+      div.style.marginTop = '8px';
+
+      var title = document.createElement('div');
+      title.className = 'card-title';
+      title.textContent = slot.label || slot.name || 'Resultado';
+      div.appendChild(title);
+
+      if (slot.type === 'plotly' || slot.type === 'plotly_json') {
+        // Renderizar Plotly
+        var plotDiv = document.createElement('div');
+        plotDiv.style.width = '100%';
+        plotDiv.style.minHeight = '300px';
+        div.appendChild(plotDiv);
+        try {
+          var plotData = typeof slot.value === 'string' ? JSON.parse(slot.value) : slot.value;
+          if (typeof Plotly !== 'undefined') {
+            Plotly.newPlot(plotDiv, plotData.data || [], plotData.layout || {}, { responsive: true });
+          }
+        } catch (e) {
+          plotDiv.textContent = 'Error renderizando gráfico: ' + e.message;
+        }
+      } else if (slot.type === 'table' || slot.type === 'matrix') {
+        // Renderizar tabla
+        var val = typeof slot.value === 'string' ? JSON.parse(slot.value) : slot.value;
+        if (Array.isArray(val) && val.length > 0) {
+          var table = document.createElement('table');
+          table.style.cssText = 'width:100%;border-collapse:collapse;font-size:10px';
+          var maxRows = Math.min(val.length, 50);
+          for (var i = 0; i < maxRows; i++) {
+            var tr = document.createElement('tr');
+            var row = Array.isArray(val[i]) ? val[i] : [val[i]];
+            row.forEach(function(cell) {
+              var td = document.createElement(i === 0 ? 'th' : 'td');
+              td.style.cssText = 'border:1px solid #444;padding:4px;text-align:left';
+              td.textContent = cell != null ? String(cell) : '';
+              tr.appendChild(td);
+            });
+            table.appendChild(tr);
+          }
+          div.appendChild(table);
+        }
+      } else if (slot.type === 'html') {
+        var htmlDiv = document.createElement('div');
+        htmlDiv.innerHTML = slot.value || '';
+        div.appendChild(htmlDiv);
+      } else {
+        // Scalar o texto
+        var pre = document.createElement('pre');
+        pre.style.cssText = 'font-size:10px;overflow-x:auto;white-space:pre-wrap';
+        pre.textContent = typeof slot.value === 'object' ? JSON.stringify(slot.value, null, 2) : String(slot.value || '');
+        div.appendChild(pre);
+      }
+
+      container.appendChild(div);
+    });
+  }
+
+})();
+</script>
 
 <!-- Inicializacion de Office.js (si esta disponible) -->
 <script>

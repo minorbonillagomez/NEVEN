@@ -39,32 +39,47 @@ namespace RJ2XCLGraphics {
     compound_name += name;
 
     RJ2XCL_LOG_DEBUG("creating device target");
+    OutputDebugStringA("[NEVEN] CreateDeviceTarget called\n");
+    char dbg[512];
+    sprintf_s(dbg, "[NEVEN] name='%s' w=%.0f h=%.0f\n", name.c_str(), w, h);
+    OutputDebugStringA(dbg);
 
     HDC hdcScreen = ::GetDC(NULL);
     int logpixels = ::GetDeviceCaps(hdcScreen, LOGPIXELSX);
     ::ReleaseDC(NULL, hdcScreen);
+    sprintf_s(dbg, "[NEVEN] logpixels=%d\n", logpixels);
+    OutputDebugStringA(dbg);
 
     std::string alttext = "RJ2XCL/R Graphics Device Target: ";
     alttext += name;
 
     if (appplication_pointer) {
+      OutputDebugStringA("[NEVEN] app pointer OK\n");
       CComQIPtr< Excel::_Application > app(appplication_pointer);
       if (app) {
+        OutputDebugStringA("[NEVEN] app QI OK\n");
         CComPtr<IDispatch> pdispsheet;
         if (SUCCEEDED(app->get_ActiveSheet(&pdispsheet))) {
+          OutputDebugStringA("[NEVEN] get_ActiveSheet OK\n");
           CComQIPtr< Excel::_Worksheet > sheet(pdispsheet);
           if (sheet) {
+            OutputDebugStringA("[NEVEN] sheet QI OK\n");
             CComPtr< Excel::Shapes > shapes;
             sheet->get_Shapes(&shapes);
             if (shapes) {
+              OutputDebugStringA("[NEVEN] get_Shapes OK\n");
               Excel::IShapes *ishapes = (Excel::IShapes*)(shapes.p);
               if (ishapes) {
+                OutputDebugStringA("[NEVEN] ishapes cast OK\n");
                 CComPtr< Excel::Shape > shape;
 
-                ishapes->raw_AddShape(Office::msoShapeRectangle, 100, 100, (float)(w * 72 / logpixels), (float)(h * 72 / logpixels), &shape);
+                hr = ishapes->raw_AddShape(Office::msoShapeRectangle, 100, 100, (float)(w * 72 / logpixels), (float)(h * 72 / logpixels), &shape);
+                sprintf_s(dbg, "[NEVEN] raw_AddShape hr=0x%08X shape=%p\n", hr, shape.p);
+                OutputDebugStringA(dbg);
 
                 Excel::IShape *ishape = (Excel::IShape*)(shape.p);
                 if (ishape) {
+                  OutputDebugStringA("[NEVEN] ishape OK, setting name\n");
                   int rc = ishape->AddRef();
                   CComBSTR bstr = compound_name.c_str();
                   ishape->put_Name(bstr);
@@ -74,13 +89,18 @@ namespace RJ2XCLGraphics {
                   ishape->get_Line(&line);
                   if (line) line->put_Visible(Office::MsoTriState::msoFalse);
                   ishape->Release();
+                  OutputDebugStringA("[NEVEN] shape created successfully\n");
                 }
                 target = shape.p;
               }
             }
           }
+        } else {
+          OutputDebugStringA("[NEVEN] get_ActiveSheet FAILED\n");
         }
       }
+    } else {
+      OutputDebugStringA("[NEVEN] app pointer is NULL!\n");
     }
 
   }
