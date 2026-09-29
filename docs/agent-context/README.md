@@ -5,7 +5,20 @@
 
 ---
 
+## Fuentes de conocimiento
+
+NEVEN tiene DOS tipos de documentación para agentes:
+
+| Tipo | Ubicación | Propósito |
+|------|-----------|-----------|
+| **Instrucciones operativas** | `C:\NEVEN\docs\agent-context\` | Cómo hacer cambios |
+| **Ontologías** | `C:\NEVEN\docs\ontologia\` | Conocimiento estructurado del dominio |
+
+---
+
 ## Orden de lectura obligatorio
+
+### Antes de CUALQUIER cambio:
 
 | # | Documento | Propósito |
 |---|-----------|-----------|
@@ -13,6 +26,17 @@
 | 2 | `INVARIANTES.md` | Reglas técnicas que NUNCA deben violarse |
 | 3 | `COMO_AGREGAR_FUNCIONES.md` | Proceso para agregar nueva funcionalidad |
 | 4 | `ALIASES.md` | Sistema de nombres cortos y cómo extenderlo |
+
+### Según el tipo de tarea:
+
+| Si la tarea involucra... | Consultar también |
+|--------------------------|-------------------|
+| Arquitectura C++, pipes, COM | `ontologia/neven-core/neven-ontology-p1.yaml` |
+| Dispatcher R, sidecars, HTTP server | `ontologia/neven-core/neven-ontology-p2.yaml` |
+| Julia, TaskPane frontend | `ontologia/neven-core/neven-ontology-p3.yaml` |
+| Build, tests, instalador | `ontologia/neven-core/neven-ontology-p4.yaml` |
+| Conceptos econométricos | `ontologia/econometrics/schema.yaml` + `graph.jsonl` |
+| Funciones de Excel | `ontologia/excel-functions/excel-functions-ontology.yaml` |
 
 ---
 
