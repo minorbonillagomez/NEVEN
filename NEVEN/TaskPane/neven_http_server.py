@@ -100,6 +100,24 @@ except ImportError:
 _pkg_service: object = None
 _PKG_SERVICE_AVAILABLE = False
 
+# Config Manager — perfiles AI/DB con credenciales seguras (v2.0)
+try:
+    from config_manager import (  # type: ignore
+        get_config_manager as _get_config_manager,
+        reload_config as _reload_config,
+        ConfigManager as _ConfigManager,
+        AI_PROVIDERS, AI_MODELS, DB_TYPES, DB_DEFAULT_PORTS,
+    )
+    _CONFIG_MANAGER_AVAILABLE = True
+except ImportError:
+    _CONFIG_MANAGER_AVAILABLE = False
+    _get_config_manager = None
+    _reload_config = None
+    AI_PROVIDERS = []
+    AI_MODELS = {}
+    DB_TYPES = []
+    DB_DEFAULT_PORTS = {}
+
 
 def _is_broken_pipe(exc: Exception, msg: str) -> bool:
     """Return True when *exc* indicates the Named Pipe connection was lost.
@@ -549,7 +567,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         """Serve static files and health endpoint."""
         if not _rate_limiter.allow():
-            self._send_error_json("Rate limit exceeded (60 req/min)", 429)
+            self._send_error_json("Rate limit exceeded (300 req/min)", 429)
             return
 
         parsed = urlparse(self.path)
@@ -624,8 +642,94 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_pkg_function(fn_id)
             return
 
+        # ══════════════════════════════════════════════════════════════════════
+        # Config Manager v2.0 — Perfiles AI/DB con credenciales seguras
+        # ══════════════════════════════════════════════════════════════════════
+        
+        # GET /api/config/ai-profiles — Lista todos los perfiles de IA
+        if path == 'api/config/ai-profiles':
+            self._handle_config_ai_list()
+            return
+        
+        # GET /api/config/ai-profiles/{id} — Obtener perfil específico
+        if path.startswith('api/config/ai-profiles/') and '/test' not in path:
+            profile_id = path.split('api/config/ai-profiles/', 1)[1]
+            self._handle_config_ai_get(profile_id)
+            return
+        
+        # GET /api/config/db-connections — Lista todas las conexiones DB
+        if path == 'api/config/db-connections':
+            self._handle_config_db_list()
+            return
+        
+        # GET /api/config/db-connections/{id} — Obtener conexión específica
+        if path.startswith('api/config/db-connections/') and '/test' not in path:
+            conn_id = path.split('api/config/db-connections/', 1)[1]
+            self._handle_config_db_get(conn_id)
+            return
+        
+        # GET /api/config/providers — Lista proveedores AI disponibles
+        if path == 'api/config/providers':
+            self._handle_config_providers()
+            return
+        
+        # GET /api/config/db-types — Lista tipos de DB disponibles
+        if path == 'api/config/db-types':
+            self._handle_config_db_types()
+            return
+        
+        # GET /api/config/prompts — Lista prompts disponibles
+        if path == 'api/config/prompts':
+            self._handle_config_prompts_list()
+            return
+        
+        # GET /api/config/prompts/{id} — Obtener contenido de prompt
+        if path.startswith('api/config/prompts/'):
+            prompt_id = path.split('api/config/prompts/', 1)[1]
+            self._handle_config_prompt_get(prompt_id)
+            return
+
+        # ══════════════════════════════════════════════════════════════════════
+
         # ── AI config ─────────────────────────────────────────────────────────
         if path == 'api/ai/config':
+            # Usar config_manager para obtener perfil activo
+            if _CONFIG_MANAGER_AVAILABLE:
+                try:
+                    mgr = _get_config_manager()
+                    active_profile = mgr.get_active_ai_profile()
+                    prompts_dir = mgr.prompts.prompts_directory
+                    prompt_ids = []
+                    if os.path.isdir(prompts_dir):
+                        prompt_ids = [
+                            os.path.splitext(f)[0]
+                            for f in sorted(os.listdir(prompts_dir))
+                            if f.endswith(".txt")
+                        ]
+                    
+                    if active_profile:
+                        self._send_json({
+                            "status":    "ok",
+                            "enabled":   True,
+                            "provider":  active_profile.get("provider", ""),
+                            "model":     active_profile.get("model", ""),
+                            "endpoint":  active_profile.get("endpoint", ""),
+                            "prompts":   prompt_ids,
+                        })
+                    else:
+                        self._send_json({
+                            "status":    "ok",
+                            "enabled":   False,
+                            "provider":  "",
+                            "model":     "",
+                            "endpoint":  "",
+                            "prompts":   prompt_ids,
+                        })
+                    return
+                except Exception as exc:
+                    print(f"[AI Config] Error con config_manager: {exc}")
+            
+            # Fallback a config legacy
             static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
             config_path = os.path.join(
                 os.path.dirname(static_dir), "..",
@@ -786,7 +890,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         """Handle API endpoints."""
         if not _rate_limiter.allow():
-            self._send_error_json("Rate limit exceeded (60 req/min)", 429)
+            self._send_error_json("Rate limit exceeded (300 req/min)", 429)
             return
 
         # Check payload size
@@ -858,6 +962,42 @@ class NEVENHandler(BaseHTTPRequestHandler):
         elif path == 'api/shutdown':
             # Graceful shutdown requested from Ribbon "Detener Servidor" button
             self._handle_shutdown()
+        # ══════════════════════════════════════════════════════════════════════
+        # Config Manager v2.0 — POST endpoints
+        # ══════════════════════════════════════════════════════════════════════
+        elif path == 'api/config/ai-profiles':
+            self._handle_config_ai_create(body)
+        elif path.startswith('api/config/ai-profiles/') and path.endswith('/test'):
+            profile_id = path.replace('api/config/ai-profiles/', '').replace('/test', '')
+            self._handle_config_ai_test(profile_id)
+        elif path.startswith('api/config/ai-profiles/') and path.endswith('/activate'):
+            profile_id = path.replace('api/config/ai-profiles/', '').replace('/activate', '')
+            self._handle_config_ai_activate(profile_id)
+        elif path.startswith('api/config/ai-profiles/') and path.endswith('/delete'):
+            profile_id = path.replace('api/config/ai-profiles/', '').replace('/delete', '')
+            self._handle_config_ai_delete(profile_id)
+        elif path.startswith('api/config/ai-profiles/'):
+            profile_id = path.split('api/config/ai-profiles/', 1)[1]
+            self._handle_config_ai_update(profile_id, body)
+        elif path == 'api/config/db-connections':
+            self._handle_config_db_create(body)
+        elif path.startswith('api/config/db-connections/') and path.endswith('/test'):
+            conn_id = path.replace('api/config/db-connections/', '').replace('/test', '')
+            self._handle_config_db_test(conn_id)
+        elif path.startswith('api/config/db-connections/') and path.endswith('/activate'):
+            conn_id = path.replace('api/config/db-connections/', '').replace('/activate', '')
+            self._handle_config_db_activate(conn_id)
+        elif path.startswith('api/config/db-connections/') and path.endswith('/delete'):
+            conn_id = path.replace('api/config/db-connections/', '').replace('/delete', '')
+            self._handle_config_db_delete(conn_id)
+        elif path.startswith('api/config/db-connections/'):
+            conn_id = path.split('api/config/db-connections/', 1)[1]
+            self._handle_config_db_update(conn_id, body)
+        elif path == 'api/config/prompts':
+            self._handle_config_prompt_save(body)
+        elif path == 'api/config/reload':
+            self._handle_config_reload()
+        # ══════════════════════════════════════════════════════════════════════
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
 
@@ -929,6 +1069,504 @@ class NEVENHandler(BaseHTTPRequestHandler):
         _pkg_service.encolar_instalacion(valid)
         self._send_json({"status": "ok", "encolados": len(valid)})
 
+    # ══════════════════════════════════════════════════════════════════════════
+    # Config Manager v2.0 — Handlers para perfiles AI/DB
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def _handle_config_ai_list(self):
+        """GET /api/config/ai-profiles — Lista todos los perfiles de IA."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            profiles = mgr.list_ai_profiles()
+            self._send_json({
+                "status": "ok",
+                "profiles": profiles,
+                "active_id": mgr.active_ai_profile,
+            })
+        except Exception as e:
+            self._send_error_json(f"Error listando perfiles AI: {e}", 500)
+
+    def _handle_config_ai_get(self, profile_id: str):
+        """GET /api/config/ai-profiles/{id} — Obtener perfil específico."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            profile = mgr.get_ai_profile(profile_id)
+            if profile:
+                self._send_json({"status": "ok", "profile": profile})
+            else:
+                self._send_error_json(f"Perfil no encontrado: {profile_id}", 404)
+        except Exception as e:
+            self._send_error_json(f"Error obteniendo perfil AI: {e}", 500)
+
+    def _handle_config_ai_create(self, body: dict):
+        """POST /api/config/ai-profiles — Crear nuevo perfil de IA."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            profile_id = mgr.add_ai_profile(
+                name=body.get("name", "Nuevo Perfil"),
+                provider=body.get("provider", "openai"),
+                model=body.get("model", "gpt-4o"),
+                api_key=body.get("api_key"),
+                endpoint=body.get("endpoint"),
+                api_version=body.get("api_version"),
+                temperature=body.get("temperature", 0.7),
+                max_tokens=body.get("max_tokens", 4096),
+                timeout=body.get("timeout", 120),
+                set_active=body.get("set_active", False),
+            )
+            mgr.save()
+            self._send_json({
+                "status": "ok",
+                "message": "Perfil creado",
+                "profile_id": profile_id,
+            })
+        except Exception as e:
+            self._send_error_json(f"Error creando perfil AI: {e}", 500)
+
+    def _handle_config_ai_update(self, profile_id: str, body: dict):
+        """POST /api/config/ai-profiles/{id} — Actualizar perfil existente."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            success = mgr.update_ai_profile(
+                profile_id=profile_id,
+                name=body.get("name"),
+                provider=body.get("provider"),
+                model=body.get("model"),
+                api_key=body.get("api_key"),
+                endpoint=body.get("endpoint"),
+                api_version=body.get("api_version"),
+                temperature=body.get("temperature"),
+                max_tokens=body.get("max_tokens"),
+                timeout=body.get("timeout"),
+            )
+            if success:
+                mgr.save()
+                self._send_json({"status": "ok", "message": "Perfil actualizado"})
+            else:
+                self._send_error_json(f"Perfil no encontrado: {profile_id}", 404)
+        except Exception as e:
+            self._send_error_json(f"Error actualizando perfil AI: {e}", 500)
+
+    def _handle_config_ai_delete(self, profile_id: str):
+        """POST /api/config/ai-profiles/{id}/delete — Eliminar perfil."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            success = mgr.delete_ai_profile(profile_id)
+            if success:
+                mgr.save()
+                self._send_json({"status": "ok", "message": "Perfil eliminado"})
+            else:
+                self._send_error_json(f"Perfil no encontrado: {profile_id}", 404)
+        except Exception as e:
+            self._send_error_json(f"Error eliminando perfil AI: {e}", 500)
+
+    def _handle_config_ai_activate(self, profile_id: str):
+        """POST /api/config/ai-profiles/{id}/activate — Activar perfil."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            success = mgr.set_active_ai_profile(profile_id)
+            if success:
+                mgr.save()
+                self._send_json({"status": "ok", "message": "Perfil activado"})
+            else:
+                self._send_error_json(f"Perfil no encontrado: {profile_id}", 404)
+        except Exception as e:
+            self._send_error_json(f"Error activando perfil AI: {e}", 500)
+
+    def _handle_config_ai_test(self, profile_id: str):
+        """POST /api/config/ai-profiles/{id}/test — Probar conexión."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            result = mgr.test_ai_connection(profile_id)
+            self._send_json(result)
+        except Exception as e:
+            self._send_error_json(f"Error probando conexión AI: {e}", 500)
+
+    # ── DB Connection handlers ────────────────────────────────────────────────
+
+    def _handle_config_db_list(self):
+        """GET /api/config/db-connections — Lista todas las conexiones DB."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            connections = mgr.list_db_connections()
+            self._send_json({
+                "status": "ok",
+                "connections": connections,
+                "active_id": mgr.active_db_connection,
+            })
+        except Exception as e:
+            self._send_error_json(f"Error listando conexiones DB: {e}", 500)
+
+    def _handle_config_db_get(self, conn_id: str):
+        """GET /api/config/db-connections/{id} — Obtener conexión específica."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            conn = mgr.get_db_connection(conn_id)
+            if conn:
+                self._send_json({"status": "ok", "connection": conn})
+            else:
+                self._send_error_json(f"Conexión no encontrada: {conn_id}", 404)
+        except Exception as e:
+            self._send_error_json(f"Error obteniendo conexión DB: {e}", 500)
+
+    def _handle_config_db_create(self, body: dict):
+        """POST /api/config/db-connections — Crear nueva conexión DB."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            conn_id = mgr.add_db_connection(
+                name=body.get("name", "Nueva Conexión"),
+                db_type=body.get("db_type", "postgresql"),
+                database=body.get("database", ""),
+                host=body.get("host"),
+                port=body.get("port"),
+                username=body.get("username"),
+                password=body.get("password"),
+                use_windows_auth=body.get("use_windows_auth", False),
+                extra_params=body.get("extra_params"),
+                set_active=body.get("set_active", False),
+            )
+            mgr.save()
+            self._send_json({
+                "status": "ok",
+                "message": "Conexión creada",
+                "connection_id": conn_id,
+            })
+        except Exception as e:
+            self._send_error_json(f"Error creando conexión DB: {e}", 500)
+
+    def _handle_config_db_update(self, conn_id: str, body: dict):
+        """POST /api/config/db-connections/{id} — Actualizar conexión existente."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            success = mgr.update_db_connection(
+                conn_id=conn_id,
+                name=body.get("name"),
+                db_type=body.get("db_type"),
+                host=body.get("host"),
+                port=body.get("port"),
+                database=body.get("database"),
+                username=body.get("username"),
+                password=body.get("password"),
+                use_windows_auth=body.get("use_windows_auth"),
+                extra_params=body.get("extra_params"),
+            )
+            if success:
+                mgr.save()
+                self._send_json({"status": "ok", "message": "Conexión actualizada"})
+            else:
+                self._send_error_json(f"Conexión no encontrada: {conn_id}", 404)
+        except Exception as e:
+            self._send_error_json(f"Error actualizando conexión DB: {e}", 500)
+
+    def _handle_config_db_delete(self, conn_id: str):
+        """POST /api/config/db-connections/{id}/delete — Eliminar conexión."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            success = mgr.delete_db_connection(conn_id)
+            if success:
+                mgr.save()
+                self._send_json({"status": "ok", "message": "Conexión eliminada"})
+            else:
+                self._send_error_json(f"Conexión no encontrada: {conn_id}", 404)
+        except Exception as e:
+            self._send_error_json(f"Error eliminando conexión DB: {e}", 500)
+
+    def _handle_config_db_activate(self, conn_id: str):
+        """POST /api/config/db-connections/{id}/activate — Activar conexión."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            success = mgr.set_active_db_connection(conn_id)
+            if success:
+                mgr.save()
+                self._send_json({"status": "ok", "message": "Conexión activada"})
+            else:
+                self._send_error_json(f"Conexión no encontrada: {conn_id}", 404)
+        except Exception as e:
+            self._send_error_json(f"Error activando conexión DB: {e}", 500)
+
+    def _handle_config_db_test(self, conn_id: str):
+        """POST /api/config/db-connections/{id}/test — Probar conexión."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            result = mgr.test_db_connection(conn_id)
+            self._send_json(result)
+        except Exception as e:
+            self._send_error_json(f"Error probando conexión DB: {e}", 500)
+
+    # ── Providers / Types helpers ─────────────────────────────────────────────
+
+    def _handle_config_providers(self):
+        """GET /api/config/providers — Lista proveedores AI y sus modelos."""
+        self._send_json({
+            "status": "ok",
+            "providers": AI_PROVIDERS,
+            "models": AI_MODELS,
+        })
+
+    def _handle_config_db_types(self):
+        """GET /api/config/db-types — Lista tipos de BD y puertos default."""
+        self._send_json({
+            "status": "ok",
+            "db_types": DB_TYPES,
+            "default_ports": DB_DEFAULT_PORTS,
+        })
+
+    # ── Prompts handlers ──────────────────────────────────────────────────────
+
+    def _handle_config_prompts_list(self):
+        """GET /api/config/prompts — Lista prompts disponibles organizados por categoría."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            prompts_dir = mgr.prompts.prompts_directory
+            
+            # Cargar configuración de categorías
+            config_path = os.path.join(prompts_dir, "prompts_config.json")
+            categories_config = {}
+            if os.path.isfile(config_path):
+                with open(config_path, "r", encoding="utf-8") as f:
+                    categories_config = json.load(f)
+            
+            categories = categories_config.get("categories", {})
+            default_category = categories_config.get("default_category", "custom")
+            
+            # Recopilar todos los prompts
+            all_prompts = {}  # id -> prompt info
+            
+            # System prompts
+            if os.path.isdir(prompts_dir):
+                for f in sorted(os.listdir(prompts_dir)):
+                    if f.endswith(".txt"):
+                        pid = os.path.splitext(f)[0]
+                        all_prompts[pid] = {
+                            "id": pid,
+                            "name": pid.replace("_", " ").replace("-", " ").title(),
+                            "type": "system",
+                        }
+            
+            # Custom prompts
+            custom_dir = os.path.join(prompts_dir, "custom")
+            if os.path.isdir(custom_dir):
+                for f in sorted(os.listdir(custom_dir)):
+                    if f.endswith(".txt"):
+                        pid = os.path.splitext(f)[0]
+                        all_prompts[pid] = {
+                            "id": pid,
+                            "name": pid.replace("_", " ").replace("-", " ").title(),
+                            "type": "custom",
+                        }
+            
+            # Organizar por categorías
+            categorized = {}
+            assigned_prompts = set()
+            
+            for cat_id, cat_info in categories.items():
+                cat_prompts = []
+                for pid in cat_info.get("prompts", []):
+                    if pid in all_prompts:
+                        cat_prompts.append(all_prompts[pid])
+                        assigned_prompts.add(pid)
+                
+                # Agregar prompts custom a categoría "custom"
+                if cat_id == "custom":
+                    for pid, pinfo in all_prompts.items():
+                        if pinfo["type"] == "custom" and pid not in assigned_prompts:
+                            cat_prompts.append(pinfo)
+                            assigned_prompts.add(pid)
+                
+                if cat_prompts or cat_id == "custom":  # Siempre mostrar custom aunque esté vacía
+                    categorized[cat_id] = {
+                        "label": cat_info.get("label", cat_id.title()),
+                        "icon": cat_info.get("icon", "📄"),
+                        "prompts": cat_prompts,
+                    }
+            
+            # Prompts no asignados van a default_category
+            unassigned = [p for pid, p in all_prompts.items() if pid not in assigned_prompts]
+            if unassigned:
+                if default_category not in categorized:
+                    categorized[default_category] = {
+                        "label": "Otros",
+                        "icon": "📄",
+                        "prompts": [],
+                    }
+                categorized[default_category]["prompts"].extend(unassigned)
+            
+            self._send_json({
+                "status": "ok",
+                "active": mgr.prompts.active_system,
+                "categories": categorized,
+            })
+        except Exception as e:
+            self._send_error_json(f"Error listando prompts: {e}", 500)
+
+    def _handle_config_prompt_get(self, prompt_id: str):
+        """GET /api/config/prompts/{id} — Obtener contenido de un prompt."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _get_config_manager()
+            prompts_dir = mgr.prompts.prompts_directory
+            
+            # Try system prompt first
+            path = os.path.join(prompts_dir, f"{prompt_id}.txt")
+            prompt_type = "system"
+            
+            if not os.path.isfile(path):
+                # Try custom
+                path = os.path.join(prompts_dir, "custom", f"{prompt_id}.txt")
+                prompt_type = "custom"
+            
+            if not os.path.isfile(path):
+                self._send_error_json(f"Prompt no encontrado: {prompt_id}", 404)
+                return
+            
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            
+            self._send_json({
+                "status": "ok",
+                "id": prompt_id,
+                "type": prompt_type,
+                "content": content,
+                "editable": prompt_type == "custom",
+            })
+        except Exception as e:
+            self._send_error_json(f"Error leyendo prompt: {e}", 500)
+
+    def _handle_config_prompt_save(self, body: dict):
+        """POST /api/config/prompts — Guardar prompt (con backup automático)."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            prompt_id = body.get("id", "").strip()
+            content = body.get("content", "")
+            set_active = body.get("set_active", False)
+            
+            if not prompt_id:
+                self._send_error_json("ID de prompt requerido", 400)
+                return
+            
+            # Sanitize ID
+            prompt_id = "".join(c for c in prompt_id if c.isalnum() or c in "-_")
+            
+            mgr = _get_config_manager()
+            prompts_dir = mgr.prompts.prompts_directory
+            
+            # Determinar si es prompt de sistema o custom existente
+            system_path = os.path.join(prompts_dir, f"{prompt_id}.txt")
+            custom_path = os.path.join(prompts_dir, "custom", f"{prompt_id}.txt")
+            
+            if os.path.isfile(system_path):
+                # Es prompt de sistema - hacer backup antes de sobrescribir
+                backup_dir = os.path.join(prompts_dir, "backup")
+                os.makedirs(backup_dir, exist_ok=True)
+                
+                # Backup con timestamp
+                import datetime
+                ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                backup_path = os.path.join(backup_dir, f"{prompt_id}_{ts}.txt")
+                
+                # Solo hacer backup si no existe uno idéntico reciente
+                with open(system_path, "r", encoding="utf-8") as f:
+                    original_content = f.read()
+                
+                if original_content != content:  # Solo backup si hay cambios
+                    with open(backup_path, "w", encoding="utf-8") as f:
+                        f.write(original_content)
+                    print(f"[Prompts] Backup creado: {backup_path}")
+                
+                # Guardar directamente en el archivo de sistema
+                target_path = system_path
+            elif os.path.isfile(custom_path):
+                # Es prompt custom existente - sobrescribir
+                target_path = custom_path
+            else:
+                # Es nuevo prompt custom
+                custom_dir = os.path.join(prompts_dir, "custom")
+                os.makedirs(custom_dir, exist_ok=True)
+                target_path = os.path.join(custom_dir, f"{prompt_id}.txt")
+            
+            # Guardar
+            with open(target_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            
+            if set_active:
+                mgr.prompts.active_system = prompt_id
+                mgr.save()
+            
+            self._send_json({
+                "status": "ok",
+                "message": "Prompt guardado",
+                "id": prompt_id,
+                "path": target_path,
+            })
+        except Exception as e:
+            self._send_error_json(f"Error guardando prompt: {e}", 500)
+
+    def _handle_config_reload(self):
+        """POST /api/config/reload — Recargar configuración desde archivo."""
+        if not _CONFIG_MANAGER_AVAILABLE:
+            self._send_error_json("Config Manager no disponible", 503)
+            return
+        try:
+            mgr = _reload_config()
+            self._send_json({
+                "status": "ok",
+                "message": "Configuración recargada",
+                "version": mgr.version,
+            })
+        except Exception as e:
+            self._send_error_json(f"Error recargando config: {e}", 500)
+
+    # ══════════════════════════════════════════════════════════════════════════
+
     # ── AI/Chat endpoint ──────────────────────────────────────────────────────
 
     def _handle_ai_chat(self, body: dict):
@@ -945,6 +1583,18 @@ class NEVENHandler(BaseHTTPRequestHandler):
           {status, message, code}               on error
         """
         import urllib.request as _url_req
+        import traceback
+
+        try:
+            return self._handle_ai_chat_impl(body, _url_req)
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(f"[AI Chat] CRITICAL ERROR:\n{tb}")
+            self._send_error_json(f"Error interno en AI Chat: {e}", 500)
+            return
+
+    def _handle_ai_chat_impl(self, body: dict, _url_req):
+        """Implementación interna del chat con AI."""
 
         # ── Load AI config from neven-config.json ────────────────────────────
         static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
@@ -962,22 +1612,56 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_error_json(f"No se pudo leer neven-config.json: {exc}", 503)
             return
 
-        ai = full_cfg.get("AI", {})
-        if not ai.get("enabled", False):
-            self._send_error_json(
-                "AI.enabled=false en neven-config.json. Habilite la integración AI primero.",
-                503
-            )
-            return
-
-        endpoint    = ai.get("endpoint", "http://localhost:1234/v1/chat/completions")
-        model       = ai.get("model", "local-model")
-        max_tokens  = int(ai.get("maxTokens", 1000))
-        temperature = float(ai.get("temperature", 0.3))
-        timeout_sec = int(ai.get("timeout", 60))
-        api_key     = ai.get("apiKey", "")
-        provider    = ai.get("provider", "lmstudio")
-        prompts_dir = ai.get("promptsDirectory", r"C:\NEVEN\prompts")
+        # ═══ Obtener configuración AI del perfil activo (v2) o sección legacy ═══
+        endpoint    = ""
+        model       = ""
+        max_tokens  = 2000
+        temperature = 0.3
+        timeout_sec = 60
+        api_key     = ""
+        provider    = "lmstudio"
+        prompts_dir = r"C:\NEVEN\prompts"
+        api_version = ""
+        
+        if _CONFIG_MANAGER_AVAILABLE:
+            # Usar sistema nuevo de perfiles con credenciales en keyring
+            try:
+                mgr = _get_config_manager()
+                active_profile = mgr.get_active_ai_profile()
+                if active_profile:
+                    endpoint    = active_profile.get("endpoint", "")
+                    model       = active_profile.get("model", "gpt-4")
+                    max_tokens  = int(active_profile.get("max_tokens", 2000))
+                    temperature = float(active_profile.get("temperature", 0.3))
+                    timeout_sec = int(active_profile.get("timeout", 60))
+                    provider    = active_profile.get("provider", "azure")
+                    api_version = active_profile.get("api_version", "")
+                    # API key viene de keyring via config_manager
+                    api_key     = active_profile.get("api_key", "")
+                    print(f"[AI Chat] Usando perfil activo: {active_profile.get('name')} ({provider}/{model})")
+            except Exception as e:
+                print(f"[AI Chat] Error obteniendo perfil activo: {e}")
+        
+        # Fallback a sección AI legacy si no hay perfil activo
+        if not api_key:
+            ai = full_cfg.get("AI", {})
+            if not ai.get("enabled", False):
+                self._send_error_json(
+                    "AI.enabled=false en neven-config.json. Habilite la integración AI primero.",
+                    503
+                )
+                return
+            endpoint    = ai.get("endpoint", "http://localhost:1234/v1/chat/completions")
+            model       = ai.get("model", "local-model")
+            max_tokens  = int(ai.get("maxTokens", 1000))
+            temperature = float(ai.get("temperature", 0.3))
+            timeout_sec = int(ai.get("timeout", 60))
+            api_key     = ai.get("apiKey", "")
+            provider    = ai.get("provider", "lmstudio")
+            api_version = ai.get("api_version", "")
+        
+        prompts_cfg = full_cfg.get("prompts", {})
+        prompts_dir = prompts_cfg.get("prompts_directory", r"C:\NEVEN\prompts")
 
         # ── Build messages array ──────────────────────────────────────────────
         messages = body.get("messages", [])
@@ -1072,36 +1756,39 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if context or catalog_section:
             if has_sheet_analysis:
                 # ═══════════════════════════════════════════════════════════════
-                # Excel Consultant Mode — Uses sheet structure for precise answers
+                # Excel Forensic Analysis Mode — Usa prompt forense para auditoria
                 # ═══════════════════════════════════════════════════════════════
-                sys_content = (
-                    "Eres un **Consultor Excel experto** integrado en NEVEN.\n\n"
-                    "## Tu rol\n"
-                    "Actúas como auditor, documentador y asesor de hojas de cálculo. "
-                    "Tienes acceso al análisis estructural de la hoja activa del usuario.\n\n"
-                    "## Capacidad: Crear funciones NEVEN\n"
-                    "Si Excel nativo no puede resolver algo, puedes crear funciones R/Julia/Python.\n"
-                    "Para que aparezcan en el Diccionario de Funciones, crea:\n"
-                    "1. Archivo de código en `C:\\NEVEN\\libreria\\R\\` (o JULIA/, PYTHON/)\n"
-                    "2. Sidecar JSON en `C:\\NEVEN\\functions\\{ID}.json` con:\n"
-                    "   - `function_name_xll`: nombre para =NEVEN.R(...)\n"
-                    "   - `nevenx_positions`: mapeo de argumentos a0-a9\n"
-                    "   - `tipo_outputs`: lista de outputs\n"
-                    "Ver documentación completa: `C:\\NEVEN\\functions\\AGENT_INSTRUCTIONS.md`\n\n"
-                    "## REGLA CRÍTICA: Usa el contexto para respuestas precisas\n"
-                    "Cuando el usuario pregunte sobre una columna por nombre (ej: 'totaliza SALARIOS'), SIEMPRE:\n"
-                    "1. Busca en '## Estructura de columnas' qué columna tiene ese nombre\n"
-                    "2. Usa el rango exacto mostrado (ej: D2:D13) para tu fórmula\n"
-                    "3. NUNCA pidas más información si ya la tienes en el contexto\n\n"
-                    "Ejemplo:\n"
-                    "- Contexto dice: Columna D = 'SALARIOS' → datos en D2:D13\n"
-                    "- Usuario pregunta: 'totaliza salarios'\n"
-                    "- Respuesta correcta: =SUMA(D2:D13)\n"
-                    "- Respuesta INCORRECTA: '¿En qué rango están los salarios?'\n\n"
-                    f"## Contexto del análisis de la hoja:\n\n{context}\n\n"
-                    "Responde siempre basándote en los datos reales de la hoja del usuario, no en abstracto.\n\n"
-                    + _fmt
-                )
+                forense_prompt = ""
+                forense_path = os.path.join(prompts_dir, "analisis_forense_libro.txt")
+                if os.path.isfile(forense_path):
+                    try:
+                        with open(forense_path, "r", encoding="utf-8") as f:
+                            forense_prompt = f.read()
+                    except Exception:
+                        pass
+                
+                if forense_prompt:
+                    sys_content = (
+                        forense_prompt + "\n\n"
+                        f"## DATOS DEL ANALISIS ACTUAL:\n\n{context}\n\n"
+                        + _fmt
+                    )
+                else:
+                    # Fallback si no existe el archivo
+                    sys_content = (
+                        "Eres un **Consultor Excel experto** integrado en NEVEN.\n\n"
+                        "## Tu rol\n"
+                        "Actuas como auditor forense, documentador y asesor de hojas de calculo. "
+                        "Tienes acceso al analisis estructural de la hoja activa del usuario.\n\n"
+                        "## REGLA CRITICA: Usa el contexto para respuestas precisas\n"
+                        "Cuando el usuario pregunte sobre una columna por nombre, SIEMPRE:\n"
+                        "1. Busca en '## Estructura de columnas' que columna tiene ese nombre\n"
+                        "2. Usa el rango exacto mostrado para tu formula\n"
+                        "3. NUNCA pidas mas informacion si ya la tienes en el contexto\n\n"
+                        f"## Contexto del analisis de la hoja:\n\n{context}\n\n"
+                        "Responde siempre basandote en los datos reales de la hoja del usuario.\n\n"
+                        + _fmt
+                    )
             elif has_results_context and has_excel_context:
                 sys_content = (
                     "Eres NEVEN Assistant, un econometrista experto. "
@@ -1163,7 +1850,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if provider == "azure":
             # Azure OpenAI usa api-key en header y endpoint con deployment + api-version
             headers["api-key"] = api_key
-            api_version = ai.get("apiVersion", "2025-01-01-preview")
+            # api_version ya viene del perfil activo; fallback solo si está vacía
+            if not api_version:
+                ai = full_cfg.get("AI", {})
+                api_version = ai.get("apiVersion", "2025-01-01-preview")
             azure_base  = endpoint.rstrip("/")
             endpoint = (
                 f"{azure_base}/openai/deployments/{model}"
@@ -1188,41 +1878,50 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 "temperature": temperature,
             }, ensure_ascii=False).encode("utf-8")
 
+        print(f"[AI Chat] Endpoint: {endpoint}")
+        
+        # Usar requests en lugar de urllib (más confiable en threading)
+        import requests as _requests
         try:
-            req = _url_req.Request(
-                endpoint, data=req_body, headers=headers, method="POST"
+            resp = _requests.post(
+                endpoint,
+                headers=headers,
+                data=req_body,
+                timeout=timeout_sec
             )
-            with _url_req.urlopen(req, timeout=timeout_sec) as resp:
-                raw_body = resp.read()
-                # Defensive decode — strip BOM si existe
-                raw_str = raw_body.decode("utf-8-sig").strip()
-                if not raw_str:
-                    self._send_error_json(
-                        f"El LLM ({provider}) retornó respuesta vacía. "
-                        f"Verifica el modelo '{model}' y la apiVersion en neven-config.json.",
-                        502
-                    )
-                    return
-                data = json.loads(raw_str)
-        except _url_req.HTTPError as exc:
-            try:
-                err_body = exc.read().decode("utf-8", errors="replace")
+            
+            if resp.status_code != 200:
+                detail = resp.text[:300]
                 try:
-                    err_json = json.loads(err_body)
+                    err_json = resp.json()
                     detail = (err_json.get("error", {}).get("message")
-                              or err_json.get("message") or err_body[:300])
+                              or err_json.get("message") or detail)
                 except Exception:
-                    detail = err_body[:300]
-            except Exception:
-                detail = str(exc)
+                    pass
+                self._send_error_json(
+                    f"El LLM ({provider}) retornó HTTP {resp.status_code}: {detail}", 502)
+                return
+            
+            raw_str = resp.text.strip()
+            if not raw_str:
+                self._send_error_json(
+                    f"El LLM ({provider}) retornó respuesta vacía. "
+                    f"Verifica el modelo '{model}' y la apiVersion en neven-config.json.",
+                    502
+                )
+                return
+            data = resp.json()
+        except _requests.exceptions.Timeout:
             self._send_error_json(
-                f"El LLM ({provider}) retornó HTTP {exc.code}: {detail}", 502)
+                f"Timeout al llamar al LLM ({provider}). "
+                f"El servidor no respondió en {timeout_sec} segundos.",
+                504
+            )
             return
-        except _url_req.URLError as exc:
-            reason = str(exc.reason) if hasattr(exc, "reason") else str(exc)
+        except _requests.exceptions.RequestException as exc:
             self._send_error_json(
                 f"No se pudo conectar al LLM ({provider}). "
-                f"Verifique que {endpoint} esté activo. Detalle: {reason}",
+                f"Verifique que {endpoint} esté activo. Detalle: {exc}",
                 503
             )
             return
@@ -2011,49 +2710,6 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "UC": "Casos de Uso"
         }
         
-        # Alias de nombres cortos (sincronizado con R4XCL-0-NevenX.R)
-        # Mapeo: function_name_xll → lista de alias
-        _function_aliases = {
-            # --- Análisis de Datos (AD_) ---
-            "AD_ACP.C": ["ACP", "PCA"],
-            "AD_KMedias.C": ["KMeans", "KMedias"],
-            "AD_ClusteringJerarquico.C": ["Clustering", "HClust"],
-            "AD_Correlacion.C": ["Cor", "Correlacion"],
-            "AD_ArbolDeDecision.C": ["Arbol", "DecisionTree", "CART"],
-            
-            # --- Regresión (MR_ y RG_) ---
-            "MR_Lineal": ["Lineal", "LM", "OLS"],
-            "MR_Binario.C": ["Logistica", "Logit", "Binario"],
-            "MR_Poisson.C": ["Poisson"],
-            "MR_Tobit.C": ["Tobit"],
-            "MR_2SLS": ["IV", "2SLS", "Instrumentales"],
-            "MR_PanelData.C": ["Panel", "PanelData"],
-            "MR_Newey_West": ["NeweyWest", "HAC"],
-            "MR_FGLS": ["FGLS", "GLS"],
-            "MR_HECKIT": ["Heckit", "Heckman"],
-            "MR_SVM": ["SVM", "SupportVector"],
-            "MR_RESET": ["RESET"],
-            "MR_Davidson_MacKinnon": ["Davidson", "MacKinnon"],
-            "RG_Lineal.C": ["Lineal", "LM", "OLS"],
-            "RG_Logistica.C": ["Logistica", "Logit"],
-            "RG_Poisson.C": ["Poisson"],
-            "RG_SeriesTiempo.C": ["ARIMA", "SeriesTiempo"],
-            
-            # --- Series de Tiempo (ST_) ---
-            "ST_AutoRegresivos": ["AR", "AutoRegresivo", "ARIMA"],
-            "ST_ECM": ["ECM", "Cointegracion", "ErrorCorrection"],
-            "ST_VAR": ["VAR", "VectorAR"],
-            
-            # --- Gráficos (GR_) ---
-            "GR_Histograma.C": ["Histograma", "Hist"],
-            "GR_BoxPlot.C": ["BoxPlot", "Box"],
-            "GR_Scatter.C": ["Scatter", "Dispersion"],
-            "GR_Correlaciones.C": ["Correlaciones", "CorrPlot"],
-            
-            # --- Text Mining (TM_) ---
-            "TM_TextMining": ["TextMining", "NLP", "Texto"],
-        }
-        
         try:
             if not os.path.isdir(functions_dir):
                 self._send_json(result)
@@ -2084,14 +2740,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
                         }
                     
                     # Extraer información relevante para el diccionario
-                    aliases_found = _function_aliases.get(xll_name, [])
-                    print(f"[AYUDA DEBUG] xll={xll_name} aliases={aliases_found}")  # DEBUG
                     func_info = {
                         "id": sidecar.get('id', filename.replace('.json', '')),
                         "name": sidecar.get('name', xll_name),
                         "description": sidecar.get('description', ''),
                         "function_name_xll": xll_name,
-                        "aliases": aliases_found,
                         "languages": sidecar.get('languages', []),
                         "wikipedia_url": sidecar.get('wikipedia_url'),
                         "nevenx_positions": sidecar.get('nevenx_positions', {}),

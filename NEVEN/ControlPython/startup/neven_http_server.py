@@ -1485,22 +1485,56 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_error_json(f"No se pudo leer neven-config.json: {exc}", 503)
             return
 
-        ai = full_cfg.get("AI", {})
-        if not ai.get("enabled", False):
-            self._send_error_json(
-                "AI.enabled=false en neven-config.json. Habilite la integración AI primero.",
-                503
-            )
-            return
-
-        endpoint    = ai.get("endpoint", "http://localhost:1234/v1/chat/completions")
-        model       = ai.get("model", "local-model")
-        max_tokens  = int(ai.get("maxTokens", 1000))
-        temperature = float(ai.get("temperature", 0.3))
-        timeout_sec = int(ai.get("timeout", 60))
-        api_key     = ai.get("apiKey", "")
-        provider    = ai.get("provider", "lmstudio")
-        prompts_dir = ai.get("promptsDirectory", r"C:\NEVEN\prompts")
+        # ═══ Obtener configuración AI del perfil activo (v2) o sección legacy ═══
+        endpoint    = ""
+        model       = ""
+        max_tokens  = 2000
+        temperature = 0.3
+        timeout_sec = 60
+        api_key     = ""
+        provider    = "lmstudio"
+        prompts_dir = r"C:\NEVEN\prompts"
+        api_version = ""
+        
+        if _CONFIG_MANAGER_AVAILABLE:
+            # Usar sistema nuevo de perfiles con credenciales en keyring
+            try:
+                mgr = _get_config_manager()
+                active_profile = mgr.get_active_ai_profile()
+                if active_profile:
+                    endpoint    = active_profile.get("endpoint", "")
+                    model       = active_profile.get("model", "gpt-4")
+                    max_tokens  = int(active_profile.get("max_tokens", 2000))
+                    temperature = float(active_profile.get("temperature", 0.3))
+                    timeout_sec = int(active_profile.get("timeout", 60))
+                    provider    = active_profile.get("provider", "azure")
+                    api_version = active_profile.get("api_version", "")
+                    # API key viene de keyring via config_manager
+                    api_key     = active_profile.get("api_key", "")
+                    log.info(f"[AI Chat] Usando perfil activo: {active_profile.get('name')} ({provider}/{model})")
+            except Exception as e:
+                log.warning(f"[AI Chat] Error obteniendo perfil activo: {e}")
+        
+        # Fallback a sección AI legacy si no hay perfil activo
+        if not api_key:
+            ai = full_cfg.get("AI", {})
+            if not ai.get("enabled", False):
+                self._send_error_json(
+                    "AI.enabled=false en neven-config.json. Habilite la integración AI primero.",
+                    503
+                )
+                return
+            endpoint    = ai.get("endpoint", "http://localhost:1234/v1/chat/completions")
+            model       = ai.get("model", "local-model")
+            max_tokens  = int(ai.get("maxTokens", 1000))
+            temperature = float(ai.get("temperature", 0.3))
+            timeout_sec = int(ai.get("timeout", 60))
+            api_key     = ai.get("apiKey", "")
+            provider    = ai.get("provider", "lmstudio")
+            api_version = ai.get("api_version", "")
+        
+        prompts_cfg = full_cfg.get("prompts", {})
+        prompts_dir = prompts_cfg.get("prompts_directory", r"C:\NEVEN\prompts")
 
         # ── Build messages array ──────────────────────────────────────────────
         messages = body.get("messages", [])

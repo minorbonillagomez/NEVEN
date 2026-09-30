@@ -3500,6 +3500,9 @@ function initSettingsTab() {
 
   // Cargar proveedores/modelos desde servidor
   loadConfigMetadata();
+  
+  // Cargar perfiles AI al inicio (es el sub-tab activo por defecto)
+  loadAiProfiles();
 }
 
 // ─── Cargar metadata de configuracion ────────────────────────────────────────

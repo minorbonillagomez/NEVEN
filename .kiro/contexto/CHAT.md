@@ -7,12 +7,142 @@
 ---
 
 ## Ultima actualizacion
-**Fecha:** 2026-08-20
-**Hora aproximada:** ~09:15 — Diseño refinado: perfiles múltiples + encriptación + Python requerido
+**Fecha:** 2026-08-19
+**Hora aproximada:** ~mediodía — Fix AI Chat endpoint
 
 ---
 
 ## Sesiones recientes
+
+### Sesion 2026-08-19 (~11:30) — Fix AI Chat "Failed to fetch"
+
+**Estado:** COMPLETO
+
+### Problema diagnosticado
+
+El endpoint `/api/ai/chat` fallaba con "Error de red: Failed to fetch" (conexión terminada inesperadamente).
+
+### Causas identificadas
+
+1. **Múltiples instancias del servidor HTTP** — Había DOS procesos Python escuchando en puerto 5555. Los requests llegaban al proceso incorrecto que no tenía el handler actualizado.
+
+2. **`urllib.request.urlopen` bloqueaba en threading** — La librería estándar de Python para HTTP no funciona bien dentro del contexto de threading del HTTPServer. La llamada quedaba bloqueada indefinidamente sin timeout efectivo.
+
+3. **Referencias a `log.info()`/`log.warning()` sin definir `log`** — Agregué logs usando un objeto `log` que no existía, causando `NameError` silencioso.
+
+4. **Variable `ai` usada sin definir** — En el bloque de Azure, se usaba `ai.get("apiVersion", ...)` pero `ai` solo se define en el fallback legacy, no cuando usa config_manager.
+
+### Fixes aplicados
+
+1. **Cambiado de `urllib.request` a `requests`** — La librería `requests` funciona correctamente en contextos de threading.
+
+2. **Corregido acceso a `api_version`** — Ahora verifica si `api_version` está vacía antes de hacer fallback a config legacy.
+
+3. **Reemplazado `log.info/warning` por `print()`** — Para logging simple sin dependencias externas.
+
+4. **Eliminados servidores duplicados** — Instrucciones para verificar con `netstat -ano | Select-String ":5555"`.
+
+### Prueba de verificación
+
+```powershell
+# Verificar un solo servidor
+netstat -ano | Select-String ":5555.*LISTENING"
+
+# Probar endpoint AI
+$body = '{"messages":[{"role":"user","content":"Di OK"}]}'
+$body | Out-File -Encoding ASCII body.json -NoNewline
+curl.exe -s -X POST "http://localhost:5555/api/ai/chat" -H "Content-Type: application/json" -d "@body.json"
+# Debe retornar: {"status": "ok", "reply": "OK", "model": "gpt-4.1", ...}
+```
+
+### Archivos modificados
+
+- `C:\NEVEN\startup\neven_http_server.py` — Fix de AI Chat handler
+- `NEVEN\TaskPane\neven_http_server.py` — Copia al repositorio
+
+---
+
+### Sesion 2026-08-20 (~09:30-11:30) — Implementacion NEVEN Settings
+
+**Estado:** COMPLETO — Commit 918e511 pusheado
+
+### Logros principales
+
+1. **config_manager.py** — Modulo completo para gestion de configuracion
+   - Dataclasses: `AIProfile`, `DBConnection`, `PromptConfig`, `Preferences`
+   - CRUD completo para perfiles AI y conexiones DB
+   - Integracion con Windows Credential Manager via `keyring`
+   - Migracion automatica de config v1 a v2.0
+   - Tests de conexion para OpenAI, Azure, Anthropic, Ollama
+   - Tests de conexion para PostgreSQL, MySQL, SQL Server, SQLite, DuckDB
+
+2. **Endpoints HTTP** — 20+ nuevos endpoints en neven_http_server.py
+   - GET/POST `/api/config/ai-profiles` (list, get, create, update, delete, activate, test)
+   - GET/POST `/api/config/db-connections` (mismo set de operaciones)
+   - GET `/api/config/providers`, `/api/config/db-types`
+   - GET/POST `/api/config/prompts` (list, get, save)
+   - POST `/api/config/reload`
+
+3. **Tab Settings en TaskPane** — UI completa
+   - Sub-tabs: Motor IA, Conexiones DB, Prompts
+   - Lista de perfiles con radio buttons para activar
+   - Formularios de edicion con validacion
+   - Botones "Probar Conexion" con feedback visual
+   - Estilos CSS integrados con paleta NEVEN
+
+4. **Migracion neven-config.json** — v1 a v2.0
+   - API key de Azure movida a Windows Credential Manager
+   - Perfil "azure-migrated" creado automaticamente
+   - Secciones legacy (NEVEN, WebView2, TaskPane) preservadas
+
+### Archivos modificados (implementacion)
+
+| Archivo | Cambio |
+|---------|--------|
+| `ControlPython/startup/config_manager.py` | NUEVO — 1000+ lineas |
+| `ControlPython/startup/neven_http_server.py` | +400 lineas (handlers config) |
+| `TaskPane/taskpane.html` | +200 lineas (tab Settings) |
+| `TaskPane/taskpane.js` | +600 lineas (funciones Settings) |
+| `TaskPane/taskpane.css` | +50 lineas (estilos Settings) |
+| `Install/neven-config.json` | Formato v2.0 |
+| `C:\NEVEN\neven-config.json` | Migrado a v2.0 |
+
+### Decisiones de diseño
+
+1. **Credenciales en keyring** — API keys NUNCA en JSON, solo referencias
+2. **Multiples perfiles** — Usuario puede tener varios proveedores AI y cambiar entre ellos
+3. **Python requerido** — Ya no es opcional porque keyring y HTTP server lo necesitan
+4. **Migracion automatica** — config_manager detecta v1 y migra sin intervencion
+
+### Problema resuelto: Submodule corrupto
+
+**Sintoma:** `git add` fallaba con "in unpopulated submodule 'NEVEN'"
+
+**Causa raiz:** NEVEN estaba registrado como submodule (mode 160000) pero no habia `.gitmodules`. Estado inconsistente heredado.
+
+**Solucion:**
+```powershell
+git rm --cached NEVEN  # Remover referencia de submodule
+git add NEVEN/         # Agregar como directorio normal
+```
+
+**Resultado:** 850 archivos agregados al commit como directorio normal.
+
+### Commit
+
+```
+918e511 feat(settings): formulario de configuracion con perfiles AI/DB y keyring
+```
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar tab Settings con servidor HTTP corriendo |
+| **MEDIA** | Verificar que _handle_ai_chat use el perfil activo de config_manager |
+| **BAJA** | Agregar boton Settings al Ribbon (acceso directo sin abrir TaskPane) |
+
+---
 
 ### Sesion 2026-08-20 (~08:30-09:00) — Diseño: Formulario de Configuración NEVEN
 
@@ -11787,3 +11917,938 @@ Removidos los estilos inline de background/border-color de todos los botones par
 | **ALTA** | Hacer commit de todos los cambios acumulados |
 
 ---
+
+
+---
+
+### Sesion 2026-08-19 (~tarde) — Fix: Tab Settings no carga perfiles
+
+**Estado:** FIX APLICADO — Pendiente verificacion por usuario
+
+### Problema reportado
+
+Usuario reportó que el Tab Settings muestra "Cargando perfiles..." indefinidamente. El resto del TaskPane funciona correctamente.
+
+### Diagnóstico
+
+1. **Hipótesis inicial (incorrecta):** Error SSL - el TaskPane intentaba HTTPS mientras el servidor corre HTTP.
+   - Verificado: El manifest usa `http://localhost:5555/taskpane.html`
+   - Verificado: El código de detección HTTPS solo se ejecuta si `protocol === 'file:'`
+   - Verificado: `http://localhost:5555/api/config/ai-profiles` responde correctamente
+
+2. **Causa raíz encontrada:** El texto "Cargando perfiles..." está **hardcodeado en el HTML** como placeholder inicial. La función `loadAiProfiles()` nunca se ejecutaba automáticamente — solo se llamaba cuando el usuario hacía click en un sub-tab dentro de Settings.
+
+   ```html
+   <!-- taskpane.html línea 864-865 -->
+   <div id="ai-profiles-list">
+     <div class="msg-info">Cargando perfiles...</div>  <!-- ESTE ES EL PROBLEMA -->
+   </div>
+   ```
+
+   La función `initSettingsTab()` registra handlers para clicks en sub-tabs pero NO carga los datos del sub-tab activo por defecto ("ai").
+
+### Fix aplicado
+
+En `taskpane.js`, dentro de `initSettingsTab()`, agregué llamada a `loadAiProfiles()` para que cargue los perfiles AI al inicializar (ya que "ai" es el sub-tab activo por defecto):
+
+```javascript
+// Antes:
+  loadConfigMetadata();
+}
+
+// Después:
+  loadConfigMetadata();
+  
+  // Cargar perfiles AI al inicio (es el sub-tab activo por defecto)
+  loadAiProfiles();
+}
+```
+
+### Archivos modificados
+
+| Archivo | Ubicación en producción | Cambio |
+|---------|-------------------------|--------|
+| `TaskPane/taskpane.js` | `C:\NEVEN\TaskPane\taskpane.js` | +3 líneas en `initSettingsTab()` |
+
+### Pendientes (actualizados)
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe verificar que Tab Settings ahora carga perfiles |
+| **ALTA** | Investigar "asistente IA desconectado" — probablemente `_handle_ai_chat` no usa config_manager |
+| **MEDIA** | Verificar que `_handle_ai_chat` lee el perfil activo de config_manager |
+| **BAJA** | Agregar botón Settings al Ribbon |
+
+### Nota sobre el "asistente IA desconectado"
+
+**RESUELTO** — El problema era que `_handle_ai_chat` usaba la sección `AI` legacy que no existía en el config v2.0.
+
+**Fix aplicado:** Modifiqué `_handle_ai_chat` para usar `config_manager.get_active_ai_profile()` que obtiene la API key de Windows Credential Manager (keyring).
+
+**Archivos modificados:**
+- `C:\NEVEN\startup\neven_http_server.py` — +40 líneas en `_handle_ai_chat`
+- Sincronizado a `NEVEN\ControlPython\startup\neven_http_server.py`
+
+**Servidor reiniciado:** Verificado que `/api/config/ai-profiles` retorna el perfil activo con `has_api_key: true`.
+
+---
+
+### Resumen de cambios en esta sesión (2026-08-19)
+
+| Archivo | Cambio |
+|---------|--------|
+| `TaskPane/taskpane.js` | +3 líneas — llamar `loadAiProfiles()` en `initSettingsTab()` |
+| `startup/neven_http_server.py` | +40 líneas — `_handle_ai_chat` usa `config_manager` |
+
+### Pendientes actualizados
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe recargar TaskPane y probar Tab IA |
+| **MEDIA** | Verificar que el chat IA funciona con Azure |
+| **BAJA** | Agregar botón Settings al Ribbon |
+
+---
+
+### Sesión 2026-08-19 (~tarde, continuación) — Fix definitivo Tab Settings
+
+**Estado:** FIX APLICADO — Pendiente verificación
+
+### Problema
+
+Usuario reportó que Tab IA ya funciona pero Tab Settings sigue mostrando "Cargando perfiles..." indefinidamente.
+
+### Causa raíz
+
+El fix anterior (`loadAiProfiles()` en `initSettingsTab()`) **no se había aplicado correctamente al archivo de producción**. El `str_replace` se ejecutó pero al copiar el archivo al repositorio, se copió la versión sin el fix.
+
+**Verificación que reveló el problema:**
+```powershell
+# En producción, línea 3502-3503 mostraba:
+loadConfigMetadata();
+}
+# Faltaba la llamada a loadAiProfiles()
+```
+
+### Fix aplicado
+
+Reaplicado el fix directamente en `C:\NEVEN\TaskPane\taskpane.js`:
+
+```javascript
+// Antes (incorrecto):
+  loadConfigMetadata();
+}
+
+// Después (correcto):
+  loadConfigMetadata();
+  
+  // Cargar perfiles AI al inicio (es el sub-tab activo por defecto)
+  loadAiProfiles();
+}
+```
+
+### Archivos modificados
+
+| Archivo | Ubicación |
+|---------|-----------|
+| `taskpane.js` | `C:\NEVEN\TaskPane\taskpane.js` (producción) |
+| `taskpane.js` | `NEVEN\TaskPane\taskpane.js` (repositorio, sincronizado) |
+
+### Lección aprendida
+
+**Siempre verificar que el fix se aplicó en producción**, no solo en el repositorio. Usar comando de verificación:
+```powershell
+$content = Get-Content "C:\NEVEN\TaskPane\taskpane.js" -Raw
+$content -match "loadAiProfiles\(\)"  # Debe retornar True
+```
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe recargar TaskPane y verificar Tab Settings |
+| **MEDIA** | Commit de los fixes de esta sesión |
+| **BAJA** | Agregar botón Settings al Ribbon |
+
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Diagnóstico cache del TaskPane
+
+**Estado:** EN PROGRESO — Pendiente verificación por usuario
+
+### Problema persistente
+
+Tab Settings sigue mostrando "Cargando perfiles..." a pesar de que el código tiene el fix aplicado.
+
+### Diagnóstico
+
+1. Usuario compartió logs de consola del TaskPane
+2. Los logs `[Settings]` que agregué **NO aparecen** — esto confirma que `initSettingsTab()` nunca se ejecuta
+3. Verificado que el archivo JS tiene el código correcto
+4. **Causa raíz:** El navegador/WebView2 tiene el archivo `taskpane.js` cacheado
+
+### Evidencia del cache
+
+```
+// En consola aparece:
+ayuda.js?v=20260819202000  ← timestamp reciente
+// Pero taskpane.js tenía:
+taskpane.js?v=20260925113746  ← timestamp viejo (fecha futura por error)
+```
+
+### Fix aplicado
+
+Actualizado el cache busting en `taskpane.html`:
+```html
+<!-- Antes -->
+<script src="taskpane.js?v=20260925113746"></script>
+
+<!-- Después -->
+<script src="taskpane.js?v=20260930092837"></script>
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.js` | +logging para diagnóstico |
+| `C:\NEVEN\TaskPane\taskpane.html` | Actualizado cache busting timestamp |
+
+### Logging agregado para diagnóstico
+
+```javascript
+function initSettingsTab() {
+  console.log('[Settings] initSettingsTab() INICIANDO...');
+  // ...
+  console.log('[Settings] Llamando loadConfigMetadata()...');
+  console.log('[Settings] Llamando loadAiProfiles()...');
+  console.log('[Settings] initSettingsTab() COMPLETADO');
+}
+
+async function loadAiProfiles() {
+  console.log('[Settings] loadAiProfiles() INICIANDO...');
+  console.log('[Settings] ai-profiles-list element:', list);
+  console.log('[Settings] Fetch a:', API_BASE + '/api/config/ai-profiles');
+  console.log('[Settings] Response status:', resp.status);
+}
+```
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe recargar TaskPane y verificar logs [Settings] en consola |
+| **ALTA** | Si logs aparecen pero fetch falla, investigar CORS o error de red |
+| **MEDIA** | Remover logging de diagnóstico una vez funcione |
+| **MEDIA** | Sincronizar cambios al repositorio y hacer commit |
+
+### Nota sobre cache en Office Add-ins
+
+WebView2 (Edge Chromium embebido) cachea agresivamente los archivos JS/CSS. Para forzar recarga:
+1. Usar cache busting con timestamps: `script.js?v=TIMESTAMP`
+2. Cerrar y reabrir el TaskPane (no basta con cambiar de tab)
+3. En casos extremos, reiniciar Excel
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche, continuación) — Cache persistente de WebView2
+
+**Estado:** EN PROGRESO — Usuario debe reiniciar Excel
+
+### Diagnóstico confirmado
+
+Los logs de consola muestran que `taskpane.js` **no se está recargando** a pesar de actualizar el cache busting:
+- `ayuda.js?v=20260819202000` aparece en logs ✓
+- `[Settings]` logs NO aparecen ✗
+
+### Verificaciones realizadas
+
+1. **Código existe en el archivo:**
+   ```
+   Línea 3423: function initSettingsTab() {
+   Línea 3424:   console.log('[Settings] initSettingsTab() INICIANDO...');
+   Línea 3509:   console.log('[Settings] initSettingsTab() COMPLETADO');
+   Línea 4116:     initSettingsTab();
+   ```
+
+2. **Cache busting actualizado:** `taskpane.js?v=20260930093113`
+
+3. **El archivo en disco es correcto** — el problema es que WebView2 no lo recarga
+
+### Causa raíz
+
+**WebView2 (Edge Chromium embebido en Office Add-ins) cachea agresivamente los archivos JS** y no respeta el cache busting en algunos casos. El cache persiste incluso al cerrar y reabrir el TaskPane.
+
+### Solución requerida
+
+**El usuario debe cerrar Excel completamente y reabrirlo** para que WebView2 descarte el cache.
+
+### Archivos modificados en esta sesión
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.js` | +logging diagnóstico en `initSettingsTab` y `loadAiProfiles` |
+| `C:\NEVEN\TaskPane\taskpane.html` | Cache busting actualizado a `?v=20260930093113` |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe CERRAR EXCEL y reabrirlo para limpiar cache WebView2 |
+| **ALTA** | Verificar que aparezcan logs `[Settings]` en consola |
+| **MEDIA** | Una vez funcione, remover logs de diagnóstico |
+| **MEDIA** | Sincronizar archivos al repositorio y commit |
+
+### Nota técnica: Cache en Office Web Add-ins
+
+WebView2 usa el cache de Edge Chromium. Para forzar recarga:
+1. Cache busting con timestamps (`?v=TIMESTAMP`) — no siempre funciona
+2. Cerrar y reabrir TaskPane — a veces no es suficiente
+3. **Cerrar Excel completamente** — única forma garantizada
+4. En desarrollo, usar DevTools (F12) → Network → "Disable cache" mientras DevTools esté abierto
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche final) — Intento de forzar recarga JS
+
+**Estado:** EN PROGRESO — Pendiente verificación
+
+### Problema persistente
+
+El archivo `taskpane.js` no se carga a pesar de:
+- Cerrar y reabrir Excel
+- Actualizar cache busting timestamps
+- Verificar que el servidor sirve el archivo correcto (160KB con logs)
+
+### Diagnóstico
+
+1. `ayuda.js` se carga correctamente (logs aparecen)
+2. `taskpane.js` NO se carga (logs NO aparecen)
+3. Servidor sirve el archivo correcto: `http://localhost:5555/taskpane.js` retorna 160KB con `[Settings]`
+4. **Conclusión:** WebView2 tiene cache extremadamente persistente
+
+### Solución intentada: Renombrar archivo
+
+Para evitar el cache completamente, renombré el archivo:
+```
+taskpane.js → taskpane_20260930093346.js
+```
+
+Y actualicé `taskpane.html` para referenciarlo con el nuevo nombre.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.js` | +log al inicio: `[TASKPANE.JS] ========== ARCHIVO CARGADO v20260930 ==========` |
+| `C:\NEVEN\TaskPane\taskpane_20260930093346.js` | Copia del JS con nuevo nombre |
+| `C:\NEVEN\TaskPane\taskpane.html` | Referencia al nuevo nombre de archivo |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe recargar TaskPane y verificar si aparece log `[TASKPANE.JS]` |
+| **ALTA** | Si funciona, verificar que Tab Settings carga perfiles |
+| **MEDIA** | Limpiar archivos JS duplicados una vez funcione |
+| **MEDIA** | Restaurar nombre original `taskpane.js` con mecanismo anti-cache robusto |
+| **BAJA** | Investigar por qué WebView2 cachea tan agresivamente |
+
+### Nota: Limpieza pendiente
+
+Una vez funcione, hay que:
+1. Eliminar `taskpane_*.js` duplicados
+2. Restaurar referencia a `taskpane.js` con cache busting
+3. Sincronizar cambios al repositorio
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche, diagnóstico final) — Archivo JS se carga pero initSettingsTab no se ejecuta
+
+**Estado:** EN PROGRESO — Agregando más diagnóstico
+
+### Avance importante
+
+El renombrar el archivo funcionó. Ahora aparece en consola:
+```
+taskpane_20260930093346.js:4 [TASKPANE.JS] ========== ARCHIVO CARGADO v20260930 ==========
+```
+
+**PERO** los logs `[Settings]` NO aparecen, lo que significa que `initSettingsTab()` nunca se ejecuta.
+
+### Diagnóstico
+
+El código de inicialización al final del archivo:
+```javascript
+const _originalInitApp = typeof initializeApp === 'function' ? initializeApp : null;
+if (_originalInitApp) {
+  initializeApp = function() { _originalInitApp(); initSettingsTab(); };
+} else {
+  document.addEventListener('DOMContentLoaded', initSettingsTab);
+}
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(initSettingsTab, 100);
+}
+```
+
+**Posibles causas:**
+1. `initializeApp` existe pero nunca se llama
+2. `document.readyState` no es 'complete' ni 'interactive' cuando se ejecuta
+3. Hay un error silencioso antes de llegar a este código
+
+### Logging agregado
+
+Agregué logs detallados para entender qué rama del código se ejecuta:
+- `[Settings] Configurando inicializacion...`
+- `[Settings] initializeApp existe?`
+- `[Settings] document.readyState:`
+- `[Settings] Envolviendo initializeApp` o `[Settings] Registrando DOMContentLoaded`
+- `[Settings] DOM ya listo, llamando setTimeout`
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe recargar TaskPane y compartir logs `[Settings]` |
+| **ALTA** | Según los logs, determinar por qué initSettingsTab no se ejecuta |
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche, causa raíz encontrada) — initializeApp envuelta nunca se ejecuta
+
+**Estado:** FIX APLICADO — Pendiente verificación
+
+### Causa raíz identificada
+
+Los logs revelaron:
+```
+[Settings] initializeApp existe? true
+[Settings] document.readyState: loading
+[Settings] Envolviendo initializeApp
+```
+
+**PERO** nunca apareció `[Settings] initializeApp envuelta ejecutandose`.
+
+**Explicación:** El código envuelve `initializeApp` al final del archivo, pero `initializeApp()` probablemente se llama desde el HTML **antes** de que el JS termine de cargar, así que se llama la versión original, no la envuelta.
+
+### Fix aplicado
+
+Cambié la estrategia de inicialización:
+- **Antes:** Envolver `initializeApp` (no funciona por orden de ejecución)
+- **Después:** Esperar a que el elemento `ai-profiles-list` exista en el DOM, luego llamar `initSettingsTab()`
+
+```javascript
+function _initSettingsWhenReady() {
+  if (document.getElementById('ai-profiles-list')) {
+    initSettingsTab();
+  } else {
+    setTimeout(_initSettingsWhenReady, 200);  // Reintentar
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initSettingsWhenReady);
+} else {
+  _initSettingsWhenReady();
+}
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane_20260930093346.js` | Nueva estrategia de inicialización con polling |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe recargar TaskPane y verificar que Settings funciona |
+| **MEDIA** | Si funciona, limpiar logs de diagnóstico |
+| **MEDIA** | Restaurar nombre `taskpane.js` y sincronizar al repositorio |
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche, Tab Settings funcionando) — Fix completo + mejora de prompts
+
+**Estado:** FIX COMPLETO + MEJORA APLICADA
+
+### Logros
+
+1. **Tab Settings FUNCIONA** — El usuario confirmó que aparece correctamente
+2. **Tab IA FUNCIONA** — Confirmado funcionando con Azure OpenAI
+3. **Edición de prompts mejorada** — Ahora permite editar prompts del sistema
+
+### Causa raíz del problema Tab Settings
+
+El código intentaba "envolver" la función `initializeApp` para agregar `initSettingsTab()`, pero `initializeApp()` se llamaba desde el HTML **antes** de que el JS terminara de cargar. La versión envuelta nunca se ejecutaba.
+
+**Solución:** Usar polling para esperar a que el elemento `ai-profiles-list` exista en el DOM:
+
+```javascript
+function _initSettingsWhenReady() {
+  if (document.getElementById('ai-profiles-list')) {
+    initSettingsTab();
+  } else {
+    setTimeout(_initSettingsWhenReady, 200);
+  }
+}
+```
+
+### Mejora: Edición de prompts del sistema
+
+**Antes:** Los prompts del sistema eran `readOnly` y no se podían editar.
+
+**Después:** Se pueden editar todos los prompts. Si es del sistema, muestra advertencia y al guardar se crea una copia en `custom/`.
+
+```javascript
+// Mostrar nota si es prompt del sistema
+if (data.type === 'system') {
+  // Crear nota: "⚠️ Este es un prompt del sistema. Al guardar se creará una versión personalizada."
+}
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane_20260930093346.js` | Fix inicialización + mejora editor prompts |
+| `C:\NEVEN\TaskPane\taskpane.html` | Cache busting actualizado |
+
+### Decisiones de diseño
+
+1. **Renombrar archivo JS** para evitar cache de WebView2 (`taskpane.js` → `taskpane_20260930093346.js`)
+2. **Polling en lugar de envolver función** — más robusto para orden de carga de scripts
+3. **Permitir editar prompts sistema** — se guardan como custom override, preservando originales
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe probar edición de prompts (sistema y nuevo) |
+| **MEDIA** | Limpiar logs de diagnóstico del JS |
+| **MEDIA** | Restaurar nombre `taskpane.js` con mecanismo anti-cache robusto |
+| **MEDIA** | Sincronizar cambios al repositorio y hacer commit |
+| **BAJA** | Agregar botón Settings al Ribbon |
+
+### Nota: Limpieza necesaria post-sesión
+
+Una vez estable:
+1. Remover logs `console.log('[Settings]...')` y `console.log('[TASKPANE.JS]...')`
+2. Renombrar `taskpane_20260930093346.js` de vuelta a `taskpane.js`
+3. Implementar cache busting robusto (timestamp generado por servidor)
+4. Sincronizar todos los archivos al repositorio
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche, continuación) — Cache persistente de WebView2
+
+**Estado:** EN PROGRESO — Creado nuevo archivo JS
+
+### Problema
+
+Usuario reporta que aún no puede editar prompts existentes, a pesar de que el código tiene el fix.
+
+### Diagnóstico
+
+Verificado que el archivo `taskpane_20260930093346.js` SÍ contiene el fix:
+```
+FIX DE PROMPTS EXISTE
+Línea 4023: showPromptEditor encontrado
+```
+
+**Causa:** WebView2 sigue usando versión cacheada.
+
+### Acción tomada
+
+Creado nuevo archivo con timestamp diferente para forzar recarga:
+- `taskpane_20260930093346.js` → `taskpane_20260930102619.js`
+- Actualizado `taskpane.html` para referenciar el nuevo archivo
+
+### Archivos en producción
+
+| Archivo | Estado |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane_20260930102619.js` | NUEVO - con fix de prompts |
+| `C:\NEVEN\TaskPane\taskpane.html` | Actualizado referencia |
+| `C:\NEVEN\TaskPane\taskpane_20260930093346.js` | Anterior (puede eliminarse) |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe cerrar y reabrir TaskPane para probar edición de prompts |
+| **MEDIA** | Limpiar archivos JS duplicados una vez funcione |
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche final) — Edición directa de prompts con backup automático
+
+**Estado:** IMPLEMENTADO — Pendiente prueba por usuario
+
+### Cambio de diseño: Edición de prompts
+
+**Problema original:** El sistema creaba copias "custom" de los prompts del sistema al editar, lo que acumularía duplicados.
+
+**Decisión del usuario:** Permitir editar directamente los prompts del sistema, con backup automático para rollback.
+
+### Implementación
+
+**Backend (`neven_http_server.py`):**
+```python
+def _handle_config_prompt_save(self, body: dict):
+    # Si es prompt de sistema:
+    # 1. Crear backup en C:\NEVEN\prompts\backup\{id}_{timestamp}.txt
+    # 2. Sobrescribir el archivo original directamente
+    
+    # Si es prompt custom existente:
+    # - Sobrescribir directamente
+    
+    # Si es nuevo prompt:
+    # - Crear en C:\NEVEN\prompts\custom\{id}.txt
+```
+
+**Frontend (`taskpane_*.js`):**
+- Nota azul informativa: "ℹ️ Se creará un backup automático antes de guardar cambios."
+- Todos los prompts son editables
+- Botón Guardar siempre visible
+
+### Estructura de directorios de prompts
+
+```
+C:\NEVEN\prompts\
+├── default.txt           # Prompt de sistema (editable directamente)
+├── analisis.txt          # Otro prompt de sistema
+├── custom\               # Prompts nuevos creados por usuario
+│   └── mi-prompt.txt
+└── backup\               # Backups automáticos antes de editar
+    └── default_20260930_103000.txt
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | Lógica de backup + edición directa de prompts sistema |
+| `C:\NEVEN\TaskPane\taskpane_20260930103938.js` | Nota informativa azul en lugar de advertencia amarilla |
+| `C:\NEVEN\TaskPane\taskpane.html` | Referencia al nuevo JS |
+
+### Servidor reiniciado
+
+El servidor HTTP fue reiniciado para tomar los cambios del backend.
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe probar edición de prompt y verificar backup |
+| **MEDIA** | Sincronizar cambios al repositorio |
+| **MEDIA** | Limpiar archivos JS duplicados (`taskpane_*.js`) |
+| **MEDIA** | Restaurar nombre `taskpane.js` con cache busting robusto |
+| **BAJA** | Agregar UI para ver/restaurar backups |
+
+
+
+---
+
+### Sesión 2026-08-19 (~noche, mejoras Settings) — Prompts organizados por categoría
+
+**Estado:** IMPLEMENTADO — Pendiente verificación
+
+### Logros
+
+1. **Prompts organizados por categoría** con acordeones (como en tab Ayuda)
+2. **Color de nota corregido** — ahora usa paleta dorada NEVEN
+3. **Botón editar visible** en todos los prompts (sistema y custom)
+4. **Edición directa de prompts sistema** con backup automático
+
+### Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\prompts\prompts_config.json` | NUEVO — Configuración de categorías |
+| `C:\NEVEN\startup\neven_http_server.py` | Endpoint `/api/config/prompts` devuelve categorías |
+| `C:\NEVEN\TaskPane\taskpane_20260930104511.js` | Renderizado con acordeones + color dorado |
+
+### Estructura de categorías (prompts_config.json)
+
+```json
+{
+  "categories": {
+    "analisis": {
+      "label": "Análisis de Datos",
+      "icon": "📊",
+      "prompts": ["resumir_descriptiva", "detectar_outliers", "explicar_acp"]
+    },
+    "econometria": {
+      "label": "Econometría", 
+      "icon": "📈",
+      "prompts": ["interpretar_regresion", "interpretar_series", "comparar_modelos", "evaluar_modelo"]
+    },
+    "excel": {
+      "label": "Excel & Fórmulas",
+      "icon": "📋",
+      "prompts": []
+    },
+    "custom": {
+      "label": "Personalizados",
+      "icon": "✏️",
+      "prompts": []
+    }
+  }
+}
+```
+
+### UI de prompts
+
+- Acordeones `<details>/<summary>` como en tab Ayuda
+- Categoría con prompt activo se abre automáticamente
+- Iconos emoji para cada categoría
+- Contador de prompts por categoría
+- Botón ✎ en todos los prompts
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe verificar visualización de prompts por categoría |
+| **MEDIA** | Agregar más categorías según necesidad (Excel, etc.) |
+| **MEDIA** | Limpiar archivos JS duplicados |
+| **MEDIA** | Sincronizar cambios al repositorio y commit |
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche, correccion final) — Emojis eliminados + Prompts Asistente Excel
+
+**Estado:** IMPLEMENTADO — Pendiente verificacion
+
+### Correcciones aplicadas
+
+1. **EMOJIS ELIMINADOS** — Regla recordada: NO usar emojis en la aplicacion
+   - Removido icono de categorias en acordeones
+   - Cambiado boton editar de simbolo a texto "[edit]"
+   - Cambiado nota de backup de "info emoji" a "Nota:"
+
+2. **Prompts del Asistente Excel agregados**
+   - Creado `default.txt` — prompt principal del asistente
+   - Creado `system.txt` — prompt alternativo/base
+   - Categoria "Asistente Excel" agregada a prompts_config.json
+
+### Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\prompts\default.txt` | NUEVO — Prompt principal del asistente |
+| `C:\NEVEN\prompts\system.txt` | NUEVO — Prompt alternativo |
+| `C:\NEVEN\prompts\prompts_config.json` | Categoria "asistente" agregada |
+| `C:\NEVEN\TaskPane\taskpane_20260930105541.js` | Emojis eliminados |
+| `C:\NEVEN\TaskPane\taskpane.html` | Referencia a nuevo JS |
+
+### Contenido de prompts_config.json
+
+```json
+{
+  "categories": {
+    "asistente": {
+      "label": "Asistente Excel",
+      "prompts": ["default", "system"]
+    },
+    "analisis": {
+      "label": "Analisis de Datos",
+      "prompts": ["resumir_descriptiva", "detectar_outliers", "explicar_acp"]
+    },
+    "econometria": {
+      "label": "Econometria",
+      "prompts": ["interpretar_regresion", "interpretar_series", "comparar_modelos", "evaluar_modelo"]
+    },
+    "custom": {
+      "label": "Personalizados",
+      "prompts": []
+    }
+  }
+}
+```
+
+### REGLA IMPORTANTE DOCUMENTADA
+
+**PROHIBIDO USAR EMOJIS EN LA APLICACION NEVEN**
+
+Esta regla ha sido indicada multiples veces por el usuario. Aplicar en:
+- Codigo JavaScript/HTML
+- Archivos de configuracion JSON
+- Mensajes de UI
+- Notas informativas
+
+Usar texto descriptivo en su lugar (ej: "[edit]", "Nota:", etc.)
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe verificar que no hay emojis y prompts aparecen |
+| **ALTA** | Verificar conexion IA funciona |
+| **MEDIA** | Limpiar archivos JS duplicados (taskpane_*.js) |
+| **MEDIA** | Sincronizar cambios al repositorio |
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche final) — Prompt de Analisis Forense de Libros Excel
+
+**Estado:** IMPLEMENTADO
+
+### Logros principales
+
+1. **Prompt de analisis forense creado** (`analisis_forense_libro.txt`)
+   - Metodologia rigurosa de auditoria
+   - Taxonomia ontologica para clasificar datos
+   - Formato de informe organizacional
+
+2. **Integracion automatica con analisis de hoja/libro**
+   - Cuando usuario solicita "Analizar Hoja" o "Analizar Libro", se usa el prompt forense
+   - Detectado via `has_sheet_analysis` en el servidor
+
+3. **Emojis eliminados** de toda la aplicacion (regla documentada)
+
+### Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\prompts\analisis_forense_libro.txt` | NUEVO — Prompt de auditoria forense |
+| `C:\NEVEN\prompts\default.txt` | NUEVO — Prompt base del asistente |
+| `C:\NEVEN\prompts\system.txt` | NUEVO — Prompt alternativo |
+| `C:\NEVEN\prompts\prompts_config.json` | Categorias actualizadas con prompts Excel |
+| `C:\NEVEN\startup\neven_http_server.py` | Carga prompt forense cuando hay analisis de hoja |
+| `C:\NEVEN\TaskPane\taskpane_20260930105541.js` | Emojis eliminados |
+
+### Contenido del prompt forense (resumen)
+
+El prompt `analisis_forense_libro.txt` incluye:
+
+1. **INVENTARIO ESTRUCTURAL** — Documentar cada hoja, rangos, tipos de datos
+2. **ANALISIS DE FORMULAS** — Mapear dependencias, referencias entre hojas, errores
+3. **TAXONOMIA ONTOLOGICA** — Clasificar en:
+   - Entidades: maestros, transacciones, catalogos, resultados
+   - Procesos: captura, transformacion, agregacion, presentacion
+   - Relaciones: uno-a-uno, jerarquias, temporales
+4. **FLUJO DE PROCESO** — Punto de entrada, transformaciones, salidas
+5. **EVALUACION DE CALIDAD** — Consistencia, validaciones, riesgos
+6. **FORMATO DE INFORME** — Documento organizacional estructurado
+
+### Integracion en el servidor
+
+```python
+if has_sheet_analysis:
+    # Cargar prompt forense desde archivo
+    forense_path = os.path.join(prompts_dir, "analisis_forense_libro.txt")
+    if os.path.isfile(forense_path):
+        forense_prompt = open(forense_path).read()
+        sys_content = forense_prompt + "\n\n## DATOS DEL ANALISIS ACTUAL:\n\n" + context
+```
+
+### REGLA DOCUMENTADA: NO EMOJIS
+
+**PROHIBIDO usar emojis en la aplicacion NEVEN**
+- En codigo JavaScript/HTML
+- En archivos de configuracion JSON
+- En mensajes de UI
+- En prompts
+
+Usar texto descriptivo: "[edit]", "Nota:", etc.
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar analisis forense con un libro real |
+| **MEDIA** | Limpiar archivos JS duplicados (taskpane_*.js) |
+| **MEDIA** | Sincronizar cambios al repositorio y commit |
+| **BAJA** | Refinar prompt forense segun feedback de uso |
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche, fix conexion IA) — Endpoint /api/ai/config actualizado
+
+**Estado:** FIX APLICADO — Pendiente verificacion
+
+### Problema
+
+El badge de IA mostraba "IA desactivada" a pesar de que el perfil AI estaba configurado correctamente con API key en keyring.
+
+### Causa raiz
+
+El endpoint `/api/ai/config` (usado por el frontend para verificar estado de IA) leia la seccion `AI` legacy del JSON en lugar del perfil activo de `config_manager`.
+
+**Antes:**
+```json
+{"enabled": false, "provider": "lmstudio", "model": ""}
+```
+
+**Despues:**
+```json
+{"enabled": true, "provider": "azure", "model": "gpt-4.1", "endpoint": "..."}
+```
+
+### Fix aplicado
+
+Modificado `/api/ai/config` en `neven_http_server.py` para:
+1. Intentar obtener perfil activo de `config_manager`
+2. Si hay perfil activo, devolver `enabled: true` con datos del perfil
+3. Fallback a config legacy solo si `config_manager` no esta disponible
+
+```python
+if _CONFIG_MANAGER_AVAILABLE:
+    mgr = _get_config_manager()
+    active_profile = mgr.get_active_ai_profile()
+    if active_profile:
+        self._send_json({
+            "enabled": True,
+            "provider": active_profile.get("provider"),
+            "model": active_profile.get("model"),
+            ...
+        })
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | Endpoint `/api/ai/config` usa config_manager |
+
+### Verificacion
+
+```
+GET /api/ai/config
+{"status": "ok", "enabled": true, "provider": "azure", "model": "gpt-4.1", ...}
+```
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe verificar que badge muestra "gpt-4.1" y IA conectada |
+| **MEDIA** | Sincronizar cambios al repositorio |
+| **MEDIA** | Limpiar archivos JS duplicados |
+
