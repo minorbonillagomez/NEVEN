@@ -1,0 +1,281 @@
+# Implementation Plan
+
+## Overview
+
+Auditoría integral del código fuente del proyecto NEVEN cubriendo 4 dimensiones: seguridad, arquitectura, código muerto y documentación. El pipeline de ejecución tiene 6 fases: inventario, análisis de seguridad (C++, scripts, Electron, configuración), evaluación de arquitectura, detección de código muerto, evaluación de documentación, y generación del informe final en español.
+
+## Tasks
+
+- [x] 1. Inventario y Alcance
+  - [x] 1.1 Enumerar todos los archivos del proyecto clasificados por lenguaje y tipo de configuración
+    - Recorrer directorios: Core/, Common/, ControlR/, ControlJulia/, ControlPython/, Console/, Ribbon/, PB/, tests/, startup/, libreria/R/, libreria/JULIA/, docs/, Addin/, .github/
+    - Clasificar por lenguaje: C++ (.cc, .h), R (.R), Julia (.jl), Python (.py), TypeScript (.ts), JavaScript (.js)
+    - Clasificar configuración: CMakeLists.txt, .json, .yml, .xml, .proto
+    - Generar lista completa con ruta relativa, extensión y módulo
+  - [x] 1.2 Calcular métricas base: total de archivos y LOC por lenguaje y por módulo
+    - Contar LOC excluyendo líneas en blanco para cada archivo
+    - Agregar por módulo y por lenguaje
+    - Registrar resultados en formato tabular
+  - [x] 1.3 Identificar y documentar exclusiones justificadas
+    - Detectar archivos binarios (.dll, .exe, .obj, .lib, .pdb, .ico, .woff)
+    - Detectar directorios de dependencias (node_modules/, Build/, Include/, OfficeTypes/)
+    - Detectar archivos generados (Console/generated/, PB/ generados por protoc)
+    - Documentar cada exclusión con categoría (BINARIO, GENERADO, TERCEROS, OTRO) y justificación
+  - [x] 1.4 Generar tabla resumen del inventario con cobertura por módulo
+    - Crear tabla: Directorio, Contenido, Lenguajes, Archivos, LOC, Estado
+    - Verificar que unión de archivos analizados + excluidos = total descubierto (Property 11)
+- [x] 2. Análisis de Seguridad C++
+  - [x] 2.1 Escanear funciones de manejo de strings sin verificación de límites
+    - Buscar patrones: strcpy, sprintf, strcat, gets, sscanf sin especificador de ancho
+    - Registrar hallazgo con archivo, línea, contexto; severidad Alta
+    - Verificar si existen alternativas seguras ya usadas (strncpy, snprintf, std::string)
+  - [x] 2.2 Escanear datos de usuario pasados a llamadas de sistema sin sanitización
+    - Identificar invocaciones de CreateProcess, ShellExecute, system, _popen, WinExec
+    - Rastrear si parámetros provienen de entrada de usuario o datos externos
+    - Registrar severidad Crítica por inyección de comandos
+  - [x] 2.3 Escanear credenciales, tokens o rutas sensibles hardcodeadas
+    - Buscar strings literales con "password", "token", "key", "secret", rutas absolutas sensibles
+    - Buscar API keys, connection strings en constantes
+    - Registrar severidad Crítica por exposición de credenciales
+  - [x] 2.4 Verificar validación de handles de Named_Pipe antes de ReadFile/WriteFile
+    - Identificar operaciones de lectura/escritura en pipes
+    - Verificar validación contra INVALID_HANDLE_VALUE antes de uso
+    - Registrar severidad Alta por uso de handle inválido
+  - [x] 2.5 Identificar asignaciones de memoria sin liberación correspondiente
+    - Buscar new/malloc sin delete/free correspondiente en todas las rutas
+    - Verificar uso de smart pointers como alternativa
+    - Registrar severidad Media por fuga de memoria
+  - [x] 2.6 Evaluar mecanismos de Sandbox y detectar posibles bypass
+    - Identificar mecanismos de restricción para scripts R, Julia, Python
+    - Verificar si scripts de usuario pueden ejecutar código arbitrario sin restricción
+    - Registrar severidad Crítica por bypass de sandbox
+  - [x] 2.7 Verificar validación de mensajes Protobuf en comunicaciones por Named_Pipe
+    - Identificar puntos de deserialización (ParseFromString, ParseFromArray)
+    - Verificar validación de tamaño máximo antes de parsear
+    - Verificar validación de contenido/tipo después de parsear
+    - Registrar severidad Alta por mensaje malformado
+- [x] 3. Análisis de Seguridad Scripts
+  - [x] 3.1 Analizar archivos R en libreria/R/ y startup/ en busca de funciones peligrosas
+    - Buscar system(), system2(), shell(), eval(), parse() con entrada no sanitizada
+    - Verificar acceso a filesystem fuera del directorio de trabajo
+    - Registrar severidad Crítica si ejecuta comandos OS con input de usuario
+  - [x] 3.2 Analizar archivos Julia en libreria/JULIA/ y startup/ en busca de uso inseguro
+    - Buscar run(), eval(), Meta.parse(), include() con entrada dinámica
+    - Verificar acceso a filesystem sin restricción
+    - Registrar severidad según riesgo
+  - [x] 3.3 Analizar archivos Python en startup/ en busca de funciones peligrosas
+    - Buscar exec(), eval(), subprocess.*, os.system(), os.popen()
+    - Determinar si parámetros provienen de entrada no sanitizada
+    - Registrar severidad según riesgo
+  - [x] 3.4 Verificar que Startup_Scripts no exponen variables de entorno sensibles
+    - Revisar scripts de inicio para R, Julia y Python
+    - Identificar variables de entorno sensibles expuestas (PATH, tokens, credenciales)
+    - Registrar severidad Alta
+  - [x] 3.5 Verificar carga de dependencias externas sin verificación de versión o integridad
+    - Identificar paquetes R/Julia/Python cargados sin versión específica
+    - Registrar severidad Media
+- [x] 4. Análisis de Seguridad Electron
+  - [x] 4.1 Verificar configuración de seguridad de Electron en Console/main.js
+    - Buscar nodeIntegration: true, contextIsolation: false
+    - Verificar versión de Electron (1.8.2 es severamente desactualizada)
+    - Registrar severidad Crítica
+  - [x] 4.2 Escanear XSS en archivos TypeScript/JavaScript de Console/
+    - Buscar innerHTML, outerHTML, document.write, insertAdjacentHTML con datos de usuario
+    - Registrar severidad Alta
+  - [x] 4.3 Verificar comunicación IPC entre renderer y main process
+    - Identificar ipcRenderer.send/ipcMain.on sin validación de origen/contenido
+    - Verificar APIs privilegiadas expuestas al renderer
+    - Registrar severidad Alta
+  - [x] 4.4 Analizar dependencias npm en Console/package.json
+    - Identificar dependencias con CVEs conocidos (especialmente Electron 1.8.2)
+    - Registrar severidad proporcional al CVSS
+- [x] 5. Análisis de Seguridad Configuración
+  - [x] 5.1 Analizar CMakeLists.txt verificando flags de seguridad MSVC
+    - Verificar presencia de /GS, /DYNAMICBASE, /NXCOMPAT, /guard:cf
+    - Identificar flags que desactivan protecciones
+    - Registrar severidad Alta
+  - [x] 5.2 Verificar que archivos JSON no contienen valores sensibles hardcodeados
+    - Revisar neven-config.json, package.json, tsconfig.json, constants.json, default_config.json
+    - Buscar tokens, passwords, API keys en valores JSON
+    - Registrar severidad Crítica
+  - [x] 5.3 Analizar workflows de GitHub Actions verificando seguridad
+    - Verificar versiones fijadas de actions (SHA o tag, no @main/@master)
+    - Verificar no exposición de secretos en logs
+    - Verificar permisos mínimos del workflow
+    - Registrar severidad Media-Alta
+  - [x] 5.4 Verificar que .gitignore excluye archivos sensibles y de build
+    - Verificar exclusión de Build/, node_modules/, .env, claves privadas, .pdb
+    - Identificar archivos sensibles potencialmente trackeados
+    - Registrar severidad Crítica si hay archivos sensibles expuestos
+- [x] 6. Evaluación de Arquitectura
+  - [x] 6.1 Construir grafo de dependencias entre módulos
+    - Analizar #include en archivos C++ para mapear dependencias inter-módulo
+    - Analizar target_link_libraries y add_subdirectory en CMakeLists.txt
+    - Medir acoplamiento aferente y eferente por módulo
+  - [x] 6.2 Detectar dependencias circulares entre módulos
+    - Aplicar DFS al grafo de dependencias para detectar ciclos
+    - Registrar hallazgo de severidad Alta con cadena completa del ciclo
+  - [x] 6.3 Evaluar cohesión de cada módulo principal
+    - Verificar responsabilidad única para Core, Common, ControlR, ControlJulia, ControlPython, Console, Ribbon
+    - Identificar módulos con múltiples responsabilidades (violación SRP)
+    - Registrar severidad Media
+  - [x] 6.4 Evaluar escalabilidad del diseño IPC para adición de nuevos lenguajes
+    - Analizar patrón Named_Pipe + Protobuf entre XLL y ControlX_Process
+    - Verificar si agregar nuevo lenguaje requiere cambios estructurales o solo configuración
+    - Documentar hallazgo positivo si extensible, negativo si requiere cambios invasivos
+  - [x] 6.5 Evaluar consistencia de patrones de diseño a través de módulos
+    - Identificar Singleton, Factory, Observer y otros patrones usados
+    - Verificar consistencia de implementación entre módulos
+    - Identificar mezcla de lógica de negocio con presentación/infraestructura
+    - Registrar hallazgos positivos para patrones bien implementados
+  - [x] 6.6 Evaluar testabilidad de la arquitectura
+    - Verificar abstracción de dependencias externas (Excel, R, Julia, Python) detrás de interfaces
+    - Revisar MockExcelBridge y mocks existentes en tests/
+    - Registrar hallazgo positivo si testabilidad es buena
+- [x] 7. Detección de Código Muerto C++
+  - [x] 7.1 Identificar funciones C++ no invocadas desde ningún otro punto del código
+    - Extraer definiciones de funciones en Core/, Common/, ControlR/, ControlJulia/, ControlPython/
+    - Buscar invocaciones en todo el código fuente
+    - Excluir entry points (DllMain, xlAutoOpen, callbacks de Excel)
+    - Registrar severidad Baja-Media
+  - [x] 7.2 Identificar bloques de código comentados (más de 5 líneas consecutivas)
+    - Buscar bloques // o /* */ con más de 5 líneas de código comentado
+    - Distinguir documentación Doxygen de código comentado
+    - Registrar severidad Baja
+  - [x] 7.3 Identificar directivas de preprocesador con código no compilado
+    - Buscar #if 0, #ifdef con macros no definidas en CMakeLists.txt
+    - Verificar contra configuraciones activas del proyecto
+    - Registrar severidad Baja
+  - [x] 7.4 Identificar archivos C++ completos no referenciados por CMakeLists.txt ni incluidos por otro archivo
+    - Cruzar archivos C++ con archivos listados en CMakeLists.txt
+    - Verificar si archivos no listados son incluidos por otros
+    - Registrar severidad Baja como archivo obsoleto
+  - [x] 7.5 Identificar funciones exportadas del XLL no registradas en tabla de funciones Excel
+    - Identificar funciones __declspec(dllexport) o en .def
+    - Cruzar con tabla de registro (xlAutoRegister, xlfRegister)
+    - Registrar severidad Media
+  - [x] 7.6 Identificar variables miembro de clase asignadas pero nunca leídas
+    - Identificar miembros escritos pero nunca leídos
+    - Excluir miembros de interfaces públicas o serializados
+    - Registrar severidad Baja
+  - [x] 7.7 Identificar código Python deprecado residual
+    - Buscar código Python desactivado (OFF por defecto)
+    - Identificar archivos ControlPython/ residuales
+    - Registrar severidad Baja con recomendación de eliminación
+- [x] 8. Detección de Código Muerto Scripts
+  - [x] 8.1 Identificar funciones R no invocadas en libreria/R/
+    - Extraer definiciones de funciones en archivos .R
+    - Buscar invocaciones en otros archivos R, código C++ y documentación
+    - Registrar severidad Baja
+  - [x] 8.2 Identificar funciones Julia no invocadas en libreria/JULIA/
+    - Extraer funciones exportadas de módulos Julia
+    - Buscar invocaciones en otros archivos Julia y código C++
+    - Registrar severidad Baja
+  - [x] 8.3 Identificar archivos completos no cargados por Startup_Scripts ni auto-carga
+    - Analizar startup/ para archivos cargados (source() en R, include() en Julia)
+    - Analizar AutoLoader.cc en Common/
+    - Registrar severidad Baja
+  - [x] 8.4 Identificar funciones que duplican funcionalidad en la misma librería
+    - Comparar funciones con nombres similares o lógica equivalente
+    - Identificar wrappers triviales sin valor agregado
+    - Registrar severidad Baja con recomendación de consolidación
+  - [x] 8.5 Identificar código comentado (más de 3 líneas) en archivos R y Julia
+    - Buscar bloques de comentarios con código en archivos .R y .jl
+    - Distinguir documentación (roxygen2, docstrings) de código comentado
+    - Registrar severidad Baja
+  - [x] 8.6 Identificar scripts Python residuales de integración deprecada
+    - Buscar archivos .py en startup/, ControlPython/ y otros directorios
+    - Determinar si son funcionales o residuales
+    - Registrar severidad Baja con recomendación de archivo o eliminación
+- [x] 9. Detección de Código Muerto Console
+  - [x] 9.1 Identificar exports no importados en Console/src/
+    - Extraer todos los exports de archivos TypeScript
+    - Verificar si cada export es importado por algún otro archivo
+    - Registrar severidad Baja
+  - [x] 9.2 Identificar archivos TypeScript no alcanzables desde entry points
+    - Construir árbol de imports desde main.js, renderer.ts, REPL.ts
+    - Identificar archivos .ts no alcanzables transitivamente
+    - Registrar severidad Baja
+  - [x] 9.3 Identificar dependencias npm no utilizadas en Console/package.json
+    - Listar dependencias y devDependencies
+    - Buscar imports/requires de cada dependencia
+    - Registrar severidad Baja
+  - [x] 9.4 Identificar assets huérfanos en Console/
+    - Listar archivos de assets (ext/, style/, data/)
+    - Verificar referencias desde HTML, TypeScript, JavaScript, LESS
+    - Registrar severidad Baja
+- [x] 10. Evaluación de Documentación
+  - [x] 10.1 Verificar documentación por módulo en docs/
+    - Verificar existencia de docs para Core, Common, ControlR, ControlJulia, ControlPython, Console, Ribbon
+    - Registrar severidad Baja para módulos sin documentación
+  - [x] 10.2 Verificar documentación de funciones XLL exportadas
+    - Identificar funciones registradas con Excel
+    - Verificar documentación de API para cada función
+    - Registrar severidad Baja para funciones sin documentación
+  - [x] 10.3 Verificar comentarios Doxygen en funciones públicas de headers
+    - Revisar .h en Core/, Common/, ControlR/, ControlJulia/, ControlPython/
+    - Identificar funciones públicas sin Doxygen
+    - Registrar severidad Baja
+  - [x] 10.4 Identificar discrepancias entre documentación y código actual
+    - Comparar comportamiento documentado con implementación
+    - Verificar parámetros, retornos y efectos documentados
+    - Registrar severidad Media por documentación desactualizada
+  - [x] 10.5 Evaluar consistencia terminológica en docs/
+    - Verificar uso consistente de nombres para mismos conceptos
+    - Identificar inconsistencias (RJ2XCL vs NEVEN, etc.)
+    - Registrar severidad Baja
+  - [x] 10.6 Verificar procedimientos de build/deploy/troubleshooting actualizados
+    - Comparar docs/Mantenimiento/ con build.ps1, CMakeLists.txt actuales
+    - Verificar reproducibilidad de pasos documentados
+    - Registrar severidad Media para procedimientos desactualizados
+  - [x] 10.7 Identificar secciones TODO, FIXME o pendientes en documentación
+    - Buscar marcadores TODO, FIXME, HACK, PENDING, PENDIENTE en docs/
+    - Registrar severidad Baja con ubicación
+  - [x] 10.8 Evaluar cobertura de documentación de Librería_R y Librería_Julia
+    - Verificar descripción, parámetros, retorno y ejemplo para cada función exportada
+    - Registrar severidad Baja para funciones sin documentación completa
+  - [x] 10.9 Identificar documentación bien estructurada como fortalezas
+    - Identificar documentos completos, bien organizados y actualizados
+    - Registrar hallazgos positivos
+- [x] 11. Generación del Informe
+  - [x] 11.1 Compilar Resumen Ejecutivo con conteo por severidad/categoría y puntuación de salud
+    - Consolidar hallazgos de todas las fases
+    - Calcular conteo por severidad y categoría
+    - Calcular puntuación de salud 1-10
+    - Redactar en español
+  - [x] 11.2 Redactar sección de Metodología
+    - Describir técnicas de análisis estático por fase
+    - Documentar alcance (directorios, lenguajes, tipos de archivo)
+    - Incluir lista de exclusiones con justificación
+  - [x] 11.3 Organizar hallazgos en secciones temáticas con IDs únicos
+    - Agrupar por categoría: Seguridad, Arquitectura, Código_Muerto, Documentación
+    - Ordenar por severidad dentro de cada sección (Crítica → Baja)
+    - Asignar IDs formato [CAT]-[SEV]-[NNN] (ej: SEC-CRI-001)
+    - Verificar completitud de campos: ID, título, descripción, ubicación, severidad, categoría, recomendación
+  - [x] 11.4 Compilar sección de Fortalezas Identificadas
+    - Reunir hallazgos positivos de todas las fases
+    - Organizar por categoría
+    - Redactar en español
+  - [x] 11.5 Generar Recomendaciones Priorizadas ordenadas por impacto
+    - Crear recomendaciones agrupando hallazgos relacionados
+    - Ordenar por impacto (mayor a menor)
+    - Incluir: prioridad, título, descripción, impacto, esfuerzo, hallazgos que resuelve
+  - [x] 11.6 Generar Anexos con métricas y lista de archivos
+    - Tabla resumen: total archivos, total LOC, hallazgos por severidad, cobertura por módulo
+    - Lista completa de archivos analizados
+    - Lista de archivos excluidos con justificación
+    - Verificar consistencia de conteos (Property 8)
+  - [x] 11.7 Ensamblar informe final en Markdown
+    - Orden de secciones: Resumen Ejecutivo, Metodología, Hallazgos de Seguridad, Hallazgos de Arquitectura, Hallazgos de Código Muerto, Hallazgos de Documentación, Fortalezas Identificadas, Recomendaciones Priorizadas, Anexos
+    - Verificar idioma español completo
+    - Verificar formato consistente de hallazgos
+    - Guardar como docs/INFORME_AUDITORIA.md
+
+## Notes
+
+- Las tareas de wave2 (Tasks 2-10) pueden ejecutarse en paralelo ya que solo dependen del inventario (Task 1)
+- La generación del informe (Task 11) requiere que todas las fases de análisis estén completas
+- El informe debe generarse completamente en español
+- La versión de Electron 1.8.2 en Console/ es un hallazgo esperado de severidad Crítica
+- Python está deprecado (OFF por defecto) — el código en ControlPython/ es probablemente residual
+- Los tests corren sin Excel, R ni Julia gracias a MockExcelBridge

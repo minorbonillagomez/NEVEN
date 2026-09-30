@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Validar comandos de alto riesgo",
+      "trigger": "PreToolUse",
+      "description": "Intercepta execute_pwsh y control_pwsh_process. Si el comando es de alto riesgo (compilacion, deploy a produccion, registro de Windows, eliminacion de archivos, git destructivo), pide confirmacion al usuario antes de proceder.",
+      "matcher": "execute_pwsh|control_pwsh_process",
+      "action": {
+        "type": "command",
+        "command": "powershell -NoProfile -File \"F:\\ANTIGRAVITY\\2026\\NEVEN\\.kiro\\hooks\\validate-before-run.ps1\"",
+        "timeout": 10
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Guardar resumen en CHAT.md al cerrar sesión",
+      "trigger": "Stop",
+      "description": "Al cerrar sesión, pide al agente que genere un resumen y lo escriba al final de CHAT.md. Garantiza que ninguna sesión se pierda sin documentar.",
+      "action": {
+        "type": "agent",
+        "prompt": "La sesión está terminando. Actualiza el archivo F:\\ANTIGRAVITY\\2026\\NEVEN\\.kiro\\contexto\\CHAT.md con un resumen de lo que se hizo en esta sesión.\n\nEl resumen debe incluir:\n- Fecha y hora aproximada\n- Logros principales (qué se implementó, qué se corrigió)\n- Causa raíz de problemas resueltos (no solo el síntoma)\n- Archivos modificados con sus rutas exactas\n- Commits realizados (hash + descripción)\n- Decisiones de diseño importantes y por qué se tomaron\n- Intentos fallidos y por qué fallaron (evita repetir el mismo error)\n- Pendientes concretos para la próxima sesión con prioridad ALTA/MEDIA/BAJA\n\nUsa el formato de las entradas anteriores en CHAT.md (secciones ### [N] con fecha).\nNO modifiques las entradas anteriores — solo agrega al final.\nSi no hubo cambios significativos, escribe una entrada breve indicando qué se discutió."
+      }
+    }
+  ]
+}

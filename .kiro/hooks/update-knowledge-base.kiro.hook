@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Update Knowledge Base on Push",
+  "description": "After a task completes (spec task or manual execution involving commits/pushes), reminds the agent to update buklo-knowledge-base with a summary of what was done and commit+push the changes.",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "If you just performed a git commit and push, update the knowledge base at /Users/timis/Documents/git/buklo/buklo-git/knowledge/buklo-knowledge-base/ with a summary of what was changed. Add or update the relevant markdown file in the appropriate section (03-frontend, 02-backend, etc.). Then commit and push the knowledge base repo with a descriptive message."
+  }
+}
