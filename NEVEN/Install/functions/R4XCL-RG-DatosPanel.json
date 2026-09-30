@@ -1,0 +1,77 @@
+{
+  "id": "RG_DatosPanel",
+  "family": "RG",
+  "family_label": "Regresion",
+  "name": "Datos de Panel",
+  "description": "Estima modelos de datos de panel: OLS, Pooling, Within (efectos fijos), Between, Random (efectos aleatorios) y Pooled Fixed(t). Incluye tests de Hausman, Breusch-Pagan y autocorrelacion.",
+  "wikipedia_url": "https://es.wikipedia.org/wiki/Datos_de_panel",
+  "languages": ["r"],
+  "function_name": "RG_DatosPanel.Studio",
+  "function_name_xll": "MR_PanelData.C",
+  "file": "R4XCL-RG-DatosPanel.Studio.R",
+  "variable_roles": {
+    "Y": {
+      "label": "Variable dependiente (Y)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    },
+    "X": {
+      "label": "Variables independientes (X)",
+      "types": ["numeric"],
+      "multiple": true,
+      "required": true
+    },
+    "i": {
+      "label": "Identificador de individuo/entidad (i)",
+      "types": ["numeric", "character"],
+      "multiple": false,
+      "required": true
+    },
+    "t": {
+      "label": "Identificador de tiempo (t)",
+      "types": ["numeric"],
+      "multiple": false,
+      "required": true
+    }
+  },
+  "parameters": [
+    {
+      "name": "Filtro",
+      "label": "Excluir observaciones (0=incluir)",
+      "type": "range",
+      "default": null,
+      "tier": 2
+    }
+  ],
+  "dependencies": {
+    "R": ["plm", "stargazer", "tseries"],
+    "Julia": [],
+    "Python": []
+  },
+  "nevenx_positions": {
+    "a0": { "name": "SetDatosY",   "label": "Variable dependiente Y",              "type": "range",   "required": true,  "default": null },
+    "a1": { "name": "SetDatosX",   "label": "Variables independientes X",           "type": "range",   "required": true,  "default": null },
+    "a4": { "name": "Filtro",      "label": "Excluir observaciones (0=incluir)",    "type": "range",   "required": false, "default": null },
+    "a6": { "name": "Variable_i",  "label": "Identificador de individuo/entidad i", "type": "range",   "required": true,  "default": null },
+    "a7": { "name": "Variable_t",  "label": "Identificador de tiempo t",            "type": "range",   "required": true,  "default": null }
+  },
+  "tipo_outputs": [
+    { "id": 0,  "label": "Ayuda -- parametros de entrada y outputs disponibles" },
+    { "id": 1,  "label": "Tabla comparativa OLS/Pooling/Within/Between/Random/PooledFixed(t)" },
+    { "id": 2,  "label": "Efectos fijos individuales (fixef Within)" },
+    { "id": 3,  "label": "Test F efectos fijos (pFtest Within vs OLS)" },
+    { "id": 4,  "label": "Test Hausman (Within vs Random)" },
+    { "id": 5,  "label": "Test F efectos temporales (pFtest Fixed.t vs Within)" },
+    { "id": 6,  "label": "Test Breusch-Pagan efectos temporales" },
+    { "id": 7,  "label": "Test Breusch-Pagan efectos individuales" },
+    { "id": 8,  "label": "Test Breusch-Pagan efectos bidireccionales" },
+    { "id": 9,  "label": "Test Breusch-Pagan (bp global)" },
+    { "id": 10, "label": "Test dependencia transversal Pesaran LM" },
+    { "id": 11, "label": "Test dependencia transversal Pesaran CD" },
+    { "id": 12, "label": "Test autocorrelacion Breusch-Godfrey (pbgtest)" },
+    { "id": 13, "label": "Test raiz unitaria ADF en panel" },
+    { "id": 14, "label": "Informacion de ejecucion (formula, N, variables)" },
+    { "id": 16, "label": "Metricas estructuradas Within (Seccion, Parametro, Metrica, Valor)" }
+  ]
+}

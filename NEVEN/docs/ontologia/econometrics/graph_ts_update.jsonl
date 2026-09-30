@@ -1,0 +1,11 @@
+{"op":"create","entity":{"id":"method_arima","type":"Method","properties":{"name":"ARIMA","description":"Autoregressive Integrated Moving Average for forecasting non-stationary time series"}}}
+{"op":"create","entity":{"id":"method_garch","type":"Method","properties":{"name":"GARCH","description":"Generalized Autoregressive Conditional Heteroscedasticity for modeling volatility"}}}
+{"op":"create","entity":{"id":"concept_stationarity","type":"Concept","properties":{"name":"Stationarity","definition":"Statistical properties of the series do not change over time."}}}
+{"op":"create","entity":{"id":"concept_heteroscedasticity","type":"Concept","properties":{"name":"Heteroscedasticity","definition":"Variance changes over time (volatility clustering)."}}}
+{"op":"create","entity":{"id":"rpkg_tsa","type":"RPackage","properties":{"name":"TSA","purpose":"Time Series Analysis package from Cryer and Chan"}}}
+{"op":"create","entity":{"id":"rfunc_arima","type":"RFunction","properties":{"name":"arima","package":"stats"}}}
+{"op":"create","entity":{"id":"rfunc_garch","type":"RFunction","properties":{"name":"garch","package":"tseries"}}}
+{"op":"relate","from":"method_arima","rel":"adjusts_for","to":"concept_stationarity"}
+{"op":"relate","from":"method_arima","rel":"uses_r_function","to":"rfunc_arima"}
+{"op":"relate","from":"method_garch","rel":"adjusts_for","to":"concept_heteroscedasticity"}
+{"op":"relate","from":"method_garch","rel":"uses_r_function","to":"rfunc_garch"}

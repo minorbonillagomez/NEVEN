@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  NEVEN AI Agent — Office Add-in Manifest
+  =========================================
+  Este manifest registra el Agente IA de NEVEN como un Office Add-in
+  independiente del Studio completo.
+
+  MODOS DE USO:
+  1. Desarrollo local   → usar manifest.dev.xml (apunta a localhost:5556)
+  2. Producción         → este archivo (apunta a https://ai.neven.app)
+  3. On-premise         → reemplazar la URL base con el servidor corporativo
+
+  SIDELOADING (desarrollo):
+     Ejecutar:  PowerShell -ExecutionPolicy Bypass -File sideload.ps1
+  
+  DESPLIEGUE CORPORATIVO:
+     Admin Center M365 → Apps integradas → Cargar aplicaciones personalizadas
+-->
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xsi:type="TaskPaneApp">
+
+  <!-- GUID único para el Agente IA — distinto al de NEVEN Studio -->
+  <Id>b9c8d7e6-f5a4-3210-9876-fedcba654321</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>NEVEN Project</ProviderName>
+  <DefaultLocale>es-419</DefaultLocale>
+  <DisplayName DefaultValue="NEVEN AI"/>
+  <Description DefaultValue="Agente IA de NEVEN — análisis econométrico asistido con contexto de la hoja de cálculo"/>
+
+  <!-- Icono: sirve desde el propio servicio IA -->
+  <IconUrl DefaultValue="https://ai.neven.app/static/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://ai.neven.app/static/icon-64.png"/>
+  <SupportUrl DefaultValue="https://ai.neven.app"/>
+
+  <AppDomains>
+    <!-- Dominios adicionales desde los que se puede hacer fetch -->
+    <AppDomain>https://ai.neven.app</AppDomain>
+    <!-- Permitir también el servidor local para el modo híbrido -->
+    <AppDomain>http://localhost:5555</AppDomain>
+    <AppDomain>http://localhost:5556</AppDomain>
+    <AppDomain>https://localhost:5556</AppDomain>
+  </AppDomains>
+
+  <Hosts>
+    <Host Name="Workbook"/>
+  </Hosts>
+
+  <Requirements>
+    <Sets>
+      <!-- ExcelApi 1.1: mínimo para getSelectedRange() y onSelectionChanged -->
+      <Set Name="ExcelApi" MinVersion="1.1"/>
+    </Sets>
+  </Requirements>
+
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://ai.neven.app/"/>
+  </DefaultSettings>
+
+  <!-- ReadWriteDocument: necesario para leer rangos con Excel.run() -->
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <!--
+    VersionOverrides: configura el botón en el ribbon de Excel
+    y el comportamiento del task pane
+  -->
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+                    xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Workbook">
+        <DesktopFormFactor>
+
+          <FunctionFile resid="Commands.Url"/>
+
+          <!-- Botón en el ribbon — grupo "NEVEN" -->
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <OfficeTab id="TabHome">
+              <Group id="neven.ai.group">
+                <Label resid="GroupLabel"/>
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16x16"/>
+                  <bt:Image size="32" resid="Icon.32x32"/>
+                  <bt:Image size="80" resid="Icon.80x80"/>
+                </Icon>
+
+                <!-- Botón principal: abrir agente IA -->
+                <Control xsi:type="Button" id="neven.ai.taskpane.button">
+                  <Label resid="TaskpaneButton.Label"/>
+                  <Supertip>
+                    <Title resid="TaskpaneButton.Label"/>
+                    <Description resid="TaskpaneButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>NevenAiTaskpane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url"/>
+                  </Action>
+                </Control>
+
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+
+          <!-- Task pane -->
+          <ExtensionPoint xsi:type="CustomFunctions"/>
+
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon.16x16" DefaultValue="https://ai.neven.app/static/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://ai.neven.app/static/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://ai.neven.app/static/icon-80.png"/>
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="Commands.Url"    DefaultValue="https://ai.neven.app/static/commands.html"/>
+        <bt:Url id="Taskpane.Url"    DefaultValue="https://ai.neven.app/"/>
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="GroupLabel"              DefaultValue="NEVEN AI"/>
+        <bt:String id="TaskpaneButton.Label"    DefaultValue="Agente IA"/>
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="TaskpaneButton.Tooltip"
+                   DefaultValue="Abrir el Agente IA de NEVEN — análisis de datos con IA contextualizada en tu hoja de cálculo"/>
+      </bt:LongStrings>
+    </Resources>
+
+  </VersionOverrides>
+
+</OfficeApp>

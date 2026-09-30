@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEVEN-SIM — Simulación Monte Carlo</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1e1e2e; color: #cdd6f4; height: 100vh; overflow: hidden; }
+        
+        .container { display: grid; grid-template-columns: 320px 1fr; grid-template-rows: 1fr 36px; height: 100vh; }
+        
+        /* Left Panel */
+        .left-panel { background: #181825; border-right: 1px solid #313244; overflow-y: auto; padding: 16px; }
+        .left-panel h2 { font-size: 14px; color: #89b4fa; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .btn { display: inline-block; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+        .btn-primary { background: #89b4fa; color: #1e1e2e; }
+        .btn-primary:hover { background: #b4d0fb; }
+        .btn-danger { background: #f38ba8; color: #1e1e2e; }
+        .btn-danger:hover { background: #f5a3b8; }
+        .btn-success { background: #a6e3a1; color: #1e1e2e; }
+        .btn-success:hover { background: #c0f0bc; }
+        .btn-sm { padding: 4px 10px; font-size: 11px; }
+        
+        .assumption-card { background: #313244; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+        .assumption-card h3 { font-size: 13px; color: #f5c2e7; margin-bottom: 6px; }
+        .assumption-card .dist-info { font-size: 11px; color: #a6adc8; }
+        .assumption-card .actions { margin-top: 8px; display: flex; gap: 6px; }
+        
+        .model-section { margin-top: 20px; }
+        .model-section label { font-size: 12px; color: #a6adc8; display: block; margin-bottom: 4px; }
+        .model-section textarea { width: 100%; height: 60px; background: #1e1e2e; border: 1px solid #45475a; border-radius: 6px; color: #cdd6f4; padding: 8px; font-family: 'Cascadia Code', monospace; font-size: 12px; resize: vertical; }
+        .model-section input[type="number"] { width: 100%; background: #1e1e2e; border: 1px solid #45475a; border-radius: 6px; color: #cdd6f4; padding: 8px; font-size: 13px; margin-top: 4px; }
+        
+        .run-section { margin-top: 16px; display: flex; gap: 8px; }
+        
+        /* Right Panel */
+        .right-panel { padding: 16px; overflow-y: auto; display: grid; grid-template-rows: 1fr 1fr; gap: 12px; }
+        .chart-container { background: #181825; border-radius: 8px; border: 1px solid #313244; min-height: 200px; }
+        
+        /* Status Bar */
+        .status-bar { grid-column: 1 / -1; background: #11111b; border-top: 1px solid #313244; padding: 0 16px; display: flex; align-items: center; font-size: 12px; color: #6c7086; }
+        .status-bar .status-text { flex: 1; }
+        .status-bar .elapsed { color: #a6e3a1; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #181825; }
+        ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel: Configuration -->
+        <div class="left-panel">
+            <h2>Supuestos (Assumptions)</h2>
+            <button class="btn btn-primary" onclick="addAssumption()" style="width:100%;margin-bottom:12px;">+ Agregar Supuesto</button>
+            
+            <div id="assumptions-list">
+                <!-- Populated dynamically -->
+                <div class="assumption-card" style="border:1px dashed #45475a;text-align:center;color:#6c7086;padding:24px;">
+                    Sin supuestos definidos.<br>Use "Agregar Supuesto" para comenzar.
+                </div>
+            </div>
+            
+            <div class="model-section">
+                <label>Función Modelo (Julia)</label>
+                <textarea id="model-func" placeholder="(ventas, costos) -> ventas - costos">(x) -> x</textarea>
+                
+                <label style="margin-top:12px;">Iteraciones</label>
+                <input type="number" id="iterations" value="1000000" min="1000" max="10000000" step="100000">
+            </div>
+            
+            <div class="run-section">
+                <button class="btn btn-success" onclick="runSimulation()" style="flex:1;">▶ Simular</button>
+                <button class="btn btn-primary btn-sm" onclick="exportReport()">📋 Reporte</button>
+            </div>
+        </div>
+        
+        <!-- Right Panel: Charts -->
+        <div class="right-panel">
+            <div class="chart-container" id="chart-histogram"></div>
+            <div class="chart-container" id="chart-tornado"></div>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span class="status-text" id="status-text">NEVEN-SIM v1.0 | Listo</span>
+            <span class="elapsed" id="elapsed"></span>
+        </div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // NEVEN-SIM Workspace — JavaScript Controller
+    // ═══════════════════════════════════════════════════════════════════
+
+    const state = {
+        assumptions: [],
+        results: null,
+        sensitivity: null
+    };
+
+    // ─── PostMessage Bridge (JS ↔ C++ XLL) ───────────────────────────
+    function postToXLL(msg) {
+        if (window.chrome && window.chrome.webview) {
+            window.chrome.webview.postMessage(JSON.stringify(msg));
+        } else {
+            console.log('[SIM→XLL]', msg);
+        }
+    }
+
+    // Listen for messages from C++
+    if (window.chrome && window.chrome.webview) {
+        window.chrome.webview.addEventListener('message', (event) => {
+            const msg = JSON.parse(event.data);
+            handleXLLMessage(msg);
+        });
+    }
+
+    function handleXLLMessage(msg) {
+        switch (msg.type) {
+            case 'fit-results':
+                updateFitResults(msg.assumption, msg.data);
+                break;
+            case 'simulation-results':
+                updateSimResults(msg.data);
+                break;
+            case 'sensitivity':
+                updateSensitivity(msg.data);
+                break;
+            case 'status':
+                setStatus(msg.message);
+                break;
+        }
+    }
+
+    // ─── Assumptions Management ──────────────────────────────────────
+    function addAssumption() {
+        const name = prompt('Nombre del supuesto (ej: Ventas):');
+        if (!name) return;
+        const range = prompt('Rango de datos en Excel (ej: Sheet1!A1:A100):');
+        if (!range) return;
+
+        state.assumptions.push({ name, range, dist: null, params: null });
+        renderAssumptions();
+        postToXLL({ type: 'add-assumption', name, range });
+    }
+
+    function removeAssumption(index) {
+        const name = state.assumptions[index].name;
+        state.assumptions.splice(index, 1);
+        renderAssumptions();
+        postToXLL({ type: 'remove-assumption', name });
+    }
+
+    function renderAssumptions() {
+        const list = document.getElementById('assumptions-list');
+        if (state.assumptions.length === 0) {
+            list.innerHTML = '<div class="assumption-card" style="border:1px dashed #45475a;text-align:center;color:#6c7086;padding:24px;">Sin supuestos definidos.</div>';
+            return;
+        }
+        list.innerHTML = state.assumptions.map((a, i) => `
+            <div class="assumption-card">
+                <h3>${a.name}</h3>
+                <div class="dist-info">
+                    Rango: ${a.range}<br>
+                    ${a.dist ? `Distribución: ${a.dist} (${a.params || ''})` : 'Pendiente de ajuste...'}
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary btn-sm" onclick="fitAssumption(${i})">Ajustar</button>
+                    <button class="btn btn-danger btn-sm" onclick="removeAssumption(${i})">Eliminar</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function fitAssumption(index) {
+        const a = state.assumptions[index];
+        setStatus('Ajustando distribución para ' + a.name + '...');
+        postToXLL({ type: 'fit-assumption', name: a.name, range: a.range });
+    }
+
+    function updateFitResults(name, data) {
+        const a = state.assumptions.find(x => x.name === name);
+        if (a && data && data.length > 0) {
+            const best = data[0];
+            a.dist = best.dist_name || Object.keys(data)[0];
+            a.params = `p1=${best.param1?.toFixed(3)}, p2=${best.param2?.toFixed(3)}`;
+        }
+        renderAssumptions();
+        setStatus('Ajuste completo para ' + name);
+    }
+
+    // ─── Simulation ──────────────────────────────────────────────────
+    function runSimulation() {
+        const model = document.getElementById('model-func').value;
+        const iterations = parseInt(document.getElementById('iterations').value);
+        
+        if (state.assumptions.length === 0) {
+            setStatus('Error: No hay supuestos definidos');
+            return;
+        }
+
+        setStatus('Ejecutando simulación (' + iterations.toLocaleString() + ' iteraciones)...');
+        postToXLL({ type: 'run-simulation', model, iterations });
+    }
+
+    function updateSimResults(data) {
+        state.results = data;
+        setStatus(`Simulación completa — Media: ${data.mean?.toFixed(2)}, P50: ${data.p50?.toFixed(2)}`);
+        document.getElementById('elapsed').textContent = data.elapsed_ms ? `${data.elapsed_ms.toFixed(0)}ms` : '';
+        renderHistogram(data);
+    }
+
+    // ─── Sensitivity ─────────────────────────────────────────────────
+    function updateSensitivity(data) {
+        state.sensitivity = data;
+        renderTornado(data);
+    }
+
+    // ─── Charts (Plotly.js) ──────────────────────────────────────────
+    function renderHistogram(data) {
+        const container = document.getElementById('chart-histogram');
+        
+        if (data.histogram) {
+            // Pre-binned data from C++
+            Plotly.newPlot(container, [{
+                x: data.histogram.centers || data.histogram.bins,
+                y: data.histogram.counts,
+                type: 'bar',
+                marker: { color: '#89b4fa', opacity: 0.8 }
+            }], {
+                title: { text: 'Distribución de Resultados', font: { color: '#cdd6f4', size: 14 } },
+                paper_bgcolor: '#181825',
+                plot_bgcolor: '#181825',
+                font: { color: '#a6adc8' },
+                xaxis: { gridcolor: '#313244' },
+                yaxis: { gridcolor: '#313244', title: 'Frecuencia' },
+                margin: { t: 40, r: 20, b: 40, l: 50 },
+                shapes: data.p50 ? [{
+                    type: 'line', x0: data.p50, x1: data.p50, y0: 0, y1: 1, yref: 'paper',
+                    line: { color: '#f5c2e7', width: 2, dash: 'dash' }
+                }] : []
+            }, { responsive: true });
+        } else {
+            // Show summary stats as text
+            container.innerHTML = `
+                <div style="padding:20px;font-size:13px;">
+                    <h3 style="color:#89b4fa;margin-bottom:10px;">Resultados</h3>
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr><td style="padding:4px;color:#6c7086;">Media</td><td>${data.mean?.toFixed(4)}</td></tr>
+                        <tr><td style="padding:4px;color:#6c7086;">Desv. Std</td><td>${data.std?.toFixed(4)}</td></tr>
+                        <tr><td style="padding:4px;color:#6c7086;">Mínimo</td><td>${data.min?.toFixed(4)}</td></tr>
+                        <tr><td style="padding:4px;color:#6c7086;">P5</td><td>${data.p5?.toFixed(4)}</td></tr>
+                        <tr><td style="padding:4px;color:#6c7086;">Mediana (P50)</td><td>${data.p50?.toFixed(4)}</td></tr>
+                        <tr><td style="padding:4px;color:#6c7086;">P95</td><td>${data.p95?.toFixed(4)}</td></tr>
+                        <tr><td style="padding:4px;color:#6c7086;">Máximo</td><td>${data.max?.toFixed(4)}</td></tr>
+                    </table>
+                </div>`;
+        }
+    }
+
+    function renderTornado(data) {
+        const container = document.getElementById('chart-tornado');
+        
+        if (!data || !data.variables) {
+            container.innerHTML = '<div style="padding:20px;color:#6c7086;">Sin datos de sensibilidad</div>';
+            return;
+        }
+
+        const vars = data.variables || [];
+        const rho = data.spearman || [];
+        const contrib = data.contribution || [];
+
+        // Sort by absolute value (should already be sorted by C++)
+        const indices = vars.map((_, i) => i);
+
+        Plotly.newPlot(container, [{
+            y: vars,
+            x: rho,
+            type: 'bar',
+            orientation: 'h',
+            marker: { 
+                color: rho.map(r => r >= 0 ? '#a6e3a1' : '#f38ba8'),
+                opacity: 0.85
+            },
+            text: contrib.map(c => (c * 100).toFixed(1) + '%'),
+            textposition: 'outside'
+        }], {
+            title: { text: 'Análisis de Sensibilidad (Tornado)', font: { color: '#cdd6f4', size: 14 } },
+            paper_bgcolor: '#181825',
+            plot_bgcolor: '#181825',
+            font: { color: '#a6adc8' },
+            xaxis: { gridcolor: '#313244', title: 'Correlación Spearman (ρ)', zeroline: true, zerolinecolor: '#45475a' },
+            yaxis: { gridcolor: '#313244' },
+            margin: { t: 40, r: 60, b: 40, l: 120 }
+        }, { responsive: true });
+    }
+
+    // ─── Status Bar ──────────────────────────────────────────────────
+    function setStatus(msg) {
+        document.getElementById('status-text').textContent = msg;
+    }
+
+    // ─── Report Export ───────────────────────────────────────────────
+    function exportReport() {
+        postToXLL({ type: 'export-report' });
+        setStatus('Generando reporte...');
+    }
+
+    // ─── Demo: Show empty state charts ───────────────────────────────
+    (function init() {
+        document.getElementById('chart-histogram').innerHTML = 
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#6c7086;font-size:13px;">Histograma de resultados aparecerá aquí</div>';
+        document.getElementById('chart-tornado').innerHTML = 
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#6c7086;font-size:13px;">Gráfico Tornado aparecerá aquí</div>';
+    })();
+    </script>
+</body>
+</html>

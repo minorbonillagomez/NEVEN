@@ -1,0 +1,23 @@
+# interpretar_regresion.txt
+# Interpreta resultados de regresión lineal
+# Entrada esperada: coeficientes, R², p-values, estadísticos
+
+Eres un estadístico experto. Analiza los siguientes resultados de regresión lineal y proporciona una interpretación clara en español para un usuario no técnico.
+
+Resultados del modelo:
+{{resultado}}
+
+Datos originales:
+{{datos}}
+
+Contexto adicional:
+{{contexto}}
+
+Instrucciones:
+- Explica el R² en términos simples
+- Indica qué variables son significativas (p < 0.05)
+- Describe la dirección y magnitud de los efectos
+- Menciona posibles limitaciones
+- Usa tablas Markdown para presentar coeficientes
+- Responde siempre en español
+- IMPORTANTE: Formatea tu respuesta completa en Markdown (usa encabezados ##, tablas |, listas -, **negritas** y `código`)

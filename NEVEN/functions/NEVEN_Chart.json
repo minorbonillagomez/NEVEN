@@ -1,0 +1,88 @@
+{
+    "id": "NEVEN_Chart",
+    "family": "GR",
+    "family_label": "Gráficos",
+    "name": "NEVEN.Chart — Gráficos Embebidos",
+    "description": "Crea gráficos embebidos directamente en Excel como Shapes, usando datos de un rango. Soporta R (ggplot2), Python (matplotlib) y Julia (Plots.jl). El gráfico se inserta como imagen en la hoja activa y se actualiza automáticamente al recalcular la celda.",
+    "wikipedia_url": "https://es.wikipedia.org/wiki/Gr%C3%A1fico",
+    "languages": ["r", "python", "julia"],
+    "function_name_xll": "NEVEN.Chart.R / .P / .J",
+    "nevenx_positions": {
+        "a1": {
+            "name": "Datos",
+            "label": "Rango con datos. Fila 1 = encabezados de columna. Col 1 = eje X, Col 2+ = series Y.",
+            "type": "range",
+            "required": true,
+            "default": null
+        },
+        "a2": {
+            "name": "Tipo",
+            "label": "Tipo de gráfico: 1=Barras, 2=Líneas, 3=Scatter, 4=Área, 5=Pastel, 6=Histograma, 7=BoxPlot",
+            "type": "integer",
+            "required": true,
+            "default": 1
+        },
+        "a3": {
+            "name": "Nombre",
+            "label": "Nombre único del gráfico (para actualizar el mismo Shape). Si se omite, se genera automáticamente.",
+            "type": "text",
+            "required": false,
+            "default": "Chart_N"
+        },
+        "a4": {
+            "name": "Ancho",
+            "label": "Ancho del gráfico en píxeles (100-2000)",
+            "type": "integer",
+            "required": false,
+            "default": 400
+        },
+        "a5": {
+            "name": "Alto",
+            "label": "Alto del gráfico en píxeles (100-2000)",
+            "type": "integer",
+            "required": false,
+            "default": 300
+        }
+    },
+    "tipo_outputs": [
+        {
+            "id": 0,
+            "label": "Shape insertado en la hoja activa con el gráfico como imagen PNG"
+        }
+    ],
+    "examples": [
+        {
+            "formula": "=NEVEN.Chart.R(A1:C10, 1)",
+            "description": "Gráfico de barras con datos en A1:C10 usando R/ggplot2"
+        },
+        {
+            "formula": "=NEVEN.Chart.R(A1:B20, 2, \"ventas_mensuales\", 600, 400)",
+            "description": "Gráfico de líneas con nombre personalizado y tamaño 600x400"
+        },
+        {
+            "formula": "=NEVEN.Chart.P(Datos!A1:D50, 3)",
+            "description": "Scatter plot usando Python/matplotlib con datos de otra hoja"
+        },
+        {
+            "formula": "=NEVEN.Chart.J(A1:A100, 6)",
+            "description": "Histograma usando Julia/Plots.jl con una sola columna de datos"
+        }
+    ],
+    "chart_types": [
+        {"id": 1, "name": "Barras", "description": "Gráfico de barras verticales — ideal para comparar categorías"},
+        {"id": 2, "name": "Líneas", "description": "Gráfico de líneas — ideal para tendencias temporales"},
+        {"id": 3, "name": "Scatter", "description": "Dispersión de puntos — ideal para correlaciones"},
+        {"id": 4, "name": "Área", "description": "Gráfico de área rellena — ideal para mostrar volumen acumulado"},
+        {"id": 5, "name": "Pastel", "description": "Gráfico circular — ideal para proporciones de un total"},
+        {"id": 6, "name": "Histograma", "description": "Distribución de frecuencias — ideal para analizar distribución de datos"},
+        {"id": 7, "name": "BoxPlot", "description": "Diagrama de caja — ideal para ver mediana, cuartiles y outliers"}
+    ],
+    "notes": [
+        "El gráfico se genera como imagen PNG en C:\\NEVEN\\temp\\ y se inserta como Shape.",
+        "Si ya existe un Shape con el mismo nombre, se actualiza la imagen (no se crea uno nuevo).",
+        "Para actualizar el gráfico cuando los datos cambian, simplemente recalcula la celda (F9).",
+        "Usa NEVEN.Chart.R para gráficos estilizados con ggplot2 (recomendado para publicaciones).",
+        "Usa NEVEN.Chart.P para compatibilidad con Python y matplotlib.",
+        "Usa NEVEN.Chart.J para alto rendimiento con grandes datasets usando Julia."
+    ]
+}

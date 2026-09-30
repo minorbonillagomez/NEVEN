@@ -1,0 +1,37 @@
+---
+title: "Reporte de Datos — RJ2XCL"
+author: "Generado automaticamente"
+date: today
+format:
+  html:
+    self-contained: true
+    theme: none
+    minimal: true
+---
+
+## Datos del Analisis
+
+Este reporte fue generado desde Excel usando `=RJ2XCL.QUARTO()`.
+
+### Tabla de Datos
+
+| Metrica | Valor |
+|---------|-------|
+| Plataforma | RJ2XCL v2.0 |
+| Motores | R 4.4.1 + Julia 1.12.6 |
+| Visualizacion | WebView2 + Plotly |
+| Notebooks | Pluto.jl 0.20 |
+
+### Estadisticas del Sistema
+
+- **R:** Operativo con 90+ funciones registradas
+- **Julia:** Operativo con 61 procedimientos
+- **WebView2:** Activo para visualizacion interactiva
+- **Quarto:** Renderizando este documento
+
+## Conclusion
+
+RJ2XCL integra R, Julia, Quarto y Pluto.jl en un ecosistema unificado dentro de Microsoft Excel.
+
+---
+*Universidad de Costa Rica — Tesis de Maestria*

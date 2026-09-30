@@ -1,0 +1,371 @@
+\documentclass[12pt, a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+\geometry{left=25mm, right=25mm, top=25mm, bottom=25mm}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{\textbf{RJ2XCL: Sistema Multilenguaje de Cómputo Científico\\Integrado en Microsoft Excel\\con Visor WebView2 y Notebooks Pluto.jl}}
+\author{Minor Bonilla G.\\Universidad de Costa Rica\\Tesis de Maestría}
+\date{19 de abril de 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+RJ2XCL es un sistema de cómputo científico multilenguaje que integra R y Julia como motores de cálculo dentro de Microsoft Excel, utilizando una arquitectura de procesos aislados comunicados mediante Named Pipes y Protocol Buffers. El sistema expone más de 90 procedimientos estadísticos y matemáticos accesibles directamente desde celdas de Excel, un visor HTML embebido basado en WebView2 para visualizaciones interactivas, y un modo avanzado con notebooks Pluto.jl para usuarios técnicos. La validación se sustenta en una suite de 200 pruebas unitarias y de integración con 0\% de fallos, incluyendo pruebas basadas en propiedades (Property-Based Testing). El sistema evolucionó de una calificación de calidad de 4.3/10 a 8.9/10 mediante correcciones sistemáticas de seguridad, confiabilidad y mantenibilidad.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter{Introducción}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{Contexto y Motivación}
+
+En las ciencias de datos modernas existe una brecha entre el poder del procesamiento estadístico avanzado (R, Julia) y la accesibilidad en la capa de negocio (Microsoft Excel). Las soluciones existentes como BERT (Basic Excel R Toolkit) adolecen de problemas de estabilidad al inyectar librerías dinámicas directamente en el proceso de Excel, donde una violación de segmento del motor analítico provoca el colapso del proceso anfitrión.
+
+RJ2XCL resuelve este problema mediante una arquitectura de tres capas con aislamiento de procesos: el XLL (add-in de Excel) se comunica con procesos hijo independientes (ControlR.exe, ControlJulia.exe) a través de Named Pipes, garantizando que un fallo en R o Julia no afecte la estabilidad de Excel.
+
+\section{Objetivos}
+
+\begin{enumerate}
+    \item Aislar la ejecución del código analítico en procesos separados del entorno UI de Excel.
+    \item Gestionar determinísticamente la memoria intercambiada con Excel mediante RAII en C++.
+    \item Exponer funciones estadísticas y matemáticas de R y Julia como funciones nativas de Excel.
+    \item Integrar un visor HTML embebido (WebView2) para visualizaciones interactivas.
+    \item Proporcionar un modo avanzado con notebooks Pluto.jl para usuarios técnicos.
+    \item Garantizar la reproducibilidad de análisis mediante exportación a notebooks.
+\end{enumerate}
+
+\section{Contribuciones}
+
+Las contribuciones principales de este trabajo son:
+\begin{itemize}
+    \item Una arquitectura IPC robusta basada en Named Pipes y Protocol Buffers que soporta múltiples lenguajes de programación.
+    \item La corrección de bugs críticos en la C API de Julia 1.12 (\texttt{jl\_arrayset} y \texttt{jl\_array\_ptr} para tipos primitivos inline).
+    \item Un sandbox de seguridad que bloquea más de 90 patrones de ejecución peligrosa en R y Julia.
+    \item La integración de WebView2 como visor HTML embebido en Excel con comunicación bidireccional JavaScript$\leftrightarrow$C++.
+    \item Un generador de presentaciones HTML autocontenidas basado en reveal.js.
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter{Arquitectura del Sistema}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{Estructura de Tres Capas}
+
+RJ2XCL implementa una topología de tres capas:
+
+\begin{enumerate}
+    \item \textbf{Capa de Presentación (XLL):} Add-in de Excel compilado como DLL en C++17 con MSVC 2022. Registra funciones UDF, gestiona el visor WebView2, y coordina la comunicación con los motores.
+    \item \textbf{Capa de Transporte (IPC):} Named Pipes de Windows con serialización Protocol Buffers v3.21.12. Comunicación síncrona bidireccional con timeouts configurables por lenguaje.
+    \item \textbf{Capa de Motores:} Procesos hijo independientes --- ControlR.exe (R 4.4.1) y ControlJulia.exe (Julia 1.12.6) --- que ejecutan código y retornan resultados serializados.
+\end{enumerate}
+
+\section{Componentes Principales}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Componente} & \textbf{Tecnología} & \textbf{Función} \\
+\midrule
+XLL (RJ2XCL64.xll) & C++17, MSVC 2022 & Add-in de Excel, registro de funciones \\
+ControlR.exe & C++ + R 4.4.1 & Motor R con embedding via R API \\
+ControlJulia.exe & C++ + Julia 1.12.6 & Motor Julia con embedding via C API \\
+ViewerManager & C++ + WebView2 SDK & Visor HTML embebido \\
+PlutoManager & C++ & Gestión del servidor Pluto.jl \\
+PresentationBuilder & C++ & Generador de presentaciones reveal.js \\
+NotebookLibrary & C++ & Gestión de 13 notebooks precargados \\
+NotebookExporter & C++ & Exportación de análisis reproducibles \\
+SandboxVerifier & C++ & Validación de seguridad de código \\
+ConfigService & C++ + JSON & Configuración centralizada \\
+\bottomrule
+\end{tabular}
+\caption{Componentes principales del sistema RJ2XCL}
+\end{table}
+
+\section{Protocol Buffers para IPC}
+
+El intercambio de datos utiliza Protocol Buffers con un esquema extensible:
+
+\begin{lstlisting}[language=C++, caption={Esquema Protobuf simplificado}]
+message Variable {
+  oneof value {
+    int32 integer = 5;
+    double real = 6;
+    string str = 7;
+    bool boolean = 8;
+    Array arr = 10;
+    HtmlContent html_content = 16; // WebView2
+  }
+  string name = 15;
+}
+\end{lstlisting}
+
+El campo \texttt{HtmlContent} (field 16) fue agregado para transportar contenido HTML desde los motores de lenguaje al visor WebView2.
+
+\section{Gestión de Memoria: Patrón RAII}
+
+La interfaz \texttt{XLOPER12} de Excel requiere gestión manual de memoria. RJ2XCL encapsula toda interacción en la clase \texttt{RaiiXlOper}, garantizando liberación determinista:
+
+\begin{lstlisting}[language=C++, caption={Patrón RAII para XLOPER12}]
+{
+    RaiiXlOper result;
+    Excel12(xlUDF, &result, 1, arg1);
+    // Al salir del bloque, el destructor libera
+    // la memoria de XLOPER12 automaticamente.
+}
+\end{lstlisting}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter{Funcionalidades Implementadas}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{Funciones Estadísticas en R}
+
+Se implementaron 8 módulos R con más de 60 procedimientos estadísticos, accesibles como \texttt{=R.func(datos, TipoOutput)}:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llc}
+\toprule
+\textbf{Módulo} & \textbf{Paquete R} & \textbf{Procedimientos} \\
+\midrule
+Regresión Lineal & stats, stargazer & 12 \\
+Regresión Binaria & stats & 8 \\
+Datos de Panel & plm & 15 \\
+Series de Tiempo & tseries, mFilter & 12 \\
+Pronóstico & forecast & 10 \\
+Efectos Mixtos & lme4 & 8 \\
+Supervivencia & survival & 7 \\
+Psicometría & psych & 7 \\
+Bayesiana & rstanarm & 8 \\
+Estadística Base & stats & 12 \\
+Descriptiva & Hmisc & 10 \\
+Supuestos & car, lmtest & 12 \\
+\bottomrule
+\end{tabular}
+\caption{Módulos estadísticos R implementados}
+\end{table}
+
+\section{Funciones Científicas en Julia}
+
+Se implementaron 9 funciones Julia con 61 procedimientos, accesibles como \texttt{=J.func(datos, TipoOutput)}:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llc}
+\toprule
+\textbf{Función} & \textbf{Área} & \textbf{Procedimientos} \\
+\midrule
+JM\_Algebra & Álgebra Lineal & 12 \\
+JM\_Calculo & Cálculo Numérico & 7 \\
+JM\_EDO & Ecuaciones Diferenciales & 4 \\
+JML\_Clasificacion & Machine Learning & 6 \\
+JML\_Clustering & K-Medias & 6 \\
+JML\_Estadistica & Estadística & 8 \\
+JO\_Optimizar & Optimización & 7 \\
+JC\_Transformar & Transformación de Datos & 6 \\
+JC\_Utilidades & Utilidades & 5 \\
+\bottomrule
+\end{tabular}
+\caption{Funciones Julia implementadas}
+\end{table}
+
+\section{Visor WebView2 Embebido}
+
+El sistema integra Microsoft Edge WebView2 como visor HTML embebido dentro de Excel, permitiendo renderizar visualizaciones interactivas (Plotly, D3.js, htmlwidgets) sin abrir un navegador externo. El visor soporta:
+
+\begin{itemize}
+    \item Ventanas flotantes modeless asociadas a la ventana de Excel.
+    \item Comunicación bidireccional JavaScript$\leftrightarrow$C++ via PostMessage.
+    \item Sandbox de seguridad con navegación restringida.
+    \item Múltiples instancias simultáneas con evicción FIFO.
+\end{itemize}
+
+\section{Modo Avanzado: Pluto.jl}
+
+Para usuarios técnicos, el sistema ofrece un modo avanzado basado en Pluto.jl:
+
+\begin{itemize}
+    \item Servidor Pluto.jl lanzado como proceso Julia independiente.
+    \item 13 notebooks precargados (7 R via RCall.jl, 5 Julia nativo, 1 mixto).
+    \item Exportación de análisis como notebooks reproducibles.
+    \item RCall.jl para pipelines mixtos Julia+R.
+\end{itemize}
+
+\section{Presentaciones reveal.js}
+
+El sistema genera presentaciones HTML autocontenidas usando reveal.js:
+
+\begin{lstlisting}[language=C++, caption={Flujo de creación de presentaciones desde Excel}]
+=RJ2XCL.PRESENTATION.NEW("Resultados Q1")
+=RJ2XCL.PRESENTATION.ADD.SLIDE("presentation-1",
+    "# Resumen\nVentas crecieron 15%", "text")
+=RJ2XCL.PRESENTATION.BUILD("presentation-1", "")
+\end{lstlisting}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter{Seguridad}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{Sandbox de Ejecución}
+
+El \texttt{SandboxVerifier} bloquea más de 90 patrones de ejecución peligrosa:
+
+\begin{itemize}
+    \item \textbf{R:} \texttt{system()}, \texttt{shell()}, \texttt{eval(parse())}, \texttt{do.call()}, \texttt{.Call()}, \texttt{url()}, \texttt{Sys.setenv()}
+    \item \textbf{Julia:} \texttt{ccall}, \texttt{@ccall}, \texttt{cglobal}, \texttt{unsafe\_*}, \texttt{include()}, backtick literals
+    \item \textbf{Bypass prevention:} Detección de concatenación de strings, whitespace stripping, \texttt{getattr} patterns
+\end{itemize}
+
+\section{Seguridad del Visor WebView2}
+
+\begin{itemize}
+    \item Navegación restringida: solo \texttt{file://} dentro del directorio de datos y \texttt{about:blank}.
+    \item DevTools deshabilitado por defecto (configurable para debugging).
+    \item JavaScript habilitado para interactividad (Plotly, D3.js) pero sin acceso a filesystem o red.
+    \item Extensión de política para \texttt{localhost:port} cuando Pluto está activo.
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter{Correcciones Técnicas Significativas}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{Bugs de Julia 1.12: Array I/O}
+
+Julia 1.12 cambió el almacenamiento de arrays de tipos primitivos (\texttt{Float64}, \texttt{Int64}) a \textit{inline storage}. Las funciones \texttt{jl\_arrayset} y \texttt{jl\_array\_ptr} dejaron de funcionar correctamente para estos tipos:
+
+\begin{lstlisting}[language=C++, caption={Fix para arrays primitivos en Julia 1.12}]
+// Antes (roto en Julia 1.12):
+jl_arrayset(julia_array, element, i);
+
+// Despues (correcto):
+if (array_base_type == jl_float64_type) {
+    jl_array_data(julia_array, double)[i] = 
+        jl_unbox_float64(element);
+}
+\end{lstlisting}
+
+Adicionalmente, \texttt{jl\_array\_data} cambió de firma: \texttt{jl\_array\_data(a)} $\rightarrow$ \texttt{jl\_array\_data(a, type)}.
+
+\section{Base.Docs.doc() en Julia 1.12}
+
+La función \texttt{Base.Docs.doc()} lanza \texttt{MethodError} en Julia 1.12 para funciones sin docstrings formales. Se resolvió con \texttt{try/catch} en \texttt{ListFunctions()}.
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter{Validación y Pruebas}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{Suite de Pruebas}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Categoría} & \textbf{Tests} & \textbf{Estado} \\
+\midrule
+Sandbox (R + Julia + Python) & 109 & 100\% \\
+Property-Based (Python sandbox) & 3 & 100\% \\
+Confiabilidad (unit + PBT) & 35 & 100\% \\
+Config, Security, Discovery & 20 & 100\% \\
+Type conversions, RAII, COM & 12 & 100\% \\
+Integration, Callbacks, Basic & 9 & 100\% \\
+Misc (Result, Version) & 12 & 100\% \\
+\midrule
+\textbf{Total} & \textbf{200} & \textbf{100\%} \\
+\bottomrule
+\end{tabular}
+\caption{Suite de pruebas automatizadas}
+\end{table}
+
+\section{Evolución de Calidad}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+\textbf{Hito} & \textbf{Nota} & \textbf{Tests} & \textbf{Cambio Clave} \\
+\midrule
+Estado original & 4.3 & 39 & Prototipo con deuda técnica \\
+Post-correcciones & 6.8 & 119 & Seguridad, RAII, mutex \\
+Post-Julia sysimage & 7.2 & 119 & Julia arranca en segundos \\
+Post-Mantenibilidad & 7.9 & 165 & Constants, logging, Doxygen \\
+Post-Confiabilidad & 8.1 & 200 & Health monitoring, errores \\
+Post-Julia Libraries & 8.4 & 200 & 61 procedimientos Julia \\
+Post-WebView2+Pluto & 8.9 & 200 & Visor, notebooks, presentaciones \\
+\bottomrule
+\end{tabular}
+\caption{Evolución de la calificación de calidad}
+\end{table}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter{Conclusiones y Trabajo Futuro}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\section{Conclusiones}
+
+RJ2XCL demuestra que es viable construir un sistema multilenguaje robusto que integre R y Julia en Microsoft Excel mediante una arquitectura de procesos aislados. Las contribuciones principales incluyen:
+
+\begin{enumerate}
+    \item Una arquitectura IPC que soporta múltiples lenguajes sin comprometer la estabilidad de Excel.
+    \item Más de 120 procedimientos estadísticos y matemáticos accesibles como funciones nativas de Excel.
+    \item Un visor HTML embebido con WebView2 para visualizaciones interactivas.
+    \item Un modo avanzado con Pluto.jl para reproducibilidad y personalización.
+    \item Una suite de 200 pruebas con 100\% de cobertura en paths críticos.
+\end{enumerate}
+
+\section{Trabajo Futuro}
+
+\begin{itemize}
+    \item \textbf{Callback thread:} Re-habilitar el hilo de callbacks para inserción directa de gráficos en Excel.
+    \item \textbf{CI/CD:} Pipeline de integración continua con tests automatizados en cada commit.
+    \item \textbf{Property-Based Testing:} Implementar las 20 propiedades formales definidas en el diseño del visor WebView2.
+    \item \textbf{Python:} Resolver los problemas de estabilidad de ControlPython.exe para re-habilitar Python como tercer lenguaje.
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter*{Agradecimientos}
+% ═══════════════════════════════════════════════════════════════════════════
+
+A la Universidad de Costa Rica por el apoyo institucional. Al equipo de desarrollo de BERT (Basic Excel R Toolkit) cuyo código base sirvió como punto de partida. A la comunidad de Julia por el soporte en la migración a Julia 1.12.
+
+\end{document}

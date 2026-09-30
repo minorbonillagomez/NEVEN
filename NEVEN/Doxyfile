@@ -1,0 +1,31 @@
+# Doxyfile for RJ2XCL API Documentation
+# Run via: .\scripts\generate-docs.ps1
+# or:      doxygen Doxyfile
+
+PROJECT_NAME           = "RJ2XCL"
+PROJECT_NUMBER         = "2.0.0"
+PROJECT_BRIEF          = "R and Julia to Excel — High-performance add-in"
+OUTPUT_DIRECTORY       = docs/api
+INPUT                  = RJ2XCL/include Common ControlR/include ControlJulia/include
+FILE_PATTERNS          = *.h *.cc
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HTML_COLORSTYLE        = LIGHT
+HTML_DYNAMIC_SECTIONS  = YES
+HAVE_DOT               = NO
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+OPTIMIZE_OUTPUT_FOR_C  = NO
+BUILTIN_STL_SUPPORT    = YES
+SORT_BRIEF_DOCS        = YES
+SORT_MEMBERS_CTORS_1ST = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = YES
+EXCLUDE_PATTERNS       = */json11/* */build_new/* */_deps/*
+USE_MDFILE_AS_MAINPAGE = README.md

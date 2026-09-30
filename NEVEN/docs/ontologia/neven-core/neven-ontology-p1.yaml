@@ -1,0 +1,560 @@
+# =============================================================================
+# NEVEN — Ontologia del Proyecto
+# =============================================================================
+# Proposito: Fuente de verdad estructurada para el agente validador.
+# El agente usa este archivo para razonar sobre cambios antes de implementarlos.
+#
+# Estructura:
+#   componente.id         : identificador unico
+#   componente.prioridad  : 1=critico, 2=alto, 3=medio, 4=soporte
+#   componente.fuentes    : archivos fuente en el repo
+#   componente.produccion : artefacto en C:\NEVEN\
+#   componente.dependencias: ids de otros componentes requeridos
+#   componente.invariantes: reglas que SIEMPRE deben cumplirse
+#   componente.deploy     : como se despliega a produccion
+#   componente.errores    : senales de fallo conocidas
+# =============================================================================
+
+meta:
+  version: "1.0"
+  paquete: 1
+  descripcion: "Componentes criticos del nucleo de NEVEN"
+  ultima_actualizacion: "2026-08-19"
+  autor: "Minor Bonilla / Kiro"
+
+# =============================================================================
+# PAQUETE 1 — COMPONENTES CRITICOS
+# =============================================================================
+
+componentes:
+
+  # ---------------------------------------------------------------------------
+  - id: core_xll
+    nombre: "NEVEN64.xll (Core)"
+    prioridad: 1
+    descripcion: >
+      Singleton RJ2XCL_Engine. Entry point de todo el sistema. Registra funciones
+      en Excel, lanza procesos hijo, gestiona el ciclo de vida de los motores.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/Core/"
+      archivos_principales:
+        - "Core/src/rj2xcl.cc"          # xlAutoOpen, Init(), singleton
+        - "Core/src/rj2xcl.def"         # exportaciones del XLL
+        - "Core/src/basic_functions.cc" # NEVEN.r, NEVEN.j, NevenX_R, etc.
+        - "Core/src/language_service.cc"# lanzamiento de procesos y pipes
+        - "Core/src/LanguageManager.cc" # orquestacion de motores
+        - "Core/include/basic_functions.h"
+        - "Core/include/language_service.h"
+      cmake_target: "NEVEN_Core"
+      cmake_output: "NEVEN64.dll"  # renombrado a .xll en post-build
+
+    produccion:
+      ruta: "C:/NEVEN/NEVEN64.xll"
+      tamano_aprox: "~2.45 MB"
+      registro_excel:
+        clave: "HKCU/Software/Microsoft/Office/16.0/Excel/Options/OPEN"
+        valor: "/R \"C:\\NEVEN\\NEVEN64.xll\""
+
+    dependencias:
+      - common_lib
+      - pb_lib
+      - controlr_exe    # proceso hijo
+      - controljulia_exe # proceso hijo
+      - controlpython_exe # proceso hijo
+
+    invariantes:
+      - id: INV-CORE-01
+        descripcion: >
+          MapFunctions() + RegisterFunctions() SOLO pueden llamarse durante xlAutoOpen().
+          Cualquier llamada desde un timer o hilo de fondo resulta en xlfRegister error=2
+          (todas las funciones se pierden y aparecen como #NOMBRE? en Excel).
+        como_verificar: "Buscar en rj2xcl.cc que no haya RegisterFunctions() fuera de Init()"
+
+      - id: INV-CORE-02
+        descripcion: >
+          El zombie cleanup (taskkill ControlR/Julia/Python) DEBE ejecutarse ANTES de
+          file_watch_service_->Start() y ConnectLanguages(). El orden en Init() es:
+          1. ConfigureLanguages -> 2. zombie cleanup -> 3. file_watch_service Start ->
+          4. ConnectLanguages -> 5. InitializeConnectedLanguages -> 6. LoadUserFiles ->
+          7. MapFunctions -> 8. RegisterFunctions
+        como_verificar: "Ver orden de llamadas en RJ2XCL_Engine::Init() en rj2xcl.cc"
+
+      - id: INV-CORE-03
+        descripcion: >
+          El guard g_neven_initialized previene doble init. Si xlAutoOpen se llama
+          dos veces (p.ej. al recargar el XLL), la segunda llamada retorna sin reinit.
+        como_verificar: "Verificar que la variable estatica g_neven_initialized existe en rj2xcl.cc"
+
+      - id: INV-CORE-04
+        descripcion: >
+          rj2xcl.def debe exportar xlAutoOpen, xlAutoFree12, xlAutoClose,
+          xlAddInManagerInfo12 (obligatorios por el Excel SDK).
+          Si se agrega una nueva funcion XLL, debe agregarse al .def.
+        como_verificar: "grep xlAutoOpen Core/src/rj2xcl.def"
+
+    deploy:
+      prerequisito: "Excel debe estar cerrado"
+      comando: >
+        [System.IO.File]::Copy("Build/Dist/NEVEN64.dll", "C:/NEVEN/NEVEN64.xll", $true)
+      nota: "No requiere regsvr32. Excel lo carga via clave OPEN del registro."
+
+    errores:
+      - sintoma: "Funciones aparecen como #NOMBRE? en Excel"
+        causa: "RegisterFunctions fallida o XLL no cargado"
+        diagnostico: "Ver C:/NEVEN/neven.log, buscar xlfRegister error"
+
+      - sintoma: "MdCallBack12 not found — MessageBox y abort"
+        causa: "Version de Excel incompatible (muy raro)"
+        diagnostico: "Verificar version de Excel >= 2010"
+
+      - sintoma: "Pipe connected ausente en neven.log"
+        causa: "ConnectLanguages fallo — algun motor no levanto"
+        diagnostico: "Ver C:/NEVEN/controlr.log para R, controlpython.log para Python"
+
+  # ---------------------------------------------------------------------------
+  - id: ribbon_dll
+    nombre: "NEVENRibbon.dll (COM Add-in)"
+    prioridad: 2
+    descripcion: >
+      COM Add-in con el Ribbon de Excel. Siempre carga al inicio (LoadBehavior=3).
+      Carga NEVEN64.xll via RegisterXLL si auto_load_xll=true en el config.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/Ribbon/"
+      archivos_principales:
+        - "Ribbon/ribbon_connect.h"    # clase CConnect, enum DispIds, helpers config
+        - "Ribbon/ribbon_connect.cc"   # OnConnection, GetCustomUI, callbacks
+        - "Ribbon/ribbon_ui.xml"       # XML del Ribbon (embebido como recurso IDR_XML2)
+        - "Ribbon/ribbon.cc"           # DLL exports COM
+        - "Ribbon/dllmain.cpp"         # DllMain + ATL module
+        - "Ribbon/RJ2XCLRibbon.idl"    # TypeLib COM
+      cmake_target: "NEVENRibbon"
+      vcxproj: "Build/Ribbon/NEVENRibbon.vcxproj"
+      dist_output: "Build/Dist/NEVENRibbon.dll"
+
+    produccion:
+      ruta: "C:/NEVEN/NEVENRibbon.dll"
+      tamano_aprox: "~316 KB"
+      registro_com:
+        clave: "HKCU/Software/Microsoft/Office/Excel/Addins/NEVENRibbon.Connect"
+        LoadBehavior: 3  # DWORD, SIEMPRE debe ser 3
+        FriendlyName: "NEVEN Ribbon Menu"
+
+    dependencias:
+      - core_xll   # OnConnection llama RJ_SetPointers en el XLL
+
+    invariantes:
+      - id: INV-RIBBON-01
+        descripcion: >
+          CADA onAction="XXX" y getPressed="YYY" en ribbon_ui.xml DEBE tener:
+          1. Entrada en GetIDsOfNames: else if (!wcscmp(L"XXX")) disp_id = DispIds::XXX
+          2. Valor en el enum DispIds
+          3. Case correspondiente en Invoke()
+          Si falta alguno, el boton aparece pero no funciona (silencioso).
+        como_verificar: >
+          Extraer todos los onAction/getPressed del XML y verificar que cada
+          uno existe en GetIDsOfNames Y en el enum DispIds de ribbon_connect.h
+
+      - id: INV-RIBBON-02
+        descripcion: >
+          OnConnection() SIEMPRE debe retornar S_OK sin lanzar excepciones.
+          Si lanza excepcion, Excel baja LoadBehavior a 2 y el Ribbon desaparece
+          en la proxima sesion. Todo el codigo de OnConnection va dentro de try{}.
+        como_verificar: "Ver ribbon_connect.cc: verificar try-catch que envuelve todo el cuerpo"
+
+      - id: INV-RIBBON-03
+        descripcion: >
+          LoadBehavior en el registro DEBE ser 3 (DWORD).
+          Excel lo baja a 2 si OnConnection falla o si el XLL produce un hang.
+          Verificar con: (Get-ItemProperty 'HKCU:/Software/.../NEVENRibbon.Connect').LoadBehavior
+        como_verificar: "PowerShell: (Get-ItemProperty $ribbonKey).LoadBehavior -eq 3"
+
+      - id: INV-RIBBON-04
+        descripcion: >
+          El XML del Ribbon usa el namespace 2009/07/customui.
+          El atributo onLoad='Ribbon_Load' debe existir en customUI.
+          El ribbon XML se embebe como recurso Win32 de tipo 'XML' con ID IDR_XML2.
+        como_verificar: "Verificar primera linea de ribbon_ui.xml"
+
+      - id: INV-RIBBON-05
+        descripcion: >
+          Para desplegar: Excel DEBE estar cerrado antes de copiar el DLL.
+          Despues de copiar: regsvr32 /s 'C:/NEVEN/NEVENRibbon.dll'
+          Si OfficeClickToRun tiene el DLL bloqueado, usar Rename-Item primero.
+        como_verificar: "Verificar que no hay proceso EXCEL.EXE antes de copiar"
+
+    deploy:
+      prerequisito: "Excel cerrado. OfficeClickToRun puede bloquear el archivo."
+      comando_seguro: >
+        $ts = Get-Date -Format 'HHmmss'
+        Rename-Item 'C:/NEVEN/NEVENRibbon.dll' "C:/NEVEN/NEVENRibbon.dll.$ts" -ErrorAction SilentlyContinue
+        [System.IO.File]::Copy('Build/Dist/NEVENRibbon.dll', 'C:/NEVEN/NEVENRibbon.dll', $false)
+        Start-Process 'regsvr32' -ArgumentList '/s "C:/NEVEN/NEVENRibbon.dll"' -Wait
+      log_debug: "C:/NEVEN/ribbon_debug.log"
+
+    errores:
+      - sintoma: "Tab NEVEN ausente en Excel"
+        causa_1: "LoadBehavior != 3 en el registro"
+        causa_2: "ribbon_debug.log vacio: DLL no registrado (regsvr32 no corrio)"
+        causa_3: "OnConnection hizo hang (ver Event Log: AppHangB1 con EXCEL.EXE)"
+        diagnostico: "Verificar ribbon_debug.log y registro COM"
+
+      - sintoma: "Boton clickeable pero sin efecto"
+        causa: "Callback no registrado en GetIDsOfNames (XML vs .h desincronizados)"
+        diagnostico: "Comparar onAction en XML con entradas en GetIDsOfNames"
+
+  # ---------------------------------------------------------------------------
+  - id: controlr_exe
+    nombre: "ControlR.exe"
+    prioridad: 3
+    descripcion: >
+      Proceso hijo que embebe R via C API (carga dinamica de R.dll).
+      Comunicacion con el XLL via Named Pipe + Protobuf.
+      Un proceso por sesion de Excel.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/ControlR/"
+      archivos_principales:
+        - "ControlR/src/controlr.cc"         # main(), InputStreamRead, ManagementThread
+        - "ControlR/src/r_engine_loader.cc"  # carga dinamica R.dll
+        - "ControlR/src/rinterface_loop.cc"  # RLoop(), init de R embebido
+        - "ControlR/src/rinterface_win.cc"   # R callbacks: ReadConsole, WriteConsole
+        - "ControlR/src/rinterface_common.cc"# RCall(), RExec(), ListScriptFunctions
+        - "ControlR/src/rcall_seh.cc"        # SEH guard para llamadas R
+
+    produccion:
+      ruta: "C:/NEVEN/ControlR.exe"
+      tamano_aprox: "~1.53 MB"
+      log: "C:/NEVEN/controlr.log"
+
+    dependencias:
+      - common_lib
+      - pb_lib
+      - r_dll_externo  # C:/Program Files/R/R-4.4.1/bin/x64/R.dll (externo al repo)
+
+    parametros_lanzamiento:
+      comando: "C:/NEVEN/ControlR.exe -p RJ2XCL2-PIPE-R-{PID} -r {R_HOME}"
+      ejemplo: "C:/NEVEN/ControlR.exe -p RJ2XCL2-PIPE-R-12345 -r C:/Program Files/R/R-4.4.1"
+      nota: "R_HOME viene de DiscoveryService que lee neven-config.json [NEVEN][R][home]"
+
+    protocolo_ipc:
+      tipo: "Named Pipe OVERLAPPED (async)"
+      nombre_pipe: "\\\\.\pipe\\RJ2XCL2-PIPE-R-{PID}"
+      framing: "4 bytes little-endian length + Protobuf bytes"
+      mensaje: "variable.proto: CallResponse con operation, wait, id, result"
+      pipes:
+        - nombre: "primario"   descripcion: "canal principal de llamadas"
+        - nombre: "callback"   descripcion: "XLL->ControlR para graphics/COM callbacks"
+        - nombre: "management" descripcion: "recibe 'break' para RSetUserBreak()"
+
+    invariantes:
+      - id: INV-CR-01
+        descripcion: >
+          R.dll se carga con LoadLibraryA desde {R_HOME}/bin/x64/R.dll.
+          Las 25 funciones 'required' deben resolverse con GetProcAddress.
+          Si alguna falta, ValidateRequired() falla y ControlR termina con
+          exit code PROCESS_ERROR_UNSUPPORTED_VERSION.
+        como_verificar: "Ver REngineLoader::ValidateRequired() en r_engine_loader.cc"
+
+      - id: INV-CR-02
+        descripcion: >
+          El retry loop de conexion del pipe tiene MAXIMO 30 intentos x 100ms = 3 seg.
+          Si ControlR no crea el pipe en ese tiempo, HealthStatus=Unavailable.
+          Causa tipica: R.dll encontrado pero Rblas.dll no (PATH de R incompleto).
+        como_verificar: "Ver Connect() en language_service.cc, variable errs > 30"
+
+      - id: INV-CR-03
+        descripcion: >
+          R version minima: 3.5 (minMajor/minMinor en neven-config.json).
+          R version maxima: 99 (sin limite superior por defecto).
+          La version se verifica con getDLLVersion() antes de setup_Rmainloop.
+        como_verificar: "Ver neven-config.json [NEVEN][R][minMajor/minMinor]"
+
+    deploy:
+      nota: "ControlR.exe se compila junto con el Core. No tiene deploy independiente."
+      comando: "Se copia a C:/NEVEN/ como parte del build del Core (post-build step)"
+
+    errores:
+      - sintoma: "Exit code PROCESS_ERROR_UNSUPPORTED_VERSION"
+        causa: "R.dll no encontrado o version incompatible"
+        diagnostico: "Ver C:/NEVEN/controlr.log, verificar R_HOME en neven-config.json"
+
+      - sintoma: "Pipe retry > 30 — HealthStatus: Unavailable"
+        causa: "ControlR crasheo antes de crear el pipe"
+        diagnostico: "Rblas.dll no en PATH, o R_HOME incorrecto"
+
+      - sintoma: "Funciones R no aparecen en Excel"
+        causa: "NEVEN$list.functions no definido o startup.r fallo"
+        diagnostico: "Ver controlr.log por errores de parse en startup.r"
+
+  # ---------------------------------------------------------------------------
+  - id: common_lib
+    nombre: "Common.lib"
+    prioridad: 4
+    descripcion: >
+      Biblioteca estatica compartida por Core, ControlR, ControlJulia, ControlPython
+      y NEVENRibbon. Contiene toda la infraestructura: IPC, config, seguridad,
+      viewers WebView2, Pluto, diagnosticos.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/Common/"
+      modulos:
+        ipc:
+          - "Common/IPC/pipe.h/.cc"             # Named Pipe OVERLAPPED
+          - "Common/IPC/message_utilities.cc"   # Frame/Unframe con length prefix
+          - "Common/IPC/MessageValidator.cc"    # SafeUnframe con validacion Protobuf
+          - "Common/IPC/REPLBridge.cc"          # puente WebView2 <-> pipe
+        config:
+          - "Common/ConfigService.h/.cc"        # Lee neven-config.json, singleton
+          - "Common/EnvService.cc"              # ExpandEnvStrings, metadata version
+          - "Common/DiscoveryService.cc"        # auto-descubrimiento R/Julia/Python
+        seguridad:
+          - "Common/Security/SecurityService.cc"   # HMAC de scripts (VerifyScriptIntegrity)
+          - "Common/Security/InputSanitizer.cc"    # sanitizacion de codigo
+          - "Common/Security/SandboxVerifier.cc"   # verificacion del sandbox
+        viewers:
+          - "Common/ViewerManager.cc/.h"        # hasta 16 ventanas WebView2
+          - "Common/ViewerWindow.cc/.h"         # una ventana WebView2 (STA thread)
+          - "Common/PostMessageBridge.cc/.h"    # mensajeria JS<->C++
+          - "Common/PlutoManager.cc/.h"         # servidor Pluto.jl, TSV pipeline
+          - "Common/ContentPipeline.cc/.h"      # Excel->TSV para Pluto
+        diagnosticos:
+          - "Common/LogService.cc/.h"           # neven.log, macros RJ2XCL_LOG_*
+          - "Common/CrashHandler.cc/.h"         # SEH, health snapshots
+          - "Common/DiagnosticRouter.cc/.h"     # enruta diagnosticos
+        headers_criticos:
+          - "Common/Constants.h"                # kPipeBufferSize, kMaxPipeCount, etc.
+          - "Common/result.h"                   # Result<T,E> pattern
+          - "Common/string_utilities.h"         # split, trim, interpolacion
+
+    produccion:
+      nota: "Biblioteca estatica — no tiene artefacto independiente. Se enlaza en tiempo de compilacion."
+
+    dependencias: []  # No depende de otros componentes NEVEN
+
+    invariantes:
+      - id: INV-CMN-01
+        descripcion: >
+          ConfigService es un singleton. Se inicializa ONCE en RJ2XCL_Engine::Init()
+          con ConfigService::Instance().Initialize(). Multiples llamadas a Initialize()
+          son seguras (idempotente), pero el config se lee solo en la primera.
+        como_verificar: "Ver ConfigService::Initialize() en Common/ConfigService.cc"
+
+      - id: INV-CMN-02
+        descripcion: >
+          SecurityService::VerifyScriptIntegrity(file) verifica HMAC de cada archivo
+          en C:/NEVEN/functions/ antes de enviarlo al motor. Si falla, el archivo no
+          se carga. Para actualizar un archivo .R o .jl en produccion, el hash .sha256
+          debe actualizarse en el mismo directorio.
+        como_verificar: "Buscar archivos *.sha256 en C:/NEVEN/startup/ y C:/NEVEN/functions/"
+
+      - id: INV-CMN-03
+        descripcion: >
+          kPipeBufferSize en Constants.h define el buffer de lectura del pipe.
+          Si un resultado supera este tamano, el mensaje se fragmenta en multiples
+          lecturas. MessageValidator::SafeUnframe() maneja la reensambla correctamente.
+        como_verificar: "Ver Constants.h: kPipeBufferSize"
+
+    deploy:
+      nota: "Se recompila automaticamente cuando cambia cualquier archivo en Common/. No deploy independiente."
+
+    errores:
+      - sintoma: "Hash mismatch en SecurityService"
+        causa: "Archivo .R modificado pero .sha256 no actualizado"
+        diagnostico: "Ver C:/NEVEN/neven.log por 'Security violation: Script integrity check failed'"
+
+  # ---------------------------------------------------------------------------
+  - id: startup_r
+    nombre: "startup/startup.r"
+    prioridad: 5
+    descripcion: >
+      Primer archivo R que ejecuta ControlR al conectarse. Define el entorno NEVEN,
+      el mecanismo de discovery de funciones (NEVEN$list.functions), el graphics device,
+      y carga los modulos base: r_object_to_slots.R, R4XCL-NEVEN-pluto-read.R,
+      R4XCL-0-NevenX.R (dispatcher NevenX).
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/startup/startup.r"
+
+    produccion:
+      ruta: "C:/NEVEN/startup/startup.r"
+      hash_file: "C:/NEVEN/startup/startup.r.sha256"
+      archivos_que_sourcea:
+        - "C:/NEVEN/startup/r_object_to_slots.R"       # Data Lab serializer
+        - "C:/NEVEN/startup/R4XCL-NEVEN-pluto-read.R"  # PLUTO.READ
+        - "C:/NEVEN/functions/R4XCL-0-NevenX.R"        # dispatcher NevenX
+
+    dependencias:
+      - controlr_exe  # lo ejecuta via LanguageService::Initialize()
+
+    invariantes:
+      - id: INV-SR-01
+        descripcion: >
+          ASCII PURO — sin caracteres > 127 en codigo activo.
+          ControlR envia el startup linea-por-linea. Un BOM (EF BB BF) o un
+          caracter UTF-8 en codigo activo produce 'unexpected invalid token' en R.
+          Los comentarios pueden tener UTF-8 (el parser R los ignora) PERO
+          ControlR puede fallar al leerlos si hay BOM en el archivo.
+        como_verificar: >
+          $bytes = [System.IO.File]::ReadAllBytes('C:/NEVEN/startup/startup.r')
+          ($bytes | Where-Object { $_ -gt 127 }).Count  # debe ser 0 en codigo activo
+          $bytes[0..2]  # no debe ser 239 187 191 (EF BB BF = BOM)
+
+      - id: INV-SR-02
+        descripcion: >
+          SIN library() en nivel top-level. Un library() fallido genera un error
+          no capturable que corta el startup y deja NEVEN$list.functions sin definir.
+          Usar siempre: requireNamespace("pkg", quietly=TRUE) dentro de tryCatch().
+        como_verificar: "grep -n '^library(' startup/startup.r  # debe dar 0 resultados"
+
+      - id: INV-SR-03
+        descripcion: >
+          NEVEN$list.functions DEBE quedar definido al finalizar el startup.
+          ControlR llama a esta funcion en el paso 'list-functions' del init.
+          Si no existe, ninguna funcion R aparece en Excel.
+        como_verificar: "La definicion existe en la seccion inicial del startup.r (NEVEN$list.functions <- function()...)"
+
+      - id: INV-SR-04
+        descripcion: >
+          El dispatcher NevenX (R4XCL-0-NevenX.R) se carga con tryCatch.
+          Si falla, el error se escribe en C:/NEVEN/nevenx_startup.log.
+          Si el archivo no existe o tiene error de parse, las funciones
+          =NevenX_R(), =NevenX_J(), =NevenX_P() no funcionan en Excel.
+        como_verificar: >
+          Test-Path 'C:/NEVEN/nevenx_startup.log'  # si existe, hay error
+          Get-Content 'C:/NEVEN/nevenx_startup.log'  # ver el error
+
+      - id: INV-SR-05
+        descripcion: >
+          DEPLOY: usar UTF8Encoding($false) para escribir, NUNCA [System.Text.Encoding]::UTF8.
+          Este ultimo escribe BOM que rompe el parser de R.
+        como_verificar: >
+          $bytes = [System.IO.File]::ReadAllBytes('C:/NEVEN/startup/startup.r')
+          if ($bytes[0] -eq 239 -and $bytes[1] -eq 187 -and $bytes[2] -eq 191) { 'TIENE BOM' }
+
+    deploy:
+      metodo: "UTF-8 sin BOM"
+      comando: >
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        $c = [System.IO.File]::ReadAllText('repo/startup/startup.r', $utf8NoBom)
+        [System.IO.File]::WriteAllText('C:/NEVEN/startup/startup.r', $c, $utf8NoBom)
+      nota: >
+        NUNCA usar Copy-Item (corrompe UTF-8) ni WriteAllText con ::UTF8 (escribe BOM).
+        Despues de modificar startup.r, regenerar el SHA-256:
+          $hash = Get-FileHash 'C:/NEVEN/startup/startup.r' -Algorithm SHA256
+          $hash.Hash | Out-File 'C:/NEVEN/startup/startup.r.sha256' -NoNewline
+
+    errores:
+      - sintoma: "Funciones R no aparecen en Excel"
+        causa: "NEVEN$list.functions no definido — startup.r fallo"
+        diagnostico: "Ver C:/NEVEN/controlr.log por errores de parse o library() fallido"
+
+      - sintoma: "[NevenX] ERROR al cargar dispatcher en nevenx_startup.log"
+        causa: "R4XCL-0-NevenX.R tiene BOM, error de sintaxis, o no existe"
+        diagnostico: >
+          1. Test-Path 'C:/NEVEN/functions/R4XCL-0-NevenX.R'
+          2. Verificar primeros bytes por BOM
+          3. julia -e 'parse(...)' equivalente en R para validar sintaxis
+
+      - sintoma: "Timeout en primera llamada a funcion econometrica"
+        causa: "Paquetes lmtest/sandwich/etc. no pre-cargados"
+        diagnostico: "Verificar que el bloque de pre-carga de paquetes existe en startup.r"
+
+# =============================================================================
+# FLUJOS DE DESPLIEGUE CRITICOS
+# =============================================================================
+
+flujos_deploy:
+
+  - id: DEPLOY-XLL
+    nombre: "Desplegar NEVEN64.xll"
+    prerequisitos:
+      - "Excel cerrado (sin proceso EXCEL.EXE activo)"
+      - "Build exitoso (0 errores en MSBuild)"
+    pasos:
+      1: "Verificar que Build/Dist/NEVEN64.dll existe y tiene timestamp reciente"
+      2: "[System.IO.File]::Copy('Build/Dist/NEVEN64.dll', 'C:/NEVEN/NEVEN64.xll', $true)"
+      3: "Abrir Excel — verificar que funciones =NEVEN.r() aparecen"
+    validacion: "=NEVEN.r('1+1') debe retornar 2"
+
+  - id: DEPLOY-RIBBON
+    nombre: "Desplegar NEVENRibbon.dll"
+    prerequisitos:
+      - "Excel cerrado"
+      - "Build exitoso"
+    pasos:
+      1: "Verificar que Build/Dist/NEVENRibbon.dll existe y tiene timestamp reciente"
+      2: >
+        $ts = Get-Date -Format 'HHmmss'
+        try { Rename-Item 'C:/NEVEN/NEVENRibbon.dll' "C:/NEVEN/NEVENRibbon.dll.$ts" } catch {}
+        [System.IO.File]::Copy('Build/Dist/NEVENRibbon.dll', 'C:/NEVEN/NEVENRibbon.dll', $false)
+      3: "Start-Process 'regsvr32' -ArgumentList '/s C:/NEVEN/NEVENRibbon.dll' -Wait"
+      4: "Verificar registro: (Get-ItemProperty $ribbonKey).LoadBehavior -eq 3"
+    validacion: "Abrir Excel — verificar que tab NEVEN aparece con todos sus botones"
+
+  - id: DEPLOY-R
+    nombre: "Desplegar archivo .R a C:/NEVEN/functions/ o startup/"
+    prerequisitos:
+      - "Archivo es ASCII puro (0 chars > 127 en codigo activo)"
+      - "Sin BOM (primeros bytes != EF BB BF)"
+      - "Sintaxis R valida (probar con julia --eval equivalente en R)"
+    pasos:
+      1: "Verificar invariantes (ASCII, BOM, sintaxis)"
+      2: >
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        $c = [System.IO.File]::ReadAllText($src, $utf8NoBom)
+        [System.IO.File]::WriteAllText($dst, $c, $utf8NoBom)
+    validacion: "Test-Path nevenx_startup.log — si no existe, carga exitosa"
+
+  - id: DEPLOY-CONFIG
+    nombre: "Modificar neven-config.json"
+    prerequisitos:
+      - "JSON valido (usar ConvertFrom-Json para verificar)"
+    efectos:
+      - "enabled:false en [NEVEN][R/Julia/Python] — ese motor no inicia al abrir Excel"
+      - "auto_load_xll:false — XLL no carga automaticamente (Ribbon sigue cargando)"
+    validacion: "Reiniciar Excel — verificar comportamiento esperado"
+
+# =============================================================================
+# REGLAS DEL AGENTE VALIDADOR
+# =============================================================================
+
+reglas_validador:
+
+  - id: REGLA-01
+    trigger: "Cualquier comando que compile NEVENRibbon.vcxproj"
+    verificar_antes:
+      - "Verificar que cada onAction/getPressed en ribbon_ui.xml tiene entrada en GetIDsOfNames (INV-RIBBON-01)"
+      - "Verificar balance de llaves {} en ribbon_connect.h y ribbon_connect.cc"
+      - "Verificar que ribbon_ui.xml es XML valido"
+
+  - id: REGLA-02
+    trigger: "Cualquier deploy de archivo .R a C:/NEVEN/"
+    verificar_antes:
+      - "ASCII puro: ($bytes | Where-Object { $_ -gt 127 }).Count -eq 0 (INV-SR-01)"
+      - "Sin BOM: $bytes[0..2] != [239, 187, 191] (INV-SR-05)"
+      - "Para startup.r: sin library() en nivel top (INV-SR-02)"
+      - "Para R4XCL-0-NevenX.R: balance de llaves correcto"
+
+  - id: REGLA-03
+    trigger: "Cualquier script Julia ejecutado en PackageCompiler/create_sysimage"
+    verificar_antes:
+      - "El precompile script debe ejecutarse exitosamente de forma independiente primero"
+      - "Comando: julia precompile_script.jl -- debe retornar exit code 0"
+      - "Verificar que todos los 'using X' esten al INICIO del script"
+
+  - id: REGLA-04
+    trigger: "Deploy de NEVENRibbon.dll (Copy + regsvr32)"
+    verificar_antes:
+      - "Excel no esta corriendo: Get-Process EXCEL -ErrorAction SilentlyContinue"
+      - "DLL compilado hoy: (Get-Item Build/Dist/NEVENRibbon.dll).LastWriteTime"
+    verificar_despues:
+      - "LoadBehavior = 3: (Get-ItemProperty $ribbonKey).LoadBehavior"
+
+  - id: REGLA-05
+    trigger: "Modificacion de rj2xcl.cc o basic_functions.cc o rj2xcl.def"
+    verificar:
+      - "RegisterFunctions() no se llama fuera de Init() (INV-CORE-01)"
+      - "Si se agrega nueva funcion XLL, verificar que esta en rj2xcl.def"
+      - "Si se agrega NevenX_X, verificar firma UQQQQQQQQQQQQQQQQQ (17Q)"

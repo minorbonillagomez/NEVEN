@@ -1,0 +1,164 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "winres.h"
+#include "verrsrc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""winres.h""\r\n"
+    "#include ""verrsrc.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "1 TYPELIB ""RJ2XCLRibbon.tlb""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "RJ2XCL Project"
+            VALUE "FileDescription", "RJ2XCL Excel Ribbon"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "LegalCopyright", "Copyright (c) 2026 RJ2XCL Project"
+            VALUE "InternalName", "RJ2XCLRibbon.dll"
+            VALUE "OriginalFilename", "RJ2XCLRibbon.dll"
+            VALUE "ProductName", "RJ2XCL"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_NEVENRIBBON         REGISTRY                "RJ2XCLRibbon.rgs"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// XML
+//
+
+IDR_XML2                XML                     "ribbon_ui.xml"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// PNG
+//
+
+IDB_CONSOLE_32          PNG                     "images\\console-32.png"
+
+IDB_CONSOLE_16          PNG                     "images\\console-16.png"
+
+IDB_LOGO_32             PNG                     "images\\logo-32.png"
+
+IDB_LOGO_16             PNG                     "images\\logo-16.png"
+
+IDB_R_32                PNG                     "images\\logo_r-32.png"
+
+IDB_R_16                PNG                     "images\\logo_r-16.png"
+
+IDB_JULIA_32            PNG                     "images\\logo_julia-32.png"
+
+IDB_JULIA_16            PNG                     "images\\logo_julia-16.png"
+
+IDB_QUARTO_32           PNG                     "images\\logo_quarto-32.png"
+
+IDB_QUARTO_16           PNG                     "images\\logo_quarto-16.png"
+
+IDB_NEVEN_32            PNG                     "images\\logo_neven-32.png"
+
+IDB_NEVEN_16            PNG                     "images\\logo_neven-16.png"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_PROJNAME            "RJ2XCLRibbon"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+1 TYPELIB "RJ2XCLRibbon.tlb"
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

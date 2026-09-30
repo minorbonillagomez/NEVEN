@@ -1,0 +1,4564 @@
+/**
+ * Copyright (c) 2026 NEVEN Project
+ * 
+ * This file is part of NEVEN.
+ *
+ * NEVEN is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * NEVEN is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with NEVEN.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "stdafx.h"
+#include "variable.pb.h"
+#include "XLCALL.h"
+#include "function_descriptor.h"
+#include "rj2xcl.h"
+#include "basic_functions.h"
+#include "rj2xcl_version.h"
+#include "rj2xcl_graphics.h"
+#include "type_conversions.h"
+#include "string_utilities.h"
+#include "SandboxVerifier.h"
+#include "InputSanitizer.h"
+#include "ConfigService.h"
+#include "ViewerManager.h"
+
+// WinHTTP — usado por RJ_IA_Contexto para POST a localhost:5555
+#include <winhttp.h>
+#pragma comment(lib, "winhttp.lib")
+#include <fstream>    // std::ifstream — para leer neven-config.json en RJ_IA_Contexto
+
+/**
+ * @brief Dispatches a registered R/Julia function call from Excel.
+ * 
+ * Called when user types =R.FunctionName(args) or =J.FunctionName(args).
+ * Maps the function index to the registered function descriptor,
+ * serializes arguments via Protobuf, sends to language service,
+ * and returns the result or error message.
+ * 
+ * @param index Function index (1000-based, maps to function_list_)
+ * @param input_0..input_15 Up to 16 XLOPER12 arguments from Excel
+ * @return LPXLOPER12 Result value or error message
+ */
+LPXLOPER12 RJ_FunctionCall(
+	int index
+	, LPXLOPER12 input_0
+	, LPXLOPER12 input_1
+	, LPXLOPER12 input_2
+	, LPXLOPER12 input_3
+	, LPXLOPER12 input_4
+	, LPXLOPER12 input_5
+	, LPXLOPER12 input_6
+	, LPXLOPER12 input_7
+	, LPXLOPER12 input_8
+	, LPXLOPER12 input_9
+	, LPXLOPER12 input_10
+	, LPXLOPER12 input_11
+	, LPXLOPER12 input_12
+	, LPXLOPER12 input_13
+	, LPXLOPER12 input_14
+	, LPXLOPER12 input_15
+) {
+	thread_local XLOPER12 rslt; // H-04 FIX: thread-local for parallel safety
+
+	rslt.xltype = xltypeErr;
+	rslt.val.err = xlerrName;
+
+	auto engine = RJ2XCL_Engine::Instance();
+
+	if (index < 0 || index >= engine->function_list_.size()) return &rslt;
+
+	LPXLOPER12 arglist[16] = {
+		input_0, input_1, input_2, input_3, input_4, input_5, input_6, input_7,
+		input_8, input_9, input_10, input_11, input_12, input_13, input_14, input_15
+	};
+
+	RJ2XCLBuffers::CallResponse call, response;
+	call.set_wait(true);
+	auto function_call = call.mutable_function_call();
+
+  auto function_descriptor = engine->function_list_[index];
+
+  function_call->set_function(function_descriptor->name_);
+  function_call->set_flags(function_descriptor->flags_);
+
+	int argcount = 16;
+	for (; argcount && arglist[argcount - 1] && arglist[argcount - 1]->xltype == xltypeMissing; argcount--);
+
+  int function_arguments = function_descriptor->language_service_->named_arguments() ? 
+    function_descriptor->arguments_.size() : 0;
+
+	for (int i = 0; i < argcount; i++) {
+		auto argument = function_call->add_arguments();
+		Convert::XLOPERToVariable(argument, arglist[i]);
+    if(i < function_arguments) argument->set_name(function_descriptor->arguments_[i]->name_);
+	}
+
+  //RJ2XCL->CallLanguage(function_descriptor->language_key_, response, call);
+  function_descriptor->language_service_->Call(response, call);
+
+  if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kResult) {
+    Convert::VariableToXLOPER(&rslt, response.result());
+  }
+  else if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kErr) {
+    std::string err_msg = response.err();
+    Convert::StringToXLOPER(&rslt, err_msg.c_str(), false);
+    rslt.xltype |= xlbitDLLFree;
+  }
+  else {
+    rslt.xltype = xltypeErr;
+    rslt.val.err = xlerrValue;
+  }
+
+	return &rslt;
+}
+
+/**
+ * @brief Executes arbitrary R/Julia code from an Excel cell.
+ * 
+ * Called when user types =NEVEN.r("code") or =NEVEN.j("code").
+ * Validates code against sandbox, sends to language service via pipe,
+ * and returns result or error message to the cell.
+ * 
+ * @param language_key Index of the language service (0=R, 1=Julia)
+ * @param code XLOPER12 string containing the code to execute
+ * @return LPXLOPER12 Result value, error message, or BLOCKED message
+ */
+LPXLOPER12 RJ_Exec_Generic(uint32_t language_key, LPXLOPER12 code) {
+ 
+  // H-04 FIX: Use thread-local storage instead of static to prevent
+  // data corruption during parallel recalculation
+  thread_local XLOPER12 rslt;
+
+  RJ2XCL_LOG_INFO("RJ_Exec_Generic called: language_key=%d, code_type=%d", language_key, code ? code->xltype : -1);
+
+  if (!code || code->xltype != xltypeStr) {
+    RJ2XCL_LOG_ERR("RJ_Exec_Generic: code is not a string (type=%d)", code ? code->xltype : -1);
+    rslt.xltype = xltypeErr;
+    rslt.val.err = xlerrValue;
+    return &rslt;
+  }
+
+  RJ2XCLBuffers::CallResponse call, response;
+  call.set_wait(true);
+
+  std::string code_string = Convert::XLOPERToString(code);
+
+  // C-02 FIX: Validate code against sandbox before execution
+  if (rj2xcl::ConfigService::Instance().IsSandboxEnabled()) {
+    std::string rejection_reason;
+    if (!rj2xcl::security::SandboxVerifier::GetInstance().ValidateCodeForExecution(code_string, rejection_reason)) {
+      RJ2XCL_LOG_WARN("Sandbox BLOCKED: %s (code: %.30s...)", rejection_reason.c_str(), code_string.c_str());
+      std::string msg = "BLOCKED: " + rejection_reason;
+      Convert::StringToXLOPER(&rslt, msg.c_str(), false);
+      rslt.xltype |= xlbitDLLFree;
+      return &rslt;
+    }
+  }
+
+  std::vector < std::string > lines;
+  StringUtilities::Split(code_string, '\n', 0, lines, true);
+
+  auto message = call.mutable_code();
+  for (auto line : lines) message->add_line(line);
+
+  RJ2XCL_Engine::Instance()->CallLanguage(language_key, response, call);
+
+  if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kResult) {
+    Convert::VariableToXLOPER(&rslt, response.result());
+  }
+  else if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kErr) {
+    // Return error message as string so user can see what went wrong
+    std::string err_msg = response.err();
+    Convert::StringToXLOPER(&rslt, err_msg.c_str(), false);
+    rslt.xltype |= xlbitDLLFree;
+  }
+  else {
+    rslt.xltype = xltypeErr;
+    rslt.val.err = xlerrValue;
+  }
+
+  return &rslt;
+
+}
+
+LPXLOPER12 RJ_Call_Generic(uint32_t language_key, LPXLOPER12 func,
+  LPXLOPER12 arg0, LPXLOPER12 arg1, LPXLOPER12 arg2, LPXLOPER12 arg3,
+  LPXLOPER12 arg4, LPXLOPER12 arg5, LPXLOPER12 arg6, LPXLOPER12 arg7,
+  LPXLOPER12 arg8, LPXLOPER12 arg9, LPXLOPER12 arg10, LPXLOPER12 arg11,
+  LPXLOPER12 arg12, LPXLOPER12 arg13, LPXLOPER12 arg14, LPXLOPER12 arg15) {
+
+  thread_local XLOPER12 rslt; // H-04 FIX: thread-local for parallel safety
+
+  if (func->xltype != xltypeStr) {
+    rslt.xltype = xltypeErr;
+    rslt.val.err = xlerrValue;
+    return &rslt;
+  }
+
+  RJ2XCLBuffers::CallResponse call, response;
+  call.set_wait(true);
+  auto function_call = call.mutable_function_call();
+  function_call->set_function(Convert::XLOPERToString(func));
+
+  LPXLOPER12 arglist[16] = {
+    arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
+    arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15
+  };
+
+  int argcount = 16;
+  for (; argcount && arglist[argcount - 1] && arglist[argcount - 1]->xltype == xltypeMissing; argcount--);
+
+  for (int i = 0; i < argcount; i++) {
+    auto argument = function_call->add_arguments();
+    Convert::XLOPERToVariable(argument, arglist[i]);
+  }
+
+  RJ2XCL_Engine::Instance()->CallLanguage(language_key, response, call);
+
+  if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kResult) {
+    Convert::VariableToXLOPER(&rslt, response.result());
+  }
+  else if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kErr) {
+    std::string err_msg = response.err();
+    Convert::StringToXLOPER(&rslt, err_msg.c_str(), false);
+    rslt.xltype |= xlbitDLLFree;
+  }
+  else {
+    rslt.xltype = xltypeErr;
+    rslt.val.err = xlerrValue;
+  }
+
+  return &rslt;
+
+}
+
+/**
+ * @brief Stores Excel application and ribbon COM pointers for later use.
+ * @param excel_pointer Pointer to the Excel IDispatch interface.
+ * @param ribbon_pointer Pointer to the IRibbonUI interface.
+ * @return LPXLOPER12 Always returns integer 1.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_SetPointers(ULONG_PTR excel_pointer, ULONG_PTR ribbon_pointer) {
+    static XLOPER12 x;
+    x.xltype = xltypeInt;
+    x.val.w = 1;
+    RJ2XCL_Engine::Instance()->SetPointers(excel_pointer, ribbon_pointer);
+    return &x;
+}
+
+/**
+ * @brief Opens the NEVEN interactive console window.
+ * @return LPXLOPER12 Always returns integer 0.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Console() {
+    static XLOPER12 x;
+    x.xltype = xltypeInt;
+    x.val.w = 0;
+    RJ2XCL_Engine::Instance()->ShowConsole();
+    return &x;
+}
+
+/**
+ * @brief Opens the console window with R language focus.
+ * @return LPXLOPER12 Always returns integer 0.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_RConsole() {
+    static XLOPER12 x;
+    x.xltype = xltypeInt;
+    x.val.w = 0;
+    RJ2XCL_Engine::Instance()->ShowConsole();
+    return &x;
+}
+
+/**
+ * @brief Opens the console window with Julia language focus.
+ * @return LPXLOPER12 Always returns integer 0.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_JuliaConsole() {
+    static XLOPER12 x;
+    x.xltype = xltypeInt;
+    x.val.w = 0;
+    RJ2XCL_Engine::Instance()->ShowConsole();
+    return &x;
+}
+
+/**
+ * @brief Switches the active language context (R or Julia) on the callback thread.
+ * @param argument XLOPER12 string identifying the target context.
+ * @return LPXLOPER12 Integer result code from the context switch.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_ContextSwitch(LPXLOPER12 argument) {
+  static XLOPER12 x;
+  x.xltype = xltypeInt;
+  x.val.w = RJ2XCL_Engine::Instance()->HandleCallbackOnThread(Convert::XLOPERToString(argument));
+  return &x;
+}
+
+/**
+ * @brief Handles a ribbon menu button click and dispatches the user action.
+ * @param button_id XLOPER12 integer or numeric ID of the clicked button.
+ * @param language XLOPER12 string identifying the target language (e.g., "R", "Julia").
+ * @return LPXLOPER12 Always returns integer 0.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_ButtonCallback(LPXLOPER12 button_id, LPXLOPER12 language) {
+  static XLOPER12 x;
+  x.xltype = xltypeInt;
+  x.val.w = 0;
+  int id = 0;
+  if (button_id->xltype == xltypeInt) id = button_id->val.w;
+  else if (button_id->xltype == xltypeNum) id = button_id->val.num;
+  std::string language_string = Convert::XLOPERToString(language);
+  RJ2XCL_Engine::Instance()->ExecUserButton(id, language_string);
+  return &x;
+}
+
+/**
+ * @brief Re-registers dynamically exported R/Julia functions with Excel.
+ * @return LPXLOPER12 Integer count of functions registered.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_UpdateFunctions() {
+  static XLOPER12 x;
+  x.xltype = xltypeInt;
+  auto engine = RJ2XCL_Engine::Instance();
+  x.val.w = engine->UpdateFunctions();
+  return &x;
+}
+
+/**
+ * @brief Returns the current NEVEN version string.
+ * @return LPXLOPER12 String such as "NEVEN 2.0.0".
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Version() {
+  static XLOPER12 x;
+  x.xltype = xltypeStr;
+  Convert::StringToXLOPER(&x, L"NEVEN 2.0.0", false);
+  return &x;
+}
+
+/**
+ * @brief Renders a Quarto (.qmd) file to HTML and opens it in a WebView2 viewer.
+ * @param file_path XLOPER12 string with the path to the .qmd file.
+ * @param format Reserved for future output format selection.
+ * @param data_range Reserved for future data injection into the document.
+ * @return LPXLOPER12 Viewer ID string on success, or error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Q(
+    LPXLOPER12 file_path, LPXLOPER12 format, LPXLOPER12 data_range) {
+
+  thread_local XLOPER12 rslt;
+  std::string qmd_path = Convert::XLOPERToString(file_path);
+
+  if (qmd_path.empty()) {
+      Convert::StringToXLOPER(&rslt, "Error: QMD file path required", false);
+      rslt.xltype |= xlbitDLLFree;
+      return &rslt;
+  }
+
+  // Validate input path against allowlist before any use
+  auto path_validation = rj2xcl::security::InputSanitizer::ValidatePath(qmd_path);
+  if (!path_validation.is_valid) {
+      std::string err = "Error: invalid path - " + path_validation.error_message;
+      Convert::StringToXLOPER(&rslt, err, false);
+      rslt.xltype |= xlbitDLLFree;
+      return &rslt;
+  }
+
+  // Verify QMD file exists
+  DWORD attrs = GetFileAttributesA(qmd_path.c_str());
+  if (attrs == INVALID_FILE_ATTRIBUTES) {
+      std::string err = "Error: file not found � " + qmd_path;
+      Convert::StringToXLOPER(&rslt, err, false);
+      rslt.xltype |= xlbitDLLFree;
+      return &rslt;
+  }
+
+  // Find Quarto executable � prefer junction C:\Quarto (avoids Sass space bug)
+  std::string quarto_exe;
+  const char* quarto_paths[] = {
+      "C:\\Quarto\\bin\\quarto.exe",
+      "C:\\Program Files\\Quarto\\bin\\quarto.exe",
+      nullptr
+  };
+  for (int i = 0; quarto_paths[i]; i++) {
+      if (GetFileAttributesA(quarto_paths[i]) != INVALID_FILE_ATTRIBUTES) {
+          quarto_exe = quarto_paths[i];
+          break;
+      }
+  }
+  if (quarto_exe.empty()) {
+      quarto_exe = "quarto";  // Fallback to PATH
+  }
+
+  // Build safe command line with separated executable and arguments
+  auto safe_cmd = rj2xcl::security::InputSanitizer::BuildSafeCommandLine(
+      quarto_exe, {"render", qmd_path, "--to", "html"});
+
+  if (safe_cmd.first.empty()) {
+      Convert::StringToXLOPER(&rslt, "Error: command line validation failed", false);
+      rslt.xltype |= xlbitDLLFree;
+      return &rslt;
+  }
+
+  // Launch as external process using safe command line with CreateProcess
+  STARTUPINFOA si = {};
+  si.cb = sizeof(si);
+  si.dwFlags = STARTF_USESHOWWINDOW;
+  si.wShowWindow = SW_HIDE;
+  PROCESS_INFORMATION pi = {};
+
+  std::string cmd_line = safe_cmd.second;
+  char cmd_buf[2048];
+  strncpy_s(cmd_buf, cmd_line.c_str(), sizeof(cmd_buf) - 1);
+
+  if (!CreateProcessA(safe_cmd.first.c_str(), cmd_buf, nullptr, nullptr, FALSE,
+                       CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi)) {
+      std::string err = "Error: could not launch Quarto (error " + std::to_string(GetLastError()) + ")";
+      Convert::StringToXLOPER(&rslt, err, false);
+      rslt.xltype |= xlbitDLLFree;
+      return &rslt;
+  }
+
+  // Wait for Quarto to finish (max 60 seconds)
+  DWORD wait = WaitForSingleObject(pi.hProcess, 60000);
+  CloseHandle(pi.hThread);
+  CloseHandle(pi.hProcess);
+
+  if (wait == WAIT_TIMEOUT) {
+      Convert::StringToXLOPER(&rslt, "Error: Quarto render timed out (60s)", false);
+      rslt.xltype |= xlbitDLLFree;
+      return &rslt;
+  }
+
+  // Find the output HTML (same name, .html extension)
+  std::string html_path = qmd_path;
+  size_t dot = html_path.rfind('.');
+  if (dot != std::string::npos) {
+      html_path = html_path.substr(0, dot) + ".html";
+  } else {
+      html_path += ".html";
+  }
+
+  // Verify HTML was generated
+  attrs = GetFileAttributesA(html_path.c_str());
+  if (attrs == INVALID_FILE_ATTRIBUTES) {
+      Convert::StringToXLOPER(&rslt, "Error: Quarto did not generate HTML output", false);
+      rslt.xltype |= xlbitDLLFree;
+      return &rslt;
+  }
+
+  // Open in WebView2
+  auto& viewer = rj2xcl::ViewerManager::Instance();
+  if (viewer.IsAvailable()) {
+      std::string viewer_id = viewer.CreateViewerFromFile(html_path, "Quarto", qmd_path);
+      Convert::StringToXLOPER(&rslt, viewer_id, false);
+  } else {
+      Convert::StringToXLOPER(&rslt, html_path, false);
+  }
+  rslt.xltype |= xlbitDLLFree;
+  return &rslt;
+}
+
+// ---------------------------------------------------------------------------
+// WebView2 Viewer Functions
+// ---------------------------------------------------------------------------
+
+#include "ViewerManager.h"
+#include "PlutoManager.h"
+#include "ContentPipeline.h"
+#include "NotebookLibrary.h"
+#include "NotebookExporter.h"
+#include "PresentationBuilder.h"
+
+/**
+ * @brief Opens HTML content or file in an embedded WebView2 viewer window.
+ * Reuses the last viewer if still alive; otherwise creates a new one.
+ * @param content_or_path HTML string, file path, or URL to display.
+ * @return LPXLOPER12 Viewer ID string (e.g., "viewer-1") or error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_View(LPXLOPER12 content_or_path) {
+    thread_local XLOPER12 rslt;
+    // Track the last viewer created by RJ_View for reuse on recalculation
+    static std::string last_view_viewer_id;
+
+    std::string input = Convert::XLOPERToString(content_or_path);
+
+    auto& viewer = rj2xcl::ViewerManager::Instance();
+    if (!viewer.IsAvailable()) {
+        Convert::StringToXLOPER(&rslt, "WebView2 not available � install Edge WebView2 Runtime", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Try to reuse the last viewer if it's still alive
+    if (!last_view_viewer_id.empty() && viewer.IsViewerAlive(last_view_viewer_id)) {
+        // Compute content hash for duplicate detection
+        size_t new_hash = rj2xcl::ContentPipeline::ComputeContentHash(input);
+
+        // Check if content is identical � skip navigation
+        std::string captured = viewer.CaptureViewerContent(last_view_viewer_id);
+        size_t current_hash = rj2xcl::ContentPipeline::ComputeContentHash(captured);
+        if (!captured.empty() && new_hash == current_hash) {
+            Convert::StringToXLOPER(&rslt, last_view_viewer_id, false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+
+        bool reused = false;
+        if (rj2xcl::ContentPipeline::IsHtmlFile(input)) {
+            reused = viewer.NavigateViewerToFile(last_view_viewer_id, input);
+        } else if (rj2xcl::ContentPipeline::IsInlineHtml(input)) {
+            reused = viewer.NavigateViewerToString(last_view_viewer_id, input);
+        } else if (rj2xcl::ContentPipeline::IsMarkdown(input)) {
+            std::string html = rj2xcl::ContentPipeline::WrapMarkdownAsHtml(input);
+            reused = viewer.NavigateViewerToString(last_view_viewer_id, html);
+        } else if (rj2xcl::ContentPipeline::IsPdfFile(input)) {
+            // PDF: navigate to file directly for native PDF rendering
+            DWORD attrs = GetFileAttributesA(input.c_str());
+            if (attrs == INVALID_FILE_ATTRIBUTES) {
+                Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+                rslt.xltype |= xlbitDLLFree;
+                return &rslt;
+            }
+            reused = viewer.NavigateViewerToFile(last_view_viewer_id, input);
+        } else if (rj2xcl::ContentPipeline::IsTxtFile(input)) {
+            DWORD attrs = GetFileAttributesA(input.c_str());
+            if (attrs == INVALID_FILE_ATTRIBUTES) {
+                Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+                rslt.xltype |= xlbitDLLFree;
+                return &rslt;
+            }
+            std::string html = rj2xcl::ContentPipeline::WrapTxtAsHtml(input);
+            reused = viewer.NavigateViewerToString(last_view_viewer_id, html);
+        } else if (rj2xcl::ContentPipeline::IsDocxFile(input)) {
+            DWORD attrs = GetFileAttributesA(input.c_str());
+            if (attrs == INVALID_FILE_ATTRIBUTES) {
+                Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+                rslt.xltype |= xlbitDLLFree;
+                return &rslt;
+            }
+            std::string html = rj2xcl::ContentPipeline::ConvertWithPandoc(input, "docx");
+            if (html.find("Error:") == 0) {
+                Convert::StringToXLOPER(&rslt, html.c_str(), false);
+                rslt.xltype |= xlbitDLLFree;
+                return &rslt;
+            }
+            reused = viewer.NavigateViewerToString(last_view_viewer_id, html);
+        } else if (rj2xcl::ContentPipeline::IsDocFile(input)) {
+            DWORD attrs = GetFileAttributesA(input.c_str());
+            if (attrs == INVALID_FILE_ATTRIBUTES) {
+                Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+                rslt.xltype |= xlbitDLLFree;
+                return &rslt;
+            }
+            std::string html = rj2xcl::ContentPipeline::ConvertWithPandoc(input, "doc");
+            if (html.find("Error:") == 0) {
+                Convert::StringToXLOPER(&rslt, html.c_str(), false);
+                rslt.xltype |= xlbitDLLFree;
+                return &rslt;
+            }
+            reused = viewer.NavigateViewerToString(last_view_viewer_id, html);
+        } else {
+            reused = viewer.NavigateViewerToFile(last_view_viewer_id, input);
+        }
+        if (reused) {
+            Convert::StringToXLOPER(&rslt, last_view_viewer_id, false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+    }
+
+    // Create a new viewer
+    std::string result;
+    if (rj2xcl::ContentPipeline::IsHtmlFile(input)) {
+        result = viewer.CreateViewerFromFile(input, "HTML", input);
+    } else if (rj2xcl::ContentPipeline::IsInlineHtml(input)) {
+        result = viewer.CreateViewer(input, "HTML", "Inline Content");
+    } else if (rj2xcl::ContentPipeline::IsMarkdown(input)) {
+        // Markdown content: wrap with marked.js renderer and display
+        std::string html = rj2xcl::ContentPipeline::WrapMarkdownAsHtml(input);
+        result = viewer.CreateViewer(html, "AI", "AI Response");
+    } else if (rj2xcl::ContentPipeline::IsPdfFile(input)) {
+        // PDF: navigate to file directly for native WebView2 PDF rendering
+        DWORD attrs = GetFileAttributesA(input.c_str());
+        if (attrs == INVALID_FILE_ATTRIBUTES) {
+            Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+        result = viewer.CreateViewerFromFile(input, "PDF", input);
+    } else if (rj2xcl::ContentPipeline::IsTxtFile(input)) {
+        // TXT: wrap in dark-theme HTML with <pre>
+        DWORD attrs = GetFileAttributesA(input.c_str());
+        if (attrs == INVALID_FILE_ATTRIBUTES) {
+            Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+        std::string html = rj2xcl::ContentPipeline::WrapTxtAsHtml(input);
+        if (html.empty()) {
+            Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+        result = viewer.CreateViewer(html, "TXT", input);
+    } else if (rj2xcl::ContentPipeline::IsDocxFile(input)) {
+        // DOCX: convert via Pandoc
+        DWORD attrs = GetFileAttributesA(input.c_str());
+        if (attrs == INVALID_FILE_ATTRIBUTES) {
+            Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+        std::string html = rj2xcl::ContentPipeline::ConvertWithPandoc(input, "docx");
+        if (html.find("Error:") == 0) {
+            Convert::StringToXLOPER(&rslt, html.c_str(), false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+        result = viewer.CreateViewer(html, "DOCX", input);
+    } else if (rj2xcl::ContentPipeline::IsDocFile(input)) {
+        // DOC: convert via Pandoc
+        DWORD attrs = GetFileAttributesA(input.c_str());
+        if (attrs == INVALID_FILE_ATTRIBUTES) {
+            Convert::StringToXLOPER(&rslt, ("Error: file not found � " + input).c_str(), false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+        std::string html = rj2xcl::ContentPipeline::ConvertWithPandoc(input, "doc");
+        if (html.find("Error:") == 0) {
+            Convert::StringToXLOPER(&rslt, html.c_str(), false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+        result = viewer.CreateViewer(html, "DOC", input);
+    } else {
+        result = viewer.CreateViewerFromFile(input, "HTML", input);
+    }
+
+    // Remember this viewer for future reuse
+    if (result.find("viewer-") == 0) {
+        last_view_viewer_id = result;
+    }
+
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Closes a specific WebView2 viewer by its ID.
+ * @param viewer_id XLOPER12 string with the viewer identifier (e.g., "viewer-1").
+ * @return LPXLOPER12 "OK" on success, or "Viewer not found".
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_ViewerClose(LPXLOPER12 viewer_id) {
+    thread_local XLOPER12 rslt;
+    std::string id = Convert::XLOPERToString(viewer_id);
+    bool closed = rj2xcl::ViewerManager::Instance().CloseViewer(id);
+    Convert::StringToXLOPER(&rslt, closed ? "OK" : "Viewer not found", false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Lists all active WebView2 viewer IDs.
+ * @return LPXLOPER12 Comma-separated viewer IDs, or "(no active viewers)".
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_ViewerList() {
+    thread_local XLOPER12 rslt;
+    auto ids = rj2xcl::ViewerManager::Instance().ListViewers();
+    std::string result;
+    for (size_t i = 0; i < ids.size(); i++) {
+        if (i > 0) result += ", ";
+        result += ids[i];
+    }
+    if (result.empty()) result = "(no active viewers)";
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Sends a JSON message to a specific WebView2 viewer via postMessage.
+ * @param viewer_id_xloper XLOPER12 string with the target viewer ID.
+ * @param json_data XLOPER12 string containing the JSON payload.
+ * @return LPXLOPER12 "OK" on success, or diagnostic error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_ViewerSend(LPXLOPER12 viewer_id_xloper, LPXLOPER12 json_data) {
+    thread_local XLOPER12 rslt;
+    std::string id = Convert::XLOPERToString(viewer_id_xloper);
+    std::string data = Convert::XLOPERToString(json_data);
+
+    auto& viewer = rj2xcl::ViewerManager::Instance();
+
+    // Diagnostic: check if viewer exists
+    auto active = viewer.ListViewers();
+    if (active.empty()) {
+        Convert::StringToXLOPER(&rslt, "No active viewers", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    bool sent = viewer.SendToViewer(id, data);
+    if (sent) {
+        Convert::StringToXLOPER(&rslt, "OK", false);
+    } else {
+        // Build diagnostic message
+        std::string diag = "Send failed � active viewers: ";
+        for (size_t i = 0; i < active.size(); i++) {
+            if (i > 0) diag += ", ";
+            diag += active[i];
+        }
+        diag += " | requested: " + id;
+        Convert::StringToXLOPER(&rslt, diag, false);
+    }
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+// ---------------------------------------------------------------------------
+// Pluto.jl Advanced Mode Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Starts the Pluto.jl reactive notebook server.
+ * @return LPXLOPER12 Status message (e.g., URL or error).
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoStart() {
+    thread_local XLOPER12 rslt;
+    std::string result = rj2xcl::PlutoManager::Instance().StartPluto();
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Stops the running Pluto.jl server.
+ * @return LPXLOPER12 Status message confirming shutdown.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoStop() {
+    thread_local XLOPER12 rslt;
+    std::string result = rj2xcl::PlutoManager::Instance().StopPluto();
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Returns the current status of the Pluto.jl server.
+ * @return LPXLOPER12 Status string (e.g., "running", "stopped").
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoStatus() {
+    thread_local XLOPER12 rslt;
+    std::string result = rj2xcl::PlutoManager::Instance().GetStatus();
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Sends an Excel range as a Julia matrix to Pluto via NEVEN.set_data().
+ * @param data_range XLOPER12 multi-cell range to convert to a Julia matrix.
+ * @param dataset_name XLOPER12 string naming the dataset (defaults to "default").
+ * @return LPXLOPER12 Confirmation string with dimensions, or error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoData(LPXLOPER12 data_range, LPXLOPER12 dataset_name) {
+    thread_local XLOPER12 rslt;
+
+    std::string name = "default";
+    if (dataset_name && dataset_name->xltype == xltypeStr) {
+        name = Convert::XLOPERToString(dataset_name);
+    }
+    if (name.empty()) name = "default";
+
+    // Convert the Excel range to a Julia matrix literal
+    // The range comes as xltypeMulti (array) from Excel
+    if (!data_range || (data_range->xltype & ~(xlbitXLFree | xlbitDLLFree)) != xltypeMulti) {
+        Convert::StringToXLOPER(&rslt, "Error: first argument must be a range", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    int rows = data_range->val.array.rows;
+    int cols = data_range->val.array.columns;
+    LPXLOPER12 cells = data_range->val.array.lparray;
+
+    // Build Julia code: NEVEN.set_data("name", [val val; val val; ...])
+    std::string julia_code = "NEVEN.set_data(\"" + name + "\", Any[";
+
+    for (int r = 0; r < rows; r++) {
+        if (r > 0) julia_code += "; ";
+        for (int c = 0; c < cols; c++) {
+            if (c > 0) julia_code += " ";
+            LPXLOPER12 cell = &cells[r * cols + c];
+            switch (cell->xltype & ~(xlbitXLFree | xlbitDLLFree)) {
+                case xltypeNum:
+                    julia_code += std::to_string(cell->val.num);
+                    break;
+                case xltypeInt:
+                    julia_code += std::to_string(cell->val.w);
+                    break;
+                case xltypeStr: {
+                    std::string s = Convert::XLOPERToString(cell);
+                    // Escape quotes in string
+                    std::string escaped;
+                    for (char ch : s) {
+                        if (ch == '"') escaped += "\\\"";
+                        else if (ch == '\\') escaped += "\\\\";
+                        else escaped += ch;
+                    }
+                    julia_code += "\"" + escaped + "\"";
+                    break;
+                }
+                case xltypeBool:
+                    julia_code += cell->val.xbool ? "true" : "false";
+                    break;
+                case xltypeErr:
+                    julia_code += "missing";
+                    break;
+                default:
+                    julia_code += "missing";
+                    break;
+            }
+        }
+    }
+    julia_code += "])";
+
+    // Send to Julia via pipe (language key 1 = Julia)
+    RJ2XCLBuffers::CallResponse call, response;
+    call.set_wait(true);
+    auto message = call.mutable_code();
+    message->add_line(julia_code);
+
+    RJ2XCL_Engine::Instance()->CallLanguage(1, response, call);
+
+    if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kResult) {
+        Convert::VariableToXLOPER(&rslt, response.result());
+    } else if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kErr) {
+        std::string err = response.err();
+        Convert::StringToXLOPER(&rslt, err, false);
+        rslt.xltype |= xlbitDLLFree;
+    } else {
+        std::string info = "OK: " + name + " (" + std::to_string(rows) + "x" + std::to_string(cols) + ")";
+        Convert::StringToXLOPER(&rslt, info, false);
+        rslt.xltype |= xlbitDLLFree;
+    }
+
+    return &rslt;
+}
+
+// ---------------------------------------------------------------------------
+// Notebook Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Opens a Pluto notebook by name from the notebook library.
+ * @param notebook_name XLOPER12 string with the notebook name to open.
+ * @return LPXLOPER12 Status message, or "Notebook not found" error.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_NotebookOpen(LPXLOPER12 notebook_name) {
+    thread_local XLOPER12 rslt;
+    std::string name = Convert::XLOPERToString(notebook_name);
+
+    rj2xcl::NotebookLibrary lib;
+    auto info = lib.FindNotebook(name);
+    if (info.name.empty()) {
+        Convert::StringToXLOPER(&rslt, "Notebook not found: " + name, false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    std::string result = rj2xcl::PlutoManager::Instance().OpenNotebook(info.full_path);
+
+    // Append RCall warning if notebook requires R and RCall may not be available
+    if (info.requires_rcall) {
+        result += " (requires R via RCall)";
+    }
+
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Lists all available Pluto notebooks in the library.
+ * @return LPXLOPER12 Formatted notebook list, or "(no notebooks found)".
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_NotebookList() {
+    thread_local XLOPER12 rslt;
+    rj2xcl::NotebookLibrary lib;
+    std::string result = lib.ListNotebooksFormatted();
+    if (result.empty()) result = "(no notebooks found)";
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Exports a Pluto notebook to a standalone HTML file.
+ * @param title XLOPER12 string with the notebook title to export.
+ * @return LPXLOPER12 Export result path or error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_NotebookExport(LPXLOPER12 title) {
+    thread_local XLOPER12 rslt;
+    std::string title_str = Convert::XLOPERToString(title);
+    std::string result = rj2xcl::NotebookExporter::ExportNotebook(title_str);
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+// ---------------------------------------------------------------------------
+// Presentation Functions
+// ---------------------------------------------------------------------------
+
+// PresentationBuilder uses a static registry � see PresentationBuilder.cc
+
+/**
+ * @brief Creates a new impress.js presentation with the given title.
+ * @param title XLOPER12 string with the presentation title.
+ * @return LPXLOPER12 Presentation ID string (e.g., "pres-1").
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PresentationNew(LPXLOPER12 title) {
+    thread_local XLOPER12 rslt;
+    std::string title_str = Convert::XLOPERToString(title);
+    std::string id = rj2xcl::PresentationBuilder::CreatePresentation(title_str);
+    Convert::StringToXLOPER(&rslt, id, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Adds a slide to an existing presentation.
+ * @param pres_id XLOPER12 string with the presentation ID.
+ * @param content XLOPER12 string with the slide HTML/Markdown content.
+ * @param slide_type XLOPER12 string with the slide type (e.g., "title", "content").
+ * @return LPXLOPER12 Confirmation message or error.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PresentationAddSlide(
+    LPXLOPER12 pres_id, LPXLOPER12 content, LPXLOPER12 slide_type) {
+    thread_local XLOPER12 rslt;
+    std::string id = Convert::XLOPERToString(pres_id);
+    std::string cont = Convert::XLOPERToString(content);
+    std::string type = Convert::XLOPERToString(slide_type);
+    std::string result = rj2xcl::PresentationBuilder::AddSlideToPresentation(id, cont, type);
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Builds a presentation to an HTML file and optionally opens it.
+ * @param pres_id XLOPER12 string with the presentation ID.
+ * @param output_path XLOPER12 string with the output file path.
+ * @return LPXLOPER12 Output path on success, or error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PresentationBuild(
+    LPXLOPER12 pres_id, LPXLOPER12 output_path) {
+    thread_local XLOPER12 rslt;
+    std::string id = Convert::XLOPERToString(pres_id);
+    std::string path = Convert::XLOPERToString(output_path);
+    std::string result = rj2xcl::PresentationBuilder::BuildPresentation(id, path);
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+// ---------------------------------------------------------------------------
+// Information Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Returns project information (version, author, license, test score).
+ * @return LPXLOPER12 Multi-line about string.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_About() {
+    thread_local XLOPER12 rslt;
+    std::string about =
+        "NEVEN v2.0 - Open Source Polyglot Infrastructure for Excel\n"
+        "Autor: Minor Bonilla Gomez\n"
+        "Licencia: GPL v3 - Software libre para todos\n"
+        "R: Estadistica | Julia: Matematica/ML | Python: Computo | WebView2: Visualizacion\n"
+        "Construido con la conviccion de que el conocimiento\n"
+        "debe ser accesible, colaborativo y libre.";
+    Convert::StringToXLOPER(&rslt, about, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Returns a help string listing all available NEVEN worksheet functions.
+ * @return LPXLOPER12 Multi-line help text.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Help() {
+    thread_local XLOPER12 rslt;
+    std::string help =
+        "=NEVEN.r(\"code\") � Ejecutar codigo R\n"
+        "=NEVEN.j(\"code\") � Ejecutar codigo Julia\n"
+        "=R.func(args) � Llamar funcion R registrada\n"
+        "=J.func(args) � Llamar funcion Julia registrada\n"
+        "=NEVEN.v(html_or_path) � Abrir visor WebView2\n"
+        "=NEVEN.v.list() � Listar visores activos\n"
+        "=NEVEN.v.close(id) � Cerrar visor\n"
+        "=NEVEN.v.send(id, json) � Enviar datos al visor\n"
+        "=NEVEN.editor() � Abrir editor de presentaciones\n"
+        "=NEVEN.pluto.start/stop/status() � Servidor Pluto.jl\n"
+        "=NEVEN.notebook.list/open/export() � Notebooks Pluto\n"
+        "=NEVEN.presentation.new/add.slide/build() � Presentaciones\n"
+        "=NEVEN.about() � Informacion del proyecto\n"
+        "=NEVEN.status() � Estado de motores de lenguaje\n"
+        "=NEVEN.help() � Esta lista de funciones";
+    Convert::StringToXLOPER(&rslt, help, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+// ---------------------------------------------------------------------------
+// NEVEN.STATUS() � Engine Health Reporting
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Activates Julia on demand � connects, loads functions, registers J.* formulas.
+ *
+ * Called by the user via =NEVEN.iniciar.J() when they need Julia.
+ * Julia starts disabled by default to avoid startup delay.
+ *
+ * @return LPXLOPER12 Status message with function count.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_IniciarJulia() {
+    thread_local XLOPER12 rslt;
+
+    auto& lm = rj2xcl::LanguageManager::Instance();
+    auto services = lm.GetServices();
+    auto engine = RJ2XCL_Engine::Instance();
+
+    // Find Julia service
+    std::shared_ptr<LanguageService> julia_svc = nullptr;
+    for (auto& svc : services) {
+        if (svc->name() == "Julia") {
+            julia_svc = svc;
+            break;
+        }
+    }
+
+    if (!julia_svc) {
+        Convert::StringToXLOPER(&rslt, "ERROR: Julia no configurada en neven-languages.json", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    if (julia_svc->connected()) {
+        Convert::StringToXLOPER(&rslt, "Julia ya esta activa", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Show wait message via Excel status bar
+
+    // (status bar not available in this context)
+
+    // Connect Julia
+    julia_svc->Connect(engine->GetJobHandle());
+
+    if (!julia_svc->connected()) {
+
+        Convert::StringToXLOPER(&rslt, "ERROR: No se pudo conectar a Julia. Verifique la instalacion.", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Initialize (send startup script)
+    julia_svc->Initialize();
+
+    // Load user function files
+    auto& config_service = rj2xcl::ConfigService::Instance();
+    auto config = config_service.GetConfig();
+    std::string functions_directory = config["NEVEN"]["functionsDirectory"].string_value();
+    if (functions_directory.length()) {
+        char expanded[MAX_PATH];
+        ExpandEnvironmentStringsA(functions_directory.c_str(), expanded, MAX_PATH);
+        functions_directory = expanded;
+
+        WIN32_FIND_DATAA find_data;
+        std::string search_pattern = functions_directory + "\\*.*";
+        HANDLE hFind = FindFirstFileA(search_pattern.c_str(), &find_data);
+        if (hFind != INVALID_HANDLE_VALUE) {
+            do {
+                if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
+                std::string file_path = functions_directory + "\\" + find_data.cFileName;
+                if (julia_svc->ValidFile(file_path)) {
+                    julia_svc->ReadSourceFile(file_path);
+                }
+            } while (FindNextFileA(hFind, &find_data));
+            FindClose(hFind);
+        }
+    }
+
+    // Re-register all functions (adds J.* functions)
+    engine->UpdateFunctions();
+
+    // Clear status bar
+    // (status bar cleared)
+
+    // Count Julia functions
+    int julia_funcs = 0;
+    for (auto& f : engine->function_list_) {
+        if (f->language_name_ == "Julia") julia_funcs++;
+    }
+
+    std::string msg = "Julia activada: " + std::to_string(julia_funcs) + " funciones J.* registradas";
+    Convert::StringToXLOPER(&rslt, msg, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Returns a formatted summary of all language engine states.
+ *
+ * Shows connection status, health, and function count for each engine.
+ *
+ * @return LPXLOPER12 Multi-line status string.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_Status() {
+    thread_local XLOPER12 rslt;
+
+    auto& lm = rj2xcl::LanguageManager::Instance();
+    auto services = lm.GetServices();
+
+    std::string status = "NEVEN Status\n";
+    status += "---------------------------\n";
+
+    int connected_count = 0;
+    int total_functions = static_cast<int>(RJ2XCL_Engine::Instance()->function_list_.size());
+
+    for (size_t i = 0; i < services.size(); i++) {
+        auto& svc = services[i];
+        status += "\n[" + svc->name() + "] ";
+
+        // Check connectivity: connected_ flag OR pipe is valid (auto-reconnect capable)
+        bool is_connected = svc->connected() || svc->configured();
+        
+        if (is_connected && svc->configured()) {
+            auto health = svc->GetHealthStatus();
+            if (health == HealthStatus::Unavailable) {
+                status += "UNAVAILABLE";
+            } else if (svc->connected()) {
+                status += "OK";
+                connected_count++;
+            } else {
+                // Configured but not yet connected — try a quick reconnect test
+                // by checking if the pipe handle is valid or process is still alive
+                status += "OK (on-demand)";
+                connected_count++;
+            }
+        } else {
+            status += "NOT CONNECTED";
+        }
+
+        status += " | prefix: " + svc->prefix() + ";";
+    }
+
+    status += "\n\n" + std::to_string(connected_count) + "/" + std::to_string(services.size()) + " engines connected";
+    status += " | " + std::to_string(total_functions) + " functions registered";
+
+    Convert::StringToXLOPER(&rslt, status, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Opens the impress.js presentation editor in a WebView2 viewer.
+ * @return LPXLOPER12 Viewer ID string, or error if WebView2 is unavailable.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Editor() {
+    thread_local XLOPER12 rslt;
+
+    auto& viewer = rj2xcl::ViewerManager::Instance();
+    if (!viewer.IsAvailable()) {
+        Convert::StringToXLOPER(&rslt, "WebView2 not available � install Edge WebView2 Runtime", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Open the CreadorPresentaciones editor
+    std::string home = rj2xcl::ConfigService::Instance().GetHomePath();
+    std::string editor_path = home + "CreadorPresentaciones/index.html";
+    std::string result = viewer.CreateViewerFromFile(editor_path, "Editor", "Impress.js Presentation Editor");
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+#include "MenuService.h"
+
+/**
+ * @brief Toggles the UI language between Spanish and English.
+ * @return LPXLOPER12 String confirming the new language (e.g., "Idioma: Espanol").
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_LangToggle() {
+    thread_local XLOPER12 rslt;
+    rj2xcl::MenuService::ToggleLanguage();
+    auto lang = rj2xcl::MenuService::GetLanguage();
+    std::string result = (lang == rj2xcl::Language::ES) ? "Idioma: Espanol" : "Language: English";
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Starts the Pluto.jl server (ribbon command variant).
+ * @return LPXLOPER12 Status message from PlutoManager.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoStartCmd() {
+    thread_local XLOPER12 rslt;
+    std::string result = rj2xcl::PlutoManager::Instance().StartPluto();
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Stops the Pluto.jl server (ribbon command variant).
+ * @return LPXLOPER12 Status message from PlutoManager.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoStopCmd() {
+    thread_local XLOPER12 rslt;
+    std::string result = rj2xcl::PlutoManager::Instance().StopPluto();
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Launches the Julia sysimage rebuild script in a visible console window.
+ *
+ * The sysimage (neven_julia.dll) pre-compiles the NEVEN Julia module so that
+ * the first call to =NEVEN.j() starts in ~2 seconds instead of 1-5 minutes.
+ * This command must be run once after installing or updating Julia.
+ *
+ * The build script writes neven_julia.version alongside the sysimage so that
+ * ControlJulia can verify compatibility before loading.
+ *
+ * @return LPXLOPER12 Status message (launched/error).
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_JuliaSysimageCmd() {
+    thread_local XLOPER12 rslt;
+
+    // Locate the build script
+    std::string neven_home = rj2xcl::ConfigService::Instance().GetHomePath();
+    // GetHomePath returns path with trailing backslash
+    std::string script_path = neven_home + "startup\\build-julia-sysimage.jl";
+
+    // Check script exists
+    DWORD attrs = GetFileAttributesA(script_path.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        std::string err = "Error: script no encontrado en " + script_path;
+        Convert::StringToXLOPER(&rslt, err, false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Show confirmation dialog before launching (can take 5-10 minutes)
+    int confirm = MessageBoxA(
+        FindWindowA("XLMAIN", nullptr),
+        "Este proceso compilara la sysimage de Julia (~5-10 minutos).\n\n"
+        "Durante la compilacion:\n"
+        "  - Julia estara disponible para usar normalmente\n"
+        "  - Al terminar, reinicie Excel para activar la sysimage\n\n"
+        "La sysimage elimina el retraso de 1-5 minutos del primer calculo Julia.\n\n"
+        "Desea continuar?",
+        "NEVEN - Compilar Sysimage Julia",
+        MB_YESNO | MB_ICONQUESTION);
+
+    if (confirm != IDYES) {
+        Convert::StringToXLOPER(&rslt, "Cancelado por el usuario", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Find julia.exe (should be in PATH since it was prepended for ControlJulia)
+    // Try common locations
+    const char* julia_candidates[] = {
+        nullptr,  // Sentinel: try from PATH
+    };
+
+    // Build command: julia <script>
+    // Use CREATE_NEW_CONSOLE so the user can see progress
+    std::string cmd = "julia \"" + script_path + "\"";
+    char cmd_buf[MAX_PATH * 2];
+    strncpy_s(cmd_buf, cmd.c_str(), sizeof(cmd_buf) - 1);
+
+    STARTUPINFOA si = {};
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi = {};
+
+    BOOL ok = CreateProcessA(
+        nullptr,        // julia from PATH
+        cmd_buf,
+        nullptr, nullptr, FALSE,
+        CREATE_NEW_CONSOLE,   // visible console for progress
+        nullptr, nullptr,
+        &si, &pi);
+
+    if (!ok) {
+        DWORD err = GetLastError();
+        std::string msg = "Error al lanzar julia.exe (codigo " +
+                          std::to_string(err) + ").\n"
+                          "Verifique que Julia esta instalado y en el PATH.";
+        Convert::StringToXLOPER(&rslt, msg, false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+
+    Convert::StringToXLOPER(&rslt,
+        "Compilando sysimage Julia... Abra la consola que aparecio para ver el progreso. "
+        "Al terminar, reinicie Excel.", false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Opens the presentation editor (ribbon command variant).
+ * @return LPXLOPER12 Viewer ID string, or error if WebView2 is unavailable.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_EditorCmd() {
+
+    thread_local XLOPER12 rslt;
+    auto& viewer = rj2xcl::ViewerManager::Instance();
+    if (!viewer.IsAvailable()) {
+        Convert::StringToXLOPER(&rslt, "WebView2 not available", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    std::string home = rj2xcl::ConfigService::Instance().GetHomePath();
+    std::string editor_path = home + "CreadorPresentaciones/index.html";
+    std::string result = viewer.CreateViewerFromFile(
+        editor_path, "Editor", "Impress.js Presentation Editor");
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+// ---------------------------------------------------------------------------
+// Menu Dialog Functions (called from CommandBar menu buttons)
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Shows an Open File dialog and opens the selected HTML file in a WebView2 viewer.
+ * @return LPXLOPER12 Numeric 1 if a file was opened, 0 otherwise.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_View_Dialog() {
+    static XLOPER12 rslt;
+    rslt.xltype = xltypeNum;
+    rslt.val.num = 0;
+
+    char filename[MAX_PATH] = "";
+    OPENFILENAMEA ofn = {};
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = FindWindowA("XLMAIN", nullptr);
+    ofn.lpstrFilter = "HTML Files (*.html;*.htm)\0*.html;*.htm\0All Files (*.*)\0*.*\0";
+    ofn.lpstrFile = filename;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrTitle = "Abrir archivo HTML en visor WebView2";
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+
+    if (GetOpenFileNameA(&ofn)) {
+        auto& viewer = rj2xcl::ViewerManager::Instance();
+        if (viewer.IsAvailable()) {
+            viewer.CreateViewerFromFile(filename, "HTML", filename);
+            rslt.val.num = 1;
+        }
+    }
+    return &rslt;
+}
+
+/**
+ * @brief Shows a message box listing available Pluto notebooks.
+ * @return LPXLOPER12 Always returns numeric 0.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_NotebookOpen_Dialog() {
+    static XLOPER12 rslt;
+    rslt.xltype = xltypeNum;
+    rslt.val.num = 0;
+
+    rj2xcl::NotebookLibrary lib;
+    auto notebooks = lib.ListNotebooks();
+
+    if (notebooks.empty()) {
+        MessageBoxA(FindWindowA("XLMAIN", nullptr),
+                    "No se encontraron notebooks en C:\\NEVEN\\notebooks\\",
+                    "NEVEN � Notebooks", MB_OK | MB_ICONINFORMATION);
+        return &rslt;
+    }
+
+    std::string msg = "Notebooks disponibles:\n\n";
+    for (size_t i = 0; i < notebooks.size(); i++) {
+        msg += "[" + std::to_string(i + 1) + "] " + notebooks[i].name;
+        if (notebooks[i].requires_rcall) msg += " (requiere R)";
+        if (notebooks[i].is_custom) msg += " [custom]";
+        msg += "\n";
+    }
+    msg += "\nUse =NEVEN.notebook.open(\"nombre\") para abrir un notebook.";
+
+    MessageBoxA(FindWindowA("XLMAIN", nullptr), msg.c_str(),
+                "NEVEN � Biblioteca de Notebooks", MB_OK | MB_ICONINFORMATION);
+    return &rslt;
+}
+
+/**
+ * @brief Shows a message box with project information (About dialog).
+ * @return LPXLOPER12 Always returns numeric 1.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_About_Dialog() {
+    static XLOPER12 rslt;
+    rslt.xltype = xltypeNum;
+    rslt.val.num = 1;
+
+    std::string msg =
+        "NEVEN v2.0\n"
+        "Open Source Polyglot Infrastructure for Excel\n\n"
+        "Creado por Minor Bonilla G.\n"
+        "Licencia: GPL v3 — Software libre para todos\n\n"
+        "R: Estadistica | Julia: Matematica/ML\n"
+        "WebView2: Visualizacion interactiva\n"
+        "Pluto.jl: Notebooks reactivos\n\n"
+        "---\n\n"
+        "Creo fielmente en un mundo mas igualitario\n"
+        "en el que todos podamos colaborar.\n\n"
+        "NEVEN es una invitacion a construir comunidad,\n"
+        "a compartir conocimiento sin barreras,\n"
+        "y a inspirar a otros a crear un mundo donde\n"
+        "la humanidad avance junta, no dividida.\n\n"
+        "Si este proyecto te es util, compartelo.\n"
+        "Si puedes mejorarlo, contribuye.\n"
+        "Juntos llegamos mas lejos.\n\n"
+        "github.com/minor-bonilla/NEVEN";
+
+    MessageBoxA(FindWindowA("XLMAIN", nullptr), msg.c_str(),
+                "Acerca de NEVEN", MB_OK | MB_ICONINFORMATION);
+    return &rslt;
+}
+
+/**
+ * @brief Closes all active WebView2 viewer windows.
+ * @return LPXLOPER12 Always returns numeric 1.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_ViewerCloseAll() {
+    static XLOPER12 rslt;
+    rslt.xltype = xltypeNum;
+    rslt.val.num = 1;
+
+    rj2xcl::ViewerManager::Instance().CloseAllViewers();
+    return &rslt;
+}
+
+/**
+ * @brief Opens NEVEN Studio AI Agent in a WebView2 window pointing to the local HTTP server.
+ *
+ * Activates advanced mode on port 5555 (same mechanism as Pluto.jl) so the
+ * WebView2 security policy allows navigation to localhost:5555.
+ * If a viewer with title "NEVEN Studio AI" already exists it is reused.
+ *
+ * @return LPXLOPER12 Viewer ID (e.g. "viewer-N") or error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_AgenteIA() {
+    static XLOPER12 rslt;
+    static std::string agente_viewer_id;
+
+    auto& viewer = rj2xcl::ViewerManager::Instance();
+    if (!viewer.IsAvailable()) {
+        Convert::StringToXLOPER(&rslt,
+            "WebView2 not available - install Edge WebView2 Runtime", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Reusar viewer existente si sigue vivo
+    if (!agente_viewer_id.empty() && viewer.IsViewerAlive(agente_viewer_id)) {
+        Convert::StringToXLOPER(&rslt, agente_viewer_id.c_str(), false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // ── Verificar si NEVEN Studio está activo en localhost:5555 ──────────────
+    auto _studio_alive = []() -> bool {
+        HINTERNET hT = WinHttpOpen(L"NEVEN-XLL/3.0",
+                                    WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                    WINHTTP_NO_PROXY_NAME,
+                                    WINHTTP_NO_PROXY_BYPASS, 0);
+        if (!hT) return false;
+        DWORD t = 500;
+        WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
+        WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
+        WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
+        bool alive = false;
+        HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
+        if (hC) {
+            HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
+                                               nullptr, WINHTTP_NO_REFERER,
+                                               WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+            if (hR) {
+                alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                           nullptr, 0, 0, 0) &&
+                        WinHttpReceiveResponse(hR, nullptr);
+                WinHttpCloseHandle(hR);
+            }
+            WinHttpCloseHandle(hC);
+        }
+        WinHttpCloseHandle(hT);
+        return alive;
+    };
+
+    // ── Arrancar NEVEN Studio si no está activo ───────────────────────────────
+    if (!_studio_alive()) {
+        // Mismo comando que el .vbs: python start_studio.py --no-browser
+        // Buscar Python en la ruta de NEVEN primero, luego en el PATH
+        std::wstring python_exe = L"C:\\NEVEN\\python\\python.exe";
+        DWORD attrs = GetFileAttributesW(python_exe.c_str());
+        if (attrs == INVALID_FILE_ATTRIBUTES)
+            python_exe = L"python";  // fallback al PATH del sistema
+
+        std::wstring cmd = python_exe +
+            L" \"C:\\NEVEN\\taskpane\\start_studio.py\" --no-browser";
+
+        STARTUPINFOW si{};
+        si.cb          = sizeof(si);
+        si.dwFlags     = STARTF_USESHOWWINDOW;
+        si.wShowWindow = SW_HIDE;
+        PROCESS_INFORMATION pi{};
+
+        CreateProcessW(nullptr,
+                       const_cast<LPWSTR>(cmd.c_str()),
+                       nullptr, nullptr, FALSE,
+                       CREATE_NO_WINDOW,
+                       nullptr,
+                       L"C:\\NEVEN\\taskpane\\",   // working dir
+                       &si, &pi);
+        if (pi.hThread)  CloseHandle(pi.hThread);
+        if (pi.hProcess) CloseHandle(pi.hProcess);
+
+        // Esperar hasta 30 segundos (Studio tarda más que el AgentService)
+        for (int i = 0; i < 60 && !_studio_alive(); i++)
+            Sleep(500);
+    }
+
+    // ── Abrir el viewer ───────────────────────────────────────────────────────
+    viewer.SetAdvancedMode(true, 5555);
+    agente_viewer_id = viewer.CreateViewerFromUrl(
+        "http://localhost:5555/taskpane.html",
+        "NEVEN Studio AI");
+
+    Convert::StringToXLOPER(&rslt, agente_viewer_id.c_str(), false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
+ * @brief Publica el contexto de la hoja de cálculo al agente IA de NEVEN Studio.
+ *
+ * Serializa dos rangos de Excel (datos y resultados) y los envía via HTTP POST
+ * al servidor NEVEN Studio en localhost:5555/api/ai/context.
+ * El agente los recoge automáticamente al abrir la ventana o al cambiar de tab.
+ *
+ * Uso: =NEVEN.IA.Contexto(datos_rango, resultados_rango)
+ *   datos_rango     : rango con los datos (incluyendo fila de headers)
+ *   resultados_rango: rango con los resultados del modelo (opcional, puede ser "")
+ *
+ * @return "OK — contexto enviado (N filas x K cols)" o mensaje de error.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+RJ_IA_Contexto(LPXLOPER12 data_range, LPXLOPER12 results_range) {
+    thread_local XLOPER12 rslt;
+
+    // ── 0. Garantizar que el Agente IA esté abierto ───────────────────────────
+    // Si el viewer no existe, lo creamos ahora. Sin esto, el POST a localhost:5555
+    // falla con el servidor apagado y Excel puede colapsar.
+    {
+        auto& viewer = rj2xcl::ViewerManager::Instance();
+        if (!viewer.IsAvailable()) {
+            Convert::StringToXLOPER(&rslt,
+                "Error: WebView2 no disponible. Instala Edge WebView2 Runtime.", false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+
+        // Verificar si hay algún viewer vivo
+        bool agente_activo = false;
+        auto viewer_ids = viewer.ListViewers();
+        for (const auto& vid : viewer_ids) {
+            if (viewer.IsViewerAlive(vid)) { agente_activo = true; break; }
+        }
+
+        if (!agente_activo) {
+            // Abrir el agente automáticamente
+            // Usar el puerto del servicio IA si está configurado en neven-config.json,
+            // de lo contrario usar el servidor local estándar (5555)
+            int   ai_port = 5555;
+            bool  ai_service_enabled = false;
+            std::wstring ai_host = L"localhost";
+            std::wstring ai_url  = L"http://localhost:5555/taskpane.html";
+            std::wstring health_path = L"/api/engines";
+
+            // Leer AIService de neven-config.json
+            {
+                const char* cfg_path = "C:\\NEVEN\\neven-config.json";
+                std::ifstream f(cfg_path);
+                if (f.good()) {
+                    std::string content((std::istreambuf_iterator<char>(f)),
+                                         std::istreambuf_iterator<char>());
+                    // Buscar "AIService" → "enabled": true y "url"
+                    auto pos_svc = content.find("\"AIService\"");
+                    if (pos_svc != std::string::npos) {
+                        auto pos_en = content.find("\"enabled\"", pos_svc);
+                        if (pos_en != std::string::npos && pos_en < pos_svc + 200) {
+                            auto pos_true = content.find("true", pos_en);
+                            auto pos_next = content.find(",", pos_en);
+                            if (pos_true != std::string::npos &&
+                                (pos_next == std::string::npos || pos_true < pos_next + 20)) {
+                                ai_service_enabled = true;
+                            }
+                        }
+                        if (ai_service_enabled) {
+                            auto pos_url = content.find("\"url\"", pos_svc);
+                            if (pos_url != std::string::npos && pos_url < pos_svc + 300) {
+                                auto q1 = content.find('"', pos_url + 5);
+                                auto q2 = content.find('"', q1 + 1);
+                                if (q1 != std::string::npos && q2 != std::string::npos) {
+                                    std::string svc_url = content.substr(q1 + 1, q2 - q1 - 1);
+                                    // Extraer host y puerto de la URL
+                                    // Formato esperado: http://host:port o http://host
+                                    auto colon = svc_url.rfind(':');
+                                    if (colon != std::string::npos && colon > 6) {
+                                        try {
+                                            ai_port = std::stoi(svc_url.substr(colon + 1));
+                                        } catch (...) {}
+                                    }
+                                    // Construir URL del add-in del agente
+                                    std::wstring wsvc(svc_url.begin(), svc_url.end());
+                                    ai_url = wsvc + L"/";
+                                    health_path = L"/health";  // FastAPI usa /health
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!ai_service_enabled) {
+                viewer.SetAdvancedMode(true, 5555);
+                ai_url = L"http://localhost:5555/taskpane.html";
+                ai_port = 5555;
+            }
+
+            viewer.CreateViewerFromUrl(
+                std::string(ai_url.begin(), ai_url.end()),
+                "NEVEN Studio AI");
+        }
+
+        // Esperar a que el servidor esté listo (máx 8 segundos)
+        // Detectar puerto del servicio activo
+        int   check_port = 5555;
+        std::wstring check_path = L"/api/engines";
+        {
+            // Re-leer config para el health check
+            const char* cfg_path = "C:\\NEVEN\\neven-config.json";
+            std::ifstream f(cfg_path);
+            if (f.good()) {
+                std::string content((std::istreambuf_iterator<char>(f)),
+                                     std::istreambuf_iterator<char>());
+                auto pos_svc = content.find("\"AIService\"");
+                if (pos_svc != std::string::npos) {
+                    auto pos_en = content.find("\"enabled\"", pos_svc);
+                    if (pos_en != std::string::npos) {
+                        auto pos_true = content.find("true", pos_en);
+                        auto pos_next = content.find(",", pos_en);
+                        if (pos_true != std::string::npos &&
+                            (pos_next == std::string::npos || pos_true < pos_next + 20)) {
+                            auto pos_url = content.find("\"url\"", pos_svc);
+                            if (pos_url != std::string::npos) {
+                                auto q1 = content.find('"', pos_url + 5);
+                                auto q2 = content.find('"', q1 + 1);
+                                if (q1 != std::string::npos && q2 != std::string::npos) {
+                                    std::string svc_url = content.substr(q1 + 1, q2 - q1 - 1);
+                                    auto colon = svc_url.rfind(':');
+                                    if (colon != std::string::npos && colon > 6) {
+                                        try { check_port = std::stoi(svc_url.substr(colon + 1)); }
+                                        catch (...) {}
+                                    }
+                                    check_path = L"/health";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        bool servidor_listo = false;
+        for (int i = 0; i < 16 && !servidor_listo; i++) {
+            Sleep(500);
+            HINTERNET hT = WinHttpOpen(L"NEVEN-XLL/3.0",
+                                        WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                        WINHTTP_NO_PROXY_NAME,
+                                        WINHTTP_NO_PROXY_BYPASS, 0);
+            if (hT) {
+                DWORD timeout_ms = 400;
+                WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT,    &timeout_ms, sizeof(timeout_ms));
+                WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,       &timeout_ms, sizeof(timeout_ms));
+                WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT,    &timeout_ms, sizeof(timeout_ms));
+
+                HINTERNET hC = WinHttpConnect(hT, L"localhost",
+                                               static_cast<INTERNET_PORT>(check_port), 0);
+                if (hC) {
+                    HINTERNET hR = WinHttpOpenRequest(hC, L"GET", check_path.c_str(),
+                                                       nullptr, WINHTTP_NO_REFERER,
+                                                       WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+                    if (hR) {
+                        if (WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                               nullptr, 0, 0, 0) &&
+                            WinHttpReceiveResponse(hR, nullptr)) {
+                            servidor_listo = true;
+                        }
+                        WinHttpCloseHandle(hR);
+                    }
+                    WinHttpCloseHandle(hC);
+                }
+                WinHttpCloseHandle(hT);
+            }
+        }
+
+        if (!servidor_listo) {
+            Convert::StringToXLOPER(&rslt,
+                "Error: NEVEN Studio no responde (localhost:5555). "
+                "Inicia el servidor con el acceso directo 'NEVEN Studio.vbs'.", false);
+            rslt.xltype |= xlbitDLLFree;
+            return &rslt;
+        }
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    // Escapar string para JSON inline
+    auto escape_json = [](const std::string& s) -> std::string {
+        std::string o; o.reserve(s.size() + 16);
+        for (unsigned char c : s) {
+            if      (c == '"')  o += "\\\"";
+            else if (c == '\\') o += "\\\\";
+            else if (c == '\n') o += "\\n";
+            else if (c == '\r') o += "\\r";
+            else if (c == '\t') o += "\\t";
+            else if (c < 0x20)  o += ' ';   // control chars → espacio
+            else                o += c;
+        }
+        return o;
+    };
+
+    // Convertir una celda XLOPER12 a string CSV-seguro
+    auto cell_to_str = [](LPXLOPER12 cell) -> std::string {
+        if (!cell) return "";
+        int t = cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        if (t == xltypeNum)  return std::to_string(cell->val.num);
+        if (t == xltypeInt)  return std::to_string(cell->val.w);
+        if (t == xltypeBool) return cell->val.xbool ? "TRUE" : "FALSE";
+        if (t == xltypeStr)  return Convert::XLOPERToString(cell);
+        if (t == xltypeNil || t == xltypeMissing || t == xltypeErr) return "";
+        return Convert::XLOPERToString(cell);
+    };
+
+    // Serializar un rango (ya materializado como xltypeMulti por Excel con tipo Q)
+    // a texto CSV. Retorna "" si el rango es inválido/vacío.
+    auto range_to_csv = [&cell_to_str](LPXLOPER12 rng) -> std::string {
+        if (!rng) return "";
+        int t = rng->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        // Escalar: retornar directamente
+        if (t == xltypeNum || t == xltypeStr || t == xltypeBool || t == xltypeInt)
+            return cell_to_str(rng);
+        // Tipos vacíos
+        if (t == xltypeMissing || t == xltypeNil || t == xltypeErr) return "";
+        // Multi: iterar celdas
+        if (t != xltypeMulti) return "";
+
+        int rows = static_cast<int>(rng->val.array.rows);
+        int cols = static_cast<int>(rng->val.array.columns);
+        if (rows == 0 || cols == 0) return "";
+
+        std::string csv;
+        int max_rows = (std::min)(rows, 51); // máx 51 filas (1 header + 50 datos)
+        for (int r = 0; r < max_rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (c > 0) csv += ',';
+                LPXLOPER12 cell = &rng->val.array.lparray[r * cols + c];
+                std::string v = cell_to_str(cell);
+                // Citar si contiene coma o comilla
+                if (v.find(',') != std::string::npos || v.find('"') != std::string::npos) {
+                    // reemplazar " por "" (CSV estándar)
+                    std::string q = "\"";
+                    for (char ch : v) { if (ch == '"') q += "\"\""; else q += ch; }
+                    q += '"';
+                    csv += q;
+                } else {
+                    csv += v;
+                }
+            }
+            csv += '\n';
+        }
+        if (rows > 51)
+            csv += "... (" + std::to_string(rows - 51) + " filas más)\n";
+        return csv;
+    };
+
+    // ── 1. Serializar rangos ──────────────────────────────────────────────────
+    // Con tipo "UQQ" en funcTemplates, Excel ya materializa los rangos a
+    // xltypeMulti antes de llamar esta función. No se necesita xlCoerce.
+    std::string dataset_csv  = range_to_csv(data_range);
+    std::string results_csv  = range_to_csv(results_range);
+
+    if (dataset_csv.empty() && results_csv.empty()) {
+        Convert::StringToXLOPER(&rslt,
+            "Error: selecciona un rango con datos antes de ejecutar NEVEN.IA.Contexto", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // ── 2. Contar filas y columnas del dataset ────────────────────────────────
+    int n_rows = 0, n_cols = 0;
+    if (data_range && (data_range->xltype & ~(xlbitXLFree | xlbitDLLFree)) == xltypeMulti) {
+        n_rows = (std::max)(0, static_cast<int>(data_range->val.array.rows) - 1);
+        n_cols = static_cast<int>(data_range->val.array.columns);
+    }
+
+    // ── 3. Construir JSON y hacer POST al servicio IA ────────────────────────
+    // Puerto configurable: si AIService.enabled=true en neven-config.json usa ese
+    // puerto, de lo contrario usa el servidor local en 5555
+    int post_port = 5555;
+    {
+        const char* cfg_path = "C:\\NEVEN\\neven-config.json";
+        std::ifstream fcfg(cfg_path);
+        if (fcfg.good()) {
+            std::string content((std::istreambuf_iterator<char>(fcfg)),
+                                 std::istreambuf_iterator<char>());
+            auto pos_svc = content.find("\"AIService\"");
+            if (pos_svc != std::string::npos) {
+                auto pos_en = content.find("\"enabled\"", pos_svc);
+                if (pos_en != std::string::npos && pos_en < pos_svc + 200) {
+                    auto pos_true = content.find("true", pos_en);
+                    auto pos_next = content.find(",", pos_en);
+                    if (pos_true != std::string::npos &&
+                        (pos_next == std::string::npos || pos_true < pos_next + 20)) {
+                        auto pos_url = content.find("\"url\"", pos_svc);
+                        if (pos_url != std::string::npos && pos_url < pos_svc + 300) {
+                            auto q1 = content.find('"', pos_url + 5);
+                            auto q2 = content.find('"', q1 + 1);
+                            if (q1 != std::string::npos && q2 != std::string::npos) {
+                                std::string svc_url = content.substr(q1 + 1, q2 - q1 - 1);
+                                auto colon = svc_url.rfind(':');
+                                if (colon != std::string::npos && colon > 6) {
+                                    try { post_port = std::stoi(svc_url.substr(colon + 1)); }
+                                    catch (...) {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::string json_body = "{\"source\":\"excel_xll\",\"n_rows\":";
+    json_body += std::to_string(n_rows);
+    json_body += ",\"n_cols\":";
+    json_body += std::to_string(n_cols);
+    json_body += ",\"dataset_text\":\"";
+    json_body += escape_json(dataset_csv);
+    json_body += "\",\"results_text\":\"";
+    json_body += escape_json(results_csv);
+    json_body += "\"}";
+
+    // HTTP POST via WinHTTP (sin dependencias externas)
+    HINTERNET hSess = nullptr, hConn = nullptr, hReq = nullptr;
+    bool ok = false;
+    std::string resp_msg;
+
+    hSess = WinHttpOpen(L"NEVEN-XLL/3.0",
+                        WINHTTP_ACCESS_TYPE_NO_PROXY,
+                        WINHTTP_NO_PROXY_NAME,
+                        WINHTTP_NO_PROXY_BYPASS, 0);
+    if (hSess) {
+        // Timeouts conservadores: 3s connect, 10s send/receive
+        DWORD t_conn = 3000, t_rw = 10000;
+        WinHttpSetOption(hSess, WINHTTP_OPTION_CONNECT_TIMEOUT, &t_conn, sizeof(t_conn));
+        WinHttpSetOption(hSess, WINHTTP_OPTION_SEND_TIMEOUT,    &t_rw,   sizeof(t_rw));
+        WinHttpSetOption(hSess, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t_rw,   sizeof(t_rw));
+        hConn = WinHttpConnect(hSess, L"localhost",
+                               static_cast<INTERNET_PORT>(post_port), 0);
+    }
+    if (hConn) hReq  = WinHttpOpenRequest(hConn, L"POST", L"/api/ai/context",
+                                          nullptr, WINHTTP_NO_REFERER,
+                                          WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+    if (hReq) {
+        BOOL sent = WinHttpSendRequest(hReq,
+                                       L"Content-Type: application/json\r\n", (DWORD)-1,
+                                       (LPVOID)json_body.c_str(),
+                                       (DWORD)json_body.size(),
+                                       (DWORD)json_body.size(), 0);
+        if (sent && WinHttpReceiveResponse(hReq, nullptr)) {
+            DWORD sz = 0;
+            WinHttpQueryDataAvailable(hReq, &sz);
+            if (sz > 0 && sz < 4096) {
+                std::string buf(sz, '\0');
+                DWORD rd = 0;
+                WinHttpReadData(hReq, &buf[0], sz, &rd);
+                buf.resize(rd);
+                auto p = buf.find("\"message\":\"");
+                if (p != std::string::npos) {
+                    p += 11;
+                    auto e = buf.find('"', p);
+                    if (e != std::string::npos) resp_msg = buf.substr(p, e - p);
+                }
+            }
+            ok = true;
+        }
+    }
+
+    if (hReq)  WinHttpCloseHandle(hReq);
+    if (hConn) WinHttpCloseHandle(hConn);
+    if (hSess) WinHttpCloseHandle(hSess);
+
+    std::string result_str;
+    if (ok) {
+        result_str = resp_msg.empty()
+            ? "OK - contexto enviado (" + std::to_string(n_rows) + " filas x "
+              + std::to_string(n_cols) + " cols)"
+            : resp_msg;
+    } else {
+        result_str = "Error: NEVEN Studio no responde (localhost:5555). "
+                     "Inicia el servidor primero.";
+    }
+
+    Convert::StringToXLOPER(&rslt, result_str, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+// =============================================================================
+// NevenX -- Dispatcher generico de procesos
+// Usa la misma firma que NEVEN.Call (17Q = func + 16 args) para que Excel
+// pase todos los argumentos no usados como xltypeMissing — nunca nullptr.
+// El primer arg (proceso) va como arg0 al dispatcher NEVEN$.nevenx_dispatch.
+
+static XLOPER12 g_nevenx_disp_R;
+static XLOPER12 g_nevenx_disp_J;
+static XLOPER12 g_nevenx_disp_P;
+static bool     g_nevenx_init_done = false;
+
+extern "C" void NevenX_InitGlobals() {
+    if (g_nevenx_init_done) return;
+
+    // R:      NEVEN$.nevenx_dispatch  (accede al env NEVEN via $ operator)
+    // Julia:  NEVEN.nevenx_dispatch   (accede al modulo NEVEN via . operator)
+    // Python: nevenx_dispatch         (funcion global en __main__)
+    static wchar_t disp_buf_R[32] = {};
+    static wchar_t disp_buf_J[32] = {};
+    static wchar_t disp_buf_P[32] = {};
+
+    // R dispatcher name
+    std::wstring disp_name_R = L"NEVEN$.nevenx_dispatch";
+    disp_buf_R[0] = (wchar_t)disp_name_R.size();
+    for (size_t i = 0; i < disp_name_R.size(); ++i) disp_buf_R[i+1] = disp_name_R[i];
+    g_nevenx_disp_R.xltype = xltypeStr; g_nevenx_disp_R.val.str = disp_buf_R;
+
+    // Julia dispatcher name: NEVEN.nevenx_dispatch (modulo NEVEN, funcion nevenx_dispatch)
+    std::wstring disp_name_J = L"NEVEN.nevenx_dispatch";
+    disp_buf_J[0] = (wchar_t)disp_name_J.size();
+    for (size_t i = 0; i < disp_name_J.size(); ++i) disp_buf_J[i+1] = disp_name_J[i];
+    g_nevenx_disp_J.xltype = xltypeStr; g_nevenx_disp_J.val.str = disp_buf_J;
+
+    // Python dispatcher name: nevenx_dispatch (funcion global en __main__)
+    std::wstring disp_name_P = L"nevenx_dispatch";
+    disp_buf_P[0] = (wchar_t)disp_name_P.size();
+    for (size_t i = 0; i < disp_name_P.size(); ++i) disp_buf_P[i+1] = disp_name_P[i];
+    g_nevenx_disp_P.xltype = xltypeStr; g_nevenx_disp_P.val.str = disp_buf_P;
+
+    g_nevenx_init_done = true;
+}
+
+/**
+ * @brief Helper: Detecta si el resultado contiene marcador NEVEN_EMBED_CHART
+ *        y si es así, crea el Shape en Excel y retorna mensaje de éxito.
+ *        Usado por NevenX_R/J/P cuando TipoOutput=99.
+ * @param result Resultado del dispatcher NevenX
+ * @return nullptr si no hay marcador, o puntero a XLOPER12 con mensaje de éxito
+ */
+static LPXLOPER12 NevenX_HandleEmbedChart(LPXLOPER12 result) {
+    // DEBUG: Log para verificar que se llama
+    OutputDebugStringA("[NEVEN] NevenX_HandleEmbedChart called\n");
+    
+    if (!result) {
+        OutputDebugStringA("[NEVEN] result is NULL\n");
+        return nullptr;
+    }
+    
+    int raw_type = result->xltype;
+    int clean_type = raw_type & ~(xlbitXLFree | xlbitDLLFree);
+    char dbg[256];
+    sprintf_s(dbg, "[NEVEN] xltype raw=%d clean=%d (xltypeMulti=%d)\n", raw_type, clean_type, xltypeMulti);
+    OutputDebugStringA(dbg);
+    
+    if (clean_type != xltypeMulti) {
+        OutputDebugStringA("[NEVEN] Not xltypeMulti, returning nullptr\n");
+        return nullptr;
+    }
+    
+    int rows = result->val.array.rows;
+    int cols = result->val.array.columns;
+    LPXLOPER12 cells = result->val.array.lparray;
+    
+    sprintf_s(dbg, "[NEVEN] Array: rows=%d cols=%d\n", rows, cols);
+    OutputDebugStringA(dbg);
+    
+    if (rows < 2 || cols < 1) {
+        OutputDebugStringA("[NEVEN] rows<2 or cols<1, returning nullptr\n");
+        return nullptr;
+    }
+    
+    // Buscar columnas especiales en la primera fila (headers)
+    int chart_col = -1, name_col = -1, width_col = -1, height_col = -1;
+    
+    for (int c = 0; c < cols; c++) {
+        LPXLOPER12 cell = &cells[c];
+        int cell_type = cell->xltype & ~(xlbitXLFree | xlbitDLLFree);  // Limpiar flags
+        sprintf_s(dbg, "[NEVEN] Header col %d: xltype=%d clean=%d\n", c, cell->xltype, cell_type);
+        OutputDebugStringA(dbg);
+        if (cell_type == xltypeStr) {
+            std::string header = Convert::XLOPERToString(cell);
+            sprintf_s(dbg, "[NEVEN] Header col %d: '%s'\n", c, header.c_str());
+            OutputDebugStringA(dbg);
+            if (header == "NEVEN_EMBED_CHART") chart_col = c;
+            else if (header == "NEVEN_CHART_NAME") name_col = c;
+            else if (header == "NEVEN_CHART_WIDTH") width_col = c;
+            else if (header == "NEVEN_CHART_HEIGHT") height_col = c;
+        }
+    }
+    
+    sprintf_s(dbg, "[NEVEN] chart_col=%d name_col=%d width_col=%d height_col=%d\n", 
+              chart_col, name_col, width_col, height_col);
+    OutputDebugStringA(dbg);
+    
+    if (chart_col < 0) {
+        OutputDebugStringA("[NEVEN] NEVEN_EMBED_CHART not found, returning nullptr\n");
+        return nullptr;
+    }
+    
+    // Extraer datos
+    LPXLOPER12 path_cell = &cells[1 * cols + chart_col];
+    std::string png_path;
+    int path_type = path_cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+    if (path_type == xltypeStr) {
+        png_path = Convert::XLOPERToString(path_cell);
+    }
+    
+    std::string chart_name = "NevenX_Chart";
+    if (name_col >= 0) {
+        LPXLOPER12 name_cell = &cells[1 * cols + name_col];
+        int name_type = name_cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        if (name_type == xltypeStr) {
+            chart_name = Convert::XLOPERToString(name_cell);
+        }
+    }
+    
+    int width = 500, height = 400;
+    if (width_col >= 0) {
+        LPXLOPER12 w_cell = &cells[1 * cols + width_col];
+        int w_type = w_cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        if (w_type == xltypeNum) width = (int)w_cell->val.num;
+        else if (w_type == xltypeInt) width = w_cell->val.w;
+    }
+    if (height_col >= 0) {
+        LPXLOPER12 h_cell = &cells[1 * cols + height_col];
+        int h_type = h_cell->xltype & ~(xlbitXLFree | xlbitDLLFree);
+        if (h_type == xltypeNum) height = (int)h_cell->val.num;
+        else if (h_type == xltypeInt) height = h_cell->val.w;
+    }
+    
+    // Verificar archivo
+    DWORD attrs = GetFileAttributesA(png_path.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES || png_path.empty()) {
+        return nullptr;
+    }
+    
+    // Crear Shape en Excel
+    RJ2XCLBuffers::GraphicsUpdate graphics;
+    graphics.set_name(chart_name);
+    graphics.set_path(png_path);
+    graphics.set_width(width);
+    graphics.set_height(height);
+    
+    LPDISPATCH app_dispatch = RJ2XCL_Engine::Instance()->GetApplicationDispatch();
+    RJ2XCLGraphics::UpdateGraphics(graphics, app_dispatch);
+    
+    // Retornar mensaje de éxito
+    thread_local XLOPER12 success_rslt;
+    std::string msg = "Chart: " + chart_name;
+    Convert::StringToXLOPER(&success_rslt, msg, false);
+    success_rslt.xltype |= xlbitDLLFree;
+    return &success_rslt;
+}
+
+// NevenX_R: firma identica a RJ_CallLanguage_ (func + 16 args opcionales = 17Q)
+// Excel pasa los no usados como xltypeMissing — nunca nullptr
+// TipoOutput=99: Si el resultado contiene marcador NEVEN_EMBED_CHART, crea Shape
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+NevenX_R(LPXLOPER12 proceso,
+  LPXLOPER12 a0, LPXLOPER12 a1, LPXLOPER12 a2, LPXLOPER12 a3,
+  LPXLOPER12 a4, LPXLOPER12 a5, LPXLOPER12 a6, LPXLOPER12 a7,
+  LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
+  LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
+    NevenX_InitGlobals();
+    LPXLOPER12 result = RJ_Call_Generic(0, &g_nevenx_disp_R,
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+    LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
+    return embed_result ? embed_result : result;
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+NevenX_J(LPXLOPER12 proceso,
+  LPXLOPER12 a0, LPXLOPER12 a1, LPXLOPER12 a2, LPXLOPER12 a3,
+  LPXLOPER12 a4, LPXLOPER12 a5, LPXLOPER12 a6, LPXLOPER12 a7,
+  LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
+  LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
+    NevenX_InitGlobals();
+    LPXLOPER12 result = RJ_Call_Generic(1, &g_nevenx_disp_J,
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+    LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
+    return embed_result ? embed_result : result;
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+NevenX_P(LPXLOPER12 proceso,
+  LPXLOPER12 a0, LPXLOPER12 a1, LPXLOPER12 a2, LPXLOPER12 a3,
+  LPXLOPER12 a4, LPXLOPER12 a5, LPXLOPER12 a6, LPXLOPER12 a7,
+  LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
+  LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
+    NevenX_InitGlobals();
+    LPXLOPER12 result = RJ_Call_Generic(2, &g_nevenx_disp_P,
+        proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+    LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
+    return embed_result ? embed_result : result;
+}
+
+// =============================================================================
+// NEVEN.Chart.R/P/J -- Graficos embebidos en Excel como Shapes
+// Lee un rango de datos, genera codigo R/Python/Julia, ejecuta el grafico,
+// y crea/actualiza un Shape en Excel con la imagen resultante.
+// =============================================================================
+
+/**
+ * @brief Helper: Extrae datos de un rango XLOPER12 y construye vectores R.
+ * @param data_range Rango con datos (fila 1 = headers)
+ * @param headers Vector de nombres de columnas (output)
+ * @param columns Vector de strings con datos R para cada columna (output)
+ * @return true si exito, false si error
+ */
+static bool ExtractRangeForChart(LPXLOPER12 data_range,
+    std::vector<std::string>& headers,
+    std::vector<std::vector<std::string>>& columns) {
+    
+    if (!data_range || (data_range->xltype & ~(xlbitXLFree | xlbitDLLFree)) != xltypeMulti) {
+        return false;
+    }
+    
+    int rows = data_range->val.array.rows;
+    int cols = data_range->val.array.columns;
+    LPXLOPER12 cells = data_range->val.array.lparray;
+    
+    if (rows < 2 || cols < 1) return false;  // Need at least headers + 1 row
+    
+    // Extract headers (row 0)
+    headers.resize(cols);
+    for (int c = 0; c < cols; c++) {
+        LPXLOPER12 cell = &cells[c];
+        if (cell->xltype == xltypeStr) {
+            headers[c] = Convert::XLOPERToString(cell);
+        } else {
+            headers[c] = "Col" + std::to_string(c + 1);
+        }
+    }
+    
+    // Extract data (rows 1+)
+    columns.resize(cols);
+    for (int c = 0; c < cols; c++) {
+        columns[c].resize(rows - 1);
+        for (int r = 1; r < rows; r++) {
+            LPXLOPER12 cell = &cells[r * cols + c];
+            switch (cell->xltype & ~(xlbitXLFree | xlbitDLLFree)) {
+                case xltypeNum:
+                    columns[c][r - 1] = std::to_string(cell->val.num);
+                    break;
+                case xltypeInt:
+                    columns[c][r - 1] = std::to_string(cell->val.w);
+                    break;
+                case xltypeStr: {
+                    std::string s = Convert::XLOPERToString(cell);
+                    // Escape quotes for R/Python/Julia
+                    std::string escaped;
+                    for (char ch : s) {
+                        if (ch == '"') escaped += "\\\"";
+                        else if (ch == '\\') escaped += "\\\\";
+                        else escaped += ch;
+                    }
+                    columns[c][r - 1] = "\"" + escaped + "\"";
+                    break;
+                }
+                case xltypeBool:
+                    columns[c][r - 1] = cell->val.xbool ? "TRUE" : "FALSE";
+                    break;
+                default:
+                    columns[c][r - 1] = "NA";
+                    break;
+            }
+        }
+    }
+    
+    return true;
+}
+
+/**
+ * @brief Helper generico para NEVEN.Chart.*
+ * @param language_key 0=R, 1=Julia, 2=Python
+ * @param data_range Rango con datos
+ * @param chart_type Tipo de grafico (1-7)
+ * @param chart_name Nombre del Shape (opcional)
+ * @param width Ancho en pixeles (opcional, default 400)
+ * @param height Alto en pixeles (opcional, default 300)
+ */
+static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
+    LPXLOPER12 data_range, LPXLOPER12 chart_type,
+    LPXLOPER12 chart_name, LPXLOPER12 width, LPXLOPER12 height) {
+    
+    thread_local XLOPER12 rslt;
+    
+    // 1. Validate chart_type
+    int type = 1;
+    if (chart_type && chart_type->xltype == xltypeNum) {
+        type = (int)chart_type->val.num;
+    } else if (chart_type && chart_type->xltype == xltypeInt) {
+        type = chart_type->val.w;
+    }
+    if (type < 1 || type > 7) {
+        Convert::StringToXLOPER(&rslt, "Error: tipo debe ser 1-7 (1=barras, 2=lineas, 3=scatter, 4=area, 5=pastel, 6=histograma, 7=boxplot)", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    
+    // 2. Get chart name (auto-generate if not provided)
+    std::string name = "Chart";
+    if (chart_name && chart_name->xltype == xltypeStr) {
+        name = Convert::XLOPERToString(chart_name);
+    }
+    if (name.empty()) {
+        // Generate unique name based on calling cell address
+        static int chart_counter = 0;
+        name = "Chart_" + std::to_string(++chart_counter);
+    }
+    
+    // 3. Get dimensions
+    int w = 400, h = 300;
+    if (width && width->xltype == xltypeNum) w = (int)width->val.num;
+    else if (width && width->xltype == xltypeInt) w = width->val.w;
+    if (height && height->xltype == xltypeNum) h = (int)height->val.num;
+    else if (height && height->xltype == xltypeInt) h = height->val.w;
+    if (w < 100) w = 100;
+    if (h < 100) h = 100;
+    if (w > 2000) w = 2000;
+    if (h > 2000) h = 2000;
+    
+    // 4. Extract data from range
+    std::vector<std::string> headers;
+    std::vector<std::vector<std::string>> columns;
+    if (!ExtractRangeForChart(data_range, headers, columns)) {
+        Convert::StringToXLOPER(&rslt, "Error: rango invalido - debe tener headers en fila 1 y al menos 1 fila de datos", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    
+    // 5. Build code based on language and chart type
+    std::string code;
+    std::string temp_file = "C:/NEVEN/temp/chart_" + name + ".png";
+    
+    const char* chart_types_r[] = {"bar", "line", "scatter", "area", "pie", "histogram", "boxplot"};
+    
+    if (language_key == 0) {  // R
+        // Build R code using ggplot2
+        code = "library(ggplot2)\n";
+        code += "library(tidyr)\n";
+        
+        // Create data.frame
+        code += "data <- data.frame(\n";
+        for (size_t c = 0; c < columns.size(); c++) {
+            code += "  `" + headers[c] + "` = c(";
+            for (size_t r = 0; r < columns[c].size(); r++) {
+                if (r > 0) code += ", ";
+                code += columns[c][r];
+            }
+            code += ")";
+            if (c < columns.size() - 1) code += ",";
+            code += "\n";
+        }
+        code += ")\n";
+        
+        // Generate plot based on type
+        std::string x_col = headers[0];
+        std::string y_col = headers.size() > 1 ? headers[1] : headers[0];
+        
+        switch (type) {
+            case 1:  // Bar
+                code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`)) +\n";
+                code += "  geom_bar(stat='identity', fill='steelblue') +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 2:  // Line
+                code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`, group=1)) +\n";
+                code += "  geom_line(color='steelblue', linewidth=1.2) +\n";
+                code += "  geom_point(color='steelblue', size=3) +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 3:  // Scatter
+                code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`)) +\n";
+                code += "  geom_point(color='steelblue', size=3) +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 4:  // Area
+                code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`)) +\n";
+                code += "  geom_area(fill='steelblue', alpha=0.6) +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 5:  // Pie
+                code += "p <- ggplot(data, aes(x='', y=`" + y_col + "`, fill=`" + x_col + "`)) +\n";
+                code += "  geom_bar(stat='identity', width=1) +\n";
+                code += "  coord_polar('y') +\n";
+                code += "  theme_void()\n";
+                break;
+            case 6:  // Histogram
+                code += "p <- ggplot(data, aes(x=`" + (headers.size() > 1 ? y_col : x_col) + "`)) +\n";
+                code += "  geom_histogram(fill='steelblue', color='white', bins=20) +\n";
+                code += "  theme_minimal()\n";
+                break;
+            case 7:  // BoxPlot
+                if (headers.size() > 1) {
+                    code += "p <- ggplot(data, aes(x=`" + x_col + "`, y=`" + y_col + "`)) +\n";
+                } else {
+                    code += "p <- ggplot(data, aes(y=`" + x_col + "`)) +\n";
+                }
+                code += "  geom_boxplot(fill='steelblue') +\n";
+                code += "  theme_minimal()\n";
+                break;
+        }
+        
+        code += "ggsave('" + temp_file + "', p, width=" + std::to_string(w) + "/96, height=" + std::to_string(h) + "/96, dpi=96)\n";
+        code += "'" + temp_file + "'";
+        
+    } else if (language_key == 2) {  // Python
+        // Build Python code using matplotlib
+        code = "import matplotlib.pyplot as plt\n";
+        code += "import numpy as np\n";
+        
+        // Create lists
+        for (size_t c = 0; c < columns.size(); c++) {
+            code += headers[c] + " = [";
+            for (size_t r = 0; r < columns[c].size(); r++) {
+                if (r > 0) code += ", ";
+                code += columns[c][r];
+            }
+            code += "]\n";
+        }
+        
+        code += "fig, ax = plt.subplots(figsize=(" + std::to_string(w/96.0) + ", " + std::to_string(h/96.0) + "))\n";
+        
+        std::string x_col = headers[0];
+        std::string y_col = headers.size() > 1 ? headers[1] : headers[0];
+        
+        switch (type) {
+            case 1: code += "ax.bar(" + x_col + ", " + y_col + ", color='steelblue')\n"; break;
+            case 2: code += "ax.plot(" + x_col + ", " + y_col + ", color='steelblue', marker='o')\n"; break;
+            case 3: code += "ax.scatter(" + x_col + ", " + y_col + ", color='steelblue')\n"; break;
+            case 4: code += "ax.fill_between(range(len(" + y_col + ")), " + y_col + ", color='steelblue', alpha=0.6)\n"; break;
+            case 5: code += "ax.pie(" + y_col + ", labels=" + x_col + ")\n"; break;
+            case 6: code += "ax.hist(" + y_col + ", bins=20, color='steelblue')\n"; break;
+            case 7: code += "ax.boxplot([" + y_col + "])\n"; break;
+        }
+        
+        code += "plt.tight_layout()\n";
+        code += "plt.savefig('" + temp_file + "', dpi=96)\n";
+        code += "plt.close()\n";
+        code += "print('" + temp_file + "')";
+        
+    } else {  // Julia
+        // Build Julia code using Plots.jl
+        code = "using Plots\n";
+        
+        // Create vectors
+        for (size_t c = 0; c < columns.size(); c++) {
+            code += headers[c] + " = [";
+            for (size_t r = 0; r < columns[c].size(); r++) {
+                if (r > 0) code += ", ";
+                code += columns[c][r];
+            }
+            code += "]\n";
+        }
+        
+        std::string x_col = headers[0];
+        std::string y_col = headers.size() > 1 ? headers[1] : headers[0];
+        
+        switch (type) {
+            case 1: code += "p = bar(" + x_col + ", " + y_col + ", legend=false)\n"; break;
+            case 2: code += "p = plot(" + x_col + ", " + y_col + ", legend=false, marker=:circle)\n"; break;
+            case 3: code += "p = scatter(" + x_col + ", " + y_col + ", legend=false)\n"; break;
+            case 4: code += "p = areaplot(" + x_col + ", " + y_col + ", legend=false)\n"; break;
+            case 5: code += "p = pie(" + y_col + ", " + x_col + ")\n"; break;
+            case 6: code += "p = histogram(" + y_col + ", legend=false)\n"; break;
+            case 7: code += "p = boxplot(" + y_col + ", legend=false)\n"; break;
+        }
+        
+        code += "savefig(p, \"" + temp_file + "\")\n";
+        code += "\"" + temp_file + "\"";
+    }
+    
+    // 6. Execute code via language service
+    RJ2XCLBuffers::CallResponse call, response;
+    call.set_wait(true);
+    auto message = call.mutable_code();
+    
+    std::vector<std::string> lines;
+    StringUtilities::Split(code, '\n', 0, lines, true);
+    for (const auto& line : lines) {
+        message->add_line(line);
+    }
+    
+    RJ2XCL_Engine::Instance()->CallLanguage(language_key, response, call);
+    
+    if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kErr) {
+        std::string err = "Error: " + response.err();
+        Convert::StringToXLOPER(&rslt, err, false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    
+    // 7. Verify the image file was created
+    DWORD attrs = GetFileAttributesA(temp_file.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        Convert::StringToXLOPER(&rslt, "Error: no se genero el archivo de imagen", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+    
+    // 8. Create or update Shape in Excel using RJ2XCLGraphics
+    RJ2XCLBuffers::GraphicsUpdate graphics;
+    graphics.set_name(name);
+    graphics.set_path(temp_file);
+    graphics.set_width(w);
+    graphics.set_height(h);
+    
+    LPDISPATCH app_dispatch = RJ2XCL_Engine::Instance()->GetApplicationDispatch();
+    RJ2XCLGraphics::UpdateGraphics(graphics, app_dispatch);
+    
+    // 9. Return success message
+    std::string result = "Chart: " + name;
+    Convert::StringToXLOPER(&rslt, result, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+RJ_Chart_R(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+           LPXLOPER12 width, LPXLOPER12 height) {
+    return RJ_Chart_Generic(0, data_range, chart_type, chart_name, width, height);
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+RJ_Chart_P(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+           LPXLOPER12 width, LPXLOPER12 height) {
+    return RJ_Chart_Generic(2, data_range, chart_type, chart_name, width, height);
+}
+
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
+RJ_Chart_J(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
+           LPXLOPER12 width, LPXLOPER12 height) {
+    return RJ_Chart_Generic(1, data_range, chart_type, chart_name, width, height);
+}
+
+BCALL(1000);
+BCALL(1001);
+BCALL(1002);
+BCALL(1003);
+BCALL(1004);
+BCALL(1005);
+
+BEXEC(1000);
+BEXEC(1001);
+BEXEC(1002);
+BEXEC(1003);
+BEXEC(1004);
+BEXEC(1005);
+
+// placeholder functions follow
+
+BFC(1000);
+BFC(1001);
+BFC(1002);
+BFC(1003);
+BFC(1004);
+BFC(1005);
+BFC(1006);
+BFC(1007);
+BFC(1008);
+BFC(1009);
+BFC(1010);
+BFC(1011);
+BFC(1012);
+BFC(1013);
+BFC(1014);
+BFC(1015);
+BFC(1016);
+BFC(1017);
+BFC(1018);
+BFC(1019);
+BFC(1020);
+BFC(1021);
+BFC(1022);
+BFC(1023);
+BFC(1024);
+BFC(1025);
+BFC(1026);
+BFC(1027);
+BFC(1028);
+BFC(1029);
+BFC(1030);
+BFC(1031);
+BFC(1032);
+BFC(1033);
+BFC(1034);
+BFC(1035);
+BFC(1036);
+BFC(1037);
+BFC(1038);
+BFC(1039);
+BFC(1040);
+BFC(1041);
+BFC(1042);
+BFC(1043);
+BFC(1044);
+BFC(1045);
+BFC(1046);
+BFC(1047);
+BFC(1048);
+BFC(1049);
+BFC(1050);
+BFC(1051);
+BFC(1052);
+BFC(1053);
+BFC(1054);
+BFC(1055);
+BFC(1056);
+BFC(1057);
+BFC(1058);
+BFC(1059);
+BFC(1060);
+BFC(1061);
+BFC(1062);
+BFC(1063);
+BFC(1064);
+BFC(1065);
+BFC(1066);
+BFC(1067);
+BFC(1068);
+BFC(1069);
+BFC(1070);
+BFC(1071);
+BFC(1072);
+BFC(1073);
+BFC(1074);
+BFC(1075);
+BFC(1076);
+BFC(1077);
+BFC(1078);
+BFC(1079);
+BFC(1080);
+BFC(1081);
+BFC(1082);
+BFC(1083);
+BFC(1084);
+BFC(1085);
+BFC(1086);
+BFC(1087);
+BFC(1088);
+BFC(1089);
+BFC(1090);
+BFC(1091);
+BFC(1092);
+BFC(1093);
+BFC(1094);
+BFC(1095);
+BFC(1096);
+BFC(1097);
+BFC(1098);
+BFC(1099);
+BFC(1100);
+BFC(1101);
+BFC(1102);
+BFC(1103);
+BFC(1104);
+BFC(1105);
+BFC(1106);
+BFC(1107);
+BFC(1108);
+BFC(1109);
+BFC(1110);
+BFC(1111);
+BFC(1112);
+BFC(1113);
+BFC(1114);
+BFC(1115);
+BFC(1116);
+BFC(1117);
+BFC(1118);
+BFC(1119);
+BFC(1120);
+BFC(1121);
+BFC(1122);
+BFC(1123);
+BFC(1124);
+BFC(1125);
+BFC(1126);
+BFC(1127);
+BFC(1128);
+BFC(1129);
+BFC(1130);
+BFC(1131);
+BFC(1132);
+BFC(1133);
+BFC(1134);
+BFC(1135);
+BFC(1136);
+BFC(1137);
+BFC(1138);
+BFC(1139);
+BFC(1140);
+BFC(1141);
+BFC(1142);
+BFC(1143);
+BFC(1144);
+BFC(1145);
+BFC(1146);
+BFC(1147);
+BFC(1148);
+BFC(1149);
+BFC(1150);
+BFC(1151);
+BFC(1152);
+BFC(1153);
+BFC(1154);
+BFC(1155);
+BFC(1156);
+BFC(1157);
+BFC(1158);
+BFC(1159);
+BFC(1160);
+BFC(1161);
+BFC(1162);
+BFC(1163);
+BFC(1164);
+BFC(1165);
+BFC(1166);
+BFC(1167);
+BFC(1168);
+BFC(1169);
+BFC(1170);
+BFC(1171);
+BFC(1172);
+BFC(1173);
+BFC(1174);
+BFC(1175);
+BFC(1176);
+BFC(1177);
+BFC(1178);
+BFC(1179);
+BFC(1180);
+BFC(1181);
+BFC(1182);
+BFC(1183);
+BFC(1184);
+BFC(1185);
+BFC(1186);
+BFC(1187);
+BFC(1188);
+BFC(1189);
+BFC(1190);
+BFC(1191);
+BFC(1192);
+BFC(1193);
+BFC(1194);
+BFC(1195);
+BFC(1196);
+BFC(1197);
+BFC(1198);
+BFC(1199);
+BFC(1200);
+BFC(1201);
+BFC(1202);
+BFC(1203);
+BFC(1204);
+BFC(1205);
+BFC(1206);
+BFC(1207);
+BFC(1208);
+BFC(1209);
+BFC(1210);
+BFC(1211);
+BFC(1212);
+BFC(1213);
+BFC(1214);
+BFC(1215);
+BFC(1216);
+BFC(1217);
+BFC(1218);
+BFC(1219);
+BFC(1220);
+BFC(1221);
+BFC(1222);
+BFC(1223);
+BFC(1224);
+BFC(1225);
+BFC(1226);
+BFC(1227);
+BFC(1228);
+BFC(1229);
+BFC(1230);
+BFC(1231);
+BFC(1232);
+BFC(1233);
+BFC(1234);
+BFC(1235);
+BFC(1236);
+BFC(1237);
+BFC(1238);
+BFC(1239);
+BFC(1240);
+BFC(1241);
+BFC(1242);
+BFC(1243);
+BFC(1244);
+BFC(1245);
+BFC(1246);
+BFC(1247);
+BFC(1248);
+BFC(1249);
+BFC(1250);
+BFC(1251);
+BFC(1252);
+BFC(1253);
+BFC(1254);
+BFC(1255);
+BFC(1256);
+BFC(1257);
+BFC(1258);
+BFC(1259);
+BFC(1260);
+BFC(1261);
+BFC(1262);
+BFC(1263);
+BFC(1264);
+BFC(1265);
+BFC(1266);
+BFC(1267);
+BFC(1268);
+BFC(1269);
+BFC(1270);
+BFC(1271);
+BFC(1272);
+BFC(1273);
+BFC(1274);
+BFC(1275);
+BFC(1276);
+BFC(1277);
+BFC(1278);
+BFC(1279);
+BFC(1280);
+BFC(1281);
+BFC(1282);
+BFC(1283);
+BFC(1284);
+BFC(1285);
+BFC(1286);
+BFC(1287);
+BFC(1288);
+BFC(1289);
+BFC(1290);
+BFC(1291);
+BFC(1292);
+BFC(1293);
+BFC(1294);
+BFC(1295);
+BFC(1296);
+BFC(1297);
+BFC(1298);
+BFC(1299);
+BFC(1300);
+BFC(1301);
+BFC(1302);
+BFC(1303);
+BFC(1304);
+BFC(1305);
+BFC(1306);
+BFC(1307);
+BFC(1308);
+BFC(1309);
+BFC(1310);
+BFC(1311);
+BFC(1312);
+BFC(1313);
+BFC(1314);
+BFC(1315);
+BFC(1316);
+BFC(1317);
+BFC(1318);
+BFC(1319);
+BFC(1320);
+BFC(1321);
+BFC(1322);
+BFC(1323);
+BFC(1324);
+BFC(1325);
+BFC(1326);
+BFC(1327);
+BFC(1328);
+BFC(1329);
+BFC(1330);
+BFC(1331);
+BFC(1332);
+BFC(1333);
+BFC(1334);
+BFC(1335);
+BFC(1336);
+BFC(1337);
+BFC(1338);
+BFC(1339);
+BFC(1340);
+BFC(1341);
+BFC(1342);
+BFC(1343);
+BFC(1344);
+BFC(1345);
+BFC(1346);
+BFC(1347);
+BFC(1348);
+BFC(1349);
+BFC(1350);
+BFC(1351);
+BFC(1352);
+BFC(1353);
+BFC(1354);
+BFC(1355);
+BFC(1356);
+BFC(1357);
+BFC(1358);
+BFC(1359);
+BFC(1360);
+BFC(1361);
+BFC(1362);
+BFC(1363);
+BFC(1364);
+BFC(1365);
+BFC(1366);
+BFC(1367);
+BFC(1368);
+BFC(1369);
+BFC(1370);
+BFC(1371);
+BFC(1372);
+BFC(1373);
+BFC(1374);
+BFC(1375);
+BFC(1376);
+BFC(1377);
+BFC(1378);
+BFC(1379);
+BFC(1380);
+BFC(1381);
+BFC(1382);
+BFC(1383);
+BFC(1384);
+BFC(1385);
+BFC(1386);
+BFC(1387);
+BFC(1388);
+BFC(1389);
+BFC(1390);
+BFC(1391);
+BFC(1392);
+BFC(1393);
+BFC(1394);
+BFC(1395);
+BFC(1396);
+BFC(1397);
+BFC(1398);
+BFC(1399);
+BFC(1400);
+BFC(1401);
+BFC(1402);
+BFC(1403);
+BFC(1404);
+BFC(1405);
+BFC(1406);
+BFC(1407);
+BFC(1408);
+BFC(1409);
+BFC(1410);
+BFC(1411);
+BFC(1412);
+BFC(1413);
+BFC(1414);
+BFC(1415);
+BFC(1416);
+BFC(1417);
+BFC(1418);
+BFC(1419);
+BFC(1420);
+BFC(1421);
+BFC(1422);
+BFC(1423);
+BFC(1424);
+BFC(1425);
+BFC(1426);
+BFC(1427);
+BFC(1428);
+BFC(1429);
+BFC(1430);
+BFC(1431);
+BFC(1432);
+BFC(1433);
+BFC(1434);
+BFC(1435);
+BFC(1436);
+BFC(1437);
+BFC(1438);
+BFC(1439);
+BFC(1440);
+BFC(1441);
+BFC(1442);
+BFC(1443);
+BFC(1444);
+BFC(1445);
+BFC(1446);
+BFC(1447);
+BFC(1448);
+BFC(1449);
+BFC(1450);
+BFC(1451);
+BFC(1452);
+BFC(1453);
+BFC(1454);
+BFC(1455);
+BFC(1456);
+BFC(1457);
+BFC(1458);
+BFC(1459);
+BFC(1460);
+BFC(1461);
+BFC(1462);
+BFC(1463);
+BFC(1464);
+BFC(1465);
+BFC(1466);
+BFC(1467);
+BFC(1468);
+BFC(1469);
+BFC(1470);
+BFC(1471);
+BFC(1472);
+BFC(1473);
+BFC(1474);
+BFC(1475);
+BFC(1476);
+BFC(1477);
+BFC(1478);
+BFC(1479);
+BFC(1480);
+BFC(1481);
+BFC(1482);
+BFC(1483);
+BFC(1484);
+BFC(1485);
+BFC(1486);
+BFC(1487);
+BFC(1488);
+BFC(1489);
+BFC(1490);
+BFC(1491);
+BFC(1492);
+BFC(1493);
+BFC(1494);
+BFC(1495);
+BFC(1496);
+BFC(1497);
+BFC(1498);
+BFC(1499);
+BFC(1500);
+BFC(1501);
+BFC(1502);
+BFC(1503);
+BFC(1504);
+BFC(1505);
+BFC(1506);
+BFC(1507);
+BFC(1508);
+BFC(1509);
+BFC(1510);
+BFC(1511);
+BFC(1512);
+BFC(1513);
+BFC(1514);
+BFC(1515);
+BFC(1516);
+BFC(1517);
+BFC(1518);
+BFC(1519);
+BFC(1520);
+BFC(1521);
+BFC(1522);
+BFC(1523);
+BFC(1524);
+BFC(1525);
+BFC(1526);
+BFC(1527);
+BFC(1528);
+BFC(1529);
+BFC(1530);
+BFC(1531);
+BFC(1532);
+BFC(1533);
+BFC(1534);
+BFC(1535);
+BFC(1536);
+BFC(1537);
+BFC(1538);
+BFC(1539);
+BFC(1540);
+BFC(1541);
+BFC(1542);
+BFC(1543);
+BFC(1544);
+BFC(1545);
+BFC(1546);
+BFC(1547);
+BFC(1548);
+BFC(1549);
+BFC(1550);
+BFC(1551);
+BFC(1552);
+BFC(1553);
+BFC(1554);
+BFC(1555);
+BFC(1556);
+BFC(1557);
+BFC(1558);
+BFC(1559);
+BFC(1560);
+BFC(1561);
+BFC(1562);
+BFC(1563);
+BFC(1564);
+BFC(1565);
+BFC(1566);
+BFC(1567);
+BFC(1568);
+BFC(1569);
+BFC(1570);
+BFC(1571);
+BFC(1572);
+BFC(1573);
+BFC(1574);
+BFC(1575);
+BFC(1576);
+BFC(1577);
+BFC(1578);
+BFC(1579);
+BFC(1580);
+BFC(1581);
+BFC(1582);
+BFC(1583);
+BFC(1584);
+BFC(1585);
+BFC(1586);
+BFC(1587);
+BFC(1588);
+BFC(1589);
+BFC(1590);
+BFC(1591);
+BFC(1592);
+BFC(1593);
+BFC(1594);
+BFC(1595);
+BFC(1596);
+BFC(1597);
+BFC(1598);
+BFC(1599);
+BFC(1600);
+BFC(1601);
+BFC(1602);
+BFC(1603);
+BFC(1604);
+BFC(1605);
+BFC(1606);
+BFC(1607);
+BFC(1608);
+BFC(1609);
+BFC(1610);
+BFC(1611);
+BFC(1612);
+BFC(1613);
+BFC(1614);
+BFC(1615);
+BFC(1616);
+BFC(1617);
+BFC(1618);
+BFC(1619);
+BFC(1620);
+BFC(1621);
+BFC(1622);
+BFC(1623);
+BFC(1624);
+BFC(1625);
+BFC(1626);
+BFC(1627);
+BFC(1628);
+BFC(1629);
+BFC(1630);
+BFC(1631);
+BFC(1632);
+BFC(1633);
+BFC(1634);
+BFC(1635);
+BFC(1636);
+BFC(1637);
+BFC(1638);
+BFC(1639);
+BFC(1640);
+BFC(1641);
+BFC(1642);
+BFC(1643);
+BFC(1644);
+BFC(1645);
+BFC(1646);
+BFC(1647);
+BFC(1648);
+BFC(1649);
+BFC(1650);
+BFC(1651);
+BFC(1652);
+BFC(1653);
+BFC(1654);
+BFC(1655);
+BFC(1656);
+BFC(1657);
+BFC(1658);
+BFC(1659);
+BFC(1660);
+BFC(1661);
+BFC(1662);
+BFC(1663);
+BFC(1664);
+BFC(1665);
+BFC(1666);
+BFC(1667);
+BFC(1668);
+BFC(1669);
+BFC(1670);
+BFC(1671);
+BFC(1672);
+BFC(1673);
+BFC(1674);
+BFC(1675);
+BFC(1676);
+BFC(1677);
+BFC(1678);
+BFC(1679);
+BFC(1680);
+BFC(1681);
+BFC(1682);
+BFC(1683);
+BFC(1684);
+BFC(1685);
+BFC(1686);
+BFC(1687);
+BFC(1688);
+BFC(1689);
+BFC(1690);
+BFC(1691);
+BFC(1692);
+BFC(1693);
+BFC(1694);
+BFC(1695);
+BFC(1696);
+BFC(1697);
+BFC(1698);
+BFC(1699);
+BFC(1700);
+BFC(1701);
+BFC(1702);
+BFC(1703);
+BFC(1704);
+BFC(1705);
+BFC(1706);
+BFC(1707);
+BFC(1708);
+BFC(1709);
+BFC(1710);
+BFC(1711);
+BFC(1712);
+BFC(1713);
+BFC(1714);
+BFC(1715);
+BFC(1716);
+BFC(1717);
+BFC(1718);
+BFC(1719);
+BFC(1720);
+BFC(1721);
+BFC(1722);
+BFC(1723);
+BFC(1724);
+BFC(1725);
+BFC(1726);
+BFC(1727);
+BFC(1728);
+BFC(1729);
+BFC(1730);
+BFC(1731);
+BFC(1732);
+BFC(1733);
+BFC(1734);
+BFC(1735);
+BFC(1736);
+BFC(1737);
+BFC(1738);
+BFC(1739);
+BFC(1740);
+BFC(1741);
+BFC(1742);
+BFC(1743);
+BFC(1744);
+BFC(1745);
+BFC(1746);
+BFC(1747);
+BFC(1748);
+BFC(1749);
+BFC(1750);
+BFC(1751);
+BFC(1752);
+BFC(1753);
+BFC(1754);
+BFC(1755);
+BFC(1756);
+BFC(1757);
+BFC(1758);
+BFC(1759);
+BFC(1760);
+BFC(1761);
+BFC(1762);
+BFC(1763);
+BFC(1764);
+BFC(1765);
+BFC(1766);
+BFC(1767);
+BFC(1768);
+BFC(1769);
+BFC(1770);
+BFC(1771);
+BFC(1772);
+BFC(1773);
+BFC(1774);
+BFC(1775);
+BFC(1776);
+BFC(1777);
+BFC(1778);
+BFC(1779);
+BFC(1780);
+BFC(1781);
+BFC(1782);
+BFC(1783);
+BFC(1784);
+BFC(1785);
+BFC(1786);
+BFC(1787);
+BFC(1788);
+BFC(1789);
+BFC(1790);
+BFC(1791);
+BFC(1792);
+BFC(1793);
+BFC(1794);
+BFC(1795);
+BFC(1796);
+BFC(1797);
+BFC(1798);
+BFC(1799);
+BFC(1800);
+BFC(1801);
+BFC(1802);
+BFC(1803);
+BFC(1804);
+BFC(1805);
+BFC(1806);
+BFC(1807);
+BFC(1808);
+BFC(1809);
+BFC(1810);
+BFC(1811);
+BFC(1812);
+BFC(1813);
+BFC(1814);
+BFC(1815);
+BFC(1816);
+BFC(1817);
+BFC(1818);
+BFC(1819);
+BFC(1820);
+BFC(1821);
+BFC(1822);
+BFC(1823);
+BFC(1824);
+BFC(1825);
+BFC(1826);
+BFC(1827);
+BFC(1828);
+BFC(1829);
+BFC(1830);
+BFC(1831);
+BFC(1832);
+BFC(1833);
+BFC(1834);
+BFC(1835);
+BFC(1836);
+BFC(1837);
+BFC(1838);
+BFC(1839);
+BFC(1840);
+BFC(1841);
+BFC(1842);
+BFC(1843);
+BFC(1844);
+BFC(1845);
+BFC(1846);
+BFC(1847);
+BFC(1848);
+BFC(1849);
+BFC(1850);
+BFC(1851);
+BFC(1852);
+BFC(1853);
+BFC(1854);
+BFC(1855);
+BFC(1856);
+BFC(1857);
+BFC(1858);
+BFC(1859);
+BFC(1860);
+BFC(1861);
+BFC(1862);
+BFC(1863);
+BFC(1864);
+BFC(1865);
+BFC(1866);
+BFC(1867);
+BFC(1868);
+BFC(1869);
+BFC(1870);
+BFC(1871);
+BFC(1872);
+BFC(1873);
+BFC(1874);
+BFC(1875);
+BFC(1876);
+BFC(1877);
+BFC(1878);
+BFC(1879);
+BFC(1880);
+BFC(1881);
+BFC(1882);
+BFC(1883);
+BFC(1884);
+BFC(1885);
+BFC(1886);
+BFC(1887);
+BFC(1888);
+BFC(1889);
+BFC(1890);
+BFC(1891);
+BFC(1892);
+BFC(1893);
+BFC(1894);
+BFC(1895);
+BFC(1896);
+BFC(1897);
+BFC(1898);
+BFC(1899);
+BFC(1900);
+BFC(1901);
+BFC(1902);
+BFC(1903);
+BFC(1904);
+BFC(1905);
+BFC(1906);
+BFC(1907);
+BFC(1908);
+BFC(1909);
+BFC(1910);
+BFC(1911);
+BFC(1912);
+BFC(1913);
+BFC(1914);
+BFC(1915);
+BFC(1916);
+BFC(1917);
+BFC(1918);
+BFC(1919);
+BFC(1920);
+BFC(1921);
+BFC(1922);
+BFC(1923);
+BFC(1924);
+BFC(1925);
+BFC(1926);
+BFC(1927);
+BFC(1928);
+BFC(1929);
+BFC(1930);
+BFC(1931);
+BFC(1932);
+BFC(1933);
+BFC(1934);
+BFC(1935);
+BFC(1936);
+BFC(1937);
+BFC(1938);
+BFC(1939);
+BFC(1940);
+BFC(1941);
+BFC(1942);
+BFC(1943);
+BFC(1944);
+BFC(1945);
+BFC(1946);
+BFC(1947);
+BFC(1948);
+BFC(1949);
+BFC(1950);
+BFC(1951);
+BFC(1952);
+BFC(1953);
+BFC(1954);
+BFC(1955);
+BFC(1956);
+BFC(1957);
+BFC(1958);
+BFC(1959);
+BFC(1960);
+BFC(1961);
+BFC(1962);
+BFC(1963);
+BFC(1964);
+BFC(1965);
+BFC(1966);
+BFC(1967);
+BFC(1968);
+BFC(1969);
+BFC(1970);
+BFC(1971);
+BFC(1972);
+BFC(1973);
+BFC(1974);
+BFC(1975);
+BFC(1976);
+BFC(1977);
+BFC(1978);
+BFC(1979);
+BFC(1980);
+BFC(1981);
+BFC(1982);
+BFC(1983);
+BFC(1984);
+BFC(1985);
+BFC(1986);
+BFC(1987);
+BFC(1988);
+BFC(1989);
+BFC(1990);
+BFC(1991);
+BFC(1992);
+BFC(1993);
+BFC(1994);
+BFC(1995);
+BFC(1996);
+BFC(1997);
+BFC(1998);
+BFC(1999);
+BFC(2000);
+BFC(2001);
+BFC(2002);
+BFC(2003);
+BFC(2004);
+BFC(2005);
+BFC(2006);
+BFC(2007);
+BFC(2008);
+BFC(2009);
+BFC(2010);
+BFC(2011);
+BFC(2012);
+BFC(2013);
+BFC(2014);
+BFC(2015);
+BFC(2016);
+BFC(2017);
+BFC(2018);
+BFC(2019);
+BFC(2020);
+BFC(2021);
+BFC(2022);
+BFC(2023);
+BFC(2024);
+BFC(2025);
+BFC(2026);
+BFC(2027);
+BFC(2028);
+BFC(2029);
+BFC(2030);
+BFC(2031);
+BFC(2032);
+BFC(2033);
+BFC(2034);
+BFC(2035);
+BFC(2036);
+BFC(2037);
+BFC(2038);
+BFC(2039);
+BFC(2040);
+BFC(2041);
+BFC(2042);
+BFC(2043);
+BFC(2044);
+BFC(2045);
+BFC(2046);
+BFC(2047);
+BFC(2048);
+BFC(2049);
+BFC(2050);
+BFC(2051);
+BFC(2052);
+BFC(2053);
+BFC(2054);
+BFC(2055);
+BFC(2056);
+BFC(2057);
+BFC(2058);
+BFC(2059);
+BFC(2060);
+BFC(2061);
+BFC(2062);
+BFC(2063);
+BFC(2064);
+BFC(2065);
+BFC(2066);
+BFC(2067);
+BFC(2068);
+BFC(2069);
+BFC(2070);
+BFC(2071);
+BFC(2072);
+BFC(2073);
+BFC(2074);
+BFC(2075);
+BFC(2076);
+BFC(2077);
+BFC(2078);
+BFC(2079);
+BFC(2080);
+BFC(2081);
+BFC(2082);
+BFC(2083);
+BFC(2084);
+BFC(2085);
+BFC(2086);
+BFC(2087);
+BFC(2088);
+BFC(2089);
+BFC(2090);
+BFC(2091);
+BFC(2092);
+BFC(2093);
+BFC(2094);
+BFC(2095);
+BFC(2096);
+BFC(2097);
+BFC(2098);
+BFC(2099);
+BFC(2100);
+BFC(2101);
+BFC(2102);
+BFC(2103);
+BFC(2104);
+BFC(2105);
+BFC(2106);
+BFC(2107);
+BFC(2108);
+BFC(2109);
+BFC(2110);
+BFC(2111);
+BFC(2112);
+BFC(2113);
+BFC(2114);
+BFC(2115);
+BFC(2116);
+BFC(2117);
+BFC(2118);
+BFC(2119);
+BFC(2120);
+BFC(2121);
+BFC(2122);
+BFC(2123);
+BFC(2124);
+BFC(2125);
+BFC(2126);
+BFC(2127);
+BFC(2128);
+BFC(2129);
+BFC(2130);
+BFC(2131);
+BFC(2132);
+BFC(2133);
+BFC(2134);
+BFC(2135);
+BFC(2136);
+BFC(2137);
+BFC(2138);
+BFC(2139);
+BFC(2140);
+BFC(2141);
+BFC(2142);
+BFC(2143);
+BFC(2144);
+BFC(2145);
+BFC(2146);
+BFC(2147);
+BFC(2148);
+BFC(2149);
+BFC(2150);
+BFC(2151);
+BFC(2152);
+BFC(2153);
+BFC(2154);
+BFC(2155);
+BFC(2156);
+BFC(2157);
+BFC(2158);
+BFC(2159);
+BFC(2160);
+BFC(2161);
+BFC(2162);
+BFC(2163);
+BFC(2164);
+BFC(2165);
+BFC(2166);
+BFC(2167);
+BFC(2168);
+BFC(2169);
+BFC(2170);
+BFC(2171);
+BFC(2172);
+BFC(2173);
+BFC(2174);
+BFC(2175);
+BFC(2176);
+BFC(2177);
+BFC(2178);
+BFC(2179);
+BFC(2180);
+BFC(2181);
+BFC(2182);
+BFC(2183);
+BFC(2184);
+BFC(2185);
+BFC(2186);
+BFC(2187);
+BFC(2188);
+BFC(2189);
+BFC(2190);
+BFC(2191);
+BFC(2192);
+BFC(2193);
+BFC(2194);
+BFC(2195);
+BFC(2196);
+BFC(2197);
+BFC(2198);
+BFC(2199);
+BFC(2200);
+BFC(2201);
+BFC(2202);
+BFC(2203);
+BFC(2204);
+BFC(2205);
+BFC(2206);
+BFC(2207);
+BFC(2208);
+BFC(2209);
+BFC(2210);
+BFC(2211);
+BFC(2212);
+BFC(2213);
+BFC(2214);
+BFC(2215);
+BFC(2216);
+BFC(2217);
+BFC(2218);
+BFC(2219);
+BFC(2220);
+BFC(2221);
+BFC(2222);
+BFC(2223);
+BFC(2224);
+BFC(2225);
+BFC(2226);
+BFC(2227);
+BFC(2228);
+BFC(2229);
+BFC(2230);
+BFC(2231);
+BFC(2232);
+BFC(2233);
+BFC(2234);
+BFC(2235);
+BFC(2236);
+BFC(2237);
+BFC(2238);
+BFC(2239);
+BFC(2240);
+BFC(2241);
+BFC(2242);
+BFC(2243);
+BFC(2244);
+BFC(2245);
+BFC(2246);
+BFC(2247);
+BFC(2248);
+BFC(2249);
+BFC(2250);
+BFC(2251);
+BFC(2252);
+BFC(2253);
+BFC(2254);
+BFC(2255);
+BFC(2256);
+BFC(2257);
+BFC(2258);
+BFC(2259);
+BFC(2260);
+BFC(2261);
+BFC(2262);
+BFC(2263);
+BFC(2264);
+BFC(2265);
+BFC(2266);
+BFC(2267);
+BFC(2268);
+BFC(2269);
+BFC(2270);
+BFC(2271);
+BFC(2272);
+BFC(2273);
+BFC(2274);
+BFC(2275);
+BFC(2276);
+BFC(2277);
+BFC(2278);
+BFC(2279);
+BFC(2280);
+BFC(2281);
+BFC(2282);
+BFC(2283);
+BFC(2284);
+BFC(2285);
+BFC(2286);
+BFC(2287);
+BFC(2288);
+BFC(2289);
+BFC(2290);
+BFC(2291);
+BFC(2292);
+BFC(2293);
+BFC(2294);
+BFC(2295);
+BFC(2296);
+BFC(2297);
+BFC(2298);
+BFC(2299);
+BFC(2300);
+BFC(2301);
+BFC(2302);
+BFC(2303);
+BFC(2304);
+BFC(2305);
+BFC(2306);
+BFC(2307);
+BFC(2308);
+BFC(2309);
+BFC(2310);
+BFC(2311);
+BFC(2312);
+BFC(2313);
+BFC(2314);
+BFC(2315);
+BFC(2316);
+BFC(2317);
+BFC(2318);
+BFC(2319);
+BFC(2320);
+BFC(2321);
+BFC(2322);
+BFC(2323);
+BFC(2324);
+BFC(2325);
+BFC(2326);
+BFC(2327);
+BFC(2328);
+BFC(2329);
+BFC(2330);
+BFC(2331);
+BFC(2332);
+BFC(2333);
+BFC(2334);
+BFC(2335);
+BFC(2336);
+BFC(2337);
+BFC(2338);
+BFC(2339);
+BFC(2340);
+BFC(2341);
+BFC(2342);
+BFC(2343);
+BFC(2344);
+BFC(2345);
+BFC(2346);
+BFC(2347);
+BFC(2348);
+BFC(2349);
+BFC(2350);
+BFC(2351);
+BFC(2352);
+BFC(2353);
+BFC(2354);
+BFC(2355);
+BFC(2356);
+BFC(2357);
+BFC(2358);
+BFC(2359);
+BFC(2360);
+BFC(2361);
+BFC(2362);
+BFC(2363);
+BFC(2364);
+BFC(2365);
+BFC(2366);
+BFC(2367);
+BFC(2368);
+BFC(2369);
+BFC(2370);
+BFC(2371);
+BFC(2372);
+BFC(2373);
+BFC(2374);
+BFC(2375);
+BFC(2376);
+BFC(2377);
+BFC(2378);
+BFC(2379);
+BFC(2380);
+BFC(2381);
+BFC(2382);
+BFC(2383);
+BFC(2384);
+BFC(2385);
+BFC(2386);
+BFC(2387);
+BFC(2388);
+BFC(2389);
+BFC(2390);
+BFC(2391);
+BFC(2392);
+BFC(2393);
+BFC(2394);
+BFC(2395);
+BFC(2396);
+BFC(2397);
+BFC(2398);
+BFC(2399);
+BFC(2400);
+BFC(2401);
+BFC(2402);
+BFC(2403);
+BFC(2404);
+BFC(2405);
+BFC(2406);
+BFC(2407);
+BFC(2408);
+BFC(2409);
+BFC(2410);
+BFC(2411);
+BFC(2412);
+BFC(2413);
+BFC(2414);
+BFC(2415);
+BFC(2416);
+BFC(2417);
+BFC(2418);
+BFC(2419);
+BFC(2420);
+BFC(2421);
+BFC(2422);
+BFC(2423);
+BFC(2424);
+BFC(2425);
+BFC(2426);
+BFC(2427);
+BFC(2428);
+BFC(2429);
+BFC(2430);
+BFC(2431);
+BFC(2432);
+BFC(2433);
+BFC(2434);
+BFC(2435);
+BFC(2436);
+BFC(2437);
+BFC(2438);
+BFC(2439);
+BFC(2440);
+BFC(2441);
+BFC(2442);
+BFC(2443);
+BFC(2444);
+BFC(2445);
+BFC(2446);
+BFC(2447);
+BFC(2448);
+BFC(2449);
+BFC(2450);
+BFC(2451);
+BFC(2452);
+BFC(2453);
+BFC(2454);
+BFC(2455);
+BFC(2456);
+BFC(2457);
+BFC(2458);
+BFC(2459);
+BFC(2460);
+BFC(2461);
+BFC(2462);
+BFC(2463);
+BFC(2464);
+BFC(2465);
+BFC(2466);
+BFC(2467);
+BFC(2468);
+BFC(2469);
+BFC(2470);
+BFC(2471);
+BFC(2472);
+BFC(2473);
+BFC(2474);
+BFC(2475);
+BFC(2476);
+BFC(2477);
+BFC(2478);
+BFC(2479);
+BFC(2480);
+BFC(2481);
+BFC(2482);
+BFC(2483);
+BFC(2484);
+BFC(2485);
+BFC(2486);
+BFC(2487);
+BFC(2488);
+BFC(2489);
+BFC(2490);
+BFC(2491);
+BFC(2492);
+BFC(2493);
+BFC(2494);
+BFC(2495);
+BFC(2496);
+BFC(2497);
+BFC(2498);
+BFC(2499);
+BFC(2500);
+BFC(2501);
+BFC(2502);
+BFC(2503);
+BFC(2504);
+BFC(2505);
+BFC(2506);
+BFC(2507);
+BFC(2508);
+BFC(2509);
+BFC(2510);
+BFC(2511);
+BFC(2512);
+BFC(2513);
+BFC(2514);
+BFC(2515);
+BFC(2516);
+BFC(2517);
+BFC(2518);
+BFC(2519);
+BFC(2520);
+BFC(2521);
+BFC(2522);
+BFC(2523);
+BFC(2524);
+BFC(2525);
+BFC(2526);
+BFC(2527);
+BFC(2528);
+BFC(2529);
+BFC(2530);
+BFC(2531);
+BFC(2532);
+BFC(2533);
+BFC(2534);
+BFC(2535);
+BFC(2536);
+BFC(2537);
+BFC(2538);
+BFC(2539);
+BFC(2540);
+BFC(2541);
+BFC(2542);
+BFC(2543);
+BFC(2544);
+BFC(2545);
+BFC(2546);
+BFC(2547);
+BFC(2548);
+BFC(2549);
+BFC(2550);
+BFC(2551);
+BFC(2552);
+BFC(2553);
+BFC(2554);
+BFC(2555);
+BFC(2556);
+BFC(2557);
+BFC(2558);
+BFC(2559);
+BFC(2560);
+BFC(2561);
+BFC(2562);
+BFC(2563);
+BFC(2564);
+BFC(2565);
+BFC(2566);
+BFC(2567);
+BFC(2568);
+BFC(2569);
+BFC(2570);
+BFC(2571);
+BFC(2572);
+BFC(2573);
+BFC(2574);
+BFC(2575);
+BFC(2576);
+BFC(2577);
+BFC(2578);
+BFC(2579);
+BFC(2580);
+BFC(2581);
+BFC(2582);
+BFC(2583);
+BFC(2584);
+BFC(2585);
+BFC(2586);
+BFC(2587);
+BFC(2588);
+BFC(2589);
+BFC(2590);
+BFC(2591);
+BFC(2592);
+BFC(2593);
+BFC(2594);
+BFC(2595);
+BFC(2596);
+BFC(2597);
+BFC(2598);
+BFC(2599);
+BFC(2600);
+BFC(2601);
+BFC(2602);
+BFC(2603);
+BFC(2604);
+BFC(2605);
+BFC(2606);
+BFC(2607);
+BFC(2608);
+BFC(2609);
+BFC(2610);
+BFC(2611);
+BFC(2612);
+BFC(2613);
+BFC(2614);
+BFC(2615);
+BFC(2616);
+BFC(2617);
+BFC(2618);
+BFC(2619);
+BFC(2620);
+BFC(2621);
+BFC(2622);
+BFC(2623);
+BFC(2624);
+BFC(2625);
+BFC(2626);
+BFC(2627);
+BFC(2628);
+BFC(2629);
+BFC(2630);
+BFC(2631);
+BFC(2632);
+BFC(2633);
+BFC(2634);
+BFC(2635);
+BFC(2636);
+BFC(2637);
+BFC(2638);
+BFC(2639);
+BFC(2640);
+BFC(2641);
+BFC(2642);
+BFC(2643);
+BFC(2644);
+BFC(2645);
+BFC(2646);
+BFC(2647);
+BFC(2648);
+BFC(2649);
+BFC(2650);
+BFC(2651);
+BFC(2652);
+BFC(2653);
+BFC(2654);
+BFC(2655);
+BFC(2656);
+BFC(2657);
+BFC(2658);
+BFC(2659);
+BFC(2660);
+BFC(2661);
+BFC(2662);
+BFC(2663);
+BFC(2664);
+BFC(2665);
+BFC(2666);
+BFC(2667);
+BFC(2668);
+BFC(2669);
+BFC(2670);
+BFC(2671);
+BFC(2672);
+BFC(2673);
+BFC(2674);
+BFC(2675);
+BFC(2676);
+BFC(2677);
+BFC(2678);
+BFC(2679);
+BFC(2680);
+BFC(2681);
+BFC(2682);
+BFC(2683);
+BFC(2684);
+BFC(2685);
+BFC(2686);
+BFC(2687);
+BFC(2688);
+BFC(2689);
+BFC(2690);
+BFC(2691);
+BFC(2692);
+BFC(2693);
+BFC(2694);
+BFC(2695);
+BFC(2696);
+BFC(2697);
+BFC(2698);
+BFC(2699);
+BFC(2700);
+BFC(2701);
+BFC(2702);
+BFC(2703);
+BFC(2704);
+BFC(2705);
+BFC(2706);
+BFC(2707);
+BFC(2708);
+BFC(2709);
+BFC(2710);
+BFC(2711);
+BFC(2712);
+BFC(2713);
+BFC(2714);
+BFC(2715);
+BFC(2716);
+BFC(2717);
+BFC(2718);
+BFC(2719);
+BFC(2720);
+BFC(2721);
+BFC(2722);
+BFC(2723);
+BFC(2724);
+BFC(2725);
+BFC(2726);
+BFC(2727);
+BFC(2728);
+BFC(2729);
+BFC(2730);
+BFC(2731);
+BFC(2732);
+BFC(2733);
+BFC(2734);
+BFC(2735);
+BFC(2736);
+BFC(2737);
+BFC(2738);
+BFC(2739);
+BFC(2740);
+BFC(2741);
+BFC(2742);
+BFC(2743);
+BFC(2744);
+BFC(2745);
+BFC(2746);
+BFC(2747);
+BFC(2748);
+BFC(2749);
+BFC(2750);
+BFC(2751);
+BFC(2752);
+BFC(2753);
+BFC(2754);
+BFC(2755);
+BFC(2756);
+BFC(2757);
+BFC(2758);
+BFC(2759);
+BFC(2760);
+BFC(2761);
+BFC(2762);
+BFC(2763);
+BFC(2764);
+BFC(2765);
+BFC(2766);
+BFC(2767);
+BFC(2768);
+BFC(2769);
+BFC(2770);
+BFC(2771);
+BFC(2772);
+BFC(2773);
+BFC(2774);
+BFC(2775);
+BFC(2776);
+BFC(2777);
+BFC(2778);
+BFC(2779);
+BFC(2780);
+BFC(2781);
+BFC(2782);
+BFC(2783);
+BFC(2784);
+BFC(2785);
+BFC(2786);
+BFC(2787);
+BFC(2788);
+BFC(2789);
+BFC(2790);
+BFC(2791);
+BFC(2792);
+BFC(2793);
+BFC(2794);
+BFC(2795);
+BFC(2796);
+BFC(2797);
+BFC(2798);
+BFC(2799);
+BFC(2800);
+BFC(2801);
+BFC(2802);
+BFC(2803);
+BFC(2804);
+BFC(2805);
+BFC(2806);
+BFC(2807);
+BFC(2808);
+BFC(2809);
+BFC(2810);
+BFC(2811);
+BFC(2812);
+BFC(2813);
+BFC(2814);
+BFC(2815);
+BFC(2816);
+BFC(2817);
+BFC(2818);
+BFC(2819);
+BFC(2820);
+BFC(2821);
+BFC(2822);
+BFC(2823);
+BFC(2824);
+BFC(2825);
+BFC(2826);
+BFC(2827);
+BFC(2828);
+BFC(2829);
+BFC(2830);
+BFC(2831);
+BFC(2832);
+BFC(2833);
+BFC(2834);
+BFC(2835);
+BFC(2836);
+BFC(2837);
+BFC(2838);
+BFC(2839);
+BFC(2840);
+BFC(2841);
+BFC(2842);
+BFC(2843);
+BFC(2844);
+BFC(2845);
+BFC(2846);
+BFC(2847);
+BFC(2848);
+BFC(2849);
+BFC(2850);
+BFC(2851);
+BFC(2852);
+BFC(2853);
+BFC(2854);
+BFC(2855);
+BFC(2856);
+BFC(2857);
+BFC(2858);
+BFC(2859);
+BFC(2860);
+BFC(2861);
+BFC(2862);
+BFC(2863);
+BFC(2864);
+BFC(2865);
+BFC(2866);
+BFC(2867);
+BFC(2868);
+BFC(2869);
+BFC(2870);
+BFC(2871);
+BFC(2872);
+BFC(2873);
+BFC(2874);
+BFC(2875);
+BFC(2876);
+BFC(2877);
+BFC(2878);
+BFC(2879);
+BFC(2880);
+BFC(2881);
+BFC(2882);
+BFC(2883);
+BFC(2884);
+BFC(2885);
+BFC(2886);
+BFC(2887);
+BFC(2888);
+BFC(2889);
+BFC(2890);
+BFC(2891);
+BFC(2892);
+BFC(2893);
+BFC(2894);
+BFC(2895);
+BFC(2896);
+BFC(2897);
+BFC(2898);
+BFC(2899);
+BFC(2900);
+BFC(2901);
+BFC(2902);
+BFC(2903);
+BFC(2904);
+BFC(2905);
+BFC(2906);
+BFC(2907);
+BFC(2908);
+BFC(2909);
+BFC(2910);
+BFC(2911);
+BFC(2912);
+BFC(2913);
+BFC(2914);
+BFC(2915);
+BFC(2916);
+BFC(2917);
+BFC(2918);
+BFC(2919);
+BFC(2920);
+BFC(2921);
+BFC(2922);
+BFC(2923);
+BFC(2924);
+BFC(2925);
+BFC(2926);
+BFC(2927);
+BFC(2928);
+BFC(2929);
+BFC(2930);
+BFC(2931);
+BFC(2932);
+BFC(2933);
+BFC(2934);
+BFC(2935);
+BFC(2936);
+BFC(2937);
+BFC(2938);
+BFC(2939);
+BFC(2940);
+BFC(2941);
+BFC(2942);
+BFC(2943);
+BFC(2944);
+BFC(2945);
+BFC(2946);
+BFC(2947);
+BFC(2948);
+BFC(2949);
+BFC(2950);
+BFC(2951);
+BFC(2952);
+BFC(2953);
+BFC(2954);
+BFC(2955);
+BFC(2956);
+BFC(2957);
+BFC(2958);
+BFC(2959);
+BFC(2960);
+BFC(2961);
+BFC(2962);
+BFC(2963);
+BFC(2964);
+BFC(2965);
+BFC(2966);
+BFC(2967);
+BFC(2968);
+BFC(2969);
+BFC(2970);
+BFC(2971);
+BFC(2972);
+BFC(2973);
+BFC(2974);
+BFC(2975);
+BFC(2976);
+BFC(2977);
+BFC(2978);
+BFC(2979);
+BFC(2980);
+BFC(2981);
+BFC(2982);
+BFC(2983);
+BFC(2984);
+BFC(2985);
+BFC(2986);
+BFC(2987);
+BFC(2988);
+BFC(2989);
+BFC(2990);
+BFC(2991);
+BFC(2992);
+BFC(2993);
+BFC(2994);
+BFC(2995);
+BFC(2996);
+BFC(2997);
+BFC(2998);
+BFC(2999);
+BFC(3000);
+BFC(3001);
+BFC(3002);
+BFC(3003);
+BFC(3004);
+BFC(3005);
+BFC(3006);
+BFC(3007);
+BFC(3008);
+BFC(3009);
+BFC(3010);
+BFC(3011);
+BFC(3012);
+BFC(3013);
+BFC(3014);
+BFC(3015);
+BFC(3016);
+BFC(3017);
+BFC(3018);
+BFC(3019);
+BFC(3020);
+BFC(3021);
+BFC(3022);
+BFC(3023);
+BFC(3024);
+BFC(3025);
+BFC(3026);
+BFC(3027);
+BFC(3028);
+BFC(3029);
+BFC(3030);
+BFC(3031);
+BFC(3032);
+BFC(3033);
+BFC(3034);
+BFC(3035);
+BFC(3036);
+BFC(3037);
+BFC(3038);
+BFC(3039);
+BFC(3040);
+BFC(3041);
+BFC(3042);
+BFC(3043);
+BFC(3044);
+BFC(3045);
+BFC(3046);
+BFC(3047);
+

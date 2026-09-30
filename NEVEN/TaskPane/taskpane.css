@@ -1,0 +1,524 @@
+/* NEVEN Studio — Task Pane Styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #242424;
+  --bg-card: rgba(40, 40, 40, 0.85);
+  --accent: #d7a538;
+  --accent-dim: rgba(215, 165, 56, 0.15);
+  --text-primary: #e0e0e0;
+  --text-secondary: #888;
+  --text-muted: #555;
+  --border: rgba(215, 165, 56, 0.12);
+  --error: #ff4444;
+  --success: #4caf50;
+  --radius: 6px;
+}
+
+body {
+  font-family: 'Segoe UI', -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 12px;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ──────────────────────────────────────────────────── */
+.header {
+  background: var(--bg-secondary);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header h1 {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.header .version {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 8px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--accent); }
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ─── Tab Content ─────────────────────────────────────────────── */
+.tab-content {
+  display: none;
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+}
+.tab-content.active { display: block; }
+
+/* ─── Status Bar ──────────────────────────────────────────────── */
+.status-bar {
+  background: var(--bg-secondary);
+  padding: 4px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+.status-bar .range { color: var(--accent); font-weight: 600; }
+.status-bar .toggle { display: flex; align-items: center; gap: 4px; }
+.status-bar .toggle input { accent-color: var(--accent); }
+
+/* ─── Cards & Panels ──────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.card-title {
+  color: var(--accent);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+.btn-primary:hover { background: #c4922a; }
+.btn-secondary {
+  background: #333;
+  color: var(--text-primary);
+  border: 1px solid #555;
+}
+.btn-secondary:hover { background: #444; }
+
+/* ─── Tables ──────────────────────────────────────────────────── */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(8px, 1.5vw, 11px);
+}
+table.data-table th {
+  background: #373434;
+  color: var(--accent);
+  padding: 5px 6px;
+  text-align: right;
+  border-bottom: 1px solid #444;
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+}
+table.data-table th:first-child { text-align: left; }
+table.data-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #444;
+  text-align: right;
+  white-space: nowrap;
+  background: #373434;
+}
+table.data-table td:first-child { text-align: left; }
+table.data-table tr:hover td { background: var(--accent-dim); }
+
+/* ─── Controls ────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.controls label {
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 600;
+}
+.controls select, .controls input[type="text"] {
+  background: #333;
+  color: var(--text-primary);
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+/* ─── SQL Editor ──────────────────────────────────────────────── */
+.sql-editor {
+  width: 100%;
+  min-height: 80px;
+  background: #111;
+  color: var(--accent);
+  border: 1px solid #333;
+  border-radius: var(--radius);
+  padding: 8px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+  resize: vertical;
+}
+.sql-editor:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+/* ─── Chart Container ─────────────────────────────────────────── */
+.chart-container { height: 180px; margin: 8px 0; }
+
+/* ─── Messages ────────────────────────────────────────────────── */
+.msg-info { color: var(--text-secondary); padding: 12px; text-align: center; }
+.msg-error { color: var(--error); padding: 8px; font-size: 10px; background: rgba(255,68,68,0.1); border-radius: 4px; }
+.msg-success { color: var(--success); padding: 8px; font-size: 10px; }
+
+/* ─── Engine Dots ─────────────────────────────────────────────── */
+.engine-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 4px; background-color: #555; }
+.engine-dot.available   { background-color: var(--success); }
+.engine-dot.unavailable { background-color: var(--error); }
+.engine-dot.checking    { background-color: #888; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.4 } }
+
+/* ─── Spinner ─────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid var(--text-muted);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Viewers Tab ─────────────────────────────────────────────── */
+.viewer-nav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.viewer-nav .btn { font-size: 9px; padding: 5px 10px; }
+.viewer-iframe {
+  width: 100%;
+  height: calc(100vh - 160px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+}
+
+
+/* ── Estilos para HTML generado por marked.js en el chat IA ─────────────── */
+#ai-chat-history p          { margin: 4px 0; color: var(--text-primary); line-height: 1.6; }
+#ai-chat-history h1,
+#ai-chat-history h2         { color: var(--accent); font-size: 13px; margin: 10px 0 4px; font-weight: 700; }
+#ai-chat-history h3,
+#ai-chat-history h4,
+#ai-chat-history h5,
+#ai-chat-history h6         { color: var(--accent); font-size: 12px; margin: 8px 0 3px; font-weight: 600; }
+#ai-chat-history ul,
+#ai-chat-history ol         { margin: 4px 0 4px 18px; padding: 0; }
+#ai-chat-history li         { margin: 2px 0; color: var(--text-primary); line-height: 1.5; }
+#ai-chat-history strong     { color: var(--accent); font-weight: 700; }
+#ai-chat-history em         { color: var(--text-secondary); font-style: italic; }
+#ai-chat-history code       { background: #1e1e1e; border: 1px solid #444; border-radius: 3px;
+                               padding: 1px 5px; font-family: Consolas, 'Cascadia Code', monospace;
+                               font-size: 11px; color: var(--accent); }
+#ai-chat-history pre        { background: #1e1e1e; border: 1px solid var(--border); border-radius: 4px;
+                               padding: 10px 14px; font-family: Consolas, 'Cascadia Code', monospace;
+                               font-size: 11px; color: #d4d4d4; white-space: pre-wrap;
+                               overflow-x: auto; margin: 6px 0; }
+#ai-chat-history pre code   { background: none; border: none; padding: 0; color: inherit; }
+#ai-chat-history blockquote { border-left: 2px solid rgba(215,165,56,0.4); margin: 4px 0;
+                               padding: 4px 10px; color: var(--text-secondary); }
+#ai-chat-history hr         { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+#ai-chat-history a          { color: var(--accent); text-decoration: underline; }
+/* KaTeX display en el chat */
+#ai-chat-history .katex-display { margin: 8px 0; overflow-x: auto; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAB AYUDA — Diccionario de Funciones NevenX
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Familias (categorías colapsables) ────────────────────────────────────── */
+.ayuda-familia {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+
+.ayuda-familia-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  list-style: none;
+  user-select: none;
+}
+
+.ayuda-familia-header::-webkit-details-marker { display: none; }
+
+.ayuda-familia[open] .ayuda-familia-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.ayuda-familia-label::before {
+  content: '▶ ';
+  font-size: 8px;
+  margin-right: 6px;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+
+.ayuda-familia[open] .ayuda-familia-label::before {
+  transform: rotate(90deg);
+}
+
+.ayuda-familia-count {
+  background: rgba(215, 165, 56, 0.15);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ─── Lista de funciones dentro de una familia ─────────────────────────────── */
+.ayuda-funciones-lista {
+  padding: 6px;
+}
+
+.ayuda-funcion-item {
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.ayuda-funcion-item:hover {
+  border-color: var(--accent);
+  background: rgba(215, 165, 56, 0.05);
+}
+
+.ayuda-funcion-item:last-child {
+  margin-bottom: 0;
+}
+
+.ayuda-funcion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ayuda-funcion-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.ayuda-funcion-nombre {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.ayuda-funcion-xll {
+  background: #111;
+  color: var(--accent);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: Consolas, monospace;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+
+.ayuda-funcion-desc {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.ayuda-funcion-aliases {
+  font-size: 9px;
+  color: #7dc97d;
+  margin-left: 6px;
+  font-weight: 500;
+}
+
+/* ─── Tablas de parámetros, outputs y roles ────────────────────────────────── */
+.ayuda-params-table,
+.ayuda-outputs-table,
+.ayuda-roles-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.ayuda-params-table th,
+.ayuda-outputs-table th,
+.ayuda-roles-table th {
+  background: #333;
+  color: var(--accent);
+  padding: 4px 6px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #444;
+}
+
+.ayuda-params-table td,
+.ayuda-outputs-table td,
+.ayuda-roles-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #333;
+  color: var(--text-primary);
+  vertical-align: top;
+}
+
+.ayuda-params-table tr:hover td,
+.ayuda-outputs-table tr:hover td,
+.ayuda-roles-table tr:hover td {
+  background: rgba(215, 165, 56, 0.05);
+}
+
+/* ─── Panel de detalle ─────────────────────────────────────────────────────── */
+#ayuda-detalle {
+  animation: ayuda-slide-in 0.2s ease-out;
+}
+
+@keyframes ayuda-slide-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#ayuda-detalle details {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+#ayuda-detalle details summary {
+  margin-bottom: 6px;
+}
+
+#ayuda-detalle details[open] summary {
+  margin-bottom: 8px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   Tab Settings — Configuracion NEVEN
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.settings-tab.active {
+  color: var(--accent) !important;
+  border-bottom-color: var(--accent) !important;
+}
+
+.settings-tab:hover {
+  color: var(--accent);
+}
+
+.settings-panel {
+  display: none;
+}
+
+.settings-panel.active {
+  display: block;
+}
+
+/* Profile/Connection items */
+.ai-profile-item:hover,
+.db-conn-item:hover,
+.prompt-item:hover {
+  border-color: var(--accent) !important;
+  background: rgba(215, 165, 56, 0.05) !important;
+}
+
+/* Form inputs en settings */
+#settings input[type="text"],
+#settings input[type="password"],
+#settings input[type="number"],
+#settings select,
+#settings textarea {
+  transition: border-color 0.15s;
+}
+
+#settings input:focus,
+#settings select:focus,
+#settings textarea:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+}
+
+/* Range slider */
+#settings input[type="range"] {
+  -webkit-appearance: none;
+  background: #333;
+  height: 4px;
+  border-radius: 2px;
+}
+
+#settings input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#settings input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}

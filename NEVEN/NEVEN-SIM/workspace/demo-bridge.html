@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>NEVEN — Demo PostMessage Bridge</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1e1e2e; color: #cdd6f4; padding: 30px; }
+        h1 { color: #89b4fa; font-size: 22px; margin-bottom: 8px; }
+        p.subtitle { color: #6c7086; font-size: 13px; margin-bottom: 24px; }
+        .card { background: #313244; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+        .card h2 { color: #f5c2e7; font-size: 14px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .control-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+        .control-row label { font-size: 13px; color: #a6adc8; min-width: 120px; }
+        .control-row input[type="range"] { flex: 1; accent-color: #89b4fa; }
+        .control-row input[type="number"], .control-row input[type="text"] { background: #1e1e2e; border: 1px solid #45475a; border-radius: 6px; color: #cdd6f4; padding: 6px 10px; font-size: 13px; width: 120px; }
+        .control-row select { background: #1e1e2e; border: 1px solid #45475a; border-radius: 6px; color: #cdd6f4; padding: 6px 10px; font-size: 13px; }
+        .control-row .value-display { background: #1e1e2e; border-radius: 4px; padding: 4px 10px; font-family: 'Cascadia Code', monospace; font-size: 14px; color: #a6e3a1; min-width: 60px; text-align: center; }
+        .control-row input[type="checkbox"] { accent-color: #89b4fa; width: 18px; height: 18px; }
+        .btn { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-primary { background: #89b4fa; color: #1e1e2e; }
+        .btn-primary:hover { background: #b4d0fb; }
+        .log { background: #11111b; border-radius: 8px; padding: 12px; font-family: 'Cascadia Code', monospace; font-size: 11px; color: #6c7086; max-height: 150px; overflow-y: auto; margin-top: 12px; }
+        .log .entry { margin-bottom: 4px; }
+        .log .ok { color: #a6e3a1; }
+        .log .warn { color: #fab387; }
+        .instructions { background: #181825; border: 1px solid #45475a; border-radius: 8px; padding: 16px; margin-bottom: 20px; font-size: 12px; line-height: 1.8; }
+        .instructions code { background: #313244; padding: 2px 6px; border-radius: 3px; color: #f5c2e7; }
+    </style>
+</head>
+<body>
+    <h1>NEVEN — Demo PostMessage Bridge</h1>
+    <p class="subtitle">Controles interactivos que modifican celdas de Excel en tiempo real</p>
+
+    <div class="instructions">
+        <b>Instrucciones:</b><br>
+        1. En Excel, coloca una formula en <code>C1</code>: <code>=A1*B1</code><br>
+        2. Usa los sliders de abajo para modificar <code>A1</code> y <code>B1</code><br>
+        3. Observa como <code>C1</code> se recalcula automaticamente<br>
+        <br>
+        <b>Nota:</b> Los controles escriben a las celdas de la hoja activa via <code>window.neven.writeCell()</code>
+    </div>
+
+    <div class="card">
+        <h2>Sliders → Celdas Excel</h2>
+        <div class="control-row">
+            <label>Celda A1:</label>
+            <input type="range" id="slider-a1" min="0" max="100" value="50" oninput="updateSlider('A1', this.value)">
+            <span class="value-display" id="val-a1">50</span>
+        </div>
+        <div class="control-row">
+            <label>Celda B1:</label>
+            <input type="range" id="slider-b1" min="0" max="100" value="25" oninput="updateSlider('B1', this.value)">
+            <span class="value-display" id="val-b1">25</span>
+        </div>
+        <div class="control-row">
+            <label>Celda A2 (decimal):</label>
+            <input type="range" id="slider-a2" min="0" max="100" value="50" step="1" oninput="updateSliderDecimal('A2', this.value)">
+            <span class="value-display" id="val-a2">0.50</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Inputs de Texto → Celdas Excel</h2>
+        <div class="control-row">
+            <label>Celda A3:</label>
+            <input type="number" id="input-a3" value="1000" step="100" onchange="writeValue('A3', this.value)">
+            <button class="btn btn-primary" onclick="writeValue('A3', document.getElementById('input-a3').value)">Enviar</button>
+        </div>
+        <div class="control-row">
+            <label>Celda A4 (texto):</label>
+            <input type="text" id="input-a4" value="Hola NEVEN" onchange="writeText('A4', this.value)">
+            <button class="btn btn-primary" onclick="writeText('A4', document.getElementById('input-a4').value)">Enviar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Selector → Celda Excel</h2>
+        <div class="control-row">
+            <label>Celda A5:</label>
+            <select onchange="writeValue('A5', this.value)">
+                <option value="100">Escenario Bajo (100)</option>
+                <option value="500" selected>Escenario Medio (500)</option>
+                <option value="1000">Escenario Alto (1000)</option>
+                <option value="5000">Escenario Extremo (5000)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Checkbox → Celda Excel</h2>
+        <div class="control-row">
+            <label>Celda A6 (1/0):</label>
+            <input type="checkbox" id="check-a6" onchange="writeValue('A6', this.checked ? 1 : 0)">
+            <span style="font-size:12px;color:#6c7086;">Activar parametro</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Log de Comunicacion</h2>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+    function writeValue(cell, value) {
+        var sheet = "Hoja1";
+        var numVal = parseFloat(value);
+        if (window.chrome && window.chrome.webview) {
+            window.chrome.webview.postMessage(JSON.stringify({action:"write-cell", sheet:sheet, cell:cell, value:numVal}));
+            logMsg('ok', sheet + '!' + cell + ' = ' + numVal);
+        } else {
+            logMsg('warn', 'Bridge no disponible. Abra con =NEVEN.v("C:/NEVEN/workspace/demo-bridge.html")');
+        }
+    }
+
+    function writeText(cell, text) {
+        var sheet = "Hoja1";
+        if (window.chrome && window.chrome.webview) {
+            window.chrome.webview.postMessage(JSON.stringify({action:"write-cell", sheet:sheet, cell:cell, value:text}));
+            logMsg('ok', sheet + '!' + cell + ' = "' + text + '"');
+        } else {
+            logMsg('warn', 'Bridge no disponible');
+        }
+    }
+
+    function updateSlider(cell, value) {
+        document.getElementById('val-' + cell.toLowerCase()).textContent = value;
+        writeValue(cell, value);
+    }
+
+    function updateSliderDecimal(cell, value) {
+        var decimal = (value / 100).toFixed(2);
+        document.getElementById('val-' + cell.toLowerCase()).textContent = decimal;
+        writeValue(cell, decimal);
+    }
+
+    function logMsg(type, msg) {
+        var log = document.getElementById('log');
+        var time = new Date().toLocaleTimeString();
+        log.innerHTML += '<div class="entry ' + type + '">[' + time + '] ' + msg + '</div>';
+        log.scrollTop = log.scrollHeight;
+    }
+
+    logMsg('ok', 'Demo Bridge cargado.');
+    if (!window.chrome || !window.chrome.webview) {
+        logMsg('warn', 'WebView2 NO detectado. Use =NEVEN.v("C:/NEVEN/workspace/demo-bridge.html")');
+    } else {
+        logMsg('ok', 'WebView2 bridge ACTIVO. Mueva los sliders.');
+    }
+    </script>
+</body>
+</html>

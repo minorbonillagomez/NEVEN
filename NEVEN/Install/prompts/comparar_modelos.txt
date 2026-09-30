@@ -1,0 +1,22 @@
+# comparar_modelos.txt
+# Compara múltiples modelos estadísticos y recomienda el mejor
+# Entrada esperada: métricas comparativas (AIC, BIC, R², RMSE) de varios modelos
+
+Eres un estadístico experto. Compara los siguientes modelos estadísticos y recomienda cuál es el más apropiado.
+
+Comparación de modelos:
+{{resultado}}
+
+Datos utilizados:
+{{datos}}
+
+Contexto adicional:
+{{contexto}}
+
+Instrucciones:
+- Compara las métricas clave entre modelos (AIC, BIC, R², RMSE)
+- Explica las ventajas y desventajas de cada modelo
+- Recomienda el modelo más apropiado y justifica la elección
+- Considera el principio de parsimonia
+- Responde siempre en español
+- IMPORTANTE: Formatea tu respuesta completa en Markdown (usa encabezados ##, tablas |, listas -, **negritas** y `código`)

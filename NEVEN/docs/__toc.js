@@ -1,0 +1,15 @@
+﻿var TOC=[
+{id:'00-portada',title:'NEVEN v2.1'},
+{id:'01-introduccion',title:'Capitulo 1: Introduccion'},
+{id:'02-instalacion',title:'Capitulo 2: Instalacion'},
+{id:'03-arquitectura',title:'Capitulo 3: Arquitectura del Sistema'},
+{id:'04-funciones-julia',title:'Capitulo 4: Funciones Julia'},
+{id:'05-funciones-r',title:'Capitulo 5: Funciones R'},
+{id:'06-pluto-quarto',title:'Capitulo 6: Pluto.jl y Quarto'},
+{id:'07-webview2-ribbon',title:'Verificar registro'},
+{id:'08-seguridad-testing',title:'Ejecutar tests'},
+{id:'09-mantenimiento',title:'Compilar componentes individuales:'},
+{id:'10-ejemplos',title:'NEVEN v2.0 -- Guia de Ejemplos para el Usuario'},
+{id:'11-diccionario-funciones',title:'11-diccionario-funciones'},
+{id:'12-simulacion-montecarlo',title:'Capitulo 12: Simulacion Monte Carlo (NEVEN-SIM)'},
+];

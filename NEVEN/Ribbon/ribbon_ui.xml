@@ -1,0 +1,189 @@
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+  <ribbon>
+    <tabs>
+      <tab id="tabRJ2XCL" label="NEVEN" insertAfterMso="TabHome">
+
+        <!-- Grupo: Motores de Lenguaje -->
+        <group id="grpEngines" label="Motores">
+          <button id="btnActivateNEVEN"
+                  label="Activar NEVEN"
+                  size="large"
+                  onAction="OnActivateNEVENCommand"
+                  imageMso="ServerConnect"
+                  screentip="Activar motores NEVEN"
+                  supertip="Carga NEVEN64.xll bajo demanda: inicia los motores activos sin reiniciar Excel." />
+
+          <button id="btnReloadFunctions"
+                  label="Actualizar"
+                  size="large"
+                  onAction="OnReloadCommand"
+                  imageMso="Refresh"
+                  screentip="Recargar funciones de usuario"
+                  supertip="Recarga todos los archivos .R, .jl y .py de C:\NEVEN\functions\ sin reiniciar Excel." />
+
+          <button id="btnEngineStatus"
+                  label="Estado"
+                  size="large"
+                  onAction="OnEngineStatusCommand"
+                  imageMso="ServerConnection"
+                  screentip="Estado de los motores"
+                  supertip="Muestra el estado de conexion de R, Julia y Python." />
+
+          <separator id="sepMotores" />
+
+          <toggleButton id="btnEnableR"
+                  label="R"
+                  size="normal"
+                  onAction="OnEnableRCommand"
+                  getPressed="GetEnableRPressed"
+                  imageMso="TableStylesGallery"
+                  screentip="Motor R al inicio"
+                  supertip="Activa o desactiva el motor R al arrancar Excel. Desactivarlo reduce el tiempo de inicio si no necesita funciones R en esta sesion." />
+
+          <toggleButton id="btnEnableJulia"
+                  label="Julia"
+                  size="normal"
+                  onAction="OnEnableJuliaCommand"
+                  getPressed="GetEnableJuliaPressed"
+                  imageMso="ChartColumnClustered"
+                  screentip="Motor Julia al inicio"
+                  supertip="Activa o desactiva el motor Julia al arrancar Excel." />
+
+          <toggleButton id="btnEnablePython"
+                  label="Python"
+                  size="normal"
+                  onAction="OnEnablePythonCommand"
+                  getPressed="GetEnablePythonPressed"
+                  imageMso="FieldInsert"
+                  screentip="Motor Python al inicio"
+                  supertip="Activa o desactiva el motor Python al arrancar Excel." />
+        </group>
+
+        <!-- Grupo: Analisis (nuevos viewers) -->
+        <group id="grpAnalysis" label="Analisis">
+          <button id="btnAIAssistant"
+                  label="NEVEN Studio"
+                  size="large"
+                  onAction="OnAIAssistantCommand"
+                  imageMso="BlogHomePage"
+                  screentip="NEVEN Studio"
+                  supertip="Abre NEVEN Studio — análisis interactivo con R, Python, Julia, DuckDB y asistente IA." />
+
+          <button id="btnTextAnalysis"
+                  label="Texto"
+                  size="large"
+                  onAction="OnTextAnalysisCommand"
+                  imageMso="ReviewCompareDocuments"
+                  screentip="Analisis de Texto"
+                  supertip="Analiza documentos PDF/TXT: Word Cloud, frecuencia, n-gramas, sentimiento y resumen." />
+
+          <button id="btnSimulation"
+                  label="Simulacion"
+                  size="large"
+                  onAction="OnSimulationCommand"
+                  imageMso="ChartInsert"
+                  screentip="Simulacion Monte Carlo"
+                  supertip="Explorador reactivo de simulaciones Monte Carlo con sliders y comparacion de escenarios." />
+        </group>
+
+        <!-- Grupo: Visor -->
+        <group id="grpViewer" label="Visor">
+          <button id="btnViewerOpen"
+                  label="Abrir Visor"
+                  size="large"
+                  onAction="OnViewerOpenCommand"
+                  imageMso="PictureInsertFromFile"
+                  screentip="Abrir visor HTML"
+                  supertip="Abre un archivo HTML en el visor WebView2 embebido (Plotly, D3, dashboards)." />
+
+          <button id="btnViewerCloseAll"
+                  label="Cerrar Todos"
+                  size="normal"
+                  onAction="OnViewerCloseAllCommand"
+                  imageMso="WindowCloseAllDocuments"
+                  screentip="Cerrar todos los visores" />
+        </group>
+
+        <!-- Grupo: Notebooks y Pluto -->
+        <group id="grpNotebooks" label="Notebooks">
+          <button id="btnPlutoStart"
+                  label="Pluto.jl"
+                  size="large"
+                  onAction="OnPlutoStartCommand"
+                  imageMso="FileDocumentManagement"
+                  screentip="Iniciar Pluto.jl"
+                  supertip="Inicia el servidor de notebooks reactivos Pluto.jl. Los notebooks se abren en el visor WebView2." />
+
+          <button id="btnNotebookList"
+                  label="Biblioteca"
+                  size="normal"
+                  onAction="OnNotebookListCommand"
+                  imageMso="ViewsGallery"
+                  screentip="Biblioteca de notebooks" />
+
+          <button id="btnPlutoStop"
+                  label="Detener"
+                  size="normal"
+                  onAction="OnPlutoStopCommand"
+                  imageMso="RecordStop"
+                  screentip="Detener Pluto.jl" />
+        </group>
+
+        <!-- Grupo: NEVEN Studio -->
+        <group id="grpStudio" label="Studio">
+          <button id="btnTaskPane"
+                  label="NEVEN Studio"
+                  size="large"
+                  onAction="OnTaskPaneCommand"
+                  imageMso="ViewCode"
+                  screentip="NEVEN Studio (Task Pane)"
+                  supertip="Abre el panel interactivo con DuckDB, GROUP BY, SQL y visualizaciones embebidas." />
+
+          <button id="btnStartServer"
+                  label="Iniciar Servidor"
+                  size="normal"
+                  onAction="OnStartServerCommand"
+                  imageMso="ServerConnection"
+                  screentip="Iniciar servidor HTTP"
+                  supertip="Inicia el servidor HTTP en el puerto 5555 si no está corriendo. Útil cuando el TaskPane muestra error de conexión." />
+
+          <button id="btnStopServer"
+                  label="Detener Servidor"
+                  size="normal"
+                  onAction="OnStopServerCommand"
+                  imageMso="RecordStop"
+                  screentip="Detener servidor HTTP"
+                  supertip="Detiene el servidor HTTP que corre en el puerto 5555. Libera recursos si no va a usar NEVEN Studio." />
+
+          <button id="btnPresentaciones"
+                  label="Presentaciones"
+                  size="large"
+                  onAction="OnPresentacionesCommand"
+                  imageMso="SlideshowFromBeginning"
+                  screentip="Creador de Presentaciones NEVEN"
+                  supertip="Abre el editor visual de presentaciones Impress.js. Exporta a HTML standalone." />
+        </group>
+
+        <!-- Grupo: Ayuda -->
+        <group id="grpConfig" label="Ayuda">
+          <button id="btnDocs"
+                  label="Documentacion"
+                  size="large"
+                  onAction="OnDocsCommand"
+                  imageMso="Help"
+                  screentip="Documentacion NEVEN"
+                  supertip="Abre la documentacion completa de NEVEN en el visor." />
+
+          <button id="btnAbout"
+                  label="Acerca de"
+                  size="normal"
+                  onAction="OnAboutCommand"
+                  imageMso="Info"
+                  screentip="Acerca de NEVEN"
+                  supertip="NEVEN v2.1 -- Open Source." />
+        </group>
+
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

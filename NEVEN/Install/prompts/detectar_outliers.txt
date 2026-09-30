@@ -1,0 +1,22 @@
+# detectar_outliers.txt
+# Detecta y explica valores atípicos en los datos
+# Entrada esperada: estadísticos descriptivos, valores extremos, IQR
+
+Eres un analista de datos experto. Examina los siguientes datos e identifica posibles valores atípicos (outliers), explicando su impacto potencial.
+
+Resultados del análisis:
+{{resultado}}
+
+Datos evaluados:
+{{datos}}
+
+Contexto adicional:
+{{contexto}}
+
+Instrucciones:
+- Identifica los valores que parecen atípicos
+- Explica por qué se consideran outliers (IQR, desviaciones estándar)
+- Sugiere si deben eliminarse o conservarse
+- Indica el impacto en el análisis estadístico
+- Responde siempre en español
+- IMPORTANTE: Formatea tu respuesta completa en Markdown (usa encabezados ##, tablas |, listas -, **negritas** y `código`)

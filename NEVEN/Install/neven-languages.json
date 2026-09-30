@@ -1,0 +1,32 @@
+[
+  {
+    "name": "R",
+    "executable": "ControlR.exe",
+    "prefix": "R",
+    "extensions": [ "r", "R" ],
+    "command_arguments": "-r \"$HOME\"",
+    "prepend_path": "$HOME\\bin\\x64",
+    "priority": 10,
+    "startup_resource": "startup.r"
+  },
+  {
+    "name": "Julia",
+    "executable": "ControlJulia.exe",
+    "prefix": "J",
+    "extensions": [ "jl" ],
+    "command_arguments": "",
+    "prepend_path": "$HOME\\bin",
+    "priority": 10,
+    "startup_resource": "startup.jl"
+  },
+  {
+    "name": "Python",
+    "executable": "ControlPython.exe",
+    "prefix": "P",
+    "extensions": [ "py" ],
+    "command_arguments": "",
+    "prepend_path": "$HOME",
+    "priority": 10,
+    "startup_resource": "startup.py"
+  }
+]

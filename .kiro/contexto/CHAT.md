@@ -8,11 +8,144 @@
 
 ## Ultima actualizacion
 **Fecha:** 2026-08-20
-**Hora aproximada:** ~02:50 — Sesion completa: D3 graph fix, paleta NEVEN, limpieza emojis
+**Hora aproximada:** ~09:15 — Diseño refinado: perfiles múltiples + encriptación + Python requerido
 
 ---
 
 ## Sesiones recientes
+
+### Sesion 2026-08-20 (~08:30-09:00) — Diseño: Formulario de Configuración NEVEN
+
+**Estado:** DISEÑO REFINADO — Pendiente implementación
+
+### Objetivo
+Crear un formulario de configuración (Settings) accesible desde el Ribbon para que usuarios no técnicos puedan configurar NEVEN sin usar consolas ni editar archivos JSON manualmente.
+
+### Refinamiento: Múltiples Perfiles
+
+Usuario solicitó que tanto IA como BD soporten múltiples configuraciones con una ACTIVA seleccionable:
+- **AI Profiles**: OpenAI, Claude, Azure, Ollama — usuario puede cambiar entre ellos
+- **DB Connections**: Múltiples conexiones, una activa a la vez
+- UI tipo lista con radio buttons: `[●] OpenAI GPT-4o ← ACTIVA`
+
+### Refinamiento: Encriptación de Credenciales
+
+**Decisión:** Enfoque híbrido (no encriptar todo el JSON)
+
+| Dato | Almacenamiento |
+|------|----------------|
+| API Keys, passwords BD | Windows Credential Manager via `keyring` |
+| Config general (hosts, puertos, nombres) | JSON plano (facilita debug/backup) |
+
+**Flujo:**
+1. Usuario ingresa API Key en formulario
+2. Python: `keyring.set_password("neven", "openai-gpt4o", "sk-...")`
+3. JSON guarda referencia: `"credential_key": "neven/ai/openai-gpt4o"`
+4. Al leer: `keyring.get_password("neven", "openai-gpt4o")`
+
+**Por qué no encriptar todo el JSON:**
+- Credenciales nunca tocan disco en texto plano (más seguro)
+- Config general legible facilita troubleshooting
+- Windows Credential Manager es estándar y nativo
+
+### CAMBIO ARQUITECTURAL: Python ahora es REQUERIDO
+
+**Antes:** Python era opcional (R y Julia podían usarse sin él)
+**Ahora:** Python es obligatorio para NEVEN
+
+**Razón:** El sistema de configuración depende de:
+- `keyring` (Python) para Windows Credential Manager
+- `neven_http_server.py` para endpoints de config
+- `config_manager.py` (nuevo) para CRUD de perfiles
+
+**Impacto:**
+- Instalador debe incluir Python obligatoriamente
+- Documentación debe actualizarse
+- `neven-config.json` campo `python.enabled` ya no aplica (siempre ON)
+
+### Estructura neven-config.json v2.0
+
+```json
+{
+  "version": "2.0",
+  "active_ai_profile": "openai-gpt4o",
+  "active_db_connection": "prod-sqlserver",
+  "ai_profiles": [...],
+  "db_connections": [...],
+  "prompts": {"active_system": "default", "custom_prompts": [...]},
+  "preferences": {"language": "es", "theme": "system", ...}
+}
+```
+
+### Archivos modificados
+Ninguno — sesión de diseño únicamente
+
+### Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Crear `config_manager.py` con soporte keyring |
+| **ALTA** | Endpoints HTTP para CRUD de perfiles AI/DB |
+| **ALTA** | HTML del formulario Settings con UI de perfiles |
+| **MEDIA** | Agregar botón "Configuración" al Ribbon |
+| **MEDIA** | Migrar config actual a v2.0 |
+| **BAJA** | Sección de prompts editables |
+
+---
+
+### Sesion 2026-08-19 (~16:30) — Verificacion post-push
+
+**Estado:** COMPLETO
+
+### Verificado
+- Commit `c27eac3` ya estaba en `origin/master` (push exitoso en sesion anterior)
+- `taskpane.html` tenia diferencia repo vs produccion — sincronizado
+- `taskpane.js` y `sheet_analyzer.py` ya estaban OK
+
+### Archivos sincronizados a produccion
+- `C:\NEVEN\TaskPane\taskpane.html` — copiado desde repo
+
+---
+
+### Sesion 2026-08-19 (~02:50) — D3 Graph + Paleta NEVEN
+
+**Estado:** COMPLETO — Commit c27eac3 pusheado
+
+### Problema resuelto
+D3 force graph para flujo de datos del workbook no mostraba conexiones (edges).
+
+### Causa raiz
+En `sheet_analyzer.py` linea ~1301, el response de `analyze_workbook()` NO incluia `data_flow.edges`:
+```python
+"data_flow": {
+    "nodes": data_flow.get("nodes", []),
+    # FALTABA: "edges": data_flow.get("edges", [])
+}
+```
+
+### Fix aplicado
+Agregado `"edges": data_flow.get("edges", [])` al response dict.
+
+### Mejoras adicionales
+1. **Layout jerarquico** — 3 columnas (Input, Processing, Output) en lugar de force puro
+2. **Exportar HTML** — Boton genera archivo interactivo standalone
+3. **Paleta NEVEN unificada** — Removidos verdes/morados, todo usa gold/amber (#d7a538)
+4. **Emojis removidos** — Regex agresivo para limpiar caracteres corruptos (ðŸ...)
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `TaskPane/taskpane.js` | renderWorkbookGraphD3() reescrito, generateGraphHTML(), chip/button styles |
+| `TaskPane/taskpane.html` | Emojis removidos, botones unificados con btn-secondary |
+| `ControlPython/startup/sheet_analyzer.py` | Agregado edges a data_flow response |
+
+### Commit
+```
+c27eac3 feat(taskpane): D3 force graph para flujo de datos + paleta NEVEN unificada
+```
+
+---
 
 ### Sesion 2026-08-19 (~23:45) — Discusion: Renderizado de Mermaid
 

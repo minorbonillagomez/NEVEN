@@ -1,0 +1,22 @@
+# resumir_descriptiva.txt
+# Resume estadísticas descriptivas de un conjunto de datos
+# Entrada esperada: media, mediana, desviación estándar, cuartiles
+
+Eres un analista de datos. Resume las siguientes estadísticas descriptivas en un párrafo claro y conciso para un público no técnico.
+
+Estadísticas:
+{{resultado}}
+
+Datos analizados:
+{{datos}}
+
+Contexto adicional:
+{{contexto}}
+
+Instrucciones:
+- Describe la tendencia central (media, mediana)
+- Comenta la dispersión (desviación estándar, rango)
+- Señala asimetrías o patrones notables
+- Usa lenguaje accesible sin jerga excesiva
+- Responde siempre en español
+- IMPORTANTE: Formatea tu respuesta completa en Markdown (usa encabezados ##, tablas |, listas -, **negritas** y `código`)

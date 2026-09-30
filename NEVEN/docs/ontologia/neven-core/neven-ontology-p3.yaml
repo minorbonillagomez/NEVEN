@@ -1,0 +1,524 @@
+# =============================================================================
+# NEVEN — Ontologia del Proyecto — Paquete 3
+# =============================================================================
+# Componentes de cambios ocasionales:
+#   10. controljulia_exe  — ControlJulia.exe (motor Julia embebido)
+#   11. agent_service     — AgentService/neven_ai_service.py
+#   12. taskpane_frontend — TaskPane/taskpane.html + datalab.js + taskpane.js
+# =============================================================================
+
+meta:
+  version: "1.0"
+  paquete: 3
+  descripcion: "Componentes de cambios ocasionales"
+  ultima_actualizacion: "2026-08-19"
+  autor: "Minor Bonilla / Kiro"
+  referencia_p1: "docs/ontologia/neven-ontology-p1.yaml"
+  referencia_p2: "docs/ontologia/neven-ontology-p2.yaml"
+
+componentes:
+
+  # ---------------------------------------------------------------------------
+  - id: controljulia_exe
+    nombre: "ControlJulia.exe"
+    prioridad: 10
+    descripcion: >
+      Proceso hijo que embebe Julia via C API. Comunicacion con el XLL via
+      Named Pipe + Protobuf (igual que ControlR). Soporta sysimage pre-compilada
+      (neven_julia.dll) para eliminar el cold start de JIT (~2-5 min -> ~2 seg).
+      Startup script enviado con wait=false (no-bloqueante) por el JIT.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/ControlJulia/src/"
+      archivos_principales:
+        - "ControlJulia/src/julia_interface.cc"  # jl_init, sysimage, llamadas Julia
+        - "ControlJulia/src/control_julia.cc"    # main(), loop de pipes
+        - "ControlJulia/src/JuliaConversion.cpp" # conversion Variable <-> Julia types
+        - "ControlJulia/src/Julia_Environment.cpp" # setup del entorno Julia
+
+    produccion:
+      ejecutable: "C:/NEVEN/ControlJulia.exe"
+      sysimage:   "C:/NEVEN/neven_julia.dll"      # opcional, ~415 MB
+      version_file: "C:/NEVEN/neven_julia.version" # version Julia usada al compilar
+      log: "C:/NEVEN/controljulia.log"
+      startup_script: "C:/NEVEN/startup/startup.jl"
+
+    dependencias:
+      - common_lib   # IPC, config, log
+      - pb_lib       # Protobuf
+
+    sysimage:
+      descripcion: >
+        Pre-imagen compilada que elimina el JIT cold start de Julia.
+        Sin sysimage: primera llamada tarda 2-5 minutos.
+        Con sysimage: primera llamada tarda ~2 segundos.
+      ubicacion: "C:/NEVEN/neven_julia.dll"
+      version_file: "C:/NEVEN/neven_julia.version"
+      como_usa: >
+        julia_interface.cc verifica:
+        1. Si neven_julia.dll existe
+        2. Si neven_julia.version coincide con la version Julia actual
+        3. Si ambas OK: jl_init_with_image(bindir, sysimage_path)
+        4. Si no: jl_init() (cold start normal, seguro)
+      como_construir: >
+        julia 'C:/NEVEN/startup/run-sysimage.jl'
+        PREREQUISITO: El precompile script debe correr sin errores independientemente:
+          julia 'C:/NEVEN/startup/precompile_julia_simple.jl'  # debe retornar exit 0
+        El precompile script DEBE tener todos los 'using X' AL INICIO del archivo.
+      fallo_graceful: >
+        Si la version no coincide o el archivo no existe, ControlJulia usa jl_init()
+        (cold start) sin error. La sysimage NUNCA causa crash — solo mejora rendimiento.
+
+    startup_julia:
+      descripcion: >
+        A diferencia de R, el startup de Julia se envia con wait=false (no-bloqueante).
+        Esto porque Julia JIT o re-evaluacion de modulos podria bloquear el pipe de Excel.
+      archivo: "C:/NEVEN/startup/startup.jl"
+      diferencia_con_r: >
+        R: startup enviado con wait=true (sincrono)
+        Julia: startup enviado con wait=false (asincrono)
+        Python: startup enviado como bloque completo (sensible a whitespace)
+
+    invariantes:
+      - id: INV-CJ-01
+        descripcion: >
+          neven_julia.version DEBE contener la version Julia exacta usada al compilar.
+          Formato: "MAJOR.MINOR.PATCH" (ej: "1.12.6") en una sola linea, sin newline.
+          Si el archivo falta o la version no coincide, ControlJulia usa cold start.
+          NUNCA usar sysimage de una version Julia diferente: causa crash inmediato.
+        como_verificar: >
+          Get-Content 'C:/NEVEN/neven_julia.version'  # debe coincidir con:
+          julia -e 'print(VERSION)'
+
+      - id: INV-CJ-02
+        descripcion: >
+          El precompile script para build-sysimage DEBE ejecutarse sin errores
+          de forma independiente ANTES de llamar create_sysimage().
+          PackageCompiler ejecuta el precompile en un sub-proceso Julia con
+          su propio entorno. Si el script falla en ese sub-proceso, create_sysimage
+          falla aunque el script funcione en el Julia principal.
+          CAUSA MAS COMUN: 'using X' no esta al inicio del script (en funciones Julia
+          los imports locales no son visibles en el scope del sub-proceso).
+        como_verificar: >
+          julia 'C:/NEVEN/startup/precompile_julia_simple.jl'
+          echo $LASTEXITCODE  # debe ser 0
+
+      - id: INV-CJ-03
+        descripcion: >
+          ControlJulia usa el mismo protocolo de pipes que ControlR:
+          Named Pipe OVERLAPPED, framing 4-byte length prefix + Protobuf.
+          El pipe se llama: \\.\pipe\RJ2XCL2-PIPE-J-{PID}
+          El retry loop es identico: 30 intentos x 100ms = 3 segundos max.
+        como_verificar: "Ver LanguageService::Connect() en language_service.cc"
+
+    deploy:
+      nota: >
+        ControlJulia.exe se compila junto con el Core en el build general.
+        No tiene deploy independiente — se copia a C:/NEVEN/ como post-build step.
+      sysimage_deploy: >
+        El archivo neven_julia.dll y neven_julia.version se generan con:
+        julia 'C:/NEVEN/startup/run-sysimage.jl'
+        y se quedan en C:/NEVEN/ automaticamente.
+
+    errores:
+      - sintoma: "Funciones Julia lentas en primera llamada (2-5 minutos)"
+        causa: "Sysimage no construida o version no coincide"
+        fix: "Reconstruir sysimage: julia 'C:/NEVEN/startup/run-sysimage.jl'"
+
+      - sintoma: "Julia crash al iniciar (sin log)"
+        causa: "Sysimage de version Julia diferente a la instalada"
+        fix: >
+          Verificar: Get-Content 'C:/NEVEN/neven_julia.version' vs julia -e 'print(VERSION)'
+          Si no coincide: eliminar neven_julia.dll y neven_julia.version, reiniciar Excel.
+
+      - sintoma: "create_sysimage() falla con ProcessExited(1)"
+        causa: "Precompile script falla en sub-proceso de PackageCompiler"
+        fix: >
+          Ejecutar el script independientemente primero:
+          julia 'C:/NEVEN/startup/precompile_julia_simple.jl'
+          Si falla: revisar que todos los 'using X' estan AL INICIO del script.
+
+  # ---------------------------------------------------------------------------
+  - id: agent_service
+    nombre: "AgentService (neven_ai_service.py)"
+    prioridad: 11
+    descripcion: >
+      Microservicio FastAPI independiente que expone el Agente IA de NEVEN.
+      Corre en puerto 5556 (separado del servidor Studio en 5555).
+      Puede correr localmente o en cloud. Sirve agent.html como Office Add-in
+      standalone. Gestiona historial de chat y contexto de Excel por sesion.
+
+    fuentes:
+      repo: "F:/ANTIGRAVITY/2026/NEVEN/NEVEN/AgentService/"
+      archivos_principales:
+        - "AgentService/neven_ai_service.py"  # servidor FastAPI completo
+        - "AgentService/static/agent.html"    # UI del agente
+        - "AgentService/manifest.xml"         # Office Add-in manifest
+        - "AgentService/sideload.ps1"         # script de sideload en Excel
+
+    produccion:
+      ruta: "C:/NEVEN/AgentService/"
+      puerto: 5556
+      punto_entrada: "python neven_ai_service.py [--port 5556] [--config neven-config.json]"
+
+    dependencias:
+      - studio_backend  # opcional: puede leer contexto de /api/ai/context/pending
+
+    endpoints:
+      POST:
+        "/api/ai/chat":             "Conversacion con el LLM (LM Studio, Ollama, OpenAI, Azure, OpenRouter)"
+        "/api/ai/context":          "Recibir contexto de Excel (=NEVEN.IA.Contexto())"
+      GET:
+        "/api/ai/context/pending":  "Leer y consumir contexto pendiente (CONSUMIBLE)"
+        "/api/ai/history/{session_id}": "Historial de chat de una sesion"
+        "/health":                  "Health check"
+        "/ready":                   "Readiness check"
+        "/":                        "Sirve agent.html"
+      DELETE:
+        "/api/ai/context/{session_id}": "Limpiar contexto de una sesion"
+        "/api/ai/history/{session_id}": "Limpiar historial de una sesion"
+
+    dependencias_python:
+      requeridas:
+        - "fastapi==0.115.0"
+        - "uvicorn==0.30.6"
+      nota: >
+        Solo 2 dependencias externas. Llama al LLM con urllib.request (stdlib).
+        Sin dependencias adicionales para facilitar el deploy en cloud.
+
+    invariantes:
+      - id: INV-AS-01
+        descripcion: >
+          FastAPI y uvicorn son REQUERIDOS. Si no estan instalados, el servicio
+          imprime un mensaje de error claro y termina. No hay graceful degradation.
+          Instalar con: pip install fastapi==0.115.0 uvicorn==0.30.6
+        como_verificar: "python -c 'import fastapi, uvicorn'  # no debe dar error"
+
+      - id: INV-AS-02
+        descripcion: >
+          /api/ai/context/pending es CONSUMIBLE — al leerlo, el contexto se borra.
+          Una segunda lectura retorna 404 (sin contexto). Es intencional para
+          que el Tab IA consuma el contexto exactamente una vez.
+          Esta es la misma invariante que INV-SB-05 del servidor Studio.
+        como_verificar: "Ver handler GET /api/ai/context/pending: borra despues de retornar"
+
+      - id: INV-AS-03
+        descripcion: >
+          El servicio corre en puerto 5556, NO en 5555. El puerto 5555 es del
+          servidor Studio principal (neven_http_server.py). Si hay conflicto
+          de puerto, uvicorn falla al arrancar con OSError: address already in use.
+        como_verificar: "netstat -ano | findstr ':5556'  # debe estar libre antes de arrancar"
+
+    deploy:
+      nota: >
+        El AgentService puede correr independientemente del servidor Studio.
+        Para deploy local: python AgentService/neven_ai_service.py
+        Para sideload en Excel: ejecutar AgentService/sideload.ps1
+
+    errores:
+      - sintoma: "ImportError: No module named 'fastapi'"
+        fix: "pip install fastapi==0.115.0 uvicorn==0.30.6"
+
+      - sintoma: "OSError: [Errno 10048] address already in use"
+        causa: "Puerto 5556 ocupado por otra instancia o proceso"
+        fix: "netstat -ano | findstr ':5556'  luego taskkill /PID XXX /F"
+
+  # ---------------------------------------------------------------------------
+  - id: taskpane_frontend
+    nombre: "TaskPane Frontend (taskpane.html + datalab.js + taskpane.js)"
+    prioridad: 12
+    descripcion: >
+      UI web del NEVEN Studio servida por neven_http_server.py desde C:/NEVEN/taskpane/.
+      Contiene los tabs: Data Studio, Data Lab, Run Script, SQL, Presentaciones, AI.
+      JavaScript vanilla (sin frameworks). Se comunica con el backend via REST.
+
+    fuentes:
+      repo:
+        - "TaskPane/taskpane.html"   # UI principal, todos los tabs, JS inline
+        - "TaskPane/datalab.js"      # logica completa del tab Data Lab
+        - "TaskPane/taskpane.js"     # utilidades compartidas
+        - "TaskPane/taskpane.css"    # estilos globales
+
+    produccion:
+      static_dir: "C:/NEVEN/taskpane/"
+      taskpane_html: "C:/NEVEN/taskpane/taskpane.html"
+      datalab_js:    "C:/NEVEN/taskpane/datalab.js"
+      presentaciones_dir: "C:/NEVEN/taskpane/presentaciones/"
+
+    dependencias:
+      - studio_backend  # todos los endpoints /api/* son del backend
+
+    funciones_criticas_reutilizables:
+      buildSlotElement:
+        archivo: "datalab.js"
+        linea_aprox: 1450
+        descripcion: >
+          RENDERER CENTRAL de resultados. Convierte un slot {name,label,type,value,tier}
+          en un elemento DOM. Es la UNICA fuente de verdad para renderizar outputs
+          de R/Python/Julia. Run Script y DataLab lo usan.
+        tipos_soportados:
+          table:  "renderSlotTable(slot.value, slot.name)"
+          html:   "si tiene <neven-plotly>: _renderPlotlyJSON(); si no: iframe"
+          scalar: "elemento pre con texto"
+          vector: "lista de valores"
+          plotly: "alias de html con <neven-plotly>"
+        regla: >
+          NUNCA reimplementar este renderer en otro lugar.
+          Si se necesita renderizar un resultado de R, llamar buildSlotElement().
+
+      renderSlotTable:
+        archivo: "datalab.js"
+        linea_aprox: 2220
+        descripcion: >
+          Tabla con paginacion (TOP 10 visible, boton 'Mostrar todo') y
+          descarga CSV. Acepta array de objetos [{col: val, ...}].
+        regla: "Llamar desde buildSlotElement para type='table'"
+
+      _renderPlotlyJSON:
+        archivo: "datalab.js"
+        linea_aprox: 1814
+        descripcion: >
+          Extrae base64 de <neven-plotly>...</neven-plotly>, parsea JSON,
+          llama Plotly.newPlot(). Agrega botones PNG/SVG/Enviar a Slide.
+        regla: "Llamar desde buildSlotElement cuando slot.type=='html' con <neven-plotly>"
+
+      selectFunction:
+        archivo: "datalab.js"
+        linea_aprox: 179
+        descripcion: >
+          Llamada cuando el usuario elige una funcion en DataLab.
+          RESETEA _dlState.parameters y _dlState.columnRoles para evitar
+          contaminacion de la funcion anterior.
+          LIMPIA el panel de resultados inmediatamente.
+        regla: "Siempre que se cambie la funcion seleccionada, llamar selectFunction(card)"
+
+      showToast:
+        archivo: "taskpane.html"
+        descripcion: >
+          Muestra una notificacion temporal en la parte inferior sin cambiar de tab.
+          Usar para confirmaciones silenciosas (ej: 'Slide agregado').
+
+      _loadFromContent:
+        archivo: "taskpane.html"
+        descripcion: >
+          Carga CSV/TSV/JSON del browser en DuckDB via FileReader.
+          Auto-detecta delimitador y tipos de columna.
+
+    flujo_datalab_frontend:
+      descripcion: "Flujo completo de ejecucion en DataLab (lado cliente)"
+      pasos:
+        1: "Usuario abre tab DataLab → GET /api/datalab/catalog"
+        2: "renderFamilyDropdown() agrupa por familia"
+        3: "Usuario selecciona funcion → selectFunction(card)"
+        4: "renderParameterForm(card) genera el formulario de roles y parametros"
+        5: "Usuario asigna columnas y configura parametros"
+        6: "Click 'Ejecutar' → POST /api/datalab/run"
+        7: "renderResults(slots) → buildSlotElement(slot) para cada slot"
+        8: "Slots tier=1 visibles, tier=2 en seccion colapsable"
+
+    postmessage_bridge:
+      descripcion: >
+        Comunicacion entre datalab.js y el iframe de Presentaciones via postMessage.
+        DataLab envia NEVEN_ADD_SLIDE con plotlyData/slideHtml.
+        taskpane.html recibe, relays al iframe de presentaciones.
+        Las presentaciones reciben y crean el slide.
+      tipos_mensaje:
+        NEVEN_ADD_SLIDE: "DataLab -> Presentaciones (grafico o tabla)"
+      nota: >
+        El relay usa window.parent.postMessage desde datalab.js y
+        window.addEventListener('message') en taskpane.html.
+
+    invariantes:
+      - id: INV-TF-01
+        descripcion: >
+          buildSlotElement() es el UNICO renderer de resultados.
+          NO crear renderers paralelos en taskpane.html ni en otros JS.
+          REGLA DRY: un solo renderer, una sola fuente de verdad.
+        como_verificar: >
+          grep -n "Plotly.newPlot" TaskPane/taskpane.html  # debe dar 0 resultados
+          grep -n "Plotly.newPlot" TaskPane/datalab.js     # solo en _renderPlotlyJSON
+
+      - id: INV-TF-02
+        descripcion: >
+          selectFunction() DEBE llamarse al cambiar la funcion seleccionada.
+          Resetea _dlState para evitar que parametros de la funcion anterior
+          contaminen la nueva. Si se omite, los parametros de BoxPlot aparecen
+          en GR_Barras, etc.
+        como_verificar: >
+          grep -n "selectFunction" TaskPane/datalab.js  # solo debe llamarse desde el boton
+
+      - id: INV-TF-03
+        descripcion: >
+          UTF-8 para todos los archivos HTML/JS/CSS. NUNCA usar Copy-Item
+          (puede recodificar caracteres especiales en comentarios o strings).
+          Usar [System.IO.File]::Copy() que preserva encoding exacto.
+        como_verificar: >
+          $bytes = [System.IO.File]::ReadAllBytes('taskpane.html')
+          # No debe tener BOM (EF BB BF) al inicio para archivos HTML
+
+      - id: INV-TF-04
+        descripcion: >
+          JavaScript ES5/ES6 vanilla — sin transpiladores, sin bundlers.
+          El archivo se sirve directamente por neven_http_server.py.
+          Cualquier syntax error detiene la ejecucion del script completo.
+          Verificar con: node --check datalab.js
+        como_verificar: >
+          node --check TaskPane/datalab.js  # debe retornar exit 0 sin output
+
+    deploy:
+      metodo: "[System.IO.File]::Copy() — preserva encoding UTF-8"
+      prerequisito: "NEVEN Studio no necesita reiniciarse para cambios en .html/.js/.css"
+      comando: >
+        [System.IO.File]::Copy($src, $dst, $true)
+      hot_reload: >
+        El servidor sirve los archivos desde disco en cada request.
+        Un Ctrl+Shift+R en el Task Pane recarga la UI con los cambios.
+        NO requiere reiniciar el servidor Python.
+
+    errores:
+      - sintoma: "DataLab muestra 'raw=' en lugar de resultados"
+        causa: "_parse_slots_from_variable() no reconocio el formato del data.frame R"
+        diagnostico: >
+          Ver la funcion .Studio — debe retornar data.frame con columnas
+          name/label/type/value/tier via r_object_to_slots() o Extraer_outputs()
+
+      - sintoma: "Funciones de DataLab cachean version anterior"
+        causa: "ControlR tiene la funcion .Studio cacheada en env NEVEN"
+        fix: >
+          _build_r_script() ya incluye rm() + source() + assign() al env NEVEN
+          para forzar recarga. Si sigue fallando, reiniciar NEVEN Studio.
+
+      - sintoma: "SyntaxError en datalab.js al abrir DataLab"
+        causa: "Error de sintaxis JS (} sobrante, string sin cerrar, etc.)"
+        diagnostico: "node --check TaskPane/datalab.js"
+
+# =============================================================================
+# FLUJOS DE DEPLOY — PAQUETE 3
+# =============================================================================
+
+flujos_deploy:
+
+  - id: DEPLOY-SYSIMAGE-JULIA
+    nombre: "Construir y desplegar sysimage Julia"
+    prerequisitos:
+      - "julia precompile_julia_simple.jl retorna exit 0 (verificar ANTES)"
+      - "Todos los 'using X' al inicio del precompile script"
+    pasos:
+      1: "Verificar precompile script: julia 'C:/NEVEN/startup/precompile_julia_simple.jl'"
+      2: "Si exit 0: lanzar build: julia 'C:/NEVEN/startup/run-sysimage.jl'"
+      3: "Esperar ~5-10 minutos"
+    validacion: >
+      Test-Path 'C:/NEVEN/neven_julia.dll'   # debe ser True
+      Get-Content 'C:/NEVEN/neven_julia.version'  # debe mostrar version Julia
+    nota: >
+      ControlJulia verifica automaticamente la version al arrancar.
+      No requiere ninguna accion adicional — solo reiniciar Excel.
+
+  - id: DEPLOY-TASKPANE-JS
+    nombre: "Desplegar cambios en taskpane.html o datalab.js"
+    prerequisitos:
+      - "INV-TF-04: node --check TaskPane/datalab.js retorna exit 0"
+    pasos:
+      1: "Verificar sintaxis JS: node --check TaskPane/datalab.js"
+      2: "[System.IO.File]::Copy($src, 'C:/NEVEN/taskpane/datalab.js', $true)"
+      3: "Ctrl+Shift+R en el Task Pane para recargar (sin reiniciar servidor)"
+    validacion: "Abrir DataLab y verificar funcionamiento basico"
+
+  - id: DEPLOY-AGENT-SERVICE
+    nombre: "Desplegar AgentService"
+    prerequisitos:
+      - "fastapi y uvicorn instalados: python -c 'import fastapi, uvicorn'"
+      - "Puerto 5556 libre: netstat -ano | findstr ':5556'"
+    pasos:
+      1: "Copiar archivos AgentService/ a C:/NEVEN/AgentService/"
+      2: "python C:/NEVEN/AgentService/neven_ai_service.py"
+    validacion: "GET http://localhost:5556/health retorna {status: ok}"
+
+# =============================================================================
+# REGLAS DEL AGENTE VALIDADOR — PAQUETE 3
+# =============================================================================
+
+reglas_validador:
+
+  - id: REGLA-P3-01
+    trigger: "Construir sysimage Julia (run-sysimage.jl, PackageCompiler)"
+    verificar_antes:
+      - "INV-CJ-02: julia precompile_julia_simple.jl debe retornar exit 0"
+      - "Todos los 'using X' estan AL INICIO del precompile script (no dentro de funciones)"
+      - "julia --version coincide con el entorno esperado"
+    bloquear_si: "El precompile script falla — NO lanzar create_sysimage()"
+
+  - id: REGLA-P3-02
+    trigger: "Modificacion de datalab.js o taskpane.html"
+    verificar_antes:
+      - "INV-TF-04: node --check TaskPane/datalab.js retorna exit 0"
+      - "INV-TF-01: no hay Plotly.newPlot fuera de _renderPlotlyJSON en datalab.js"
+    verificar_despues:
+      - "Ctrl+Shift+R en Task Pane carga la nueva version sin errores en consola"
+
+  - id: REGLA-P3-03
+    trigger: "Inicio o restart de AgentService (neven_ai_service.py)"
+    verificar_antes:
+      - "INV-AS-01: import fastapi uvicorn funciona"
+      - "INV-AS-03: puerto 5556 libre (netstat -ano | findstr ':5556')"
+
+# =============================================================================
+# MATRIZ DE DEPENDENCIAS — VISION COMPLETA (P1 + P2 + P3)
+# =============================================================================
+
+matriz_dependencias:
+  descripcion: >
+    Mapa completo de dependencias entre los 12 componentes de los 3 paquetes.
+    Una flecha A -> B significa: A depende de B.
+
+  dependencias:
+    core_xll:
+      depende_de: [common_lib, pb_lib, controlr_exe, controljulia_exe, controlpython_exe]
+    ribbon_dll:
+      depende_de: [core_xll]  # OnConnection llama RJ_SetPointers en el XLL
+    controlr_exe:
+      depende_de: [common_lib, pb_lib, startup_r, libreria_r]
+    controljulia_exe:
+      depende_de: [common_lib, pb_lib]
+      opcional: [sysimage_julia]
+    common_lib:
+      depende_de: []  # sin dependencias internas
+    startup_r:
+      depende_de: [dispatcher_nevenx]  # source() del dispatcher al final
+    dispatcher_nevenx:
+      depende_de: [sidecars_json, libreria_r]  # .nevenx_load_sidecar + do.call(fn)
+    libreria_r:
+      depende_de: [startup_r]  # usa helpers R4XCL_INT_* de Interno-1/2/3.R
+    studio_backend:
+      depende_de: [controlr_exe, sidecars_json, libreria_r]
+    sidecars_json:
+      depende_de: []  # archivos JSON estaticos
+    agent_service:
+      depende_de: []  # independiente; opcional: lee contexto de studio_backend
+    taskpane_frontend:
+      depende_de: [studio_backend]  # todos los endpoints /api/*
+
+  flujo_excel_to_result:
+    descripcion: "Flujo completo desde celda Excel hasta resultado visible"
+    pasos:
+      1: "Usuario escribe =NevenX.R('MR_Lineal', Y, X, 1) en Excel"
+      2: "Excel llama NevenX_R() exportada por core_xll (NEVEN64.xll)"
+      3: "core_xll invoca .nevenx_dispatch en dispatcher_nevenx via ControlR pipe"
+      4: "dispatcher_nevenx llama MR_Lineal() de libreria_r"
+      5: "MR_Lineal retorna data.frame R4XCL_ModeloEstimado"
+      6: "controlr_exe serializa data.frame a Variable Protobuf"
+      7: "core_xll deserializa Variable y retorna XLOPER12 a Excel"
+      8: "Excel muestra el resultado en la celda"
+
+  flujo_studio_to_result:
+    descripcion: "Flujo completo desde DataLab Studio hasta slot visible en UI"
+    pasos:
+      1: "Usuario selecciona RG_Lineal en DataLab y click Ejecutar"
+      2: "taskpane_frontend POST /api/datalab/run"
+      3: "studio_backend.DataLabHandler.handle_run() escanea sidecars_json"
+      4: "Construye r_lines con _build_r_script() usando sidecar"
+      5: "Envia r_lines a controlr_exe via Named Pipe"
+      6: "controlr_exe ejecuta RG_Lineal.Studio() de libreria_r"
+      7: "RG_Lineal.Studio() llama r_object_to_slots() — retorna data.frame de slots"
+      8: "studio_backend._parse_slots_from_variable() convierte a lista Python"
+      9: "taskpane_frontend.buildSlotElement() renderiza cada slot en el UI"

@@ -1,0 +1,29 @@
+---
+title: "RJ2XCL Demo Report"
+author: "Team Vikingos"
+format:
+  html:
+    theme: none
+    minimal: true
+---
+
+## Reporte desde Excel
+
+Este documento fue renderizado usando `=P.quarto_render()` desde Excel.
+
+```{python}
+import math
+for name, val in {"Pi": math.pi, "e": math.e, "sqrt(2)": math.sqrt(2)}.items():
+    print(f"{name}: {val:.6f}")
+```
+
+### Tabla
+
+| Lenguaje | Prefijo | Estado |
+|----------|---------|--------|
+| R        | R.      | OK     |
+| Julia    | J.      | OK     |
+| Python   | P.      | OK     |
+| Quarto   | Q.      | OK     |
+
+*Generado por RJ2XCL v3.0*

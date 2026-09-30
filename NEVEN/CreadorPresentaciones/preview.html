@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Presentation Preview</title>
+    <link href="../impress.js/css/impress-demo.css" rel="stylesheet" />
+    <style>
+        .slide-counter {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 14px;
+            color: white;
+            font-family: Arial, sans-serif;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="impress">
+        <!-- Slides will be injected here -->
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../impress.js/js/impress.js"></script>
+    <script>
+        function initImpress(slidesHTML, chartInitScripts) {
+            document.getElementById('impress').innerHTML = slidesHTML;
+            var api = impress();
+            
+            var steps = document.querySelectorAll('.step');
+            var counter = document.createElement('div');
+            counter.className = 'slide-counter';
+            document.body.appendChild(counter);
+
+            function updateCounter() {
+                var activeStep = document.querySelector('.step.active');
+                if (activeStep) {
+                    var activeIndex = Array.from(steps).indexOf(activeStep);
+                    counter.textContent = (activeIndex + 1) + '/' + steps.length;
+                }
+            }
+
+            document.addEventListener('impress:init', function(event) {
+                // The first step is entered right after init
+                setTimeout(updateCounter, 1); 
+            });
+
+            document.addEventListener('impress:stepenter', function() {
+                updateCounter();
+            });
+
+            api.init();
+
+            if (chartInitScripts) {
+                var script = document.createElement('script');
+                script.textContent = chartInitScripts;
+                document.body.appendChild(script);
+            }
+        }
+        
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'loadSlides') {
+                initImpress(event.data.slidesHTML, event.data.chartInitScripts);
+            }
+        });
+    </script>
+</body>
+</html>

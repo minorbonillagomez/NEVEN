@@ -1,0 +1,30 @@
+NEVEN - An Open-Source Polyglot Infrastructure for Excel
+Copyright (C) 2023-2026 Minor Bonilla-Gómez
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Additional Terms (pursuant to Section 7 of the GPL v3):
+
+  Attribution Requirement: Any use, distribution, or derivative work
+  of this software must include a visible attribution to the original
+  author in the following form:
+
+    "Powered by NEVEN — developed by Minor Bonilla-Gómez"
+
+  This attribution must appear in at least one of the following:
+  (a) the software's user interface (e.g., About dialog, splash screen,
+      or Ribbon tab tooltip);
+  (b) the documentation distributed with the software; or
+  (c) any publication, report, or academic work that presents results
+      obtained using this software.

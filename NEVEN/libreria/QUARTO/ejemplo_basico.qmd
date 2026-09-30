@@ -1,0 +1,43 @@
+---
+title: "Ejemplo Básico — NEVEN Quarto"
+author: "NEVEN"
+format: html
+---
+
+## Introducción
+
+Este es un ejemplo mínimo de documento Quarto que puede renderizarse desde Excel usando:
+
+```
+=P.quarto_render("ruta/a/este/archivo.qmd", "html")
+```
+
+## Datos de ejemplo
+
+```{python}
+import pandas as pd
+
+datos = pd.DataFrame({
+    "Producto": ["A", "B", "C", "D"],
+    "Ventas": [120, 85, 200, 150],
+    "Margen": [0.25, 0.30, 0.18, 0.22]
+})
+
+datos
+```
+
+## Gráfico
+
+```{python}
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(8, 4))
+plt.bar(datos["Producto"], datos["Ventas"], color=["#4CAF50", "#2196F3", "#FF9800", "#9C27B0"])
+plt.title("Ventas por Producto")
+plt.ylabel("Unidades")
+plt.show()
+```
+
+## Resumen
+
+Este documento demuestra la integración entre Excel → Python → Quarto para generar reportes reproducibles.
