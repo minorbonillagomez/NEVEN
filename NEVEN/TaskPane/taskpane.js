@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // NEVEN Studio — Task Pane JavaScript (Office.js + API Client)
 // ═══════════════════════════════════════════════════════════════════════════════
+console.log('[TASKPANE.JS] ========== ARCHIVO CARGADO v20260930 ==========');
 
 // Si ya existe API (definida en el HTML inline), solo exponer funciones de gráficos
 // y no reinicializar la app
@@ -1510,7 +1511,7 @@ async function analyzeSheetForAI(options = {}) {
       const ctxSummary = document.getElementById('ai-context-summary');
       if (ctxCard && ctxSummary) {
         ctxCard.style.display = '';
-        ctxSummary.textContent = `📊 ${analysis.sheet_name}: ${analysis.summary.total_formulas} fórmulas`;
+        ctxSummary.textContent = ` ${analysis.sheet_name}: ${analysis.summary.total_formulas} fórmulas`;
       }
       
       // Add system message to chat history
@@ -1530,7 +1531,7 @@ async function analyzeSheetForAI(options = {}) {
       // Show Excel Consultant chips
       showExcelConsultantChips(analysis);
       
-      showToast('✓ Análisis de hoja cargado — Modo Consultor activo');
+      showToast(' Análisis de hoja cargado — Modo Consultor activo');
       return true;
     }
     
@@ -1871,7 +1872,7 @@ async function captureSheetData(context, sheet) {
  */
 async function analyzeWorkbookForAI(options = {}) {
   try {
-    showToast('📚 Analizando libro de trabajo...');
+    showToast(' Analizando libro de trabajo...');
     
     const workbookData = await captureWorkbookForAnalysis(options);
     
@@ -1925,7 +1926,7 @@ async function analyzeWorkbookForAI(options = {}) {
       if (ctxCard && ctxSummary) {
         ctxCard.style.display = '';
         const stats = analysis.aggregated_stats || {};
-        ctxSummary.textContent = `📚 ${analysis.workbook_name}: ${analysis.captured_sheets} hojas, ${stats.total_formulas || 0} fórmulas`;
+        ctxSummary.textContent = ` ${analysis.workbook_name}: ${analysis.captured_sheets} hojas, ${stats.total_formulas || 0} fórmulas`;
       }
       
       // Add system message to chat history
@@ -2143,7 +2144,7 @@ function formatWorkbookAnalysisForAI(analysis) {
     lines.push('');
     lines.push('## Recomendaciones');
     analysis.recommendations.forEach(r => {
-      const icon = r.priority === 'high' ? '🔴' : (r.priority === 'medium' ? '🟡' : '🟢');
+      const icon = r.priority === 'high' ? '' : (r.priority === 'medium' ? '' : '');
       lines.push(`- ${icon} [${r.type}] ${r.message}`);
     });
   }
@@ -2689,7 +2690,7 @@ function downloadWorkbookAnalysisMD() {
   
   // Download
   downloadTextFile(md, filename, 'text/markdown');
-  showToast(`✓ Descargado: ${filename}`);
+  showToast(` Descargado: ${filename}`);
 }
 
 /**
@@ -2712,7 +2713,7 @@ function downloadSheetAnalysisMD() {
   
   // Download
   downloadTextFile(md, filename, 'text/markdown');
-  showToast(`✓ Descargado: ${filename}`);
+  showToast(` Descargado: ${filename}`);
 }
 
 /**
@@ -3147,24 +3148,24 @@ function renderChartInPreview(htmlContent, title = 'Gráfico generado', library 
   `;
 
   // Botón: Enviar a Slide
-  const btnSlide = _createChartActionButton('📊 Enviar a Slide', () => {
+  const btnSlide = _createChartActionButton(' Enviar a Slide', () => {
     sendChartToPresentation(htmlContent, title);
   });
 
   // Botón: Guardar PNG
-  const btnPng = _createChartActionButton('💾 Guardar PNG', () => {
+  const btnPng = _createChartActionButton(' Guardar PNG', () => {
     _exportChartAsPng(iframe, title);
   });
 
   // Botón: Copiar HTML
-  const btnCopy = _createChartActionButton('📋 Copiar HTML', () => {
+  const btnCopy = _createChartActionButton(' Copiar HTML', () => {
     navigator.clipboard.writeText(htmlContent).then(() => {
       showToast('HTML copiado al portapapeles');
     });
   });
 
   // Botón: Expandir
-  const btnExpand = _createChartActionButton('🔍 Expandir', () => {
+  const btnExpand = _createChartActionButton(' Expandir', () => {
     _openChartInNewWindow(htmlContent, title);
   });
 
@@ -3296,7 +3297,7 @@ function sendChartToPresentation(htmlContent, title = 'Gráfico') {
     presTab.click();
   }
 
-  showToast('📊 Gráfico enviado a la presentación');
+  showToast(' Gráfico enviado a la presentación');
 }
 
 /**
@@ -3315,18 +3316,18 @@ async function processChartRequest(userPrompt) {
 
   try {
     // Mostrar indicador de carga
-    showToast('📊 Capturando datos y generando gráfico...');
+    showToast(' Capturando datos y generando gráfico...');
 
     // Capturar datos seleccionados
     const rangeData = await captureSelectedRangeForChart();
     
     if (rangeData.error) {
-      showToast('⚠️ ' + rangeData.error);
+      showToast('️ ' + rangeData.error);
       return false;
     }
 
     if (!rangeData.data || rangeData.data.length === 0) {
-      showToast('⚠️ Selecciona un rango de datos primero');
+      showToast('️ Selecciona un rango de datos primero');
       return false;
     }
 
@@ -3338,7 +3339,7 @@ async function processChartRequest(userPrompt) {
       const title = `Gráfico ${result.chart_type || 'generado'}`;
       renderChartInPreview(result.html, title, result.library);
       
-      showToast(`✅ Gráfico generado con ${result.library}`);
+      showToast(` Gráfico generado con ${result.library}`);
       return true;
     } else {
       throw new Error(result.error || 'Error desconocido');
@@ -3346,7 +3347,7 @@ async function processChartRequest(userPrompt) {
 
   } catch (error) {
     console.error('[NEVEN] Error generando gráfico:', error);
-    showToast('❌ Error: ' + error.message);
+    showToast(' Error: ' + error.message);
     return false;
   }
 }
@@ -3376,7 +3377,7 @@ function showChartRangeIndicator(rangeData) {
 
   const headers = rangeData.headers ? rangeData.headers.join(', ') : '(sin headers)';
   indicator.innerHTML = `
-    📊 <strong>Rango seleccionado:</strong> ${rangeData.address} 
+     <strong>Rango seleccionado:</strong> ${rangeData.address} 
     (${rangeData.rows} filas × ${rangeData.columns} columnas)<br>
     <small>Headers: ${headers}</small>
   `;
@@ -3421,6 +3422,7 @@ let _editingPrompt = null;
 // ─── Inicializacion del Tab Settings ─────────────────────────────────────────
 
 function initSettingsTab() {
+  console.log('[Settings] initSettingsTab() INICIANDO...');
   // Sub-tabs de settings
   document.querySelectorAll('.settings-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -3499,10 +3501,13 @@ function initSettingsTab() {
   document.getElementById('btn-prompt-activate')?.addEventListener('click', activatePrompt);
 
   // Cargar proveedores/modelos desde servidor
+  console.log('[Settings] Llamando loadConfigMetadata()...');
   loadConfigMetadata();
   
   // Cargar perfiles AI al inicio (es el sub-tab activo por defecto)
+  console.log('[Settings] Llamando loadAiProfiles()...');
   loadAiProfiles();
+  console.log('[Settings] initSettingsTab() COMPLETADO');
 }
 
 // ─── Cargar metadata de configuracion ────────────────────────────────────────
@@ -3534,11 +3539,19 @@ async function loadConfigMetadata() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 async function loadAiProfiles() {
+  console.log('[Settings] loadAiProfiles() INICIANDO...');
   const list = document.getElementById('ai-profiles-list');
+  console.log('[Settings] ai-profiles-list element:', list);
+  if (!list) {
+    console.error('[Settings] ERROR: ai-profiles-list NO EXISTE EN DOM');
+    return;
+  }
   list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">Cargando...</div>';
   
   try {
+    console.log('[Settings] Fetch a:', API_BASE + '/api/config/ai-profiles');
     const resp = await fetch(API_BASE + '/api/config/ai-profiles');
+    console.log('[Settings] Response status:', resp.status);
     if (!resp.ok) throw new Error('Error ' + resp.status);
     const data = await resp.json();
     
@@ -3558,8 +3571,8 @@ async function loadAiProfiles() {
           <div style="font-size:9px;color:var(--text-secondary)">${p.provider} / ${p.model}</div>
         </div>
         <span style="font-size:8px;color:${p.has_api_key ? '#6c6' : '#f66'}">${p.has_api_key ? 'KEY OK' : 'SIN KEY'}</span>
-        <button class="btn-ai-edit" data-id="${p.id}" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:2px" title="Editar">✎</button>
-        <button class="btn-ai-delete" data-id="${p.id}" style="background:none;border:none;color:#f66;cursor:pointer;padding:2px" title="Eliminar">✕</button>
+        <button class="btn-ai-edit" data-id="${p.id}" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:2px" title="Editar"></button>
+        <button class="btn-ai-delete" data-id="${p.id}" style="background:none;border:none;color:#f66;cursor:pointer;padding:2px" title="Eliminar"></button>
       </div>
     `).join('');
     
@@ -3775,8 +3788,8 @@ async function loadDbConnections() {
           <div style="font-size:11px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div>
           <div style="font-size:9px;color:var(--text-secondary)">${c.db_type} ${c.host ? '@ ' + c.host : ''}</div>
         </div>
-        <button class="btn-db-edit" data-id="${c.id}" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:2px" title="Editar">✎</button>
-        <button class="btn-db-delete" data-id="${c.id}" style="background:none;border:none;color:#f66;cursor:pointer;padding:2px" title="Eliminar">✕</button>
+        <button class="btn-db-edit" data-id="${c.id}" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:2px" title="Editar"></button>
+        <button class="btn-db-delete" data-id="${c.id}" style="background:none;border:none;color:#f66;cursor:pointer;padding:2px" title="Eliminar"></button>
       </div>
     `).join('');
     
@@ -3971,26 +3984,48 @@ async function loadPromptsList() {
     if (!resp.ok) throw new Error('Error ' + resp.status);
     const data = await resp.json();
     
-    const allPrompts = [...(data.system || []), ...(data.custom || [])];
+    const categories = data.categories || {};
+    const catIds = Object.keys(categories);
     
-    if (allPrompts.length === 0) {
+    if (catIds.length === 0) {
       list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">No hay prompts configurados</div>';
       return;
     }
     
-    list.innerHTML = allPrompts.map(p => `
-      <div class="prompt-item" data-id="${p.id}" data-type="${p.type}" style="display:flex;align-items:center;gap:8px;padding:6px 8px;
-           background:${p.id === data.active ? 'rgba(215,165,56,0.1)' : 'var(--bg-primary)'};
-           border:1px solid ${p.id === data.active ? 'var(--accent)' : '#333'};border-radius:4px;cursor:pointer">
-        <input type="radio" name="prompt-active" ${p.id === data.active ? 'checked' : ''} 
-               style="accent-color:var(--accent)" data-id="${p.id}">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:11px;font-weight:600;color:var(--text-primary)">${p.name}</div>
-          <div style="font-size:9px;color:var(--text-secondary)">${p.type === 'system' ? 'Sistema' : 'Personalizado'}</div>
-        </div>
-        ${p.editable ? `<button class="btn-prompt-edit" data-id="${p.id}" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:2px" title="Editar">✎</button>` : ''}
-      </div>
-    `).join('');
+    // Renderizar con acordeones como en Ayuda
+    list.innerHTML = catIds.map(catId => {
+      const cat = categories[catId];
+      const prompts = cat.prompts || [];
+      if (prompts.length === 0 && catId !== 'custom') return '';
+      
+      return `
+        <details class="prompt-categoria" ${prompts.some(p => p.id === data.active) ? 'open' : ''}>
+          <summary style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bg-secondary);
+                         border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text-primary);
+                         list-style:none;user-select:none">
+            <span style="flex:1">${cat.label}</span>
+            <span style="font-size:9px;color:var(--text-muted);background:var(--bg-primary);padding:1px 6px;border-radius:8px">${prompts.length}</span>
+          </summary>
+          <div style="display:flex;flex-direction:column;gap:2px;padding:4px 0 4px 16px;margin-top:2px">
+            ${prompts.length === 0 
+              ? '<div style="font-size:9px;color:var(--text-muted);padding:4px 8px">Sin prompts en esta categoria</div>'
+              : prompts.map(p => `
+                <div class="prompt-item" data-id="${p.id}" data-type="${p.type}" style="display:flex;align-items:center;gap:6px;padding:5px 8px;
+                     background:${p.id === data.active ? 'rgba(215,165,56,0.15)' : 'transparent'};
+                     border-left:2px solid ${p.id === data.active ? 'var(--accent)' : 'transparent'};
+                     border-radius:0 4px 4px 0;cursor:pointer;transition:background 0.15s">
+                  <input type="radio" name="prompt-active" ${p.id === data.active ? 'checked' : ''} 
+                         style="accent-color:var(--accent);margin:0" data-id="${p.id}">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:10px;color:var(--text-primary)">${p.name}</div>
+                  </div>
+                  <button class="btn-prompt-edit" data-id="${p.id}" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px;font-size:10px" title="Editar">[edit]</button>
+                </div>
+              `).join('')}
+          </div>
+        </details>
+      `;
+    }).join('');
     
     // Event listeners
     list.querySelectorAll('input[name="prompt-active"]').forEach(radio => {
@@ -4013,6 +4048,10 @@ async function showPromptEditor(promptId) {
   const title = document.getElementById('prompt-editor-title');
   const idRow = document.getElementById('prompt-id-row');
   
+  // Remover nota anterior si existe
+  const oldNote = document.getElementById('prompt-edit-note');
+  if (oldNote) oldNote.remove();
+  
   if (promptId) {
     title.textContent = 'Editar Prompt';
     idRow.style.display = 'none';  // No se puede cambiar ID de existente
@@ -4024,8 +4063,17 @@ async function showPromptEditor(promptId) {
       
       document.getElementById('prompt-id').value = promptId;
       document.getElementById('prompt-content').value = data.content || '';
-      document.getElementById('prompt-content').readOnly = !data.editable;
-      document.getElementById('btn-prompt-save').style.display = data.editable ? 'block' : 'none';
+      document.getElementById('prompt-content').readOnly = false;
+      document.getElementById('btn-prompt-save').style.display = 'block';
+      
+      // Mostrar nota informativa para prompts del sistema
+      if (data.type === 'system') {
+        const note = document.createElement('div');
+        note.id = 'prompt-edit-note';
+        note.style.cssText = 'font-size:9px;color:var(--accent);background:rgba(215,165,56,0.1);padding:6px 8px;border-radius:4px;margin-bottom:8px;border:1px solid rgba(215,165,56,0.3)';
+        note.innerHTML = 'Nota: Se creara un backup automatico antes de guardar cambios.';
+        editor.querySelector('.card-title').after(note);
+      }
     } catch (e) {
       showToast('Error cargando prompt: ' + e.message);
       return;
@@ -4096,18 +4144,25 @@ async function activatePromptById(promptId) {
 
 // ─── Inicializar Settings al cargar ──────────────────────────────────────────
 
-// Agregar al initializeApp existente
-const _originalInitApp = typeof initializeApp === 'function' ? initializeApp : null;
-if (_originalInitApp) {
-  initializeApp = function() {
-    _originalInitApp();
+console.log('[Settings] Configurando inicializacion...');
+console.log('[Settings] document.readyState:', document.readyState);
+
+// Llamar initSettingsTab cuando el DOM esté listo
+function _initSettingsWhenReady() {
+  console.log('[Settings] _initSettingsWhenReady llamado');
+  if (document.getElementById('ai-profiles-list')) {
+    console.log('[Settings] Elemento encontrado, llamando initSettingsTab');
     initSettingsTab();
-  };
-} else {
-  document.addEventListener('DOMContentLoaded', initSettingsTab);
+  } else {
+    console.log('[Settings] Elemento NO encontrado, reintentando en 200ms');
+    setTimeout(_initSettingsWhenReady, 200);
+  }
 }
 
-// También inicializar si ya se cargo
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  setTimeout(initSettingsTab, 100);
+if (document.readyState === 'loading') {
+  console.log('[Settings] DOM loading, registrando DOMContentLoaded');
+  document.addEventListener('DOMContentLoaded', _initSettingsWhenReady);
+} else {
+  console.log('[Settings] DOM ya listo, llamando _initSettingsWhenReady');
+  _initSettingsWhenReady();
 }
