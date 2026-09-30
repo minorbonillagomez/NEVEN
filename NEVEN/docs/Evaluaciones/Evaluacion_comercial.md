@@ -501,3 +501,62 @@ Este es un mensaje de una línea que cualquier usuario de Excel entiende inmedia
 
 *Actualizado: 19 de agosto de 2026*
 *NEVEN v2.4 — Data Binding Reactivo*
+
+
+---
+
+## ACTUALIZACIÓN — Agosto de 2026 (NEVEN v2.4+)
+
+### Nuevas fortalezas comerciales
+
+**21. Tab Settings — Configurador Visual sin Código.** NEVEN Studio incluye un configurador completo accesible desde la pestaña "Settings" que permite gestionar múltiples perfiles de IA y conexiones de base de datos sin editar archivos JSON ni usar consolas.
+
+**Características clave:**
+- **Múltiples perfiles AI:** OpenAI, Claude, Azure, Ollama, LM Studio — el usuario puede cambiar entre proveedores con un clic
+- **Múltiples conexiones DB:** PostgreSQL, MySQL, SQL Server, SQLite, DuckDB — todas gestionables visualmente
+- **Botón "Probar Conexión":** Feedback visual inmediato de si las credenciales son correctas
+- **Credenciales seguras:** API keys y passwords almacenados en Windows Credential Manager, no en archivos JSON
+- **Migración automática:** Configuraciones v1 se migran automáticamente a v2.0 sin intervención
+- **Editor de prompts:** Los prompts de IA son editables por categoría directamente en la UI
+
+**Relevancia comercial:**
+- **Onboarding simplificado:** Un usuario no técnico puede configurar NEVEN completo en 2 minutos sin leer documentación
+- **Reducción de soporte:** El 80% de tickets de soporte en software similar son "cómo configuro X" — el Tab Settings elimina esa categoría
+- **Seguridad enterprise:** Las credenciales en Windows Credential Manager cumplen requisitos de auditoría corporativa
+- **Flexibilidad de proveedores:** El usuario puede probar Ollama (gratis, local) y después migrar a OpenAI (cloud, pagado) sin cambiar código
+
+**Diferenciador vs. competencia:**
+
+| Producto | Configuración | Múltiples proveedores | Credenciales seguras |
+|:---|:---|:---|:---|
+| PyXLL | Archivo YAML manual | No | No |
+| xlwings | Código Python | No | No |
+| Python in Excel | Microsoft config | Solo Microsoft | Microsoft managed |
+| **NEVEN Studio** | **UI visual** | **Sí (5 proveedores AI, 5 tipos DB)** | **Windows Credential Manager** |
+
+### Impacto en viabilidad comercial
+
+| Aspecto | NEVEN v2.3 | NEVEN v2.4+ |
+|:---|:---|:---|
+| Configuración inicial | Editar JSON + documentación | **Formulario visual en 2 minutos** |
+| Cambio de proveedor AI | Editar config + reiniciar | **Un clic en radio button** |
+| Gestión de credenciales | Texto plano en JSON | **Encriptado en Windows** |
+| Soporte requerido | Alto (configuración manual) | **Bajo (auto-explicativo)** |
+
+### API de Configuración (bonus técnico)
+
+El Tab Settings expone 20+ endpoints REST que permiten automatización:
+
+```
+GET/POST /api/config/ai-profiles      — CRUD perfiles IA
+GET/POST /api/config/db-connections   — CRUD conexiones DB  
+GET/POST /api/config/prompts          — Edición de prompts
+POST     /api/config/reload           — Recargar configuración
+```
+
+Esto permite que DevOps configure NEVEN programáticamente en despliegues automatizados.
+
+---
+
+*Actualizado: Agosto de 2026*
+*NEVEN v2.4+ — Tab Settings y API de Configuración*

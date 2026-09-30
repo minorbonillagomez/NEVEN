@@ -714,3 +714,151 @@ Este flujo de trabajo es análogo al "live coding" en entornos de desarrollo mod
 
 *Actualización: 19 de agosto de 2026*
 *NEVEN v2.4 — Data Binding Reactivo*
+
+
+---
+
+## ACTUALIZACIÓN — Agosto de 2026 (NEVEN v2.4+)
+
+### 2.20 Sistema de Configuración Visual — Tab Settings con Gestión Segura de Credenciales
+
+Se implementó un sistema completo de configuración accesible desde la interfaz de NEVEN Studio que permite gestionar múltiples perfiles de proveedores AI y conexiones de base de datos sin editar archivos JSON.
+
+**Arquitectura del sistema:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Tab Settings (UI)                        │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
+│  │  Motor IA   │ │Conexiones DB│ │   Prompts   │            │
+│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘            │
+└─────────┼───────────────┼───────────────┼────────────────────┘
+          │               │               │
+          ▼               ▼               ▼
+    /api/config/ai  /api/config/db  /api/config/prompts
+          │               │               │
+          └───────────────┴───────────────┘
+                          │
+                          ▼
+              ┌───────────────────────┐
+              │   config_manager.py   │
+              │  - AIProfile          │
+              │  - DBConnection       │
+              │  - PromptConfig       │
+              └───────────┬───────────┘
+                          │
+          ┌───────────────┴───────────────┐
+          ▼                               ▼
+┌─────────────────┐             ┌─────────────────┐
+│ neven-config.json│             │ Windows Credential│
+│ (metadatos)      │             │ Manager (secrets) │
+└─────────────────┘             └─────────────────┘
+```
+
+**Componentes implementados:**
+
+| Componente | Función | Líneas de código |
+|:---|:---|:---|
+| `config_manager.py` | Gestión de configuración con dataclasses | ~1000 líneas |
+| `neven_http_server.py` | 20+ endpoints REST para CRUD | +400 líneas |
+| `taskpane.html` | UI del Tab Settings | +200 líneas |
+| `taskpane.js` | Lógica de formularios | +600 líneas |
+| `taskpane.css` | Estilos del configurador | +50 líneas |
+
+**Decisiones de diseño con justificación técnica:**
+
+1. **Credenciales en Windows Credential Manager vía `keyring`**
+   - **Problema:** API keys y passwords en JSON son un riesgo de seguridad (commits accidentales, backups sin encriptar)
+   - **Solución:** El archivo JSON solo contiene IDs de referencia; las credenciales reales están en el Credential Manager de Windows
+   - **Beneficio:** Cumple requisitos de auditoría corporativa; las credenciales están encriptadas por el OS
+
+2. **Múltiples perfiles con uno activo**
+   - **Problema:** El usuario puede necesitar OpenAI para producción y Ollama para desarrollo/pruebas
+   - **Solución:** Sistema de perfiles donde el usuario puede cambiar de proveedor con un clic
+   - **Patrón:** Análogo a los "perfiles" de navegadores web o los "environments" de Postman
+
+3. **Migración automática v1 → v2.0**
+   - **Problema:** Usuarios existentes tienen configuración en formato v1 (API key directamente en JSON)
+   - **Solución:** `config_manager.py` detecta formato v1, mueve la API key al Credential Manager, crea perfil "migrated"
+   - **Beneficio:** Zero-friction upgrade — el usuario no necesita hacer nada manual
+
+4. **Botón "Probar Conexión" con feedback visual**
+   - **Problema:** El usuario no sabe si sus credenciales son correctas hasta que falla algo
+   - **Solución:** Cada formulario tiene botón de test que valida la conexión antes de guardar
+   - **Implementación:** Diferentes tests según proveedor (OpenAI: `/models`, Ollama: `/api/tags`, BD: `SELECT 1`)
+
+**Proveedores AI soportados:**
+
+| Proveedor | Endpoint | Modelos | Test de conexión |
+|:---|:---|:---|:---|
+| OpenAI | `api.openai.com` | gpt-4o, gpt-4-turbo, gpt-3.5-turbo | GET `/v1/models` |
+| Azure OpenAI | Configurable | Deployment-based | GET `/openai/deployments` |
+| Anthropic | `api.anthropic.com` | claude-3-5-sonnet, claude-3-opus | POST `/v1/messages` |
+| Ollama | `localhost:11434` | Modelos locales | GET `/api/tags` |
+| LM Studio | `localhost:1234` | Modelos locales | GET `/v1/models` |
+
+**Bases de datos soportadas:**
+
+| Tipo | Puerto default | Driver | Test de conexión |
+|:---|:---|:---|:---|
+| PostgreSQL | 5432 | `psycopg2` | `SELECT 1` |
+| MySQL | 3306 | `mysql-connector` | `SELECT 1` |
+| SQL Server | 1433 | `pyodbc` | `SELECT 1` |
+| SQLite | — | `sqlite3` | `SELECT 1` |
+| DuckDB | — | `duckdb` | `SELECT 1` |
+
+**API REST implementada:**
+
+| Endpoint | Método | Función |
+|:---|:---|:---|
+| `/api/config/ai-profiles` | GET | Lista todos los perfiles AI |
+| `/api/config/ai-profiles` | POST | Crear nuevo perfil |
+| `/api/config/ai-profiles/{id}` | GET/POST | Leer/Actualizar perfil |
+| `/api/config/ai-profiles/{id}/delete` | POST | Eliminar perfil |
+| `/api/config/ai-profiles/{id}/activate` | POST | Activar perfil |
+| `/api/config/ai-profiles/{id}/test` | POST | Probar conexión |
+| `/api/config/db-connections` | GET/POST | CRUD conexiones DB |
+| `/api/config/providers` | GET | Lista proveedores y modelos |
+| `/api/config/db-types` | GET | Lista tipos BD y puertos |
+| `/api/config/prompts` | GET/POST | Gestión de prompts |
+| `/api/config/reload` | POST | Recargar configuración |
+
+**Contribución técnica:**
+
+- Demuestra arquitectura de configuración enterprise-grade con separación de secretos
+- Implementa patrón de migración automática sin intervención del usuario
+- Documenta integración de Python con Windows Credential Manager vía biblioteca `keyring`
+- La API REST permite automatización en despliegues DevOps
+
+**Relevancia académica:**
+
+El Tab Settings resuelve el problema de "configuración de herramientas técnicas por usuarios no técnicos". En la literatura de HCI, esto se conoce como el problema de "configuration burden" — cuando la configuración inicial es tan compleja que impide la adopción. El diseño de NEVEN (formularios visuales, múltiples perfiles, tests de conexión, migración automática) sigue las mejores prácticas documentadas en la literatura de usabilidad de software.
+
+### Actualización de tabla comparativa con BERT
+
+| Capacidad | BERT (2017-2018) | NEVEN (Ago 2026+) | Innovación |
+|:---|:---|:---|:---|
+| *(anteriores)* | — | — | — |
+| Configuración visual | No (editar JSON) | Tab Settings con formularios | **Innovación** |
+| Múltiples proveedores AI | No | 5 proveedores, perfiles switchables | **Innovación** |
+| Credenciales seguras | No (texto plano) | Windows Credential Manager | **Innovación** |
+| API de configuración | No | 20+ endpoints REST | **Innovación** |
+
+**Resumen actualizado:** De 25 capacidades comparadas, 23 son innovaciones sobre BERT.
+
+### Tabla de hitos — actualizada agosto 2026+
+
+| Fase | Estado | Descripción |
+|:---|:---|:---|
+| *(todos los anteriores)* | ✅ | Ver versiones anteriores |
+| **Tab Settings (UI)** | ✅ | Formularios visuales para AI profiles y DB connections |
+| **config_manager.py** | ✅ | Módulo de gestión con dataclasses y keyring |
+| **API de configuración** | ✅ | 20+ endpoints REST para CRUD |
+| **Migración automática** | ✅ | v1 → v2.0 sin intervención del usuario |
+| Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
+| Benchmarks | ⏳ Pendiente | Datos cuantitativos de rendimiento |
+
+---
+
+*Actualización: Agosto de 2026*
+*NEVEN v2.4+ — Tab Settings y Sistema de Configuración*

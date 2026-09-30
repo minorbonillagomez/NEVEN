@@ -275,7 +275,154 @@ Para agregar un nuevo alias, modificar ambos archivos. Ver guia completa en:
 
 ---
 
-*Documentacion actualizada: Setiembre 2026*
+## 13.11 Tab Settings — Configurador de Perfiles AI y Conexiones DB
+
+**Disponible desde:** Agosto 2026
+
+El Tab Settings permite configurar NEVEN sin editar archivos JSON manualmente. Es accesible desde la pestaña "Settings" en NEVEN Studio.
+
+### Sub-tabs disponibles
+
+| Sub-tab | Función |
+|:---|:---|
+| **Motor IA** | Gestionar perfiles de proveedores AI (OpenAI, Claude, Azure, Ollama, LM Studio) |
+| **Conexiones DB** | Gestionar conexiones a bases de datos (PostgreSQL, MySQL, SQL Server, SQLite, DuckDB) |
+| **Prompts** | Editar prompts de IA por categoría |
+
+### Motor IA — Perfiles múltiples
+
+NEVEN soporta múltiples perfiles de IA. Solo uno puede estar activo a la vez.
+
+**Proveedores soportados:**
+
+| Proveedor | Modelos | Notas |
+|:---|:---|:---|
+| OpenAI | gpt-4o, gpt-4-turbo, gpt-3.5-turbo | Requiere API key |
+| Azure OpenAI | Configurable | Requiere endpoint + API key |
+| Anthropic | claude-3-5-sonnet, claude-3-opus | Requiere API key |
+| Ollama | Modelos locales | Gratis, local, sin API key |
+| LM Studio | Modelos locales | Gratis, local, sin API key |
+
+**Flujo de uso:**
+
+```
+1. Settings → Motor IA
+2. Clic "Nuevo Perfil"
+3. Seleccionar proveedor
+4. Completar credenciales
+5. Clic "Probar Conexión" (verificar)
+6. Clic "Guardar"
+7. Seleccionar perfil → radio button para activarlo
+```
+
+### Conexiones DB — Múltiples conexiones
+
+Gestiona conexiones a bases de datos para el Data Studio y consultas SQL.
+
+**Bases de datos soportadas:**
+
+| Tipo | Puerto default | Notas |
+|:---|:---|:---|
+| PostgreSQL | 5432 | Requiere host/user/password |
+| MySQL | 3306 | Requiere host/user/password |
+| SQL Server | 1433 | Windows Auth o SQL Auth |
+| SQLite | — | Solo ruta al archivo .db |
+| DuckDB | — | Solo ruta al archivo .duckdb |
+
+**Flujo de uso:**
+
+```
+1. Settings → Conexiones DB
+2. Clic "Nueva Conexión"
+3. Seleccionar tipo de BD
+4. Completar datos de conexión
+5. Clic "Probar Conexión"
+6. Clic "Guardar"
+```
+
+### Seguridad de credenciales
+
+Las credenciales sensibles (API keys, passwords de BD) se almacenan en **Windows Credential Manager**, no en el archivo JSON. Esto significa:
+
+- Las credenciales están encriptadas por Windows
+- El archivo `neven-config.json` solo contiene referencias (IDs)
+- Si alguien copia el JSON, no obtiene las credenciales
+
+### Migración automática
+
+Si tienes un `neven-config.json` del formato anterior (v1), NEVEN lo migra automáticamente:
+
+1. Detecta el formato v1
+2. Mueve la API key al Credential Manager
+3. Crea un perfil "migrated" con los datos existentes
+4. Preserva las secciones legacy (WebView2, TaskPane)
+
+### Archivos de configuración
+
+| Archivo | Contenido |
+|:---|:---|
+| `C:\NEVEN\neven-config.json` | Perfiles AI/DB (sin credenciales) |
+| `C:\NEVEN\prompts\*.txt` | Prompts editables |
+| `C:\NEVEN\prompts\prompts_config.json` | Categorías de prompts |
+| Windows Credential Manager | API keys y passwords |
+
+---
+
+## 13.12 API de Configuración (Endpoints HTTP)
+
+El servidor HTTP expone endpoints para gestionar la configuración programáticamente.
+
+### Perfiles de IA
+
+| Método | Endpoint | Descripción |
+|:---|:---|:---|
+| GET | `/api/config/ai-profiles` | Lista todos los perfiles |
+| GET | `/api/config/ai-profiles/{id}` | Obtener perfil específico |
+| POST | `/api/config/ai-profiles` | Crear nuevo perfil |
+| POST | `/api/config/ai-profiles/{id}` | Actualizar perfil |
+| POST | `/api/config/ai-profiles/{id}/delete` | Eliminar perfil |
+| POST | `/api/config/ai-profiles/{id}/activate` | Activar perfil |
+| POST | `/api/config/ai-profiles/{id}/test` | Probar conexión |
+
+### Conexiones de BD
+
+| Método | Endpoint | Descripción |
+|:---|:---|:---|
+| GET | `/api/config/db-connections` | Lista todas las conexiones |
+| GET | `/api/config/db-connections/{id}` | Obtener conexión específica |
+| POST | `/api/config/db-connections` | Crear nueva conexión |
+| POST | `/api/config/db-connections/{id}` | Actualizar conexión |
+| POST | `/api/config/db-connections/{id}/delete` | Eliminar conexión |
+| POST | `/api/config/db-connections/{id}/activate` | Activar conexión |
+| POST | `/api/config/db-connections/{id}/test` | Probar conexión |
+
+### Metadata y utilidades
+
+| Método | Endpoint | Descripción |
+|:---|:---|:---|
+| GET | `/api/config/providers` | Lista proveedores AI y modelos |
+| GET | `/api/config/db-types` | Lista tipos de BD y puertos default |
+| GET | `/api/config/prompts` | Lista prompts por categoría |
+| GET | `/api/config/prompts/{id}` | Obtener contenido de prompt |
+| POST | `/api/config/prompts` | Guardar prompt (backup automático) |
+| POST | `/api/config/reload` | Recargar configuración desde archivo |
+
+### Ejemplo de uso con curl
+
+```bash
+# Listar perfiles de IA
+curl http://localhost:5555/api/config/ai-profiles
+
+# Activar un perfil
+curl -X POST http://localhost:5555/api/config/ai-profiles/openai-default/activate
+
+# Probar conexión de BD
+curl -X POST http://localhost:5555/api/config/db-connections/postgres-local/test
+```
+
+---
+
+*Documentacion actualizada: Agosto 2026*
 
 *NEVEN Studio Standalone — Julio 2026*
 *Universidad de Costa Rica — Tesis de Maestría*
