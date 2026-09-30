@@ -32,8 +32,40 @@ import json
 import ssl
 import time
 import threading
+import logging
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, unquote
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Logging Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+_log = logging.getLogger("NEVEN.HTTP")
+_log.setLevel(logging.DEBUG)
+
+# Console handler with format
+if not _log.handlers:
+    _console = logging.StreamHandler(sys.stderr)
+    _console.setLevel(logging.INFO)
+    _console.setFormatter(logging.Formatter(
+        "[%(name)s] %(levelname)s: %(message)s"
+    ))
+    _log.addHandler(_console)
+
+    # File handler (optional, rotates at 5MB)
+    _log_dir = os.environ.get("NEVEN_LOG_DIR", r"C:\NEVEN")
+    _log_file = os.path.join(_log_dir, "neven_http.log")
+    try:
+        from logging.handlers import RotatingFileHandler
+        _file_handler = RotatingFileHandler(
+            _log_file, maxBytes=5*1024*1024, backupCount=3, encoding="utf-8"
+        )
+        _file_handler.setLevel(logging.DEBUG)
+        _file_handler.setFormatter(logging.Formatter(
+            "%(asctime)s [%(levelname)s] %(message)s"
+        ))
+        _log.addHandler(_file_handler)
+    except Exception:
+        pass  # File logging optional
 
 # ─── pipe_client imports (optional — only needed for Script endpoints) ────────
 # pipe_client.py lives in TaskPane/, which is one level up from ControlPython/startup/.
@@ -727,7 +759,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                         })
                     return
                 except Exception as exc:
-                    print(f"[AI Config] Error con config_manager: {exc}")
+                    _log.warning(f"Error con config_manager: {exc}")
             
             # Fallback a config legacy
             static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
@@ -1520,7 +1552,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 if original_content != content:  # Solo backup si hay cambios
                     with open(backup_path, "w", encoding="utf-8") as f:
                         f.write(original_content)
-                    print(f"[Prompts] Backup creado: {backup_path}")
+                    _log.info(f"Backup creado: {backup_path}")
                 
                 # Guardar directamente en el archivo de sistema
                 target_path = system_path
@@ -1589,7 +1621,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
             return self._handle_ai_chat_impl(body, _url_req)
         except Exception as e:
             tb = traceback.format_exc()
-            print(f"[AI Chat] CRITICAL ERROR:\n{tb}")
+            _log.error(f"CRITICAL ERROR in AI Chat:\n{tb}")
             self._send_error_json(f"Error interno en AI Chat: {e}", 500)
             return
 
@@ -1638,9 +1670,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     api_version = active_profile.get("api_version", "")
                     # API key viene de keyring via config_manager
                     api_key     = active_profile.get("api_key", "")
-                    print(f"[AI Chat] Usando perfil activo: {active_profile.get('name')} ({provider}/{model})")
+                    _log.info(f"Usando perfil activo: {active_profile.get('name')} ({provider}/{model})")
             except Exception as e:
-                print(f"[AI Chat] Error obteniendo perfil activo: {e}")
+                _log.warning(f"Error obteniendo perfil activo: {e}")
         
         # Fallback a sección AI legacy si no hay perfil activo
         if not api_key:
@@ -1878,7 +1910,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 "temperature": temperature,
             }, ensure_ascii=False).encode("utf-8")
 
-        print(f"[AI Chat] Endpoint: {endpoint}")
+        _log.debug(f"AI Chat endpoint: {endpoint}")
         
         # Usar requests en lugar de urllib (más confiable en threading)
         import requests as _requests
@@ -2757,7 +2789,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     
                 except Exception as e:
                     # Log error pero continuar con otros archivos
-                    print(f"[AYUDA] Error leyendo {filename}: {e}")
+                    _log.warning(f"Error leyendo {filename}: {e}")
                     continue
             
             # Ordenar funciones dentro de cada familia por nombre
@@ -3248,7 +3280,7 @@ def start_server(config=None):
         _config = DEFAULT_CONFIG.copy()
 
     if not _config.get("enabled", True):
-        print("[NEVEN HTTP] TaskPane disabled in config — server not started", file=sys.stderr)
+        _log.warning("TaskPane disabled in config — server not started")
         return None
 
     ports = [_config.get("port", 5555), _config.get("fallbackPort", 5556)]
@@ -3258,13 +3290,13 @@ def start_server(config=None):
         try:
             server = HTTPServer(('127.0.0.1', port), NEVENHandler)
             _server_port = port
-            print(f"[NEVEN HTTP] Bound to localhost:{port}", file=sys.stderr)
+            _log.info(f"Bound to localhost:{port}")
             break
         except OSError as e:
-            print(f"[NEVEN HTTP] Port {port} unavailable: {e}", file=sys.stderr)
+            _log.warning(f"Port {port} unavailable: {e}")
 
     if server is None:
-        print("[NEVEN HTTP] FATAL: Cannot bind HTTP server on any port", file=sys.stderr)
+        _log.error("FATAL: Cannot bind HTTP server on any port")
         return None
 
     # HTTPS setup (if cert available)
@@ -3275,11 +3307,11 @@ def start_server(config=None):
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             ssl_context.load_cert_chain(certfile=cert_path, keyfile=key_path)
             server.socket = ssl_context.wrap_socket(server.socket, server_side=True)
-            print(f"[NEVEN HTTP] HTTPS enabled (cert: {cert_path})", file=sys.stderr)
+            _log.info(f"HTTPS enabled (cert: {cert_path})")
         except Exception as e:
-            print(f"[NEVEN HTTP] HTTPS setup failed: {e} — running HTTP only", file=sys.stderr)
+            _log.warning(f"HTTPS setup failed: {e} — running HTTP only")
     else:
-        print("[NEVEN HTTP] No cert configured — running HTTP (Task Pane may require HTTPS)", file=sys.stderr)
+        _log.info("No cert configured — running HTTP (Task Pane may require HTTPS)")
 
     _server_instance = server
 
@@ -3294,14 +3326,14 @@ def start_server(config=None):
                 raise KeyError(f"No factory for {lang}")
             _pkg_service = _init_pkg_service(_get_pipe_for_pkg)
             _PKG_SERVICE_AVAILABLE = True
-            print("[NEVEN HTTP] Package Manager Service iniciado", file=sys.stderr)
+            _log.info("Package Manager Service iniciado")
         except Exception as e:
-            print(f"[NEVEN HTTP] Package Manager Service no disponible: {e}", file=sys.stderr)
+            _log.warning(f"Package Manager Service no disponible: {e}")
 
     # Start on daemon thread
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    print(f"[NEVEN HTTP] Server running on thread (port {_server_port})", file=sys.stderr)
+    _log.info(f"Server running on thread (port {_server_port})")
 
     return thread, _server_port
 
@@ -3312,7 +3344,7 @@ def stop_server():
     if _server_instance:
         _server_instance.shutdown()
         _server_instance = None
-        print("[NEVEN HTTP] Server stopped", file=sys.stderr)
+        _log.info("Server stopped")
 
 
 # ─── Standalone entry point ───────────────────────────────────────────────────
@@ -3321,20 +3353,20 @@ if __name__ == "__main__":
     """Run the HTTP server standalone (not embedded in ControlPython.exe)."""
     import signal
     
-    print("[NEVEN HTTP] Starting standalone server...", file=sys.stderr)
+    _log.info("Starting standalone server...")
     
     # Start server
     result = start_server()
     if result is None:
-        print("[NEVEN HTTP] Failed to start server", file=sys.stderr)
+        _log.error("Failed to start server")
         sys.exit(1)
     
     thread, port = result
-    print(f"[NEVEN HTTP] Standalone server running on http://127.0.0.1:{port}", file=sys.stderr)
+    _log.info(f"Standalone server running on http://127.0.0.1:{port}")
     
     # Keep main thread alive until interrupted
     def signal_handler(sig, frame):
-        print("\n[NEVEN HTTP] Shutting down...", file=sys.stderr)
+        _log.info("Shutting down...")
         stop_server()
         sys.exit(0)
     

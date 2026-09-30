@@ -16,7 +16,7 @@
 
 ### Sesion 2026-08-19 (~11:30) — Fix AI Chat "Failed to fetch"
 
-**Estado:** COMPLETO
+**Estado:** COMPLETO — Commit `6094ae2` pusheado
 
 ### Problema diagnosticado
 
@@ -59,6 +59,29 @@ curl.exe -s -X POST "http://localhost:5555/api/ai/chat" -H "Content-Type: applic
 
 - `C:\NEVEN\startup\neven_http_server.py` — Fix de AI Chat handler
 - `NEVEN\TaskPane\neven_http_server.py` — Copia al repositorio
+- `NEVEN\ControlPython\startup\neven_http_server.py` — Copia sincronizada
+- `NEVEN\Install\Dist\startup\neven_http_server.py` — Actualizado para instalador
+- `NEVEN\Install\Dist\taskpane\taskpane.js` — Actualizado para instalador
+
+### Commit
+
+- **Hash:** `6094ae2`
+- **Mensaje:** `fix(ai-chat): cambiar urllib a requests para llamadas LLM en threading`
+
+### Decisiones de diseno
+
+- **Usar `requests` en lugar de `urllib.request`** — La libreria estandar tiene problemas conocidos en contextos de threading. `requests` es thread-safe y mas confiable.
+- **Mantener logs con `print()`** — En lugar de configurar logging complejo, usar print simple para diagnostico inmediato en consola del servidor.
+
+### Intentos fallidos
+
+1. **Agregar try/except global sin encontrar error** — El error no se capturaba porque ocurria antes de entrar al handler (multiples servidores en mismo puerto)
+2. **Agregar logging con `log.info()`** — Objeto `log` no estaba definido, causando NameError silencioso
+
+### Pendientes proxima sesion
+
+- **[BAJA]** Limpiar archivos `taskpane_*.js` duplicados en produccion
+- **[BAJA]** Considerar usar logging formal en lugar de print() para el servidor
 
 ---
 

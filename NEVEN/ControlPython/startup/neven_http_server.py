@@ -32,8 +32,40 @@ import json
 import ssl
 import time
 import threading
+import logging
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, unquote
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Logging Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+_log = logging.getLogger("NEVEN.HTTP")
+_log.setLevel(logging.DEBUG)
+
+# Console handler with format
+if not _log.handlers:
+    _console = logging.StreamHandler(sys.stderr)
+    _console.setLevel(logging.INFO)
+    _console.setFormatter(logging.Formatter(
+        "[%(name)s] %(levelname)s: %(message)s"
+    ))
+    _log.addHandler(_console)
+
+    # File handler (optional, rotates at 5MB)
+    _log_dir = os.environ.get("NEVEN_LOG_DIR", r"C:\NEVEN")
+    _log_file = os.path.join(_log_dir, "neven_http.log")
+    try:
+        from logging.handlers import RotatingFileHandler
+        _file_handler = RotatingFileHandler(
+            _log_file, maxBytes=5*1024*1024, backupCount=3, encoding="utf-8"
+        )
+        _file_handler.setLevel(logging.DEBUG)
+        _file_handler.setFormatter(logging.Formatter(
+            "%(asctime)s [%(levelname)s] %(message)s"
+        ))
+        _log.addHandler(_file_handler)
+    except Exception:
+        pass  # File logging optional
 
 # ─── pipe_client imports (optional — only needed for Script endpoints) ────────
 # pipe_client.py lives in TaskPane/, which is one level up from ControlPython/startup/.
@@ -693,6 +725,43 @@ class NEVENHandler(BaseHTTPRequestHandler):
 
         # ── AI config ─────────────────────────────────────────────────────────
         if path == 'api/ai/config':
+            # Usar config_manager para obtener perfil activo
+            if _CONFIG_MANAGER_AVAILABLE:
+                try:
+                    mgr = _get_config_manager()
+                    active_profile = mgr.get_active_ai_profile()
+                    prompts_dir = mgr.prompts.prompts_directory
+                    prompt_ids = []
+                    if os.path.isdir(prompts_dir):
+                        prompt_ids = [
+                            os.path.splitext(f)[0]
+                            for f in sorted(os.listdir(prompts_dir))
+                            if f.endswith(".txt")
+                        ]
+                    
+                    if active_profile:
+                        self._send_json({
+                            "status":    "ok",
+                            "enabled":   True,
+                            "provider":  active_profile.get("provider", ""),
+                            "model":     active_profile.get("model", ""),
+                            "endpoint":  active_profile.get("endpoint", ""),
+                            "prompts":   prompt_ids,
+                        })
+                    else:
+                        self._send_json({
+                            "status":    "ok",
+                            "enabled":   False,
+                            "provider":  "",
+                            "model":     "",
+                            "endpoint":  "",
+                            "prompts":   prompt_ids,
+                        })
+                    return
+                except Exception as exc:
+                    _log.warning(f"Error con config_manager: {exc}")
+            
+            # Fallback a config legacy
             static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
             config_path = os.path.join(
                 os.path.dirname(static_dir), "..",
@@ -1319,7 +1388,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
     # ── Prompts handlers ──────────────────────────────────────────────────────
 
     def _handle_config_prompts_list(self):
-        """GET /api/config/prompts — Lista prompts disponibles (system + custom)."""
+        """GET /api/config/prompts — Lista prompts disponibles organizados por categoría."""
         if not _CONFIG_MANAGER_AVAILABLE:
             self._send_error_json("Config Manager no disponible", 503)
             return
@@ -1327,37 +1396,82 @@ class NEVENHandler(BaseHTTPRequestHandler):
             mgr = _get_config_manager()
             prompts_dir = mgr.prompts.prompts_directory
             
-            system_prompts = []
-            custom_prompts = []
+            # Cargar configuración de categorías
+            config_path = os.path.join(prompts_dir, "prompts_config.json")
+            categories_config = {}
+            if os.path.isfile(config_path):
+                with open(config_path, "r", encoding="utf-8") as f:
+                    categories_config = json.load(f)
+            
+            categories = categories_config.get("categories", {})
+            default_category = categories_config.get("default_category", "custom")
+            
+            # Recopilar todos los prompts
+            all_prompts = {}  # id -> prompt info
             
             # System prompts
             if os.path.isdir(prompts_dir):
                 for f in sorted(os.listdir(prompts_dir)):
                     if f.endswith(".txt"):
-                        system_prompts.append({
-                            "id": os.path.splitext(f)[0],
-                            "name": os.path.splitext(f)[0].replace("-", " ").title(),
+                        pid = os.path.splitext(f)[0]
+                        all_prompts[pid] = {
+                            "id": pid,
+                            "name": pid.replace("_", " ").replace("-", " ").title(),
                             "type": "system",
-                            "editable": False,
-                        })
+                        }
             
             # Custom prompts
             custom_dir = os.path.join(prompts_dir, "custom")
             if os.path.isdir(custom_dir):
                 for f in sorted(os.listdir(custom_dir)):
                     if f.endswith(".txt"):
-                        custom_prompts.append({
-                            "id": os.path.splitext(f)[0],
-                            "name": os.path.splitext(f)[0].replace("-", " ").title(),
+                        pid = os.path.splitext(f)[0]
+                        all_prompts[pid] = {
+                            "id": pid,
+                            "name": pid.replace("_", " ").replace("-", " ").title(),
                             "type": "custom",
-                            "editable": True,
-                        })
+                        }
+            
+            # Organizar por categorías
+            categorized = {}
+            assigned_prompts = set()
+            
+            for cat_id, cat_info in categories.items():
+                cat_prompts = []
+                for pid in cat_info.get("prompts", []):
+                    if pid in all_prompts:
+                        cat_prompts.append(all_prompts[pid])
+                        assigned_prompts.add(pid)
+                
+                # Agregar prompts custom a categoría "custom"
+                if cat_id == "custom":
+                    for pid, pinfo in all_prompts.items():
+                        if pinfo["type"] == "custom" and pid not in assigned_prompts:
+                            cat_prompts.append(pinfo)
+                            assigned_prompts.add(pid)
+                
+                if cat_prompts or cat_id == "custom":  # Siempre mostrar custom aunque esté vacía
+                    categorized[cat_id] = {
+                        "label": cat_info.get("label", cat_id.title()),
+                        "icon": cat_info.get("icon", "📄"),
+                        "prompts": cat_prompts,
+                    }
+            
+            # Prompts no asignados van a default_category
+            unassigned = [p for pid, p in all_prompts.items() if pid not in assigned_prompts]
+            if unassigned:
+                if default_category not in categorized:
+                    categorized[default_category] = {
+                        "label": "Otros",
+                        "icon": "📄",
+                        "prompts": [],
+                    }
+                categorized[default_category]["prompts"].extend(unassigned)
             
             self._send_json({
                 "status": "ok",
                 "active": mgr.prompts.active_system,
-                "system": system_prompts,
-                "custom": custom_prompts,
+                "categories": categorized,
             })
         except Exception as e:
             self._send_error_json(f"Error listando prompts: {e}", 500)
@@ -1398,7 +1512,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_error_json(f"Error leyendo prompt: {e}", 500)
 
     def _handle_config_prompt_save(self, body: dict):
-        """POST /api/config/prompts — Guardar prompt (solo custom)."""
+        """POST /api/config/prompts — Guardar prompt (con backup automático)."""
         if not _CONFIG_MANAGER_AVAILABLE:
             self._send_error_json("Config Manager no disponible", 503)
             return
@@ -1416,11 +1530,43 @@ class NEVENHandler(BaseHTTPRequestHandler):
             
             mgr = _get_config_manager()
             prompts_dir = mgr.prompts.prompts_directory
-            custom_dir = os.path.join(prompts_dir, "custom")
-            os.makedirs(custom_dir, exist_ok=True)
             
-            path = os.path.join(custom_dir, f"{prompt_id}.txt")
-            with open(path, "w", encoding="utf-8") as f:
+            # Determinar si es prompt de sistema o custom existente
+            system_path = os.path.join(prompts_dir, f"{prompt_id}.txt")
+            custom_path = os.path.join(prompts_dir, "custom", f"{prompt_id}.txt")
+            
+            if os.path.isfile(system_path):
+                # Es prompt de sistema - hacer backup antes de sobrescribir
+                backup_dir = os.path.join(prompts_dir, "backup")
+                os.makedirs(backup_dir, exist_ok=True)
+                
+                # Backup con timestamp
+                import datetime
+                ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                backup_path = os.path.join(backup_dir, f"{prompt_id}_{ts}.txt")
+                
+                # Solo hacer backup si no existe uno idéntico reciente
+                with open(system_path, "r", encoding="utf-8") as f:
+                    original_content = f.read()
+                
+                if original_content != content:  # Solo backup si hay cambios
+                    with open(backup_path, "w", encoding="utf-8") as f:
+                        f.write(original_content)
+                    _log.info(f"Backup creado: {backup_path}")
+                
+                # Guardar directamente en el archivo de sistema
+                target_path = system_path
+            elif os.path.isfile(custom_path):
+                # Es prompt custom existente - sobrescribir
+                target_path = custom_path
+            else:
+                # Es nuevo prompt custom
+                custom_dir = os.path.join(prompts_dir, "custom")
+                os.makedirs(custom_dir, exist_ok=True)
+                target_path = os.path.join(custom_dir, f"{prompt_id}.txt")
+            
+            # Guardar
+            with open(target_path, "w", encoding="utf-8") as f:
                 f.write(content)
             
             if set_active:
@@ -1431,6 +1577,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 "status": "ok",
                 "message": "Prompt guardado",
                 "id": prompt_id,
+                "path": target_path,
             })
         except Exception as e:
             self._send_error_json(f"Error guardando prompt: {e}", 500)
@@ -1468,6 +1615,18 @@ class NEVENHandler(BaseHTTPRequestHandler):
           {status, message, code}               on error
         """
         import urllib.request as _url_req
+        import traceback
+
+        try:
+            return self._handle_ai_chat_impl(body, _url_req)
+        except Exception as e:
+            tb = traceback.format_exc()
+            _log.error(f"CRITICAL ERROR in AI Chat:\n{tb}")
+            self._send_error_json(f"Error interno en AI Chat: {e}", 500)
+            return
+
+    def _handle_ai_chat_impl(self, body: dict, _url_req):
+        """Implementación interna del chat con AI."""
 
         # ── Load AI config from neven-config.json ────────────────────────────
         static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
@@ -1511,9 +1670,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     api_version = active_profile.get("api_version", "")
                     # API key viene de keyring via config_manager
                     api_key     = active_profile.get("api_key", "")
-                    log.info(f"[AI Chat] Usando perfil activo: {active_profile.get('name')} ({provider}/{model})")
+                    _log.info(f"Usando perfil activo: {active_profile.get('name')} ({provider}/{model})")
             except Exception as e:
-                log.warning(f"[AI Chat] Error obteniendo perfil activo: {e}")
+                _log.warning(f"Error obteniendo perfil activo: {e}")
         
         # Fallback a sección AI legacy si no hay perfil activo
         if not api_key:
@@ -1629,36 +1788,39 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if context or catalog_section:
             if has_sheet_analysis:
                 # ═══════════════════════════════════════════════════════════════
-                # Excel Consultant Mode — Uses sheet structure for precise answers
+                # Excel Forensic Analysis Mode — Usa prompt forense para auditoria
                 # ═══════════════════════════════════════════════════════════════
-                sys_content = (
-                    "Eres un **Consultor Excel experto** integrado en NEVEN.\n\n"
-                    "## Tu rol\n"
-                    "Actúas como auditor, documentador y asesor de hojas de cálculo. "
-                    "Tienes acceso al análisis estructural de la hoja activa del usuario.\n\n"
-                    "## Capacidad: Crear funciones NEVEN\n"
-                    "Si Excel nativo no puede resolver algo, puedes crear funciones R/Julia/Python.\n"
-                    "Para que aparezcan en el Diccionario de Funciones, crea:\n"
-                    "1. Archivo de código en `C:\\NEVEN\\libreria\\R\\` (o JULIA/, PYTHON/)\n"
-                    "2. Sidecar JSON en `C:\\NEVEN\\functions\\{ID}.json` con:\n"
-                    "   - `function_name_xll`: nombre para =NEVEN.R(...)\n"
-                    "   - `nevenx_positions`: mapeo de argumentos a0-a9\n"
-                    "   - `tipo_outputs`: lista de outputs\n"
-                    "Ver documentación completa: `C:\\NEVEN\\functions\\AGENT_INSTRUCTIONS.md`\n\n"
-                    "## REGLA CRÍTICA: Usa el contexto para respuestas precisas\n"
-                    "Cuando el usuario pregunte sobre una columna por nombre (ej: 'totaliza SALARIOS'), SIEMPRE:\n"
-                    "1. Busca en '## Estructura de columnas' qué columna tiene ese nombre\n"
-                    "2. Usa el rango exacto mostrado (ej: D2:D13) para tu fórmula\n"
-                    "3. NUNCA pidas más información si ya la tienes en el contexto\n\n"
-                    "Ejemplo:\n"
-                    "- Contexto dice: Columna D = 'SALARIOS' → datos en D2:D13\n"
-                    "- Usuario pregunta: 'totaliza salarios'\n"
-                    "- Respuesta correcta: =SUMA(D2:D13)\n"
-                    "- Respuesta INCORRECTA: '¿En qué rango están los salarios?'\n\n"
-                    f"## Contexto del análisis de la hoja:\n\n{context}\n\n"
-                    "Responde siempre basándote en los datos reales de la hoja del usuario, no en abstracto.\n\n"
-                    + _fmt
-                )
+                forense_prompt = ""
+                forense_path = os.path.join(prompts_dir, "analisis_forense_libro.txt")
+                if os.path.isfile(forense_path):
+                    try:
+                        with open(forense_path, "r", encoding="utf-8") as f:
+                            forense_prompt = f.read()
+                    except Exception:
+                        pass
+                
+                if forense_prompt:
+                    sys_content = (
+                        forense_prompt + "\n\n"
+                        f"## DATOS DEL ANALISIS ACTUAL:\n\n{context}\n\n"
+                        + _fmt
+                    )
+                else:
+                    # Fallback si no existe el archivo
+                    sys_content = (
+                        "Eres un **Consultor Excel experto** integrado en NEVEN.\n\n"
+                        "## Tu rol\n"
+                        "Actuas como auditor forense, documentador y asesor de hojas de calculo. "
+                        "Tienes acceso al analisis estructural de la hoja activa del usuario.\n\n"
+                        "## REGLA CRITICA: Usa el contexto para respuestas precisas\n"
+                        "Cuando el usuario pregunte sobre una columna por nombre, SIEMPRE:\n"
+                        "1. Busca en '## Estructura de columnas' que columna tiene ese nombre\n"
+                        "2. Usa el rango exacto mostrado para tu formula\n"
+                        "3. NUNCA pidas mas informacion si ya la tienes en el contexto\n\n"
+                        f"## Contexto del analisis de la hoja:\n\n{context}\n\n"
+                        "Responde siempre basandote en los datos reales de la hoja del usuario.\n\n"
+                        + _fmt
+                    )
             elif has_results_context and has_excel_context:
                 sys_content = (
                     "Eres NEVEN Assistant, un econometrista experto. "
@@ -1720,7 +1882,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if provider == "azure":
             # Azure OpenAI usa api-key en header y endpoint con deployment + api-version
             headers["api-key"] = api_key
-            api_version = ai.get("apiVersion", "2025-01-01-preview")
+            # api_version ya viene del perfil activo; fallback solo si está vacía
+            if not api_version:
+                ai = full_cfg.get("AI", {})
+                api_version = ai.get("apiVersion", "2025-01-01-preview")
             azure_base  = endpoint.rstrip("/")
             endpoint = (
                 f"{azure_base}/openai/deployments/{model}"
@@ -1745,41 +1910,50 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 "temperature": temperature,
             }, ensure_ascii=False).encode("utf-8")
 
+        _log.debug(f"AI Chat endpoint: {endpoint}")
+        
+        # Usar requests en lugar de urllib (más confiable en threading)
+        import requests as _requests
         try:
-            req = _url_req.Request(
-                endpoint, data=req_body, headers=headers, method="POST"
+            resp = _requests.post(
+                endpoint,
+                headers=headers,
+                data=req_body,
+                timeout=timeout_sec
             )
-            with _url_req.urlopen(req, timeout=timeout_sec) as resp:
-                raw_body = resp.read()
-                # Defensive decode — strip BOM si existe
-                raw_str = raw_body.decode("utf-8-sig").strip()
-                if not raw_str:
-                    self._send_error_json(
-                        f"El LLM ({provider}) retornó respuesta vacía. "
-                        f"Verifica el modelo '{model}' y la apiVersion en neven-config.json.",
-                        502
-                    )
-                    return
-                data = json.loads(raw_str)
-        except _url_req.HTTPError as exc:
-            try:
-                err_body = exc.read().decode("utf-8", errors="replace")
+            
+            if resp.status_code != 200:
+                detail = resp.text[:300]
                 try:
-                    err_json = json.loads(err_body)
+                    err_json = resp.json()
                     detail = (err_json.get("error", {}).get("message")
-                              or err_json.get("message") or err_body[:300])
+                              or err_json.get("message") or detail)
                 except Exception:
-                    detail = err_body[:300]
-            except Exception:
-                detail = str(exc)
+                    pass
+                self._send_error_json(
+                    f"El LLM ({provider}) retornó HTTP {resp.status_code}: {detail}", 502)
+                return
+            
+            raw_str = resp.text.strip()
+            if not raw_str:
+                self._send_error_json(
+                    f"El LLM ({provider}) retornó respuesta vacía. "
+                    f"Verifica el modelo '{model}' y la apiVersion en neven-config.json.",
+                    502
+                )
+                return
+            data = resp.json()
+        except _requests.exceptions.Timeout:
             self._send_error_json(
-                f"El LLM ({provider}) retornó HTTP {exc.code}: {detail}", 502)
+                f"Timeout al llamar al LLM ({provider}). "
+                f"El servidor no respondió en {timeout_sec} segundos.",
+                504
+            )
             return
-        except _url_req.URLError as exc:
-            reason = str(exc.reason) if hasattr(exc, "reason") else str(exc)
+        except _requests.exceptions.RequestException as exc:
             self._send_error_json(
                 f"No se pudo conectar al LLM ({provider}). "
-                f"Verifique que {endpoint} esté activo. Detalle: {reason}",
+                f"Verifique que {endpoint} esté activo. Detalle: {exc}",
                 503
             )
             return
@@ -2615,7 +2789,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     
                 except Exception as e:
                     # Log error pero continuar con otros archivos
-                    print(f"[AYUDA] Error leyendo {filename}: {e}")
+                    _log.warning(f"Error leyendo {filename}: {e}")
                     continue
             
             # Ordenar funciones dentro de cada familia por nombre
@@ -3106,7 +3280,7 @@ def start_server(config=None):
         _config = DEFAULT_CONFIG.copy()
 
     if not _config.get("enabled", True):
-        print("[NEVEN HTTP] TaskPane disabled in config — server not started", file=sys.stderr)
+        _log.warning("TaskPane disabled in config — server not started")
         return None
 
     ports = [_config.get("port", 5555), _config.get("fallbackPort", 5556)]
@@ -3116,13 +3290,13 @@ def start_server(config=None):
         try:
             server = HTTPServer(('127.0.0.1', port), NEVENHandler)
             _server_port = port
-            print(f"[NEVEN HTTP] Bound to localhost:{port}", file=sys.stderr)
+            _log.info(f"Bound to localhost:{port}")
             break
         except OSError as e:
-            print(f"[NEVEN HTTP] Port {port} unavailable: {e}", file=sys.stderr)
+            _log.warning(f"Port {port} unavailable: {e}")
 
     if server is None:
-        print("[NEVEN HTTP] FATAL: Cannot bind HTTP server on any port", file=sys.stderr)
+        _log.error("FATAL: Cannot bind HTTP server on any port")
         return None
 
     # HTTPS setup (if cert available)
@@ -3133,11 +3307,11 @@ def start_server(config=None):
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             ssl_context.load_cert_chain(certfile=cert_path, keyfile=key_path)
             server.socket = ssl_context.wrap_socket(server.socket, server_side=True)
-            print(f"[NEVEN HTTP] HTTPS enabled (cert: {cert_path})", file=sys.stderr)
+            _log.info(f"HTTPS enabled (cert: {cert_path})")
         except Exception as e:
-            print(f"[NEVEN HTTP] HTTPS setup failed: {e} — running HTTP only", file=sys.stderr)
+            _log.warning(f"HTTPS setup failed: {e} — running HTTP only")
     else:
-        print("[NEVEN HTTP] No cert configured — running HTTP (Task Pane may require HTTPS)", file=sys.stderr)
+        _log.info("No cert configured — running HTTP (Task Pane may require HTTPS)")
 
     _server_instance = server
 
@@ -3152,14 +3326,14 @@ def start_server(config=None):
                 raise KeyError(f"No factory for {lang}")
             _pkg_service = _init_pkg_service(_get_pipe_for_pkg)
             _PKG_SERVICE_AVAILABLE = True
-            print("[NEVEN HTTP] Package Manager Service iniciado", file=sys.stderr)
+            _log.info("Package Manager Service iniciado")
         except Exception as e:
-            print(f"[NEVEN HTTP] Package Manager Service no disponible: {e}", file=sys.stderr)
+            _log.warning(f"Package Manager Service no disponible: {e}")
 
     # Start on daemon thread
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    print(f"[NEVEN HTTP] Server running on thread (port {_server_port})", file=sys.stderr)
+    _log.info(f"Server running on thread (port {_server_port})")
 
     return thread, _server_port
 
@@ -3170,7 +3344,7 @@ def stop_server():
     if _server_instance:
         _server_instance.shutdown()
         _server_instance = None
-        print("[NEVEN HTTP] Server stopped", file=sys.stderr)
+        _log.info("Server stopped")
 
 
 # ─── Standalone entry point ───────────────────────────────────────────────────
@@ -3179,20 +3353,20 @@ if __name__ == "__main__":
     """Run the HTTP server standalone (not embedded in ControlPython.exe)."""
     import signal
     
-    print("[NEVEN HTTP] Starting standalone server...", file=sys.stderr)
+    _log.info("Starting standalone server...")
     
     # Start server
     result = start_server()
     if result is None:
-        print("[NEVEN HTTP] Failed to start server", file=sys.stderr)
+        _log.error("Failed to start server")
         sys.exit(1)
     
     thread, port = result
-    print(f"[NEVEN HTTP] Standalone server running on http://127.0.0.1:{port}", file=sys.stderr)
+    _log.info(f"Standalone server running on http://127.0.0.1:{port}")
     
     # Keep main thread alive until interrupted
     def signal_handler(sig, frame):
-        print("\n[NEVEN HTTP] Shutting down...", file=sys.stderr)
+        _log.info("Shutting down...")
         stop_server()
         sys.exit(0)
     
