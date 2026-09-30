@@ -98,7 +98,7 @@ function _ayudaRenderCatalogo(data, filtro) {
     
     var summary = document.createElement('summary');
     summary.className = 'ayuda-familia-header';
-    summary.innerHTML = '<span class="ayuda-familia-label">' + familia.label + '</span>' +
+    summary.innerHTML = '<span class="ayuda-familia-label">' + familia.label.toUpperCase() + '</span>' +
                         '<span class="ayuda-familia-count">' + funciones.length + '</span>';
     details.appendChild(summary);
     
