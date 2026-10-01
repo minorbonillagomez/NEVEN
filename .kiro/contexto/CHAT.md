@@ -8,11 +8,280 @@
 
 ## Ultima actualizacion
 **Fecha:** 2026-08-19
-**Hora aproximada:** ~mediodía — Fix AI Chat endpoint
+**Hora aproximada:** ~19:20 — Tab Conocimiento + crear dominios personalizados
 
 ---
 
 ## Sesiones recientes
+
+### Sesion 2026-08-19 (~18:00) — Tab Conocimiento (Ontología) Frontend
+
+**Estado:** COMPLETO — Pendiente commit
+
+### Objetivo
+
+Implementar el sub-tab "Conocimiento" dentro de Settings para que el usuario pueda:
+- Ver dominios de conocimiento disponibles (excel, econometrics)
+- Ver libros procesados por dominio
+- Procesar nuevos libros PDF para expandir la ontología
+
+### Trabajo realizado
+
+1. **HTML** — Agregado sub-tab "Conocimiento" con `data-settings-tab="ontology"`
+2. **HTML** — Agregado panel `#settings-ontology` con:
+   - Lista de dominios de conocimiento
+   - Lista de libros procesados (por dominio)
+   - Formulario para agregar libro (ruta PDF, dominio, opciones avanzadas)
+   - Barra de progreso para procesamiento
+3. **JavaScript** — Agregadas funciones en `taskpane.js`:
+   - `loadOntologyDomains()` — carga dominios desde `/api/ontology/domains`
+   - `loadOntologyBooks()` — carga libros desde `/api/ontology/books?domain=X`
+   - `browseOntologyFile()` — intenta abrir selector de archivo
+   - `processOntologyBook()` — envía PDF a `/api/ontology/process-book`
+4. **Event listeners** agregados en `initSettingsTab()`:
+   - `btn-ontology-refresh` → recargar dominios
+   - `btn-ontology-browse` → seleccionar archivo
+   - `btn-ontology-process` → procesar libro
+   - `ontology-target-domain` (change) → cargar libros del dominio
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN\TaskPane\taskpane.html` | +85 líneas — sub-tab + panel ontología |
+| `NEVEN\TaskPane\taskpane.js` | +230 líneas — handlers y funciones |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sync a producción |
+| `C:\NEVEN\TaskPane\taskpane.js` | Sync a producción |
+| `C:\NEVEN\startup\neven_http_server.py` | Sync a producción (contenía endpoints) |
+
+### Endpoints verificados
+
+| Endpoint | Status | Respuesta |
+|----------|--------|-----------|
+| `GET /api/ontology/domains` | ✅ OK | 2 dominios (excel, econometrics) |
+| `GET /api/ontology/books?domain=excel` | ✅ OK | Lista vacía (sin libros aún) |
+| `POST /api/ontology/process-book` | ✅ OK | Valida parámetros correctamente |
+
+### Pendiente
+
+- [x] **ALTA** — ~~Probar UI en Excel~~ ✅ Funciona
+- [x] **ALTA** — ~~Crear dominios personalizados~~ ✅ Implementado
+- [ ] **ALTA** — Procesar un libro de prueba para verificar flujo completo
+- [ ] **MEDIA** — Commit: `feat(studio): tab Conocimiento para gestión de ontología`
+- [ ] **BAJA** — Mejorar selector de archivos (actualmente solo muestra instrucción de escribir ruta)
+
+### Notas técnicas
+
+- El servidor HTTP fue reiniciado (PID 97480) para cargar los nuevos endpoints
+- El endpoint `/api/ontology/books` devuelve warning "ontology_manager not available" cuando no hay libros — es comportamiento esperado
+- La selección de archivo PDF en Office.js no tiene API nativa de file picker, el usuario debe escribir la ruta manualmente
+
+### Fix adicional (~18:30) — Libros no aparecían
+
+**Problema:** El endpoint `/api/ontology/books` devolvía lista vacía aunque los libros ya estaban procesados.
+
+**Causa raíz:** El archivo `ontology_manager.py` en producción (`C:\NEVEN\startup\`) estaba desactualizado — no tenía la función `list_processed_books()`.
+
+**Fix:** Copiar `ontology_manager.py` del repo a producción y reiniciar servidor.
+
+### Fix adicional (~18:50) — Conteo de libros mostraba 0
+
+**Problema:** La UI mostraba "0 libros" para cada dominio aunque los endpoints funcionaban.
+
+**Causa raíz:** La función `list_domains()` en `ontology_manager.py` no incluía el campo `book_count` en la respuesta. El JavaScript esperaba `d.book_count` pero el servidor solo enviaba `entity_count`.
+
+**Fix:** Modificar `list_domains()` para contar libros únicos por dominio:
+```python
+# Cuenta libros buscando source_book o reference.book en cada entidad
+books = set()
+for entity in self._entities.get(d.id, {}).values():
+    source = entity.properties.get("source_book")
+    if not source:
+        ref = entity.properties.get("reference", {})
+        source = ref.get("book") if isinstance(ref, dict) else None
+    if source:
+        books.add(source)
+book_count = len(books)
+```
+
+**Archivos modificados adicionales:**
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN\ControlPython\startup\ontology_manager.py` | +15 líneas — agregar book_count a list_domains() |
+| `C:\NEVEN\startup\ontology_manager.py` | Sync a producción |
+
+**Resultado verificado:**
+- Excel: 6 libros, 183 entidades ✅
+- Econometrics: 14 libros, 199 entidades ✅
+
+### Feature adicional (~19:15) — Crear dominios personalizados
+
+**Requerimiento:** El usuario debe poder crear sus propios dominios de conocimiento, no solo usar los predefinidos (excel, econometrics).
+
+**Implementación:**
+
+1. **Frontend (HTML):**
+   - Agregada opción `+ Crear nuevo dominio...` en dropdown `ontology-target-domain`
+   - Campo oculto `ontology-new-domain-name` que aparece al seleccionar crear nuevo
+
+2. **Frontend (JS):**
+   - Nueva función `onOntologyDomainChange()` que muestra/oculta el campo de nuevo dominio
+   - Modificado `processOntologyBook()` para validar y usar el nombre del nuevo dominio
+   - Validación: nombre debe ser snake_case (letras minúsculas, números, guiones bajos)
+
+3. **Backend (ontology_manager.py):**
+   - Nuevo método `OntologyManager.create_domain(domain_id, display_name, description)`
+   - Crea estructura en producción: `C:\NEVEN\ontology\{domain_id}\graph.jsonl` + `schema.yaml`
+   - Crea estructura en desarrollo: `ONTOLOGIA\LIBROS {NOMBRE}\memory\ontology\`
+   - Actualiza `domains.json` con el nuevo dominio
+   - Modificado `process_book()` para crear dominio automáticamente si no existe
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN\TaskPane\taskpane.html` | +8 líneas — campo para nuevo dominio |
+| `NEVEN\TaskPane\taskpane.js` | +35 líneas — onOntologyDomainChange(), validación nuevo dominio |
+| `NEVEN\ControlPython\startup\ontology_manager.py` | +150 líneas — create_domain(), auto-create en process_book |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sync |
+| `C:\NEVEN\TaskPane\taskpane.js` | Sync |
+| `C:\NEVEN\startup\ontology_manager.py` | Sync |
+
+**Decisiones de diseño:**
+- El dominio se crea automáticamente al procesar el primer libro (no requiere endpoint separado)
+- El schema.yaml se genera con tipos genéricos (Concept, Method, BestPractice) que cubren la mayoría de casos
+- Se mantiene sincronización producción ↔ desarrollo para facilitar trabajo con libros
+
+---
+
+### Sesion 2026-08-19 (~13:00) — Fix tildes en Tab Ayuda
+
+**Estado:** COMPLETO — Commit `a298bbb` pusheado
+
+### Problema
+
+Las categorias del diccionario de funciones mostraban "REGRESION" y "ANALISIS" sin tildes.
+
+### Causa raiz
+
+El CSS tenia `text-transform: uppercase` que en algunos navegadores/fuentes no preserva correctamente los caracteres acentuados al convertir a mayusculas.
+
+### Fix aplicado
+
+1. Quitar `text-transform: uppercase` del CSS
+2. Hacer `toUpperCase()` en JavaScript que si preserva tildes Unicode
+3. Corregir sidecar TM_TextAnalysis.json: "Analisis" -> "Análisis"
+
+### Archivos modificados
+
+- `C:\NEVEN\TaskPane\taskpane.css` — Quitar text-transform
+- `C:\NEVEN\TaskPane\ayuda.js` — Agregar toUpperCase() en JS
+- `C:\NEVEN\functions\TM_TextAnalysis.json` — Fix tilde en nombre
+- `NEVEN\TaskPane\taskpane.css` — Sync al repo
+- `NEVEN\TaskPane\ayuda.js` — Sync al repo
+- `NEVEN\Install\functions\TM_TextAnalysis.json` — Sync al repo
+
+### Commit
+
+- **Hash:** `a298bbb`
+- **Mensaje:** `fix(ayuda): preservar tildes en nombres de categorias`
+
+### Nota tecnica
+
+JavaScript `String.toUpperCase()` preserva tildes correctamente:
+- "Regresión".toUpperCase() → "REGRESIÓN"
+- "Análisis".toUpperCase() → "ANÁLISIS"
+
+El problema era el CSS `text-transform: uppercase` que depende del navegador/fuente.
+
+### Pendientes proxima sesion
+
+- **[ALTA]** Actualizar documentacion Docusaurus con el nuevo Tab Settings (configurador de perfiles AI/DB)
+- **[ALTA]** Actualizar evaluaciones: comercial, doctoral, MiBoGo
+- **[MEDIA]** Documentar endpoints nuevos de `/api/config/*`
+
+---
+
+### Sesion 2026-08-19 (~12:30) — Eliminacion de emojis en TaskPane
+
+**Estado:** COMPLETO — Commit `6758b3c` pusheado
+
+### Problema
+
+Usuario encontro emoji de libro (📚) junto a "Contexto:" en el tab Asistente IA.
+
+### Fix aplicado
+
+Eliminados 11 emojis de `taskpane.js` usando regex Python:
+- Contexto de hoja/libro (📊, 📚)
+- Toast de analisis (📚)
+- Indicadores de prioridad (🔴, 🟡, 🟢)
+- Botones de graficos (📊, 💾, 📋, 🔍)
+
+### Archivos modificados
+
+- `C:\NEVEN\TaskPane\taskpane.js` — Emojis eliminados
+- `NEVEN\TaskPane\taskpane.js` — Sync al repositorio
+- `NEVEN\Install\Dist\taskpane\taskpane.js` — Actualizado para instalador
+
+### Commit
+
+- **Hash:** `6758b3c`
+- **Mensaje:** `fix(ui): eliminar todos los emojis restantes de taskpane.js`
+
+### Nota para futuro
+
+Para buscar emojis en archivos usar Python:
+```python
+import re
+with open('archivo.js', 'r', encoding='utf-8') as f:
+    for i, line in enumerate(f, 1):
+        if re.search(r'[\U0001F300-\U0001F9FF]', line):
+            print(f'{i}: {line[:100]}')
+```
+
+---
+
+### Sesion 2026-08-19 (~12:00) — Logging formal y limpieza
+
+**Estado:** COMPLETO — Commit `2d9bd56` pusheado
+
+### Logros principales
+
+1. **Logging formal implementado** en `neven_http_server.py`
+   - Logger: `NEVEN.HTTP` usando modulo `logging` de Python
+   - Consola: nivel INFO, formato `[NEVEN.HTTP] LEVEL: message`
+   - Archivo: nivel DEBUG con RotatingFileHandler (5MB max, 3 backups)
+   - Ubicacion: `C:\NEVEN\neven_http.log`
+
+2. **Limpieza de archivos duplicados**
+   - Eliminados 6 archivos `taskpane_*.js` con timestamps en produccion
+   - Actualizado `taskpane.html` para usar `taskpane.js` (sin timestamp)
+   - Contenido mas reciente preservado en archivo principal
+
+### Archivos modificados
+
+- `C:\NEVEN\startup\neven_http_server.py` — Logging formal
+- `C:\NEVEN\TaskPane\taskpane.html` — Referencia a taskpane.js sin timestamp
+- `C:\NEVEN\TaskPane\taskpane.js` — Contenido actualizado
+- `NEVEN\TaskPane\neven_http_server.py` — Sync al repositorio
+- `NEVEN\ControlPython\startup\neven_http_server.py` — Sync al repositorio
+- `NEVEN\Install\Dist\startup\neven_http_server.py` — Actualizado para instalador
+
+### Commit
+
+- **Hash:** `2d9bd56`
+- **Mensaje:** `refactor(http-server): implementar logging formal con rotacion de archivos`
+
+### Decisiones de diseno
+
+- **RotatingFileHandler con 5MB y 3 backups** — Balance entre retener logs utiles y no llenar disco
+- **Consola INFO, archivo DEBUG** — Consola limpia para operacion normal, archivo detallado para diagnostico
+
+### Pendientes proxima sesion
+
+- Ninguno pendiente de esta sesion
+
+---
 
 ### Sesion 2026-08-19 (~11:30) — Fix AI Chat "Failed to fetch"
 
@@ -12875,3 +13144,189 @@ GET /api/ai/config
 | **MEDIA** | Sincronizar cambios al repositorio |
 | **MEDIA** | Limpiar archivos JS duplicados |
 
+
+
+---
+
+### Sesión 2026-08-19 (~14:00) — Documentación del Tab Settings
+
+**Estado:** COMPLETO — Commit `de976fe` pusheado
+
+### Objetivo
+
+Actualizar la documentación de NEVEN (Docusaurus y Evaluaciones) para reflejar el nuevo Tab Settings que permite configurar perfiles AI y conexiones DB visualmente.
+
+### Logros
+
+1. **13-neven-studio.md** — Agregadas secciones:
+   - 13.11: Tab Settings (UI para gestionar perfiles AI y conexiones DB)
+   - 13.12: API de Configuración (20+ endpoints REST documentados)
+
+2. **Evaluacion_comercial.md** — Agregada fortaleza #21:
+   - Comparativa vs PyXLL/xlwings (ninguno tiene configuración visual)
+   - Análisis de impacto comercial (onboarding simplificado, reducción de soporte)
+
+3. **Evaluacion_doctoral.md** — Agregada contribución 2.20:
+   - Diagrama de arquitectura completo
+   - Decisiones de diseño con justificación técnica
+   - Tabla de proveedores AI y BD soportados
+   - API REST completa documentada
+   - Actualización de comparativa con BERT (+4 innovaciones)
+
+4. **EVALUACION_MIBOGO.md** — No requirió cambios (evalúa habilidades del desarrollador, no features del producto)
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/13-neven-studio.md` | +Secciones 13.11 y 13.12 |
+| `NEVEN/docs/Evaluaciones/Evaluacion_comercial.md` | +Fortaleza #21 |
+| `NEVEN/docs/Evaluaciones/Evaluacion_doctoral.md` | +Contribución 2.20 |
+
+### Commit
+
+- **Hash:** `de976fe`
+- **Mensaje:** `docs: documentar Tab Settings (configurador AI/DB) en Docusaurus y Evaluaciones`
+- **Estadísticas:** 3 archivos, 355 líneas agregadas
+
+### Contenido documentado
+
+**Sección 13.11 — Tab Settings:**
+- Sub-tabs: Motor IA, Conexiones DB, Prompts
+- Proveedores AI: OpenAI, Azure, Anthropic, Ollama, LM Studio
+- Bases de datos: PostgreSQL, MySQL, SQL Server, SQLite, DuckDB
+- Seguridad: credenciales en Windows Credential Manager
+- Migración automática v1 → v2.0
+
+**Sección 13.12 — API de Configuración:**
+- GET/POST `/api/config/ai-profiles` (CRUD + activate + test)
+- GET/POST `/api/config/db-connections` (CRUD + activate + test)
+- GET `/api/config/providers`, `/api/config/db-types`
+- GET/POST `/api/config/prompts`
+- POST `/api/config/reload`
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **BAJA** | Agregar capturas de pantalla del Tab Settings a la documentación |
+| **BAJA** | Video demo de 3 minutos mostrando el flujo de configuración |
+
+
+---
+
+### Sesión 2026-08-19 (~14:30) — Discusión: Tab Ontología en Settings
+
+**Estado:** DISEÑO CONCEPTUAL — Pendiente implementación
+
+### Propuesta discutida
+
+Agregar un nuevo sub-tab "Base de Conocimiento" (u "Ontología") dentro del Tab Settings que permita al usuario:
+1. Ver dominios existentes (Excel, NEVEN, Econometría) con conteo de entidades
+2. Ver libros ya procesados (tabla con libro, fecha, funciones extraídas)
+3. Agregar nuevos libros PDF para expandir la ontología
+4. Vista previa de funciones detectadas antes de confirmar
+5. Barra de progreso durante el procesamiento
+
+### Justificación
+
+- **Coherencia UX:** Settings ya es "el lugar donde configuro NEVEN"
+- **Visibilidad:** El usuario actual no sabe que existen las ontologías ni cómo expandirlas
+- **Diferenciador comercial:** Ningún competidor tiene conocimiento expansible por el usuario
+- **Demo potente:** "Agrego este libro de finanzas y ahora NEVEN entiende valuación"
+
+### Consideraciones técnicas identificadas
+
+1. **Procesamiento lento** — PDFs de 300 páginas toman 2-5 minutos. Requiere:
+   - Indicador de progreso real
+   - Opción de cancelar
+   - Notificación al terminar
+
+2. **Implementación en Python** (Opción B elegida):
+   - PyMuPDF para extraer texto de PDFs
+   - Conexión a LLM via config_manager (perfil AI activo)
+   - Lógica de escritura a JSONL (replicar del skill existente)
+
+3. **Compliance** — El procesamiento debe parafrasear, no copiar verbatim
+
+### Decisión
+
+**Prioridad MEDIA-ALTA** para próxima iteración (después de estabilizar lo actual).
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA-ALTA** | Diseñar spec detallado del Tab Ontología |
+| **MEDIA** | Crear mockup de UI para validar concepto |
+| **MEDIA** | Implementar endpoint `/api/ontology/process-book` en Python |
+| **BAJA** | Agregar vista de "Libros procesados" con metadata |
+
+
+---
+
+### Sesión 2026-08-19 (~15:00) — Refinamiento: Tab Ontología autónomo
+
+**Estado:** DISEÑO REFINADO — Decisiones clave tomadas
+
+### Decisiones de diseño
+
+**1. Agente independiente de Kiro**
+
+El procesamiento de libros debe funcionar sin Kiro. El agente AI de NEVEN (Excel Consultant) debe poder hacerlo autónomamente.
+
+Arquitectura definida:
+```
+Usuario → Tab Settings → "Agregar libro" → Selecciona PDF
+    ↓
+POST /api/ontology/process-book {file_path, domain}
+    ↓
+neven_http_server.py:
+    1. Extrae texto con PyMuPDF
+    2. Divide en chunks manejables
+    3. Llama al LLM (perfil AI activo) con prompt de extracción
+    4. Parsea respuesta → genera entidades JSONL
+    5. Append a graph.jsonl del dominio
+    ↓
+Respuesta: {funciones_extraidas: 45, dominio: "FINANZAS"}
+```
+
+Las instrucciones de procesamiento vivirán en:
+- `C:\NEVEN\prompts\ontology_extraction.txt` — prompt system para el LLM
+- `ONTOLOGIA/COMO_PROCESAR_LIBROS.md` — documentación para el agente AI
+
+**2. Responsabilidad del usuario sobre libros**
+
+- NO limitamos qué libros puede procesar el usuario
+- NO forzamos parafraseo artificial
+- El usuario que sube un libro se asume lo compró legalmente
+- La responsabilidad legal es del usuario (igual que fotocopiar un libro propio)
+- Esto simplifica la implementación: extracción directa sin reglas de compliance
+
+### Comparativa antes/después
+
+| Aspecto | Antes (con Kiro) | Ahora (autónomo) |
+|---------|------------------|------------------|
+| Dependencia | Skill de Kiro | Endpoint Python propio |
+| Compliance | Parafraseo forzado | Responsabilidad del usuario |
+| Instrucciones | En `.kiro/skills/` | En `C:\NEVEN\prompts/` |
+| Disponibilidad | Solo con Kiro activo | 24/7 desde NEVEN Studio |
+
+### Archivos a crear (próxima sesión)
+
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\prompts\ontology_extraction.txt` | Prompt de extracción de funciones |
+| `ONTOLOGIA/COMO_PROCESAR_LIBROS.md` | Documentación para el agente AI |
+| `neven_http_server.py` | Endpoint `/api/ontology/process-book` |
+| `taskpane.html/js` | UI del sub-tab "Base de Conocimiento" |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Crear prompt `ontology_extraction.txt` |
+| **ALTA** | Implementar endpoint `/api/ontology/process-book` |
+| **MEDIA** | Diseñar UI del sub-tab en Settings |
+| **MEDIA** | Crear `COMO_PROCESAR_LIBROS.md` |
+| **BAJA** | Vista de libros procesados con metadata |

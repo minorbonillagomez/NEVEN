@@ -24,6 +24,8 @@
 #   GET  /api/ontology/domains → List available ontology domains
 #   GET  /api/ontology/domain/{id}/stats → Get domain statistics
 #   GET  /api/ontology/search?q=term&domain=excel → Search knowledge graph
+#   GET  /api/ontology/books?domain=excel → List processed books
+#   POST /api/ontology/process-book → Process PDF book and extract entities
 #   GET  /api/ayuda/funciones → Diccionario dinámico de funciones NevenX
 
 import os
@@ -822,6 +824,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
             # GET /api/ontology/search?q=VLOOKUP&domain=excel
             self._handle_ontology_search()
             return
+        
+        if path == 'api/ontology/books':
+            # GET /api/ontology/books?domain=excel — List processed books
+            self._handle_ontology_books()
+            return
 
         # ── Ayuda / Diccionario de Funciones NevenX ───────────────────────────
         if path == 'api/ayuda/funciones':
@@ -1029,6 +1036,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_config_prompt_save(body)
         elif path == 'api/config/reload':
             self._handle_config_reload()
+        # ══════════════════════════════════════════════════════════════════════
+        # Ontology Manager — POST endpoints
+        # ══════════════════════════════════════════════════════════════════════
+        elif path == 'api/ontology/process-book':
+            self._handle_ontology_process_book(body)
         # ══════════════════════════════════════════════════════════════════════
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
@@ -2713,6 +2725,75 @@ class NEVENHandler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             self._send_error_json(f"Search error: {e}")
+    
+    def _handle_ontology_books(self):
+        """GET /api/ontology/books?domain=excel — List processed books."""
+        from urllib.parse import urlparse, parse_qs
+        query_params = parse_qs(urlparse(self.path).query)
+        domain = query_params.get("domain", [None])[0]
+        
+        try:
+            from ontology_manager import list_processed_books
+            books = list_processed_books(domain)
+            self._send_json({
+                "status": "ok",
+                "books": books,
+                "count": len(books)
+            })
+        except ImportError:
+            self._send_json({
+                "status": "ok",
+                "books": [],
+                "count": 0,
+                "warning": "ontology_manager not available"
+            })
+        except Exception as e:
+            self._send_error_json(f"List books error: {e}")
+    
+    def _handle_ontology_process_book(self, body: dict):
+        """POST /api/ontology/process-book — Process a PDF book and extract entities."""
+        file_path = body.get("file_path")
+        domain = body.get("domain")
+        max_pages = body.get("max_pages")
+        chunk_size = body.get("chunk_size", 4000)
+        
+        if not file_path:
+            self._send_error_json("Missing 'file_path' parameter", 400)
+            return
+        
+        if not domain:
+            self._send_error_json("Missing 'domain' parameter", 400)
+            return
+        
+        try:
+            from ontology_manager import process_book
+            
+            # Get config_manager for AI profile access
+            config_mgr = None
+            if _CONFIG_MANAGER_AVAILABLE:
+                try:
+                    from config_manager import ConfigManager
+                    config_mgr = ConfigManager()
+                except Exception:
+                    pass
+            
+            result = process_book(
+                file_path=file_path,
+                domain_id=domain,
+                config_manager=config_mgr,
+                max_pages=max_pages,
+                chunk_size=chunk_size
+            )
+            
+            if result.get("status") == "error":
+                self._send_error_json(result.get("error", "Unknown error"), 400)
+            else:
+                self._send_json(result)
+                
+        except ImportError as e:
+            self._send_error_json(f"ontology_manager not available: {e}", 503)
+        except Exception as e:
+            self._send_error_json(f"Process book error: {e}", 500)
 
     def _handle_ayuda_funciones(self):
         """GET /api/ayuda/funciones — Diccionario dinámico de funciones NevenX.

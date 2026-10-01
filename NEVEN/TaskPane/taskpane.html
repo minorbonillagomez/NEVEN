@@ -849,6 +849,7 @@
       <div class="settings-tab active" data-settings-tab="ai" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Motor IA</div>
       <div class="settings-tab" data-settings-tab="db" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conexiones DB</div>
       <div class="settings-tab" data-settings-tab="prompts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Prompts</div>
+      <div class="settings-tab" data-settings-tab="ontology" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conocimiento</div>
     </div>
 
     <!-- Panel: Motor IA -->
@@ -1080,6 +1081,96 @@
             <button class="btn btn-primary" id="btn-prompt-save" style="flex:1">Guardar</button>
             <button class="btn btn-secondary" id="btn-prompt-activate" style="flex:1">Activar</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Base de Conocimiento / Ontología -->
+    <div class="settings-panel" id="settings-ontology" style="display:none;padding:8px;overflow-y:auto;max-height:calc(100vh - 140px)">
+      
+      <!-- Dominios disponibles -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Dominios de Conocimiento</span>
+          <button class="btn btn-secondary" id="btn-ontology-refresh" style="padding:3px 8px;font-size:9px" title="Recargar">&#x21bb;</button>
+        </div>
+        <div id="ontology-domains-list" style="display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto">
+          <div class="msg-info" style="padding:8px;font-size:10px">Cargando dominios...</div>
+        </div>
+      </div>
+
+      <!-- Libros procesados -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title">Libros Procesados</div>
+        <div id="ontology-books-list" style="display:flex;flex-direction:column;gap:4px;max-height:120px;overflow-y:auto">
+          <div class="msg-info" style="padding:8px;font-size:10px">Selecciona un dominio para ver libros</div>
+        </div>
+      </div>
+
+      <!-- Agregar libro -->
+      <div class="card">
+        <div class="card-title">Agregar Libro</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          
+          <!-- Seleccionar archivo -->
+          <div>
+            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:2px">Archivo PDF</label>
+            <div style="display:flex;gap:4px">
+              <input type="text" id="ontology-file-path" placeholder="C:\Ruta\al\libro.pdf" style="flex:1;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+              <button class="btn btn-secondary" id="btn-ontology-browse" style="padding:4px 8px;font-size:9px">...</button>
+            </div>
+            <div style="font-size:8px;color:var(--text-muted);margin-top:2px">Solo archivos PDF con texto seleccionable</div>
+          </div>
+          
+          <!-- Dominio destino -->
+          <div>
+            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:2px">Dominio Destino</label>
+            <select id="ontology-target-domain" style="width:100%;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+              <option value="">Seleccionar dominio...</option>
+            </select>
+          </div>
+          
+          <!-- Campo para nuevo dominio (oculto por defecto) -->
+          <div id="ontology-new-domain-row" style="display:none">
+            <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:2px">Nombre del Nuevo Dominio</label>
+            <input type="text" id="ontology-new-domain-name" placeholder="ej: machine_learning, statistics, python" 
+                   style="width:100%;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+            <div style="font-size:8px;color:var(--text-muted);margin-top:2px">Usa snake_case sin espacios ni caracteres especiales</div>
+          </div>
+          
+          <!-- Opciones avanzadas (colapsadas) -->
+          <details style="font-size:10px">
+            <summary style="cursor:pointer;color:var(--text-secondary)">Opciones avanzadas</summary>
+            <div style="padding:8px 0;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;gap:8px">
+                <div style="flex:1">
+                  <label style="font-size:9px;color:var(--text-muted)">Max páginas (vacío = todas)</label>
+                  <input type="number" id="ontology-max-pages" min="1" placeholder="Todas" style="width:100%;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:4px;font-size:10px">
+                </div>
+                <div style="flex:1">
+                  <label style="font-size:9px;color:var(--text-muted)">Chunk size (chars)</label>
+                  <input type="number" id="ontology-chunk-size" value="4000" min="1000" max="8000" style="width:100%;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:4px;font-size:10px">
+                </div>
+              </div>
+            </div>
+          </details>
+          
+          <!-- Botón procesar -->
+          <button class="btn btn-primary" id="btn-ontology-process" style="width:100%">Procesar Libro</button>
+          
+          <!-- Barra de progreso -->
+          <div id="ontology-progress" style="display:none">
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-secondary);margin-bottom:4px">
+              <span id="ontology-progress-text">Procesando...</span>
+              <span id="ontology-progress-percent">0%</span>
+            </div>
+            <div style="height:6px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden">
+              <div id="ontology-progress-bar" style="height:100%;background:var(--accent);width:0%;transition:width 0.3s"></div>
+            </div>
+          </div>
+          
+          <!-- Resultado -->
+          <div id="ontology-result" style="display:none;padding:8px;border-radius:4px;font-size:10px"></div>
         </div>
       </div>
     </div>

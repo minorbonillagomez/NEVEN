@@ -3439,6 +3439,7 @@ function initSettingsTab() {
       if (target === 'ai') loadAiProfiles();
       else if (target === 'db') loadDbConnections();
       else if (target === 'prompts') loadPromptsList();
+      else if (target === 'ontology') loadOntologyDomains();
     });
   });
 
@@ -3499,6 +3500,12 @@ function initSettingsTab() {
   document.getElementById('btn-prompt-cancel')?.addEventListener('click', hidePromptEditor);
   document.getElementById('btn-prompt-save')?.addEventListener('click', savePrompt);
   document.getElementById('btn-prompt-activate')?.addEventListener('click', activatePrompt);
+
+  // ── Ontology / Knowledge Base handlers ─────────────────────────────────────
+  document.getElementById('btn-ontology-refresh')?.addEventListener('click', loadOntologyDomains);
+  document.getElementById('btn-ontology-browse')?.addEventListener('click', browseOntologyFile);
+  document.getElementById('btn-ontology-process')?.addEventListener('click', processOntologyBook);
+  document.getElementById('ontology-target-domain')?.addEventListener('change', onOntologyDomainChange);
 
   // Cargar proveedores/modelos desde servidor
   console.log('[Settings] Llamando loadConfigMetadata()...');
@@ -4139,6 +4146,297 @@ async function activatePromptById(promptId) {
     loadPromptsList();
   } catch (e) {
     showToast('Error: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ONTOLOGY / KNOWLEDGE BASE FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _selectedOntologyDomain = null;
+
+async function loadOntologyDomains() {
+  const list = document.getElementById('ontology-domains-list');
+  const select = document.getElementById('ontology-target-domain');
+  
+  list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">Cargando dominios...</div>';
+  
+  try {
+    const resp = await fetch(API_BASE + '/api/ontology/domains');
+    if (!resp.ok) throw new Error('Error cargando dominios');
+    const data = await resp.json();
+    
+    if (!data.domains || data.domains.length === 0) {
+      list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">No hay dominios configurados</div>';
+      return;
+    }
+    
+    // Renderizar lista de dominios
+    list.innerHTML = data.domains.map(d => `
+      <div class="ontology-domain-item" data-domain="${d.id}" 
+           style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;
+                  background:var(--bg-tertiary);border-radius:4px;cursor:pointer;
+                  border:1px solid ${_selectedOntologyDomain === d.id ? 'var(--accent)' : 'transparent'}">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:11px;font-weight:600;color:var(--text-primary)">${d.id}</span>
+          <span style="font-size:9px;color:var(--text-muted)">${d.entity_count || 0} entidades</span>
+        </div>
+        <span style="font-size:10px;color:var(--accent)">${d.book_count || 0} libros</span>
+      </div>
+    `).join('');
+    
+    // Event listeners para seleccionar dominio
+    list.querySelectorAll('.ontology-domain-item').forEach(item => {
+      item.addEventListener('click', () => {
+        _selectedOntologyDomain = item.dataset.domain;
+        // Actualizar visual
+        list.querySelectorAll('.ontology-domain-item').forEach(i => {
+          i.style.borderColor = i.dataset.domain === _selectedOntologyDomain ? 'var(--accent)' : 'transparent';
+        });
+        // Cargar libros del dominio
+        loadOntologyBooks();
+      });
+    });
+    
+    // Actualizar dropdown de dominios (incluyendo opción para crear nuevo)
+    select.innerHTML = '<option value="">Seleccionar dominio...</option>' + 
+      data.domains.map(d => `<option value="${d.id}">${d.id}</option>`).join('') +
+      '<option value="__new__" style="font-style:italic;color:var(--accent)">+ Crear nuevo dominio...</option>';
+    
+    // Si hay dominio seleccionado, seleccionarlo en dropdown
+    if (_selectedOntologyDomain && _selectedOntologyDomain !== '__new__') {
+      select.value = _selectedOntologyDomain;
+    }
+    
+  } catch (e) {
+    console.error('[Ontology] Error:', e);
+    list.innerHTML = `<div class="msg-error" style="padding:8px;font-size:10px">Error: ${e.message}</div>`;
+  }
+}
+
+function onOntologyDomainChange() {
+  const select = document.getElementById('ontology-target-domain');
+  const newDomainRow = document.getElementById('ontology-new-domain-row');
+  const newDomainInput = document.getElementById('ontology-new-domain-name');
+  
+  if (select.value === '__new__') {
+    // Mostrar campo para nuevo dominio
+    newDomainRow.style.display = 'block';
+    newDomainInput.focus();
+    // Limpiar selección de dominio existente
+    _selectedOntologyDomain = null;
+  } else {
+    // Ocultar campo de nuevo dominio
+    newDomainRow.style.display = 'none';
+    newDomainInput.value = '';
+    // Cargar libros del dominio seleccionado
+    loadOntologyBooks();
+  }
+}
+
+async function loadOntologyBooks() {
+  const list = document.getElementById('ontology-books-list');
+  const select = document.getElementById('ontology-target-domain');
+  
+  // Sincronizar dominio seleccionado con dropdown si cambió (ignorar __new__)
+  if (select.value && select.value !== '__new__' && select.value !== _selectedOntologyDomain) {
+    _selectedOntologyDomain = select.value;
+  }
+  
+  if (!_selectedOntologyDomain || _selectedOntologyDomain === '__new__') {
+    list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">Selecciona un dominio para ver libros</div>';
+    return;
+  }
+  
+  list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">Cargando libros...</div>';
+  
+  try {
+    const resp = await fetch(API_BASE + `/api/ontology/books?domain=${encodeURIComponent(_selectedOntologyDomain)}`);
+    if (!resp.ok) throw new Error('Error cargando libros');
+    const data = await resp.json();
+    
+    if (!data.books || data.books.length === 0) {
+      list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">No hay libros procesados en este dominio</div>';
+      return;
+    }
+    
+    // Renderizar lista de libros
+    list.innerHTML = data.books.map(b => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;
+                  background:var(--bg-tertiary);border-radius:4px;font-size:10px">
+        <div style="display:flex;flex-direction:column;gap:1px;overflow:hidden">
+          <span style="font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" 
+                title="${b.filename}">${b.filename}</span>
+          <span style="color:var(--text-muted)">${b.pages || '?'} págs · ${b.entities || 0} entidades</span>
+        </div>
+        <span style="color:var(--text-muted);flex-shrink:0">${b.processed_date || ''}</span>
+      </div>
+    `).join('');
+    
+  } catch (e) {
+    console.error('[Ontology] Error:', e);
+    list.innerHTML = `<div class="msg-error" style="padding:8px;font-size:10px">Error: ${e.message}</div>`;
+  }
+}
+
+async function browseOntologyFile() {
+  // Usar Office.js para abrir diálogo de archivo si está disponible
+  // De lo contrario, mostrar mensaje indicando que debe escribir la ruta
+  const input = document.getElementById('ontology-file-path');
+  
+  if (window._officeReady && Office.context.ui && Office.context.ui.displayDialogAsync) {
+    // No hay API nativa de file picker en Office.js - mostrar instrucción
+    showToast('Escribe la ruta completa del archivo PDF');
+    input.focus();
+  } else {
+    // Fuera de Office, intentar usar input file hidden
+    let fileInput = document.getElementById('_ontology-file-input');
+    if (!fileInput) {
+      fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.id = '_ontology-file-input';
+      fileInput.accept = '.pdf';
+      fileInput.style.display = 'none';
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          // En browser, no podemos obtener la ruta real, solo el nombre
+          input.value = e.target.files[0].name;
+          showToast('Nota: En browser solo se muestra el nombre. Escribe la ruta completa.');
+        }
+      });
+      document.body.appendChild(fileInput);
+    }
+    fileInput.click();
+  }
+}
+
+async function processOntologyBook() {
+  const filePath = document.getElementById('ontology-file-path').value.trim();
+  let domain = document.getElementById('ontology-target-domain').value;
+  const newDomainName = document.getElementById('ontology-new-domain-name').value.trim();
+  const maxPages = document.getElementById('ontology-max-pages').value;
+  const chunkSize = document.getElementById('ontology-chunk-size').value || 4000;
+  
+  // Si es nuevo dominio, usar el nombre ingresado
+  if (domain === '__new__') {
+    if (!newDomainName) {
+      showToast('Ingresa un nombre para el nuevo dominio');
+      document.getElementById('ontology-new-domain-name').focus();
+      return;
+    }
+    // Validar formato: solo letras, números y guiones bajos
+    if (!/^[a-z][a-z0-9_]*$/.test(newDomainName)) {
+      showToast('El nombre debe empezar con letra minúscula y solo contener letras, números y guiones bajos');
+      return;
+    }
+    domain = newDomainName;
+  }
+  
+  // Validaciones
+  if (!filePath) {
+    showToast('Selecciona un archivo PDF');
+    return;
+  }
+  if (!domain) {
+    showToast('Selecciona un dominio destino');
+    return;
+  }
+  if (!filePath.toLowerCase().endsWith('.pdf')) {
+    showToast('El archivo debe ser un PDF');
+    return;
+  }
+  
+  // Mostrar progreso
+  const progressDiv = document.getElementById('ontology-progress');
+  const progressBar = document.getElementById('ontology-progress-bar');
+  const progressText = document.getElementById('ontology-progress-text');
+  const progressPercent = document.getElementById('ontology-progress-percent');
+  const resultDiv = document.getElementById('ontology-result');
+  const processBtn = document.getElementById('btn-ontology-process');
+  
+  progressDiv.style.display = 'block';
+  resultDiv.style.display = 'none';
+  processBtn.disabled = true;
+  processBtn.textContent = 'Procesando...';
+  
+  progressText.textContent = 'Iniciando extracción...';
+  progressBar.style.width = '10%';
+  progressPercent.textContent = '10%';
+  
+  try {
+    const body = {
+      file_path: filePath,
+      domain: domain
+    };
+    if (maxPages) body.max_pages = parseInt(maxPages);
+    if (chunkSize) body.chunk_size = parseInt(chunkSize);
+    
+    progressText.textContent = 'Extrayendo texto del PDF...';
+    progressBar.style.width = '30%';
+    progressPercent.textContent = '30%';
+    
+    const resp = await fetch(API_BASE + '/api/ontology/process-book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    
+    progressText.textContent = 'Procesando con LLM...';
+    progressBar.style.width = '70%';
+    progressPercent.textContent = '70%';
+    
+    const data = await resp.json();
+    
+    if (!resp.ok) {
+      throw new Error(data.error || 'Error procesando libro');
+    }
+    
+    progressBar.style.width = '100%';
+    progressPercent.textContent = '100%';
+    progressText.textContent = '¡Completado!';
+    
+    // Mostrar resultado
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'var(--success-bg, #1a3320)';
+    resultDiv.style.color = 'var(--success-text, #4ade80)';
+    resultDiv.innerHTML = `
+      <strong>✓ Libro procesado exitosamente</strong><br>
+      <span style="font-size:9px;color:var(--text-muted)">
+        ${data.pages_processed || '?'} páginas · 
+        ${data.entities_added || 0} entidades extraídas · 
+        ${data.relations_added || 0} relaciones
+      </span>
+    `;
+    
+    // Limpiar formulario
+    document.getElementById('ontology-file-path').value = '';
+    
+    // Recargar dominios y libros
+    await loadOntologyDomains();
+    _selectedOntologyDomain = domain;
+    await loadOntologyBooks();
+    
+    showToast('Libro procesado: ' + (data.entities_added || 0) + ' entidades añadidas');
+    
+  } catch (e) {
+    console.error('[Ontology] Error procesando:', e);
+    
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'var(--error-bg, #3d1f1f)';
+    resultDiv.style.color = 'var(--error-text, #f87171)';
+    resultDiv.innerHTML = `<strong>✗ Error:</strong> ${e.message}`;
+    
+    showToast('Error: ' + e.message);
+    
+  } finally {
+    processBtn.disabled = false;
+    processBtn.textContent = 'Procesar Libro';
+    
+    // Ocultar progreso después de un momento
+    setTimeout(() => {
+      progressDiv.style.display = 'none';
+      progressBar.style.width = '0%';
+    }, 2000);
   }
 }
 
