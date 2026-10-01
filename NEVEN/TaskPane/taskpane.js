@@ -3440,6 +3440,8 @@ function initSettingsTab() {
       else if (target === 'db') loadDbConnections();
       else if (target === 'prompts') loadPromptsList();
       else if (target === 'ontology') loadOntologyDomains();
+      else if (target === 'notebooks') loadNotebooksList();
+      else if (target === 'engines') loadEnginesStatus();
     });
   });
 
@@ -3506,6 +3508,18 @@ function initSettingsTab() {
   document.getElementById('btn-ontology-browse')?.addEventListener('click', browseOntologyFile);
   document.getElementById('btn-ontology-process')?.addEventListener('click', processOntologyBook);
   document.getElementById('ontology-target-domain')?.addEventListener('change', onOntologyDomainChange);
+
+  // ── Notebooks / Pluto.jl handlers ──────────────────────────────────────────
+  document.getElementById('btn-pluto-start')?.addEventListener('click', startPlutoServer);
+  document.getElementById('btn-pluto-stop')?.addEventListener('click', stopPlutoServer);
+  document.getElementById('btn-notebooks-refresh')?.addEventListener('click', loadNotebooksList);
+
+  // ── Engines / Motores handlers ─────────────────────────────────────────────
+  document.getElementById('btn-engines-refresh')?.addEventListener('click', loadEnginesStatus);
+  document.getElementById('btn-engines-save')?.addEventListener('click', saveEnginesConfig);
+  document.getElementById('toggle-engine-r')?.addEventListener('change', onEngineToggleChange);
+  document.getElementById('toggle-engine-julia')?.addEventListener('change', onEngineToggleChange);
+  document.getElementById('toggle-engine-python')?.addEventListener('change', onEngineToggleChange);
 
   // Cargar proveedores/modelos desde servidor
   console.log('[Settings] Llamando loadConfigMetadata()...');
@@ -4438,6 +4452,329 @@ async function processOntologyBook() {
       progressBar.style.width = '0%';
     }, 2000);
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Notebooks / Pluto.jl
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function loadNotebooksList() {
+  const list = document.getElementById('notebooks-list');
+  if (!list) return;
+  
+  list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">Cargando notebooks...</div>';
+  
+  try {
+    const resp = await fetch(API_BASE + '/api/notebooks/list');
+    if (!resp.ok) throw new Error('Error ' + resp.status);
+    const data = await resp.json();
+    
+    if (!data.notebooks || data.notebooks.length === 0) {
+      list.innerHTML = '<div class="msg-info" style="padding:8px;font-size:10px">No hay notebooks en C:\\NEVEN\\notebooks\\</div>';
+      return;
+    }
+    
+    list.innerHTML = data.notebooks.map(nb => `
+      <div class="notebook-item" data-path="${nb.path}" style="display:flex;align-items:center;gap:8px;padding:6px 8px;
+           background:var(--bg-primary);border:1px solid #333;border-radius:4px;cursor:pointer;transition:border-color 0.15s"
+           onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='#333'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nb.name}</div>
+          <div style="font-size:9px;color:var(--text-secondary)">${nb.size || ''}</div>
+        </div>
+        <button class="btn-notebook-open" data-path="${nb.path}" style="background:var(--accent);color:#000;border:none;border-radius:3px;padding:3px 8px;font-size:9px;cursor:pointer">Abrir</button>
+      </div>
+    `).join('');
+    
+    // Event listeners para abrir notebooks
+    list.querySelectorAll('.btn-notebook-open').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openNotebook(btn.dataset.path);
+      });
+    });
+    list.querySelectorAll('.notebook-item').forEach(item => {
+      item.addEventListener('click', () => openNotebook(item.dataset.path));
+    });
+    
+  } catch (e) {
+    list.innerHTML = `<div class="msg-error" style="padding:8px;font-size:10px">Error: ${e.message}</div>`;
+  }
+  
+  // También actualizar estado de Pluto
+  checkPlutoStatus();
+}
+
+async function checkPlutoStatus() {
+  const indicator = document.getElementById('pluto-status-indicator');
+  const text = document.getElementById('pluto-status-text');
+  if (!indicator || !text) return;
+  
+  try {
+    const resp = await fetch(API_BASE + '/api/pluto/status');
+    const data = await resp.json();
+    
+    if (data.running) {
+      indicator.style.background = '#4ade80';
+      indicator.title = 'Pluto corriendo';
+      text.textContent = 'Corriendo en puerto ' + (data.port || '1234');
+    } else {
+      indicator.style.background = '#666';
+      indicator.title = 'Pluto detenido';
+      text.textContent = 'Detenido';
+    }
+  } catch (e) {
+    indicator.style.background = '#f66';
+    indicator.title = 'Error verificando';
+    text.textContent = 'Error';
+  }
+}
+
+async function startPlutoServer() {
+  const msgDiv = document.getElementById('pluto-message');
+  const startBtn = document.getElementById('btn-pluto-start');
+  
+  startBtn.disabled = true;
+  startBtn.textContent = 'Iniciando...';
+  msgDiv.style.display = 'block';
+  msgDiv.style.background = 'var(--info-bg, #1e3a5f)';
+  msgDiv.style.color = 'var(--info-text, #60a5fa)';
+  msgDiv.textContent = 'Iniciando servidor Pluto.jl...';
+  
+  try {
+    const resp = await fetch(API_BASE + '/api/pluto/start', { method: 'POST' });
+    const data = await resp.json();
+    
+    if (resp.ok && data.success) {
+      msgDiv.style.background = 'var(--success-bg, #1a3320)';
+      msgDiv.style.color = 'var(--success-text, #4ade80)';
+      msgDiv.textContent = '✓ Pluto iniciado en puerto ' + (data.port || '1234');
+      showToast('Pluto.jl iniciado');
+    } else {
+      throw new Error(data.error || 'Error al iniciar');
+    }
+    
+    checkPlutoStatus();
+    
+  } catch (e) {
+    msgDiv.style.background = 'var(--error-bg, #3d1f1f)';
+    msgDiv.style.color = 'var(--error-text, #f87171)';
+    msgDiv.textContent = '✗ ' + e.message;
+  } finally {
+    startBtn.disabled = false;
+    startBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> Iniciar Pluto';
+    
+    setTimeout(() => { msgDiv.style.display = 'none'; }, 5000);
+  }
+}
+
+async function stopPlutoServer() {
+  const msgDiv = document.getElementById('pluto-message');
+  const stopBtn = document.getElementById('btn-pluto-stop');
+  
+  stopBtn.disabled = true;
+  stopBtn.textContent = 'Deteniendo...';
+  
+  try {
+    const resp = await fetch(API_BASE + '/api/pluto/stop', { method: 'POST' });
+    const data = await resp.json();
+    
+    if (resp.ok) {
+      msgDiv.style.display = 'block';
+      msgDiv.style.background = 'var(--success-bg, #1a3320)';
+      msgDiv.style.color = 'var(--success-text, #4ade80)';
+      msgDiv.textContent = '✓ Pluto detenido';
+      showToast('Pluto.jl detenido');
+    } else {
+      throw new Error(data.error || 'Error al detener');
+    }
+    
+    checkPlutoStatus();
+    
+  } catch (e) {
+    msgDiv.style.display = 'block';
+    msgDiv.style.background = 'var(--error-bg, #3d1f1f)';
+    msgDiv.style.color = 'var(--error-text, #f87171)';
+    msgDiv.textContent = '✗ ' + e.message;
+  } finally {
+    stopBtn.disabled = false;
+    stopBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="6" width="12" height="12"/></svg> Detener';
+    
+    setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+  }
+}
+
+async function openNotebook(path) {
+  showToast('Abriendo notebook...');
+  
+  try {
+    const resp = await fetch(API_BASE + '/api/pluto/open', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: path })
+    });
+    const data = await resp.json();
+    
+    if (resp.ok && data.url) {
+      // Abrir en nueva ventana/pestaña
+      window.open(data.url, '_blank');
+    } else {
+      throw new Error(data.error || 'Error abriendo notebook');
+    }
+  } catch (e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Engines / Motores de Lenguaje
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function loadEnginesStatus() {
+  const engines = ['r', 'julia', 'python'];
+  
+  for (const eng of engines) {
+    const indicator = document.getElementById('engine-' + eng + '-indicator');
+    const version = document.getElementById('engine-' + eng + '-version');
+    const status = document.getElementById('engine-' + eng + '-status');
+    
+    if (!indicator) continue;
+    
+    indicator.style.background = '#666';
+    status.textContent = 'Verificando...';
+  }
+  
+  try {
+    const resp = await fetch(API_BASE + '/api/engines/status');
+    if (!resp.ok) throw new Error('Error ' + resp.status);
+    const data = await resp.json();
+    
+    for (const eng of engines) {
+      const indicator = document.getElementById('engine-' + eng + '-indicator');
+      const version = document.getElementById('engine-' + eng + '-version');
+      const status = document.getElementById('engine-' + eng + '-status');
+      const toggle = document.getElementById('toggle-engine-' + eng);
+      
+      if (!indicator) continue;
+      
+      const engData = data[eng] || {};
+      
+      if (engData.connected) {
+        indicator.style.background = '#4ade80';
+        indicator.title = 'Conectado';
+        status.textContent = 'Conectado';
+        version.textContent = engData.version || '—';
+      } else if (engData.enabled === false) {
+        indicator.style.background = '#888';
+        indicator.title = 'Deshabilitado';
+        status.textContent = 'Deshabilitado';
+        version.textContent = '—';
+      } else {
+        indicator.style.background = '#f66';
+        indicator.title = 'Desconectado';
+        status.textContent = 'Desconectado';
+        version.textContent = '—';
+      }
+      
+      // Actualizar toggles según config
+      if (toggle && engData.enabled !== undefined) {
+        toggle.checked = engData.enabled;
+      }
+    }
+    
+  } catch (e) {
+    console.error('[Engines] Error cargando estado:', e);
+    for (const eng of engines) {
+      const status = document.getElementById('engine-' + eng + '-status');
+      if (status) status.textContent = 'Error';
+    }
+  }
+}
+
+function onEngineToggleChange(e) {
+  // Solo marcar que hay cambios pendientes
+  const saveBtn = document.getElementById('btn-engines-save');
+  if (saveBtn) {
+    saveBtn.style.background = 'var(--accent)';
+    saveBtn.textContent = 'Guardar Configuración *';
+  }
+}
+
+async function saveEnginesConfig() {
+  const resultDiv = document.getElementById('engines-save-result');
+  const saveBtn = document.getElementById('btn-engines-save');
+  
+  const config = {
+    r: document.getElementById('toggle-engine-r')?.checked ?? true,
+    julia: document.getElementById('toggle-engine-julia')?.checked ?? true,
+    python: document.getElementById('toggle-engine-python')?.checked ?? true
+  };
+  
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Guardando...';
+  
+  try {
+    const resp = await fetch(API_BASE + '/api/engines/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+    
+    const data = await resp.json();
+    
+    if (resp.ok) {
+      resultDiv.style.display = 'block';
+      resultDiv.style.background = 'var(--success-bg, #1a3320)';
+      resultDiv.style.color = 'var(--success-text, #4ade80)';
+      resultDiv.textContent = '✓ Configuración guardada. Los cambios se aplicarán al reiniciar Excel.';
+      
+      saveBtn.style.background = '';
+      saveBtn.textContent = 'Guardar Configuración';
+      
+      showToast('Configuración de motores guardada');
+    } else {
+      throw new Error(data.error || 'Error guardando');
+    }
+    
+  } catch (e) {
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'var(--error-bg, #3d1f1f)';
+    resultDiv.style.color = 'var(--error-text, #f87171)';
+    resultDiv.textContent = '✗ ' + e.message;
+  } finally {
+    saveBtn.disabled = false;
+    
+    setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Tab Ayuda - Handlers
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function initAyudaTab() {
+  // Botón Documentación
+  document.getElementById('btn-ayuda-docs')?.addEventListener('click', () => {
+    // Abrir documentación en visor o nueva pestaña
+    const docsUrl = API_BASE + '/docs/neven-docs.html';
+    window.open(docsUrl, '_blank');
+  });
+  
+  // Botón Videos
+  document.getElementById('btn-ayuda-videos')?.addEventListener('click', () => {
+    showToast('Videos tutoriales próximamente disponibles');
+    // TODO: Implementar cuando estén disponibles
+  });
+}
+
+// Inicializar handlers de Ayuda cuando el DOM esté listo
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAyudaTab);
+} else {
+  initAyudaTab();
 }
 
 // ─── Inicializar Settings al cargar ──────────────────────────────────────────

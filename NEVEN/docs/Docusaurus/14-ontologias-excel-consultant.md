@@ -155,4 +155,119 @@ Esto significa que **la ontología crece con el uso**.
 
 ---
 
-*Documentación actualizada: Setiembre 2026*
+## 14.8 Tab Conocimiento — Gestión de Ontologías (UI)
+
+**Disponible desde:** Agosto 2026
+
+El Tab Conocimiento en Settings proporciona una interfaz visual para gestionar las ontologías de NEVEN sin necesidad de editar archivos manualmente.
+
+### Acceso
+
+```
+NEVEN Studio → Settings → Conocimiento
+```
+
+### Funcionalidades
+
+| Sección | Descripción |
+|:---|:---|
+| **Dominios** | Lista de dominios de conocimiento disponibles |
+| **Libros procesados** | Libros PDF que alimentan cada dominio |
+| **Procesar libro** | Formulario para agregar nuevos PDFs |
+| **Crear dominio** | Crear un nuevo dominio personalizado |
+
+### Lista de dominios
+
+Muestra los dominios existentes con estadísticas:
+
+| Dominio | Entidades | Libros |
+|:---|:---:|:---:|
+| excel | 183 | 6 |
+| econometrics | 199 | 14 |
+| neven | 45 | — |
+
+Al seleccionar un dominio, se muestran los libros que lo alimentan.
+
+### Procesar nuevo libro
+
+Para agregar un libro PDF a la base de conocimiento:
+
+```
+1. Settings → Conocimiento
+2. Seleccionar dominio destino (o crear uno nuevo)
+3. Ingresar ruta del PDF
+4. Clic "Procesar Libro"
+5. Esperar extracción (barra de progreso)
+6. Ver resumen: funciones extraídas, entidades creadas
+```
+
+El procesamiento:
+1. Extrae texto del PDF con PyMuPDF
+2. Divide en chunks manejables
+3. Envía al LLM activo con prompt de extracción
+4. Parsea respuesta → genera entidades JSONL
+5. Hace append a `graph.jsonl` del dominio
+
+### Crear dominio personalizado
+
+Para crear un dominio nuevo (ej: `machine_learning`, `finance`):
+
+```
+1. Settings → Conocimiento
+2. En selector de dominio, elegir "Crear nuevo..."
+3. Ingresar ID del dominio (snake_case)
+4. Ingresar nombre descriptivo
+5. Clic "Crear Dominio"
+```
+
+Esto crea la estructura:
+
+```
+C:\NEVEN\ontology\{id}\
+  └── memory\
+      └── ontology\
+          ├── schema.yaml
+          └── graph.jsonl
+
+ONTOLOGIA\LIBROS {NAME}\
+  └── memory\
+      └── ontology\
+          ├── schema.yaml
+          └── graph.jsonl
+```
+
+### Endpoints relacionados
+
+| Método | Endpoint | Descripción |
+|:---|:---|:---|
+| GET | `/api/ontology/domains` | Lista dominios con estadísticas |
+| GET | `/api/ontology/books?domain=X` | Lista libros de un dominio |
+| POST | `/api/ontology/process-book` | Procesar PDF nuevo |
+| POST | `/api/ontology/create-domain` | Crear dominio nuevo |
+
+### Ejemplo de respuesta `/api/ontology/domains`
+
+```json
+{
+  "domains": [
+    {
+      "id": "excel",
+      "name": "Excel Functions",
+      "entity_count": 183,
+      "book_count": 6,
+      "path": "C:\\NEVEN\\ontology\\excel"
+    },
+    {
+      "id": "econometrics",
+      "name": "Econometrics",
+      "entity_count": 199,
+      "book_count": 14,
+      "path": "ONTOLOGIA\\LIBROS ECONOMETRICS"
+    }
+  ]
+}
+```
+
+---
+
+*Documentación actualizada: Agosto 2026*

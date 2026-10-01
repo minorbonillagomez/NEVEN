@@ -3,15 +3,15 @@
     <tabs>
       <tab id="tabRJ2XCL" label="NEVEN" insertAfterMso="TabHome">
 
-        <!-- Grupo: Motores de Lenguaje -->
-        <group id="grpEngines" label="Motores">
-          <button id="btnConsole"
-                  label="Consola"
+        <!-- Grupo: NEVEN (esenciales) -->
+        <group id="grpNEVEN" label="NEVEN">
+          <button id="btnActivateNEVEN"
+                  label="Activar NEVEN"
                   size="large"
-                  onAction="OnOpenConsoleCommand"
-                  imageMso="MacroSecurity"
-                  screentip="Consola REPL interactiva"
-                  supertip="Abre la consola REPL con tabs para R, Julia y Python." />
+                  onAction="OnActivateNEVENCommand"
+                  imageMso="ServerConnect"
+                  screentip="Activar motores NEVEN"
+                  supertip="Carga NEVEN64.xll bajo demanda: inicia los motores activos sin reiniciar Excel." />
 
           <button id="btnReloadFunctions"
                   label="Actualizar"
@@ -19,18 +19,10 @@
                   onAction="OnReloadCommand"
                   imageMso="Refresh"
                   screentip="Recargar funciones de usuario"
-                  supertip="Recarga todos los archivos .R, .jl y .py de C:\NEVEN\functions\ sin reiniciar Excel. Use despues de agregar nuevas funciones." />
-
-          <button id="btnEngineStatus"
-                  label="Estado"
-                  size="normal"
-                  onAction="OnEngineStatusCommand"
-                  imageMso="ServerConnection"
-                  screentip="Estado de los motores"
-                  supertip="Muestra el estado de conexion de R, Julia y Python." />
+                  supertip="Recarga todos los archivos .R, .jl y .py de C:\NEVEN\functions\ sin reiniciar Excel." />
         </group>
 
-        <!-- Grupo: Analisis (nuevos viewers) -->
+        <!-- Grupo: Analisis -->
         <group id="grpAnalysis" label="Analisis">
           <button id="btnAIAssistant"
                   label="NEVEN Studio"
@@ -57,25 +49,26 @@
                   supertip="Explorador reactivo de simulaciones Monte Carlo con sliders y comparacion de escenarios." />
         </group>
 
-        <!-- Grupo: Visor -->
-        <group id="grpViewer" label="Visor">
-          <button id="btnViewerOpen"
-                  label="Abrir Visor"
+        <!-- Grupo: Servidor HTTP -->
+        <group id="grpServer" label="Servidor">
+          <button id="btnStartServer"
+                  label="Iniciar Servidor"
                   size="large"
-                  onAction="OnViewerOpenCommand"
-                  imageMso="PictureInsertFromFile"
-                  screentip="Abrir visor HTML"
-                  supertip="Abre un archivo HTML en el visor WebView2 embebido (Plotly, D3, dashboards)." />
+                  onAction="OnStartServerCommand"
+                  imageMso="ServerConnection"
+                  screentip="Iniciar servidor HTTP"
+                  supertip="Inicia el servidor HTTP en el puerto 5555 si no está corriendo. Útil cuando el TaskPane muestra error de conexión." />
 
-          <button id="btnViewerCloseAll"
-                  label="Cerrar Todos"
+          <button id="btnStopServer"
+                  label="Detener Servidor"
                   size="normal"
-                  onAction="OnViewerCloseAllCommand"
-                  imageMso="WindowCloseAllDocuments"
-                  screentip="Cerrar todos los visores" />
+                  onAction="OnStopServerCommand"
+                  imageMso="RecordStop"
+                  screentip="Detener servidor HTTP"
+                  supertip="Detiene el servidor HTTP que corre en el puerto 5555. Libera recursos si no va a usar NEVEN Studio." />
         </group>
 
-        <!-- Grupo: Notebooks y Pluto -->
+        <!-- Grupo: Notebooks (inicio rapido) -->
         <group id="grpNotebooks" label="Notebooks">
           <button id="btnPlutoStart"
                   label="Pluto.jl"
@@ -83,67 +76,7 @@
                   onAction="OnPlutoStartCommand"
                   imageMso="FileDocumentManagement"
                   screentip="Iniciar Pluto.jl"
-                  supertip="Inicia el servidor de notebooks reactivos Pluto.jl. Los notebooks se abren en el visor WebView2." />
-
-          <button id="btnNotebookList"
-                  label="Biblioteca"
-                  size="normal"
-                  onAction="OnNotebookListCommand"
-                  imageMso="ViewsGallery"
-                  screentip="Biblioteca de notebooks" />
-
-          <button id="btnPlutoStop"
-                  label="Detener"
-                  size="normal"
-                  onAction="OnPlutoStopCommand"
-                  imageMso="RecordStop"
-                  screentip="Detener Pluto.jl" />
-
-          <button id="btnJuliaSysimage"
-                  label="Sysimage"
-                  size="normal"
-                  onAction="OnJuliaSysimageCommand"
-                  imageMso="ExportExcel"
-                  screentip="Compilar sysimage Julia"
-                  supertip="Compila la sysimage de Julia (neven_julia.dll). Elimina el retraso de 1-5 minutos del primer calculo. Ejecutar una vez al instalar o actualizar Julia. Tarda 5-10 minutos." />
-        </group>
-
-        <!-- Grupo: NEVEN Studio (Task Pane v3.0) -->
-        <group id="grpStudio" label="Studio">
-          <button id="btnTaskPane"
-                  label="NEVEN Studio"
-                  size="large"
-                  onAction="OnTaskPaneCommand"
-                  imageMso="ViewCode"
-                  screentip="NEVEN Studio (Task Pane)"
-                  supertip="Abre el panel interactivo con DuckDB, GROUP BY, SQL y visualizaciones embebidas." />
-
-          <button id="btnPresentaciones"
-                  label="Presentaciones"
-                  size="large"
-                  onAction="OnPresentacionesCommand"
-                  imageMso="SlideshowFromBeginning"
-                  screentip="Creador de Presentaciones NEVEN"
-                  supertip="Abre el editor visual de presentaciones Impress.js. Crea slides con texto, graficos de Excel, pizarras interactivas y sitios web embebidos. Exporta a HTML standalone." />
-        </group>
-
-        <!-- Grupo: Ayuda -->
-        <group id="grpConfig" label="Ayuda">
-          <button id="btnDocs"
-                  label="Documentacion"
-                  size="large"
-                  onAction="OnDocsCommand"
-                  imageMso="Help"
-                  screentip="Documentacion NEVEN"
-                  supertip="Abre la documentacion completa de NEVEN (13 capitulos) en el visor." />
-
-          <button id="btnAbout"
-                  label="Acerca de"
-                  size="normal"
-                  onAction="OnAboutCommand"
-                  imageMso="Info"
-                  screentip="Acerca de NEVEN"
-                  supertip="NEVEN v2.1 — Open Source. Construyendo comunidad." />
+                  supertip="Inicia el servidor de notebooks reactivos Pluto.jl. Los notebooks se abren en el visor WebView2. Para gestionar notebooks, usar Settings en NEVEN Studio." />
         </group>
 
       </tab>

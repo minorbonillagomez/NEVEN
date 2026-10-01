@@ -749,6 +749,59 @@
   <!-- Tab: Ayuda / Diccionario de Funciones -->
   <div class="tab-content" id="ayuda">
     
+    <!-- Sección: Documentación y Acerca de -->
+    <div class="card" style="margin-bottom:8px">
+      <div class="card-title">Recursos NEVEN</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <!-- Botón Documentación -->
+        <button class="btn btn-primary" id="btn-ayuda-docs" style="width:100%;display:flex;align-items:center;gap:8px;justify-content:flex-start;padding:10px 12px">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <div style="text-align:left">
+            <div style="font-weight:600">Documentación Completa</div>
+            <div style="font-size:9px;opacity:0.8">Manual de 14 capítulos con guías y ejemplos</div>
+          </div>
+        </button>
+        <!-- Botón Videos/Tutoriales -->
+        <button class="btn btn-secondary" id="btn-ayuda-videos" style="width:100%;display:flex;align-items:center;gap:8px;justify-content:flex-start;padding:10px 12px">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <div style="text-align:left">
+            <div style="font-weight:600">Videos Tutoriales</div>
+            <div style="font-size:9px;opacity:0.8">Demos y guías paso a paso</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sección: Acerca de NEVEN -->
+    <div class="card" style="margin-bottom:8px">
+      <div class="card-title">Acerca de NEVEN</div>
+      <div style="font-size:11px;line-height:1.6">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text-secondary)">Versión</span>
+          <span style="font-weight:600" id="ayuda-version">v2.3</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text-secondary)">Motores</span>
+          <span id="ayuda-motores">R 4.4.1 | Julia 1.12.6 | Python 3.12</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text-secondary)">Autor</span>
+          <span>Minor Bonilla Gómez</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text-secondary)">Institución</span>
+          <span>Universidad de Costa Rica</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0">
+          <span style="color:var(--text-secondary)">Licencia</span>
+          <span>GPL v3 (core) / Comercial (Studio)</span>
+        </div>
+      </div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);text-align:center">
+        Tesis de Maestría en Computación e Informática
+      </div>
+    </div>
+
     <!-- Encabezado con boton de recarga -->
     <div class="card" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px">
       <div>
@@ -845,11 +898,13 @@
   <div class="tab-content" id="settings">
     
     <!-- Sub-tabs de settings -->
-    <div class="settings-tabs" style="display:flex;gap:0;padding:0 8px;background:var(--bg-secondary);border-bottom:1px solid var(--border)">
+    <div class="settings-tabs" style="display:flex;gap:0;padding:0 8px;background:var(--bg-secondary);border-bottom:1px solid var(--border);flex-wrap:wrap">
       <div class="settings-tab active" data-settings-tab="ai" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Motor IA</div>
       <div class="settings-tab" data-settings-tab="db" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conexiones DB</div>
       <div class="settings-tab" data-settings-tab="prompts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Prompts</div>
       <div class="settings-tab" data-settings-tab="ontology" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conocimiento</div>
+      <div class="settings-tab" data-settings-tab="notebooks" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Notebooks</div>
+      <div class="settings-tab" data-settings-tab="engines" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Motores</div>
     </div>
 
     <!-- Panel: Motor IA -->
@@ -1172,6 +1227,130 @@
           <!-- Resultado -->
           <div id="ontology-result" style="display:none;padding:8px;border-radius:4px;font-size:10px"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- Panel: Notebooks / Pluto.jl -->
+    <div class="settings-panel" id="settings-notebooks" style="display:none;padding:8px;overflow-y:auto;max-height:calc(100vh - 140px)">
+      
+      <!-- Estado de Pluto -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Servidor Pluto.jl</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span id="pluto-status-indicator" style="width:8px;height:8px;border-radius:50%;background:#666" title="Estado desconocido"></span>
+            <span id="pluto-status-text" style="font-size:9px;color:var(--text-secondary)">Verificando...</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn btn-primary" id="btn-pluto-start" style="flex:1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Iniciar Pluto
+          </button>
+          <button class="btn btn-secondary" id="btn-pluto-stop" style="flex:1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="6" width="12" height="12"/></svg>
+            Detener
+          </button>
+        </div>
+        <div id="pluto-message" style="display:none;margin-top:8px;padding:6px 8px;border-radius:4px;font-size:10px"></div>
+      </div>
+
+      <!-- Biblioteca de notebooks -->
+      <div class="card">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Biblioteca de Notebooks</span>
+          <button class="btn btn-secondary" id="btn-notebooks-refresh" style="padding:3px 8px;font-size:9px" title="Recargar">&#x21bb;</button>
+        </div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:8px">
+          Ubicación: <code style="background:#333;padding:1px 4px;border-radius:2px">C:\NEVEN\notebooks\</code>
+        </div>
+        <div id="notebooks-list" style="display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto">
+          <div class="msg-info" style="padding:8px;font-size:10px">Cargando notebooks...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Motores de Lenguaje -->
+    <div class="settings-panel" id="settings-engines" style="display:none;padding:8px;overflow-y:auto;max-height:calc(100vh - 140px)">
+      
+      <!-- Estado de motores -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title">Estado de Motores</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <!-- R -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--bg-tertiary);border-radius:4px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="engine-r-indicator" style="width:10px;height:10px;border-radius:50%;background:#666"></span>
+              <div>
+                <div style="font-weight:600;font-size:11px">R</div>
+                <div id="engine-r-version" style="font-size:9px;color:var(--text-secondary)">—</div>
+              </div>
+            </div>
+            <span id="engine-r-status" style="font-size:9px;color:var(--text-secondary)">Verificando...</span>
+          </div>
+          <!-- Julia -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--bg-tertiary);border-radius:4px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="engine-julia-indicator" style="width:10px;height:10px;border-radius:50%;background:#666"></span>
+              <div>
+                <div style="font-weight:600;font-size:11px">Julia</div>
+                <div id="engine-julia-version" style="font-size:9px;color:var(--text-secondary)">—</div>
+              </div>
+            </div>
+            <span id="engine-julia-status" style="font-size:9px;color:var(--text-secondary)">Verificando...</span>
+          </div>
+          <!-- Python -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--bg-tertiary);border-radius:4px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="engine-python-indicator" style="width:10px;height:10px;border-radius:50%;background:#666"></span>
+              <div>
+                <div style="font-weight:600;font-size:11px">Python</div>
+                <div id="engine-python-version" style="font-size:9px;color:var(--text-secondary)">—</div>
+              </div>
+            </div>
+            <span id="engine-python-status" style="font-size:9px;color:var(--text-secondary)">Verificando...</span>
+          </div>
+        </div>
+        <button class="btn btn-secondary" id="btn-engines-refresh" style="width:100%;margin-top:8px">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Verificar Estado
+        </button>
+      </div>
+
+      <!-- Toggles de habilitación al inicio -->
+      <div class="card">
+        <div class="card-title">Motores al Iniciar Excel</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-bottom:8px">
+          Selecciona qué motores se activan automáticamente al abrir Excel. Los cambios toman efecto en el próximo reinicio.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <!-- Toggle R -->
+          <label style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--bg-tertiary);border-radius:4px;cursor:pointer">
+            <div>
+              <div style="font-weight:600;font-size:11px">Motor R</div>
+              <div style="font-size:9px;color:var(--text-secondary)">Estadística, econometría, gráficos</div>
+            </div>
+            <input type="checkbox" id="toggle-engine-r" checked style="width:18px;height:18px;accent-color:var(--accent)">
+          </label>
+          <!-- Toggle Julia -->
+          <label style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--bg-tertiary);border-radius:4px;cursor:pointer">
+            <div>
+              <div style="font-weight:600;font-size:11px">Motor Julia</div>
+              <div style="font-size:9px;color:var(--text-secondary)">Notebooks Pluto, cómputo numérico</div>
+            </div>
+            <input type="checkbox" id="toggle-engine-julia" checked style="width:18px;height:18px;accent-color:var(--accent)">
+          </label>
+          <!-- Toggle Python -->
+          <label style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--bg-tertiary);border-radius:4px;cursor:pointer">
+            <div>
+              <div style="font-weight:600;font-size:11px">Motor Python</div>
+              <div style="font-size:9px;color:var(--text-secondary)">ML, pandas, servidor HTTP</div>
+            </div>
+            <input type="checkbox" id="toggle-engine-python" checked style="width:18px;height:18px;accent-color:var(--accent)">
+          </label>
+        </div>
+        <button class="btn btn-primary" id="btn-engines-save" style="width:100%;margin-top:8px">Guardar Configuración</button>
+        <div id="engines-save-result" style="display:none;margin-top:6px;padding:6px 8px;border-radius:4px;font-size:10px"></div>
       </div>
     </div>
 

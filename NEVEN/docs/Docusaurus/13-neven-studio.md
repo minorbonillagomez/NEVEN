@@ -422,7 +422,176 @@ curl -X POST http://localhost:5555/api/config/db-connections/postgres-local/test
 
 ---
 
-*Documentacion actualizada: Agosto 2026*
+## 13.13 Tab Ayuda — Documentación y Recursos
+
+**Disponible desde:** Agosto 2026
+
+El Tab Ayuda centraliza el acceso a la documentación y recursos de NEVEN directamente desde el TaskPane, sin necesidad de usar el Ribbon.
+
+### Contenido del Tab
+
+| Sección | Descripción |
+|:---|:---|
+| **Documentación** | Abre el manual completo de NEVEN (14 capítulos) en el visor |
+| **Diccionario de Funciones** | Catálogo de 95+ funciones con ejemplos ejecutables |
+| **Videos Tutoriales** | Enlaces a demos y tutoriales (cuando disponibles) |
+| **Acerca de** | Versión, autor, licencia y créditos |
+
+### Acceso a la documentación
+
+```
+NEVEN Studio → Tab "Ayuda"
+  → Clic "Abrir Documentación"
+  → Se abre neven-docs.html en el visor WebView2
+```
+
+La documentación incluye:
+- Guía de instalación
+- Arquitectura del sistema
+- Referencia de funciones R/Julia/Python
+- Guía de NEVEN Studio
+- Sistema de ontologías
+- Troubleshooting
+
+### Diccionario de funciones
+
+El diccionario permite buscar funciones por nombre o categoría:
+
+| Familia | Ejemplos |
+|:---|:---|
+| **AD** (Análisis de Datos) | ACP, KMeans, Clustering |
+| **RG** (Regresión) | Lineal, Logística, Tobit, Panel |
+| **ST** (Series de Tiempo) | ARIMA, VAR, Cointegración |
+| **TM** (Text Mining) | WordCloud, Sentimiento, N-gramas |
+
+Cada función muestra:
+- Sintaxis y parámetros
+- Ejemplo con datos dummy
+- TipoOutput disponibles
+
+### Acerca de NEVEN
+
+Muestra información del sistema:
+
+```
+NEVEN v2.3
+Motores: R 4.4.1 | Julia 1.12.6 | Python 3.12
+Autor: Minor Bonilla Gómez
+Universidad de Costa Rica — Tesis de Maestría
+Licencia: GPL v3 (core) / Comercial (Studio)
+```
+
+### Relación con el Ribbon
+
+El Tab Ayuda reemplaza los botones "Documentación" y "Acerca de" del Ribbon, permitiendo un Ribbon más limpio enfocado en acciones frecuentes.
+
+| Antes (Ribbon) | Ahora (TaskPane) |
+|:---|:---|
+| Botón "Documentación" | Tab Ayuda → Documentación |
+| Botón "Acerca de" | Tab Ayuda → Acerca de |
+
+---
+
+## 13.14 Tab Notebooks — Gestión de Pluto.jl
+
+**Disponible desde:** Agosto 2026
+
+El Tab Notebooks (dentro de Settings) centraliza la gestión de notebooks Pluto.jl que antes requería múltiples botones en el Ribbon.
+
+### Controles disponibles
+
+| Control | Función |
+|:---|:---|
+| **Estado Pluto** | Indicador verde/rojo del servidor Pluto |
+| **Iniciar Pluto** | Arranca el servidor de notebooks reactivos |
+| **Detener Pluto** | Apaga el servidor Pluto |
+| **Biblioteca** | Lista de notebooks disponibles en `C:\NEVEN\notebooks\` |
+
+### Biblioteca de notebooks
+
+La biblioteca muestra los notebooks `.jl` disponibles:
+
+| Notebook | Descripción |
+|:---|:---|
+| `intro_julia.jl` | Introducción a Julia desde Excel |
+| `analisis_datos.jl` | Pipeline de análisis con DataFrames |
+| `visualizacion.jl` | Gráficos interactivos con Plots.jl |
+| `econometria.jl` | Modelos econométricos |
+| ... | (15 notebooks incluidos) |
+
+### Flujo de uso
+
+```
+1. Settings → Notebooks
+2. Verificar estado (indicador)
+3. Si está apagado: clic "Iniciar Pluto"
+4. Seleccionar notebook de la lista
+5. Clic "Abrir" → se abre en WebView2
+```
+
+### Relación con el Ribbon
+
+El Tab Notebooks reemplaza los botones "Biblioteca" y "Detener" del grupo Notebooks en el Ribbon. Solo el botón "Pluto.jl" (inicio rápido) permanece en el Ribbon.
+
+| Antes (Ribbon) | Ahora (TaskPane) |
+|:---|:---|
+| Botón "Biblioteca" | Settings → Notebooks → Lista |
+| Botón "Detener" | Settings → Notebooks → Detener Pluto |
+| Botón "Pluto.jl" | **Permanece en Ribbon** (inicio rápido) |
+
+---
+
+## 13.15 Controles de Motores en Settings
+
+**Disponible desde:** Agosto 2026
+
+Los toggles para habilitar/deshabilitar motores de lenguaje al inicio ahora están en el Tab Settings, en lugar del Ribbon.
+
+### Controles disponibles
+
+| Control | Función |
+|:---|:---|
+| **Toggle R** | Habilita/deshabilita R al arrancar Excel |
+| **Toggle Julia** | Habilita/deshabilita Julia al arrancar Excel |
+| **Toggle Python** | Habilita/deshabilita Python al arrancar Excel |
+| **Estado motores** | Indicadores verde/rojo de conexión |
+
+### Cuándo deshabilitar un motor
+
+- **R deshabilitado:** Si solo usas Python/Julia y quieres arranque más rápido
+- **Julia deshabilitada:** Si no necesitas notebooks Pluto ni funciones Julia
+- **Python deshabilitado:** Si solo trabajas con R (estadística clásica)
+
+### Persistencia
+
+Los cambios se guardan en `neven-config.json`:
+
+```json
+{
+  "Engines": {
+    "R": { "enabled": true },
+    "Julia": { "enabled": false },
+    "Python": { "enabled": true }
+  }
+}
+```
+
+Los cambios toman efecto en el próximo reinicio de Excel.
+
+### Relación con el Ribbon
+
+Los toggles R/Julia/Python se movieron del Ribbon al TaskPane para simplificar la interfaz. El Ribbon conserva solo los botones de uso frecuente.
+
+| Antes (Ribbon) | Ahora (TaskPane) |
+|:---|:---|
+| Toggle "R" | Settings → Motores → Toggle R |
+| Toggle "Julia" | Settings → Motores → Toggle Julia |
+| Toggle "Python" | Settings → Motores → Toggle Python |
+| Botón "Estado" | Settings → Motores → Indicadores |
+
+---
+
+*Documentación actualizada: Agosto 2026*
 
 *NEVEN Studio Standalone — Julio 2026*
 *Universidad de Costa Rica — Tesis de Maestría*
