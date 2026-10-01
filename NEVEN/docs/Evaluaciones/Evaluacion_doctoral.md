@@ -862,3 +862,108 @@ El Tab Settings resuelve el problema de "configuración de herramientas técnica
 
 *Actualización: Agosto de 2026*
 *NEVEN v2.4+ — Tab Settings y Sistema de Configuración*
+
+
+---
+
+## ACTUALIZACIÓN — 19 de agosto de 2026 (NEVEN v2.5)
+
+### 2.21 Tab Conocimiento — Interfaz de Gestión de Ontologías Autónoma
+
+Se implementó el sub-tab "Conocimiento" dentro de Settings que permite a los usuarios gestionar la base de conocimiento de NEVEN sin intervención del desarrollador.
+
+**Problema resuelto:**
+
+Anteriormente, expandir la ontología requería:
+1. Colocar PDF en carpeta correcta manualmente
+2. Solicitar al agente de desarrollo (Kiro) que procese el libro
+3. Esperar a que el desarrollador tenga disponibilidad
+
+Ahora, el usuario puede hacerlo autónomamente desde la interfaz de NEVEN Studio.
+
+**Arquitectura del sistema:**
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│               Tab Conocimiento (Settings)                         │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────────┐ │
+│  │ Lista Dominios  │ │ Libros Proces.  │ │  Agregar Libro      │ │
+│  │ excel (183, 6)  │ │ CFI Excel Book  │ │ [ruta PDF]          │ │
+│  │ econom (199,14) │ │ Excel Bible...  │ │ [dominio ▼]         │ │
+│  │ + Crear nuevo   │ │                 │ │ [Procesar]          │ │
+│  └────────┬────────┘ └────────┬────────┘ └──────────┬──────────┘ │
+└───────────┼───────────────────┼─────────────────────┼────────────┘
+            │                   │                     │
+            ▼                   ▼                     ▼
+    /api/ontology/      /api/ontology/     /api/ontology/
+      domains              books           process-book
+            │                   │                     │
+            └───────────────────┴─────────────────────┘
+                                │
+                    ┌───────────▼───────────┐
+                    │  ontology_manager.py  │
+                    │  - list_domains()     │
+                    │  - list_books()       │
+                    │  - process_book()     │
+                    │  - create_domain()    │
+                    └───────────────────────┘
+```
+
+**Endpoints implementados:**
+
+| Endpoint | Método | Función |
+|:---|:---|:---|
+| `/api/ontology/domains` | GET | Lista dominios con entity_count y book_count |
+| `/api/ontology/books?domain=X` | GET | Lista libros procesados de un dominio |
+| `/api/ontology/process-book` | POST | Procesa PDF y extrae entidades via LLM |
+
+**Funcionalidad de crear dominios personalizados:**
+
+El usuario puede crear nuevos dominios de conocimiento (ej: `machine_learning`, `finance`, `medicine`) directamente desde la UI. El sistema:
+
+1. Crea estructura en producción: `C:\NEVEN\ontology\{domain_id}\`
+2. Crea `graph.jsonl` vacío y `schema.yaml` con tipos genéricos
+3. Crea estructura en desarrollo: `ONTOLOGIA\LIBROS {NOMBRE}\memory\ontology\`
+4. Actualiza `domains.json` automáticamente
+
+**Contribución técnica:**
+
+- **Empoderamiento del usuario:** El usuario final puede expandir la base de conocimiento sin acceso al código fuente ni al agente de desarrollo
+- **Auto-creación de estructura:** `process_book()` crea automáticamente dominios que no existen, eliminando fricción
+- **Sincronización prod/dev:** La estructura de carpetas se mantiene consistente entre entornos
+
+**Relevancia académica:**
+
+El Tab Conocimiento convierte a NEVEN de un sistema con conocimiento estático (definido por el desarrollador) a un **sistema de conocimiento adaptativo** donde el usuario puede:
+- Especializar el asistente para su dominio (medicina, derecho, ingeniería)
+- Procesar libros de texto propios
+- Crear bases de conocimiento específicas para su organización
+
+Esto es análogo a la diferencia entre un chatbot con prompt fijo y un sistema RAG (Retrieval Augmented Generation) configurable.
+
+### Actualización de tabla comparativa con BERT
+
+| Capacidad | BERT (2017-2018) | NEVEN (Ago 2026) | Innovación |
+|:---|:---|:---|:---|
+| *(anteriores)* | — | — | — |
+| UI de gestión de ontologías | No | Tab Conocimiento | **Innovación** |
+| Creación de dominios | No | Auto-create desde UI | **Innovación** |
+| Procesamiento de libros | No | PDF → LLM → graph.jsonl | **Innovación** |
+
+**Resumen actualizado:** De 28 capacidades comparadas, 26 son innovaciones sobre BERT.
+
+### Tabla de hitos — actualizada agosto 2026
+
+| Fase | Estado | Descripción |
+|:---|:---|:---|
+| *(todos los anteriores)* | ✅ | Ver versiones anteriores |
+| **Tab Conocimiento (UI)** | ✅ | Lista dominios, libros, procesa PDFs |
+| **create_domain()** | ✅ | Auto-creación de dominios desde UI |
+| **book_count en domains** | ✅ | Conteo de libros procesados por dominio |
+| Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
+| Benchmarks | ⏳ Pendiente | Datos cuantitativos de rendimiento |
+
+---
+
+*Actualización: 19 de agosto de 2026*
+*NEVEN v2.5 — Tab Conocimiento*
