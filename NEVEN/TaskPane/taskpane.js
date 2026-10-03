@@ -256,12 +256,21 @@ async function loadDataFromSelection() {
 }
 
 function showPreview(headers, rows) {
+  // Funcion para formatear numeros: miles con coma, siempre 2 decimales
+  function formatNum(v) {
+    if (v === null || v === undefined || v === '') return '';
+    if (typeof v === 'number' || !isNaN(parseFloat(v))) {
+      var num = typeof v === 'number' ? v : parseFloat(v);
+      return num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+    return v;
+  }
   let html = '<table class="data-table"><tr>';
   headers.forEach(h => html += `<th>${h}</th>`);
   html += '</tr>';
   rows.forEach(row => {
     html += '<tr>';
-    row.forEach(v => html += `<td>${v !== null && v !== undefined ? v : ''}</td>`);
+    row.forEach(v => html += `<td>${formatNum(v)}</td>`);
     html += '</tr>';
   });
   html += '</table>';
@@ -4756,11 +4765,30 @@ async function saveEnginesConfig() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function initAyudaTab() {
-  // Botón Documentación
+  // Botón Documentación - abrir visor embebido
   document.getElementById('btn-ayuda-docs')?.addEventListener('click', () => {
-    // Abrir documentación en visor o nueva pestaña
-    const docsUrl = API_BASE + '/docs/neven-docs.html';
-    window.open(docsUrl, '_blank');
+    const container = document.getElementById('docs-viewer-container');
+    const iframe = document.getElementById('docs-viewer-iframe');
+    if (container && iframe) {
+      // Cargar documentación en iframe
+      iframe.src = API_BASE + '/docs/neven-docs.html?t=' + Date.now();
+      container.style.display = 'flex';
+    }
+  });
+  
+  // Botón cerrar visor de documentación
+  document.getElementById('btn-docs-close')?.addEventListener('click', () => {
+    const container = document.getElementById('docs-viewer-container');
+    const iframe = document.getElementById('docs-viewer-iframe');
+    if (container) {
+      container.style.display = 'none';
+      if (iframe) iframe.src = 'about:blank'; // Liberar recursos
+    }
+  });
+  
+  // Botón abrir en navegador externo
+  document.getElementById('btn-docs-external')?.addEventListener('click', () => {
+    window.open(API_BASE + '/docs/neven-docs.html', '_blank');
   });
   
   // Botón Videos

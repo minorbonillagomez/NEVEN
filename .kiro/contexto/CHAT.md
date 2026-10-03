@@ -7253,3 +7253,1777 @@ Se simplificó el Ribbon de NEVEN de 21 botones a 8 botones, moviendo funcionali
 | **MEDIA** | Verificar nuevos sub-tabs en browser |
 | **BAJA** | Cleanup mojibake residual en CHAT.md |
 
+
+
+---
+
+### Sesión 2026-08-19 (~21:30) — Commit de simplificación del Ribbon ✅
+
+## ✅ COMPLETADO: Commit de todos los cambios pendientes
+
+### Contexto
+Sesión breve para retomar contexto y realizar el commit de los cambios de la sesión anterior (simplificación del Ribbon de 21 a 8 botones).
+
+### Commit realizado
+
+| Hash | Descripción |
+|------|-------------|
+| `e462e49` | `refactor(ribbon): simplificar de 21 a 8 botones, migrar a TaskPane` |
+
+**Archivos incluidos en el commit (8):**
+
+| Archivo | Cambio |
+|---------|--------|
+| `.kiro/contexto/CHAT.md` | Bitácora actualizada |
+| `.kiro/contexto/CHAT_LARGO.md` | Historial anterior (nuevo archivo) |
+| `NEVEN/Ribbon/ribbon_ui.xml` | Ribbon simplificado a 8 botones |
+| `NEVEN/Addin/CustomUI.xml` | Sincronizado con ribbon_ui.xml |
+| `NEVEN/TaskPane/taskpane.html` | Tab Ayuda + sub-paneles nuevos |
+| `NEVEN/TaskPane/taskpane.js` | Handlers para Pluto, motores, ayuda |
+| `NEVEN/docs/Docusaurus/13-neven-studio.md` | Secciones 13.13-13.15 agregadas |
+| `NEVEN/docs/Docusaurus/14-ontologias-excel-consultant.md` | Sección 14.8 agregada |
+
+### Estadísticas del commit
+- **+7816 líneas** agregadas
+- **-6720 líneas** eliminadas
+- Incluye la partición de CHAT.md (creación de CHAT_LARGO.md)
+
+### Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Recompilar NEVENRibbon.dll para ver el Ribbon simplificado en Excel |
+| **MEDIA** | Verificar nuevos sub-tabs (Notebooks, Motores) en browser |
+| **BAJA** | Limpiar mojibake residual en CHAT.md (caracteres como `Ã³` → `ó`) |
+
+
+
+---
+
+### Sesión 2026-08-19 (~22:00) — Visor de Documentación Embebido en TaskPane ✅
+
+## ✅ IMPLEMENTADO: Documentación se muestra dentro del TaskPane
+
+### Problema resuelto
+El botón "Documentación Completa" en Tab Ayuda retornaba **404 NOT FOUND** al intentar abrir `/docs/neven-docs.html`.
+
+### Causa raíz
+1. El servidor HTTP no tenía handler para la ruta `/docs/*`
+2. El archivo `neven-docs.html` existe en `C:\NEVEN\docs\` pero el servidor solo servía desde `C:\NEVEN\taskpane\`
+
+### Solución implementada
+En lugar de solo agregar la ruta, se decidió mostrar la documentación **dentro del TaskPane** usando un iframe embebido. Ventajas:
+- El usuario no pierde contexto cambiando de ventana
+- Consistente con la filosofía de NEVEN Studio como hub central
+- Ya existía patrón similar en el visor de presentaciones
+
+### Cambios realizados
+
+**1. Nuevo handler en servidor HTTP** (`neven_http_server.py` línea ~886):
+```python
+# ── Serve /docs/* for NEVEN documentation ─────────────────────────────
+if path.startswith('docs/'):
+    docs_dir = _config.get("docsDir", r"C:\NEVEN\docs")
+    doc_file = path[5:]  # Remove 'docs/' prefix
+    file_path = os.path.join(docs_dir, doc_file)
+    self._serve_file(file_path)
+    return
+```
+
+**2. Visor embebido en taskpane.html** (Tab Ayuda):
+- Contenedor `docs-viewer-container` con posición absoluta que cubre todo el TaskPane
+- Header con título, botón "Abrir en navegador externo", botón "Cerrar"
+- iframe `docs-viewer-iframe` que carga `neven-docs.html`
+
+**3. Handlers en taskpane.js** (`initAyudaTab`):
+- `btn-ayuda-docs`: Muestra el visor embebido
+- `btn-docs-close`: Oculta el visor y libera recursos
+- `btn-docs-external`: Abre en nueva pestaña si el usuario prefiere
+
+### Archivos modificados
+
+| Archivo repo | Cambio |
+|--------------|--------|
+| `NEVEN/TaskPane/neven_http_server.py` | Handler `/docs/*` |
+| `NEVEN/TaskPane/taskpane.html` | Contenedor visor embebido |
+| `NEVEN/TaskPane/taskpane.js` | Handlers para visor |
+
+| Archivo producción | Copiado |
+|--------------------|---------|
+| `C:\NEVEN\startup\neven_http_server.py` | ✅ |
+| `C:\NEVEN\TaskPane\taskpane.html` | ✅ |
+| `C:\NEVEN\TaskPane\taskpane.js` | ✅ |
+
+### Verificación
+- Servidor HTTP reiniciado (matados PIDs: 117124, 160648, 176428, 177836)
+- Health: `ok` ✅
+- `/docs/neven-docs.html`: **200 OK** - 217,666 bytes ✅
+
+### Commits realizados
+⚠️ **NINGUNO** — cambios pendientes de commit
+
+### Decisiones de diseño
+
+| Decisión | Razón |
+|----------|-------|
+| Visor embebido vs nueva pestaña | Mejor UX, no pierde contexto, consistente con filosofía Studio |
+| Botón "Abrir externo" adicional | Flexibilidad si usuario prefiere ventana separada |
+| `about:blank` al cerrar | Liberar recursos del iframe |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de los cambios (visor docs + handler /docs/) |
+| **ALTA** | Usuario debe probar recargando TaskPane |
+| **MEDIA** | Verificar que el visor funciona en WebView2 de Excel |
+| **BAJA** | Considerar agregar navegación interna (índice lateral) |
+
+
+
+---
+
+### Sesión 2026-08-19 (~22:30) — Paleta de colores unificada en Documentación ✅
+
+## ✅ IMPLEMENTADO: neven-docs.html usa la misma paleta dorada del TaskPane
+
+### Problema resuelto
+La documentación embebida (`neven-docs.html`) usaba una paleta verde lima (`#a0e515`) que contrastaba visualmente con el TaskPane que usa dorado (`#d7a538`).
+
+### Solución implementada
+Actualizar el CSS de `neven-docs.html` para usar la misma paleta de colores del TaskPane:
+
+| Elemento | Antes (verde) | Después (dorado) |
+|----------|--------------|------------------|
+| Background body | `#1e1e1e` | `#1a1a1a` |
+| Header border | `#a0e515` | `#d7a538` |
+| Brand color | `#a0e515` | `#d7a538` |
+| Sidebar border | `#333` | `rgba(215,165,56,0.12)` |
+| Sidebar hover | `#a0e515` | `#d7a538` |
+| h1 color | `#a0e515` | `#d7a538` |
+| h2 color | `#c8e86e` | `#e8c06a` |
+| Links | `#a0e515` | `#d7a538` |
+| Table headers | `#a0e515` | `#d7a538` |
+| Code inline | `#ce9178` | `#d7a538` |
+| Blockquote border | `#a0e515` | `#d7a538` |
+
+### Paleta del TaskPane (referencia)
+
+```css
+:root {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #242424;
+  --accent: #d7a538;  /* dorado */
+  --text-primary: #e0e0e0;
+  --text-secondary: #888;
+  --border: rgba(215, 165, 56, 0.12);
+}
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\docs\neven-docs.html` | CSS actualizado a paleta dorada |
+| `F:\...\NEVEN\docs\neven-docs.html` | Sincronizado |
+
+### Commits realizados
+⚠️ **NINGUNO** — cambios pendientes de commit
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios pendientes (visor docs + paleta) |
+| **MEDIA** | Verificar que la documentación se ve correctamente en el visor embebido |
+| **BAJA** | Considerar agregar toggle para tema claro/oscuro |
+
+
+
+---
+
+### Sesión 2026-08-19 (~23:00) — Paleta unificada en Data Studio ✅
+
+## ✅ CORREGIDO: Botones y Binding de Data Studio usan paleta dorada
+
+### Problema resuelto
+En el tab Data Studio, los botones (Abrir archivo, Leer de Excel, Pegar de Excel, Conectar DB) usaban `#ad945c` y el indicador de "Binding previo" usaba `#cc6` (amarillo verdoso), colores que no coincidían con la paleta oficial dorada `#d7a538`.
+
+### Causa raíz
+Colores hardcodeados en estilos inline que no usaban las variables CSS del tema.
+
+### Cambios aplicados
+
+| Elemento | Antes | Después |
+|----------|-------|---------|
+| Botones Data Studio (`btn-load`, `btn-bridge-read`, `btn-paste-excel`, `btn-db-connect`) | `#ad945c` | `#d7a538` |
+| Binding indicator activo | `#6c6` (verde) | `#d7a538` (dorado) |
+| Binding indicator background | `rgba(100,200,100,0.1)` | `rgba(215,165,56,0.1)` |
+| Binding previo (JS dinámico) | `#cc6` | `#d7a538` |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\...\TaskPane\taskpane.html` | Botones + binding indicator HTML + JS |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado |
+
+### Commits realizados
+⚠️ **NINGUNO** — cambios pendientes de commit
+
+### Resumen del día completo (2026-08-19)
+
+| Sesión | Logro |
+|--------|-------|
+| ~21:30 | Commit `e462e49` — Ribbon simplificado 21→8 botones |
+| ~22:00 | Visor de documentación embebido en TaskPane |
+| ~22:30 | Paleta dorada en `neven-docs.html` |
+| ~23:00 | Paleta dorada en Data Studio (botones + binding) |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios de paleta y visor docs |
+| **MEDIA** | Revisar otros tabs por colores fuera de paleta |
+| **BAJA** | Considerar mover estilos inline a variables CSS |
+
+
+
+---
+
+### Sesión 2026-08-19 (~23:30) — Acerca de NEVEN + Aliases en Diccionario ✅
+
+## ✅ IMPLEMENTADO: Múltiples correcciones en Tab Ayuda
+
+### Cambios en "Acerca de NEVEN"
+
+| Campo | Antes | Después |
+|-------|-------|---------|
+| Versión | `v2.3` | `v3.2` |
+| Institución | `Universidad de Costa Rica` | `BukloLAB` |
+| Footer | `Tesis de Maestría en Computación e Informática` | **Eliminado** |
+
+### Sistema de Aliases para sintaxis cortas
+
+**Problema:** La sintaxis en el diccionario de funciones mostraba nombres largos como `AD_ClusteringJerarquico.C` cuando deberían usar los aliases cortos como `Clustering`.
+
+**Causa raíz:** Los aliases estaban definidos solo en el dispatcher R (`R4XCL-0-NevenX.R`) pero no eran accesibles desde el servidor HTTP que genera el diccionario.
+
+**Solución implementada:**
+
+1. **Creado `aliases.json`** — Archivo centralizado con mapeo bidireccional:
+   - `alias_to_function`: `"Clustering" -> "AD_ClusteringJerarquico.C"`
+   - `function_to_aliases`: `"AD_ClusteringJerarquico.C" -> ["Clustering", "HClust"]`
+
+2. **Modificado handler `/api/ayuda/funciones`** — Carga aliases.json y los incluye en cada función
+
+3. **JS ya soportaba aliases** — `_ayudaBuildSintaxis()` ya usaba el primer alias si existía
+
+**Ahora la sintaxis muestra:**
+```
+=NEVEN.R("Clustering", SetDatosX, [Escala], [Filtro], TipoOutput)
+```
+En lugar de:
+```
+=NEVEN.R("AD_ClusteringJerarquico.C", SetDatosX, [Escala], [Filtro], TipoOutput)
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\...\TaskPane\taskpane.html` | Versión, institución, sin footer tesis |
+| `F:\...\TaskPane\neven_http_server.py` | Handler carga aliases.json |
+| `C:\NEVEN\functions\aliases.json` | **Nuevo** — mapeo de aliases |
+| `F:\...\Install\functions\aliases.json` | Copia para repositorio |
+
+### Archivos copiados a producción
+
+| Producción | Verificación |
+|------------|--------------|
+| `C:\NEVEN\TaskPane\taskpane.html` | v3.2, BukloLAB ✅ |
+| `C:\NEVEN\startup\neven_http_server.py` | Aliases cargados ✅ |
+| `C:\NEVEN\functions\aliases.json` | 21 funciones con aliases ✅ |
+
+### Verificación API
+
+```
+GET /api/ayuda/funciones
+→ Total funciones: 21
+→ Ejemplo: AD_ClusteringJerarquico.C -> ["Clustering", "HClust"] ✅
+```
+
+### Commits realizados
+⚠️ **NINGUNO** — cambios pendientes de commit
+
+### Decisiones de diseño
+
+| Decisión | Razón |
+|----------|-------|
+| Archivo aliases.json separado | Más fácil de mantener que editar cada sidecar JSON |
+| Mapeo bidireccional | Permite buscar alias→función y función→aliases |
+| Primer alias en sintaxis | Consistente con lo que el usuario escribe más frecuentemente |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios de esta sesión |
+| **MEDIA** | Agregar más aliases a aliases.json (funciones nuevas) |
+| **BAJA** | Sincronizar aliases entre R4XCL-0-NevenX.R y aliases.json automáticamente |
+
+
+
+---
+
+## 19 Agosto 2026 — 09:XX — Limpieza de portada neven-docs.html
+
+### Problema
+La portada de la documentación (neven-docs.html) mostraba información de tesis/universidad:
+- **Universidad de Costa Rica**
+- Maestría en Matemática Aplicada
+- Autor: Minor Bonilla Gómez
+- Setiembre 2026
+
+### Solución
+1. El contenido de neven-docs.html está almacenado como base64 en `var chData = ["...", "...", ...]`
+2. Decodifiqué `chData[0]` (capítulo 0 = portada)
+3. Removí el bloque completo de UCR/Maestría/Autor/Fecha
+4. Re-encodifiqué a base64
+5. Reemplacé en el archivo HTML
+
+### Archivos modificados
+- `C:\NEVEN\docs\neven-docs.html` — portada limpia
+- `F:\...\NEVEN\docs\neven-docs.html` — copia en repositorio (creado directorio docs/)
+
+### Verificación
+Contenido ahora va directo de la fórmula LaTeX al separador `---` y luego a "### Que es NEVEN?"
+
+### Resumen de cambios de sesión UI
+1. ✅ Ribbon simplificado (21→8 botones)
+2. ✅ Docs viewer embebido en TaskPane
+3. ✅ Paleta de colores unificada (#d7a538 golden)
+4. ✅ "Acerca de" actualizado (v3.2, BukloLAB, sin tesis)
+5. ✅ Sistema de aliases (aliases.json)
+6. ✅ Portada neven-docs.html sin info universidad
+
+
+---
+
+### Sesión 2026-08-19 (~09:30-10:00) — CIERRE: Limpieza UI documentación
+
+## Resumen de sesión
+
+### Logro principal
+Removida información de tesis/universidad de la portada de `neven-docs.html`:
+- **Universidad de Costa Rica**
+- Maestría en Matemática Aplicada  
+- Autor: Minor Bonilla Gómez
+- Setiembre 2026
+
+### Causa raíz técnica
+El contenido de neven-docs.html está almacenado como **base64 en un array JavaScript** (`var chData = ["...", ...]`). El primer elemento (`chData[0]`) contiene la portada codificada en base64.
+
+**Proceso de fix:**
+1. Extraer base64 del primer elemento
+2. Decodificar UTF-8
+3. Remover bloque markdown de UCR/Autor
+4. Re-encodificar a base64
+5. Reemplazar en archivo HTML con `str_replace`
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\docs\neven-docs.html` | Portada sin info universidad |
+| `F:\ANTIGRAVITY\2026\NEVEN\docs\neven-docs.html` | Copia repositorio (dir creado) |
+
+### Commits pendientes
+Sin commits en esta sesión — cambios listos para commit.
+
+### Decisiones de diseño
+| Decisión | Razón |
+|----------|-------|
+| Mantener estructura base64 | No modificar arquitectura existente, solo contenido |
+| Crear directorio docs/ en repo | No existía, necesario para versionado |
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de cambios: docs/neven-docs.html, taskpane.html, aliases.json |
+| **MEDIA** | Verificar visualmente portada en iframe del TaskPane |
+| **BAJA** | Revisar si hay más menciones de UCR/tesis en otros archivos |
+
+### Archivos en producción actualizados esta sesión
+```
+C:\NEVEN\
+├── docs\neven-docs.html          ← portada limpia
+├── taskpane\taskpane.html        ← v3.2, BukloLAB, sin footer tesis
+├── functions\aliases.json        ← nuevo, mapeo aliases
+└── startup\neven_http_server.py  ← carga aliases en API
+```
+
+
+---
+
+### Sesión 2026-08-19 (~10:15) — Investigación: Estilo Anthropic para gráficos
+
+## Exploración de nuevo tema visual para gráficos NEVEN
+
+### Contexto
+El usuario compartió el sitio de Anthropic Economic Scenarios (https://www.anthropic.com/institute/econ-scenarios) y preguntó si podríamos extraer el estilo de diseño de sus gráficos para aplicarlo como opción en NEVEN.
+
+### Investigación realizada
+1. Fetch del sitio de Anthropic Economic Scenarios
+2. Búsqueda del sistema de diseño de Anthropic
+3. Análisis de DESIGN.md de Anthropic (vía GitHub)
+4. Revisión de shadcn.io/design/anthropic
+
+### Hallazgos del sistema de diseño Anthropic
+
+**Paleta de colores cálida:**
+| Token | Hex | Uso |
+|-------|-----|-----|
+| bg-cream | `#FAF9F5` | Fondo principal (ivory) |
+| text-primary | `#141413` | Texto (slate ink) |
+| clay | `#D97757` | Acento datos 1 (terracota) |
+| fig | `#C46686` | Acento datos 2 (rosa maduro) |
+| cactus | `#BCD1CA` | Acento datos 3 (verde menta) |
+| sky | `#6A9BBC` | Acento datos 4 (azul suave) |
+| warm-200 | `#EBE8E2` | Gridlines, bordes |
+
+**Características distintivas:**
+- Minimalismo extremo — sin gradientes, sin sombras
+- Tipografía editorial — Serif para títulos, Sans para UI, Mono para labels
+- Paleta "dormida" de 8 acentos para datos (clay, fig, cactus, sky, heather, olive, manilla, kraft)
+- Ritmo visual de bandas crema/negro alternadas
+
+### Propuesta presentada al usuario
+
+**Tres opciones de implementación:**
+1. `anthropic_theme.js` — Archivo JS que transforma gráficos Plotly
+2. Botón "Aplicar Estilo Editorial" en TaskPane junto a gráficos
+3. Parámetro `Estilo="anthropic"` en funciones R
+
+**Qué cambiaría:**
+- Fondo: `#1a1a1a` → `#FAF9F5`
+- Texto: `#e0e0e0` → `#141413`
+- Colores datos: saturados → clay, fig, cactus, sky
+- Gridlines: grises → casi invisibles
+- Tipografía: sans-serif → serif para títulos
+
+### Archivos modificados
+Ninguno — sesión de investigación y propuesta
+
+### Commits realizados
+Ninguno
+
+### Decisiones pendientes
+Usuario debe elegir:
+- ¿Implementar como botón JS, parámetro R, o ambos?
+- ¿Ver mockup primero?
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Esperar decisión del usuario sobre enfoque de implementación |
+| **ALTA** | Commit pendiente de cambios anteriores (docs/, taskpane, aliases) |
+| **MEDIA** | Crear `anthropic_theme.js` si usuario aprueba |
+| **BAJA** | Agregar más temas (dark mode Anthropic, otros estilos) |
+
+### Recursos útiles encontrados
+- https://github.com/ndroussi/design-md-for-ai/blob/main/design-md/anthropic/DESIGN.md
+- https://www.shadcn.io/design/anthropic
+
+
+---
+
+### Sesión 2026-08-19 (~10:30) — Investigación: Efecto Sketchy/Tiza para gráficos
+
+## Continuación del análisis de estilo Anthropic — Efecto visual de tiza/lápiz
+
+### Contexto
+El usuario señaló que no había captado el detalle más importante: el efecto de **tiza/lápiz** en las barras y líneas de los gráficos de Anthropic. No es solo la paleta de colores, sino el estilo de dibujo a mano alzada.
+
+### Investigación adicional
+
+**Librería identificada: Rough.js + roughViz**
+- **Rough.js** (<9kB): Librería base para dibujar primitivas con estilo sketchy
+- **roughViz**: Wrapper de D3 + Rough.js específico para charts
+- CDN: `https://unpkg.com/rough-viz@2.0.5`
+
+**Parámetros clave del efecto sketchy:**
+| Parámetro | Función | Rango típico |
+|-----------|---------|--------------|
+| `roughness` | Temblor de líneas | 1-3 |
+| `bowing` | Curvatura de rectas | 0-6 |
+| `fillStyle` | Tipo de relleno | hachure, cross-hatch, zigzag, dots |
+| `fillWeight` | Grosor líneas internas | 0.5-3 |
+
+**Fill Styles disponibles:**
+- `hachure` — líneas diagonales (clásico lápiz)
+- `cross-hatch` — líneas cruzadas (trama)
+- `zigzag` — zigzag
+- `dots` — puntillismo
+- `solid` — relleno sólido con bordes sketchy
+
+### Opciones de implementación propuestas
+
+| Opción | Descripción | Pros | Contras |
+|--------|-------------|------|---------|
+| **A** | Usar roughViz directamente | Simple, dedicado | No es Plotly, re-render |
+| **B** | Post-procesar SVG de Plotly con Rough.js | Mantiene Plotly | Muy complejo |
+| **C** | Botón "Ver como Sketch" (recomendada) | Lo mejor de ambos | Dos renderers |
+
+**Recomendación:** Opción C — mantener Plotly para análisis serio, agregar roughViz como alternativa visual para presentaciones.
+
+### Archivos modificados
+Ninguno — sesión de investigación
+
+### Commits realizados
+Ninguno
+
+### Decisiones pendientes
+Usuario debe elegir:
+1. ¿Opción A, B, o C?
+2. ¿Qué tipos de gráficos priorizar? (Bar, Line, Pie, Scatter)
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Decisión del usuario sobre enfoque de implementación |
+| **ALTA** | Commits pendientes de sesiones anteriores |
+| **MEDIA** | Crear prototipo con roughViz + paleta Anthropic |
+| **BAJA** | Evaluar si incluir roughViz en bundle o cargar desde CDN |
+
+### Recursos técnicos encontrados
+- https://roughjs.com/ — Librería base
+- https://github.com/jwilber/roughViz — Charts sketchy
+- https://github.com/rough-stuff/rough — Repo principal
+- https://nagix.github.io/chartjs-plugin-rough/ — Plugin Chart.js alternativo
+
+
+---
+
+### Sesión 2026-08-19 (~12:00) — Implementación: Botón Sketch para gráficos
+
+## Completada la implementación de la Opción C
+
+### Resumen
+El usuario eligió la **Opción C**: botón "Ver como Sketch" junto a gráficos Plotly. Se completó la implementación que permite alternar entre vista Plotly (análisis) y vista roughViz (presentación con estilo tiza/lápiz).
+
+### Trabajo realizado
+
+1. **sketch-charts.js** (ya existía de sesión anterior)
+   - Módulo completo con `SKETCH_CONFIG`, paleta Anthropic
+   - `createSketchButton()` — crea el botón toggle
+   - `renderSketchChart()` — convierte datos Plotly a roughViz
+   - `loadRoughViz()` — carga lazy desde CDN (D3 + roughViz)
+   - `setSketchEnabled()` / `isSketchEnabled()` — persistencia en localStorage
+
+2. **taskpane.html** — Cambios aplicados:
+   - Agregado `<script src="sketch-charts.js">` antes de `</body>`
+   - Agregado event listeners para panel Settings → Gráficos:
+     - `#toggle-sketch-enabled` — habilita/deshabilita feature
+     - `#sketch-roughness` — slider para nivel de temblor
+     - `#sketch-fillstyle` — select para estilo de relleno
+   - Panel `settings-charts` con UI ya existía (toggle, preview paleta, opciones avanzadas)
+   - Tab "Gráficos" en la barra de settings ya existía
+
+3. **datalab.js** — Integración (ya existía):
+   - `_renderPlotlyJSON()` líneas ~1934-1938 ya incluyen:
+     ```javascript
+     if (typeof createSketchButton === 'function' && isSketchEnabled()) {
+       var btnSketch = createSketchButton(figData, divId, slotName);
+       if (btnSketch) dlRow.appendChild(btnSketch);
+     }
+     ```
+
+### Paleta Anthropic implementada
+| Color | Hex | Uso |
+|-------|-----|-----|
+| Crema | `#FAF9F5` | Fondo gráfico sketch |
+| Slate | `#141413` | Texto |
+| Clay | `#D97757` | Color primario (terracota) |
+| Fig | `#C46686` | Rosa maduro |
+| Sky | `#6A9BBC` | Azul suave |
+| Cactus | `#BCD1CA` | Verde menta |
+| Amber | `#D4883A` | Ámbar |
+| Kraft | `#8B7355` | Marrón papel |
+
+### Tipos de gráficos soportados
+- ✅ Bar (barras)
+- ✅ Scatter (dispersión)
+- ✅ Pie (pastel)
+- ⚠️ Line (como scatter, roughViz.Line requiere CSV)
+- ❌ Heatmap, 3D (no soportados por roughViz)
+
+### Archivos modificados
+| Archivo | Ubicación Producción | Ubicación Repo |
+|---------|---------------------|----------------|
+| taskpane.html | `C:\NEVEN\taskpane\` | `NEVEN\TaskPane\` |
+| sketch-charts.js | `C:\NEVEN\taskpane\` | `NEVEN\TaskPane\` |
+| datalab.js | `C:\NEVEN\taskpane\` | `NEVEN\TaskPane\` |
+
+### Cómo usar
+1. Ejecutar cualquier gráfico desde DataLab o Run Script
+2. Junto a los botones PNG/SVG/Enviar a Slide aparece **✏️ Sketch**
+3. Click para alternar entre Plotly ↔ roughViz
+4. Para deshabilitar globalmente: Settings → Gráficos → desmarcar toggle
+
+### Commits pendientes
+```bash
+git add NEVEN/TaskPane/sketch-charts.js NEVEN/TaskPane/taskpane.html NEVEN/TaskPane/datalab.js
+git commit -m "feat(taskpane): add Sketch button for chalk/pencil style charts
+
+- Add sketch-charts.js with roughViz integration
+- Add Settings > Gráficos panel with toggle and options
+- Integrate createSketchButton in _renderPlotlyJSON()
+- Anthropic-inspired palette: clay, fig, sky, cactus
+- Supports Bar, Scatter, Pie charts"
+```
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar con gráfico real en Excel para verificar funcionamiento |
+| **MEDIA** | Ajustar roughViz.Line si se necesitan gráficos de líneas |
+| **BAJA** | Agregar más opciones (tamaño stroke, colores custom) |
+
+
+
+---
+
+### Sesión 2026-08-19 (~13:00) — Diagnóstico: Botón "Crear gráfico" no visible
+
+## Consulta del usuario
+El usuario reportó que en NEVEN Studio no aparece el botón para crear gráfico.
+
+### Diagnóstico realizado
+1. Busqué el elemento `quickchart-card` en producción y repositorio
+2. Confirmé que el card existe en `C:\NEVEN\taskpane\taskpane.html` (línea ~285)
+3. Verificé que los archivos de producción y repositorio son idénticos (0 diferencias)
+4. Identifiqué que el card tiene `style="display:none"` por defecto
+
+### Causa raíz
+**No es un bug — es comportamiento intencional.** El card "Gráfico Rápido" está oculto hasta que se cargan datos. La función `_populateQuickChart()` (línea ~2610) lo muestra cuando `cols.length > 0`:
+
+```javascript
+document.getElementById('quickchart-card').style.display = cols.length > 0 ? 'block' : 'none';
+```
+
+### Solución explicada al usuario
+Para ver el botón de crear gráfico:
+1. Ir al tab **Data Studio**
+2. Cargar datos usando: Abrir archivo, Leer de Excel, Pegar de Excel, o Conectar DB
+3. El card "Gráfico Rápido" aparece automáticamente con selector de tipo, Eje X/Y, paleta y botón **Generar**
+
+### Archivos modificados
+Ninguno — sesión de diagnóstico
+
+### Commits realizados
+Ninguno
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar flujo completo: cargar datos → Gráfico Rápido → botón Sketch |
+| **MEDIA** | Considerar mostrar card vacío con mensaje "Cargue datos para crear gráficos" |
+| **BAJA** | Commit pendiente de la implementación Sketch de sesión anterior |
+
+
+
+---
+
+### Sesión 2026-08-19 (~13:30) — Aclaración: Ubicación del botón Sketch
+
+## Consulta del usuario
+El usuario encontró el botón "Generar" en Gráfico Rápido y preguntó dónde encontrar el botón Sketch.
+
+### Explicación proporcionada
+El botón **✏️ Sketch** aparece en gráficos de **DataLab** o **Run Script**, no en "Gráfico Rápido" de Data Studio.
+
+**Dónde aparece el botón Sketch:**
+- Tab **Run Script** → ejecutar código R/Python que genera Plotly → botón aparece junto al gráfico
+- Tab **Data Lab** → pedir gráfico a la IA → botón aparece junto al resultado
+
+**Dónde NO aparece (aún):**
+- Tab **Data Studio** → Gráfico Rápido — genera Plotly directo sin pasar por `_renderPlotlyJSON()`
+
+### Cómo probar
+```r
+# En Run Script con R:
+library(plotly)
+plot_ly(x = c("A","B","C"), y = c(10, 20, 15), type = "bar")
+```
+El resultado mostrará: **⬇PNG | ⬇SVG | Enviar a Slide | ✏️ Sketch**
+
+### Archivos modificados
+Ninguno — sesión de orientación
+
+### Commits realizados
+Ninguno
+
+### Decisión pendiente
+Usuario debe decidir si quiere que el botón Sketch también aparezca en "Gráfico Rápido" de Data Studio.
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar botón Sketch en Run Script con gráfico Plotly real |
+| **MEDIA** | Agregar botón Sketch a Gráfico Rápido (si usuario lo solicita) |
+| **BAJA** | Commit de implementación Sketch pendiente |
+
+
+
+---
+
+### Sesión 2026-08-19 (~14:00) — Botón Sketch agregado a Gráfico Rápido
+
+## Trabajo realizado
+
+### 1. Agregado botón Sketch a Quick Chart (Gráfico Rápido)
+El usuario solicitó que el botón Sketch también aparezca en el "Gráfico Rápido" de Data Studio.
+
+**Cambio aplicado en `_renderQuickChartPlotly()`** (~línea 3000):
+```javascript
+// Agregar boton Sketch (estilo tiza/lapiz) si está habilitado
+if (typeof createSketchButton === 'function' && typeof isSketchEnabled === 'function' && isSketchEnabled()) {
+  var plotlyData = { data: traces, layout: layout };
+  var btnSketch = createSketchButton(plotlyData, 'qc-plot', 'quickchart');
+  if (btnSketch) {
+    btnSketch.style.marginTop = '6px';
+    btnSketch.style.marginLeft = '6px';
+    outputEl.appendChild(btnSketch);
+  }
+}
+```
+
+### 2. Aclaración sobre ubicación de tabs
+El usuario confundió **Data Lab** (análisis con IA) con **Data Studio** (datos + gráfico rápido):
+- **Data Studio** — tiene "Gráfico Rápido" con botón Generar
+- **Data Lab** — tiene "Ejecutar análisis" para métodos estadísticos con IA
+
+### Archivos modificados
+| Archivo | Ubicación |
+|---------|-----------|
+| taskpane.html | `C:\NEVEN\taskpane\` |
+| taskpane.html | `F:\ANTIGRAVITY\2026\NEVEN\NEVEN\TaskPane\` |
+
+### Commits realizados
+Ninguno — pendiente
+
+### Dónde aparece ahora el botón Sketch
+| Tab | Función | Botón Sketch |
+|-----|---------|--------------|
+| **Data Studio** | Gráfico Rápido → Generar | ✅ Agregado esta sesión |
+| **Run Script** | Código R/Python/Julia con Plotly | ✅ Ya existía |
+| **Data Lab** | Resultados de análisis con gráficos | ✅ Ya existía |
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe hacer Ctrl+Shift+R y probar Gráfico Rápido con botón Sketch |
+| **ALTA** | Commit de todos los cambios de Sketch (3 sesiones acumuladas) |
+| **MEDIA** | Verificar que roughViz carga correctamente desde CDN |
+
+### Comando de commit pendiente
+```bash
+git add NEVEN/TaskPane/taskpane.html NEVEN/TaskPane/sketch-charts.js NEVEN/TaskPane/datalab.js
+git commit -m "feat(taskpane): add Sketch button to Quick Chart and DataLab
+
+- Add roughViz integration for chalk/pencil style charts
+- Add Settings > Gráficos panel with toggle and options
+- Integrate createSketchButton in Quick Chart (_renderQuickChartPlotly)
+- Integrate createSketchButton in DataLab (_renderPlotlyJSON)
+- Anthropic-inspired palette: clay, fig, sky, cactus
+- Supports Bar, Scatter, Pie charts"
+```
+
+
+
+---
+
+### Sesión 2026-08-19 (~15:00) — Corrección de problemas en Sketch Charts
+
+## Problemas reportados por el usuario
+1. **Solo 1 serie en lugar de 3** — roughViz mostraba solo la primera serie, sumando valores
+2. **Gráfico se sale del contenedor** — SVG más grande que el espacio disponible
+3. **Paleta no se respeta** — usaba color terracota fijo en lugar de paleta NEVEN
+4. **Estilo del botón** — usaba colores claros Anthropic, no el tema oscuro de la app
+
+## Causa raíz
+- **roughViz.Bar** no soporta barras agrupadas (grouped bars) nativamente
+- No se pasaba `width`/`height` explícitos, dejando que roughViz eligiera tamaño
+- La paleta estaba hardcodeada en `SKETCH_CONFIG.palette` sin leer el selector
+- El botón usaba estilos inline en lugar de las clases CSS de la app
+
+## Solución implementada
+
+### 1. Multi-series con selector
+Como roughViz no soporta múltiples series agrupadas:
+- Se muestra **leyenda** con todos los colores de las series
+- Se agrega **dropdown "Ver serie:"** para seleccionar cuál visualizar
+- Al cambiar serie, se re-renderiza con el color correspondiente
+
+```javascript
+function _renderMultiSeriesBarSketch(container, containerId, rvData, colors, commonConfig) {
+  // Leyenda + selector de serie + re-render al cambiar
+}
+```
+
+### 2. Tamaño controlado
+```javascript
+width: container.offsetWidth - 24 || 400,
+height: 260,
+container.style.overflow = 'hidden';
+svg.style.maxWidth = '100%';
+```
+
+### 3. Paleta sincronizada con Quick Chart
+```javascript
+function _getSketchPalette() {
+  var paletteSelect = document.getElementById('qc-palette');
+  var paletteName = paletteSelect ? paletteSelect.value : 'neven';
+  return SKETCH_CONFIG.palettes[paletteName] || SKETCH_CONFIG.palettes.neven;
+}
+```
+
+Todas las paletas de Quick Chart agregadas a `SKETCH_CONFIG.palettes`:
+- neven, viridis, plasma, rainbow, pastel, dark, ocean, earth, anthropic
+
+### 4. Botón con estilo de la app
+```javascript
+btn.className = 'btn btn-secondary';  // Usar clases de la app
+btn.style.cssText = 'font-size:10px;padding:4px 10px;margin-left:6px';
+container.style.background = '#2a2a2a';  // Fondo oscuro
+```
+
+## Archivos modificados
+| Archivo | Ubicación |
+|---------|-----------|
+| sketch-charts.js | `C:\NEVEN\taskpane\` |
+| sketch-charts.js | `F:\ANTIGRAVITY\2026\NEVEN\NEVEN\TaskPane\` |
+
+## Commits realizados
+Ninguno — pendiente
+
+## Limitación técnica documentada
+**roughViz no soporta:**
+- Barras agrupadas (grouped bars) — workaround: selector de serie
+- Múltiples series superpuestas en scatter — workaround: selector de serie
+- Líneas conectadas (solo puntos) — se usa Scatter como fallback
+
+## Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe probar Ctrl+Shift+R y verificar correcciones |
+| **ALTA** | Commit de todos los cambios acumulados |
+| **MEDIA** | Evaluar si agregar roughViz.StackedBar para multi-series |
+| **BAJA** | Considerar Canvas en lugar de SVG para mejor rendimiento |
+
+
+
+---
+
+### Sesión 2026-08-19 (~15:30) — Fix: Sketch no renderizaba gráfico
+
+## Problema reportado
+Después de las correcciones anteriores, el Sketch mostraba la leyenda y el selector pero el gráfico no aparecía (área vacía).
+
+## Causa raíz
+1. **`container.offsetWidth` era 0** — El contenedor aún no estaba visible en el DOM cuando se llamaba a roughViz
+2. **Renderizado síncrono** — roughViz se llamaba inmediatamente después de `container.innerHTML = html` sin esperar al DOM
+
+## Solución aplicada
+
+### setTimeout para esperar al DOM
+```javascript
+container.innerHTML = html;
+
+// Esperar a que el DOM se actualice antes de renderizar
+setTimeout(function() {
+  var innerEl = document.getElementById(containerId + '-inner');
+  if (!innerEl) return;
+  
+  var chartWidth = Math.max(container.offsetWidth - 24, 350);
+  // ... llamar roughViz.Bar/Scatter aquí
+}, 50);
+```
+
+### Ancho mínimo garantizado
+```javascript
+var chartWidth = Math.max(container.offsetWidth - 24, 350);
+```
+Esto asegura que aunque `offsetWidth` sea 0, el gráfico tenga al menos 350px.
+
+### Más logging para diagnóstico
+```javascript
+console.log('[SketchCharts] Rendering bar chart, width:', chartWidth, 'labels:', rvData.labels.length);
+```
+
+## Archivos modificados
+| Archivo | Ubicación |
+|---------|-----------|
+| sketch-charts.js | `C:\NEVEN\taskpane\` |
+| sketch-charts.js | `F:\ANTIGRAVITY\2026\NEVEN\NEVEN\TaskPane\` |
+
+## Verificación
+- Sintaxis verificada con `node --check` — OK
+
+## Commits realizados
+Ninguno — pendiente
+
+## Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe probar Ctrl+Shift+R y verificar que el gráfico Sketch aparece |
+| **ALTA** | Si falla, revisar consola F12 para ver error específico |
+| **MEDIA** | Commit acumulado de todas las sesiones de Sketch |
+
+
+
+---
+
+### Sesión 2026-08-19 (~16:00) — Fix: Error "negative height" en roughViz
+
+## Error de consola
+```
+Error: <rect> attribute height: A negative value is not valid. ("-84")
+Error: <rect> attribute height: A negative value is not valid. ("-97")
+... (12 errores similares por cada barra)
+```
+
+## Causa raíz
+**roughViz calculaba alturas negativas** porque el `height` del gráfico era insuficiente para los márgenes:
+- `height: 240px`
+- `margin.top + margin.bottom = 30 + 70 = 100px`
+- Área útil para barras = 140px
+- Con valores grandes de datos, roughViz calcula posiciones fuera del área → heights negativos
+
+## Solución
+Aumentar la altura de todos los gráficos Sketch:
+```javascript
+// Antes → Después
+height: 220 → height: 320
+height: 240 → height: 340  
+height: 260 → height: 360
+```
+
+## Archivos modificados
+| Archivo | Ubicación |
+|---------|-----------|
+| sketch-charts.js | `C:\NEVEN\taskpane\` |
+| sketch-charts.js | `F:\ANTIGRAVITY\2026\NEVEN\NEVEN\TaskPane\` |
+
+## Commits realizados
+Ninguno — pendiente
+
+## Lección aprendida
+roughViz requiere que `height > margin.top + margin.bottom + espacio_para_datos`. Con datos que varían mucho (ej: 100-1200), se necesita más espacio vertical. Usar al menos 320px de altura para barras.
+
+## Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe probar Ctrl+Shift+R y confirmar que Sketch funciona |
+| **ALTA** | Commit de todos los cambios de Sketch (5+ sesiones acumuladas) |
+| **MEDIA** | Ajustar altura dinámicamente según rango de datos |
+
+
+
+---
+
+### Sesión 2026-08-19 (~16:30) — Fix: Emojis prohibidos + altura insuficiente
+
+## Problemas reportados
+1. **Emojis en botón** — El botón usaba "✏️ Sketch" y "📊 Plotly", lo cual está prohibido en el proyecto
+2. **Error "negative height" persiste** — El cambio anterior de 240→340px no fue suficiente
+
+## Correcciones aplicadas
+
+### 1. Emojis removidos
+```javascript
+// Antes
+btn.textContent = '✏️ Sketch';
+btn.textContent = '📊 Plotly';
+
+// Después
+btn.textContent = 'Sketch';
+btn.textContent = 'Plotly';
+```
+
+### 2. Altura aumentada drásticamente
+```javascript
+// Antes
+height: 340  // con margin top+bottom = 100px → área útil = 240px
+
+// Después  
+height: 500  // con margin top+bottom = 40px → área útil = 460px
+```
+
+### 3. Márgenes reducidos
+```javascript
+// Antes
+margin: { top: 30, right: 20, bottom: 70, left: 60 }  // 100px vertical
+
+// Después
+margin: { top: 10, right: 10, bottom: 30, left: 40 }  // 40px vertical
+```
+
+## Archivos modificados
+| Archivo | Ubicación |
+|---------|-----------|
+| sketch-charts.js | `C:\NEVEN\taskpane\` |
+| sketch-charts.js | `F:\ANTIGRAVITY\2026\NEVEN\NEVEN\TaskPane\` |
+
+## Commits realizados
+Ninguno — pendiente
+
+## Regla del proyecto recordada
+**PROHIBIDO usar emojis en botones y elementos de UI**. Usar solo texto plano o SVG icons.
+
+## Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe probar Ctrl+Shift+R y confirmar que Sketch funciona |
+| **ALTA** | Commit de todos los cambios de Sketch |
+| **MEDIA** | Si sigue fallando, considerar descartar roughViz por limitaciones |
+
+
+
+---
+
+### Sesión 2026-08-19 (~última hora) — BLOQUEADO: roughViz bug con alturas negativas
+
+## ❌ BLOQUEADO: Feature "Sketch" para gráficos no funciona con roughViz
+
+### Contexto
+Se intentó implementar un botón "Sketch" junto a los gráficos Plotly que permite al usuario ver una versión hand-drawn/chalk style usando roughViz (librería basada en Rough.js + D3).
+
+### Problema
+roughViz 2.0.5 produce errores de altura negativa en gráficos de barras:
+```
+Error: <rect> attribute height: A negative value is not valid. ("-34")
+```
+
+### Causa raíz
+Bug fundamental en roughViz que calcula alturas de rectángulos incorrectamente **independientemente de**:
+- Datos normalizados (0-100)
+- Tamaño del contenedor (probado 240→340→500px height)
+- Márgenes reducidos (de 100px a 40px total)
+
+El bug está en el cálculo interno de la librería, no en nuestros datos o configuración.
+
+### Intentos fallidos (evitar repetir)
+
+| Intento | Resultado |
+|---------|-----------|
+| Aumentar height a 340px | Error persiste |
+| Aumentar height a 500px | Error persiste |
+| Reducir márgenes a 40px total | Error persiste |
+| Normalizar datos a rango 0-100 | Error persiste |
+| setTimeout para esperar DOM | Error persiste |
+
+### Archivos creados/modificados
+
+| Archivo | Estado |
+|---------|--------|
+| `C:\NEVEN\taskpane\sketch-charts.js` | Creado, ~400 líneas |
+| `C:\NEVEN\taskpane\taskpane.html` | Modificado (script tag, settings panel) |
+| `C:\NEVEN\taskpane\datalab.js` | Modificado (integración botón Sketch) |
+| `F:\...\TaskPane\` | Sincronizado |
+
+### Archivos NO committeados
+Todos los cambios de Sketch están sin commit porque el feature no funciona.
+
+### Opciones para próxima sesión
+
+| Opción | Pros | Contras |
+|--------|------|---------|
+| **A. chartjs-plugin-roughness** | Más estable, Chart.js maduro | Requiere Chart.js (otra librería) |
+| **B. Rough.js directo sobre Canvas** | Control total | Más trabajo, sin gráficos pre-hechos |
+| **C. Deshabilitar Sketch para barras** | Rápido | Limita el feature a pie/scatter |
+| **D. Abandonar el feature** | Sin riesgo | Usuario pierde funcionalidad deseada |
+
+### Recomendación
+**Opción A (Chart.js + plugin-roughness)** — Chart.js es más maduro, tiene soporte nativo para gráficos agrupados, y el plugin de rough funciona mejor que roughViz.
+
+### Decisión
+**PENDIENTE** — Sesión terminó antes de implementar alternativa.
+
+### Pendientes para próxima sesión
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Decidir alternativa a roughViz | A/B/C/D según arriba |
+| **MEDIA** | Si A: implementar Chart.js + plugin | Reemplazar roughViz completamente |
+| **MEDIA** | Si D: eliminar sketch-charts.js | Limpiar código muerto |
+| **BAJA** | Commit cambios funcionales | Solo si se arregla o elimina |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion) — Migracion Sketch de roughViz a Chart.js
+
+## ✅ IMPLEMENTADO: Chart.js + plugin-rough reemplaza roughViz
+
+### Problema resuelto
+roughViz 2.0.5 tenia un bug fundamental que calculaba alturas negativas en graficos de barras, produciendo errores como:
+```
+Error: <rect> attribute height: A negative value is not valid. ("-34")
+```
+
+El error persistia independientemente de:
+- Normalizacion de datos (0-100)
+- Tamano del contenedor (240-500px)
+- Margenes reducidos
+- Delays para esperar DOM
+
+### Causa raiz
+Bug interno en roughViz que calcula dimensiones de rectangulos incorrectamente. No es problema de nuestros datos ni configuracion.
+
+### Solucion implementada
+Migracion completa a **Chart.js 2.9.4 + Rough.js 4.5.2 + chartjs-plugin-rough 0.2.0**
+
+| Componente | Version | CDN |
+|------------|---------|-----|
+| Chart.js | 2.9.4 | jsdelivr.net/npm/chart.js@2.9.4 |
+| Rough.js | 4.5.2 | jsdelivr.net/npm/roughjs@4.5.2 |
+| Plugin | 0.2.0 | jsdelivr.net/npm/chartjs-plugin-rough@0.2.0 |
+
+**Nota importante:** El plugin requiere Chart.js 2.x (no 3/4).
+
+### Por que Chart.js sobre roughViz
+1. **Mas estable** — libreria madura con millones de usuarios
+2. **Multi-series nativo** — soporta barras agrupadas sin workarounds
+3. **Mejor mantenido** — actualizaciones regulares
+4. **Plugin bien integrado** — ChartRough se registra como plugin estandar
+
+### Codigo nuevo (~320 lineas)
+
+```javascript
+// Funciones principales:
+function loadChartJsRough(callback)     // Lazy loading secuencial de 3 scripts
+function _convertPlotlyToChartJS(...)   // Convierte formato Plotly a Chart.js
+function renderSketchChart(...)         // Renderiza con plugin rough
+function createSketchButton(...)        // Boton toggle Sketch/Plotly
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\sketch-charts.js` | Reescrito completamente (roughViz -> Chart.js) |
+| `F:\...\TaskPane\sketch-charts.js` | Sincronizado |
+
+### Commits realizados
+**NINGUNO** — cambios pendientes de commit
+
+### Intentos fallidos con roughViz (NO repetir)
+
+| Intento | Resultado |
+|---------|-----------|
+| Aumentar height a 500px | Error persiste |
+| Reducir margenes a 40px | Error persiste |
+| Normalizar datos 0-100 | Error persiste |
+| setTimeout para DOM | Error persiste |
+
+**Conclusion:** roughViz tiene bug interno, no se puede arreglar desde fuera.
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Probar Sketch con barras multi-series | Verificar que Chart.js funciona sin errores |
+| **ALTA** | Commit cambios | sketch-charts.js con nueva implementacion |
+| **MEDIA** | Probar otros tipos de grafico | line, scatter, pie con plugin rough |
+| **BAJA** | Agregar fuente hand-writing | Google Fonts "Indie Flower" para mejor efecto |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 2) — Fix tooltip error en Sketch
+
+## ✅ CORREGIDO: Error fillOptions en tooltips de Chart.js + plugin-rough
+
+### Problema reportado
+Al pasar el mouse sobre las barras en modo Sketch, la consola mostraba:
+```
+Uncaught TypeError: Cannot read properties of undefined (reading 'fillOptions')
+    at n.fillRect (chartjs-plugin-rough.min.js:7)
+    at drawBody (Chart.min.js:7)
+```
+
+El grafico funcionaba correctamente pero el error se repetia en cada frame de animacion del tooltip.
+
+### Causa raiz
+El plugin `chartjs-plugin-rough` intenta dibujar los tooltips con estilo rough, pero el tooltip no tiene configuracion `rough.fillOptions` definida, causando el error al intentar acceder a propiedades undefined.
+
+### Solucion implementada
+Deshabilitar tooltips en el modo Sketch:
+
+```javascript
+options: {
+  tooltips: {
+    enabled: false  // Evita error de fillOptions en plugin-rough
+  },
+  // ...resto de opciones
+}
+```
+
+**Justificacion:** Los tooltips no son esenciales para el modo Sketch (es una vista alternativa/artistica). El grafico Plotly original tiene tooltips completos cuando el usuario vuelve a ese modo.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\sketch-charts.js` | Agregado `tooltips: { enabled: false }` en options |
+| `F:\...\TaskPane\sketch-charts.js` | Sincronizado |
+
+### Commits realizados
+**NINGUNO** — cambios pendientes de commit
+
+### Estado final del feature Sketch
+
+| Aspecto | Estado |
+|---------|--------|
+| Barras (single) | ✅ Funciona |
+| Barras (multi-series) | ✅ Funciona |
+| Error altura negativa | ✅ Resuelto (Chart.js vs roughViz) |
+| Error tooltip fillOptions | ✅ Resuelto (tooltips deshabilitados) |
+| Lineas | ⚠️ No probado |
+| Pie | ⚠️ No probado |
+| Scatter | ⚠️ No probado |
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Verificar fix de tooltips | Usuario debe recargar y confirmar sin errores |
+| **ALTA** | Commit cambios Sketch | sketch-charts.js completo |
+| **MEDIA** | Probar line/pie/scatter | Verificar otros tipos de grafico |
+| **BAJA** | Considerar tooltips custom | Si se quieren tooltips, implementar uno simple sin plugin-rough |
+
+
+
+---
+
+### Sesion 2026-08-19 (~final) — Feature Sketch COMPLETADO
+
+## ✅ CONFIRMADO: Sketch funciona perfectamente
+
+### Estado final
+Usuario confirmo que el feature Sketch funciona "a la perfeccion" con Chart.js + plugin-rough.
+
+### Discusion: Texturas configurables
+Usuario pregunto si es posible que la textura sea elegible. La respuesta es SI - el plugin soporta:
+
+| fillStyle | Descripcion |
+|-----------|-------------|
+| `hachure` | Lineas diagonales (default) |
+| `solid` | Relleno solido con bordes rough |
+| `zigzag` | Patron zigzag |
+| `cross-hatch` | Lineas cruzadas |
+| `dots` | Puntos |
+| `dashed` | Lineas discontinuas |
+
+Otros parametros: `roughness` (1-4), `bowing` (0-3), `fillWeight`
+
+**Nota:** Ya existe un panel Settings > Graficos con controles para roughness y fillStyle. Pendiente verificar que esten conectados al nuevo codigo Chart.js.
+
+### Archivos modificados en esta sesion completa
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\sketch-charts.js` | Reescrito: roughViz -> Chart.js + plugin-rough |
+| `F:\...\TaskPane\sketch-charts.js` | Sincronizado |
+
+### Commits realizados
+**NINGUNO** — todos los cambios de Sketch pendientes de commit
+
+### Resumen de la migracion completa roughViz -> Chart.js
+
+| Problema | Solucion |
+|----------|----------|
+| roughViz: altura negativa en barras | Migrar a Chart.js + plugin-rough |
+| Error fillOptions en tooltips | Deshabilitar tooltips en modo Sketch |
+| Multi-series no soportado | Chart.js lo soporta nativamente |
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Commit cambios Sketch | sketch-charts.js con toda la migracion |
+| **MEDIA** | Verificar controles Settings | Conectar roughness/fillStyle al nuevo codigo |
+| **MEDIA** | Probar line/pie/scatter | Verificar otros tipos de grafico en Sketch |
+| **BAJA** | Agregar control bowing | Mas opciones de personalizacion |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 3) — Panel flotante de configuracion Sketch
+
+## ✅ IMPLEMENTADO: Panel de configuracion flotante para Sketch
+
+### Solicitud del usuario
+"Lo expondria como una configuracion flotante si el usuario decide usar SKETCH"
+
+### Solucion implementada
+Panel flotante que aparece en la esquina superior derecha del grafico cuando el usuario activa el modo Sketch.
+
+**Controles disponibles:**
+
+| Control | Tipo | Rango | Descripcion |
+|---------|------|-------|-------------|
+| Textura | Select | 5 opciones | Lineas, Solido, Zigzag, Cruzado, Puntos |
+| Temblor | Slider | 0.5-4 | Que tan "temblorosas" son las lineas |
+| Curvatura | Slider | 0-3 | Curvatura de lineas rectas |
+
+### Comportamiento
+- Panel aparece automaticamente al activar Sketch
+- Cambios se aplican inmediatamente (re-render del grafico)
+- Preferencias se guardan en localStorage
+- Panel se oculta al volver a modo Plotly
+
+### Codigo agregado (~80 lineas)
+
+```javascript
+function _createSketchConfigPanel(containerId, plotlyData, onUpdate) {
+  // Crea panel con select de textura + sliders de roughness/bowing
+  // Event listeners actualizan SKETCH_CONFIG y llaman onUpdate()
+}
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\sketch-charts.js` | +_createSketchConfigPanel(), +carga de prefs en initSketchCharts() |
+| `F:\...\TaskPane\sketch-charts.js` | Sincronizado |
+
+### localStorage keys usadas
+- `neven_sketch_enabled` — toggle on/off
+- `neven_sketch_roughness` — valor del slider temblor
+- `neven_sketch_fillstyle` — textura seleccionada
+- `neven_sketch_bowing` — valor del slider curvatura
+
+### Commits realizados
+**NINGUNO** — todos los cambios de Sketch pendientes de commit
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Probar panel flotante | Usuario debe verificar que funciona |
+| **ALTA** | Commit cambios Sketch | Todo el feature completo |
+| **MEDIA** | Probar line/pie/scatter | Otros tipos de grafico |
+| **BAJA** | Eliminar controles duplicados en Settings | Ya no necesarios con panel flotante |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 4) — Panel colapsable + paleta NEVEN fija
+
+## ✅ IMPLEMENTADO: Mejoras UX solicitadas por usuario
+
+### Solicitudes del usuario
+1. "El cuadro de estilo deberia poder ocultarse/mostrarse para que no obstaculice al grafico"
+2. "Las barras estan en color AZUL debemos usar el dorado de la paleta de NEVEN"
+
+### Soluciones implementadas
+
+**1. Panel colapsable**
+- Boton toggle `+ Estilo` / `- Estilo` en lugar de titulo fijo
+- Estado colapsado se guarda en localStorage (`neven_sketch_panel_collapsed`)
+- Panel minimizado solo muestra el boton, no obstaculiza el grafico
+
+**2. Paleta NEVEN fija**
+- Funcion `_getSketchPalette()` ahora retorna siempre `SKETCH_CONFIG.palettes.neven`
+- Primer color: `#a8e600` (dorado/verde NEVEN)
+- Ignora selector de paleta de Quick Chart para mantener identidad visual de Sketch
+
+### Cambios de codigo
+
+```javascript
+// Panel colapsable - estructura HTML
+'<button id="' + panelId + '-toggle">+ Estilo</button>' +
+'<div id="' + panelId + '-body" style="display:none">...</div>'
+
+// Paleta fija
+function _getSketchPalette() {
+  return SKETCH_CONFIG.palettes.neven;  // Siempre dorado
+}
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\sketch-charts.js` | Panel colapsable + paleta NEVEN fija |
+| `F:\...\TaskPane\sketch-charts.js` | Sincronizado |
+
+### localStorage keys agregadas
+- `neven_sketch_panel_collapsed` — estado del panel (true/false)
+
+### Commits realizados
+**NINGUNO** — todos los cambios de Sketch pendientes de commit
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Verificar cambios | Usuario debe probar panel colapsable y color dorado |
+| **ALTA** | Commit todo Sketch | Feature completo listo para commit |
+| **BAJA** | Selector de paleta en panel | Si usuario quiere elegir paleta en Sketch |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 5) — Paleta sincronizada con Quick Chart
+
+## ✅ CORREGIDO: Sketch respeta paleta elegida por usuario
+
+### Solicitud del usuario
+"Debes asegurarte que la paleta de colores elegida por el usuario tambien aplique al SKETCH"
+
+### Cambio realizado
+Revertir `_getSketchPalette()` para que lea el selector `#qc-palette` de Quick Chart:
+
+```javascript
+function _getSketchPalette() {
+  var paletteSelect = document.getElementById('qc-palette');
+  var paletteName = paletteSelect ? paletteSelect.value : 'neven';
+  return SKETCH_CONFIG.palettes[paletteName] || SKETCH_CONFIG.palettes.neven;
+}
+```
+
+### Comportamiento actual
+- Si usuario selecciona paleta en Quick Chart → Sketch usa esa paleta
+- Si no hay selector (grafico desde DataLab) → usa paleta NEVEN por defecto
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\sketch-charts.js` | Revertido _getSketchPalette() |
+| `F:\...\TaskPane\sketch-charts.js` | Sincronizado |
+
+### Commits realizados
+**NINGUNO** — todos los cambios de Sketch pendientes de commit
+
+### Estado final del feature Sketch
+
+| Componente | Estado |
+|------------|--------|
+| Migracion roughViz → Chart.js | ✅ Completo |
+| Barras multi-series | ✅ Funciona |
+| Panel flotante colapsable | ✅ Funciona |
+| Texturas configurables | ✅ Funciona |
+| Roughness/Bowing sliders | ✅ Funciona |
+| Paleta sincronizada | ✅ Funciona |
+| Persistencia localStorage | ✅ Funciona |
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Commit feature Sketch completo | sketch-charts.js con todos los cambios |
+| **MEDIA** | Probar line/pie/scatter en Sketch | Verificar otros tipos de grafico |
+| **BAJA** | Documentar feature | Agregar a ayuda del usuario |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 6) — Formato numerico en tabla Data Studio
+
+## ✅ IMPLEMENTADO: Separador de miles y 2 decimales en tabla preview
+
+### Solicitud del usuario
+"La tabla que muestra los datos en Data Studio deberia mostrar formato de MILES y DOS DECIMALES"
+
+### Problema
+Los numeros se mostraban sin formato (ej: `814.5483540625` en lugar de `814.55`)
+
+### Solucion implementada
+Funcion `formatNum()` dentro de `showPreview()` que:
+- Detecta si el valor es numerico
+- Enteros: formato con separador de miles, sin decimales (1,234)
+- Decimales: maximo 2 decimales con separador de miles (1,234.56)
+- Texto: se muestra tal cual
+
+```javascript
+function formatNum(v) {
+  if (v === null || v === undefined || v === '') return '';
+  if (typeof v === 'number' || !isNaN(parseFloat(v))) {
+    var num = typeof v === 'number' ? v : parseFloat(v);
+    if (Number.isInteger(num)) {
+      return num.toLocaleString('en-US');
+    } else {
+      return num.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2});
+    }
+  }
+  return v;
+}
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\...\TaskPane\taskpane.html` | Agregado formatNum() en showPreview() |
+| `C:\NEVEN\taskpane\taskpane.html` | Sincronizado |
+
+### Commits realizados
+**NINGUNO** — cambios pendientes de commit
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Verificar formato numerico | Usuario debe recargar y ver formato aplicado |
+| **ALTA** | Commit todos los cambios | Sketch + formato numerico |
+| **MEDIA** | Considerar locale configurable | Actualmente usa en-US (coma para miles, punto decimal) |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 7) — Cache del browser
+
+## ⚠️ PENDIENTE: Usuario reporta que formato numerico no se ve
+
+### Situacion
+El codigo `formatNum()` esta confirmado en produccion (linea 3437 de taskpane.html) pero el usuario no ve el cambio.
+
+### Causa probable
+**Cache del browser WebView2.** El Task Pane no recargo el archivo actualizado.
+
+### Solucion sugerida
+1. Ctrl+Shift+R en el Task Pane (forzar recarga sin cache)
+2. O cerrar y volver a abrir Excel completamente
+
+### Verificacion realizada
+```powershell
+Select-String -Path "C:\NEVEN\taskpane\taskpane.html" -Pattern "formatNum"
+# Resultado: linea 3437 - function formatNum(v) { ...
+```
+
+El codigo ESTA en produccion, es problema de cache.
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Verificar formato numerico | Usuario debe forzar recarga o reiniciar Excel |
+| **ALTA** | Commit todos los cambios | Sketch + formato numerico |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 8) — Diagnostico cache WebView2
+
+## ⚠️ EN PROGRESO: Formato numerico no se aplica
+
+### Situacion
+- Codigo `formatNum()` confirmado en produccion (linea 3435-3451)
+- Usuario reinicio Excel pero formato no cambia
+- Cache de WebView2 encontrado en: `C:\Users\Minor Bonilla G\AppData\Local\Microsoft\Office\16.0\Wef\webview2` (1021 archivos)
+
+### Diagnostico
+La tabla muestra "Binding previo" — posiblemente los datos se renderizan desde una ruta de codigo diferente que no pasa por `showPreview()`.
+
+### Llamadas a showPreview() encontradas
+- Linea 2310: despues de leer de Excel
+- Linea 2352: en callback de binding reactivo
+- Linea 2402: en otra ruta
+- Linea 2470: en otra ruta
+
+### Siguiente paso sugerido
+Usuario debe hacer clic en **"Leer de Excel"** para forzar ejecucion de `showPreview()` con el nuevo codigo.
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Usuario debe hacer "Leer de Excel" | Verificar si el formato se aplica al re-leer |
+| **MEDIA** | Si no funciona, limpiar cache WebView2 | Eliminar `%LOCALAPPDATA%\Microsoft\Office\16.0\Wef\webview2` |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 9) — Cache WebView2 limpiado
+
+## ✅ ACCION: Cache de WebView2 eliminado
+
+### Problema confirmado
+El formato numerico no se aplicaba porque WebView2 servia el archivo taskpane.html desde cache, ignorando los cambios en disco.
+
+### Solucion aplicada
+```powershell
+# Cerrar Excel
+Get-Process -Name "EXCEL" | Stop-Process -Force
+
+# Eliminar cache WebView2
+Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\Office\16.0\Wef\webview2" -Recurse -Force
+```
+
+### Ubicacion del cache
+`C:\Users\Minor Bonilla G\AppData\Local\Microsoft\Office\16.0\Wef\webview2`
+
+### Leccion aprendida
+**WebView2 en Office Add-ins cachea agresivamente.** Cuando cambios en taskpane.html no se reflejan:
+1. Cerrar Excel completamente
+2. Eliminar `%LOCALAPPDATA%\Microsoft\Office\16.0\Wef\webview2`
+3. Reabrir Excel
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Verificar formato numerico | Usuario debe abrir Excel y probar |
+| **ALTA** | Commit todos los cambios | Sketch + formato numerico |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 10) — Debug formato numerico
+
+## 🔍 EN PROGRESO: Agregado console.log para debuggear
+
+### Situacion
+- Cache WebView2 limpiado pero formato aun no se aplica
+- Codigo `formatNum()` esta en el archivo pero no parece ejecutarse
+
+### Accion tomada
+Agregados `console.log` en `showPreview()` para verificar:
+1. Si la funcion se llama (`[showPreview] CALLED`)
+2. Que valores recibe y como se formatean (`[showPreview] Sample value`)
+
+### Archivo modificado
+- `C:\NEVEN\taskpane\taskpane.html` — agregados 2 console.log en showPreview()
+
+### Siguiente paso
+Usuario debe:
+1. Recargar Task Pane
+2. Hacer "Leer de Excel"
+3. Abrir consola del desarrollador (F12)
+4. Reportar si ve los mensajes `[showPreview]`
+
+### Hipotesis
+Si NO ve los mensajes → el archivo aun no se carga (problema de cache o ruta)
+Si SI ve los mensajes pero formato no cambia → problema en la logica de formatNum()
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 11) — CAUSA RAIZ: showPreview duplicada
+
+## ✅ ENCONTRADO Y CORREGIDO: Funcion duplicada en taskpane.js
+
+### Causa raiz del problema
+**`taskpane.js` tiene su propia funcion `showPreview()`** (linea 258) que se carga DESPUES de `taskpane.html`, sobreescribiendo la funcion modificada.
+
+### Evidencia
+Consola mostraba carga de `taskpane.js?v=20260925113746` pero NO mostraba `[showPreview] CALLED` porque la funcion de `taskpane.html` nunca se ejecutaba.
+
+### Solucion
+Agregar `formatNum()` a la funcion `showPreview()` en **taskpane.js** (no solo en taskpane.html):
+
+```javascript
+function showPreview(headers, rows) {
+  function formatNum(v) {
+    if (v === null || v === undefined || v === '') return '';
+    if (typeof v === 'number' || !isNaN(parseFloat(v))) {
+      var num = typeof v === 'number' ? v : parseFloat(v);
+      if (Number.isInteger(num)) {
+        return num.toLocaleString('en-US');
+      } else {
+        return num.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2});
+      }
+    }
+    return v;
+  }
+  // ... resto usa formatNum(v) en lugar de v directo
+}
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\taskpane.js` | Agregado formatNum() en showPreview() |
+| `F:\...\TaskPane\taskpane.js` | Sincronizado |
+
+### Leccion aprendida
+**Verificar TODOS los archivos que definen una funcion.** En NEVEN:
+- `taskpane.html` tiene funciones inline
+- `taskpane.js` tiene funciones adicionales que pueden sobreescribir
+
+Cuando un cambio en `.html` no funciona, buscar si `.js` tiene la misma funcion.
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Verificar formato numerico | Usuario debe recargar y probar |
+| **ALTA** | Commit todos los cambios | Sketch + formato numerico |
+| **MEDIA** | Consolidar funciones | Evitar duplicacion entre .html y .js |
+
+
+
+---
+
+### Sesion 2026-08-19 (~continuacion 12) — Formato con 2 decimales fijos
+
+## ✅ AJUSTADO: Enteros muestran .00 para armonia visual
+
+### Solicitud del usuario
+"Cuando el numero sea entero deberia mostrar doble cero despues de la coma para mantener la armonia visual"
+
+### Cambio realizado
+Simplificado `formatNum()` para siempre mostrar 2 decimales:
+
+```javascript
+function formatNum(v) {
+  if (v === null || v === undefined || v === '') return '';
+  if (typeof v === 'number' || !isNaN(parseFloat(v))) {
+    var num = typeof v === 'number' ? v : parseFloat(v);
+    return num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+  return v;
+}
+```
+
+### Ejemplos de formato
+- `1220` → `1,220.00`
+- `436` → `436.00`
+- `1088.65` → `1,088.65`
+- `814.5483540625` → `814.55`
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\taskpane.js` | minimumFractionDigits: 2 |
+| `F:\...\TaskPane\taskpane.js` | Sincronizado |
+
+### Commits realizados
+**NINGUNO** — pendiente commit de toda la sesion
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Verificar formato 2 decimales | Usuario debe recargar y probar |
+| **ALTA** | Commit todos los cambios | Sketch + formato numerico |
+

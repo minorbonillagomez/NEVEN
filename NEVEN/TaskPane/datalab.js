@@ -1931,6 +1931,14 @@ function _renderPlotlyJSON(jsonStr, slotName) {
         });
         dlRow.appendChild(btnPresent);
 
+        // Botón "Sketch" — vista estilo tiza/lápiz (si el módulo está disponible)
+        if (typeof createSketchButton === 'function' && isSketchEnabled()) {
+          var btnSketch = createSketchButton(figData, divId, slotName);
+          if (btnSketch) {
+            dlRow.appendChild(btnSketch);
+          }
+        }
+
         // El wrapper ya está en el DOM (adjuntado por buildSlotElement antes del setTimeout)
         if (wrapper.parentElement) {
           wrapper.parentElement.appendChild(dlRow);
