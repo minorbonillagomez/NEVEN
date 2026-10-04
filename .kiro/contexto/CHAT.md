@@ -42,14 +42,21 @@ fileMatchPattern: "**/ontologia/**/*.yaml"
 | `f927089` | feat(rag): normalización de dominios para búsqueda multi-idioma |
 | `5ad20ed` | docs(steering): agregar reglas para ontologías YAML |
 | `5116fd9` | docs(chat): actualizar bitácora sesión 2026-08-20 |
+| `c609105` | docs(chat): agregar hashes de commits realizados |
+| `e4130f7` | feat(rag): completar implementación multi-idioma (http_server, index_books, taskpane) |
+
+### Archivos pendientes (no parte de RAG)
+- `neven-docs.html` — documentación generada
+- `aliases.json` — archivo nuevo sin trackear
+- `docs/` — directorio nuevo sin trackear
 
 ### Pendientes próxima sesión
 
 | Prioridad | Tarea |
 |-----------|-------|
 | **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
-| **MEDIA** | Commitear archivos pendientes: taskpane.html, neven_http_server.py, index_books.py |
 | **BAJA** | Expandir diccionario de traducción multi-idioma con más términos |
+| **BAJA** | Revisar archivos pendientes (aliases.json, docs/) |
 
 ---
 
