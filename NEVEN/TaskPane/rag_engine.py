@@ -19,7 +19,7 @@ import re
 import json
 import hashlib
 import time
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 from pathlib import Path
 
 import duckdb
@@ -85,6 +85,80 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
         # Evitar loop infinito
         if end == len(words):
             break
+    
+    return chunks
+
+
+def extract_text_with_pages(file_path: str) -> List[Dict[str, Any]]:
+    """
+    Extrae texto de un PDF con información de página.
+    
+    Returns:
+        Lista de dicts con {page: int, text: str}
+    """
+    path = Path(file_path)
+    suffix = path.suffix.lower()
+    
+    if suffix != '.pdf':
+        # Para archivos de texto, toda es "página 1"
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            return [{"page": 1, "text": f.read()}]
+    
+    try:
+        import fitz  # PyMuPDF
+        doc = fitz.open(file_path)
+        pages = []
+        for i, page in enumerate(doc, start=1):
+            text = page.get_text()
+            if text.strip():  # Solo páginas con contenido
+                pages.append({"page": i, "text": text})
+        doc.close()
+        return pages
+    except ImportError:
+        raise ImportError("PyMuPDF (fitz) no instalado. Ejecuta: pip install pymupdf")
+
+
+def chunk_text_with_pages(pages: List[Dict[str, Any]], chunk_size: int = 500, overlap: int = 50) -> List[Dict[str, Any]]:
+    """
+    Divide texto en chunks preservando información de página.
+    
+    Args:
+        pages: Lista de {page: int, text: str}
+        chunk_size: Tamaño aproximado de cada chunk en palabras
+        overlap: Palabras de overlap entre chunks
+    
+    Returns:
+        Lista de {page: int, page_end: int, text: str}
+    """
+    chunks = []
+    
+    for page_data in pages:
+        page_num = page_data["page"]
+        text = re.sub(r'\s+', ' ', page_data["text"]).strip()
+        words = text.split()
+        
+        if not words:
+            continue
+        
+        if len(words) <= chunk_size:
+            chunks.append({
+                "page": page_num,
+                "page_end": page_num,
+                "text": text
+            })
+        else:
+            start = 0
+            while start < len(words):
+                end = min(start + chunk_size, len(words))
+                chunk_text = ' '.join(words[start:end])
+                chunks.append({
+                    "page": page_num,
+                    "page_end": page_num,
+                    "text": chunk_text
+                })
+                start = end - overlap
+                if end == len(words):
+                    break
     
     return chunks
 
@@ -245,6 +319,8 @@ class RAGEngine:
                 doc_id VARCHAR,
                 chunk_index INTEGER,
                 content TEXT,
+                page INTEGER,
+                page_end INTEGER,
                 embedding FLOAT[384],
                 FOREIGN KEY (doc_id) REFERENCES documents(id)
             )
@@ -431,13 +507,63 @@ class RAGEngine:
         chunks = chunk_text(text)
         embeddings = generate_embeddings(chunks)
         
-        # Insertar chunks
+        # Insertar chunks (sin página para texto plano)
         for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
             chunk_id = f"{doc_id}_{i:04d}"
             self.conn.execute("""
-                INSERT INTO chunks (id, doc_id, chunk_index, content, embedding)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO chunks (id, doc_id, chunk_index, content, page, page_end, embedding)
+                VALUES (?, ?, ?, ?, NULL, NULL, ?)
             """, [chunk_id, doc_id, i, chunk, embedding])
+        
+        return doc_id
+
+    def add_pdf_with_pages(self, file_path: str, doc_name: str, domain: str = "general",
+                          metadata: Optional[Dict] = None) -> str:
+        """
+        Agrega un PDF preservando información de página para cada chunk.
+        
+        Args:
+            file_path: Ruta al archivo PDF
+            doc_name: Nombre identificador
+            domain: Dominio/categoria
+            metadata: Metadatos adicionales
+        
+        Returns:
+            ID del documento
+        """
+        # Extraer páginas
+        pages = extract_text_with_pages(file_path)
+        all_text = "\n".join(p["text"] for p in pages)
+        doc_id = hashlib.md5(all_text.encode()).hexdigest()[:12]
+        
+        # Verificar si ya existe
+        existing = self.conn.execute(
+            "SELECT id FROM documents WHERE id = ?", [doc_id]
+        ).fetchone()
+        
+        if existing:
+            return doc_id
+        
+        # Insertar documento
+        self.conn.execute("""
+            INSERT INTO documents (id, filename, domain, metadata)
+            VALUES (?, ?, ?, ?)
+        """, [doc_id, doc_name, domain, json.dumps(metadata or {})])
+        
+        # Chunking con páginas
+        chunks_with_pages = chunk_text_with_pages(pages)
+        chunk_texts = [c["text"] for c in chunks_with_pages]
+        embeddings = generate_embeddings(chunk_texts)
+        
+        # Insertar chunks con información de página
+        for i, (chunk_data, embedding) in enumerate(zip(chunks_with_pages, embeddings)):
+            chunk_id = f"{doc_id}_{i:04d}"
+            self.conn.execute("""
+                INSERT INTO chunks (id, doc_id, chunk_index, content, page, page_end, embedding)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, [chunk_id, doc_id, i, chunk_data["text"], chunk_data["page"], chunk_data["page_end"], embedding])
+        
+        return doc_id
         
         return doc_id
     
@@ -465,6 +591,8 @@ class RAGEngine:
                     c.id,
                     c.content,
                     c.chunk_index,
+                    c.page,
+                    c.page_end,
                     d.filename,
                     d.domain,
                     array_cosine_distance(c.embedding, ?::FLOAT[384]) as distance
@@ -481,6 +609,8 @@ class RAGEngine:
                     c.id,
                     c.content,
                     c.chunk_index,
+                    c.page,
+                    c.page_end,
                     d.filename,
                     d.domain,
                     array_cosine_distance(c.embedding, ?::FLOAT[384]) as distance
@@ -497,9 +627,11 @@ class RAGEngine:
                 "id": r[0],
                 "content": r[1],
                 "chunk_index": r[2],
-                "filename": r[3],
-                "domain": r[4],
-                "score": 1 - r[5]  # Convertir distancia a similitud
+                "page": r[3],
+                "page_end": r[4],
+                "filename": r[5],
+                "domain": r[6],
+                "score": 1 - r[7]  # Convertir distancia a similitud
             }
             for r in results
         ]

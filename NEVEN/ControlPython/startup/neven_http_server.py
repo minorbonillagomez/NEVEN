@@ -1826,6 +1826,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
                                 {
                                     "filename": c.get("filename"),
                                     "domain": c.get("domain"),
+                                    "page": c.get("page"),
+                                    "page_end": c.get("page_end"),
                                     "score": round(c.get("score", 0), 2),
                                     "content": c.get("content", "")[:500]  # Limitar a 500 chars
                                 }

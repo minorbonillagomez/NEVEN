@@ -1,11 +1,11 @@
 """
-NEVEN RAG - Script de indexación masiva de libros
+NEVEN RAG - Script de indexación masiva de libros con información de página
 """
 import os
 import sys
 sys.path.insert(0, r"C:\NEVEN\TaskPane")
 
-from rag_engine import RAGEngine, extract_text_from_file, chunk_text
+from rag_engine import RAGEngine, extract_text_with_pages, chunk_text_with_pages
 
 DB_PATH = r"C:\NEVEN\data\rag_index.duckdb"
 ONTOLOGY_PATH = r"C:\NEVEN\docs\ontologia"
@@ -35,11 +35,16 @@ if __name__ == "__main__":
             print("NOT FOUND")
             continue
         try:
-            text = extract_text_from_file(path)
-            doc_id = engine.add_text(text, name, domain=domain)
-            print(f"OK ({len(chunk_text(text))} chunks)")
+            # Usar el nuevo método que preserva páginas
+            doc_id = engine.add_pdf_with_pages(path, name, domain=domain)
+            # Contar chunks para el log
+            pages = extract_text_with_pages(path)
+            chunks = chunk_text_with_pages(pages)
+            print(f"OK ({len(chunks)} chunks, {len(pages)} paginas)")
         except Exception as e:
             print(f"ERROR: {e}")
+            import traceback
+            traceback.print_exc()
     
     stats = engine.get_stats()
     print(f"\nTotal: {stats['documents']} docs, {stats['chunks']} chunks")

@@ -5351,24 +5351,15 @@ function _cleanPdfArtifacts(text) {
   if (!text) return text;
   var cleaned = text
     // Patrones matemáticos comunes de PDFs LaTeX corruptos
-    // E[y|x] aparece como Eðy j xÞ
-    .replace(/Eðy\s*j\s*x([\w,]*?)Þ/g, '$E[y|x$1]$')
-    .replace(/Eðy\s*j\s*x/g, '$E[y|x')
-    .replace(/Eð([a-z])\s*j\s*([a-z,\s]+?)Þ/g, '$E[$1|$2]$')
+    // E[y|x] aparece como Eðy j xÞ - convertir a notación legible (sin KaTeX)
+    .replace(/Eðy\s*j\s*x([\w,;]*?)Þ/g, 'E[y|x$1]')
+    .replace(/Eð([a-z])\s*j\s*([a-z,;\s]+?)Þ/g, 'E[$1|$2]')
     
-    // Símbolos griegos corruptos
+    // Símbolos griegos corruptos - solo limpiar, no envolver en $
     .replace(/ð/g, '[')
     .replace(/Þ/g, ']')
     .replace(/¼/g, '=')
     .replace(/þ/g, ']')
-    .replace(/b\s*¼/g, '$\\beta =$')
-    .replace(/s\s*¼/g, '$\\sigma =$')
-    
-    // Fracciones y exponentes
-    .replace(/(\d+)\/(\d+)/g, '$\\frac{$1}{$2}$')
-    .replace(/\^(\d+)/g, '$^{$1}$')
-    .replace(/x_(\d+)/g, '$x_{$1}$')
-    .replace(/y_(\d+)/g, '$y_{$1}$')
     
     // Ligaduras tipográficas
     .replace(/ﬀ/g, 'ff')
@@ -5376,6 +5367,9 @@ function _cleanPdfArtifacts(text) {
     .replace(/ﬂ/g, 'fl')
     .replace(/ﬃ/g, 'ffi')
     .replace(/ﬄ/g, 'ffl')
+    
+    // Caracteres especiales de fuentes matemáticas
+    .replace(/¤/g, 'ff')  // ff ligature corrupta
     
     // Guiones de separación de palabras
     .replace(/- \n/g, '')
@@ -5441,23 +5435,25 @@ function _showRagSourcesPopup(sources) {
     // Metadata line
     var meta = document.createElement('div');
     meta.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--text-secondary);';
+    var pageInfo = src.page ? (src.page === src.page_end ? 'p. ' + src.page : 'pp. ' + src.page + '-' + src.page_end) : null;
     meta.innerHTML = [
       '<span><b>Archivo:</b> ' + (src.filename || 'N/A') + '</span>',
+      pageInfo ? '<span><b>Pagina:</b> ' + pageInfo + '</span>' : '',
       '<span><b>Dominio:</b> ' + (src.domain || 'N/A') + '</span>',
       '<span><b>Score:</b> ' + (src.score ? src.score.toFixed(3) : 'N/A') + '</span>'
-    ].join('');
+    ].filter(Boolean).join('');
 
     // Content text - usar innerHTML para permitir renderizado de KaTeX
     var text = document.createElement('div');
     text.style.cssText = [
       'font-size:12px;line-height:1.5;color:var(--text-primary);',
-      'max-height:150px;overflow-y:auto;white-space:pre-wrap;',
+      'max-height:150px;overflow-y:auto;',
       'background:var(--bg-tertiary);padding:8px;border-radius:4px;'
     ].join('');
     var cleanedContent = _cleanPdfArtifacts(src.content) || '[Sin contenido]';
-    // Escapar HTML pero preservar $ para KaTeX
+    // NO escapar los $ para que KaTeX los procese
+    // Solo escapar < y > para evitar XSS, pero preservar todo lo demás
     text.innerHTML = cleanedContent
-      .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/\n/g, '<br>');
@@ -5484,23 +5480,56 @@ function _showRagSourcesPopup(sources) {
   overlay.appendChild(popup);
   document.body.appendChild(overlay);
 
-  // Renderizar fórmulas matemáticas con KaTeX
-  if (typeof renderMathInElement === 'function') {
-    try {
-      renderMathInElement(content, {
-        delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '$', right: '$', display: false},
-          {left: '\\[', right: '\\]', display: true},
-          {left: '\\(', right: '\\)', display: false}
-        ],
-        throwOnError: false,
-        errorColor: '#f88'
-      });
-    } catch (e) {
-      console.warn('[RAG Popup] KaTeX render error:', e);
+  // Renderizar fórmulas matemáticas con KaTeX manualmente
+  // Solo procesar fórmulas cortas y bien formadas para evitar falsos positivos
+  function renderKatexInElement(el) {
+    if (typeof katex === 'undefined') {
+      console.warn('[RAG Popup] KaTeX no disponible');
+      return;
     }
+    
+    var html = el.innerHTML;
+    
+    // Renderizar $$...$$ (display mode) - máximo 200 caracteres
+    html = html.replace(/\$\$([^$]{1,200})\$\$/g, function(match, tex) {
+      try {
+        return katex.renderToString(tex.trim(), { displayMode: true, throwOnError: false });
+      } catch (e) {
+        console.warn('[KaTeX] Error display:', tex.substring(0, 50), e.message);
+        return match;
+      }
+    });
+    
+    // Renderizar $...$ (inline mode) - más estricto:
+    // - Máximo 80 caracteres
+    // - Debe contener al menos una letra o backslash (para ser una fórmula real)
+    // - No debe contener saltos de línea
+    html = html.replace(/\$([^$\n]{1,80})\$/g, function(match, tex) {
+      // Verificar que parece una fórmula matemática real
+      if (!/[a-zA-Z\\]/.test(tex)) {
+        return match; // No es una fórmula, dejar como está
+      }
+      // Evitar falsos positivos con texto normal
+      if (/^[a-zA-Z\s,\.]+$/.test(tex)) {
+        return match; // Es solo texto, no fórmula
+      }
+      try {
+        return katex.renderToString(tex.trim(), { displayMode: false, throwOnError: false });
+      } catch (e) {
+        console.warn('[KaTeX] Error inline:', tex.substring(0, 30), e.message);
+        return match;
+      }
+    });
+    
+    el.innerHTML = html;
   }
+
+  // Aplicar a cada card de contenido
+  var textDivs = content.querySelectorAll('div[style*="bg-tertiary"]');
+  textDivs.forEach(function(div) {
+    renderKatexInElement(div);
+  });
+  console.log('[RAG Popup] KaTeX procesado para', textDivs.length, 'elementos');
 }
 
 function _aiClear() {
