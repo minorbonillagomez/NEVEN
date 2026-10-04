@@ -967,3 +967,133 @@ Esto es análogo a la diferencia entre un chatbot con prompt fijo y un sistema R
 
 *Actualización: 19 de agosto de 2026*
 *NEVEN v2.5 — Tab Conocimiento*
+
+
+---
+
+## ACTUALIZACIÓN — 20 de agosto de 2026 (NEVEN v2.6)
+
+### 2.19 RAG Engine con Ontología como Metaheurística
+
+NEVEN ahora incluye un sistema de Retrieval Augmented Generation (RAG) que usa la ontología del proyecto como **metaheurística de búsqueda**. Esta arquitectura es innovadora y tiene valor académico significativo.
+
+**Arquitectura del sistema:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Usuario pregunta                          │
+│                    "¿Qué es el ACP?"                            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              1. TRADUCCIÓN MULTI-IDIOMA                         │
+│  "¿Qué es el ACP?" → "ACP PCA principal component analysis      │
+│                       componentes principales..."                │
+│  Diccionario: ~40 términos EN/ES/PT/FR bidireccionales          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              2. ONTOLOGÍA COMO METAHEURÍSTICA                   │
+│  - Detecta entidades: "ACP" → entity[PCA, domain=econometria]   │
+│  - Detecta dominios: ["econometria", "estadistica"]             │
+│  - Normaliza: "econometrics" → "econometria"                    │
+│  - 213 entidades de 6 schemas YAML guían la búsqueda            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              3. BÚSQUEDA VECTORIAL FILTRADA                     │
+│  - Embeddings: fastembed (bge-small-en-v1.5, 384 dims)          │
+│  - Storage: DuckDB + VSS extension                              │
+│  - Filtro por dominio detectado (reduce espacio de búsqueda)    │
+│  - Cosine similarity → top_k chunks                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              4. CONTEXTO ENRIQUECIDO AL LLM                     │
+│  - Chunks relevantes con fuente, página, score                  │
+│  - Umbral mínimo configurable (minScore en neven-config.json)   │
+│  - Popup de fuentes en TaskPane con preview del texto           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Contribución técnica — Ontología como Metaheurística:**
+
+El uso de la ontología para guiar la búsqueda RAG es una aplicación novel de metaheurísticas al problema de retrieval:
+
+1. **Reducción del espacio de búsqueda**: En lugar de buscar en todos los 3,690 chunks, la ontología detecta el dominio relevante y filtra la búsqueda. Esto es análogo a cómo una metaheurística usa conocimiento del problema para podar el espacio de soluciones.
+
+2. **Expansión semántica**: La detección de entidades de la ontología expande la query con sinónimos y términos relacionados, similar a cómo las metaheurísticas usan operadores de variación para explorar vecindarios de soluciones.
+
+3. **Normalización de dominios**: El sistema mapea variantes de nombres de dominio ("econometrics" → "econometria") para unificar la representación, evitando que la búsqueda falle por inconsistencias terminológicas.
+
+**Métricas del sistema RAG:**
+
+| Métrica | Valor |
+|:---|:---|
+| Documentos indexados | 9 libros PDF |
+| Chunks totales | 3,690 |
+| Tamaño del índice | 12.26 MB (DuckDB) |
+| Modelo de embeddings | bge-small-en-v1.5 (67MB, 384 dims) |
+| Idiomas soportados | EN, ES, PT, FR |
+| Entidades de ontología | 213 (de 6 schemas YAML) |
+
+**Archivos clave:**
+
+| Archivo | Función |
+|:---|:---|
+| `rag_engine.py` | Motor RAG con ontología integrada |
+| `neven_http_server.py` | Integración con endpoint `/api/ai/chat` |
+| `neven-config.json` | Configuración RAG.minScore |
+| `docs/ontologia/*.yaml` | Schemas de ontología (6 archivos) |
+| `data/rag_index.duckdb` | Índice vectorial persistente |
+
+**Comparación con sistemas RAG tradicionales:**
+
+| Aspecto | RAG tradicional | NEVEN RAG |
+|:---|:---|:---|
+| Query expansion | Solo embeddings | Embeddings + traducción + ontología |
+| Filtrado | Sin filtro o por metadata simple | Filtrado por dominio detectado semánticamente |
+| Conocimiento del dominio | Ninguno | 213 entidades de 6 ontologías |
+| Multi-idioma | Requiere modelo multilingüe | Diccionario de traducción bidireccional |
+
+### 2.20 Steering Rules para Ontologías YAML
+
+Se creó un steering file (`ontology-yaml-rules.md`) que previene errores de sintaxis YAML en ontologías. Este es un ejemplo de **ingeniería de conocimiento aplicada a la prevención de bugs**:
+
+- Documenta los 6 errores YAML más comunes con ejemplos
+- Se activa automáticamente al editar archivos en `**/ontologia/**/*.yaml`
+- Incluye checklist de validación pre-deploy
+
+**Relevancia académica:** El uso de reglas declarativas (steering) para guiar a un agente AI es una técnica de ingeniería de prompts que merece documentación. El patrón `inclusion: fileMatch` permite inyectar contexto condicionalmente basado en el tipo de archivo que se edita.
+
+### Actualización de tabla comparativa con BERT
+
+| Capacidad | BERT (2017-2018) | NEVEN (Ago 2026) | Innovación |
+|:---|:---|:---|:---|
+| *(anteriores)* | — | — | — |
+| RAG con ontología | No | Motor RAG con 3,690 chunks + ontología como metaheurística | **Innovación** |
+| Multi-idioma RAG | No | Traducción EN/ES/PT/FR bidireccional | **Innovación** |
+| Fuentes con popup | No | Preview de chunks con página y score | **Innovación** |
+
+**Resumen actualizado:** De 21 capacidades comparadas, 19 son innovaciones sobre BERT.
+
+### Actualización de hitos
+
+| Fase | Estado | Descripción |
+|:---|:---|:---|
+| *(todos los anteriores)* | ✅ | Ver versiones anteriores |
+| **RAG Engine** | ✅ | DuckDB + fastembed + 3,690 chunks de 9 libros |
+| **Ontología como metaheurística** | ✅ | 213 entidades guían la búsqueda vectorial |
+| **Multi-idioma RAG** | ✅ | Traducción EN/ES/PT/FR con ~40 términos |
+| **Steering para YAML** | ✅ | Prevención de errores en ontologías |
+| Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
+| Benchmarks RAG | ⏳ Pendiente | Medir impacto de ontología en precision/recall |
+
+---
+
+*Actualización: 20 de agosto de 2026*
+*NEVEN v2.6 — RAG con Ontología como Metaheurística*

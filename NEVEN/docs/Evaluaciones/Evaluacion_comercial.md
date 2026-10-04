@@ -562,3 +562,80 @@ Esto permite que DevOps configure NEVEN programáticamente en despliegues automa
 
 *Actualizado: Agosto de 2026*
 *NEVEN v2.4+ — Tab Settings y API de Configuración*
+
+
+---
+
+## ACTUALIZACIÓN — 20 de agosto de 2026 (NEVEN v2.6)
+
+### Nuevas fortalezas comerciales
+
+**20. RAG Engine — Respuestas fundamentadas en libros de referencia.**
+
+El asistente de IA de NEVEN ahora consulta una base de conocimiento de 9 libros de econometría, estadística y Excel (3,690 chunks indexados) antes de responder. Las respuestas incluyen las fuentes consultadas con número de página y score de relevancia.
+
+**Relevancia comercial:**
+- Diferenciador único: ningún competidor (PyXLL, xlwings, Python in Excel) tiene RAG integrado
+- Las respuestas del AI son verificables — el usuario puede revisar la fuente original
+- El popup de fuentes con preview del texto genera confianza en entornos corporativos
+
+**21. Ontología como metaheurística de búsqueda.**
+
+El RAG no busca "a ciegas" en todos los chunks. Usa 213 entidades de ontología para:
+1. Detectar el dominio de la pregunta (econometría, estadística, Excel)
+2. Expandir la query con sinónimos y términos relacionados
+3. Filtrar la búsqueda al dominio relevante
+
+**Relevancia comercial:**
+- Búsquedas más precisas = menos "alucinaciones" del AI
+- El sistema "entiende" el contexto del usuario (ej: "ACP" → econometría, no "Acuerdo Comercial")
+- Es extensible: el usuario puede agregar sus propias ontologías
+
+**22. Soporte multi-idioma en RAG.**
+
+El sistema traduce automáticamente queries entre EN/ES/PT/FR. Un usuario que pregunta "¿Qué es el ACP?" obtiene resultados de libros en inglés que hablan de "PCA" y libros en español que hablan de "componentes principales".
+
+**Relevancia comercial:**
+- Mercado latinoamericano: usuarios preguntan en español, libros están en inglés
+- Mercado académico: terminología varía entre idiomas
+- Diccionario de ~40 términos econométricos bidireccionales
+
+### Impacto en propuesta de valor
+
+| Aspecto | Antes (v2.5) | Después (v2.6) |
+|:---|:---|:---|
+| Respuestas del AI | Basadas en conocimiento del modelo | Fundamentadas en libros de referencia |
+| Verificabilidad | Ninguna | Popup con fuente, página y preview |
+| Búsqueda RAG | N/A | Guiada por ontología (metaheurística) |
+| Idiomas | Solo español | EN/ES/PT/FR bidireccional |
+
+### Nuevo argumento de ventas
+
+El pitch para clientes corporativos ahora incluye:
+
+> *"Las respuestas del asistente están fundamentadas en libros de referencia de econometría y estadística. Cada respuesta muestra las fuentes consultadas con número de página. No es una caja negra — es conocimiento verificable."*
+
+Esto es crítico para:
+- **Auditoría**: el departamento de compliance puede verificar las fuentes
+- **Capacitación**: los nuevos empleados aprenden de los libros mientras usan la herramienta
+- **Confianza**: las "alucinaciones" del AI son detectables porque la fuente está visible
+
+### Actualización de precios sugeridos
+
+El RAG con ontología justifica un tier adicional:
+
+| Tier | Qué incluye | Precio anterior | Precio revisado |
+|:---|:---|:---|:---|
+| NEVEN Studio | Data Lab + Presentaciones | $299/año | $299/año |
+| **NEVEN Studio + RAG** | + Base de conocimiento + fuentes verificables | N/A | **$399/año** |
+| NEVEN Studio Pro | + Soporte + actualizaciones | $499/año | $599/año |
+
+El delta de $100/año por RAG es defendible porque:
+- La indexación de libros tiene costo computacional (embeddings)
+- El mantenimiento de ontologías requiere actualización continua
+- El valor para el cliente (respuestas verificables) es alto en entornos regulados
+
+---
+
+*Actualizado: 20 de agosto de 2026*
+*NEVEN v2.6 — RAG con Ontología como Metaheurística*
