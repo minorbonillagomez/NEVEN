@@ -19,6 +19,7 @@
 |-----------------------|-----------------|
 | **Archivos R** (`.R`) | P2 `dispatcher_nevenx` — INV-NX-01 (ASCII sin BOM), INV-NX-02 (llaves balanceadas) |
 | **Sidecars JSON** | `docs/SIDECAR_FORMAT.md` + P2 `sidecars_json` — INV-SJ-02 (`function_name_xll` exacto) |
+| **Ontologías YAML** | `.kiro/steering/ontology-yaml-rules.md` — escapes, comillas, dominios |
 | **Agregar funciones** | `C:\NEVEN\functions\COMO_AGREGAR_FUNCIONES.md` |
 | **Agregar aliases** | `COMO_AGREGAR_FUNCIONES.md` sección "Aliases" — modificar R + Python |
 | **TaskPane JS/HTML** | P3 `taskpane_frontend` — INV-TF-01..04, componentes reutilizables |
@@ -54,6 +55,31 @@ $bytes[0..2]  # NO debe ser 239 187 191
 □ Campo `file` es solo basename (no ruta absoluta)
 □ Campo `id` es único entre todos los sidecars
 □ Si es XLL-callable: incluir `nevenx_positions`
+```
+
+### Cambios en ontologías YAML
+
+> **CRÍTICO:** Errores de sintaxis YAML impiden que el RAG cargue entidades.
+
+```
+□ Usar comillas SIMPLES para paths Windows (contienen \)
+□ Usar comillas SIMPLES para comandos shell (pueden tener |, &)
+□ Espacio después de cada : en mappings ("key": "value", NO "key":"value")
+□ Cada item de lista (-) en su propia línea con estructura anidada
+□ Dominios en ESPAÑOL: econometria, estadistica (NO econometrics, statistics)
+□ Validar ANTES de guardar: python -c "import yaml; yaml.safe_load(open('archivo.yaml'))"
+□ Copiar a producción: C:\NEVEN\docs\ontologia\
+```
+
+**Errores comunes de escape:**
+```yaml
+# ❌ MAL - \p, \I, \| son escapes inválidos
+nombre_pipe: "\\\\.\pipe\\..."      
+comando: ".\Install-NEVEN.ps1"
+
+# ✅ BIEN - comillas simples NO interpretan escapes
+nombre_pipe: '\\\\.\\pipe\\...'
+comando: '.\Install-NEVEN.ps1'
 ```
 
 ### Agregar aliases a una función
