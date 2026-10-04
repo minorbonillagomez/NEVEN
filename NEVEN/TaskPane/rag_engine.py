@@ -307,6 +307,7 @@ class RAGEngine:
                 id VARCHAR PRIMARY KEY,
                 filename VARCHAR,
                 domain VARCHAR,
+                language VARCHAR DEFAULT 'en',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 metadata JSON
             )
@@ -518,7 +519,7 @@ class RAGEngine:
         return doc_id
 
     def add_pdf_with_pages(self, file_path: str, doc_name: str, domain: str = "general",
-                          metadata: Optional[Dict] = None) -> str:
+                          language: str = "en", metadata: Optional[Dict] = None) -> str:
         """
         Agrega un PDF preservando información de página para cada chunk.
         
@@ -526,6 +527,7 @@ class RAGEngine:
             file_path: Ruta al archivo PDF
             doc_name: Nombre identificador
             domain: Dominio/categoria
+            language: Idioma del documento (en, es, fr, de, pt)
             metadata: Metadatos adicionales
         
         Returns:
@@ -544,11 +546,11 @@ class RAGEngine:
         if existing:
             return doc_id
         
-        # Insertar documento
+        # Insertar documento con idioma
         self.conn.execute("""
-            INSERT INTO documents (id, filename, domain, metadata)
-            VALUES (?, ?, ?, ?)
-        """, [doc_id, doc_name, domain, json.dumps(metadata or {})])
+            INSERT INTO documents (id, filename, domain, language, metadata)
+            VALUES (?, ?, ?, ?, ?)
+        """, [doc_id, doc_name, domain, language, json.dumps(metadata or {})])
         
         # Chunking con páginas
         chunks_with_pages = chunk_text_with_pages(pages)
@@ -564,8 +566,160 @@ class RAGEngine:
             """, [chunk_id, doc_id, i, chunk_data["text"], chunk_data["page"], chunk_data["page_end"], embedding])
         
         return doc_id
+
+    def get_available_languages(self) -> List[str]:
+        """Retorna lista de idiomas únicos en el índice."""
+        result = self.conn.execute(
+            "SELECT DISTINCT language FROM documents WHERE language IS NOT NULL"
+        ).fetchall()
+        return [r[0] for r in result if r[0]]
+
+    def translate_query_for_languages(self, query: str, target_languages: List[str]) -> str:
+        """
+        Expande la query con traducciones de términos técnicos.
         
-        return doc_id
+        Idiomas soportados: en (inglés), es (español), pt (portugués), fr (francés)
+        
+        Args:
+            query: Pregunta original
+            target_languages: Lista de idiomas destino (ej: ['en', 'es', 'pt', 'fr'])
+        
+        Returns:
+            Query expandida con términos en múltiples idiomas
+        """
+        # Diccionario multilingüe: término -> traducciones en otros idiomas
+        # Formato: "término_en_cualquier_idioma": "EN ES PT FR"
+        _translations = {
+            # === Conceptos de regresión ===
+            "heterocedasticidad": "heteroscedasticity hétéroscédasticité heterocedasticidade",
+            "heteroscedasticity": "heterocedasticidad hétéroscédasticité heterocedasticidade",
+            "hétéroscédasticité": "heteroscedasticity heterocedasticidad heterocedasticidade",
+            "heterocedasticidade": "heteroscedasticity heterocedasticidad hétéroscédasticité",
+            
+            "homocedasticidad": "homoscedasticity homoscédasticité homocedasticidade",
+            "homoscedasticity": "homocedasticidad homoscédasticité homocedasticidade",
+            
+            "multicolinealidad": "multicollinearity multicolinéarité multicolinearidade",
+            "multicollinearity": "multicolinealidad multicolinéarité multicolinearidade",
+            "multicolinéarité": "multicollinearity multicolinealidad multicolinearidade",
+            
+            "autocorrelación": "autocorrelation autocorrélation autocorrelação",
+            "autocorrelation": "autocorrelación autocorrélation autocorrelação",
+            "autocorrélation": "autocorrelation autocorrelación autocorrelação",
+            
+            "endogeneidad": "endogeneity endogénéité endogeneidade",
+            "endogeneity": "endogeneidad endogénéité endogeneidade",
+            
+            "regresión": "regression régression regressão",
+            "regression": "regresión régression regressão",
+            "régression": "regression regresión regressão",
+            "regressão": "regression regresión régression",
+            
+            "mínimos cuadrados": "least squares OLS moindres carrés mínimos quadrados MQO",
+            "least squares": "mínimos cuadrados MCO moindres carrés mínimos quadrados",
+            "moindres carrés": "least squares mínimos cuadrados mínimos quadrados",
+            "mínimos quadrados": "least squares mínimos cuadrados moindres carrés",
+            
+            # === Series de tiempo ===
+            "serie temporal": "time series série temporelle série temporal",
+            "series temporales": "time series séries temporelles séries temporais",
+            "time series": "serie temporal series temporales série temporelle série temporal",
+            "série temporelle": "time series serie temporal série temporal",
+            
+            "estacionariedad": "stationarity stationnarité estacionariedade",
+            "stationarity": "estacionariedad stationnarité estacionariedade",
+            "stationnarité": "stationarity estacionariedad estacionariedade",
+            
+            "cointegración": "cointegration cointégration cointegração",
+            "cointegration": "cointegración cointégration cointegração",
+            "cointégration": "cointegration cointegración cointegração",
+            
+            "raíz unitaria": "unit root racine unitaire raiz unitária",
+            "unit root": "raíz unitaria racine unitaire raiz unitária",
+            "racine unitaire": "unit root raíz unitaria raiz unitária",
+            
+            # === Estadística / PCA ===
+            "componentes principales": "principal component analysis PCA ACP analyse en composantes principales",
+            "principal component": "componentes principales ACP analyse en composantes principales componentes principais",
+            "analyse en composantes principales": "PCA principal component componentes principales ACP",
+            "componentes principais": "principal component PCA componentes principales ACP",
+            "ACP": "PCA principal component analysis componentes principales",
+            "PCA": "ACP análisis de componentes principales analyse en composantes principales",
+            
+            "análisis factorial": "factor analysis analyse factorielle análise fatorial",
+            "factor analysis": "análisis factorial analyse factorielle análise fatorial",
+            "analyse factorielle": "factor analysis análisis factorial análise fatorial",
+            
+            "varianza": "variance variância",
+            "variance": "varianza variância",
+            "variância": "variance varianza",
+            
+            "covarianza": "covariance covariância",
+            "covariance": "covarianza covariância",
+            
+            "correlación": "correlation corrélation correlação",
+            "correlation": "correlación corrélation correlação",
+            "corrélation": "correlation correlación correlação",
+            
+            "distribución": "distribution distribuição",
+            "distribution": "distribución distribuição",
+            
+            "estimador": "estimator estimateur estimador",
+            "estimator": "estimador estimateur",
+            "estimateur": "estimator estimador",
+            
+            "sesgo": "bias biais viés",
+            "bias": "sesgo biais viés",
+            "biais": "bias sesgo viés",
+            "viés": "bias sesgo biais",
+            
+            # === Panel data ===
+            "datos de panel": "panel data données de panel dados em painel",
+            "panel data": "datos de panel données de panel dados em painel",
+            "données de panel": "panel data datos de panel dados em painel",
+            "dados em painel": "panel data datos de panel données de panel",
+            
+            "efectos fijos": "fixed effects effets fixes efeitos fixos",
+            "fixed effects": "efectos fijos effets fixes efeitos fixos",
+            "effets fixes": "fixed effects efectos fijos efeitos fixos",
+            
+            "efectos aleatorios": "random effects effets aléatoires efeitos aleatórios",
+            "random effects": "efectos aleatorios effets aléatoires efeitos aleatórios",
+            
+            # === Causalidad ===
+            "inferencia causal": "causal inference inférence causale inferência causal",
+            "causal inference": "inferencia causal inférence causale inferência causal",
+            "inférence causale": "causal inference inferencia causal inferência causal",
+            
+            "variable instrumental": "instrumental variable IV variable instrumentale variável instrumental",
+            "instrumental variable": "variable instrumental VI variable instrumentale variável instrumental",
+            
+            # === Excel ===
+            "tabla dinámica": "pivot table tableau croisé dynamique tabela dinâmica",
+            "pivot table": "tabla dinámica tableau croisé dynamique tabela dinâmica",
+            "tableau croisé dynamique": "pivot table tabla dinámica tabela dinâmica",
+            "tabela dinâmica": "pivot table tabla dinámica tableau croisé dynamique",
+            
+            "buscarv": "vlookup recherchev procv",
+            "vlookup": "buscarv recherchev procv",
+            "recherchev": "vlookup buscarv procv",
+            "procv": "vlookup buscarv recherchev",
+            
+            "fórmula": "formula formule fórmula",
+            "formula": "fórmula formule",
+            "formule": "formula fórmula",
+        }
+        
+        query_lower = query.lower()
+        expansions = []
+        
+        for source_term, target_term in _translations.items():
+            if source_term.lower() in query_lower:
+                expansions.append(target_term)
+        
+        if expansions:
+            return query + " " + " ".join(expansions)
+        return query
     
     def query(self, question: str, domain: Optional[str] = None,
               top_k: int = 5, use_ontology: bool = True) -> List[Dict]:
@@ -660,7 +814,8 @@ class RAGEngine:
             "econometria": ["regresion", "ols", "mco", "econometria", "wooldridge", 
                           "greene", "variable", "estimador", "heterocedasticidad",
                           "panel", "instrumentos", "2sls", "iv", "arima", "var",
-                          "serie temporal", "cointegration", "causalidad"],
+                          "serie temporal", "cointegration", "causalidad",
+                          "pca", "acp", "principal component", "componentes principales"],
             "estadistica": ["media", "varianza", "probabilidad", "distribucion",
                           "hipotesis", "test", "intervalo", "confianza", "muestreo"],
             "machine_learning": ["clasificacion", "clustering", "neural", "red neuronal",
@@ -672,6 +827,18 @@ class RAGEngine:
             "r": ["rstudio", "tidyverse", "ggplot", "dplyr", "dataframe"],
             "python": ["pandas", "numpy", "matplotlib", "sklearn", "jupyter"],
             "julia": ["julia", "dataframes.jl", "plots.jl", "flux"]
+        }
+        
+        # Mapeo de aliases de dominio para normalizar nombres en diferentes idiomas
+        # Mapea dominios detectados a los nombres usados en la base de datos
+        domain_aliases = {
+            "econometrics": "econometria",
+            "economics": "econometria",
+            "statistics": "estadistica",
+            "stats": "estadistica",
+            "time_series": "series_tiempo",
+            "timeseries": "series_tiempo",
+            "ml": "machine_learning",
         }
         
         # 1. Buscar coincidencias con entidades de la ontologia
@@ -709,7 +876,12 @@ class RAGEngine:
                         detected_domains.add(domain)
                         break
         
-        detected_domains = list(detected_domains)
+        # 2.5. Normalizar dominios usando aliases (econometrics -> econometria, etc.)
+        normalized_domains = set()
+        for domain in detected_domains:
+            normalized = domain_aliases.get(domain.lower(), domain)
+            normalized_domains.add(normalized)
+        detected_domains = list(normalized_domains)
         
         # 3. Ejecutar busqueda filtrada por dominios detectados
         if detected_domains:
