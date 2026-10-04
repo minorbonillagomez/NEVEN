@@ -883,6 +883,14 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b'Manifest not found')
             return
 
+        # ── Serve /docs/* for NEVEN documentation ─────────────────────────────
+        if path.startswith('docs/'):
+            docs_dir = _config.get("docsDir", r"C:\NEVEN\docs")
+            doc_file = path[5:]  # Remove 'docs/' prefix
+            file_path = os.path.join(docs_dir, doc_file)
+            self._serve_file(file_path)
+            return
+
         # Serve static files (taskpane, assets)
         static_dir = _config.get("staticDir", "C:\\NEVEN\\taskpane")
         if path == '' or path == 'taskpane.html':
@@ -2742,13 +2750,24 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "UC": "Casos de Uso"
         }
         
+        # Cargar mapeo de aliases (function_name_xll -> [aliases])
+        aliases_map = {}
+        aliases_file = os.path.join(functions_dir, "aliases.json")
+        if os.path.isfile(aliases_file):
+            try:
+                with open(aliases_file, 'r', encoding='utf-8') as f:
+                    aliases_data = json.load(f)
+                    aliases_map = aliases_data.get('function_to_aliases', {})
+            except Exception as e:
+                _log.warning(f"Error cargando aliases.json: {e}")
+        
         try:
             if not os.path.isdir(functions_dir):
                 self._send_json(result)
                 return
             
             for filename in os.listdir(functions_dir):
-                if not filename.endswith('.json'):
+                if not filename.endswith('.json') or filename == 'aliases.json':
                     continue
                 
                 filepath = os.path.join(functions_dir, filename)
@@ -2781,7 +2800,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
                         "wikipedia_url": sidecar.get('wikipedia_url'),
                         "nevenx_positions": sidecar.get('nevenx_positions', {}),
                         "tipo_outputs": sidecar.get('tipo_outputs', []),
-                        "variable_roles": sidecar.get('variable_roles', {})
+                        "variable_roles": sidecar.get('variable_roles', {}),
+                        "aliases": aliases_map.get(xll_name, [])
                     }
                     
                     result['familias'][family]['funciones'].append(func_info)

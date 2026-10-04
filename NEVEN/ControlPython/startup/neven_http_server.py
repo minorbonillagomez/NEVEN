@@ -24,8 +24,6 @@
 #   GET  /api/ontology/domains → List available ontology domains
 #   GET  /api/ontology/domain/{id}/stats → Get domain statistics
 #   GET  /api/ontology/search?q=term&domain=excel → Search knowledge graph
-#   GET  /api/ontology/books?domain=excel → List processed books
-#   POST /api/ontology/process-book → Process PDF book and extract entities
 #   GET  /api/ayuda/funciones → Diccionario dinámico de funciones NevenX
 
 import os
@@ -151,6 +149,19 @@ except ImportError:
     AI_MODELS = {}
     DB_TYPES = []
     DB_DEFAULT_PORTS = {}
+
+
+# RAG Engine — Ontology-Guided Retrieval Augmented Generation
+try:
+    from rag_engine import (  # type: ignore
+        get_rag_engine as _get_rag_engine,
+        RAGEngine as _RAGEngine,
+    )
+    _RAG_AVAILABLE = True
+except ImportError:
+    _RAG_AVAILABLE = False
+    _get_rag_engine = None
+    _RAGEngine = None
 
 
 def _is_broken_pipe(exc: Exception, msg: str) -> bool:
@@ -824,11 +835,6 @@ class NEVENHandler(BaseHTTPRequestHandler):
             # GET /api/ontology/search?q=VLOOKUP&domain=excel
             self._handle_ontology_search()
             return
-        
-        if path == 'api/ontology/books':
-            # GET /api/ontology/books?domain=excel — List processed books
-            self._handle_ontology_books()
-            return
 
         # ── Ayuda / Diccionario de Funciones NevenX ───────────────────────────
         if path == 'api/ayuda/funciones':
@@ -888,6 +894,25 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'text/plain')
                 self.end_headers()
                 self.wfile.write(b'Manifest not found')
+            return
+
+        # ── Serve /docs/* for NEVEN documentation ─────────────────────────────
+        if path.startswith('docs/'):
+            docs_dir = _config.get("docsDir", r"C:\NEVEN\docs")
+            doc_file = path[5:]  # Remove 'docs/' prefix
+            file_path = os.path.join(docs_dir, doc_file)
+            self._serve_file(file_path)
+            return
+
+        # ══════════════════════════════════════════════════════════════════════
+        # RAG Engine — GET endpoints
+        # ══════════════════════════════════════════════════════════════════════
+        if path == 'api/rag/documents':
+            self._handle_rag_documents()
+            return
+        
+        if path == 'api/rag/stats':
+            self._handle_rag_stats()
             return
 
         # Serve static files (taskpane, assets)
@@ -1037,10 +1062,16 @@ class NEVENHandler(BaseHTTPRequestHandler):
         elif path == 'api/config/reload':
             self._handle_config_reload()
         # ══════════════════════════════════════════════════════════════════════
-        # Ontology Manager — POST endpoints
+        # RAG Engine — Ontology-Guided Retrieval Augmented Generation
         # ══════════════════════════════════════════════════════════════════════
-        elif path == 'api/ontology/process-book':
-            self._handle_ontology_process_book(body)
+        elif path == 'api/rag/upload':
+            self._handle_rag_upload(body)
+        elif path == 'api/rag/upload-text':
+            self._handle_rag_upload_text(body)
+        elif path == 'api/rag/query':
+            self._handle_rag_query(body)
+        elif path == 'api/rag/delete':
+            self._handle_rag_delete(body)
         # ══════════════════════════════════════════════════════════════════════
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
@@ -2725,75 +2756,6 @@ class NEVENHandler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             self._send_error_json(f"Search error: {e}")
-    
-    def _handle_ontology_books(self):
-        """GET /api/ontology/books?domain=excel — List processed books."""
-        from urllib.parse import urlparse, parse_qs
-        query_params = parse_qs(urlparse(self.path).query)
-        domain = query_params.get("domain", [None])[0]
-        
-        try:
-            from ontology_manager import list_processed_books
-            books = list_processed_books(domain)
-            self._send_json({
-                "status": "ok",
-                "books": books,
-                "count": len(books)
-            })
-        except ImportError:
-            self._send_json({
-                "status": "ok",
-                "books": [],
-                "count": 0,
-                "warning": "ontology_manager not available"
-            })
-        except Exception as e:
-            self._send_error_json(f"List books error: {e}")
-    
-    def _handle_ontology_process_book(self, body: dict):
-        """POST /api/ontology/process-book — Process a PDF book and extract entities."""
-        file_path = body.get("file_path")
-        domain = body.get("domain")
-        max_pages = body.get("max_pages")
-        chunk_size = body.get("chunk_size", 4000)
-        
-        if not file_path:
-            self._send_error_json("Missing 'file_path' parameter", 400)
-            return
-        
-        if not domain:
-            self._send_error_json("Missing 'domain' parameter", 400)
-            return
-        
-        try:
-            from ontology_manager import process_book
-            
-            # Get config_manager for AI profile access
-            config_mgr = None
-            if _CONFIG_MANAGER_AVAILABLE:
-                try:
-                    from config_manager import ConfigManager
-                    config_mgr = ConfigManager()
-                except Exception:
-                    pass
-            
-            result = process_book(
-                file_path=file_path,
-                domain_id=domain,
-                config_manager=config_mgr,
-                max_pages=max_pages,
-                chunk_size=chunk_size
-            )
-            
-            if result.get("status") == "error":
-                self._send_error_json(result.get("error", "Unknown error"), 400)
-            else:
-                self._send_json(result)
-                
-        except ImportError as e:
-            self._send_error_json(f"ontology_manager not available: {e}", 503)
-        except Exception as e:
-            self._send_error_json(f"Process book error: {e}", 500)
 
     def _handle_ayuda_funciones(self):
         """GET /api/ayuda/funciones — Diccionario dinámico de funciones NevenX.
@@ -2823,13 +2785,24 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "UC": "Casos de Uso"
         }
         
+        # Cargar mapeo de aliases (function_name_xll -> [aliases])
+        aliases_map = {}
+        aliases_file = os.path.join(functions_dir, "aliases.json")
+        if os.path.isfile(aliases_file):
+            try:
+                with open(aliases_file, 'r', encoding='utf-8') as f:
+                    aliases_data = json.load(f)
+                    aliases_map = aliases_data.get('function_to_aliases', {})
+            except Exception as e:
+                _log.warning(f"Error cargando aliases.json: {e}")
+        
         try:
             if not os.path.isdir(functions_dir):
                 self._send_json(result)
                 return
             
             for filename in os.listdir(functions_dir):
-                if not filename.endswith('.json'):
+                if not filename.endswith('.json') or filename == 'aliases.json':
                     continue
                 
                 filepath = os.path.join(functions_dir, filename)
@@ -2862,7 +2835,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
                         "wikipedia_url": sidecar.get('wikipedia_url'),
                         "nevenx_positions": sidecar.get('nevenx_positions', {}),
                         "tipo_outputs": sidecar.get('tipo_outputs', []),
-                        "variable_roles": sidecar.get('variable_roles', {})
+                        "variable_roles": sidecar.get('variable_roles', {}),
+                        "aliases": aliases_map.get(xll_name, [])
                     }
                     
                     result['familias'][family]['funciones'].append(func_info)
@@ -2881,6 +2855,159 @@ class NEVENHandler(BaseHTTPRequestHandler):
             
         except Exception as e:
             self._send_error_json(f"Error cargando funciones: {e}", 500)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # RAG Engine handlers — Ontology-Guided Retrieval Augmented Generation
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def _handle_rag_documents(self):
+        """GET /api/rag/documents — List all indexed documents."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            docs = engine.list_documents()
+            self._send_json({
+                "status": "ok",
+                "documents": docs,
+                "count": len(docs)
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG documents error: {e}")
+
+    def _handle_rag_stats(self):
+        """GET /api/rag/stats — Get RAG engine statistics."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            stats = engine.get_stats()
+            self._send_json({
+                "status": "ok",
+                "stats": stats
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG stats error: {e}")
+
+    def _handle_rag_upload(self, body: dict):
+        """POST /api/rag/upload — Upload and index a document file."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        file_path = body.get("file_path")
+        domain = body.get("domain", "general")
+        metadata = body.get("metadata", {})
+        
+        if not file_path:
+            self._send_error_json("Missing 'file_path'", 400)
+            return
+        
+        if not os.path.isfile(file_path):
+            self._send_error_json(f"File not found: {file_path}", 404)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            doc_id = engine.add_document(file_path, domain=domain, metadata=metadata)
+            self._send_json({
+                "status": "ok",
+                "doc_id": doc_id,
+                "message": f"Document indexed successfully"
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG upload error: {e}")
+
+    def _handle_rag_upload_text(self, body: dict):
+        """POST /api/rag/upload-text — Upload and index text directly."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        text = body.get("text")
+        doc_name = body.get("name", "untitled")
+        domain = body.get("domain", "general")
+        metadata = body.get("metadata", {})
+        
+        if not text:
+            self._send_error_json("Missing 'text'", 400)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            doc_id = engine.add_text(text, doc_name, domain=domain, metadata=metadata)
+            self._send_json({
+                "status": "ok",
+                "doc_id": doc_id,
+                "message": f"Text indexed successfully"
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG upload text error: {e}")
+
+    def _handle_rag_query(self, body: dict):
+        """POST /api/rag/query — Query the RAG index."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        question = body.get("question") or body.get("query")
+        domain = body.get("domain")
+        top_k = int(body.get("top_k", 5))
+        use_ontology = body.get("use_ontology", True)
+        
+        if not question:
+            self._send_error_json("Missing 'question' or 'query'", 400)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            
+            if use_ontology:
+                result = engine.query_with_ontology(question, top_k=top_k)
+            else:
+                results = engine.query(question, domain=domain, top_k=top_k)
+                result = {
+                    "question": question,
+                    "detected_domains": [],
+                    "ontology_guided": False,
+                    "results": results
+                }
+            
+            self._send_json({
+                "status": "ok",
+                **result
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG query error: {e}")
+
+    def _handle_rag_delete(self, body: dict):
+        """POST /api/rag/delete — Delete a document from the index."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        doc_id = body.get("doc_id")
+        
+        if not doc_id:
+            self._send_error_json("Missing 'doc_id'", 400)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            success = engine.delete_document(doc_id)
+            if success:
+                self._send_json({
+                    "status": "ok",
+                    "message": f"Document {doc_id} deleted"
+                })
+            else:
+                self._send_error_json(f"Failed to delete document {doc_id}")
+        except Exception as e:
+            self._send_error_json(f"RAG delete error: {e}")
 
     def _handle_analyze(self, body):
         """Analyze the loaded dataset."""

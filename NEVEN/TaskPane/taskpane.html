@@ -224,6 +224,7 @@
     <!-- <div class="tab" data-tab="excel-analysis">Excel</div> -->
     <div class="tab" data-tab="presentaciones">Presentaciones</div>
     <div class="tab" data-tab="ai">IA</div>
+    <div class="tab" data-tab="rag">RAG</div>
     <div class="tab" data-tab="ayuda">Ayuda</div>
     <div class="tab" data-tab="settings" title="Configuracion NEVEN"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
   </div>
@@ -658,6 +659,118 @@
     </div>
 
   </div><!-- /tab ai -->
+
+  <!-- Tab: RAG (Ontology-Guided Retrieval) -->
+  <div class="tab-content" id="rag">
+    
+    <!-- Estadisticas del indice -->
+    <div class="card" id="rag-stats-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="card-title" style="margin-bottom:0">Base de Conocimiento</div>
+        <button class="btn btn-secondary" id="rag-refresh-btn" style="padding:2px 8px;font-size:10px">
+          Actualizar
+        </button>
+      </div>
+      <div id="rag-stats" style="font-size:11px;color:var(--text-secondary);margin-top:8px">
+        Cargando estadisticas...
+      </div>
+    </div>
+
+    <!-- Cargar documento -->
+    <div class="card">
+      <div class="card-title">Agregar Documento</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" id="rag-file-path" placeholder="Ruta al archivo (PDF, TXT, MD)"
+                 style="flex:1;padding:6px 8px;font-size:11px;border:1px solid var(--border);
+                        border-radius:4px;background:var(--bg-primary);color:var(--text-primary)">
+          <button class="btn btn-secondary" id="rag-browse-btn" style="padding:6px 10px">...</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="font-size:10px;color:var(--text-secondary);width:60px">Dominio:</label>
+          <select id="rag-domain-select" style="flex:1;padding:5px 8px;font-size:11px;
+                  border:1px solid var(--border);border-radius:4px;
+                  background:var(--bg-primary);color:var(--text-primary)">
+            <option value="general">General</option>
+            <option value="econometria">Econometria</option>
+            <option value="estadistica">Estadistica</option>
+            <option value="machine_learning">Machine Learning</option>
+            <option value="series_tiempo">Series de Tiempo</option>
+            <option value="excel">Excel</option>
+            <option value="r">R</option>
+            <option value="python">Python</option>
+            <option value="julia">Julia</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="rag-upload-btn">Indexar Documento</button>
+      </div>
+      <div id="rag-upload-status" style="font-size:10px;margin-top:6px;display:none"></div>
+    </div>
+
+    <!-- Agregar texto directo -->
+    <details class="card" style="padding:0">
+      <summary style="padding:10px 12px;cursor:pointer;font-size:11px;font-weight:500;
+                      color:var(--text-primary);list-style:none;display:flex;align-items:center;gap:6px">
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" 
+             stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        Agregar Texto Directo
+      </summary>
+      <div style="padding:0 12px 12px 12px;display:flex;flex-direction:column;gap:8px">
+        <input type="text" id="rag-text-name" placeholder="Nombre del documento"
+               style="padding:6px 8px;font-size:11px;border:1px solid var(--border);
+                      border-radius:4px;background:var(--bg-primary);color:var(--text-primary)">
+        <textarea id="rag-text-content" placeholder="Pega o escribe el contenido aqui..."
+                  style="min-height:80px;padding:8px;font-size:11px;border:1px solid var(--border);
+                         border-radius:4px;background:var(--bg-primary);color:var(--text-primary);
+                         resize:vertical;font-family:inherit"></textarea>
+        <button class="btn btn-secondary" id="rag-upload-text-btn">Indexar Texto</button>
+      </div>
+    </details>
+
+    <!-- Documentos indexados -->
+    <div class="card">
+      <div class="card-title">Documentos Indexados</div>
+      <div id="rag-documents-list" style="max-height:150px;overflow-y:auto;font-size:11px">
+        <div style="color:var(--text-secondary);padding:8px 0">Sin documentos indexados</div>
+      </div>
+    </div>
+
+    <!-- Busqueda semantica -->
+    <div class="card">
+      <div class="card-title">Busqueda Semantica</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <textarea id="rag-query-input" placeholder="Escribe tu pregunta..."
+                  style="min-height:50px;padding:8px;font-size:11px;border:1px solid var(--border);
+                         border-radius:4px;background:var(--bg-primary);color:var(--text-primary);
+                         resize:vertical;font-family:inherit"></textarea>
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-secondary)">
+            <input type="checkbox" id="rag-use-ontology" checked style="margin:0">
+            Guiar con ontologia
+          </label>
+          <label style="font-size:10px;color:var(--text-secondary);margin-left:auto">Top:</label>
+          <select id="rag-top-k" style="padding:3px 6px;font-size:10px;border:1px solid var(--border);
+                  border-radius:3px;background:var(--bg-primary);color:var(--text-primary)">
+            <option value="3">3</option>
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="rag-search-btn">Buscar</button>
+      </div>
+    </div>
+
+    <!-- Resultados de busqueda -->
+    <div class="card" id="rag-results-card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="card-title" style="margin-bottom:0">Resultados</div>
+        <span id="rag-results-meta" style="font-size:9px;color:var(--text-secondary)"></span>
+      </div>
+      <div id="rag-results-list" style="display:flex;flex-direction:column;gap:8px">
+      </div>
+    </div>
+
+  </div><!-- /tab rag -->
 
   <!-- Tab: Excel Analysis -->
   <div class="tab-content" id="excel-analysis">
@@ -5780,6 +5893,314 @@ window._renderCreateFunctionBlock = function(jsonStr) {
         if (typeof SKETCH_CONFIG !== 'undefined') {
           SKETCH_CONFIG.fillStyle = fillStyleSelect.value;
         }
+      });
+    }
+  });
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     RAG (Ontology-Guided Retrieval) - JavaScript Handlers
+     ══════════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+  
+  var API = window._NEVEN_API_BASE || window.location.origin;
+  if (API.indexOf('localhost') === -1 && API.indexOf('127.0.0.1') === -1) {
+    API = 'http://localhost:5555';
+  }
+
+  // ── Cargar estadisticas y documentos al iniciar ──────────────────────────
+  function ragLoadStats() {
+    var statsEl = document.getElementById('rag-stats');
+    if (!statsEl) return;
+    
+    fetch(API + '/api/rag/stats')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.status === 'ok' && data.stats) {
+          var s = data.stats;
+          var domains = Object.keys(s.domains || {}).map(function(d) {
+            return d + ': ' + s.domains[d];
+          }).join(', ') || 'ninguno';
+          statsEl.innerHTML = 
+            '<div style="display:flex;gap:16px;flex-wrap:wrap">' +
+            '<span>Documentos: <b>' + s.documents + '</b></span>' +
+            '<span>Chunks: <b>' + s.chunks + '</b></span>' +
+            '</div>' +
+            '<div style="margin-top:4px;font-size:10px">Dominios: ' + domains + '</div>';
+        } else {
+          statsEl.textContent = 'No hay documentos indexados';
+        }
+      })
+      .catch(function(e) {
+        statsEl.innerHTML = '<span style="color:var(--error)">Error: ' + e.message + '</span>';
+      });
+  }
+
+  function ragLoadDocuments() {
+    var listEl = document.getElementById('rag-documents-list');
+    if (!listEl) return;
+    
+    fetch(API + '/api/rag/documents')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.status === 'ok' && data.documents && data.documents.length > 0) {
+          var html = data.documents.map(function(doc) {
+            return '<div style="display:flex;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">' +
+              '<div style="flex:1">' +
+                '<div style="font-weight:500">' + (doc.filename || doc.id) + '</div>' +
+                '<div style="font-size:9px;color:var(--text-secondary)">' +
+                  'Dominio: ' + doc.domain + ' | Chunks: ' + doc.chunk_count +
+                '</div>' +
+              '</div>' +
+              '<button class="btn btn-secondary rag-delete-doc" data-id="' + doc.id + '" ' +
+                'style="padding:2px 6px;font-size:9px;color:var(--error)">x</button>' +
+            '</div>';
+          }).join('');
+          listEl.innerHTML = html;
+          
+          // Agregar handlers de delete
+          listEl.querySelectorAll('.rag-delete-doc').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              var docId = btn.getAttribute('data-id');
+              ragDeleteDocument(docId);
+            });
+          });
+        } else {
+          listEl.innerHTML = '<div style="color:var(--text-secondary);padding:8px 0">Sin documentos indexados</div>';
+        }
+      })
+      .catch(function(e) {
+        listEl.innerHTML = '<div style="color:var(--error)">Error: ' + e.message + '</div>';
+      });
+  }
+
+  // ── Subir documento ──────────────────────────────────────────────────────
+  function ragUploadFile() {
+    var pathInput = document.getElementById('rag-file-path');
+    var domainSelect = document.getElementById('rag-domain-select');
+    var statusEl = document.getElementById('rag-upload-status');
+    
+    var filePath = (pathInput.value || '').trim();
+    var domain = domainSelect.value;
+    
+    if (!filePath) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'var(--error)';
+      statusEl.textContent = 'Ingresa la ruta del archivo';
+      return;
+    }
+    
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--text-secondary)';
+    statusEl.textContent = 'Indexando documento...';
+    
+    fetch(API + '/api/rag/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_path: filePath, domain: domain })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok') {
+        statusEl.style.color = 'var(--success)';
+        statusEl.textContent = 'Documento indexado: ' + data.doc_id;
+        pathInput.value = '';
+        ragLoadStats();
+        ragLoadDocuments();
+      } else {
+        statusEl.style.color = 'var(--error)';
+        statusEl.textContent = data.message || data.error || 'Error al indexar';
+      }
+    })
+    .catch(function(e) {
+      statusEl.style.color = 'var(--error)';
+      statusEl.textContent = 'Error: ' + e.message;
+    });
+  }
+
+  // ── Subir texto directo ──────────────────────────────────────────────────
+  function ragUploadText() {
+    var nameInput = document.getElementById('rag-text-name');
+    var contentInput = document.getElementById('rag-text-content');
+    var domainSelect = document.getElementById('rag-domain-select');
+    var statusEl = document.getElementById('rag-upload-status');
+    
+    var name = (nameInput.value || '').trim() || 'texto_' + Date.now();
+    var text = (contentInput.value || '').trim();
+    var domain = domainSelect.value;
+    
+    if (!text) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'var(--error)';
+      statusEl.textContent = 'Ingresa el contenido del texto';
+      return;
+    }
+    
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--text-secondary)';
+    statusEl.textContent = 'Indexando texto...';
+    
+    fetch(API + '/api/rag/upload-text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: text, name: name, domain: domain })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok') {
+        statusEl.style.color = 'var(--success)';
+        statusEl.textContent = 'Texto indexado: ' + data.doc_id;
+        nameInput.value = '';
+        contentInput.value = '';
+        ragLoadStats();
+        ragLoadDocuments();
+      } else {
+        statusEl.style.color = 'var(--error)';
+        statusEl.textContent = data.message || data.error || 'Error al indexar';
+      }
+    })
+    .catch(function(e) {
+      statusEl.style.color = 'var(--error)';
+      statusEl.textContent = 'Error: ' + e.message;
+    });
+  }
+
+  // ── Eliminar documento ───────────────────────────────────────────────────
+  function ragDeleteDocument(docId) {
+    if (!confirm('Eliminar documento ' + docId + '?')) return;
+    
+    fetch(API + '/api/rag/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doc_id: docId })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      ragLoadStats();
+      ragLoadDocuments();
+    })
+    .catch(function(e) {
+      alert('Error eliminando: ' + e.message);
+    });
+  }
+
+  // ── Busqueda semantica ───────────────────────────────────────────────────
+  function ragSearch() {
+    var queryInput = document.getElementById('rag-query-input');
+    var useOntology = document.getElementById('rag-use-ontology').checked;
+    var topK = parseInt(document.getElementById('rag-top-k').value) || 5;
+    var resultsCard = document.getElementById('rag-results-card');
+    var resultsList = document.getElementById('rag-results-list');
+    var resultsMeta = document.getElementById('rag-results-meta');
+    
+    var question = (queryInput.value || '').trim();
+    if (!question) {
+      alert('Escribe una pregunta');
+      return;
+    }
+    
+    resultsCard.style.display = 'block';
+    resultsList.innerHTML = '<div style="color:var(--text-secondary);padding:8px">Buscando...</div>';
+    resultsMeta.textContent = '';
+    
+    fetch(API + '/api/rag/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: question, use_ontology: useOntology, top_k: topK })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok') {
+        var results = data.results || [];
+        
+        // Mostrar metadata
+        var meta = results.length + ' resultados';
+        if (data.ontology_guided && data.detected_domains && data.detected_domains.length > 0) {
+          meta += ' | Dominios: ' + data.detected_domains.join(', ');
+        }
+        resultsMeta.textContent = meta;
+        
+        if (results.length === 0) {
+          resultsList.innerHTML = '<div style="color:var(--text-secondary);padding:8px">Sin resultados</div>';
+          return;
+        }
+        
+        var html = results.map(function(r, i) {
+          var score = (r.score * 100).toFixed(1) + '%';
+          return '<div style="padding:8px;background:var(--bg-primary);border-radius:4px;border:1px solid var(--border)">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
+              '<span style="font-size:10px;font-weight:500">' + (r.filename || 'Documento') + '</span>' +
+              '<span style="font-size:9px;color:var(--accent)">' + score + '</span>' +
+            '</div>' +
+            '<div style="font-size:11px;color:var(--text-primary);line-height:1.4">' +
+              r.content.substring(0, 300) + (r.content.length > 300 ? '...' : '') +
+            '</div>' +
+            '<div style="font-size:9px;color:var(--text-secondary);margin-top:4px">' +
+              'Dominio: ' + r.domain + ' | Chunk #' + r.chunk_index +
+            '</div>' +
+          '</div>';
+        }).join('');
+        
+        resultsList.innerHTML = html;
+      } else {
+        resultsList.innerHTML = '<div style="color:var(--error);padding:8px">' + 
+          (data.message || data.error || 'Error en busqueda') + '</div>';
+      }
+    })
+    .catch(function(e) {
+      resultsList.innerHTML = '<div style="color:var(--error);padding:8px">Error: ' + e.message + '</div>';
+    });
+  }
+
+  // ── Event listeners ──────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    // Boton actualizar stats
+    var refreshBtn = document.getElementById('rag-refresh-btn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', function() {
+        ragLoadStats();
+        ragLoadDocuments();
+      });
+    }
+    
+    // Boton subir archivo
+    var uploadBtn = document.getElementById('rag-upload-btn');
+    if (uploadBtn) {
+      uploadBtn.addEventListener('click', ragUploadFile);
+    }
+    
+    // Boton subir texto
+    var uploadTextBtn = document.getElementById('rag-upload-text-btn');
+    if (uploadTextBtn) {
+      uploadTextBtn.addEventListener('click', ragUploadText);
+    }
+    
+    // Boton buscar
+    var searchBtn = document.getElementById('rag-search-btn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', ragSearch);
+    }
+    
+    // Enter en textarea de busqueda
+    var queryInput = document.getElementById('rag-query-input');
+    if (queryInput) {
+      queryInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          ragSearch();
+        }
+      });
+    }
+    
+    // Cargar datos iniciales cuando se muestra el tab RAG
+    var ragTab = document.querySelector('[data-tab="rag"]');
+    if (ragTab) {
+      ragTab.addEventListener('click', function() {
+        ragLoadStats();
+        ragLoadDocuments();
       });
     }
   });
