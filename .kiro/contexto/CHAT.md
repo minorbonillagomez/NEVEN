@@ -44,11 +44,8 @@ fileMatchPattern: "**/ontologia/**/*.yaml"
 | `5116fd9` | docs(chat): actualizar bitácora sesión 2026-08-20 |
 | `c609105` | docs(chat): agregar hashes de commits realizados |
 | `e4130f7` | feat(rag): completar implementación multi-idioma (http_server, index_books, taskpane) |
-
-### Archivos pendientes (no parte de RAG)
-- `neven-docs.html` — documentación generada
-- `aliases.json` — archivo nuevo sin trackear
-- `docs/` — directorio nuevo sin trackear
+| `80de2be` | docs(chat): actualizar con commits finales de sesión |
+| `d097ac0` | feat(aliases): agregar mapeo de aliases a funciones XLL |
 
 ### Pendientes próxima sesión
 
@@ -56,7 +53,6 @@ fileMatchPattern: "**/ontologia/**/*.yaml"
 |-----------|-------|
 | **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
 | **BAJA** | Expandir diccionario de traducción multi-idioma con más términos |
-| **BAJA** | Revisar archivos pendientes (aliases.json, docs/) |
 
 ---
 
