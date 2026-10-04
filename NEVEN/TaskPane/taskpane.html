@@ -44,6 +44,7 @@
   <!-- KaTeX para renderizado de formulas matematicas en el Tab IA -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <!-- Mermaid para diagramas de flujo (lazy load) -->
   <script>
     // Mermaid se carga bajo demanda cuando hay un diagrama que renderizar
@@ -5342,33 +5343,49 @@ function _aiAddMessage(role, content, ragSources) {
 }
 
 /**
- * Limpia artefactos de extracción de PDF (símbolos matemáticos corruptos)
+ * Limpia artefactos de extracción de PDF y convierte patrones matemáticos a LaTeX
  * @param {string} text - Texto con posibles artefactos
- * @returns {string} Texto limpio
+ * @returns {string} Texto limpio con fórmulas en notación LaTeX
  */
 function _cleanPdfArtifacts(text) {
   if (!text) return text;
-  return text
-    // Símbolos matemáticos corruptos comunes
-    .replace(/Eðy/g, 'E[y')
-    .replace(/ðy/g, '[y')
-    .replace(/ðx/g, '[x')
+  var cleaned = text
+    // Patrones matemáticos comunes de PDFs LaTeX corruptos
+    // E[y|x] aparece como Eðy j xÞ
+    .replace(/Eðy\s*j\s*x([\w,]*?)Þ/g, '$E[y|x$1]$')
+    .replace(/Eðy\s*j\s*x/g, '$E[y|x')
+    .replace(/Eð([a-z])\s*j\s*([a-z,\s]+?)Þ/g, '$E[$1|$2]$')
+    
+    // Símbolos griegos corruptos
+    .replace(/ð/g, '[')
     .replace(/Þ/g, ']')
     .replace(/¼/g, '=')
-    .replace(/ð/g, '[')
     .replace(/þ/g, ']')
+    .replace(/b\s*¼/g, '$\\beta =$')
+    .replace(/s\s*¼/g, '$\\sigma =$')
+    
+    // Fracciones y exponentes
+    .replace(/(\d+)\/(\d+)/g, '$\\frac{$1}{$2}$')
+    .replace(/\^(\d+)/g, '$^{$1}$')
+    .replace(/x_(\d+)/g, '$x_{$1}$')
+    .replace(/y_(\d+)/g, '$y_{$1}$')
+    
     // Ligaduras tipográficas
     .replace(/ﬀ/g, 'ff')
     .replace(/ﬁ/g, 'fi')
     .replace(/ﬂ/g, 'fl')
     .replace(/ﬃ/g, 'ffi')
     .replace(/ﬄ/g, 'ffl')
+    
     // Guiones de separación de palabras
     .replace(/- \n/g, '')
     .replace(/-\n/g, '')
+    
     // Espacios múltiples
     .replace(/\s{2,}/g, ' ')
     .trim();
+  
+  return cleaned;
 }
 
 /**
@@ -5430,14 +5447,20 @@ function _showRagSourcesPopup(sources) {
       '<span><b>Score:</b> ' + (src.score ? src.score.toFixed(3) : 'N/A') + '</span>'
     ].join('');
 
-    // Content text
+    // Content text - usar innerHTML para permitir renderizado de KaTeX
     var text = document.createElement('div');
     text.style.cssText = [
       'font-size:12px;line-height:1.5;color:var(--text-primary);',
       'max-height:150px;overflow-y:auto;white-space:pre-wrap;',
       'background:var(--bg-tertiary);padding:8px;border-radius:4px;'
     ].join('');
-    text.textContent = _cleanPdfArtifacts(src.content) || '[Sin contenido]';
+    var cleanedContent = _cleanPdfArtifacts(src.content) || '[Sin contenido]';
+    // Escapar HTML pero preservar $ para KaTeX
+    text.innerHTML = cleanedContent
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
 
     card.appendChild(meta);
     card.appendChild(text);
@@ -5460,6 +5483,24 @@ function _showRagSourcesPopup(sources) {
   popup.appendChild(footer);
   overlay.appendChild(popup);
   document.body.appendChild(overlay);
+
+  // Renderizar fórmulas matemáticas con KaTeX
+  if (typeof renderMathInElement === 'function') {
+    try {
+      renderMathInElement(content, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\[', right: '\\]', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ],
+        throwOnError: false,
+        errorColor: '#f88'
+      });
+    } catch (e) {
+      console.warn('[RAG Popup] KaTeX render error:', e);
+    }
+  }
 }
 
 function _aiClear() {
