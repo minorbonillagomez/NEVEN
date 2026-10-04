@@ -34,18 +34,21 @@ inclusion: fileMatch
 fileMatchPattern: "**/ontologia/**/*.yaml"
 ```
 
-### Commits pendientes
-No se realizaron commits en esta sesión. Archivos pendientes:
-- `rag_engine.py` — normalización de dominios
-- 4 ontologías YAML corregidas
-- 2 steering files nuevos/modificados
+### Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `9f46695` | fix(ontology): corregir errores de sintaxis YAML en ontologías |
+| `f927089` | feat(rag): normalización de dominios para búsqueda multi-idioma |
+| `5ad20ed` | docs(steering): agregar reglas para ontologías YAML |
+| `5116fd9` | docs(chat): actualizar bitácora sesión 2026-08-20 |
 
 ### Pendientes próxima sesión
 
 | Prioridad | Tarea |
 |-----------|-------|
-| **ALTA** | Commit + push de todos los cambios de RAG y ontologías |
 | **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **MEDIA** | Commitear archivos pendientes: taskpane.html, neven_http_server.py, index_books.py |
 | **BAJA** | Expandir diccionario de traducción multi-idioma con más términos |
 
 ---
