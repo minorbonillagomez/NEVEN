@@ -18,6 +18,7 @@ import os
 import re
 import json
 import hashlib
+import time
 from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 
@@ -127,6 +128,9 @@ class RAGEngine:
     
     Usa DuckDB con extension VSS para almacenamiento y busqueda vectorial.
     La ontologia actua como metaheuristica para filtrar dominios.
+    
+    IMPORTANTE: La ontologia se recarga automaticamente cuando se detectan
+    cambios en el directorio de ontologia (nuevos archivos, modificaciones).
     """
     
     def __init__(self, db_path: str = ":memory:", ontology_path: Optional[str] = None):
@@ -147,10 +151,79 @@ class RAGEngine:
         # Crear tablas
         self._init_tables()
         
-        # Cargar ontologia si se proporciona
+        # Inicializar ontologia
         self.ontology = {}
+        self.ontology_entities = []
+        self.ontology_path = ontology_path
+        self._ontology_file_hashes = {}  # Para detectar cambios
+        self._last_ontology_scan = 0
+        self._ontology_scan_interval = 60  # Segundos entre escaneos
+        
         if ontology_path:
             self._load_ontology(ontology_path)
+    
+    def _get_file_hash(self, filepath: str) -> str:
+        """Obtiene hash MD5 de un archivo para detectar cambios."""
+        try:
+            with open(filepath, 'rb') as f:
+                return hashlib.md5(f.read()).hexdigest()
+        except:
+            return ""
+    
+    def _scan_ontology_files(self, ontology_path: str) -> Dict[str, str]:
+        """Escanea archivos de ontologia y retorna diccionario path -> hash."""
+        file_hashes = {}
+        path = Path(ontology_path)
+        if not path.exists():
+            return file_hashes
+        
+        for pattern in ["**/*.yaml", "**/*.yml", "**/*.jsonl"]:
+            for filepath in path.rglob(pattern.split("/")[-1]):
+                file_hashes[str(filepath)] = self._get_file_hash(str(filepath))
+        
+        return file_hashes
+    
+    def _check_ontology_updates(self):
+        """Verifica si hay cambios en la ontologia y recarga si es necesario."""
+        if not self.ontology_path:
+            return
+        
+        current_time = time.time()
+        if current_time - self._last_ontology_scan < self._ontology_scan_interval:
+            return
+        
+        self._last_ontology_scan = current_time
+        current_hashes = self._scan_ontology_files(self.ontology_path)
+        
+        # Detectar cambios
+        if current_hashes != self._ontology_file_hashes:
+            new_files = set(current_hashes.keys()) - set(self._ontology_file_hashes.keys())
+            modified_files = {
+                f for f in current_hashes.keys() & self._ontology_file_hashes.keys()
+                if current_hashes[f] != self._ontology_file_hashes[f]
+            }
+            removed_files = set(self._ontology_file_hashes.keys()) - set(current_hashes.keys())
+            
+            if new_files or modified_files or removed_files:
+                print(f"[RAG] Cambios detectados en ontologia:")
+                if new_files:
+                    print(f"  + Nuevos: {[Path(f).name for f in new_files]}")
+                if modified_files:
+                    print(f"  ~ Modificados: {[Path(f).name for f in modified_files]}")
+                if removed_files:
+                    print(f"  - Eliminados: {[Path(f).name for f in removed_files]}")
+                
+                # Recargar ontologia
+                self._load_ontology(self.ontology_path)
+    
+    def get_available_domains(self) -> List[str]:
+        """Retorna lista de dominios disponibles en la ontologia."""
+        self._check_ontology_updates()
+        domains = set()
+        for entity in self.ontology_entities:
+            if entity.get("domain"):
+                domains.add(entity["domain"])
+        return sorted(list(domains))
     
     def _init_tables(self):
         """Crea las tablas necesarias."""
@@ -269,6 +342,9 @@ class RAGEngine:
                 print(f"[RAG] Error cargando {jsonl_file}: {e}")
         
         print(f"[RAG] Ontologia cargada: {len(self.ontology)} schemas, {len(self.ontology_entities)} entidades")
+        
+        # Actualizar hashes de archivos para detectar cambios futuros
+        self._ontology_file_hashes = self._scan_ontology_files(ontology_path)
     
     def add_document(self, file_path: str, domain: str = "general", 
                      metadata: Optional[Dict] = None) -> str:
