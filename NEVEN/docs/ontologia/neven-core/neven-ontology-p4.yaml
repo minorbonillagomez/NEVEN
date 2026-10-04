@@ -188,7 +188,7 @@ componentes:
           Build/Dist/ es el directorio de distribucion generado por el build.
           NUNCA commitear binarios de Build/Dist/ al repo (.gitignore ya lo excluye).
           Solo se suben releases etiquetados via GitHub Releases.
-        como_verificar: "cat .gitignore | grep 'Build/\|Dist/'"
+        como_verificar: 'cat .gitignore | grep "Build/\|Dist/"'
 
       - id: INV-BLD-04
         descripcion: >
@@ -689,7 +689,7 @@ flujos_deploy:
       - "Build/Dist/ generado por build.ps1"
     pasos:
       1: "cd Install"
-      2: ".\Install-NEVEN.ps1"
+      2: '.\Install-NEVEN.ps1'
       3: "Seguir las instrucciones interactivas"
       4: "Configurar credenciales en C:/NEVEN/neven-config.json (AI.apiKey, AI.endpoint)"
     validacion: >

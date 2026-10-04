@@ -3970,15 +3970,6 @@ funciones_estadisticas:
     complejidad: avanzada
     version: "2010"
 
-        tipo: integer
-        requerido: true
-        descripcion: "Grados de libertad"
-    retorna: numeric
-    categoria: estadisticas
-    relacionadas: [DISTR.T.N]
-    complejidad: avanzada
-    version: "2010"
-
   - id: INV.T.2C
     nombre: INV.T.2C
     nombre_en: T.INV.2T

@@ -216,7 +216,7 @@ componentes:
         "/api/functions":         "Lista funciones registradas por lenguaje"
         "/api/bridge/pull":       "Lee bridge/{key}.json (datos de Excel via NEVEN.IA.Contexto)"
         "/api/ai/config":         "Lee seccion AI de neven-config.json"
-        "/api/ai/context/pending":"Consume (y borra) contexto Excel pendiente — UNA SOLA LECTURA"
+        "/api/ai/context/pending": "Consume (y borra) contexto Excel pendiente — UNA SOLA LECTURA"
         "/api/packages/status":   "Estado paquetes R/Python/Julia"
 
       POST:

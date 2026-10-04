@@ -240,13 +240,16 @@ componentes:
 
     protocolo_ipc:
       tipo: "Named Pipe OVERLAPPED (async)"
-      nombre_pipe: "\\\\.\pipe\\RJ2XCL2-PIPE-R-{PID}"
+      nombre_pipe: '\\\\.\\pipe\\RJ2XCL2-PIPE-R-{PID}'
       framing: "4 bytes little-endian length + Protobuf bytes"
       mensaje: "variable.proto: CallResponse con operation, wait, id, result"
       pipes:
-        - nombre: "primario"   descripcion: "canal principal de llamadas"
-        - nombre: "callback"   descripcion: "XLL->ControlR para graphics/COM callbacks"
-        - nombre: "management" descripcion: "recibe 'break' para RSetUserBreak()"
+        - nombre: "primario"
+          descripcion: "canal principal de llamadas"
+        - nombre: "callback"
+          descripcion: "XLL->ControlR para graphics/COM callbacks"
+        - nombre: "management"
+          descripcion: "recibe 'break' para RSetUserBreak()"
 
     invariantes:
       - id: INV-CR-01
