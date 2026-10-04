@@ -2,9 +2,857 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-09-30 20:09
+> **Última actualización:** 2026-08-20 15:15
 
 ---
+
+### Sesión 2026-08-20 (~15:10) — Steering para ontologías YAML
+
+## ✅ Agregadas instrucciones para prevenir errores YAML
+
+### Motivación
+Los errores de sintaxis YAML en ontologías causaban que el RAG no cargara entidades, resultando en 0 resultados. Estos errores son difíciles de detectar porque el servidor no falla, simplemente ignora los archivos con errores.
+
+### Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `.kiro/steering/ontology-yaml-rules.md` | **NUEVO** — Reglas detalladas para YAML de ontologías |
+| `.kiro/steering/neven-pre-cambios.md` | Agregada sección "Cambios en ontologías YAML" + referencia |
+
+### Reglas clave documentadas
+1. Usar comillas simples para paths Windows y comandos shell (evita escapes inválidos)
+2. Siempre espacio después de `:` en mappings
+3. Items de lista en líneas separadas con estructura anidada
+4. Dominios en español (econometria, estadistica)
+5. Validar con `yaml.safe_load()` ANTES de guardar
+
+### Activación automática
+El steering `ontology-yaml-rules.md` se activa automáticamente cuando se edita cualquier archivo en `**/ontologia/**/*.yaml` gracias a:
+```yaml
+inclusion: fileMatch
+fileMatchPattern: "**/ontologia/**/*.yaml"
+```
+
+### Commits pendientes
+No se realizaron commits en esta sesión. Archivos pendientes:
+- `rag_engine.py` — normalización de dominios
+- 4 ontologías YAML corregidas
+- 2 steering files nuevos/modificados
+
+### Pendientes próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit + push de todos los cambios de RAG y ontologías |
+| **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **BAJA** | Expandir diccionario de traducción multi-idioma con más términos |
+
+---
+
+### Sesión 2026-08-20 (~14:30) — FIX: RAG multi-idioma + Ontologías YAML
+
+## ✅ RESUELTO: RAG retornaba 0 chunks con queries traducidas
+
+### Problema
+El RAG funcionaba para queries en español (`"que es regresion lineal"`) pero fallaba cuando se expandía con traducciones (`"principal component analysis"`) porque:
+1. La ontología detectaba dominio `"econometrics"` (inglés)
+2. La base de datos tiene documentos indexados con dominio `"econometria"` (español)
+3. La búsqueda filtrada no encontraba nada
+
+### Causa raíz #1: Nombres de dominio no normalizados
+`query_with_ontology()` detectaba dominios desde entidades de ontología, pero los nombres no coincidían con los usados en DuckDB.
+
+### Solución #1: Diccionario de aliases de dominio
+Agregado en `rag_engine.py`:
+
+```python
+domain_aliases = {
+    "econometrics": "econometria",
+    "economics": "econometria", 
+    "statistics": "estadistica",
+    # ...
+}
+# Normalizar antes de buscar
+normalized_domains = set()
+for domain in detected_domains:
+    normalized = domain_aliases.get(domain.lower(), domain)
+    normalized_domains.add(normalized)
+```
+
+### Causa raíz #2: Errores de sintaxis YAML en ontologías
+Los archivos YAML tenían errores que impedían cargar entidades:
+- Antes: `2 schemas, 199 entidades`
+- Después: `6 schemas, 213 entidades`
+
+### Errores corregidos en YAML
+
+| Archivo | Línea | Error | Fix |
+|---------|-------|-------|-----|
+| `neven-ontology-p1.yaml` | 243 | `\p` escape inválido en `"\\\\.\pipe\\"` | Usar comillas simples |
+| `neven-ontology-p1.yaml` | 247-249 | Items de lista mal formateados | YAML anidado correcto |
+| `neven-ontology-p2.yaml` | 219 | Falta espacio después de `:` | `"/api/...": "..."` |
+| `neven-ontology-p4.yaml` | 191 | `\|` escape inválido | Comillas simples |
+| `neven-ontology-p4.yaml` | 692 | `\I` escape en `".\Install..."` | Comillas simples |
+| `excel-functions-ontology.yaml` | 3973 | Bloque huérfano duplicado | Eliminado |
+
+### Archivos modificados
+
+| Producción | Repositorio |
+|------------|-------------|
+| `C:\NEVEN\startup\rag_engine.py` | `NEVEN\TaskPane\rag_engine.py` |
+| `C:\NEVEN\docs\ontologia\neven-core\neven-ontology-p1.yaml` | `NEVEN\docs\ontologia\neven-core\neven-ontology-p1.yaml` |
+| `C:\NEVEN\docs\ontologia\neven-core\neven-ontology-p2.yaml` | `NEVEN\docs\ontologia\neven-core\neven-ontology-p2.yaml` |
+| `C:\NEVEN\docs\ontologia\neven-core\neven-ontology-p4.yaml` | `NEVEN\docs\ontologia\neven-core\neven-ontology-p4.yaml` |
+| `C:\NEVEN\docs\ontologia\excel-functions\excel-functions-ontology.yaml` | `NEVEN\docs\ontologia\excel-functions\excel-functions-ontology.yaml` |
+
+### Validación
+```
+Query: 'principal component analysis' -> 3 results, domains: [econometria]
+Query: 'Que es ACP?' -> 3 results, domains: [econometria]  
+Query: 'que es regresion lineal' -> 3 results, domains: [econometria, excel]
+```
+
+### Pendiente
+- [ ] Probar desde TaskPane que las fuentes aparezcan en el popup
+- [ ] Agregar más keywords de PCA/ACP al diccionario de traducción
+- [ ] Agregar slider de minScore en Settings de TaskPane
+
+---
+
+### Sesión 2026-08-20 (~13:25) — FIX: Fórmulas LaTeX sin delimitadores en chat
+
+## 🔧 EN PROGRESO: Fórmulas del LLM no se renderizan
+
+### Problema
+El LLM genera fórmulas LaTeX **sin delimitadores** `$$...$$`:
+```
+y_i = \beta_0 + \beta_1 x_{i1} + \cdots + \beta_k x_{ik} + u_i
+```
+Estas aparecen como texto plano en lugar de fórmulas renderizadas.
+
+### Causa raíz
+`_markdownToHtml()` en datalab.js tiene heurísticas para detectar fórmulas sin delimitadores, pero no capturaba todos los casos. La línea tiene 5 comandos `\beta`/`\cdots` pero la detección fallaba.
+
+### Solución implementada
+Agregado **post-proceso KaTeX** en `_aiAddMessage()`:
+
+```javascript
+// Después de _markdownToHtml, buscar párrafos con comandos LaTeX
+if (typeof katex !== 'undefined') {
+  bubble.querySelectorAll('p, div').forEach(function(el) {
+    if (el.querySelector('.katex')) return; // ya procesado
+    var text = el.innerHTML;
+    // Si tiene 2+ comandos LaTeX + = o subíndices
+    if ((text.match(/\\[a-zA-Z]+/g) || []).length >= 2) {
+      var hasEquals = text.indexOf('=') !== -1;
+      var hasSubscript = text.indexOf('_') !== -1;
+      if (hasEquals || hasSubscript) {
+        el.innerHTML = katex.renderToString(el.textContent, {
+          displayMode: true, throwOnError: false
+        });
+      }
+    }
+  });
+}
+```
+
+### Archivos modificados (NO commiteados)
+
+| Archivo | Cambio |
+|---------|--------|
+| `taskpane.html` | Post-proceso KaTeX en _aiAddMessage |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Verificar que fórmulas se renderizan correctamente |
+| ALTA | git push origin master + commit de cambios pendientes |
+| MEDIA | Considerar mover esta lógica a datalab.js para DRY |
+
+---
+
+### Sesión 2026-08-20 (~13:10) — FIX: Más patrones de limpieza PDF
+
+## 🔧 EN PROGRESO: Caracteres basura adicionales en chunks
+
+### Problema
+El popup de fuentes RAG mostraba nuevos caracteres basura:
+- `Su%ocient` (debería ser "Sufficient")
+- `si½yi` (debería ser "si 1/2 yi")
+- `m[xi; b]П2` (debería ser "m[xi; b]||^2")
+
+### Causa raíz
+Las fuentes Type1 de PDFs académicos tienen más ligaduras y símbolos que los detectados inicialmente:
+- `%o`, `%u` → ligadura `ffi` corrupta
+- `½` → fracción 1/2
+- `П` → símbolo de norma ||
+
+### Patrones agregados a `_cleanPdfArtifacts()`
+
+```javascript
+.replace(/½/g, '1/2')
+.replace(/П/g, '||')
+.replace(/П2/g, '||^2')
+.replace(/%o/g, 'ffi')
+.replace(/%u/g, 'ffi')
+.replace(/%ce/g, 'ffi')
+.replace(/%/g, 'ff')
+.replace(/—/g, '-')   // em dash
+.replace(/–/g, '-')   // en dash
+.replace(/- (?=[a-z])/g, '')  // palabra cortada
+```
+
+### Archivos modificados (NO commiteados)
+
+| Archivo | Cambio |
+|---------|--------|
+| `taskpane.html` | Expandido _cleanPdfArtifacts con ~15 patrones nuevos |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | git push origin master (commits locales pendientes) |
+| ALTA | Verificar que los nuevos patrones limpian correctamente |
+| MEDIA | Commit de los cambios de limpieza |
+| BAJA | Considerar limpieza en indexación vs en display |
+
+---
+
+### Sesión 2026-08-20 (~12:30) — COMPLETADO: Número de página en fuentes RAG
+
+## ✅ COMPLETADO: Citas con página del libro
+
+### Contexto
+El usuario solicitó que las fuentes RAG muestren el número de página del libro para que pueda dirigirse a la referencia exacta.
+
+### Implementación
+
+**1. Extracción por página (`rag_engine.py`):**
+```python
+def extract_text_with_pages(file_path) -> List[Dict]:
+    # Retorna [{page: 1, text: "..."}, {page: 2, text: "..."}, ...]
+
+def chunk_text_with_pages(pages, chunk_size, overlap) -> List[Dict]:
+    # Retorna [{page: N, page_end: N, text: "..."}]
+
+def add_pdf_with_pages(file_path, doc_name, domain):
+    # Indexa PDF preservando metadata de página
+```
+
+**2. Schema de base de datos:**
+```sql
+ALTER TABLE chunks ADD COLUMN page INTEGER;
+ALTER TABLE chunks ADD COLUMN page_end INTEGER;
+```
+
+**3. Query actualizada:**
+- Devuelve `page` y `page_end` en resultados
+- Servidor incluye en `rag_sources`
+
+**4. UI del popup:**
+- Muestra "Página: p. 14" para una página
+- Muestra "Página: pp. 14-15" si el chunk cruza páginas
+
+### Re-indexación completada
+
+| Libro | Chunks | Páginas |
+|-------|--------|---------|
+| Wooldridge - Panel Data | 804 | 740 |
+| Time Series in R | 602 | (no en log) |
+| Causal Inference in R | 255 | 235 |
+| 100 Statistical Tests | 331 | 331 |
+| Spatial Data in R | 130 | 121 |
+| R for Social Sciences | 294 | 283 |
+| CFI Excel eBook | 206 | 206 |
+| Excel 365 Bible | 1048 | 1036 |
+| Excel Basics | 20 | 20 |
+| **TOTAL** | **3,690** | - |
+
+Índice: **12.26 MB**
+
+### Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `d95b3f0` | feat(rag): numero de pagina en fuentes RAG |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/rag_engine.py` | +extract_text_with_pages, +chunk_text_with_pages, +add_pdf_with_pages, +Any import |
+| `NEVEN/TaskPane/taskpane.html` | Popup muestra página, KaTeX conservador |
+| `NEVEN/ControlPython/startup/neven_http_server.py` | +page/page_end en rag_sources |
+| `NEVEN/Install/data/rag_index.duckdb` | Re-indexado con páginas |
+| `NEVEN/Install/scripts/index_books.py` | Usa add_pdf_with_pages |
+| `C:\NEVEN\*` | Todo sincronizado |
+
+### Intentos fallidos
+
+1. **NameError: 'Any' is not defined** — Faltaba importar `Any` de typing
+2. **Output de indexación cortado** — El proceso tardaba mucho; solución: ejecutar en background con log a archivo
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | git push origin master (commit local pendiente) |
+| MEDIA | Probar popup con página en Excel |
+| BAJA | Arreglar YAML de ontologías (errores preexistentes) |
+
+---
+
+### Sesión 2026-08-20 (~11:50) — FIX: KaTeX capturando texto como fórmula
+
+## 🔧 EN PROGRESO: Regex de KaTeX demasiado agresivo
+
+### Problema
+El regex `$...$` para KaTeX capturaba texto normal como si fuera fórmula matemática, causando que párrafos enteros aparecieran en itálica.
+
+**Causa raíz:** `_cleanPdfArtifacts` generaba `$` sin cerrar correctamente, y el regex de KaTeX era muy permisivo.
+
+### Solución aplicada
+
+**1. `_cleanPdfArtifacts` conservador:**
+- Ya NO genera `$...$` automáticamente
+- Solo limpia caracteres corruptos a texto legible
+- `Eðy j xÞ` → `E[y|x]` (sin envolver en $)
+
+**2. KaTeX regex estricto:**
+```javascript
+// Solo captura fórmulas si:
+// - Máximo 80 caracteres
+// - Contiene letras o backslash
+// - NO es solo texto/prosa normal
+// - NO cruza saltos de línea
+html.replace(/\$([^$\n]{1,80})\$/g, function(match, tex) {
+  if (!/[a-zA-Z\\]/.test(tex)) return match;
+  if (/^[a-zA-Z\s,\.]+$/.test(tex)) return match;
+  // ... render
+});
+```
+
+### Archivos modificados (NO commiteados)
+
+| Archivo | Cambio |
+|---------|--------|
+| `taskpane.html` | _cleanPdfArtifacts sin $, KaTeX regex estricto |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado |
+
+### Lección aprendida
+
+**No generar delimitadores LaTeX automáticamente** desde texto corrupto de PDF. Es mejor:
+1. Limpiar a texto legible
+2. Solo renderizar fórmulas que YA tienen delimitadores explícitos del documento original
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Verificar que el texto se muestra limpio sin itálica invasiva |
+| ALTA | Si funciona, commit de todos los cambios de KaTeX |
+| BAJA | Considerar desactivar KaTeX si no hay fórmulas reales en los chunks |
+
+---
+
+### Sesión 2026-08-20 (~11:30) — DEBUG: KaTeX rendering manual
+
+## 🔧 EN PROGRESO: Cambio a rendering manual con katex.renderToString()
+
+### Problema persistente
+`renderMathInElement()` (auto-render) no procesa los delimitadores `$...$` en el popup.
+
+### Cambio de approach
+Reemplazado `renderMathInElement()` por rendering manual con regex:
+
+```javascript
+function renderKatexInElement(el) {
+  var html = el.innerHTML;
+  // Display mode: $$...$$
+  html = html.replace(/\$\$([^$]+)\$\$/g, function(match, tex) {
+    return katex.renderToString(tex.trim(), { displayMode: true, throwOnError: false });
+  });
+  // Inline mode: $...$
+  html = html.replace(/\$([^$]+)\$/g, function(match, tex) {
+    return katex.renderToString(tex.trim(), { displayMode: false, throwOnError: false });
+  });
+  el.innerHTML = html;
+}
+```
+
+### Discusión: Scores RAG variables
+
+**Pregunta del usuario:** ¿El score cambia por la temperatura 0.3?
+
+**Respuesta:** No. El score es similitud coseno entre embeddings, calculado por el modelo de embeddings (fastembed), no por el LLM. La temperatura solo afecta la generación de texto del asistente.
+
+La variación puede deberse a:
+1. No-determinismo menor en el modelo de embeddings
+2. Orden de resultados con scores muy similares
+
+### Archivos modificados (NO commiteados)
+
+| Archivo | Cambio |
+|---------|--------|
+| `taskpane.html` | renderKatexInElement() manual con regex |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Verificar si katex.renderToString() funciona en consola |
+| ALTA | Si funciona, commit de los cambios |
+| MEDIA | Si no funciona, verificar que katex.min.js cargue correctamente |
+
+---
+
+### Sesión 2026-08-20 (~11:15) — DEBUG: KaTeX no renderiza en popup RAG
+
+## 🔧 EN PROGRESO: Diagnóstico de renderizado KaTeX
+
+### Problema
+Los `$E[y|x]$` aparecen como texto plano en el popup de fuentes RAG, no se renderizan como fórmulas matemáticas.
+
+### Cambios aplicados (pendientes de verificar)
+
+1. **Retry con timeout** — `renderMathInElement` ahora reintenta cada 200ms si el script no cargó
+2. **Logs de consola** — Agregado `console.log('[RAG Popup] KaTeX renderizado OK')` para debug
+3. **Quitado escapado de `&`** — `&amp;` podría interferir con KaTeX
+4. **Quitado `white-space: pre-wrap`** — puede afectar parsing de delimitadores
+5. **Usando `\mid` en lugar de `|`** — el pipe crudo puede confundir a KaTeX
+
+### Archivos modificados (NO commiteados)
+
+| Archivo | Cambio |
+|---------|--------|
+| `taskpane.html` | tryRenderKatex() con retry, logs, ajustes CSS |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado |
+
+### Próximo paso de diagnóstico
+
+1. Recargar TaskPane
+2. Abrir consola F12
+3. Abrir popup de fuentes
+4. Verificar si aparece:
+   - `[RAG Popup] KaTeX renderizado OK` → el problema es el contenido
+   - `[RAG Popup] renderMathInElement no disponible` → el script no cargó
+   - Error de KaTeX → fórmula mal formada
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Verificar logs de consola y diagnosticar por qué KaTeX no renderiza |
+| MEDIA | Si es problema de script, verificar que auto-render.min.js cargue |
+| MEDIA | Si es problema de contenido, ajustar regex de _cleanPdfArtifacts |
+
+---
+
+### Sesión 2026-08-20 (~10:30) — COMPLETADO: KaTeX en popup RAG + limpieza PDF
+
+## ✅ COMPLETADO: Renderizado de fórmulas matemáticas en fuentes RAG
+
+### Problema original
+El popup de fuentes RAG mostraba caracteres basura (`Eðy`, `¼`, `ð`, `Þ`) porque los PDFs académicos (LaTeX) usan fuentes Type 1 con encoding no-estándar que PyMuPDF extrae incorrectamente.
+
+### Solución implementada
+
+**1. Limpieza de artefactos PDF (`_cleanPdfArtifacts`):**
+- Convierte patrones corruptos a notación LaTeX válida
+- `Eðy j xÞ` → `$E[y|x]$`
+- Fracciones: `1/2` → `$\frac{1}{2}$`
+- Exponentes/subíndices: `x^2`, `x_1` → LaTeX
+- Ligaduras tipográficas: `ﬀ`, `ﬁ`, `ﬂ` → ASCII
+
+**2. KaTeX auto-render:**
+- Agregado `auto-render.min.js` al taskpane.html
+- Aplica `renderMathInElement()` al popup después de mostrarlo
+- Delimitadores: `$...$`, `$$...$$`, `\(...\)`, `\[...\]`
+
+### Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `0b78eb5` | feat(rag): popup de fuentes con limpieza de artefactos PDF |
+| `d39ce25` | feat(rag): KaTeX rendering en popup de fuentes RAG |
+
+### Archivos modificados
+
+| Archivo | Cambios |
+|---------|---------|
+| `NEVEN/TaskPane/taskpane.html` | +auto-render.min.js, +_cleanPdfArtifacts mejorado, +renderMathInElement |
+| `NEVEN/ControlPython/startup/neven_http_server.py` | +rag_sources en respuesta JSON |
+| `NEVEN/Install/data/rag_index.duckdb` | Índice pre-poblado (9 libros, 2310 chunks) |
+| `NEVEN/Install/scripts/index_books.py` | Script de indexación |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado con repo |
+
+### Decisiones de diseño
+
+1. **Limpieza en frontend vs re-indexación:** Elegimos limpiar en el momento de mostrar porque:
+   - Es instantáneo (regex)
+   - No requiere re-procesar 9 libros (~2310 chunks)
+   - Permite ajustar patrones sin re-indexar
+
+2. **KaTeX sobre texto plano:** Las fórmulas matemáticas son críticas en contenido econométrico; renderizarlas mejora significativamente la legibilidad.
+
+### Estado del sistema RAG
+
+```
+Flujo: Usuario → Pregunta → RAG (ontología) → top 3 chunks → LLM → Respuesta
+                                                         ↓
+                                              Botón "Ver fuentes (3)"
+                                                         ↓
+                                              Popup con KaTeX rendering
+```
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| MEDIA | Probar en Excel con pregunta econométrica real |
+| MEDIA | Arreglar sintaxis YAML de ontologías P1/P2/P4 |
+| BAJA | Considerar OCR para PDFs con muchas fórmulas |
+| BAJA | Agregar más patrones a _cleanPdfArtifacts si se encuentran |
+
+---
+
+### Sesión 2026-08-20 (~10:00) — FIX: Artefactos de extracción PDF en popup RAG
+
+## 🔧 EN PROGRESO: Limpieza de caracteres corruptos de fuentes LaTeX
+
+### Problema identificado
+El popup de fuentes RAG muestra caracteres basura como `Eðy`, `¼`, `ð`, `Þ` en los chunks del libro Wooldridge.
+
+### Causa raíz
+Los PDFs académicos (especialmente los generados desde LaTeX) usan fuentes Type 1/OpenType con encoding personalizado para símbolos matemáticos. PyMuPDF al extraer texto mapea esos glyphs a Unicode incorrecto porque no tiene el encoding original de la fuente.
+
+Ejemplo: `E[y|x]` se extrae como `Eðy j xÞ`
+
+### Solución implementada (parcial)
+Agregada función `_cleanPdfArtifacts()` en taskpane.html que reemplaza patrones comunes:
+- `Eðy` → `E[y`
+- `ð` → `[`, `Þ` → `]`
+- `¼` → `=`
+- Ligaduras tipográficas (ﬀ, ﬁ, ﬂ)
+
+### Archivos modificados (NO copiados a producción)
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\...\TaskPane\taskpane.html` | +_cleanPdfArtifacts(), aplicado a src.content |
+
+### Discusión sobre alternativas
+
+| Opción | Pros | Contras |
+|--------|------|---------|
+| Regex cleanup (actual) | Rápido, cubre 80% casos | Frágil, no cubre todo |
+| KaTeX en popup | Renderiza fórmulas bonito | Requiere detectar patrones LaTeX |
+| Re-indexar con OCR | Texto más limpio | Lento, ~9 libros a procesar |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Copiar taskpane.html a producción y probar |
+| ALTA | Commit de todos los cambios RAG |
+| MEDIA | Evaluar si KaTeX vale la pena para el popup |
+| BAJA | Considerar re-indexación con mejor extractor |
+
+---
+
+### Sesión 2026-08-20 (~09:00) — UI: Popup de fuentes RAG en chat IA
+
+## ✅ COMPLETADO: Botón "Ver fuentes" con popup de chunks RAG
+
+### Contexto
+El usuario solicitó que las respuestas del agente IA muestren de dónde obtienen la información del RAG. La solución implementada es un botón "Ver fuentes (N)" debajo de cada respuesta que tuvo contexto RAG, que abre un popup modal con los detalles.
+
+### Cambios implementados
+
+**1. Backend (`neven_http_server.py` ~línea 2079):**
+- Agregado `rag_sources` al JSON de respuesta:
+```python
+{
+    "status": "ok",
+    "reply": reply,
+    "rag_used": bool(rag_context),
+    "rag_domains": rag_domains,
+    "rag_sources": [
+        {"filename": "...", "domain": "...", "score": 0.85, "content": "chunk text..."}
+    ]
+}
+```
+
+**2. Frontend (`taskpane.html`):**
+- `_aiAddMessage()` ahora acepta tercer parámetro `ragSources`
+- Si hay fuentes, agrega botón "Ver fuentes (N)" debajo de la respuesta
+- Nueva función `_showRagSourcesPopup(sources)` muestra popup modal con:
+  - Header con título y botón cerrar
+  - Lista de cards, cada una con:
+    - Metadata: archivo, dominio, score
+    - Texto del chunk (max 500 chars, scrollable)
+  - Footer con botón "Cerrar"
+
+### Diseño del popup
+
+- Sin emojis (por solicitud del usuario)
+- Incluye el chunk de texto completo (no solo metadata)
+- Estilo consistente con el tema del TaskPane
+- Cierra al clickear fuera o en X/Cerrar
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `neven_http_server.py` | +rag_sources en respuesta JSON |
+| `taskpane.html` | +ragSources param, +botón Ver fuentes, +popup modal |
+| Producción | Sincronizado a C:\NEVEN\ |
+
+### Prueba verificada
+
+Log del servidor muestra:
+```
+[RAG] Contexto enriquecido: 3 chunks, dominios: ['econometria']
+```
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Commit de todos los cambios RAG |
+| MEDIA | Probar en Excel con pregunta de heterocedasticidad |
+| MEDIA | Arreglar sintaxis YAML de ontologías P1/P2/P4 (escape characters inválidos) |
+
+### Nota sobre errores YAML en ontologías
+
+Los archivos YAML de ontología tienen errores de sintaxis que impiden su carga:
+
+| Archivo | Línea | Error |
+|---------|-------|-------|
+| `neven-ontology-p1.yaml` | 243 | `unknown escape character 'p'` |
+| `neven-ontology-p2.yaml` | 219-220 | `could not find expected ':'` |
+| `neven-ontology-p4.yaml` | 191 | `unknown escape character '\|'` |
+| `excel-functions-ontology.yaml` | 3949-3973 | `expected <block end>` |
+
+**Causa probable:** Rutas de Windows con backslash en strings con comillas dobles (ej: `"C:\NEVEN\path"` debería ser `"C:\\NEVEN\\path"` o `'C:\NEVEN\path'`).
+
+**Impacto:** Bajo. El RAG funciona con 2 schemas y 199 entidades de los archivos que sí parsean, más el índice DuckDB con 9 libros/2310 chunks.
+
+---
+
+### Sesión 2026-08-19 (~23:00) — FIX: Auto-reload de ontología en RAG Engine
+
+## ✅ COMPLETADO: Import time + actualización de hashes
+
+### Problema resuelto
+El sistema de auto-reload de ontología en `rag_engine.py` no funcionaba porque:
+1. Faltaba `import time` para `_check_ontology_updates()`
+2. Los hashes de archivos no se guardaban después de cargar la ontología
+
+### Fixes aplicados
+
+1. **Agregado `import time`** al inicio del archivo
+2. **Actualizar hashes después de cargar** — agregado `self._ontology_file_hashes = self._scan_ontology_files(ontology_path)` al final de `_load_ontology()`
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\...\TaskPane\rag_engine.py` | +import time, +actualizar hashes |
+| `C:\NEVEN\TaskPane\rag_engine.py` | Sincronizado |
+| `C:\NEVEN\startup\rag_engine.py` | Sincronizado |
+
+### Verificación
+```
+Dominios: ['econometrics']
+Hashes guardados: 7
+Archivos monitoreados: ['schema.yaml', 'excel-functions-ontology.yaml', 
+  'neven-ontology-p1.yaml', 'neven-ontology-p2.yaml', 'neven-ontology-p3.yaml', 
+  'neven-ontology-p4.yaml', 'graph.jsonl']
+```
+
+### Commit
+`6657d17` — `fix(rag): add import time + update hashes after ontology load`
+
+### Nota sobre errores de YAML preexistentes
+Los archivos P1, P2, P4 de neven-ontology tienen errores de sintaxis YAML (escape characters inválidos). Esto es preexistente y no afecta el funcionamiento del RAG ya que el JSONL de econometrics se carga correctamente.
+
+### Prueba de auto-reload ✅
+
+Creamos ontología de prueba en `C:\NEVEN\docs\ontologia\test-domain\test-ontology.yaml`:
+
+```yaml
+domain: test
+categorias:
+  - id: cat_test
+    nombre: Categoría de Prueba
+funciones:
+  - nombre: PRUEBA_FUNC
+```
+
+**Resultado:**
+| Antes | Después |
+|-------|---------|
+| 7 archivos monitoreados | **8 archivos** |
+| 199 entidades | **201 entidades** |
+
+Las dos entidades nuevas fueron detectadas correctamente. El auto-reload funciona.
+
+### Nota: Servidor HTTP para Task Pane
+
+El Tab RAG en el Task Pane requiere el servidor HTTP corriendo:
+```powershell
+python C:\NEVEN\startup\neven_http_server.py
+```
+El servidor arranca en `http://127.0.0.1:5555`. Sin él, los botones del RAG no funcionan.
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| BAJA | Arreglar sintaxis YAML de neven-ontology-p1/p2/p4 |
+| ✅ | ~~Eliminar ontología de prueba~~ — eliminada |
+| BAJA | Extender parser para dominios custom (actualmente asigna "excel" a funciones/categorias) |
+
+### Discusión: Pre-indexar libros para instalación
+
+**Idea:** Incluir `rag_index.duckdb` pre-poblado con libros de econometría y Excel en la instalación, para que el usuario tenga RAG funcional desde el día 1.
+
+**PDFs encontrados en Downloads:**
+- `CFI-Excel-eBook.pdf` (6.3 MB) — Excel
+- `microsoft-excel-365-bible...pdf` (26.2 MB) — Excel  
+- `Excel tutorial - Excel basics.pdf` (1 MB) — Excel
+
+**PDFs de econometría en `F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\`:**
+- `wooldridge_j-_2002_econometric_analysis_of_cross_section_and_panel_data.pdf` — Panel/Cross-section
+- `Time-Series-Analysis-with-Applications-in-R-Second-Edition.pdf` — Series de tiempo
+- `Fundamentals of causal inference using R.pdf` — Inferencia causal
+- `100 Statistical Tests In R by N.D. Lewis.pdf` — Estadística/Tests
+- `An Introduction to Spatial Data Analysis in R.pdf` — Datos espaciales
+- `A-Portable-Workbook-for-Data-Analysis-R-for-the-Social-Sciences-1766019185.pdf` — R ciencias sociales
+
+**Total: ~9 libros para indexar**
+
+### Indexación masiva completada ✅
+
+**Ejecutado:** `python C:\NEVEN\scripts\index_books.py`
+
+| Libro | Dominio | Chunks |
+|-------|---------|--------|
+| Wooldridge - Panel Data | econometria | 686 |
+| Time Series Analysis in R | econometria | 437 |
+| Causal Inference in R | econometria | 167 |
+| 100 Statistical Tests in R | estadistica | 162 |
+| Spatial Data Analysis in R | econometria | 62 |
+| R for Social Sciences | estadistica | 118 |
+| CFI Excel eBook | excel | 57 |
+| Excel 365 Bible | excel | 613 |
+| Excel Basics Tutorial | excel | 8 |
+
+**Totales:**
+- 9 documentos indexados
+- 2,310 chunks con embeddings
+- 12 MB de base de datos
+
+**Archivos generados:**
+- `C:\NEVEN\data\rag_index.duckdb` — producción
+- `F:\...\NEVEN\Install\data\rag_index.duckdb` — para instalación
+- `C:\NEVEN\scripts\index_books.py` — script de indexación
+- `F:\...\NEVEN\Install\scripts\index_books.py` — copia en repo
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Commit de todos los cambios (RAG, taskpane, servidor) |
+| ✅ | ~~Integrar RAG en el chat de IA~~ — IMPLEMENTADO |
+| MEDIA | Probar integración RAG con pregunta de heterocedasticidad |
+| BAJA | Arreglar sintaxis YAML de neven-ontology-p1/p2/p4 |
+
+### Análisis: Integración RAG con Agente IA
+
+**Hallazgo:** El agente IA del TaskPane **NO usaba RAG ni Ontología**.
+
+**Flujo anterior:**
+```
+Usuario → /api/ai/chat → [Catálogo funciones + Prompts] → LLM → Respuesta
+```
+
+**Flujo implementado:**
+```
+Usuario → Extraer pregunta → RAG con ontología (top 3) → Contexto enriquecido → LLM → Respuesta
+```
+
+### ✅ IMPLEMENTADO: Integración RAG en chat de IA
+
+**Código agregado en `_handle_ai_chat_impl()` (~línea 1777):**
+
+```python
+# RAG: Ontology-Guided Retrieval
+rag_context = ""
+if _RAG_AVAILABLE and _get_rag_engine:
+    user_messages = [m for m in messages if m.get("role") == "user"]
+    if user_messages:
+        last_question = user_messages[-1].get("content", "")[:500]
+        engine = _get_rag_engine()
+        rag_result = engine.query_with_ontology(last_question, top_k=3)
+        # construir rag_context con chunks relevantes...
+
+# Inyectar al final del sys_content:
+if rag_context:
+    sys_content = sys_content + rag_context
+```
+
+**Archivos modificados:**
+- `F:\...\ControlPython\startup\neven_http_server.py`
+- `C:\NEVEN\startup\neven_http_server.py`
+- `F:\...\TaskPane\neven_http_server.py`
+
+**Pregunta de prueba sugerida:**
+> "¿Qué es la heterocedasticidad y cómo puedo detectarla en una regresión?"
+
+### Tab RAG movido a Configuración ✅
+
+El Tab RAG ahora es un **sub-tab dentro de Configuración**, junto a "Conocimiento".
+
+**Antes:** Tab separado en barra principal
+**Después:** Sub-tab en Settings → `Motor IA | Conexiones DB | Prompts | Conocimiento | RAG | Notebooks | ...`
+
+**Cambios realizados:**
+1. Eliminado `<div class="tab" data-tab="rag">` de la barra principal
+2. Agregado `<div class="settings-tab" data-settings-tab="rag">` en sub-tabs de settings
+3. Movido contenido del tab a `<div class="settings-panel" id="settings-rag">`
+4. Actualizado JS: `[data-tab="rag"]` → `[data-settings-tab="rag"]`
+
+**Archivos modificados:**
+- `F:\...\TaskPane\taskpane.html`
+- `C:\NEVEN\TaskPane\taskpane.html`
+
+### Problema resuelto: Servidores HTTP zombie
+
+**Síntoma:** El Task Pane mostraba 2 docs/385 chunks en vez de 9 docs/2310 chunks.
+
+**Causa raíz:** Había **8 servidores HTTP viejos** corriendo simultáneamente en el puerto 5555, cada uno con su propio singleton `_rag_instance` que contenía el índice viejo.
+
+**Diagnóstico:**
+```powershell
+netstat -ano | Select-String ":5555"
+# Mostró PIDs: 49568, 139320, 83484, 113076, 33512, 19620, 79420, 71056
+```
+
+**Solución:**
+1. Matar todos los procesos en puerto 5555
+2. Limpiar `__pycache__`
+3. Iniciar servidor fresco
+
+**Lección aprendida:** Siempre verificar que no haya procesos zombie antes de diagnosticar problemas de datos.
+
 ---
 
 ### Sesión 2026-08-19 (~11:30) — FIX: SyntaxError en línea 2376
@@ -9026,4 +9874,1198 @@ function formatNum(v) {
 |-----------|-------|---------|
 | **ALTA** | Verificar formato 2 decimales | Usuario debe recargar y probar |
 | **ALTA** | Commit todos los cambios | Sketch + formato numerico |
+
+
+
+---
+
+### Sesion 2026-08-19 (~final) — COMMIT Y PUSH COMPLETADOS
+
+## ✅ SESION EXITOSA: Sketch charts + Formato numerico
+
+### Commit realizado
+```
+c10f244 feat(TaskPane): Sketch charts with Chart.js + numeric formatting
+```
+
+### Archivos incluidos en el commit
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/sketch-charts.js` | **NUEVO** — modulo completo Sketch |
+| `NEVEN/TaskPane/taskpane.js` | formatNum() en showPreview() |
+| `NEVEN/TaskPane/taskpane.html` | script tag sketch-charts.js, panel Settings |
+| `NEVEN/TaskPane/datalab.js` | integracion boton Sketch |
+| `.kiro/contexto/CHAT.md` | bitacora actualizada |
+
+### Resumen de logros de la sesion completa
+
+| Feature | Descripcion |
+|---------|-------------|
+| **Sketch mode** | Graficos estilo hand-drawn usando Chart.js 2.9.4 + chartjs-plugin-rough 0.2.0 |
+| **Migracion roughViz** | roughViz tenia bug de alturas negativas, Chart.js es estable |
+| **Panel flotante** | Configuracion colapsable con textura, temblor, curvatura |
+| **Paleta sincronizada** | Sketch usa la misma paleta que Quick Chart |
+| **Formato numerico** | Tabla Data Studio: miles con coma, siempre 2 decimales |
+
+### Problemas resueltos y causas raiz
+
+| Problema | Causa raiz | Solucion |
+|----------|------------|----------|
+| roughViz alturas negativas | Bug interno de la libreria | Migrar a Chart.js |
+| Error fillOptions en tooltip | Plugin intenta dibujar tooltip rough sin config | Deshabilitar tooltips |
+| Formato no se aplicaba | showPreview() duplicada en taskpane.js | Modificar taskpane.js |
+| Cache no se limpiaba | WebView2 cachea agresivamente | Limpiar %LOCALAPPDATA%\Microsoft\Office\16.0\Wef\webview2 |
+
+### Decisiones de diseno
+
+1. **Chart.js 2.x en lugar de 3/4** — El plugin chartjs-plugin-rough solo es compatible con v2
+2. **Tooltips deshabilitados en Sketch** — Evita error, Plotly tiene tooltips cuando usuario vuelve
+3. **Panel colapsable** — Usuario lo pidio para no obstaculizar el grafico
+4. **2 decimales fijos** — Usuario lo pidio para armonia visual (1,220.00 en lugar de 1,220)
+
+### Lecciones aprendidas
+
+1. **Verificar funciones duplicadas** — taskpane.html y taskpane.js pueden tener la misma funcion
+2. **WebView2 cachea agresivamente** — Limpiar cache si cambios no aparecen
+3. **roughViz tiene bugs** — Usar Chart.js para graficos rough es mas estable
+
+### Estado del repositorio
+```
+c10f244 (HEAD -> master, origin/master) feat(TaskPane): Sketch charts with Chart.js + numeric formatting
+```
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **BAJA** | Probar Sketch con line/pie/scatter | Solo se probo con barras |
+| **BAJA** | Documentar feature Sketch | Agregar a ayuda del usuario |
+| **BAJA** | Consolidar funciones | Evitar duplicacion entre .html y .js |
+
+
+
+---
+
+### Sesion 2026-08-19 (~post-commit) — Discusion: Librerias de graficos JS
+
+## 📋 DISCUSION: Alternativas de librerias de graficos
+
+### Pregunta del usuario
+"Que otras librerias de JS contienen graficos modernos?"
+
+### Librerias evaluadas
+
+| Libreria | Fortaleza | Ya en NEVEN |
+|----------|-----------|-------------|
+| **Plotly.js** | Interactivo, cientifico | ✅ Si |
+| **Chart.js** | Simple, limpio | ✅ Si (Sketch) |
+| **D3.js** | Control total | ✅ Si (Treemap, Sankey, Sunburst) |
+| **ECharts** | Big data, mapas 3D | ❌ No |
+| **ApexCharts** | Moderno, animaciones | ❌ No |
+| **Highcharts** | Enterprise, pulido | ❌ No (licencia comercial) |
+| **Frappe Charts** | Heatmaps GitHub-style | ❌ No |
+| **uPlot** | Ultra-rapido series temporales | ❌ No |
+
+### Recomendaciones para NEVEN
+
+1. **ECharts** — Mapas interactivos avanzados, graficos 3D
+2. **ApexCharts** — Dashboards ejecutivos con animaciones
+3. **Frappe Charts** — Heatmaps estilo contribution graph de GitHub
+
+### Cambios realizados
+**NINGUNO** — sesion de discusion
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **BAJA** | Evaluar ECharts | Mapas interactivos avanzados |
+| **BAJA** | Evaluar ApexCharts | Alternativa moderna a Plotly |
+
+
+
+---
+
+### Sesion 2026-08-19 (~post-commit 2) — Evaluacion: notebooklm-mcp
+
+## 📋 EVALUACION: Proyecto notebooklm-mcp para integracion MCP
+
+### Solicitud del usuario
+Evaluar si el proyecto `github.com/PleasePrompto/notebooklm-mcp` puede integrarse en NEVEN para permitir al agente consultar notebooks de NotebookLM del usuario.
+
+### Descripcion del proyecto
+- Servidor MCP que automatiza Chrome para interactuar con NotebookLM de Google
+- Usa Patchright (Puppeteer stealth) para controlar un browser real
+- Tools: `ask_question`, `list_notebooks`, `select_notebook`, `add_source`, etc.
+- Retorna respuestas con citas del notebook
+
+### ⚠️ PROBLEMA CRITICO ENCONTRADO
+> **"Warning: This project is no longer maintained. As of September 2026 the repository is archived."**
+
+El proyecto esta **ARCHIVADO Y ABANDONADO**.
+
+### Evaluacion
+
+| Factor | Evaluacion |
+|--------|------------|
+| Funcionalidad | ✅ Hace lo que se necesita |
+| Arquitectura MCP | ✅ Compatible con Kiro/Claude |
+| Mantenimiento | ❌ **Archivado, sin soporte** |
+| Dependencia Google | ⚠️ Puede romperse si Google cambia UI |
+| Stealth/Automation | ⚠️ Anti-deteccion fragil |
+
+### Recomendacion
+**NO incluir como dependencia oficial de NEVEN** porque:
+1. Proyecto muerto — sin updates ni fixes
+2. Fragil — depende de scraping de UI
+3. Sin API oficial — NotebookLM no tiene API publica
+
+### Alternativas sugeridas
+1. **Fork el proyecto** y mantenerlo localmente
+2. **Esperar API oficial** de Google
+3. **RAG local** con embeddings propios (Chroma, Pinecone)
+
+### Cambios realizados
+**NINGUNO** — sesion de evaluacion
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **BAJA** | Evaluar RAG local | Alternativa robusta a NotebookLM |
+| **BAJA** | Monitorear API NotebookLM | Si Google lanza API oficial |
+
+
+
+---
+
+### Sesion 2026-08-19 (~post-commit 3) — Discusion: RAG vs Ontologia
+
+## 📋 DISCUSION: RAG local como complemento a la Ontologia
+
+### Pregunta del usuario
+"Que nos permitiria el RAG por sobre la funcionalidad que hoy tenemos de agregar conocimiento a la Ontologia? Son excluyentes o pueden ser complementos?"
+
+### Conclusion: SON COMPLEMENTARIOS
+
+| Aspecto | Ontologia NEVEN | RAG Local |
+|---------|-----------------|-----------|
+| **Almacena** | Conocimiento estructurado | Texto crudo en chunks |
+| **Busca por** | Estructura (nodos, aristas) | Similitud semantica |
+| **Fortaleza** | Relaciones explicitas | Busqueda flexible |
+| **Ideal para** | "Que tecnicas usan VLOOKUP?" | "Como resuelvo este error?" |
+
+### Capacidades nuevas que agregaria RAG
+
+1. Buscar en PDFs del usuario
+2. Contexto de proyectos anteriores
+3. Notas personales
+4. Documentacion externa
+
+### Arquitectura propuesta
+
+```
+Usuario pregunta → Router (LLM) → Ontologia + RAG → Respuesta combinada
+```
+
+### Implementacion sugerida
+
+| Componente | Tecnologia |
+|------------|------------|
+| Vector DB | ChromaDB (embebido, sin servidor) |
+| Embeddings | sentence-transformers (local) |
+| API | `/api/rag/query` en HTTP Server |
+| UI | Tab en TaskPane para cargar docs |
+
+### Cambios realizados
+**NINGUNO** — sesion de discusion arquitectural
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **MEDIA** | Disenar arquitectura RAG | Documento de diseno detallado |
+| **MEDIA** | Prototipo ChromaDB | Proof of concept basico |
+| **BAJA** | Definir router LLM | Decidir cuando usar Ontologia vs RAG |
+
+
+
+---
+
+### Sesion 2026-08-19 (~post-commit 4) — Arquitectura: Ontology-Guided RAG
+
+## 💡 IDEA CLAVE: Ontologia como metaheuristica de busqueda para RAG
+
+### Propuesta del usuario
+En lugar de router que elige entre Ontologia O RAG, hacer flujo secuencial:
+1. **Siempre consultar Ontologia primero** — obtener contexto estructurado
+2. **Usar ese contexto para filtrar RAG** — buscar solo en chunks relevantes
+3. **Retornar respuesta precisa** — basada en documentacion filtrada
+
+### Nombre tecnico
+**"Ontology-Guided RAG"** o **"Knowledge Graph-Enhanced RAG"**
+
+### Flujo propuesto
+
+```
+Pregunta → Ontologia → Filtros → RAG (acotado) → Respuesta
+```
+
+### Ejemplo concreto
+- **Pregunta:** "Como hacer regresion con datos de panel?"
+- **Ontologia responde:** "Relacionado con Wooldridge Cap. 14, Greene Cap. 11, tecnica Fixed Effects"
+- **RAG busca SOLO en:** chunks de esos capitulos especificos (no en toda la base)
+- **Resultado:** Respuesta precisa con citas exactas
+
+### Ventajas
+
+| Beneficio | Explicacion |
+|-----------|-------------|
+| **Velocidad** | Busca en ~50 chunks, no en 10,000 |
+| **Precision** | Ontologia filtra ruido antes de buscar |
+| **Costo** | Menos embeddings = menos computo |
+| **Explicabilidad** | "Busque en Wooldridge porque ontologia lo conecto" |
+
+### Componentes necesarios
+
+| Componente | Estado |
+|------------|--------|
+| Ontologia YAML | ✅ Ya existe |
+| Query a ontologia | ✅ Ya existe |
+| RAG/Vector DB (ChromaDB) | ❌ Falta |
+| Integracion ontologia→RAG | ❌ Falta |
+| UI para cargar docs | ❌ Falta |
+
+### Pseudocodigo
+
+```python
+def ontology_guided_rag(question):
+    ontology_context = query_ontology(question)  # Paso 1
+    filters = extract_rag_filters(ontology_context)  # Paso 2
+    chunks = rag_search(question, filters=filters)  # Paso 3
+    return generate_answer(question, ontology_context, chunks)
+```
+
+### Cambios realizados
+**NINGUNO** — sesion de diseno arquitectural
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Documento de arquitectura formal | Especificacion detallada del sistema |
+| **MEDIA** | Prototipo ChromaDB | POC con ontologia→filtros→RAG |
+| **MEDIA** | Endpoint `/api/rag/query` | Integrar en HTTP Server |
+| **BAJA** | UI TaskPane para docs | Cargar PDFs y consultar |
+
+
+
+---
+
+### Sesion 2026-08-19 (~post-commit 5) — Decisiones tecnicas RAG
+
+## 📋 DISCUSION: Julia vs Python para RAG local
+
+### Pregunta del usuario
+"Julia es mas rapido que Python. Dame tu opinion para el motor de RAG"
+
+### Analisis
+
+| Factor | Julia | Python |
+|--------|-------|--------|
+| Velocidad raw | ✅ 10-100x mas rapido | ❌ Mas lento |
+| Embeddings libs | ⚠️ Pocas maduras | ✅ sentence-transformers |
+| Vector DBs | ⚠️ Bindings limitados | ✅ ChromaDB, FAISS, LanceDB |
+| Cold start | ❌ JIT lento | ✅ Inmediato |
+| Ecosistema ML | ⚠️ Creciendo | ✅ Maduro |
+
+### Conclusion: Python es mejor para RAG
+
+**La velocidad de Julia NO ayuda en RAG porque:**
+1. **Embeddings** — El modelo ML es el cuello de botella, no el lenguaje
+2. **Busqueda vectorial** — Ya optimizada en C/Rust (FAISS, HNSW)
+3. **LLM** — Es el paso mas lento, independiente del lenguaje
+
+### Arquitectura decidida
+
+| Componente | Tecnologia | Razon |
+|------------|------------|-------|
+| **Lenguaje** | Python | Ecosistema ML maduro |
+| **Vector DB** | DuckDB + VSS | Ya se usa en NEVEN |
+| **Embeddings** | sentence-transformers | Local, rapido |
+| **UI** | TaskPane | Usuario no sale de Excel |
+
+### Endpoints propuestos
+
+```
+/api/rag/upload    → Procesa PDF, genera embeddings
+/api/rag/query     → Ontologia → Filtros → Busqueda
+/api/rag/documents → Lista documentos cargados
+```
+
+### Opcion DuckDB + VSS
+
+```sql
+CREATE TABLE documents (id INT, content TEXT, embedding FLOAT[384]);
+SELECT * FROM documents ORDER BY array_distance(embedding, ?) LIMIT 10;
+```
+
+**Ventaja:** Un solo motor para datos tabulares Y vectores.
+
+### Cambios realizados
+**NINGUNO** — sesion de decisiones tecnicas
+
+### Pendientes
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Prototipo DuckDB + VSS | POC de busqueda vectorial |
+| **ALTA** | Instalar sentence-transformers | Modelo local de embeddings |
+| **MEDIA** | UI TaskPane para docs | Cargar PDFs, consultar |
+| **MEDIA** | Integracion con Ontologia | Filtros para RAG |
+
+
+
+---
+
+### Sesion 2026-08-19 (~sesion resumida) — Retoma de Ontology-Guided RAG
+
+**Fecha:** 2026-08-19
+**Duracion:** Sesion muy breve (< 5 minutos)
+**Estado:** CONTEXTO RESTAURADO — Sin cambios de codigo
+
+## Contexto
+
+Esta sesion fue una retoma de contexto despues de una compactacion automatica del chat.
+El contexto anterior se resumio automaticamente y la sesion termino casi inmediatamente
+despues de restaurar el estado.
+
+## Estado del proyecto RAG al cierre
+
+### Arquitectura decidida (sesiones anteriores)
+| Componente | Tecnologia | Estado |
+|------------|------------|--------|
+| **Lenguaje** | Python | ✅ Decidido |
+| **Vector DB** | DuckDB + VSS extension | ⏳ Pendiente implementar |
+| **Embeddings** | sentence-transformers | ⏳ Pendiente instalar |
+| **Filtrado** | Ontologia como metaheuristica | ✅ Diseñado |
+| **UI** | TaskPane | ⏳ Pendiente implementar |
+
+### Investigacion completada (sesion anterior)
+- ✅ DuckDB VSS extension soporta HNSW index
+- ✅ Funciones: `array_cosine_distance()`, `array_distance()` (L2)
+- ✅ Instalacion: `INSTALL vss; LOAD vss;`
+
+### Tareas pendientes del plan RAG
+| # | Tarea | Estado |
+|---|-------|--------|
+| 1 | Investigar DuckDB VSS | ✅ Completado |
+| 2 | Instalar sentence-transformers | ⏳ Pendiente |
+| 3 | Crear `rag_engine.py` | ⏳ Pendiente |
+| 4 | Agregar endpoints HTTP | ⏳ Pendiente |
+| 5 | Crear UI en TaskPane | ⏳ Pendiente |
+| 6 | Integrar ontologia como filtro | ⏳ Pendiente |
+
+## Cambios realizados
+**NINGUNO** — sesion de retoma de contexto unicamente
+
+## Commits realizados
+**NINGUNO**
+
+## Archivos modificados
+**NINGUNO**
+
+## Pendientes para proxima sesion
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Crear `rag_engine.py` | Modulo Python con funciones core |
+| **ALTA** | Instalar sentence-transformers | `pip install sentence-transformers` |
+| **MEDIA** | Endpoints `/api/rag/*` | upload, query, documents |
+| **MEDIA** | UI en TaskPane | Tab o seccion para RAG |
+| **BAJA** | Integrar ontologia | Filtros semanticos para RAG |
+
+## Nota tecnica
+
+El concepto "Ontology-Guided RAG" usa la ontologia de NEVEN como **metaheuristica**:
+1. Usuario hace pregunta
+2. Ontologia identifica temas/entidades relevantes
+3. RAG busca SOLO en chunks relacionados (no en todo el corpus)
+4. Resultado: busquedas mas rapidas y precisas
+
+---
+
+## CIERRE SESION 2026-08-19 (Retoma de contexto)
+
+**Resultado:** Contexto restaurado exitosamente, sin avance en implementacion.
+**Proxima sesion:** Continuar con implementacion de rag_engine.py
+
+
+
+---
+
+### Sesion 2026-08-19 (~21:30) — Ontology-Guided RAG System Implementado
+
+**Fecha:** 2026-08-19  
+**Duracion:** ~2 horas  
+**Estado:** COMPLETADO
+
+## Logro Principal
+
+Implementacion completa del sistema **Ontology-Guided RAG** para NEVEN:
+- Motor de embeddings local (fastembed, bge-small-en-v1.5, 384 dimensiones)
+- Almacenamiento vectorial con DuckDB + VSS extension
+- Busqueda semantica guiada por ontologia
+- UI completa en TaskPane
+
+## Arquitectura Implementada
+
+```
+Usuario pregunta "que es heterocedasticidad"
+         |
+         v
+    Ontologia NEVEN
+    (econometrics.jsonl, excel-functions.yaml)
+         |
+         v
+    Detecta dominios: [econometria, excel]
+         |
+         v
+    DuckDB VSS busca solo en chunks
+    del dominio "econometria"
+         |
+         v
+    Retorna chunks relevantes (score 0.796)
+```
+
+## Archivos Creados
+
+| Archivo | Descripcion |
+|---------|-------------|
+| `TaskPane/rag_engine.py` | Motor RAG: embeddings, chunking, busqueda vectorial |
+
+## Archivos Modificados
+
+| Archivo | Cambios |
+|---------|---------|
+| `ControlPython/startup/neven_http_server.py` | +6 endpoints RAG, import rag_engine |
+| `TaskPane/taskpane.html` | Tab RAG con UI completa |
+
+## Endpoints Implementados
+
+| Metodo | Endpoint | Funcion |
+|--------|----------|---------|
+| GET | `/api/rag/stats` | Estadisticas del indice |
+| GET | `/api/rag/documents` | Lista documentos indexados |
+| POST | `/api/rag/upload` | Indexar archivo (PDF, TXT, MD) |
+| POST | `/api/rag/upload-text` | Indexar texto directo |
+| POST | `/api/rag/query` | Busqueda semantica |
+| POST | `/api/rag/delete` | Eliminar documento |
+
+## Componentes Tecnicos
+
+| Componente | Tecnologia | Notas |
+|------------|------------|-------|
+| Embeddings | fastembed (bge-small-en-v1.5) | 384 dims, ~67MB modelo |
+| Vector DB | DuckDB + VSS extension | HNSW index, cosine distance |
+| Ontologia | YAML + JSONL | econometrics, excel-functions |
+| UI | JavaScript vanilla | Sin emojis, paleta existente |
+
+## Pruebas Realizadas
+
+```bash
+# Upload texto
+POST /api/rag/upload-text
+{"text": "...", "name": "intro_econometria", "domain": "econometria"}
+# Response: {"status": "ok", "doc_id": "e2d20b0e6ac1"}
+
+# Query con ontologia
+POST /api/rag/query
+{"question": "que es heterocedasticidad en regresion", "use_ontology": true}
+# Response: 
+# - detected_domains: ["econometria", "excel"]
+# - ontology_guided: true
+# - score: 0.796
+```
+
+## Commit Realizado
+
+| Hash | Descripcion |
+|------|-------------|
+| `6513a16` | feat(rag): Ontology-Guided RAG system |
+
+**Archivos:** 4 changed, +1331 insertions, -83 deletions
+
+## Decisiones de Diseno
+
+| Decision | Justificacion |
+|----------|---------------|
+| fastembed sobre sentence-transformers | sentence-transformers fallo por rutas largas de Windows |
+| DuckDB VSS sobre ChromaDB | Reutiliza tech stack existente de NEVEN |
+| Ontologia como metaheuristica | Filtra chunks ANTES de busqueda vectorial |
+| Keywords + entidades para deteccion | Fallback si entidades no coinciden |
+
+## Archivos en Produccion
+
+| Produccion | Repositorio |
+|------------|-------------|
+| `C:\NEVEN\TaskPane\rag_engine.py` | `NEVEN\TaskPane\rag_engine.py` |
+| `C:\NEVEN\startup\rag_engine.py` | (copia para imports) |
+| `C:\NEVEN\TaskPane\taskpane.html` | `NEVEN\TaskPane\taskpane.html` |
+| `C:\NEVEN\startup\neven_http_server.py` | `NEVEN\ControlPython\startup\neven_http_server.py` |
+
+## Pendientes Futuros
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **MEDIA** | Soporte PDF | Instalar PyMuPDF para extract_text_from_file |
+| **MEDIA** | Persistencia | Usar archivo .duckdb en lugar de :memory: |
+| **BAJA** | UI: Progress bar | Mostrar progreso al indexar documentos grandes |
+| **BAJA** | Matched entities en UI | Mostrar entidades de ontologia coincidentes |
+
+---
+
+## CIERRE SESION 2026-08-19 (RAG)
+
+**Resultado:** Sistema Ontology-Guided RAG completamente funcional
+**Commit:** `6513a16`
+**Estado:** Pusheado a GitHub
+
+
+
+---
+
+### Sesión 2026-08-19 (~12:45) — EN PROGRESO: Soporte multi-idioma RAG
+
+## 🔧 EN PROGRESO: Columna `language` y traducción de queries
+
+### Contexto
+El usuario reportó que al preguntar por "ACP" (Análisis de Componentes Principales), el RAG devolvía fuentes de Excel en lugar de estadística. Causa: los libros están en inglés y usan "PCA", el score semántico era bajo (< 0.70).
+
+Se solicitó:
+1. Agregar metadato de idioma por documento (`language`)
+2. Traducir queries automáticamente al idioma de los libros indexados
+3. Idiomas soportados: inglés (en), español (es), portugués (pt), francés (fr)
+
+### Cambios realizados
+
+**1. Schema de base de datos actualizado (`rag_engine.py`):**
+```sql
+CREATE TABLE documents (
+    ...
+    language VARCHAR DEFAULT 'en',  -- NUEVO
+    ...
+)
+```
+
+**2. Método `add_pdf_with_pages` actualizado:**
+```python
+def add_pdf_with_pages(self, file_path, doc_name, domain="general", 
+                       language="en", metadata=None):  # NUEVO parámetro
+```
+
+**3. Método `get_available_languages()` agregado:**
+```python
+def get_available_languages(self) -> List[str]:
+    """Retorna lista de idiomas únicos en el índice."""
+```
+
+**4. Diccionario de traducciones bidireccional ES↔EN:**
+Ya existía en el servidor HTTP (`_term_translations`) y en `rag_engine.py` (`translate_query_for_languages`).
+
+**5. Script de indexación actualizado (`index_books.py`):**
+```python
+# Formato: (ruta, dominio, nombre, idioma)
+BOOKS = [
+    (r"...\wooldridge.pdf", "econometria", "Wooldridge", "en"),
+    ...
+]
+```
+
+### Archivos modificados
+
+| Archivo repo | Cambio |
+|--------------|--------|
+| `NEVEN/TaskPane/rag_engine.py` | +language en schema y add_pdf_with_pages |
+| `NEVEN/Install/scripts/index_books.py` | Tuplas de 4 elementos con idioma |
+
+| Archivo producción | Cambio |
+|--------------------|--------|
+| `C:\NEVEN\TaskPane\rag_engine.py` | Sincronizado desde repo |
+
+### Estado de re-indexación
+
+**El proceso de indexación está EN CURSO** al momento de cerrar la sesión:
+- PID: 161324
+- Tiempo corriendo: ~9 minutos
+- CPU consumido: ~60 min (7x paralelo)
+- Memoria RAM: 8.5 GB
+- Estado: Generando embeddings con fastembed
+
+El proceso es válido — fastembed genera todos los embeddings en memoria antes de escribir a DuckDB, por eso la DB aún muestra 0.01 MB.
+
+### Servidor HTTP detenido
+
+El servidor HTTP (PID 166808) fue detenido para liberar la base de datos durante la re-indexación. **DEBE reiniciarse** después de que termine la indexación.
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Esperar a que termine indexación (~5-10 min más) |
+| **ALTA** | Reiniciar servidor HTTP: `cd C:\NEVEN\startup; python neven_http_server.py` |
+| **ALTA** | Verificar que la tabla documents tenga columna `language` |
+| **ALTA** | Expandir diccionario de traducciones a 4 idiomas (EN/ES/PT/FR) — quedó interrumpido |
+| **MEDIA** | git commit + push de cambios de idioma |
+| **MEDIA** | Integrar `translate_query_for_languages()` del RAGEngine en vez de `_term_translations` duplicado |
+| **BAJA** | Agregar libros en español/portugués/francés para probar multi-idioma |
+
+### Notas técnicas
+
+- La base de datos existente **no tenía** columna `language` — por eso se necesita re-indexar
+- fastembed usa ~8.5 GB de RAM con el modelo `bge-small-en-v1.5`
+- Ratio CPU/Real de 7x indica procesamiento paralelo saludable
+- Total estimado: ~3400 páginas = ~6800 chunks = ~15-25 min de indexación
+
+
+
+---
+
+### Sesión 2026-08-19 (~12:50) — COMPLETADO: Soporte multi-idioma RAG
+
+## ✅ COMPLETADO: Columna `language` y traducción de queries multilingüe
+
+### Contexto
+El usuario reportó que al preguntar por "ACP" (Análisis de Componentes Principales en español), el RAG devolvía fuentes de Excel en lugar de estadística. Causa: los libros están en inglés y usan "PCA", el score semántico era bajo.
+
+Se solicitó:
+1. Agregar metadato de idioma por documento (`language`)
+2. Traducir queries automáticamente al idioma de los libros
+3. Idiomas soportados: inglés (en), español (es), portugués (pt), francés (fr)
+
+### Implementación completada
+
+**1. Schema de base de datos actualizado:**
+```sql
+CREATE TABLE documents (
+    id VARCHAR PRIMARY KEY,
+    filename VARCHAR,
+    domain VARCHAR,
+    language VARCHAR DEFAULT 'en',  -- NUEVO
+    created_at TIMESTAMP,
+    metadata JSON
+)
+```
+
+**2. Diccionario multilingüe en `rag_engine.py`:**
+~40 términos econométricos traducidos en 4 idiomas:
+- Heterocedasticidad / heteroscedasticity / hétéroscédasticité / heterocedasticidade
+- Componentes principales / PCA / ACP / analyse en composantes principales
+- Series temporales / time series / série temporelle / séries temporais
+- Variable instrumental / instrumental variable / variable instrumentale / variável instrumental
+- Y muchos más...
+
+**3. Servidor HTTP refactorizado:**
+Eliminado diccionario local `_term_translations` y reemplazado por llamada al método del RAGEngine:
+```python
+engine = _get_rag_engine()
+available_languages = engine.get_available_languages()
+query_for_rag = engine.translate_query_for_languages(
+    last_question, 
+    available_languages if available_languages else ["en", "es"]
+)
+```
+
+**4. Re-indexación completada:**
+- 9 documentos, 3,690 chunks
+- Base de datos: 12.26 MB
+- Columna `language` presente (todos marcados como `en`)
+
+### Archivos modificados
+
+| Archivo repo | Cambio |
+|--------------|--------|
+| `NEVEN/TaskPane/rag_engine.py` | +language en schema, +diccionario multilingüe ~130 líneas |
+| `NEVEN/ControlPython/startup/neven_http_server.py` | Refactorizado para usar translate_query_for_languages() |
+| `NEVEN/Install/scripts/index_books.py` | Tuplas de 4 elementos (path, domain, name, language) |
+
+| Archivo producción | Sincronizado |
+|--------------------|--------------|
+| `C:\NEVEN\TaskPane\rag_engine.py` | ✅ |
+| `C:\NEVEN\startup\neven_http_server.py` | ✅ |
+| `C:\NEVEN\data\rag_index.duckdb` | ✅ Re-indexado con columna language |
+
+### Decisiones de diseño
+
+1. **Un solo diccionario de traducciones** — En `rag_engine.py` en lugar de duplicarlo en el servidor HTTP. DRY.
+
+2. **Traducción bidireccional** — Cada término tiene traducciones a los otros 3 idiomas. Permite buscar en cualquier dirección.
+
+3. **Idioma como metadato del documento** — No del chunk, porque un documento entero está en un solo idioma.
+
+### Servidor HTTP reiniciado y funcionando
+
+```
+[RAG] Ontologia cargada: 2 schemas, 199 entidades
+[RAG] Contexto enriquecido: 3 chunks, dominios: ['econometria']
+```
+
+### Commits pendientes
+
+No se hizo commit en esta sesión. Cambios listos para commit:
+- feat(rag): soporte multi-idioma EN/ES/PT/FR
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | git commit + push de cambios de idioma |
+| **MEDIA** | Probar en Excel query "ACP" y verificar que encuentre PCA |
+| **MEDIA** | Agregar libros en español para probar multi-idioma real |
+| **BAJA** | Arreglar errores YAML en ontologías (preexistentes) |
+
+
+
+---
+
+### Sesión 2026-08-19 (~13:00) — VALIDACIÓN: Problema ACP resuelto
+
+## ✅ VALIDADO: Traducción multilingüe + umbral funcionan correctamente
+
+### Prueba realizada
+
+**Query original:** `"que es el ACP"`
+
+**Query expandida automáticamente:** 
+```
+"que es el ACP PCA principal component analysis componentes principales"
+```
+
+### Resultados
+
+| # | Libro | Dominio | Score |
+|---|-------|---------|-------|
+| 1 | Time Series Analysis in R | econometria | 0.711 ✅ |
+| 2 | Time Series Analysis in R | econometria | 0.706 ✅ |
+| 3 | Time Series Analysis in R | econometria | 0.705 ✅ |
+| 4 | R for Social Sciences | estadistica | 0.704 ✅ |
+| 5 | Time Series Analysis in R | econometria | 0.704 ✅ |
+
+- **5 de 5 pasan el umbral** (>= 0.70)
+- **0 resultados de Excel** (antes era el problema)
+- Dominios correctos: econometría y estadística
+
+### Comparación antes vs ahora
+
+| Aspecto | Antes | Ahora |
+|---------|-------|-------|
+| Query | Sin traducir | Expandida con sinónimos EN/ES/PT/FR |
+| Score típico | ~0.50 | ~0.70+ |
+| Resultados | Excel irrelevante | Econometría/estadística relevante |
+| Filtro | Ninguno | MIN_RAG_SCORE = 0.70 |
+
+### Conclusión
+
+El problema del ACP está **completamente resuelto** con la combinación de:
+1. Traducción automática de términos técnicos
+2. Umbral de relevancia mínima
+
+
+
+---
+
+### Sesión 2026-08-19 (~13:15) — FIX: Fuentes RAG no se mostraban
+
+## 🔧 CORREGIDO: Variable rag_sources no inicializada
+
+### Síntoma
+Al preguntar "Que es el ACP?" en el chat, no aparecía el botón "Ver fuentes" aunque los logs mostraban `[RAG] Contexto enriquecido: 3 chunks`.
+
+### Causa raíz
+La variable `rag_sources` **no estaba inicializada** como lista vacía antes del bloque RAG:
+
+```python
+# ANTES (bug)
+rag_context = ""
+rag_domains = []
+if _RAG_AVAILABLE and _get_rag_engine:
+    ...
+    rag_sources = [...]  # Solo se define aquí dentro
+
+# Más adelante se usa:
+"rag_sources": rag_sources if rag_context else []  # NameError si no hubo RAG
+```
+
+### Fix aplicado
+
+```python
+# DESPUÉS (correcto)
+rag_context = ""
+rag_domains = []
+rag_sources = []  # Inicializar fuentes RAG
+if _RAG_AVAILABLE and _get_rag_engine:
+    ...
+```
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/ControlPython/startup/neven_http_server.py` | +`rag_sources = []` en línea ~1788 |
+| `C:\NEVEN\startup\neven_http_server.py` | Sincronizado |
+
+### Servidor reiniciado
+El servidor HTTP fue reiniciado para aplicar el fix.
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar en Excel que aparezca botón "Ver fuentes" con query ACP |
+| **ALTA** | git commit + push de todos los cambios de esta sesión |
+
+
+
+---
+
+### Sesión 2026-08-19 (~13:30) — FEATURE: Umbral RAG configurable
+
+## ✅ IMPLEMENTADO: minScore configurable en neven-config.json
+
+### Problema
+Con el umbral fijo de 0.70, muchas queries devolvían chunks vacíos porque los scores no alcanzaban el umbral, especialmente cuando la traducción no mejoraba suficientemente el match semántico.
+
+### Solución
+Hacer el umbral configurable por el usuario en `neven-config.json`:
+
+```json
+"RAG": {
+    "enabled": true,
+    "minScore": 0.50,
+    "topK": 3,
+    "indexPath": "C:\\NEVEN\\data\\rag_index.duckdb",
+    "ontologyPath": "C:\\NEVEN\\docs\\ontologia"
+}
+```
+
+### Código modificado
+
+```python
+# Leer umbral mínimo desde config (default 0.50)
+rag_config = full_cfg.get("RAG", {})
+MIN_RAG_SCORE = rag_config.get("minScore", 0.50)
+
+# Filtrar chunks con score mínimo de relevancia
+relevant_chunks = [c for c in chunks if c.get("score", 0) >= MIN_RAG_SCORE]
+```
+
+### Valores recomendados
+
+| minScore | Comportamiento |
+|----------|----------------|
+| 0.50 | Más resultados, puede incluir menos relevantes |
+| 0.60 | Balance cantidad/relevancia |
+| 0.70 | Solo muy relevantes (puede dar vacío) |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/ControlPython/startup/neven_http_server.py` | Lee `minScore` de config en vez de hardcoded |
+| `C:\NEVEN\startup\neven_http_server.py` | Sincronizado |
+| `C:\NEVEN\neven-config.json` | +sección RAG con minScore, topK, paths |
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar en Excel con minScore=0.50 |
+| **ALTA** | git commit + push de todos los cambios |
+| **MEDIA** | Agregar UI en TaskPane para ajustar minScore |
+
+
+
+---
+
+### Sesión 2026-08-19 (~13:40) — VERIFICACIÓN: Flujo de traducción RAG
+
+## ✅ CONFIRMADO: Orden correcto de traducción
+
+El flujo de traducción multilingüe está implementado correctamente:
+
+```
+1. engine.get_available_languages()     → ['en'] (idiomas en el índice)
+2. engine.translate_query_for_languages(query, languages)  → query expandida
+3. engine.query_with_ontology(expanded_query)  → búsqueda con traducción
+```
+
+**Ejemplo con "Que es el ACP?":**
+- Input: `"Que es el ACP?"`
+- Idiomas detectados: `['en']`
+- Query expandida: `"Que es el ACP? PCA principal component analysis componentes principales"`
+- Búsqueda ejecutada con la query traducida
+
+**Cuando se agreguen libros en otros idiomas:**
+- `get_available_languages()` devolverá `['en', 'es', 'pt', 'fr']`
+- La traducción incluirá términos en todos esos idiomas
+
+No se realizaron cambios de código en esta sesión.
+
+
+
+---
+
+### Sesión 2026-08-19 (~13:45) — FIX: BOM en neven-config.json
+
+## 🔧 CORREGIDO: UTF-8 BOM causaba error de parsing
+
+### Error
+```
+No se pudo leer neven-config.json: Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)
+```
+
+### Causa raíz
+PowerShell `Set-Content -Encoding UTF8` agrega BOM (bytes `239 187 191`) al inicio del archivo. Python `json.load()` con encoding `utf-8` no tolera BOM.
+
+### Fix aplicado
+```powershell
+$content = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
+```
+
+### Recordatorio
+**NUNCA usar `Set-Content -Encoding UTF8` para archivos que Python leerá.**
+Siempre usar:
+```powershell
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
+```
+
+### Archivos corregidos
+- `C:\NEVEN\neven-config.json` — BOM eliminado
+
+
+
+---
+
+### Sesión 2026-08-19 (~13:55) — DEBUG: Fuentes RAG no se muestran
+
+## 🔧 EN PROGRESO: Diagnóstico de rag_sources vacío
+
+### Síntoma
+El chat responde correctamente pero no muestra el botón "Ver fuentes" aunque el RAG está activo (endpoint `/api/rag/stats` funciona).
+
+### Diagnóstico en curso
+
+1. **Frontend verificado** — `_showRagSourcesPopup` y el código del botón existen en producción
+2. **RAG Engine funciona** — `/api/rag/stats` devuelve 9 docs, 3690 chunks
+3. **Logs no muestran RAG** — No aparecen mensajes `[RAG]` durante el chat
+
+### Hipótesis
+El bloque RAG no se está ejecutando o hay un error silencioso antes del logging.
+
+### Acción tomada
+Agregado logging de diagnóstico:
+```python
+_log.info(f"[RAG] _RAG_AVAILABLE={_RAG_AVAILABLE}, _get_rag_engine={_get_rag_engine is not None}")
+```
+
+### Archivos modificados
+- `NEVEN/ControlPython/startup/neven_http_server.py` — +logging diagnóstico
+- `C:\NEVEN\startup\neven_http_server.py` — Sincronizado
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar en Excel y revisar logs para ver si `_RAG_AVAILABLE=True` |
+| **ALTA** | Identificar por qué el bloque RAG no se ejecuta |
+| **MEDIA** | Agregar UI para configurar minScore |
+| **MEDIA** | git commit + push de todos los cambios |
+
+
+
+---
+
+### Sesión 2026-08-19 (~14:10) — DEBUG: Continuación diagnóstico RAG
+
+## 🔧 EN PROGRESO: Logs no aparecen en servidor
+
+### Observaciones
+- TaskPane muestra `[NEVEN] _aiCallLLM payload:` — el request se envía
+- Servidor no muestra logs de `[RAG]` ni `[AI_CHAT]`
+- El endpoint `/api/rag/stats` funciona (9 docs, 3690 chunks)
+
+### Acciones tomadas
+1. Agregado log `[AI_CHAT] Request recibido` al inicio de `_handle_ai_chat()`
+2. Servidor reiniciado
+
+### Archivos modificados (temporalmente para debug)
+- `C:\NEVEN\startup\neven_http_server.py` — +logging en _handle_ai_chat
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar y verificar si aparece `[AI_CHAT] Request recibido` |
+| **ALTA** | Identificar por qué el bloque RAG no genera logs |
+| **ALTA** | Sincronizar cambios de debug al repo |
+
+
+
+---
+
+### Sesión 2026-08-19 (~14:20) — FIX: Servidores HTTP duplicados
+
+## 🔧 IDENTIFICADO: Dos servidores escuchando en puerto 5555
+
+### Causa raíz
+Había **dos procesos Python** (PIDs 52916 y 71868) escuchando en el puerto 5555. El TaskPane se conectaba al servidor viejo que no tenía los cambios de RAG.
+
+### Solución
+1. Matar ambos procesos: `Stop-Process -Id 52916, 71868 -Force`
+2. Reiniciar un solo servidor limpio
+3. Recargar el TaskPane en Excel
+
+### Comando para verificar duplicados
+```powershell
+netstat -ano | Select-String ":5555.*LISTENING"
+```
+
+### Lección aprendida
+Siempre verificar que no haya procesos duplicados antes de diagnosticar problemas de "logs no aparecen".
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Recargar TaskPane y probar fuentes RAG |
+| **ALTA** | Verificar que aparece `[AI_CHAT] Request recibido` en logs |
+
+
+
+---
+
+### Sesión 2026-08-19 (~14:30) — FIX: Caché Python con código viejo
+
+## 🔧 IDENTIFICADO: Error 'get_available_languages' no encontrado
+
+### Error en logs
+```
+[RAG] Error consultando: 'RAGEngine' object has no attribute 'get_available_languages'
+```
+
+### Causa raíz
+Python había cacheado una versión vieja de `rag_engine.py` en `__pycache__/`. Aunque el archivo fuente tenía el método, el bytecode compilado no lo incluía.
+
+### Solución
+```powershell
+Remove-Item "C:\NEVEN\TaskPane\__pycache__" -Recurse -Force
+Remove-Item "C:\NEVEN\startup\__pycache__" -Recurse -Force
+```
+Luego reiniciar el servidor.
+
+### Lección aprendida
+**Siempre limpiar `__pycache__` después de actualizar archivos Python en producción.**
+
+### Logs ahora muestran
+```
+[AI_CHAT] Request recibido
+[RAG] _RAG_AVAILABLE=True, _get_rag_engine=True
+```
+El diagnóstico funcionó — el bloque RAG sí se está ejecutando.
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar en Excel después de limpiar caché |
+| **ALTA** | Verificar que aparecen fuentes RAG |
+
+
+
+---
+
+### Sesión 2026-08-19 (~14:40) — FIX: Dos copias de rag_engine.py
+
+## ✅ CORREGIDO: Servidor cargaba versión vieja de rag_engine.py
+
+### Error
+```
+[RAG] Error consultando: 'RAGEngine' object has no attribute 'get_available_languages'
+```
+
+### Causa raíz
+Había **dos copias** de `rag_engine.py` en producción:
+
+| Ubicación | Tamaño | Versión |
+|-----------|--------|---------|
+| `C:\NEVEN\TaskPane\rag_engine.py` | 42,574 bytes | ✅ Actualizada |
+| `C:\NEVEN\startup\rag_engine.py` | 33,957 bytes | ❌ Vieja |
+
+El servidor HTTP corre desde `C:\NEVEN\startup\` y Python importa `rag_engine` desde el **directorio local primero** (antes de buscar en `sys.path`).
+
+### Solución
+```powershell
+[System.IO.File]::Copy(
+    "C:\NEVEN\TaskPane\rag_engine.py",
+    "C:\NEVEN\startup\rag_engine.py",
+    $true
+)
+Remove-Item "C:\NEVEN\startup\__pycache__" -Recurse -Force
+```
+
+### Lección aprendida
+En NEVEN hay archivos Python en **múltiples directorios**:
+- `C:\NEVEN\startup\` — servidor HTTP y scripts de inicio
+- `C:\NEVEN\TaskPane\` — módulos del TaskPane
+
+Cuando se actualiza un módulo compartido como `rag_engine.py`, hay que copiarlo a **TODOS** los directorios donde pueda ser importado.
+
+### Archivos sincronizados
+- `C:\NEVEN\startup\rag_engine.py` — ahora tiene la versión actualizada
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar en Excel que aparezcan fuentes RAG |
+| **MEDIA** | Considerar eliminar la copia en startup y usar import desde TaskPane |
+| **MEDIA** | git commit + push de todos los cambios |
+
+
+
+---
+
+### Sesión 2026-08-19 (~14:50) — DEBUG: Agregando más logs
+
+## 🔧 EN PROGRESO: Verificando resultados RAG
+
+### Avances
+- La traducción de query funciona: `Que es el ACP? PCA principal component analysis componentes principales`
+- El log muestra `[RAG] Query expandida (1 idiomas)...` ✅
+
+### Problema pendiente
+No aparece log de "Contexto enriquecido" ni "Chunks descartados", lo que indica que:
+1. `query_with_ontology` no devuelve resultados, o
+2. Hay un error silencioso
+
+### Acción tomada
+Agregado log para ver resultado de la query:
+```python
+rag_result = engine.query_with_ontology(query_for_rag, top_k=3)
+_log.info(f"[RAG] Resultado: {len(rag_result.get('results', []))} chunks encontrados")
+```
+
+### Archivos modificados
+- `C:\NEVEN\startup\neven_http_server.py` — +log de resultado RAG
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar y revisar logs para ver cuántos chunks se encuentran |
+| **ALTA** | Identificar por qué no se muestran fuentes |
 
