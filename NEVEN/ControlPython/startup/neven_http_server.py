@@ -1786,6 +1786,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
         # ═══════════════════════════════════════════════════════════════════════
         rag_context = ""
         rag_domains = []
+        rag_sources = []  # Inicializar fuentes RAG
+        _log.info(f"[RAG] _RAG_AVAILABLE={_RAG_AVAILABLE}, _get_rag_engine={_get_rag_engine is not None}")
         if _RAG_AVAILABLE and _get_rag_engine:
             try:
                 # Extraer la pregunta del último mensaje del usuario
@@ -1793,47 +1795,67 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 if user_messages:
                     last_question = user_messages[-1].get("content", "")[:500]  # Limitar a 500 chars
                     
-                    # Consultar RAG con ontología
+                    # Obtener idiomas disponibles y expandir query con traducciones
                     engine = _get_rag_engine()
-                    rag_result = engine.query_with_ontology(last_question, top_k=3)
+                    available_languages = engine.get_available_languages()
+                    query_for_rag = engine.translate_query_for_languages(
+                        last_question, 
+                        available_languages if available_languages else ["en", "es"]
+                    )
+                    
+                    _log.info(f"[RAG] Query expandida ({len(available_languages)} idiomas): {query_for_rag[:100]}...")
+                    
+                    # Consultar RAG con ontología
+                    rag_result = engine.query_with_ontology(query_for_rag, top_k=3)
                     
                     if rag_result.get("results"):
                         rag_domains = rag_result.get("detected_domains", [])
                         chunks = rag_result["results"]
                         
-                        # Construir contexto RAG
-                        rag_parts = []
-                        for i, chunk in enumerate(chunks, 1):
-                            source = chunk.get("filename", "unknown")
-                            domain = chunk.get("domain", "general")
-                            score = chunk.get("score", 0)
-                            content = chunk.get("content", "")[:800]  # Limitar cada chunk
-                            rag_parts.append(
-                                f"[Fuente {i}: {source} ({domain}, relevancia: {score:.2f})]\n{content}"
-                            )
+                        # Leer umbral mínimo desde config (default 0.50)
+                        rag_config = full_cfg.get("RAG", {})
+                        MIN_RAG_SCORE = rag_config.get("minScore", 0.50)
                         
-                        if rag_parts:
-                            rag_context = (
-                                "\n\n## CONTEXTO DE LIBROS DE REFERENCIA (RAG)\n"
-                                "Los siguientes fragmentos provienen de libros de econometría, "
-                                "estadística y Excel indexados en la base de conocimiento:\n\n"
-                                + "\n\n---\n\n".join(rag_parts)
-                                + "\n\n---\nUsa esta información para fundamentar tu respuesta. "
-                                "NO cites las fuentes en el texto, el sistema las mostrará en un popup.\n"
-                            )
-                            # Guardar fuentes con chunk de texto para el popup
-                            rag_sources = [
-                                {
-                                    "filename": c.get("filename"),
-                                    "domain": c.get("domain"),
-                                    "page": c.get("page"),
-                                    "page_end": c.get("page_end"),
-                                    "score": round(c.get("score", 0), 2),
-                                    "content": c.get("content", "")[:500]  # Limitar a 500 chars
-                                }
-                                for c in chunks
-                            ]
-                            _log.info(f"[RAG] Contexto enriquecido: {len(chunks)} chunks, dominios: {rag_domains}")
+                        # Filtrar chunks con score mínimo de relevancia
+                        relevant_chunks = [c for c in chunks if c.get("score", 0) >= MIN_RAG_SCORE]
+                        
+                        if not relevant_chunks:
+                            _log.info(f"[RAG] Chunks descartados por bajo score (max: {max(c.get('score',0) for c in chunks):.2f} < {MIN_RAG_SCORE})")
+                        else:
+                            chunks = relevant_chunks
+                            # Construir contexto RAG
+                            rag_parts = []
+                            for i, chunk in enumerate(chunks, 1):
+                                source = chunk.get("filename", "unknown")
+                                domain = chunk.get("domain", "general")
+                                score = chunk.get("score", 0)
+                                content = chunk.get("content", "")[:800]  # Limitar cada chunk
+                                rag_parts.append(
+                                    f"[Fuente {i}: {source} ({domain}, relevancia: {score:.2f})]\n{content}"
+                                )
+                            
+                            if rag_parts:
+                                rag_context = (
+                                    "\n\n## CONTEXTO DE LIBROS DE REFERENCIA (RAG)\n"
+                                    "Los siguientes fragmentos provienen de libros de econometría, "
+                                    "estadística y Excel indexados en la base de conocimiento:\n\n"
+                                    + "\n\n---\n\n".join(rag_parts)
+                                    + "\n\n---\nUsa esta información para fundamentar tu respuesta. "
+                                    "NO cites las fuentes en el texto, el sistema las mostrará en un popup.\n"
+                                )
+                                # Guardar fuentes con chunk de texto para el popup
+                                rag_sources = [
+                                    {
+                                        "filename": c.get("filename"),
+                                        "domain": c.get("domain"),
+                                        "page": c.get("page"),
+                                        "page_end": c.get("page_end"),
+                                        "score": round(c.get("score", 0), 2),
+                                        "content": c.get("content", "")[:500]  # Limitar a 500 chars
+                                    }
+                                    for c in chunks
+                                ]
+                                _log.info(f"[RAG] Contexto enriquecido: {len(chunks)} chunks, dominios: {rag_domains}")
             except Exception as e:
                 _log.warning(f"[RAG] Error consultando: {e}")
                 # Continuar sin RAG si falla

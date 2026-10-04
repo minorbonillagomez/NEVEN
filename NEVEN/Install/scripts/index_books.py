@@ -10,16 +10,18 @@ from rag_engine import RAGEngine, extract_text_with_pages, chunk_text_with_pages
 DB_PATH = r"C:\NEVEN\data\rag_index.duckdb"
 ONTOLOGY_PATH = r"C:\NEVEN\docs\ontologia"
 
+# Formato: (ruta, dominio, nombre, idioma)
+# Idiomas soportados: en, es, fr, de, pt
 BOOKS = [
-    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\wooldridge_j-_2002_econometric_analysis_of_cross_section_and_panel_data.pdf", "econometria", "Wooldridge - Panel Data"),
-    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\Time-Series-Analysis-with-Applications-in-R-Second-Edition.pdf", "econometria", "Time Series Analysis in R"),
-    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\Fundamentals of causal inference using R.pdf", "econometria", "Causal Inference in R"),
-    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\100 Statistical Tests In R by N.D. Lewis.pdf", "estadistica", "100 Statistical Tests in R"),
-    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\An Introduction to Spatial Data Analysis in R.pdf", "econometria", "Spatial Data Analysis in R"),
-    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\A-Portable-Workbook-for-Data-Analysis-R-for-the-Social-Sciences-1766019185.pdf", "estadistica", "R for Social Sciences"),
-    (r"C:\Users\Minor Bonilla G\Downloads\CFI-Excel-eBook.pdf", "excel", "CFI Excel eBook"),
-    (r"C:\Users\Minor Bonilla G\Downloads\dokumen.pub_microsoft-excel-365-bible-1nbsped-1119835100-9781119835103.pdf", "excel", "Excel 365 Bible"),
-    (r"C:\Users\Minor Bonilla G\Downloads\Excel tutorial - Excel basics.pdf", "excel", "Excel Basics Tutorial"),
+    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\wooldridge_j-_2002_econometric_analysis_of_cross_section_and_panel_data.pdf", "econometria", "Wooldridge - Panel Data", "en"),
+    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\Time-Series-Analysis-with-Applications-in-R-Second-Edition.pdf", "econometria", "Time Series Analysis in R", "en"),
+    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\Fundamentals of causal inference using R.pdf", "econometria", "Causal Inference in R", "en"),
+    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\100 Statistical Tests In R by N.D. Lewis.pdf", "estadistica", "100 Statistical Tests in R", "en"),
+    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\An Introduction to Spatial Data Analysis in R.pdf", "econometria", "Spatial Data Analysis in R", "en"),
+    (r"F:\ANTIGRAVITY\2026\NEVEN\ONTOLOGIA\LIBROS ECONOMETRIA\A-Portable-Workbook-for-Data-Analysis-R-for-the-Social-Sciences-1766019185.pdf", "estadistica", "R for Social Sciences", "en"),
+    (r"C:\Users\Minor Bonilla G\Downloads\CFI-Excel-eBook.pdf", "excel", "CFI Excel eBook", "en"),
+    (r"C:\Users\Minor Bonilla G\Downloads\dokumen.pub_microsoft-excel-365-bible-1nbsped-1119835100-9781119835103.pdf", "excel", "Excel 365 Bible", "en"),
+    (r"C:\Users\Minor Bonilla G\Downloads\Excel tutorial - Excel basics.pdf", "excel", "Excel Basics Tutorial", "en"),
 ]
 
 if __name__ == "__main__":
@@ -29,14 +31,14 @@ if __name__ == "__main__":
     
     engine = RAGEngine(db_path=DB_PATH, ontology_path=ONTOLOGY_PATH)
     
-    for i, (path, domain, name) in enumerate(BOOKS, 1):
-        print(f"[{i}/{len(BOOKS)}] {name}...", end=" ", flush=True)
+    for i, (path, domain, name, language) in enumerate(BOOKS, 1):
+        print(f"[{i}/{len(BOOKS)}] {name} ({language})...", end=" ", flush=True)
         if not os.path.exists(path):
             print("NOT FOUND")
             continue
         try:
-            # Usar el nuevo método que preserva páginas
-            doc_id = engine.add_pdf_with_pages(path, name, domain=domain)
+            # Usar el nuevo método que preserva páginas e idioma
+            doc_id = engine.add_pdf_with_pages(path, name, domain=domain, language=language)
             # Contar chunks para el log
             pages = extract_text_with_pages(path)
             chunks = chunk_text_with_pages(pages)

@@ -5317,6 +5317,37 @@ function _aiAddMessage(role, content, ragSources) {
     bubble.innerHTML = typeof _markdownToHtml === 'function'
       ? _markdownToHtml(content)
       : content.replace(/\n/g, '<br>');
+    
+    // Aplicar KaTeX a fórmulas que no fueron detectadas por _markdownToHtml
+    // (líneas con comandos LaTeX sin delimitadores $...$)
+    if (typeof katex !== 'undefined') {
+      var mathDivs = bubble.querySelectorAll('p, div');
+      mathDivs.forEach(function(el) {
+        if (el.querySelector('.katex')) return; // ya procesado
+        var text = el.innerHTML;
+        // Detectar líneas con múltiples comandos LaTeX sin delimitadores
+        if ((text.match(/\\[a-zA-Z]+/g) || []).length >= 2) {
+          // Envolver toda la línea si parece ser una fórmula
+          var hasEquals = text.indexOf('=') !== -1;
+          var hasSubscript = text.indexOf('_') !== -1 || text.indexOf('^') !== -1;
+          if (hasEquals || hasSubscript) {
+            try {
+              // Extraer solo el contenido LaTeX (quitar tags HTML)
+              var plainText = el.textContent || el.innerText;
+              if ((plainText.match(/\\[a-zA-Z]+/g) || []).length >= 2) {
+                el.innerHTML = katex.renderToString(plainText, {
+                  displayMode: true,
+                  throwOnError: false
+                });
+              }
+            } catch (e) {
+              console.warn('[KaTeX] Error rendering formula:', e.message);
+            }
+          }
+        }
+      });
+    }
+    
     // Renderizar diagramas Mermaid pendientes (async)
     if (typeof renderPendingMermaidDiagrams === 'function') {
       renderPendingMermaidDiagrams(bubble);
@@ -5351,29 +5382,46 @@ function _cleanPdfArtifacts(text) {
   if (!text) return text;
   var cleaned = text
     // Patrones matemáticos comunes de PDFs LaTeX corruptos
-    // E[y|x] aparece como Eðy j xÞ - convertir a notación legible (sin KaTeX)
+    // E[y|x] aparece como Eðy j xÞ - convertir a notación legible
     .replace(/Eðy\s*j\s*x([\w,;]*?)Þ/g, 'E[y|x$1]')
     .replace(/Eð([a-z])\s*j\s*([a-z,;\s]+?)Þ/g, 'E[$1|$2]')
     
-    // Símbolos griegos corruptos - solo limpiar, no envolver en $
+    // Símbolos griegos y matemáticos corruptos de fuentes Type1
     .replace(/ð/g, '[')
     .replace(/Þ/g, ']')
     .replace(/¼/g, '=')
+    .replace(/½/g, '1/2')
     .replace(/þ/g, ']')
+    .replace(/П/g, '||')  // norma ||x||
+    .replace(/П2/g, '||^2')
+    .replace(/П/g, '||')
     
-    // Ligaduras tipográficas
+    // Porcentaje corrupto (Su%ocient -> Sufficient)
+    .replace(/%o/g, 'ffi')  // ligadura ffi corrupta como %o
+    .replace(/%u/g, 'ffi')
+    .replace(/%ce/g, 'ffi')
+    .replace(/%/g, 'ff')   // ligadura ff corrupta
+    
+    // Ligaduras tipográficas estándar
     .replace(/ﬀ/g, 'ff')
     .replace(/ﬁ/g, 'fi')
     .replace(/ﬂ/g, 'fl')
     .replace(/ﬃ/g, 'ffi')
     .replace(/ﬄ/g, 'ffl')
     
-    // Caracteres especiales de fuentes matemáticas
-    .replace(/¤/g, 'ff')  // ff ligature corrupta
+    // Caracteres especiales adicionales
+    .replace(/¤/g, 'ff')
+    .replace(/—/g, '-')   // em dash
+    .replace(/–/g, '-')   // en dash
+    .replace(/'/g, "'")   // smart quote
+    .replace(/'/g, "'")
+    .replace(/"/g, '"')
+    .replace(/"/g, '"')
     
     // Guiones de separación de palabras
     .replace(/- \n/g, '')
     .replace(/-\n/g, '')
+    .replace(/- (?=[a-z])/g, '')  // guión seguido de minúscula (palabra cortada)
     
     // Espacios múltiples
     .replace(/\s{2,}/g, ' ')
