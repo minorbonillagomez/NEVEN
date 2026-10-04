@@ -2,7 +2,53 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-20 15:15
+> **Última actualización:** 2026-08-20 16:00
+
+---
+
+### Sesión 2026-08-20 (~15:45) — Actualización de Evaluaciones con RAG
+
+## ✅ Evaluaciones actualizadas con sistema RAG y ontología como metaheurística
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Evaluaciones/Evaluacion_doctoral.md` | +Secciones 2.19-2.20: RAG Engine, Steering YAML |
+| `NEVEN/docs/Evaluaciones/Evaluacion_comercial.md` | +Fortalezas 20-22: RAG, ontología, multi-idioma |
+| `NEVEN/docs/Evaluaciones/EVALUACION_MIBOGO.md` | +Análisis sesión RAG, notas actualizadas |
+
+### Contenido agregado
+
+**Doctoral:**
+- Diagrama de arquitectura del sistema RAG (4 capas)
+- Explicación de ontología como metaheurística de búsqueda
+- Comparación con sistemas RAG tradicionales
+- Tabla actualizada: 19 de 21 capacidades son innovaciones sobre BERT
+
+**Comercial:**
+- Nuevo tier de precio sugerido: NEVEN Studio + RAG ($399/año)
+- Argumento de ventas para clientes corporativos (respuestas verificables)
+- Impacto del RAG en propuesta de valor
+
+**MiBoGo:**
+- Análisis del diagnóstico de la sesión (aislamiento de variables)
+- Notas actualizadas: Desarrollador 8.2→8.3, AI Engineer 8.8→8.9
+
+### Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `6a1d70b` | docs(eval): actualizar evaluaciones con RAG y ontología como metaheurística |
+| `fd16529` | docs(eval): actualizar EVALUACION_MIBOGO con sesión RAG |
+
+### Pendientes próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **BAJA** | Expandir diccionario de traducción multi-idioma con más términos |
+| **BAJA** | Benchmarks RAG: medir impacto de ontología en precision/recall |
 
 ---
 
