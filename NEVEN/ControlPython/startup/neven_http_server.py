@@ -1781,6 +1781,61 @@ class NEVENHandler(BaseHTTPRequestHandler):
         except Exception:
             catalog_section = ""
 
+        # ═══════════════════════════════════════════════════════════════════════
+        # RAG: Ontology-Guided Retrieval — Enriquece el contexto con libros indexados
+        # ═══════════════════════════════════════════════════════════════════════
+        rag_context = ""
+        rag_domains = []
+        if _RAG_AVAILABLE and _get_rag_engine:
+            try:
+                # Extraer la pregunta del último mensaje del usuario
+                user_messages = [m for m in messages if m.get("role") == "user"]
+                if user_messages:
+                    last_question = user_messages[-1].get("content", "")[:500]  # Limitar a 500 chars
+                    
+                    # Consultar RAG con ontología
+                    engine = _get_rag_engine()
+                    rag_result = engine.query_with_ontology(last_question, top_k=3)
+                    
+                    if rag_result.get("results"):
+                        rag_domains = rag_result.get("detected_domains", [])
+                        chunks = rag_result["results"]
+                        
+                        # Construir contexto RAG
+                        rag_parts = []
+                        for i, chunk in enumerate(chunks, 1):
+                            source = chunk.get("filename", "unknown")
+                            domain = chunk.get("domain", "general")
+                            score = chunk.get("score", 0)
+                            content = chunk.get("content", "")[:800]  # Limitar cada chunk
+                            rag_parts.append(
+                                f"[Fuente {i}: {source} ({domain}, relevancia: {score:.2f})]\n{content}"
+                            )
+                        
+                        if rag_parts:
+                            rag_context = (
+                                "\n\n## CONTEXTO DE LIBROS DE REFERENCIA (RAG)\n"
+                                "Los siguientes fragmentos provienen de libros de econometría, "
+                                "estadística y Excel indexados en la base de conocimiento:\n\n"
+                                + "\n\n---\n\n".join(rag_parts)
+                                + "\n\n---\nUsa esta información para fundamentar tu respuesta. "
+                                "NO cites las fuentes en el texto, el sistema las mostrará en un popup.\n"
+                            )
+                            # Guardar fuentes con chunk de texto para el popup
+                            rag_sources = [
+                                {
+                                    "filename": c.get("filename"),
+                                    "domain": c.get("domain"),
+                                    "score": round(c.get("score", 0), 2),
+                                    "content": c.get("content", "")[:500]  # Limitar a 500 chars
+                                }
+                                for c in chunks
+                            ]
+                            _log.info(f"[RAG] Contexto enriquecido: {len(chunks)} chunks, dominios: {rag_domains}")
+            except Exception as e:
+                _log.warning(f"[RAG] Error consultando: {e}")
+                # Continuar sin RAG si falla
+
         has_excel_context   = "=== DATOS DE EXCEL ===" in context
         has_results_context = "=== RESULTADOS DEL ANÁLISIS ===" in context
         has_sheet_analysis  = (
@@ -1908,6 +1963,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     + _fmt
                 )
 
+            # ═══ Inyectar contexto RAG si existe ═══
+            if rag_context:
+                sys_content = sys_content + rag_context
+
             sys_msg = {"role": "system", "content": sys_content}
             messages = [sys_msg] + [m for m in messages if m.get("role") != "system"]
         else:
@@ -2018,6 +2077,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
             "reply":       reply,
             "model":       model,
             "tokens_used": tokens,
+            "rag_used":    bool(rag_context),
+            "rag_domains": rag_domains if rag_context else [],
+            "rag_sources": rag_sources if rag_context else [],
         })
 
     def _handle_show_taskpane(self):

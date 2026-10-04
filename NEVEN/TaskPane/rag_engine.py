@@ -662,6 +662,16 @@ class RAGEngine:
 
 _rag_instance: Optional[RAGEngine] = None
 
+def reset_rag_engine():
+    """Fuerza recreación del singleton en el próximo get_rag_engine()."""
+    global _rag_instance
+    if _rag_instance is not None:
+        try:
+            _rag_instance.close()
+        except:
+            pass
+        _rag_instance = None
+
 def get_rag_engine(db_path: str = None) -> RAGEngine:
     """
     Obtiene la instancia singleton del motor RAG.

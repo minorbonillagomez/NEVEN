@@ -224,7 +224,6 @@
     <!-- <div class="tab" data-tab="excel-analysis">Excel</div> -->
     <div class="tab" data-tab="presentaciones">Presentaciones</div>
     <div class="tab" data-tab="ai">IA</div>
-    <div class="tab" data-tab="rag">RAG</div>
     <div class="tab" data-tab="ayuda">Ayuda</div>
     <div class="tab" data-tab="settings" title="Configuracion NEVEN"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
   </div>
@@ -660,118 +659,6 @@
 
   </div><!-- /tab ai -->
 
-  <!-- Tab: RAG (Ontology-Guided Retrieval) -->
-  <div class="tab-content" id="rag">
-    
-    <!-- Estadisticas del indice -->
-    <div class="card" id="rag-stats-card">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="card-title" style="margin-bottom:0">Base de Conocimiento</div>
-        <button class="btn btn-secondary" id="rag-refresh-btn" style="padding:2px 8px;font-size:10px">
-          Actualizar
-        </button>
-      </div>
-      <div id="rag-stats" style="font-size:11px;color:var(--text-secondary);margin-top:8px">
-        Cargando estadisticas...
-      </div>
-    </div>
-
-    <!-- Cargar documento -->
-    <div class="card">
-      <div class="card-title">Agregar Documento</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="rag-file-path" placeholder="Ruta al archivo (PDF, TXT, MD)"
-                 style="flex:1;padding:6px 8px;font-size:11px;border:1px solid var(--border);
-                        border-radius:4px;background:var(--bg-primary);color:var(--text-primary)">
-          <button class="btn btn-secondary" id="rag-browse-btn" style="padding:6px 10px">...</button>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <label style="font-size:10px;color:var(--text-secondary);width:60px">Dominio:</label>
-          <select id="rag-domain-select" style="flex:1;padding:5px 8px;font-size:11px;
-                  border:1px solid var(--border);border-radius:4px;
-                  background:var(--bg-primary);color:var(--text-primary)">
-            <option value="general">General</option>
-            <option value="econometria">Econometria</option>
-            <option value="estadistica">Estadistica</option>
-            <option value="machine_learning">Machine Learning</option>
-            <option value="series_tiempo">Series de Tiempo</option>
-            <option value="excel">Excel</option>
-            <option value="r">R</option>
-            <option value="python">Python</option>
-            <option value="julia">Julia</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" id="rag-upload-btn">Indexar Documento</button>
-      </div>
-      <div id="rag-upload-status" style="font-size:10px;margin-top:6px;display:none"></div>
-    </div>
-
-    <!-- Agregar texto directo -->
-    <details class="card" style="padding:0">
-      <summary style="padding:10px 12px;cursor:pointer;font-size:11px;font-weight:500;
-                      color:var(--text-primary);list-style:none;display:flex;align-items:center;gap:6px">
-        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" 
-             stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        Agregar Texto Directo
-      </summary>
-      <div style="padding:0 12px 12px 12px;display:flex;flex-direction:column;gap:8px">
-        <input type="text" id="rag-text-name" placeholder="Nombre del documento"
-               style="padding:6px 8px;font-size:11px;border:1px solid var(--border);
-                      border-radius:4px;background:var(--bg-primary);color:var(--text-primary)">
-        <textarea id="rag-text-content" placeholder="Pega o escribe el contenido aqui..."
-                  style="min-height:80px;padding:8px;font-size:11px;border:1px solid var(--border);
-                         border-radius:4px;background:var(--bg-primary);color:var(--text-primary);
-                         resize:vertical;font-family:inherit"></textarea>
-        <button class="btn btn-secondary" id="rag-upload-text-btn">Indexar Texto</button>
-      </div>
-    </details>
-
-    <!-- Documentos indexados -->
-    <div class="card">
-      <div class="card-title">Documentos Indexados</div>
-      <div id="rag-documents-list" style="max-height:150px;overflow-y:auto;font-size:11px">
-        <div style="color:var(--text-secondary);padding:8px 0">Sin documentos indexados</div>
-      </div>
-    </div>
-
-    <!-- Busqueda semantica -->
-    <div class="card">
-      <div class="card-title">Busqueda Semantica</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <textarea id="rag-query-input" placeholder="Escribe tu pregunta..."
-                  style="min-height:50px;padding:8px;font-size:11px;border:1px solid var(--border);
-                         border-radius:4px;background:var(--bg-primary);color:var(--text-primary);
-                         resize:vertical;font-family:inherit"></textarea>
-        <div style="display:flex;gap:6px;align-items:center">
-          <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-secondary)">
-            <input type="checkbox" id="rag-use-ontology" checked style="margin:0">
-            Guiar con ontologia
-          </label>
-          <label style="font-size:10px;color:var(--text-secondary);margin-left:auto">Top:</label>
-          <select id="rag-top-k" style="padding:3px 6px;font-size:10px;border:1px solid var(--border);
-                  border-radius:3px;background:var(--bg-primary);color:var(--text-primary)">
-            <option value="3">3</option>
-            <option value="5" selected>5</option>
-            <option value="10">10</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" id="rag-search-btn">Buscar</button>
-      </div>
-    </div>
-
-    <!-- Resultados de busqueda -->
-    <div class="card" id="rag-results-card" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="card-title" style="margin-bottom:0">Resultados</div>
-        <span id="rag-results-meta" style="font-size:9px;color:var(--text-secondary)"></span>
-      </div>
-      <div id="rag-results-list" style="display:flex;flex-direction:column;gap:8px">
-      </div>
-    </div>
-
-  </div><!-- /tab rag -->
-
   <!-- Tab: Excel Analysis -->
   <div class="tab-content" id="excel-analysis">
     <div class="card">
@@ -1030,6 +917,7 @@
       <div class="settings-tab" data-settings-tab="db" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conexiones DB</div>
       <div class="settings-tab" data-settings-tab="prompts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Prompts</div>
       <div class="settings-tab" data-settings-tab="ontology" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conocimiento</div>
+      <div class="settings-tab" data-settings-tab="rag" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">RAG</div>
       <div class="settings-tab" data-settings-tab="notebooks" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Notebooks</div>
       <div class="settings-tab" data-settings-tab="engines" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Motores</div>
       <div class="settings-tab" data-settings-tab="charts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Gráficos</div>
@@ -1357,6 +1245,113 @@
         </div>
       </div>
     </div>
+
+    <!-- Panel: RAG (Ontology-Guided Retrieval) -->
+    <div class="settings-panel" id="settings-rag" style="display:none;padding:8px;overflow-y:auto;max-height:calc(100vh - 140px)">
+      
+      <!-- Estadisticas del indice -->
+      <div class="card" id="rag-stats-card" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="card-title" style="margin-bottom:0">Base de Conocimiento</div>
+          <button class="btn btn-secondary" id="rag-refresh-btn" style="padding:2px 8px;font-size:10px">Actualizar</button>
+        </div>
+        <div id="rag-stats" style="font-size:11px;color:var(--text-secondary);margin-top:8px">Cargando estadisticas...</div>
+      </div>
+
+      <!-- Cargar documento -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title">Agregar Documento</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="text" id="rag-file-path" placeholder="Ruta al archivo (PDF, TXT, MD)"
+                   style="flex:1;padding:6px 8px;font-size:11px;border:1px solid var(--border);
+                          border-radius:4px;background:var(--bg-primary);color:var(--text-primary)">
+            <button class="btn btn-secondary" id="rag-browse-btn" style="padding:6px 10px">...</button>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <label style="font-size:10px;color:var(--text-secondary);width:60px">Dominio:</label>
+            <select id="rag-domain-select" style="flex:1;padding:5px 8px;font-size:11px;
+                    border:1px solid var(--border);border-radius:4px;
+                    background:var(--bg-primary);color:var(--text-primary)">
+              <option value="general">General</option>
+              <option value="econometria">Econometria</option>
+              <option value="estadistica">Estadistica</option>
+              <option value="machine_learning">Machine Learning</option>
+              <option value="series_tiempo">Series de Tiempo</option>
+              <option value="excel">Excel</option>
+              <option value="r">R</option>
+              <option value="python">Python</option>
+              <option value="julia">Julia</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="rag-upload-btn">Indexar Documento</button>
+        </div>
+        <div id="rag-upload-status" style="font-size:10px;margin-top:6px;display:none"></div>
+      </div>
+
+      <!-- Agregar texto directo -->
+      <details class="card" style="padding:0;margin-bottom:8px">
+        <summary style="padding:10px 12px;cursor:pointer;font-size:11px;font-weight:500;
+                        color:var(--text-primary);list-style:none;display:flex;align-items:center;gap:6px">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" 
+               stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          Agregar Texto Directo
+        </summary>
+        <div style="padding:0 12px 12px 12px;display:flex;flex-direction:column;gap:8px">
+          <input type="text" id="rag-text-name" placeholder="Nombre del documento"
+                 style="padding:6px 8px;font-size:11px;border:1px solid var(--border);
+                        border-radius:4px;background:var(--bg-primary);color:var(--text-primary)">
+          <textarea id="rag-text-content" placeholder="Pega o escribe el contenido aqui..."
+                    style="min-height:80px;padding:8px;font-size:11px;border:1px solid var(--border);
+                           border-radius:4px;background:var(--bg-primary);color:var(--text-primary);
+                           resize:vertical;font-family:inherit"></textarea>
+          <button class="btn btn-secondary" id="rag-upload-text-btn">Indexar Texto</button>
+        </div>
+      </details>
+
+      <!-- Documentos indexados -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title">Documentos Indexados</div>
+        <div id="rag-documents-list" style="max-height:150px;overflow-y:auto;font-size:11px">
+          <div style="color:var(--text-secondary);padding:8px 0">Sin documentos indexados</div>
+        </div>
+      </div>
+
+      <!-- Busqueda semantica -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title">Busqueda Semantica</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <textarea id="rag-query-input" placeholder="Escribe tu pregunta..."
+                    style="min-height:50px;padding:8px;font-size:11px;border:1px solid var(--border);
+                           border-radius:4px;background:var(--bg-primary);color:var(--text-primary);
+                           resize:vertical;font-family:inherit"></textarea>
+          <div style="display:flex;gap:6px;align-items:center">
+            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-secondary)">
+              <input type="checkbox" id="rag-use-ontology" checked style="margin:0">
+              Guiar con ontologia
+            </label>
+            <label style="font-size:10px;color:var(--text-secondary);margin-left:auto">Top:</label>
+            <select id="rag-top-k" style="padding:3px 6px;font-size:10px;border:1px solid var(--border);
+                    border-radius:3px;background:var(--bg-primary);color:var(--text-primary)">
+              <option value="3">3</option>
+              <option value="5" selected>5</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="rag-search-btn">Buscar</button>
+        </div>
+      </div>
+
+      <!-- Resultados de busqueda -->
+      <div class="card" id="rag-results-card" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="card-title" style="margin-bottom:0">Resultados</div>
+          <span id="rag-results-meta" style="font-size:9px;color:var(--text-secondary)"></span>
+        </div>
+        <div id="rag-results-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+
+    </div><!-- /settings-rag -->
 
     <!-- Panel: Notebooks / Pluto.jl -->
     <div class="settings-panel" id="settings-notebooks" style="display:none;padding:8px;overflow-y:auto;max-height:calc(100vh - 140px)">
@@ -5279,7 +5274,8 @@ function _aiCallLLM(extra) {
         return;
       }
 
-      _aiAddMessage('assistant', data.reply);
+      // Pasar rag_sources para mostrar el boton de fuentes RAG
+      _aiAddMessage('assistant', data.reply, data.rag_sources || null);
       _aiState.tokenAccum += (data.tokens_used || 0);
       if (_aiState.tokenAccum > 0) {
         tokenInfo.textContent = _aiState.tokenAccum.toLocaleString() + ' tokens usados';
@@ -5292,7 +5288,7 @@ function _aiCallLLM(extra) {
     });
 }
 
-function _aiAddMessage(role, content) {
+function _aiAddMessage(role, content, ragSources) {
   // Actualizar estado (no guardar errores en el historial)
   if (role !== 'error') {
     _aiState.messages.push({ role: role, content: content });
@@ -5324,6 +5320,18 @@ function _aiAddMessage(role, content) {
     if (typeof renderPendingMermaidDiagrams === 'function') {
       renderPendingMermaidDiagrams(bubble);
     }
+    
+    // Agregar boton de fuentes RAG si hay sources disponibles
+    if (ragSources && ragSources.length > 0) {
+      var sourcesBtn = document.createElement('button');
+      sourcesBtn.className = 'btn btn-secondary';
+      sourcesBtn.style.cssText = 'font-size:10px;padding:3px 8px;margin-top:8px;display:block;';
+      sourcesBtn.textContent = 'Ver fuentes (' + ragSources.length + ')';
+      sourcesBtn.onclick = function() {
+        _showRagSourcesPopup(ragSources);
+      };
+      bubble.appendChild(sourcesBtn);
+    }
   } else {
     bubble.textContent = content;
   }
@@ -5331,6 +5339,127 @@ function _aiAddMessage(role, content) {
   history.appendChild(bubble);
   // Scroll al fondo
   history.scrollTop = history.scrollHeight;
+}
+
+/**
+ * Limpia artefactos de extracción de PDF (símbolos matemáticos corruptos)
+ * @param {string} text - Texto con posibles artefactos
+ * @returns {string} Texto limpio
+ */
+function _cleanPdfArtifacts(text) {
+  if (!text) return text;
+  return text
+    // Símbolos matemáticos corruptos comunes
+    .replace(/Eðy/g, 'E[y')
+    .replace(/ðy/g, '[y')
+    .replace(/ðx/g, '[x')
+    .replace(/Þ/g, ']')
+    .replace(/¼/g, '=')
+    .replace(/ð/g, '[')
+    .replace(/þ/g, ']')
+    // Ligaduras tipográficas
+    .replace(/ﬀ/g, 'ff')
+    .replace(/ﬁ/g, 'fi')
+    .replace(/ﬂ/g, 'fl')
+    .replace(/ﬃ/g, 'ffi')
+    .replace(/ﬄ/g, 'ffl')
+    // Guiones de separación de palabras
+    .replace(/- \n/g, '')
+    .replace(/-\n/g, '')
+    // Espacios múltiples
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+/**
+ * Muestra un popup modal con las fuentes RAG utilizadas para la respuesta.
+ * @param {Array} sources - Array de {filename, domain, score, content}
+ */
+function _showRagSourcesPopup(sources) {
+  // Crear overlay
+  var overlay = document.createElement('div');
+  overlay.style.cssText = [
+    'position:fixed;top:0;left:0;right:0;bottom:0;',
+    'background:rgba(0,0,0,0.6);z-index:9999;',
+    'display:flex;align-items:center;justify-content:center;'
+  ].join('');
+  overlay.onclick = function(e) {
+    if (e.target === overlay) document.body.removeChild(overlay);
+  };
+
+  // Crear popup
+  var popup = document.createElement('div');
+  popup.style.cssText = [
+    'background:var(--bg-primary);border-radius:12px;',
+    'max-width:600px;width:90%;max-height:80vh;overflow:hidden;',
+    'box-shadow:0 8px 32px rgba(0,0,0,0.3);',
+    'display:flex;flex-direction:column;'
+  ].join('');
+
+  // Header
+  var header = document.createElement('div');
+  header.style.cssText = [
+    'padding:16px 20px;border-bottom:1px solid var(--border);',
+    'display:flex;justify-content:space-between;align-items:center;'
+  ].join('');
+  header.innerHTML = '<span style="font-weight:600;font-size:14px;">Fuentes de conocimiento</span>';
+  
+  var closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);';
+  closeBtn.innerHTML = 'x';
+  closeBtn.onclick = function() { document.body.removeChild(overlay); };
+  header.appendChild(closeBtn);
+
+  // Content
+  var content = document.createElement('div');
+  content.style.cssText = 'padding:16px 20px;overflow-y:auto;flex:1;';
+
+  sources.forEach(function(src, idx) {
+    var card = document.createElement('div');
+    card.style.cssText = [
+      'background:var(--bg-secondary);border:1px solid var(--border);',
+      'border-radius:8px;padding:12px;margin-bottom:12px;'
+    ].join('');
+
+    // Metadata line
+    var meta = document.createElement('div');
+    meta.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--text-secondary);';
+    meta.innerHTML = [
+      '<span><b>Archivo:</b> ' + (src.filename || 'N/A') + '</span>',
+      '<span><b>Dominio:</b> ' + (src.domain || 'N/A') + '</span>',
+      '<span><b>Score:</b> ' + (src.score ? src.score.toFixed(3) : 'N/A') + '</span>'
+    ].join('');
+
+    // Content text
+    var text = document.createElement('div');
+    text.style.cssText = [
+      'font-size:12px;line-height:1.5;color:var(--text-primary);',
+      'max-height:150px;overflow-y:auto;white-space:pre-wrap;',
+      'background:var(--bg-tertiary);padding:8px;border-radius:4px;'
+    ].join('');
+    text.textContent = _cleanPdfArtifacts(src.content) || '[Sin contenido]';
+
+    card.appendChild(meta);
+    card.appendChild(text);
+    content.appendChild(card);
+  });
+
+  // Footer
+  var footer = document.createElement('div');
+  footer.style.cssText = 'padding:12px 20px;border-top:1px solid var(--border);text-align:right;';
+  
+  var okBtn = document.createElement('button');
+  okBtn.className = 'btn btn-primary';
+  okBtn.style.cssText = 'padding:6px 16px;';
+  okBtn.textContent = 'Cerrar';
+  okBtn.onclick = function() { document.body.removeChild(overlay); };
+  footer.appendChild(okBtn);
+
+  popup.appendChild(header);
+  popup.appendChild(content);
+  popup.appendChild(footer);
+  overlay.appendChild(popup);
+  document.body.appendChild(overlay);
 }
 
 function _aiClear() {
@@ -6195,8 +6324,8 @@ window._renderCreateFunctionBlock = function(jsonStr) {
       });
     }
     
-    // Cargar datos iniciales cuando se muestra el tab RAG
-    var ragTab = document.querySelector('[data-tab="rag"]');
+    // Cargar datos iniciales cuando se muestra el sub-tab RAG en settings
+    var ragTab = document.querySelector('[data-settings-tab="rag"]');
     if (ragTab) {
       ragTab.addEventListener('click', function() {
         ragLoadStats();

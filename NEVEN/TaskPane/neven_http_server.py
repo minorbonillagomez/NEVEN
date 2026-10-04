@@ -151,6 +151,19 @@ except ImportError:
     DB_DEFAULT_PORTS = {}
 
 
+# RAG Engine — Ontology-Guided Retrieval Augmented Generation
+try:
+    from rag_engine import (  # type: ignore
+        get_rag_engine as _get_rag_engine,
+        RAGEngine as _RAGEngine,
+    )
+    _RAG_AVAILABLE = True
+except ImportError:
+    _RAG_AVAILABLE = False
+    _get_rag_engine = None
+    _RAGEngine = None
+
+
 def _is_broken_pipe(exc: Exception, msg: str) -> bool:
     """Return True when *exc* indicates the Named Pipe connection was lost.
 
@@ -891,6 +904,17 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._serve_file(file_path)
             return
 
+        # ══════════════════════════════════════════════════════════════════════
+        # RAG Engine — GET endpoints
+        # ══════════════════════════════════════════════════════════════════════
+        if path == 'api/rag/documents':
+            self._handle_rag_documents()
+            return
+        
+        if path == 'api/rag/stats':
+            self._handle_rag_stats()
+            return
+
         # Serve static files (taskpane, assets)
         static_dir = _config.get("staticDir", "C:\\NEVEN\\taskpane")
         if path == '' or path == 'taskpane.html':
@@ -1037,6 +1061,17 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_config_prompt_save(body)
         elif path == 'api/config/reload':
             self._handle_config_reload()
+        # ══════════════════════════════════════════════════════════════════════
+        # RAG Engine — Ontology-Guided Retrieval Augmented Generation
+        # ══════════════════════════════════════════════════════════════════════
+        elif path == 'api/rag/upload':
+            self._handle_rag_upload(body)
+        elif path == 'api/rag/upload-text':
+            self._handle_rag_upload_text(body)
+        elif path == 'api/rag/query':
+            self._handle_rag_query(body)
+        elif path == 'api/rag/delete':
+            self._handle_rag_delete(body)
         # ══════════════════════════════════════════════════════════════════════
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
@@ -1746,6 +1781,51 @@ class NEVENHandler(BaseHTTPRequestHandler):
         except Exception:
             catalog_section = ""
 
+        # ═══════════════════════════════════════════════════════════════════════
+        # RAG: Ontology-Guided Retrieval — Enriquece el contexto con libros indexados
+        # ═══════════════════════════════════════════════════════════════════════
+        rag_context = ""
+        rag_domains = []
+        if _RAG_AVAILABLE and _get_rag_engine:
+            try:
+                # Extraer la pregunta del último mensaje del usuario
+                user_messages = [m for m in messages if m.get("role") == "user"]
+                if user_messages:
+                    last_question = user_messages[-1].get("content", "")[:500]  # Limitar a 500 chars
+                    
+                    # Consultar RAG con ontología
+                    engine = _get_rag_engine()
+                    rag_result = engine.query_with_ontology(last_question, top_k=3)
+                    
+                    if rag_result.get("results"):
+                        rag_domains = rag_result.get("detected_domains", [])
+                        chunks = rag_result["results"]
+                        
+                        # Construir contexto RAG
+                        rag_parts = []
+                        for i, chunk in enumerate(chunks, 1):
+                            source = chunk.get("filename", "unknown")
+                            domain = chunk.get("domain", "general")
+                            score = chunk.get("score", 0)
+                            content = chunk.get("content", "")[:800]  # Limitar cada chunk
+                            rag_parts.append(
+                                f"[Fuente {i}: {source} ({domain}, relevancia: {score:.2f})]\n{content}"
+                            )
+                        
+                        if rag_parts:
+                            rag_context = (
+                                "\n\n## CONTEXTO DE LIBROS DE REFERENCIA (RAG)\n"
+                                "Los siguientes fragmentos provienen de libros de econometría, "
+                                "estadística y Excel indexados en la base de conocimiento:\n\n"
+                                + "\n\n---\n\n".join(rag_parts)
+                                + "\n\n---\nUsa esta información para fundamentar tu respuesta "
+                                "cuando sea relevante. Cita las fuentes si aplica.\n"
+                            )
+                            _log.info(f"[RAG] Contexto enriquecido: {len(chunks)} chunks, dominios: {rag_domains}")
+            except Exception as e:
+                _log.warning(f"[RAG] Error consultando: {e}")
+                # Continuar sin RAG si falla
+
         has_excel_context   = "=== DATOS DE EXCEL ===" in context
         has_results_context = "=== RESULTADOS DEL ANÁLISIS ===" in context
         has_sheet_analysis  = (
@@ -1872,6 +1952,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     + (catalog_section + "\n\n" if catalog_section else "")
                     + _fmt
                 )
+
+            # ═══ Inyectar contexto RAG si existe ═══
+            if rag_context:
+                sys_content = sys_content + rag_context
 
             sys_msg = {"role": "system", "content": sys_content}
             messages = [sys_msg] + [m for m in messages if m.get("role") != "system"]
@@ -2820,6 +2904,159 @@ class NEVENHandler(BaseHTTPRequestHandler):
             
         except Exception as e:
             self._send_error_json(f"Error cargando funciones: {e}", 500)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # RAG Engine handlers — Ontology-Guided Retrieval Augmented Generation
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def _handle_rag_documents(self):
+        """GET /api/rag/documents — List all indexed documents."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            docs = engine.list_documents()
+            self._send_json({
+                "status": "ok",
+                "documents": docs,
+                "count": len(docs)
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG documents error: {e}")
+
+    def _handle_rag_stats(self):
+        """GET /api/rag/stats — Get RAG engine statistics."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            stats = engine.get_stats()
+            self._send_json({
+                "status": "ok",
+                "stats": stats
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG stats error: {e}")
+
+    def _handle_rag_upload(self, body: dict):
+        """POST /api/rag/upload — Upload and index a document file."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        file_path = body.get("file_path")
+        domain = body.get("domain", "general")
+        metadata = body.get("metadata", {})
+        
+        if not file_path:
+            self._send_error_json("Missing 'file_path'", 400)
+            return
+        
+        if not os.path.isfile(file_path):
+            self._send_error_json(f"File not found: {file_path}", 404)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            doc_id = engine.add_document(file_path, domain=domain, metadata=metadata)
+            self._send_json({
+                "status": "ok",
+                "doc_id": doc_id,
+                "message": f"Document indexed successfully"
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG upload error: {e}")
+
+    def _handle_rag_upload_text(self, body: dict):
+        """POST /api/rag/upload-text — Upload and index text directly."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        text = body.get("text")
+        doc_name = body.get("name", "untitled")
+        domain = body.get("domain", "general")
+        metadata = body.get("metadata", {})
+        
+        if not text:
+            self._send_error_json("Missing 'text'", 400)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            doc_id = engine.add_text(text, doc_name, domain=domain, metadata=metadata)
+            self._send_json({
+                "status": "ok",
+                "doc_id": doc_id,
+                "message": f"Text indexed successfully"
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG upload text error: {e}")
+
+    def _handle_rag_query(self, body: dict):
+        """POST /api/rag/query — Query the RAG index."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        question = body.get("question") or body.get("query")
+        domain = body.get("domain")
+        top_k = int(body.get("top_k", 5))
+        use_ontology = body.get("use_ontology", True)
+        
+        if not question:
+            self._send_error_json("Missing 'question' or 'query'", 400)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            
+            if use_ontology:
+                result = engine.query_with_ontology(question, top_k=top_k)
+            else:
+                results = engine.query(question, domain=domain, top_k=top_k)
+                result = {
+                    "question": question,
+                    "detected_domains": [],
+                    "ontology_guided": False,
+                    "results": results
+                }
+            
+            self._send_json({
+                "status": "ok",
+                **result
+            })
+        except Exception as e:
+            self._send_error_json(f"RAG query error: {e}")
+
+    def _handle_rag_delete(self, body: dict):
+        """POST /api/rag/delete — Delete a document from the index."""
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        doc_id = body.get("doc_id")
+        
+        if not doc_id:
+            self._send_error_json("Missing 'doc_id'", 400)
+            return
+        
+        try:
+            engine = _get_rag_engine()
+            success = engine.delete_document(doc_id)
+            if success:
+                self._send_json({
+                    "status": "ok",
+                    "message": f"Document {doc_id} deleted"
+                })
+            else:
+                self._send_error_json(f"Failed to delete document {doc_id}")
+        except Exception as e:
+            self._send_error_json(f"RAG delete error: {e}")
 
     def _handle_analyze(self, body):
         """Analyze the loaded dataset."""
