@@ -2064,3 +2064,40 @@ Corregido definitivamente el flujo de la portada — cada elemento en su propio 
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-8) — Eliminado diagrama de flujo de portada
+
+## Logro
+
+Eliminado el diagrama de flujo de la portada. La información ya está explicada en el cuerpo del texto — el diagrama era redundante y causó múltiples problemas de rendering.
+
+## Decisión de diseño
+
+**Eliminar en lugar de reparar.** Después de 4 intentos fallidos de hacer que el flujo se renderizara verticalmente (KaTeX inline, KaTeX display, HTML `<div>`), la decisión correcta fue eliminarlo. El texto de la portada ya describe los motores y su integración con Excel.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/00-portada.md` | Eliminado bloque `<div>` con diagrama de flujo |
+| `NEVEN/docs/neven-docs.html` | Regenerado (247.4 KB) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `cee791d` | fix(portada): remove flow diagram - explained in body text |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
