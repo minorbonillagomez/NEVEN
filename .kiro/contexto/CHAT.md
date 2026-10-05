@@ -2140,3 +2140,40 @@ El usuario fue consultado sobre si alguna nota necesita actualizarse — sesión
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-10) — Fix score portada aplicado
+
+## Logro
+
+Corregido el score en la portada de la documentación. El cambio en `00-portada.md` ya existía del intento anterior — solo faltaba ejecutar el rebuild.
+
+## Causa raíz
+
+El fix `\boxed{9.6/10}` → `\boxed{9.71 \approx 9.7/10}` había sido escrito en `00-portada.md` en la sesión anterior, pero la ejecución del rebuild fue interrumpida antes de completarse. El archivo fuente tenía el cambio correcto; el HTML generado no.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/00-portada.md` | `\boxed{9.6/10}` → `\boxed{9.71 \approx 9.7/10}` (ya estaba; solo rebuild) |
+| `NEVEN/docs/neven-docs.html` | Regenerado (247.4 KB) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `a1a3257` | fix(portada): correct score 9.6/10 -> 9.71 ~= 9.7/10 |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
