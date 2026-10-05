@@ -1191,7 +1191,7 @@
               <input type="text" id="ontology-file-path" placeholder="C:\Ruta\al\libro.pdf" style="flex:1;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
               <button class="btn btn-secondary" id="btn-ontology-browse" style="padding:4px 8px;font-size:9px">...</button>
             </div>
-            <div style="font-size:8px;color:var(--text-muted);margin-top:2px">Solo archivos PDF con texto seleccionable</div>
+            <div style="font-size:8px;color:var(--text-muted);margin-top:2px">PDF, DOCX, EPUB, TXT, MD con texto seleccionable</div>
           </div>
           
           <!-- Dominio destino -->
@@ -6458,6 +6458,30 @@ window._renderCreateFunctionBlock = function(jsonStr) {
       });
     }
     
+    // Boton browse para ontología (mismo mecanismo que RAG)
+    var ontologyBrowseBtn = document.getElementById('btn-ontology-browse');
+    if (ontologyBrowseBtn) {
+      ontologyBrowseBtn.addEventListener('click', async function() {
+        try {
+          ontologyBrowseBtn.disabled = true;
+          
+          var response = await fetch(API + '/api/rag/browse');
+          var data = await response.json();
+          
+          if (data.status === 'ok' && data.path) {
+            document.getElementById('ontology-file-path').value = data.path;
+            showToast('Archivo seleccionado: ' + data.filename);
+          } else if (data.status !== 'cancelled') {
+            showToast(data.error || 'Error al seleccionar archivo');
+          }
+        } catch (e) {
+          showToast('Error al abrir selector de archivos');
+        } finally {
+          ontologyBrowseBtn.disabled = false;
+        }
+      });
+    }
+
     // Boton subir texto
     var uploadTextBtn = document.getElementById('rag-upload-text-btn');
     if (uploadTextBtn) {
