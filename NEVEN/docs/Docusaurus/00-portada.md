@@ -35,7 +35,7 @@ NEVEN transforma Microsoft Excel en una plataforma de ciencia de datos. Permite 
 ### Calificacion del proyecto
 
 $
-\text{Score} = \frac{10 + 9.5 + 9.5 + 9.5 + 9.5 + 10 + 10}{7} = \frac{68}{7} = 9.71 \quad \Rightarrow \quad \boxed{9.6/10}
+\text{Score} = \frac{10 + 9.5 + 9.5 + 9.5 + 9.5 + 10 + 10}{7} = \frac{68}{7} = 9.71 \quad \Rightarrow \quad \boxed{9.71 \approx 9.7/10}
 $
 
 | Dimension | Nota |
