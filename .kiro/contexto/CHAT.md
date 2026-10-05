@@ -2,7 +2,47 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-20 16:30
+> **Última actualización:** 2026-08-19 (sesión MarkItDown completada)
+
+---
+
+### Sesión 2026-08-19 — Integración de MarkItDown en RAG ✅
+
+## 📋 Implementación completada
+
+### Cambios realizados
+
+**Nuevas funciones en `rag_engine.py`:**
+- `extract_with_markitdown(file_path)` — extracción simple a Markdown
+- `extract_text_with_pages_markitdown(file_path)` — con preservación de páginas
+- Modificación de `extract_text_with_pages()` para usar MarkItDown como primario
+
+**Estrategia de fallback:**
+1. Intenta MarkItDown primero
+2. Si falla, usa PyMuPDF como fallback
+3. Para PDFs: pdfplumber para página + MarkItDown para calidad
+
+### Tests realizados
+- Paper NEVEN (main.pdf): 31 páginas, 59,278 caracteres extraídos
+- Indexación: 19 chunks creados, dominio "neven" agregado
+- Consultas RAG: scores 0.64-0.68 para preguntas relevantes
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/rag_engine.py` | +127 líneas (funciones MarkItDown) |
+| `NEVEN/TaskPane/requirements.txt` | Nuevo (dependencias Python) |
+| `C:\NEVEN\startup\rag_engine.py` | Sincronizado con repositorio |
+
+### Commits realizados
+| Hash | Descripción |
+|------|-------------|
+| `0059535` | feat(rag): integrate Microsoft MarkItDown for PDF/DOCX extraction |
+
+### Estado del RAG
+- 10 documentos indexados (antes 9)
+- 3,709 chunks totales (antes 3,690)
+- Dominios: excel (3), econometria (4), estadistica (2), neven (1)
 
 ---
 
