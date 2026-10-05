@@ -2101,3 +2101,42 @@ Eliminado el diagrama de flujo de la portada. La información ya está explicada
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-9) — Revisión tabla de calificaciones
+
+## Sin cambios aplicados
+
+Sesión de verificación. Se inspeccionó la tabla de calificaciones en `00-portada.md` antes de proceder con el fix del score.
+
+## Estado verificado
+
+La fórmula ya tiene `9.71` correcto (corregido en esta sesión), pero el `\boxed{}` aún dice `9.6/10` — el fix ya estaba en el archivo pero no se aplicó el rebuild porque la ejecución fue interrumpida.
+
+**Notas en la tabla — estado actual:**
+
+| Dimensión | Nota | Estado |
+|-----------|------|--------|
+| Funcionalidad | 10 | OK |
+| Calidad de Código | 9.5 | Pendiente validar con usuario |
+| Seguridad | 9.5 | Pendiente validar con usuario |
+| Mantenibilidad | 9.5 | Pendiente validar con usuario |
+| Confiabilidad | 9.5 | Pendiente validar con usuario |
+| Testing | 10 | OK |
+| Documentación | 10 | OK |
+
+**Suma:** 68 / 7 = 9.714 → 9.71 ≈ 9.7/10 ✓ (fórmula consistente con las notas)
+
+El usuario fue consultado sobre si alguna nota necesita actualizarse — sesión terminó antes de recibir respuesta.
+
+## Pendiente INMEDIATO para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Confirmar si las notas de la tabla están actualizadas, luego aplicar: rebuild + sync + commit del fix `9.6/10` → `9.71 ≈ 9.7/10` |
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
