@@ -139,7 +139,61 @@ Esto significa que **la ontología crece con el uso**.
 
 ---
 
-## 14.7 Troubleshooting
+## 14.7 Visualizaciones Interactivas
+
+NEVEN incluye visualizadores interactivos para explorar las ontologías de forma visual. Estas herramientas permiten entender las relaciones entre conceptos, funciones y métodos.
+
+### Exploradores disponibles
+
+| Visualización | Descripción | Ubicación |
+|:---|:---|:---|
+| **Grafo 2D** | Red interactiva con zoom, pan y búsqueda | `docs/ontologia/econometrics/graph_visualization.html` |
+| **Grafo 3D** | Visualización tridimensional rotable | `docs/ontologia/econometrics/graph_visualization_3d.html` |
+
+### Cómo abrir las visualizaciones
+
+**Desde Windows Explorer:**
+1. Navegar a `C:\NEVEN\docs\ontologia\econometrics\`
+2. Doble clic en `graph_visualization.html`
+3. Se abre en el navegador predeterminado
+
+**Desde NEVEN Studio:**
+1. Pestaña **Ayuda** → **Explorar Ontología**
+2. Seleccionar dominio (Econometría, Excel, NEVEN)
+
+### Características del explorador 2D
+
+- **Búsqueda:** Filtrar nodos por nombre o tipo
+- **Zoom:** Rueda del mouse o botones +/-
+- **Pan:** Arrastrar el fondo
+- **Selección:** Click en nodo muestra detalles
+- **Colores por tipo:**
+  - 🔵 Métodos estadísticos
+  - 🟠 Conceptos teóricos
+  - 🔴 Supuestos
+  - 🟢 Paquetes R
+  - 🟣 Frameworks
+
+### Características del explorador 3D
+
+- **Rotación:** Arrastrar para rotar la vista
+- **Zoom:** Rueda del mouse
+- **Profundidad:** Las relaciones se ven en 3 dimensiones
+- **Clusters:** Nodos relacionados se agrupan visualmente
+
+### Ejemplo: Explorando regresión lineal
+
+1. Abrir `graph_visualization.html`
+2. Buscar "linear regression"
+3. Ver conexiones a:
+   - Supuestos (homoscedasticidad, normalidad)
+   - Métodos relacionados (OLS, GLS, WLS)
+   - Paquetes R que lo implementan (stats, lm)
+   - Conceptos teóricos (MCO, estimadores)
+
+---
+
+## 14.8 Troubleshooting
 
 **El Excel Consultant no reconoce funciones:**
 - Verificar que `graph.jsonl` existe en el dominio correcto
