@@ -13,10 +13,7 @@ $
 \text{Excel} \xrightarrow{\text{Named Pipes}} \begin{cases} \text{R 4.4.1} & \text{(Estadistica)} \\ \text{Julia 1.12.6} & \text{(Matematica / ML)} \\ \text{Python 3.12} & \text{(Data Science / IA)} \end{cases} \xrightarrow{\text{WebView2}} \text{Visualizacion Interactiva}
 $
 
-**Universidad de Costa Rica**\
-Maestria en Matematica Aplicada\
-Autor: Minor Bonilla Gomez\
-Setiembre 2026
+**<span style="color:#111">Buklo</span><span style="color:#e53935">LAB</span>**
 
 ---
 

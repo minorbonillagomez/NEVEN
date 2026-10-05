@@ -93,6 +93,7 @@ if (-not $SkipSync) {
 
     # -- docs (documentacion trackeada en git) --
     Sync-File (Join-Path $repoRoot 'docs\RAG_GUIDE.md')             (Join-Path $distDir 'docs\RAG_GUIDE.md')
+    Sync-File (Join-Path $repoRoot 'docs\neven-docs.html')          (Join-Path $distDir 'docs\neven-docs.html')
 
     # -- ontologias (docs/ontologia/) --
     Sync-Dir  (Join-Path $repoRoot 'docs\ontologia')                (Join-Path $distDir 'docs\ontologia')
