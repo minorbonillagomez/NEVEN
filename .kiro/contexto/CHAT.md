@@ -2,7 +2,71 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-19 (sesión MarkItDown + evaluaciones)
+> **Última actualización:** 2026-08-19 (sesión MarkItDown + evaluaciones + instalador)
+
+---
+
+### Sesión 2026-08-19 (~continuación) — Actualización del Instalador con RAG ✅
+
+## 📋 Instalador actualizado para usuario final
+
+### Principio aplicado
+> "Lo que podemos hacer en producción, lo debe poder hacer el usuario también"
+
+### Logros principales
+
+1. **Archivos RAG copiados a Dist/startup/** — 16 módulos Python de producción
+2. **Ontologías incluidas** — neven-core, econometrics, excel-functions
+3. **Dependencias Python actualizadas** — RAG + MarkItDown
+4. **Guía RAG_GUIDE.md creada** — flujo AGENTE→ONTOLOGÍA→RAG→AGENTE
+5. **Configuración RAG en template** — topK, minScore, paths
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/Install/Install-NEVEN.ps1` | +dependencias RAG, copia todos .py, docs, data/ |
+| `NEVEN/Install/neven-config.template.json` | +sección RAG |
+| `NEVEN/Install/Dist/startup/*.py` | 16 módulos Python copiados |
+| `NEVEN/Install/Dist/docs/ontologia/` | Ontologías completas |
+| `NEVEN/Install/Dist/docs/RAG_GUIDE.md` | Guía de uso RAG |
+| `NEVEN/Install/Dist/neven-config.json` | +sección RAG |
+| `NEVEN/Install/Dist/data/` | Directorio para índice DuckDB |
+
+### Commits realizados
+| Hash | Descripción |
+|------|-------------|
+| `86cacdd` | feat(installer): add RAG + MarkItDown support |
+
+### Decisiones de diseño
+
+1. **Copiar TODOS los .py de startup** — no lista fija, copia todo lo que exista
+2. **Dist/ ignorado en git** — se actualiza manualmente, Build-Installers.ps1 solo genera .exe
+3. **Directorio data/ vacío** — índice DuckDB se crea en primer uso
+
+### Dependencias Python agregadas al instalador
+```
+# Core (existentes)
+scikit-learn, numpy, PyPDF2, python-docx, folium, duckdb
+
+# RAG Engine (nuevas)
+fastembed, pyyaml, pdfplumber, pymupdf, httpx, openai
+
+# MarkItDown (nueva)
+markitdown[pdf,docx,xlsx,pptx]
+```
+
+### El usuario ahora puede
+- Indexar documentos (PDF, DOCX, XLSX, PPTX) en el RAG
+- Consultar con ontología como guía de búsqueda
+- Expandir ontología siguiendo RAG_GUIDE.md
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **MEDIA** | Re-indexar libros existentes con MarkItDown |
+| **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **BAJA** | Regenerar NEVEN-v3.2-Setup.zip con nuevos archivos |
 
 ---
 
