@@ -1943,3 +1943,60 @@ Reemplazada la fórmula horizontal por `\begin{array}{c}` con flechas `\downarro
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-6) — Flujo portada: cada motor en su renglón
+
+## Logro
+
+Corregido el flujo de la portada para que cada motor (R, Julia, Python) aparezca en su propio renglón.
+
+## Causa raíz
+
+El intento anterior cambió `\xrightarrow` a `\begin{array}{c}` con flechas verticales, pero mantuvo `\begin{cases}` para los tres motores. `\begin{cases}` es un entorno matemático que coloca sus elementos en una sola línea horizontal — por eso los tres motores seguían apareciendo juntos en la misma fila.
+
+## Intento fallido
+
+**Sesión anterior:** `\begin{array}{c}` con `\begin{cases}` anidado. Las flechas se volvieron verticales pero los tres motores quedaron en la misma línea porque `\begin{cases}` no respeta el flujo vertical del `array` padre.
+
+## Solución correcta
+
+Eliminar completamente `\begin{cases}` y poner cada motor como renglón independiente dentro del `\begin{array}{c}`:
+
+```latex
+\begin{array}{c}
+\text{Excel} \\
+\downarrow_{\scriptsize\text{Named Pipes}} \\
+\text{R 4.4.1} \quad \text{(Estadistica)} \\
+\text{Julia 1.12.6} \quad \text{(Matematica / ML)} \\
+\text{Python 3.12} \quad \text{(Data Science / IA)} \\
+\downarrow_{\scriptsize\text{WebView2}} \\
+\text{Visualizacion Interactiva}
+\end{array}
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/00-portada.md` | Eliminado `\begin{cases}`, cada motor en renglón propio |
+| `NEVEN/docs/neven-docs.html` | Regenerado (247.8 KB) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `e670578` | fix(portada): each engine on its own row, remove cases block |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
