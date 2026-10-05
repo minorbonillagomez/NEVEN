@@ -1663,3 +1663,11 @@ Script que sincroniza archivos del repo a `Dist/` y genera el ZIP:
 | BAJA | Verificar que procesador de libros de ontología acepta DOCX/EPUB además de PDF |
 
 ---
+
+---
+
+### Sesión 2026-08-19 (~cierre final) — Sin cambios
+
+No hubo cambios técnicos. El usuario cerró la sesión después de confirmar que fue productiva.
+
+---
