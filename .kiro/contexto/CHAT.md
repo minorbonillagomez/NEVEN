@@ -1571,3 +1571,63 @@ También actualizado el hint text: "Solo archivos PDF con texto seleccionable" �
 | BAJA | Verificar que el procesador de libros de ontología acepta los nuevos formatos (DOCX, EPUB) además de PDF |
 
 ---
+
+---
+
+### Sesión 2026-08-19 (~madrugada-2) — Build-Setup.ps1 creado
+
+## Tarea MEDIA completada
+
+**Problema:** No existía un script para regenerar el ZIP del instalador. Se hacía ad-hoc con `Compress-Archive`, lo que implicaba que `docs/RAG_GUIDE.md` (trackeado en git) podía quedar desactualizado en `Dist/docs/` sin que nadie lo notara.
+
+## Solución: `NEVEN/Install/Build-Setup.ps1`
+
+Script que sincroniza archivos del repo a `Dist/` y genera el ZIP:
+
+```powershell
+.\Build-Setup.ps1          # sync completo + ZIP
+.\Build-Setup.ps1 -SkipSync  # solo ZIP (sin sync)
+```
+
+**Mapa de sincronización:**
+
+| Origen (repo) | Destino (Dist/) |
+|---------------|-----------------|
+| `TaskPane/*.py` | `startup/` |
+| `TaskPane/*.txt` (requirements.txt) | `startup/` |
+| `TaskPane/taskpane.html` | `taskpane/` |
+| `TaskPane/*.js` | `taskpane/` |
+| `TaskPane/*.css` | `taskpane/` |
+| `docs/RAG_GUIDE.md` | `docs/` |
+| `docs/ontologia/` | `docs/ontologia/` |
+| `Install/functions/` | `functions/` |
+| `libreria/R/` | `libreria/R/` |
+| `libreria/JULIA/` | `libreria/JULIA/` |
+| `libreria/Python/` | `libreria/Python/` |
+
+**Intento fallido:** Primera versión usaba `Sync-Dir libreria/` (toda la carpeta) → copió 400+ archivos extra (EJEMPLOS, Notebooks, Benchmarks, tests). Se corrigió a tres llamadas específicas `R/`, `JULIA/`, `Python/`.
+
+**Resultado:** 22.05 MB, 452 archivos. Antes era 21.96 MB/426 — diferencia por archivos nuevos (.js/.css) que no estaban en Dist.
+
+## Archivos
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/Install/Build-Setup.ps1` | Creado |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `c855625` | feat(install): add Build-Setup.ps1 to automate Dist sync and ZIP generation |
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar que el procesador de libros de ontología acepta DOCX, EPUB además de PDF |
+
+---
