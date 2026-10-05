@@ -16,6 +16,7 @@ const sidebars = {
     'simulacion-montecarlo',
     'neven-studio',
     'ontologias-excel-consultant',
+    'rag-ontologia-metaheuristica',
   ],
 };
 
