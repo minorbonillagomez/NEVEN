@@ -2177,3 +2177,65 @@ El fix `\boxed{9.6/10}` → `\boxed{9.71 \approx 9.7/10}` había sido escrito en
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~tarde) — Capítulo 3 Arquitectura reescrito
+
+## Logros principales
+
+### 1. Capítulo 3 completamente reescrito para v3.2
+
+**Problema:** El capítulo describía una arquitectura desactualizada:
+- Python no existía en ninguna sección
+- LanguageManager solo mencionaba R y Julia
+- RAG Engine completamente ausente
+- Tests decían 228 (ahora son 342)
+- API routes desactualizadas (sin /rag/*, /ontology/*, /rag/browse)
+- Julia sysimage no documentada
+- MenuService legacy aún aparecía como componente activo
+
+**Solución:** Reescritura completa del archivo `03-arquitectura.md`.
+
+### Secciones actualizadas
+
+| Sección | Cambio |
+|---------|--------|
+| 3.1 Capas | Python en LanguageManager y DiscoveryService |
+| **3.2 Motores** | **Nueva** — tabla R/Julia/Python + Julia sysimage (~415 MB) |
+| 3.3 Comunicación | Diagrama con 3 motores |
+| 3.4 Init flow | LanguageService[Python]::Connect() agregado |
+| 3.5 Decisiones | Python Stable ABI, sysimage Julia, DuckDB |
+| 3.7 Studio | Componentes actualizados, tabla API completa |
+| **3.9 RAG Engine** | **Nueva** — arquitectura, 12 formatos offline, DuckDB VSS, fastembed |
+| 3.10 Testing | 342 tests (antes 228), comando de ejecución |
+
+### Eliminado
+- `MenuService` (legacy, deshabilitado hace tiempo)
+- Flujo de comunicación solo R/Julia
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/03-arquitectura.md` | Reescritura completa (178 ins, 93 del) |
+| `NEVEN/docs/neven-docs.html` | Regenerado (251.2 KB, +3.8 KB) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `de188bf` | docs(cap3): rewrite architecture chapter for v3.2 |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| MEDIA | Revisar si otros capítulos (ej. cap 7 WebView2/Ribbon, cap 9 Mantenimiento) también requieren actualización |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
