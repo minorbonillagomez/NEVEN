@@ -28,6 +28,7 @@ const CHAPTERS = [
   { file: 'docusaurus/12-simulacion-montecarlo.md', title: 'Simulacion Monte Carlo' },
   { file: 'docusaurus/13-neven-studio.md',          title: 'NEVEN Studio' },
   { file: 'docusaurus/14-ontologias-excel-consultant.md', title: 'Ontologias y Excel Consultant' },
+  { file: 'docusaurus/15-rag-ontologia-metaheuristica.md', title: 'RAG y Ontologia' },
 ];
 
 const docsDir = __dirname;
