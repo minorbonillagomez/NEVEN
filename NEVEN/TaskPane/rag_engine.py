@@ -89,13 +89,111 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
     return chunks
 
 
-def extract_text_with_pages(file_path: str) -> List[Dict[str, Any]]:
+# ---------------------------------------------------------------------------
+# Extracción con MarkItDown (Microsoft)
+# ---------------------------------------------------------------------------
+
+def extract_with_markitdown(file_path: str) -> str:
     """
-    Extrae texto de un PDF con información de página.
+    Extrae texto de un archivo usando MarkItDown de Microsoft.
+    
+    Soporta: PDF, DOCX, XLSX, PPTX, HTML, TXT, MD, y más.
+    Preserva estructura como Markdown (headings, tablas, listas).
+    
+    Args:
+        file_path: Ruta al archivo
+    
+    Returns:
+        Texto extraído en formato Markdown
+    """
+    try:
+        from markitdown import MarkItDown
+        md = MarkItDown(enable_plugins=False)
+        result = md.convert(file_path)
+        return result.markdown
+    except ImportError:
+        raise ImportError("MarkItDown no instalado. Ejecuta: pip install 'markitdown[pdf,docx,xlsx,pptx]'")
+    except Exception as e:
+        print(f"[RAG] MarkItDown error para {file_path}: {e}")
+        raise
+
+
+def extract_text_with_pages_markitdown(file_path: str) -> List[Dict[str, Any]]:
+    """
+    Extrae texto de un archivo con información de página usando MarkItDown.
+    
+    Para PDFs, intenta preservar la estructura de páginas.
+    Para otros formatos, retorna todo como "página 1".
     
     Returns:
         Lista de dicts con {page: int, text: str}
     """
+    path = Path(file_path)
+    suffix = path.suffix.lower()
+    
+    # Para PDFs, usamos pdfplumber para mantener info de páginas
+    # pero procesamos el texto con MarkItDown para mejor estructura
+    if suffix == '.pdf':
+        try:
+            import pdfplumber
+            from markitdown import MarkItDown
+            
+            pages = []
+            with pdfplumber.open(file_path) as pdf:
+                for i, page in enumerate(pdf.pages, start=1):
+                    text = page.extract_text() or ""
+                    if text.strip():
+                        pages.append({"page": i, "text": text})
+            
+            # Si pdfplumber no extrajo bien, usar MarkItDown como fallback
+            if not pages or sum(len(p["text"]) for p in pages) < 100:
+                md = MarkItDown(enable_plugins=False)
+                result = md.convert(file_path)
+                if result.markdown.strip():
+                    return [{"page": 1, "text": result.markdown}]
+            
+            return pages
+            
+        except ImportError as e:
+            print(f"[RAG] Fallback a MarkItDown simple: {e}")
+            pass
+        except Exception as e:
+            print(f"[RAG] Error pdfplumber, usando MarkItDown: {e}")
+            pass
+    
+    # Para todos los demás formatos, usar MarkItDown directamente
+    try:
+        from markitdown import MarkItDown
+        md = MarkItDown(enable_plugins=False)
+        result = md.convert(file_path)
+        return [{"page": 1, "text": result.markdown}]
+    except ImportError:
+        # Fallback a lectura simple para archivos de texto
+        if suffix in ['.txt', '.md', '.r', '.py', '.jl', '.json', '.yaml', '.yml']:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                return [{"page": 1, "text": f.read()}]
+        raise ImportError("MarkItDown no instalado. Ejecuta: pip install 'markitdown[pdf,docx,xlsx,pptx]'")
+
+
+def extract_text_with_pages(file_path: str) -> List[Dict[str, Any]]:
+    """
+    Extrae texto de un archivo con información de página.
+    
+    Usa MarkItDown como método principal para mejor estructura.
+    Fallback a PyMuPDF si MarkItDown no está disponible.
+    
+    Returns:
+        Lista de dicts con {page: int, text: str}
+    """
+    # Intentar con MarkItDown primero
+    try:
+        return extract_text_with_pages_markitdown(file_path)
+    except ImportError:
+        pass
+    except Exception as e:
+        print(f"[RAG] MarkItDown falló, usando PyMuPDF: {e}")
+    
+    # Fallback a implementación original con PyMuPDF
     path = Path(file_path)
     suffix = path.suffix.lower()
     
@@ -115,7 +213,7 @@ def extract_text_with_pages(file_path: str) -> List[Dict[str, Any]]:
         doc.close()
         return pages
     except ImportError:
-        raise ImportError("PyMuPDF (fitz) no instalado. Ejecuta: pip install pymupdf")
+        raise ImportError("Ni MarkItDown ni PyMuPDF instalados. Ejecuta: pip install 'markitdown[pdf]' o pip install pymupdf")
 
 
 def chunk_text_with_pages(pages: List[Dict[str, Any]], chunk_size: int = 500, overlap: int = 50) -> List[Dict[str, Any]]:

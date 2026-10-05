@@ -1,0 +1,29 @@
+# NEVEN TaskPane / HTTP Server - Python Dependencies
+# ==================================================
+# Install: pip install -r requirements.txt
+
+# Core HTTP Server
+# (uses standard library http.server, no external deps)
+
+# RAG Engine - Ontology-Guided Retrieval
+duckdb>=0.10.0          # Vector search with VSS extension
+fastembed>=0.1.0        # Local embeddings (bge-small-en-v1.5)
+pyyaml>=6.0             # Ontology YAML parsing
+
+# Document Extraction (MarkItDown as primary, PyMuPDF as fallback)
+markitdown[pdf,docx,xlsx,pptx]>=0.1.0   # Microsoft's converter (MIT license)
+pdfplumber>=0.9.0       # Page-level PDF extraction
+pymupdf>=1.23.0         # Fallback PDF extraction
+
+# DuckDB integration  
+duckdb>=0.10.0          # SQL + vector similarity
+
+# AI Integration (optional)
+openai>=1.0.0           # Azure OpenAI / OpenAI API
+httpx>=0.24.0           # Async HTTP for AI calls
+
+# Protobuf for ControlR/Julia/Python communication
+protobuf>=4.0.0
+
+# Optional: Excel COM automation
+# pywin32>=305          # Only needed on Windows for Excel automation
