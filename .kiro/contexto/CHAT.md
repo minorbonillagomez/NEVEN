@@ -2000,3 +2000,67 @@ Eliminar completamente `\begin{cases}` y poner cada motor como renglón independ
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-7) — Flujo portada: HTML en lugar de KaTeX
+
+## Logro
+
+Corregido definitivamente el flujo de la portada — cada elemento en su propio renglón usando HTML puro en lugar de KaTeX.
+
+## Causa raíz y secuencia de intentos fallidos
+
+| Intento | Enfoque | Por qué falló |
+|---------|---------|---------------|
+| 1 | `$...\begin{array}{c}...$` | `$...$` es inline math — KaTeX colapsa todo en una línea sin importar `\\` |
+| 2 | `$...\begin{array}{c}...$` sin `\begin{cases}` | Mismo problema — seguía siendo `$` inline |
+| 3 | `$$...\begin{array}{c}...$$` | Correcto en teoría, pero el comando fue interrumpido antes de ejecutarse |
+| 4 | Sugerencia de `\newline` | No es comando KaTeX válido; `\\` es el correcto, pero solo funciona en display math (`$$`) |
+| **5 (solución)** | **HTML `<div>` con `<br>`** | **Funciona siempre — no depende del parser de KaTeX ni de marked** |
+
+## Lección crítica para el futuro
+
+- `$...$` = inline math → ignora saltos de línea. Siempre en una sola fila.
+- `$$...$$` = display math → respeta `\\`. Pero marked puede interferir.
+- Para diagramas de flujo de texto simple: **usar HTML directamente**, no KaTeX.
+
+## Solución aplicada
+
+```html
+<div style="text-align:center;padding:16px 0;line-height:2.4;font-size:14px">
+  <strong>Excel</strong><br>
+  ↓ <em style="font-size:11px">Named Pipes</em><br>
+  R 4.4.1 &nbsp;&nbsp; (Estadistica)<br>
+  Julia 1.12.6 &nbsp;&nbsp; (Matematica / ML)<br>
+  Python 3.12 &nbsp;&nbsp; (Data Science / IA)<br>
+  ↓ <em style="font-size:11px">WebView2</em><br>
+  <strong>Visualizacion Interactiva</strong>
+</div>
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/00-portada.md` | KaTeX → HTML `<div>` con `<br>` |
+| `NEVEN/docs/neven-docs.html` | Regenerado (247.9 KB) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `e670578` | fix(portada): each engine on its own row, remove cases block |
+| `eb9e00b` | fix(portada): replace KaTeX flow with HTML for reliable vertical layout |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
