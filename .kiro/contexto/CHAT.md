@@ -2,7 +2,55 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-20 16:00
+> **Última actualización:** 2026-08-20 16:30
+
+---
+
+### Sesión 2026-08-20 (~16:20) — Evaluación de MarkItDown para RAG
+
+## 📋 Análisis de microsoft/markitdown para procesamiento de PDFs
+
+### Contexto
+El usuario propuso integrar [MarkItDown](https://github.com/microsoft/markitdown) de Microsoft para mejorar la extracción de texto de PDFs y otros documentos.
+
+### Análisis realizado
+
+**Ventajas identificadas:**
+- Fuente confiable (Microsoft, mismo ecosistema que Excel)
+- Preserva estructura del documento (headings, tablas, listas) como Markdown
+- Soporta PDF, DOCX, XLSX, PPTX, HTML, imágenes con OCR
+- Plugin `markitdown-ocr` para texto en imágenes embebidas
+- Licencia MIT compatible con GPL v3
+
+**Comparación con solución actual:**
+| Aspecto | PyMuPDF/pdfplumber | MarkItDown |
+|---------|-------------------|------------|
+| Tablas | Se distorsionan | Preservadas |
+| Headings | Heurístico por font-size | Semánticos |
+| DOCX/XLSX | No soportado | Nativo |
+
+### Decisión
+✅ **Aprobado para integración** — Los beneficios superan claramente la solución actual.
+
+### Archivos modificados
+Ninguno — solo análisis y discusión.
+
+### Commits realizados
+| Hash | Descripción |
+|------|-------------|
+| `e45d335` | docs(chat): agregar entrada de actualización de evaluaciones |
+
+### Pendientes próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Integrar MarkItDown en rag_engine.py |
+| **ALTA** | Agregar `markitdown[pdf,docx,xlsx,pptx]` como dependencia |
+| **ALTA** | Re-indexar libros con MarkItDown y comparar calidad |
+| **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **BAJA** | Expandir diccionario de traducción multi-idioma |
+
+---
 
 ---
 
