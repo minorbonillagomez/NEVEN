@@ -1892,3 +1892,54 @@ El color original `#111` (casi negro) era invisible sobre el fondo `#1e1e1e` del
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-5) — Flujo de portada vertical
+
+## Logro
+
+Convertido el diagrama de flujo de la portada de horizontal a vertical para evitar desbordamiento de márgenes.
+
+## Causa raíz
+
+KaTeX renderiza la fórmula `\text{A} \xrightarrow{} \begin{cases}...\end{cases} \xrightarrow{} \text{B}` en una sola línea horizontal, que excede el ancho disponible en el visor de neven-docs.html.
+
+## Solución
+
+Reemplazada la fórmula horizontal por `\begin{array}{c}` con flechas `\downarrow`:
+
+```latex
+\begin{array}{c}
+\text{Excel} \\
+\downarrow_{\scriptsize\text{Named Pipes}} \\
+\begin{cases} ... \end{cases} \\
+\downarrow_{\scriptsize\text{WebView2}} \\
+\text{Visualizacion Interactiva}
+\end{array}
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/00-portada.md` | Flujo `\xrightarrow` horizontal → `\begin{array}{c}` vertical |
+| `NEVEN/docs/neven-docs.html` | Regenerado (247.8 KB) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `30b9148` | fix(portada): change flow diagram from horizontal to vertical layout |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
