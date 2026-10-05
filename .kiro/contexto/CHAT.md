@@ -44,6 +44,13 @@
 - 3,709 chunks totales (antes 3,690)
 - Dominios: excel (3), econometria (4), estadistica (2), neven (1)
 
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Re-indexar libros existentes con MarkItDown para comparar calidad |
+| **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **BAJA** | Evaluar plugin `markitdown-ocr` para PDFs con imágenes |
+
 ---
 
 ### Sesión 2026-08-20 (~16:20) — Evaluación de MarkItDown para RAG
