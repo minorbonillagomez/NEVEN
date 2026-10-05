@@ -2,7 +2,34 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-19 (sesión MarkItDown + evaluaciones + instalador)
+> **Última actualización:** 2026-08-19 (sesión completa: MarkItDown + evaluaciones + instalador + Docusaurus)
+
+---
+
+### Sesión 2026-08-19 (~final) — Documentación Docusaurus RAG ✅
+
+## 📋 Capítulo 15 agregado
+
+### Logro
+Creado capítulo completo de documentación sobre RAG con ontología como metaheurística.
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/15-rag-ontologia-metaheuristica.md` | Nuevo (371 líneas) |
+| `NEVEN/docs/Docusaurus/sidebars.js` | Agregado nuevo capítulo |
+
+### Commits realizados
+| Hash | Descripción |
+|------|-------------|
+| `58bfa4a` | docs(docusaurus): add Chapter 15 - RAG with Ontology as Metaheuristic |
+
+### Contenido del capítulo 15
+- 15.1 ¿Qué problema resuelve?
+- 15.2 Flujo AGENTE → ONTOLOGÍA → RAG → AGENTE
+- 15.3 Ontología como Metaheurística
+- 15.4 Componentes técnicos (fastembed, DuckDB, MarkItDown)
+- 15.5-15.11 Configuración, API, troubleshooting, contribución académica
 
 ---
 
