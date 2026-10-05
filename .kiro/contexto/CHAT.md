@@ -1812,3 +1812,38 @@ Agregada sincronización de `docs/neven-docs.html` → `Dist/docs/neven-docs.htm
 | BAJA | Verificar que el procesador de libros de ontología acepta DOCX/EPUB además de PDF |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-3) — Decisión de diseño BukloLAB color
+
+## Sin cambios técnicos
+
+Sesión de consulta solamente. No se realizaron cambios en archivos.
+
+## Discusión
+
+**Problema detectado:** "Buklo" en color `#111` (negro) no se ve sobre el fondo oscuro del TaskPane y neven-docs.html (ambos usan `background:#1e1e1e`).
+
+**Opciones evaluadas:**
+1. "Buklo" en blanco (`#ffffff`) + "LAB" en rojo (`#e53935`)
+2. "BukloLAB" con fondo blanco como badge
+
+**Decisión:** Opción 1 — Buklo en blanco.
+
+**Razones:**
+- Blanco + rojo sobre fondo oscuro es combinación de alto contraste, visualmente limpia
+- Mantiene identidad tipográfica sin elementos extra (rectángulo blanco rompería el flujo visual)
+- Funciona en ambas ubicaciones (TaskPane dark y neven-docs.html dark)
+- Opción 2 se vería como badge/etiqueta, inadecuado para nombre de marca en portada
+
+## Pendiente INMEDIATO para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Aplicar fix: cambiar `color:#111` → `color:#ffffff` en `taskpane.html` y `00-portada.md` |
+| **ALTA** | Rebuild del Core (NEVEN64.xll) |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
