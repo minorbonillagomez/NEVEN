@@ -1378,3 +1378,112 @@ Repositorio sincronizado con `origin/master`.
 | MEDIA | Documentar formatos en RAG_GUIDE.md |
 
 ---
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — RAG multi-formato, browse nativo, limpieza de UI
+
+## Logros principales
+
+### 1. Soporte de 12+ formatos en RAG
+
+**Problema diagnosticado:** `rag_engine.py` tenía dos funciones de extracción paralelas:
+- `extract_text_with_pages_markitdown()` — usaba MarkItDown, soporta 20+ formatos
+- `extract_text_from_file()` — versión vieja, solo soportaba PDF y texto plano
+
+El método `add_document()` llamaba a la función vieja. **EPUB, DOCX, PPTX, XLSX no funcionaban aunque MarkItDown los soporta.**
+
+**Fix:** Modificada `extract_text_from_file()` para usar MarkItDown como primera opción, con fallback a PyMuPDF para PDF y lectura directa para texto plano.
+
+### 2. Dependencias instaladas (offline, sin APIs externas)
+
+```powershell
+pip install 'markitdown[pdf,docx,pptx,xlsx,xls]' ebooklib
+```
+
+| Formato | Dependencia |
+|---------|-------------|
+| PDF | pdfminer-six, pdfplumber |
+| DOCX | mammoth |
+| PPTX | python-pptx |
+| XLSX | openpyxl, pandas |
+| XLS | xlrd |
+| EPUB | ebooklib |
+| HTML/CSV/JSON/XML/TXT/MD/ZIP | built-in (sin deps) |
+
+### 3. Botón "..." para explorador de archivos nativo
+
+**Primer intento fallido:** Ejecutar `tkinter.filedialog` directamente en el handler HTTP.
+- **Error:** "Error al abrir selector de archivos"
+- **Causa:** tkinter requiere el hilo principal de Python; el servidor HTTP corre en threads secundarios.
+
+**Segundo intento fallido:** Usar `window.showOpenFilePicker()` (File System Access API).
+- **Problema:** Los browsers no exponen la ruta completa del archivo por seguridad. Solo devuelve el nombre.
+
+**Solución correcta:** Endpoint `GET /api/rag/browse` que lanza un subprocess Python separado con tkinter:
+
+```python
+result = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True, timeout=60)
+```
+
+El subprocess tiene su propio hilo principal → tkinter funciona correctamente → devuelve ruta completa.
+
+**Problema adicional:** El endpoint devolvía 404 porque el servidor HTTP en memoria era una versión anterior. Se detectaron dos procesos viejos (PIDs 86348 y 94980) y se terminaron con `Stop-Process`. Al reabrir Excel, cargó el código actualizado.
+
+### 4. Correcciones de UI
+
+- Placeholder del input de archivos RAG actualizado (antes decía "PDF, TXT, MD")
+- Agregada línea informativa: "Formatos: PDF, DOCX, PPTX, XLSX, XLS, EPUB, HTML, CSV, JSON, XML, TXT, MD"
+- Tab Ayuda: "14 capítulos" → "16 capítulos"
+
+### 5. Mantenimiento de CHAT.md
+
+Archivadas primeras 11,000 líneas a CHAT_LARGO.md (que ahora tiene 17,550 líneas). CHAT.md reducido a 1,380 líneas con el tracto reciente.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/rag_engine.py` | `extract_text_from_file()` usa MarkItDown primero |
+| `NEVEN/TaskPane/requirements.txt` | +ebooklib, +markitdown[xls] |
+| `NEVEN/TaskPane/neven_http_server.py` | +endpoint GET /api/rag/browse con subprocess |
+| `NEVEN/TaskPane/taskpane.html` | +lista formatos RAG, +"16 capítulos" en Ayuda, +handler browse |
+| `NEVEN/Install/Install-NEVEN.ps1` | +markitdown[xls], +ebooklib en $pipPkgsMarkItDown |
+| `NEVEN/ControlPython/startup/neven_http_server.py` | Sincronizado |
+| `NEVEN/Install/Dist/startup/rag_engine.py` | Sincronizado |
+| `NEVEN/Install/Dist/startup/neven_http_server.py` | Sincronizado |
+| `NEVEN/Install/Dist/taskpane/taskpane.html` | Sincronizado |
+| `C:\NEVEN\startup\rag_engine.py` | Sincronizado a producción |
+| `C:\NEVEN\startup\neven_http_server.py` | Sincronizado a producción |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado (21.96 MB, 426 archivos) |
+| `.kiro/contexto/CHAT.md` | Archivado tracto antiguo |
+| `.kiro/contexto/CHAT_LARGO.md` | +11,000 líneas archivadas |
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `3edbbca` | feat(rag): add multi-format support and file browser |
+| `a2c9cbb` | docs(chat): update session log with RAG multi-format implementation |
+| `ecd380c` | docs(chat): archive first 11000 lines to CHAT_LARGO.md |
+
+## Decisiones de diseño
+
+| Decisión | Razón |
+|----------|-------|
+| subprocess para tkinter | tkinter necesita hilo principal; HTTP handlers corren en threads |
+| Instalar `markitdown[xls]` aunque es obsoleto | No agrega peso, aumenta compatibilidad sin costo |
+| NO instalar audio/youtube/azure | Requieren APIs externas, rompen filosofía offline de NEVEN |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Reiniciar servidor y verificar botón browse funciona en Excel en vivo |
+| MEDIA | Documentar formatos soportados en RAG_GUIDE.md |
+| BAJA | Agregar botón browse al panel de indexado de ontologías también |
+
+---
