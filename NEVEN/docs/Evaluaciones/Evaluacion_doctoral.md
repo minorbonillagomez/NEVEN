@@ -1095,5 +1095,96 @@ Se creó un steering file (`ontology-yaml-rules.md`) que previene errores de sin
 
 ---
 
+## ACTUALIZACIÓN — 19 de agosto de 2026 (NEVEN v2.7)
+
+### 2.21 MarkItDown de Microsoft para Extracción de Documentos
+
+NEVEN integra [MarkItDown](https://github.com/microsoft/markitdown) de Microsoft como extractor principal de texto para el sistema RAG. Esta herramienta convierte PDF, DOCX, XLSX y PPTX a Markdown preservando la estructura del documento.
+
+**Arquitectura de extracción:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Documento (PDF/DOCX/XLSX)                   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              1. MARKITDOWN (Primario)                           │
+│  - Preserva headings como # Markdown                            │
+│  - Tablas como | pipe tables |                                  │
+│  - Listas como - bullet points                                  │
+│  - Licencia MIT compatible con GPL v3                           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │  ¿Falló?          │
+                    └─────────┬─────────┘
+                         No   │   Sí
+                              │    │
+                              ▼    ▼
+┌─────────────────────┐  ┌─────────────────────────────────────────┐
+│   Chunks con        │  │              2. PYMUPDF (Fallback)      │
+│   estructura        │  │  - Extracción básica de texto           │
+│   preservada        │  │  - Sin preservación de estructura       │
+└─────────────────────┘  └─────────────────────────────────────────┘
+```
+
+**Comparación de calidad de extracción:**
+
+| Aspecto | PyMuPDF/pdfplumber | MarkItDown |
+|:---|:---|:---|
+| Tablas | Se distorsionan o pierden | Preservadas como Markdown tables |
+| Headings | Heurístico por font-size | Semánticos (estructura del documento) |
+| Listas | Texto plano | Preservadas como bullet points |
+| DOCX/XLSX/PPTX | No soportado | Nativo |
+| Licencia | Mixta | MIT |
+
+**Funciones implementadas:**
+
+| Función | Descripción |
+|:---|:---|
+| `extract_with_markitdown(path)` | Extracción simple a Markdown |
+| `extract_text_with_pages_markitdown(path)` | Con preservación de páginas |
+| `extract_text_with_pages(path)` | Wrapper con fallback automático |
+
+**Test de validación:**
+
+| Documento | Páginas | Caracteres | Chunks | Observación |
+|:---|:---|:---|:---|:---|
+| NEVEN Paper (main.pdf) | 31 | 59,278 | 19 | Estructura perfecta |
+
+**Métricas actualizadas del RAG:**
+
+| Métrica | Valor anterior | Valor actual |
+|:---|:---|:---|
+| Documentos indexados | 9 | 10 |
+| Chunks totales | 3,690 | 3,709 |
+| Dominios | 3 | 4 (+ "neven") |
+| Extractor primario | PyMuPDF | MarkItDown |
+
+**Relevancia académica:**
+
+La integración de MarkItDown demuestra:
+
+1. **Reutilización de componentes open source**: Usar la mejor herramienta disponible (de Microsoft) en lugar de reinventar la rueda.
+2. **Arquitectura resiliente**: Fallback a PyMuPDF garantiza funcionamiento incluso si MarkItDown falla.
+3. **Calidad del conocimiento base**: Mejor estructura → mejores chunks → mejores respuestas RAG.
+
+### Actualización de hitos
+
+| Fase | Estado | Descripción |
+|:---|:---|:---|
+| *(todos los anteriores)* | ✅ | Ver versiones anteriores |
+| **MarkItDown integration** | ✅ | Extractor primario para PDF/DOCX/XLSX/PPTX |
+| **Fallback architecture** | ✅ | PyMuPDF como respaldo automático |
+
+---
+
+*Actualización: 19 de agosto de 2026*
+*NEVEN v2.7 — MarkItDown para extracción de documentos*
+
+---
+
 *Actualización: 20 de agosto de 2026*
 *NEVEN v2.6 — RAG con Ontología como Metaheurística*

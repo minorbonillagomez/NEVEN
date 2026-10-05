@@ -637,5 +637,49 @@ El delta de $100/año por RAG es defendible porque:
 
 ---
 
+## ACTUALIZACIÓN — 19 de agosto de 2026 (NEVEN v2.7)
+
+### Nuevas fortalezas comerciales
+
+**23. MarkItDown de Microsoft — Mejor extracción de documentos.**
+
+NEVEN ahora usa [MarkItDown](https://github.com/microsoft/markitdown) de Microsoft para extraer texto de PDFs y documentos Office. Esto mejora significativamente la calidad del conocimiento base del RAG.
+
+**Comparación:**
+
+| Aspecto | Antes (PyMuPDF) | Ahora (MarkItDown) |
+|:---|:---|:---|
+| Tablas | Se pierden o distorsionan | Preservadas como Markdown |
+| Headings | Heurístico (poco confiable) | Semánticos del documento |
+| DOCX/XLSX/PPTX | No soportado | Nativo |
+| Calidad de chunks | Variable | Consistentemente alta |
+
+**Relevancia comercial:**
+
+- **Mejor calidad de respuestas**: chunks con estructura → RAG más preciso
+- **Más formatos soportados**: el cliente puede indexar sus propios DOCX, XLSX, PPTX
+- **Respaldo de marca**: "usa tecnología de Microsoft" genera confianza
+- **Arquitectura resiliente**: fallback automático si MarkItDown falla
+
+**Métricas actualizadas:**
+
+| Métrica | Valor |
+|:---|:---|
+| Documentos indexados | 10 |
+| Chunks totales | 3,709 |
+| Dominios | 4 (excel, econometria, estadistica, neven) |
+| Formatos soportados | PDF, DOCX, XLSX, PPTX, HTML, MD |
+
+**Nuevo argumento de ventas:**
+
+> *"NEVEN puede indexar sus documentos internos (Word, Excel, PowerPoint) directamente en la base de conocimiento. Sus analistas pueden preguntar sobre sus propios manuales y políticas, no solo libros externos."*
+
+---
+
+*Actualizado: 19 de agosto de 2026*
+*NEVEN v2.7 — MarkItDown para extracción de documentos*
+
+---
+
 *Actualizado: 20 de agosto de 2026*
 *NEVEN v2.6 — RAG con Ontología como Metaheurística*

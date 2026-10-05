@@ -912,3 +912,69 @@ El incremento refleja:
 
 *Actualización: 20 de agosto de 2026*
 *Sesión: RAG multi-idioma + corrección de ontologías YAML*
+
+
+---
+
+## ACTUALIZACIÓN — 19 de agosto de 2026 (Sesión MarkItDown)
+
+### Contexto de la sesión
+
+Sesión de integración de [MarkItDown](https://github.com/microsoft/markitdown) de Microsoft como extractor principal de documentos para el sistema RAG.
+
+### Implementación completada
+
+**Decisiones de diseño (AI Engineer + Desarrollador):**
+
+1. **MarkItDown como primario, PyMuPDF como fallback**: Arquitectura resiliente que garantiza funcionamiento incluso si MarkItDown falla.
+
+2. **Preservación de páginas para PDFs**: Para PDFs se usa pdfplumber para mantener info de página + MarkItDown para calidad de texto.
+
+3. **Documentación de dependencias**: Se creó `requirements.txt` documentando todas las dependencias Python del servidor.
+
+**Archivos modificados:**
+
+| Archivo | Cambio |
+|:---|:---|
+| `NEVEN/TaskPane/rag_engine.py` | +127 líneas (3 funciones nuevas) |
+| `NEVEN/TaskPane/requirements.txt` | Nuevo archivo |
+| `C:\NEVEN\startup\rag_engine.py` | Sincronizado |
+
+**Test de validación:**
+
+| Documento | Resultado |
+|:---|:---|
+| NEVEN Paper (main.pdf) | 31 páginas, 59,278 chars, 19 chunks |
+| Consultas RAG | Scores 0.64-0.68 para queries relevantes |
+
+### Evaluación de la sesión
+
+**Patrón positivo observado:**
+
+1. **Evaluación antes de implementar**: Se analizó MarkItDown (licencia, features, comparación) antes de decidir integrar.
+
+2. **Tests incrementales**: Se probó extracción directa, luego funciones wrapper, luego indexación completa.
+
+3. **Commits atómicos**: Un commit por feature (`feat(rag)`) + commits separados para documentación.
+
+4. **Actualización de bitácora**: CHAT.md actualizado durante la sesión, no al final.
+
+### Actualización de notas
+
+| Dimensión | Nota anterior | Nota actual | Cambio |
+|:---|:---:|:---:|:---|
+| Velocidad de aprendizaje | 9.0 | 9.0 | Sin cambio (MarkItDown integrado rápido) |
+| Diseño de sistemas | 8.0 | 8.0 | Sin cambio (fallback es buen diseño) |
+| Hábitos de ingeniería | 8.6 | **8.7** | +0.1: requirements.txt, tests, docs |
+
+**Nota Global Desarrollador:** 8.3 → **8.35**
+
+El incremento menor (+0.05) refleja:
+- Sesión de integración limpia sin incidentes
+- Documentación creada proactivamente
+- Patrón de evaluación-antes-de-implementar aplicado
+
+---
+
+*Actualización: 19 de agosto de 2026*
+*Sesión: Integración de MarkItDown para extracción de documentos*
