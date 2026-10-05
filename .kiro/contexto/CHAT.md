@@ -12295,3 +12295,130 @@ Solo copiar archivos no es suficiente — el proceso Python en memoria sigue eje
 | MEDIA | Documentar formatos en RAG_GUIDE.md | Pendiente |
 
 ---
+
+
+### Sesión 2026-08-19 (~noche-final) — Commit consolidado de mejoras RAG
+
+## Confirmación final
+
+Usuario confirmó: **"ahora si abre el selector de archivos"** ✓
+
+## Commit realizado
+
+| Hash | Descripción |
+|------|-------------|
+| `3edbbca` | feat(rag): add multi-format support and file browser |
+
+### Contenido del commit
+
+**Archivos modificados (7):**
+- `NEVEN/TaskPane/rag_engine.py` — `extract_text_from_file()` usa MarkItDown primero
+- `NEVEN/TaskPane/requirements.txt` — +ebooklib, +markitdown[xls]
+- `NEVEN/TaskPane/neven_http_server.py` — +endpoint /api/rag/browse con subprocess+tkinter
+- `NEVEN/TaskPane/taskpane.html` — +lista formatos, +16 capítulos, +handler botón browse
+- `NEVEN/Install/Install-NEVEN.ps1` — +ebooklib, +xls en dependencias pip
+- `NEVEN/ControlPython/startup/neven_http_server.py` — sincronizado
+- `.kiro/contexto/CHAT.md` — bitácora actualizada
+
+### Funcionalidades agregadas
+
+1. **Soporte 12+ formatos en RAG:** PDF, DOCX, PPTX, XLSX, XLS, EPUB, HTML, CSV, JSON, XML, TXT, MD
+2. **Botón browse funcional:** Abre explorador de archivos nativo de Windows
+3. **Lista de formatos visible:** Usuario ve qué tipos de archivo puede indexar
+4. **Contador de capítulos corregido:** 14 → 16 en Tab Ayuda
+
+### Decisiones técnicas clave
+
+| Decisión | Razón |
+|----------|-------|
+| subprocess para tkinter | tkinter requiere hilo principal; HTTP server usa threads secundarios |
+| ebooklib separado | MarkItDown no lo incluye como dependencia transitiva |
+| markitdown[xls] incluido | Soporte offline para Excel legacy (.xls) |
+
+---
+
+## Resumen completo sesión 2026-08-19
+
+### Commits del día
+
+| Hash | Descripción |
+|------|-------------|
+| `ff31c4e` | docs: remove emojis from Docusaurus |
+| `b9f227d` | feat(rag): add minScore slider to RAG settings panel |
+| `0acc6b4` | feat(ontology): add interactive visualization for NEVEN-core |
+| `0ecf651` | docs(eval): add markitdown-ocr evaluation for scanned PDFs |
+| `3edbbca` | feat(rag): add multi-format support and file browser |
+
+### Logros principales
+
+- ✅ Emojis eliminados de documentación Docusaurus
+- ✅ Slider minScore en panel RAG Settings
+- ✅ Visualización interactiva ontología NEVEN-core
+- ✅ Evaluación markitdown-ocr (decisión: NO integrar)
+- ✅ Soporte 12+ formatos de documentos en RAG
+- ✅ Botón browse con diálogo nativo Windows
+- ✅ ZIP instalador actualizado (21.96 MB)
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar instalador en máquina limpia | Pendiente |
+| MEDIA | Documentar formatos soportados en RAG_GUIDE.md | Pendiente |
+| BAJA | Push a repositorio remoto | Pendiente (si se desea) |
+
+---
+
+
+### Sesión 2026-08-19 (~noche-final) — Commit y push completados
+
+## Commit realizado
+
+| Hash | Descripción |
+|------|-------------|
+| `3edbbca` | feat(rag): add multi-format support and file browser |
+
+**Archivos en el commit:**
+- `NEVEN/TaskPane/rag_engine.py`
+- `NEVEN/TaskPane/requirements.txt`
+- `NEVEN/TaskPane/neven_http_server.py`
+- `NEVEN/TaskPane/taskpane.html`
+- `NEVEN/Install/Install-NEVEN.ps1`
+- `NEVEN/ControlPython/startup/neven_http_server.py`
+- `.kiro/contexto/CHAT.md`
+
+## Push realizado
+
+Repositorio sincronizado con `origin/master`.
+
+## Resumen completo de commits del día
+
+| Hash | Descripción |
+|------|-------------|
+| `ff31c4e` | docs: remove emojis from Docusaurus |
+| `b9f227d` | feat(rag): add minScore slider to RAG settings panel |
+| `0acc6b4` | feat(ontology): add interactive visualization for NEVEN-core |
+| `0ecf651` | docs(eval): add markitdown-ocr evaluation for scanned PDFs |
+| `3edbbca` | feat(rag): add multi-format support and file browser |
+
+## Funcionalidades completadas hoy
+
+1. Emojis eliminados de documentación
+2. Slider minScore en RAG Settings
+3. Visualización interactiva NEVEN-core
+4. Soporte 12+ formatos en RAG (PDF, DOCX, PPTX, XLSX, XLS, EPUB, HTML, CSV, JSON, XML, TXT, MD)
+5. Botón browse con diálogo nativo Windows
+6. ZIP instalador actualizado (21.96 MB)
+
+---
+
+### Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| MEDIA | Documentar formatos en RAG_GUIDE.md |
+
+---
