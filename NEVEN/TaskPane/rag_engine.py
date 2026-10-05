@@ -263,17 +263,35 @@ def chunk_text_with_pages(pages: List[Dict[str, Any]], chunk_size: int = 500, ov
 
 def extract_text_from_file(file_path: str) -> str:
     """
-    Extrae texto de un archivo (txt, md, pdf).
+    Extrae texto de un archivo usando MarkItDown.
     
-    Para PDF usa PyMuPDF si esta disponible, sino retorna error.
+    Soporta: PDF, DOCX, PPTX, XLSX, EPUB, HTML, CSV, JSON, XML, TXT, MD, etc.
+    Usa MarkItDown como método principal para máxima compatibilidad.
+    Fallback a PyMuPDF para PDF si MarkItDown no está disponible.
     """
     path = Path(file_path)
     suffix = path.suffix.lower()
     
-    if suffix in ['.txt', '.md', '.r', '.py', '.jl', '.json', '.yaml', '.yml']:
+    # Intentar con MarkItDown primero (soporta 20+ formatos incluyendo EPUB)
+    try:
+        from markitdown import MarkItDown
+        md = MarkItDown(enable_plugins=False)
+        result = md.convert(file_path)
+        if result.markdown.strip():
+            return result.markdown
+        # Si MarkItDown no extrajo nada, intentar fallbacks
+    except ImportError:
+        pass  # MarkItDown no instalado, usar fallbacks
+    except Exception as e:
+        print(f"[RAG] MarkItDown falló para {path.name}: {e}")
+        # Continuar con fallbacks
+    
+    # Fallback: archivos de texto plano
+    if suffix in ['.txt', '.md', '.r', '.py', '.jl', '.json', '.yaml', '.yml', '.csv', '.xml']:
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             return f.read()
     
+    # Fallback: PDF con PyMuPDF
     elif suffix == '.pdf':
         try:
             import fitz  # PyMuPDF
@@ -284,10 +302,10 @@ def extract_text_from_file(file_path: str) -> str:
             doc.close()
             return text
         except ImportError:
-            raise ImportError("PyMuPDF (fitz) no instalado. Ejecuta: pip install pymupdf")
+            raise ImportError("Ni MarkItDown ni PyMuPDF instalados. Ejecuta: pip install 'markitdown[pdf]'")
     
     else:
-        raise ValueError(f"Formato no soportado: {suffix}")
+        raise ValueError(f"Formato no soportado: {suffix}. Instala MarkItDown: pip install 'markitdown[pdf,docx,xlsx,pptx]'")
 
 
 # ---------------------------------------------------------------------------

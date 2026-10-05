@@ -1401,10 +1401,17 @@ function Install-PythonPackages {
     # Python packages used by NEVEN ML, RAG engine, and utility functions
     # Core ML/utilities
     $pipPkgsCore = @('scikit-learn','numpy','PyPDF2','python-docx','folium','duckdb')
-    # RAG Engine + MarkItDown
+    # RAG Engine
     $pipPkgsRAG = @('fastembed','pyyaml','pdfplumber','pymupdf','httpx','openai')
-    # MarkItDown with document format support (PDF, DOCX, XLSX, PPTX)
-    $pipPkgsMarkItDown = @('markitdown[pdf,docx,xlsx,pptx]')
+    # MarkItDown with ALL offline document formats:
+    #   - PDF (pdfminer-six, pdfplumber)
+    #   - DOCX (mammoth)
+    #   - PPTX (python-pptx)
+    #   - XLSX (openpyxl, pandas)
+    #   - XLS legacy (xlrd)
+    #   - EPUB (ebooklib)
+    #   - HTML, CSV, JSON, XML, TXT, MD, ZIP (built-in, no deps)
+    $pipPkgsMarkItDown = @('markitdown[pdf,docx,xlsx,pptx,xls]','ebooklib')
     
     $pipPkgs = $pipPkgsCore + $pipPkgsRAG + $pipPkgsMarkItDown
 

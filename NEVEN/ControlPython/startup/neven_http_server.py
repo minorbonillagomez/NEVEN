@@ -914,6 +914,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if path == 'api/rag/stats':
             self._handle_rag_stats()
             return
+        
+        if path == 'api/rag/browse':
+            self._handle_rag_browse()
+            return
 
         # Serve static files (taskpane, assets)
         static_dir = _config.get("staticDir", "C:\\NEVEN\\taskpane")
@@ -2978,6 +2982,76 @@ class NEVENHandler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             self._send_error_json(f"RAG stats error: {e}")
+
+    def _handle_rag_browse(self):
+        """GET /api/rag/browse — Open native file dialog and return selected path."""
+        try:
+            import subprocess
+            import sys
+            
+            # Script inline que abre el diálogo de archivos
+            # Debe ejecutarse como proceso separado porque tkinter necesita el hilo principal
+            script = '''
+import tkinter as tk
+from tkinter import filedialog
+import json
+
+root = tk.Tk()
+root.withdraw()
+root.attributes('-topmost', True)
+root.focus_force()
+
+filetypes = [
+    ("Todos los soportados", "*.pdf *.docx *.pptx *.xlsx *.xls *.epub *.html *.htm *.csv *.json *.xml *.txt *.md"),
+    ("PDF", "*.pdf"),
+    ("Word", "*.docx"),
+    ("PowerPoint", "*.pptx"),
+    ("Excel", "*.xlsx *.xls"),
+    ("EPUB", "*.epub"),
+    ("HTML", "*.html *.htm"),
+    ("Texto", "*.txt *.md *.csv *.json *.xml"),
+    ("Todos", "*.*")
+]
+
+file_path = filedialog.askopenfilename(
+    title="Seleccionar documento para indexar",
+    filetypes=filetypes
+)
+
+root.destroy()
+
+import os
+if file_path:
+    print(json.dumps({"status": "ok", "path": file_path, "filename": os.path.basename(file_path)}))
+else:
+    print(json.dumps({"status": "cancelled", "path": "", "filename": ""}))
+'''
+            
+            # Ejecutar como proceso separado
+            result = subprocess.run(
+                [sys.executable, '-c', script],
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                import json
+                data = json.loads(result.stdout.strip())
+                self._send_json(data)
+            else:
+                error_msg = result.stderr.strip() if result.stderr else "Diálogo cancelado o error"
+                self._send_json({
+                    "status": "cancelled",
+                    "path": "",
+                    "filename": "",
+                    "error": error_msg
+                })
+                
+        except subprocess.TimeoutExpired:
+            self._send_error_json("Tiempo agotado esperando selección de archivo")
+        except Exception as e:
+            self._send_error_json(f"Error al abrir diálogo: {e}")
 
     def _handle_rag_upload(self, body: dict):
         """POST /api/rag/upload — Upload and index a document file."""

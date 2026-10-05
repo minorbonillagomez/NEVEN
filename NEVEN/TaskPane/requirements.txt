@@ -11,7 +11,10 @@ fastembed>=0.1.0        # Local embeddings (bge-small-en-v1.5)
 pyyaml>=6.0             # Ontology YAML parsing
 
 # Document Extraction (MarkItDown as primary, PyMuPDF as fallback)
-markitdown[pdf,docx,xlsx,pptx]>=0.1.0   # Microsoft's converter (MIT license)
+# MarkItDown supports 15+ formats offline:
+#   PDF, DOCX, PPTX, XLSX, XLS, EPUB, HTML, CSV, JSON, XML, TXT, MD, ZIP
+markitdown[pdf,docx,xlsx,pptx,xls]>=0.1.0   # Microsoft's converter (MIT license)
+ebooklib>=0.18          # EPUB support for MarkItDown
 pdfplumber>=0.9.0       # Page-level PDF extraction
 pymupdf>=1.23.0         # Fallback PDF extraction
 

@@ -2,11 +2,219 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-19 (sesión completa: MarkItDown + evaluaciones + instalador + Docusaurus + HTML + visualizaciones)
+> **Última actualización:** 2026-08-19 (sesión: slider minScore + re-indexación MarkItDown)
 
 ---
 
-### Sesión 2026-08-19 (~final) — Visualizaciones en Capítulo 14 ✅
+### Sesión 2026-08-19 (~noche) — Tareas MEDIA completadas
+
+## 1. Slider de minScore en panel RAG
+
+**Implementación:**
+- Agregado parámetro `min_score` al endpoint `/api/rag/query`
+- Agregado slider HTML (0.00-0.90, paso 0.05, default 0.50)
+- El valor se muestra en tiempo real al mover el slider
+- El servidor filtra resultados con score < minScore
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/ControlPython/startup/neven_http_server.py` | +min_score parameter, +filtering |
+| `NEVEN/TaskPane/taskpane.html` | +slider HTML, +JS listener, +send to API |
+| `NEVEN/TaskPane/neven_http_server.py` | Sincronizado |
+
+**Commit:**
+| Hash | Descripción |
+|------|-------------|
+| `b9f227d` | feat(rag): add minScore slider to RAG settings panel |
+
+## 2. Re-indexación con MarkItDown
+
+**Resultado:**
+- 9 libros re-indexados correctamente
+- 3,690 chunks totales (mismo número que antes — MarkItDown ya estaba integrado)
+- Índice: 12.26 MB
+- Dominios: econometria (4), estadistica (2), excel (3)
+
+**Nota:** El sistema ya usaba MarkItDown desde la sesión anterior. La re-indexación confirmó que funciona correctamente.
+
+## 3. Sincronización de archivos
+
+**Copiados a producción:**
+- `C:\NEVEN\startup\neven_http_server.py`
+- `C:\NEVEN\TaskPane\taskpane.html`
+
+**Copiados a Install/Dist:**
+- `Install/Dist/startup/neven_http_server.py`
+- `Install/Dist/taskpane/taskpane.html`
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar instalador en máquina limpia | Pendiente |
+| ~~ALTA~~ | ~~Regenerar NEVEN-v3.2-Setup.zip~~ | Completado |
+| ~~MEDIA~~ | ~~Slider de minScore~~ | Completado |
+| ~~MEDIA~~ | ~~Re-indexar con MarkItDown~~ | Completado |
+| ~~BAJA~~ | ~~Visualización ontología NEVEN-core~~ | Completado |
+| ~~BAJA~~ | ~~Evaluar markitdown-ocr~~ | Completado (NO integrar) |
+
+---
+
+### Sesión 2026-08-19 (~madrugada) — ZIP del Instalador Regenerado
+
+## NEVEN-v3.2-Setup.zip actualizado
+
+**Archivo:** `NEVEN/Install/NEVEN-v3.2-Setup.zip`
+**Tamaño:** 21.97 MB
+**Archivos:** 420
+
+### Contenido incluido
+
+| Categoría | Archivos | Descripción |
+|-----------|----------|-------------|
+| startup/ | 16 | RAG engine, HTTP server, ontology service, etc. |
+| taskpane/ | 65 | TaskPane HTML/JS/CSS + presentaciones |
+| functions/ | 156 | Sidecars JSON + funciones R/Python |
+| libreria/ | 76 | R (63), Julia (9), Python (3) |
+| docs/ontologia/ | varios | econometrics, neven-core, excel-functions |
+| docs/ | 2 | neven-docs.html, RAG_GUIDE.md |
+
+### Cambios respecto a versión anterior
+
+| Nuevo | Descripción |
+|-------|-------------|
+| startup/rag_engine.py | Motor RAG con fastembed + DuckDB |
+| startup/ontology_service.py | Servicio de ontología |
+| docs/ontologia/neven-core/ | Visualización interactiva + YAMLs |
+| taskpane/taskpane.html | Con slider minScore |
+| neven-docs.html | 16 capítulos, sin emojis |
+
+### Pendiente próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+
+---
+
+### Sesión 2026-08-19 (~noche tardía) — Tareas BAJA completadas
+
+## 1. Visualización interactiva NEVEN-core
+
+**Implementación:**
+- Creado `generate_visualization.py` para leer YAMLs de ontología
+- Genera `graph_visualization.html` con vis-network
+- 16 componentes, 21 dependencias
+- Colores por tipo (core=rojo, control=violeta, common=azul, etc.)
+- Tamaño por prioridad (P1 más grande, P4 más pequeño)
+- Sidebar con búsqueda y lista de componentes
+- Controles: Fit, Physics toggle, Filter by Priority
+
+**Archivos creados:**
+| Archivo | Descripción |
+|---------|-------------|
+| `docs/ontologia/neven-core/generate_visualization.py` | Script generador |
+| `docs/ontologia/neven-core/graph_visualization.html` | Visualización interactiva |
+
+**Commit:**
+| Hash | Descripción |
+|------|-------------|
+| `0acc6b4` | feat(ontology): add interactive visualization for NEVEN-core |
+
+## 2. Evaluación markitdown-ocr
+
+**Decisión: NO integrar por ahora**
+
+**Razones:**
+- Requiere API LLM externo (GPT-4o o compatible)
+- No funciona offline
+- Costo por imagen (~$0.01-0.03)
+- Libros actuales tienen texto extraíble (no necesitan OCR)
+
+**Cuándo reconsiderar:**
+- Si usuarios reportan PDFs escaneados que no se indexan
+- Si se integra LMStudio con modelo vision
+
+**Commit:**
+| Hash | Descripción |
+|------|-------------|
+| `0ecf651` | docs(eval): add markitdown-ocr evaluation for scanned PDFs |
+
+---
+
+### Sesión 2026-08-19 (~post-cierre) — Sincronización del instalador
+
+## Tareas realizadas
+
+### 1. Verificación de emojis en Docusaurus
+Confirmado que todos los emojis fueron removidos de la documentación de usuario en sesión anterior.
+
+### 2. Sincronización del HTML del instalador
+**Problema detectado:** El HTML en `Install/Dist/docs/neven-docs.html` estaba desactualizado y contenía emojis.
+
+**Causa raíz:** Existen dos carpetas Dist:
+- `NEVEN/Dist/` — artifacts de desarrollo
+- `NEVEN/Install/Dist/` — artifacts del instalador (esta es la que usa `Install-NEVEN.ps1`)
+
+El HTML se había copiado solo a `NEVEN/Dist/` pero no a `Install/Dist/`.
+
+**Solución:** Copiado el HTML limpio a ambas ubicaciones con `[System.IO.File]::Copy()`.
+
+### 3. Revisión de aliases en Capítulo 10
+**Verificación solicitada:** ¿Los ejemplos del capítulo 10 usan aliases cortos?
+
+**Conclusión:** El capítulo está correcto:
+- Funciones Julia (`J.Algebra`, `J.Calculo`, etc.) ya usan aliases cortos
+- Funciones R interactivas (`R.Pivot`, `R.Map`, `R.D3`, etc.) ya son nombres cortos
+- Funciones R gráficas (`R.GR_PlotlyView`, `R.GR_QuickPlot`) usan nombres completos pero descriptivos
+
+**Decisión:** No se requieren cambios — los nombres actuales son apropiados.
+
+### Archivos modificados (no en git, son gitignored)
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado con versión sin emojis |
+| `NEVEN/Dist/docs/neven-docs.html` | Sincronizado con versión sin emojis |
+
+### Nota sobre carpetas Dist
+Las carpetas `Dist/` están en `.gitignore` porque son artifacts de build. Para el usuario final:
+- El instalador copia desde `Install/Dist/` a `C:\NEVEN\`
+- El HTML limpio ya está en su lugar para la próxima instalación
+
+---
+
+### Sesión 2026-08-19 (~cierre) — Limpieza de emojis en Docusaurus
+
+## Corrección realizada
+
+Eliminados todos los emojis de la documentación Docusaurus por regla del proyecto que prohíbe emojis en documentación de usuario.
+
+### Archivos corregidos
+| Archivo | Cambio |
+|---------|--------|
+| `01-introduccion.md` | Tabla de comparación: checkmarks/X a Si/No |
+| `13-neven-studio.md` | Dos tablas de características: checkmarks/X a Si/No |
+| `14-ontologias-excel-consultant.md` | Leyenda de colores: emojis a texto (Azul, Naranja, Rojo, Verde, Morado) |
+| `15-rag-ontologia-metaheuristica.md` | Listas y ejemplos YAML: checkmarks/X eliminados |
+
+### HTML regenerado
+- `neven-docs.html` — 16 capítulos, 247.8 KB
+- Copiado a: Docusaurus/, C:\NEVEN\docs\
+
+### Commit
+| Hash | Descripción |
+|------|-------------|
+| `ff31c4e` | docs: remove emojis from Docusaurus (project rule) |
+
+### Regla establecida
+**NO usar emojis en documentación de usuario.** Para tablas de comparación usar "Si/No" o "Sí/No". Para indicadores de color usar texto descriptivo.
+
+---
+
+### Sesión 2026-08-19 (~final) — Visualizaciones en Capítulo 14
 
 ## 📋 Documentación de visualizaciones interactivas
 
@@ -11474,3 +11682,616 @@ _log.info(f"[RAG] Resultado: {len(rag_result.get('results', []))} chunks encontr
 | **ALTA** | Probar y revisar logs para ver cuántos chunks se encuentran |
 | **ALTA** | Identificar por qué no se muestran fuentes |
 
+
+
+---
+
+### Sesión 2026-10-05 (~inicio) — OBS Overlay de prueba
+
+## HTML de prueba para OBS (Browser Source)
+
+### Contexto
+Solicitud puntual fuera del flujo principal de NEVEN: crear un HTML de prueba con fondo transparente para calibrar overlays en OBS (Open Broadcaster Software).
+
+### Archivo creado
+
+| Archivo | Descripción |
+|---------|-------------|
+| `NEVEN/docs/obs-test-overlay.html` | Overlay HTML para OBS con transparencia y controles |
+
+### Características del overlay
+
+- `background: transparent` en `body` — compatible con Browser Source de OBS
+- Slider de opacidad (0–100%) para calibrar en previsualización del navegador
+- **Reloj en vivo** actualizado cada segundo (esquina superior izquierda)
+- **Badge "En vivo"** con punto parpadeante (esquina superior derecha)
+- **Headline central** con fondo semitransparente y borde azul
+- **Lower Third** con nombre y afiliación UCR
+- **Ticker de noticias** con scroll continuo (~28 s por ciclo, datos del proyecto NEVEN)
+- **Grilla de calibración** al centro: 9 swatches de blanco puro → transparente → negro puro
+- Resolución base: 1920 × 1080 px
+
+### Decisión de diseño
+El slider de opacidad solo afecta el `div#overlay` (no el panel de controles), para poder calibrar sin perder acceso al control. En OBS se usa la opacidad nativa de la fuente, no el slider.
+
+### Commits realizados
+Ninguno — archivo de utilidad local, no crítico para el proyecto.
+
+### Pendientes próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Completar commits pendientes de la sesión 2026-08-20 |
+| **MEDIA** | Verificar que fórmulas LaTeX se renderizan en chat AI |
+
+
+---
+
+### Sesión 2026-10-05 (~continuación) — Texto grande en OBS Overlay
+
+## Agregado texto "ESTO ES UNA PRUEBA" al overlay
+
+### Cambio realizado
+Agregado texto de prueba grande centrado en el overlay OBS.
+
+### Archivo modificado
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/obs-test-overlay.html` | +clase `.test-text` en CSS + `<div class="test-text">` en HTML |
+
+### Detalles de implementación
+- Tamaño: `font-size: 120px`, `font-weight: 900`
+- Posición: centrado absoluto con `top:50% / left:50% / transform: translate(-50%,-50%)`
+- Estilo: texto blanco con sombra doble (glow blanco difuso + sombra negra sólida) para visibilidad sobre cualquier fondo
+- `white-space: nowrap` para evitar que el texto se parta en dos líneas
+
+### Nota técnica
+El primer intento de `str_replace` falló porque los guiones del comentario CSS (`──`) tenían distinta longitud que el string buscado. Se resolvió buscando el patrón exacto con `grep_search` antes de reemplazar.
+
+### Commits realizados
+Ninguno.
+
+### Pendientes próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Completar commits pendientes de sesión 2026-08-20 |
+| **MEDIA** | Verificar renderizado de fórmulas LaTeX en chat AI |
+
+
+---
+
+### Sesión 2026-10-05 (~continuación 2) — OBS Overlay: fondo 100% transparente
+
+## Corrección de transparencia en overlay OBS
+
+### Problema
+El usuario aclaró que al pedir "transparencia" se refería a que **todo el fondo** fuera transparente — no solo el `body`. Los elementos del overlay (reloj, badge, headline, lower third, ticker) tenían fondos `rgba(...)` semitransparentes que bloqueaban parcialmente la escena de OBS.
+
+### Causa raíz
+El diseño inicial usó fondos de color en los elementos para mejorar el contraste del texto, asumiendo que "transparencia" era solo del body. La intención real era que **nada** tuviera fondo — solo letras flotando sobre la escena.
+
+### Solución aplicada
+Eliminados todos los `background: rgba(...)` de los elementos del overlay. Compensado el contraste perdido con `text-shadow` negra en cada elemento de texto.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/obs-test-overlay.html` | Eliminados fondos de `.clock`, `.live-badge`, `.headline-box`, `.lower-third .name`, `.lower-third .title`, `.ticker`. Agregado `text-shadow` a cada uno. Eliminados `border-radius`, `backdrop-filter` y `border-left` decorativos. |
+
+### Decisiones de diseño
+- El panel de control (`#controls`) conserva su fondo oscuro — es solo visible en el navegador, no en OBS.
+- Se agregó `text-shadow: 2px 2px 6px rgba(0,0,0,0.9)` a todos los textos para mantener legibilidad sobre fondos claros.
+- La clase `.live-dot` (punto parpadeante) quedó blanca — sin fondo de badge rojo ya no se distingue bien; pendiente revisar si conviene cambiar a rojo sólido.
+
+### Commits realizados
+Ninguno.
+
+### Pendientes próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Completar commits pendientes de sesión 2026-08-20 |
+| **MEDIA** | Revisar visibilidad del punto `.live-dot` sin fondo rojo |
+| **MEDIA** | Verificar renderizado de fórmulas LaTeX en chat AI |
+
+---
+
+### Sesión 2026-10-05 (~continuación 3) — Eliminado texto de prueba del overlay
+
+## Cambio menor
+
+Eliminado el texto "ESTO ES UNA PRUEBA" del overlay OBS: se removió el `<div class="test-text">` del HTML y la clase `.test-text` completa del CSS.
+
+### Archivo modificado
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/obs-test-overlay.html` | Eliminado div `.test-text` y su bloque CSS |
+
+### Commits realizados
+Ninguno.
+
+### Pendientes próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Completar commits pendientes de sesión 2026-08-20 |
+| **MEDIA** | Revisar visibilidad del punto `.live-dot` sin fondo rojo |
+| **MEDIA** | Verificar renderizado de fórmulas LaTeX en chat AI |
+
+
+---
+
+### Sesión 2026-08-19 (~noche-2) — Validación soporte EPUB en RAG
+
+## Problema identificado
+
+**Síntoma:** Se solicitó verificar si la implementación de MarkItDown en el RAG soporta archivos `.epub`.
+
+**Causa raíz:** Existían dos funciones de extracción de texto paralelas en `rag_engine.py`:
+1. `extract_text_with_pages_markitdown()` — usa MarkItDown, soporta 20+ formatos
+2. `extract_text_from_file()` — versión vieja, solo soportaba `.pdf` y texto básico
+
+El método `add_document()` (línea 538) usaba `extract_text_from_file()`, limitando el RAG a PDF y archivos de texto. **EPUB no estaba soportado aunque MarkItDown sí lo permite.**
+
+## Fix implementado
+
+Modificada función `extract_text_from_file()` para usar MarkItDown como primera opción:
+
+```python
+def extract_text_from_file(file_path: str) -> str:
+    # Intentar con MarkItDown primero (soporta 20+ formatos incluyendo EPUB)
+    try:
+        from markitdown import MarkItDown
+        md = MarkItDown(enable_plugins=False)
+        result = md.convert(file_path)
+        if result.markdown.strip():
+            return result.markdown
+    except ImportError:
+        pass  # MarkItDown no instalado, usar fallbacks
+    # ... fallbacks para texto plano y PDF con PyMuPDF
+```
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/rag_engine.py` | `extract_text_from_file()` ahora usa MarkItDown primero |
+| `NEVEN/Install/Dist/startup/rag_engine.py` | Sincronizado |
+| `C:\NEVEN\startup\rag_engine.py` | Sincronizado a producción |
+
+## Dependencia faltante: ebooklib
+
+**Hallazgo:** MarkItDown soporta EPUB **pero requiere `ebooklib`** como dependencia. Al verificar:
+```python
+import importlib.util
+epub_spec = importlib.util.find_spec('ebooklib')
+# Resultado: ebooklib installed: False
+```
+
+## Investigación de formatos MarkItDown
+
+Se investigaron todos los formatos soportados y sus dependencias:
+
+| Formato | Dependencia | Recomendación NEVEN |
+|---------|-------------|---------------------|
+| PDF | `markitdown[pdf]` | ✓ Instalar |
+| DOCX | `markitdown[docx]` | ✓ Instalar |
+| PPTX | `markitdown[pptx]` | ✓ Instalar |
+| XLSX | `markitdown[xlsx]` | ✓ Instalar |
+| XLS | `markitdown[xls]` | ✗ Formato obsoleto |
+| EPUB | `ebooklib` (separado) | ✓ Instalar |
+| HTML/CSV/JSON/XML | (incluido) | ✓ Ya funciona |
+| Outlook MSG | `markitdown[outlook]` | ✗ No aplica |
+| Audio | `markitdown[audio-transcription]` | ✗ Requiere API externa |
+| YouTube | `markitdown[youtube-transcription]` | ✗ Requiere API externa |
+| Azure | `markitdown[az-*]` | ✗ Requiere suscripción |
+| OCR | `markitdown-ocr` | ✗ Requiere GPT-4o |
+
+## Decisión de diseño
+
+**Instalar solo lo que funciona 100% offline:**
+```powershell
+pip install 'markitdown[pdf,docx,pptx,xlsx]' ebooklib
+```
+
+Esto habilita: PDF, DOCX, PPTX, XLSX, EPUB, HTML, CSV, JSON, XML sin APIs externas.
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Instalar dependencias MarkItDown: `pip install 'markitdown[pdf,docx,pptx,xlsx]' ebooklib` | **Pendiente** |
+| **ALTA** | Probar instalador en máquina limpia | Pendiente |
+| **ALTA** | Regenerar ZIP después de instalar dependencias | Pendiente |
+| MEDIA | Documentar formatos soportados en RAG_GUIDE.md | Pendiente |
+
+---
+
+
+### Sesión 2026-08-19 (~noche-3) — Dependencias MarkItDown instaladas + ZIP regenerado
+
+## Acciones completadas
+
+### 1. Instalación de dependencias offline completas
+
+```powershell
+pip install 'markitdown[pdf,docx,xlsx,pptx,xls]' ebooklib
+```
+
+**Resultado:**
+- `ebooklib-0.20` instalado (EPUB support)
+- `xlrd` ya estaba instalado (XLS legacy support)
+- Todas las otras dependencias ya estaban presentes
+
+### 2. Actualización del instalador
+
+**Archivo:** `NEVEN/Install/Install-NEVEN.ps1`
+
+Modificado array de paquetes pip (líneas 1401-1416):
+```powershell
+# MarkItDown with ALL offline document formats:
+#   - PDF (pdfminer-six, pdfplumber)
+#   - DOCX (mammoth)
+#   - PPTX (python-pptx)
+#   - XLSX (openpyxl, pandas)
+#   - XLS legacy (xlrd)
+#   - EPUB (ebooklib)
+#   - HTML, CSV, JSON, XML, TXT, MD, ZIP (built-in, no deps)
+$pipPkgsMarkItDown = @('markitdown[pdf,docx,xlsx,pptx,xls]','ebooklib')
+```
+
+### 3. Actualización de requirements.txt
+
+**Archivo:** `NEVEN/TaskPane/requirements.txt`
+
+Agregado:
+```
+markitdown[pdf,docx,xlsx,pptx,xls]>=0.1.0   # Microsoft's converter (MIT license)
+ebooklib>=0.18          # EPUB support for MarkItDown
+```
+
+### 4. ZIP regenerado
+
+**Archivo:** `NEVEN/Install/NEVEN-v3.2-Setup.zip`
+- **Tamaño:** 21.96 MB
+- **Archivos:** 426
+- **Fecha:** 2026-10-05 01:14:58
+
+## Formatos soportados por RAG (todos offline)
+
+| Formato | Extensión | Dependencia |
+|---------|-----------|-------------|
+| PDF | .pdf | pdfminer-six, pdfplumber |
+| Word | .docx | mammoth |
+| PowerPoint | .pptx | python-pptx |
+| Excel nuevo | .xlsx | openpyxl, pandas |
+| Excel viejo | .xls | xlrd |
+| EPUB | .epub | ebooklib |
+| HTML | .html, .htm | (built-in) |
+| CSV | .csv | (built-in) |
+| JSON | .json | (built-in) |
+| XML | .xml | (built-in) |
+| Texto | .txt, .md | (built-in) |
+| ZIP | .zip | (built-in, itera contenido) |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/rag_engine.py` | `extract_text_from_file()` usa MarkItDown primero |
+| `NEVEN/TaskPane/requirements.txt` | +ebooklib, +xls en markitdown extras |
+| `NEVEN/Install/Install-NEVEN.ps1` | +xls, +ebooklib en $pipPkgsMarkItDown |
+| `NEVEN/Install/Dist/startup/rag_engine.py` | Sincronizado |
+| `NEVEN/Install/Dist/startup/requirements.txt` | Sincronizado |
+| `C:\NEVEN\startup\rag_engine.py` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado |
+
+## Decisión de diseño
+
+**Instalar TODOS los formatos offline:** Se decidió incluir `xls` (Excel legacy) aunque es formato obsoleto porque:
+1. No agrega dependencias pesadas (solo xlrd)
+2. Algunos usuarios pueden tener archivos .xls antiguos
+3. Funciona 100% offline
+
+**NO instalar formatos que requieren API externa:**
+- `[audio-transcription]` — requiere servicio de transcripción
+- `[youtube-transcription]` — requiere API YouTube
+- `[az-*]` — requiere Azure
+- `markitdown-ocr` — requiere GPT-4o
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar instalador en máquina limpia | Pendiente |
+| ~~ALTA~~ | ~~Instalar dependencias MarkItDown~~ | Completado |
+| ~~ALTA~~ | ~~Regenerar ZIP~~ | Completado |
+| MEDIA | Documentar formatos soportados en RAG_GUIDE.md | Pendiente |
+| BAJA | Agregar filtro por extensión en UI de indexado | Pendiente |
+
+---
+
+
+### Sesión 2026-08-19 (~noche-4) — UI actualizada con formatos RAG y capítulos
+
+## Correcciones en TaskPane
+
+### 1. Lista de formatos soportados en panel RAG
+
+**Problema:** El placeholder del input de archivos decía "PDF, TXT, MD" pero ahora soportamos 12+ formatos.
+
+**Solución:** Agregada línea informativa debajo del input:
+```html
+<div style="font-size:9px;color:var(--text-secondary)">
+  <strong>Formatos:</strong> PDF, DOCX, PPTX, XLSX, XLS, EPUB, HTML, CSV, JSON, XML, TXT, MD
+</div>
+```
+
+### 2. Número de capítulos en Tab Ayuda
+
+**Problema:** Decía "Manual de 14 capítulos" pero ahora tenemos 16 (capítulos 0-15).
+
+**Solución:** Cambiado a "Manual de 16 capítulos con guías y ejemplos".
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/taskpane.html` | +lista formatos RAG, +16 capítulos |
+| `NEVEN/Install/Dist/taskpane/taskpane.html` | Sincronizado |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado (21.96 MB) |
+
+## Resumen cambios completos esta sesión
+
+| Cambio | Archivo |
+|--------|---------|
+| `extract_text_from_file()` usa MarkItDown primero | rag_engine.py |
+| +ebooklib, +xls en dependencias | requirements.txt, Install-NEVEN.ps1 |
+| Lista de formatos visible al usuario | taskpane.html |
+| "16 capítulos" en Tab Ayuda | taskpane.html |
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar instalador en máquina limpia | Pendiente |
+| ~~ALTA~~ | ~~Soporte EPUB/DOCX/PPTX/XLSX en RAG~~ | Completado |
+| ~~ALTA~~ | ~~Indicar formatos al usuario~~ | Completado |
+| ~~MEDIA~~ | ~~Corregir "14 capítulos" → "16 capítulos"~~ | Completado |
+| MEDIA | Documentar formatos en RAG_GUIDE.md | Pendiente |
+
+---
+
+
+### Sesión 2026-08-19 (~noche-5) — Botón browse para selector de archivos RAG
+
+## Problema reportado
+
+El botón "..." en el panel RAG no hacía nada al hacer clic.
+
+**Causa raíz:** El botón HTML existía pero no tenía ningún event listener asociado. Además, los browsers no permiten obtener la ruta completa de un archivo por seguridad (solo el nombre).
+
+## Solución implementada
+
+### 1. Nuevo endpoint en servidor HTTP
+
+**Endpoint:** `GET /api/rag/browse`
+
+Usa `tkinter.filedialog` para abrir el diálogo nativo de Windows:
+
+```python
+def _handle_rag_browse(self):
+    import tkinter as tk
+    from tkinter import filedialog
+    
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    
+    filetypes = [
+        ("Todos los soportados", "*.pdf;*.docx;*.pptx;*.xlsx;*.xls;*.epub;*.html;*.htm;*.csv;*.json;*.xml;*.txt;*.md"),
+        ("PDF", "*.pdf"),
+        # ... etc
+    ]
+    
+    file_path = filedialog.askopenfilename(...)
+    # Devuelve {"status": "ok", "path": "C:\\ruta\\completa.pdf", "filename": "archivo.pdf"}
+```
+
+### 2. Handler del botón en TaskPane
+
+```javascript
+browseBtn.addEventListener('click', async function() {
+    var response = await fetch(API + '/api/rag/browse');
+    var data = await response.json();
+    if (data.status === 'ok' && data.path) {
+        document.getElementById('rag-file-path').value = data.path;
+        showToast('Archivo seleccionado: ' + data.filename);
+    }
+});
+```
+
+## Intento fallido
+
+**Primer intento:** Usar `window.showOpenFilePicker()` (File System Access API)
+- **Problema:** Esta API no expone la ruta completa del archivo por seguridad del browser
+- **Resultado:** Solo se obtenía el nombre del archivo, no la ruta necesaria para el servidor
+
+**Solución correcta:** Usar el servidor HTTP para abrir el diálogo nativo de Windows con tkinter, que sí devuelve la ruta completa.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/neven_http_server.py` | +endpoint GET /api/rag/browse, +_handle_rag_browse() |
+| `NEVEN/TaskPane/taskpane.html` | +event listener para rag-browse-btn |
+| `NEVEN/ControlPython/startup/neven_http_server.py` | Sincronizado |
+| `NEVEN/Install/Dist/startup/neven_http_server.py` | Sincronizado |
+| `NEVEN/Install/Dist/taskpane/taskpane.html` | Sincronizado |
+| `C:\NEVEN\startup\neven_http_server.py` | Sincronizado a producción |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado (21.96 MB) |
+
+## Decisión de diseño
+
+**tkinter vs win32:** Se eligió tkinter porque:
+1. Viene incluido con Python (no requiere pywin32)
+2. `filedialog.askopenfilename()` es simple y funcional
+3. Devuelve la ruta completa del archivo
+4. El diálogo se muestra al frente con `attributes('-topmost', True)`
+
+---
+
+### Resumen completo de la sesión 2026-08-19
+
+| Cambio | Estado |
+|--------|--------|
+| Soporte EPUB/DOCX/PPTX/XLSX/XLS en RAG | Completado |
+| Instalar ebooklib + markitdown[xls] | Completado |
+| Lista de formatos visible en UI | Completado |
+| "16 capítulos" en Tab Ayuda | Completado |
+| Botón browse abre explorador de archivos | Completado |
+| ZIP instalador regenerado | Completado |
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar instalador en máquina limpia | Pendiente |
+| **ALTA** | Reiniciar servidor HTTP para probar botón browse | Pendiente |
+| MEDIA | Documentar formatos en RAG_GUIDE.md | Pendiente |
+| BAJA | Agregar botón browse al panel de ontología también | Pendiente |
+
+---
+
+
+### Sesión 2026-08-19 (~noche-6) — Fix botón browse con subprocess
+
+## Problema
+
+El botón "..." del panel RAG retornaba "Error al abrir selector de archivos".
+
+**Causa raíz:** tkinter GUI requiere ejecutarse en el hilo principal de Python, pero el servidor HTTP maneja requests en threads separados. Ejecutar `filedialog.askopenfilename()` directamente en un thread secundario causa error.
+
+## Solución
+
+Cambiar de ejecución directa de tkinter a usar `subprocess` para lanzar un proceso Python separado:
+
+```python
+def _handle_rag_browse(self):
+    script = '''
+import tkinter as tk
+from tkinter import filedialog
+import json, os
+
+root = tk.Tk()
+root.withdraw()
+root.attributes("-topmost", True)
+root.focus_force()
+
+file_path = filedialog.askopenfilename(...)
+root.destroy()
+
+print(json.dumps({"status": "ok", "path": file_path, ...}))
+'''
+    result = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True)
+    data = json.loads(result.stdout.strip())
+    self._send_json(data)
+```
+
+**Por qué funciona:** El subprocess crea un nuevo proceso Python con su propio hilo principal, donde tkinter puede ejecutar correctamente.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/neven_http_server.py` | `_handle_rag_browse()` usa subprocess |
+| `NEVEN/ControlPython/startup/neven_http_server.py` | Sincronizado |
+| `NEVEN/Install/Dist/startup/neven_http_server.py` | Sincronizado |
+| `C:\NEVEN\startup\neven_http_server.py` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado |
+
+## Intento fallido
+
+**Primer intento:** Ejecutar tkinter directamente en el handler HTTP
+- **Error:** tkinter no funciona en threads secundarios
+- **Síntoma:** "Error al abrir selector de archivos"
+
+## Verificación
+
+El diálogo nativo de Windows SÍ aparece cuando se ejecuta el script como subprocess (usuario confirmó que lo cerró manualmente).
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Reiniciar Excel y probar botón browse | Pendiente |
+| **ALTA** | Probar instalador en máquina limpia | Pendiente |
+| MEDIA | Documentar formatos en RAG_GUIDE.md | Pendiente |
+
+---
+
+
+### Sesión 2026-08-19 (~noche-7) — Diagnóstico servidor HTTP viejo
+
+## Problema persistente
+
+El botón "..." seguía retornando error después de sincronizar el código.
+
+**Diagnóstico:**
+```powershell
+Invoke-WebRequest -Uri 'http://localhost:5555/api/rag/browse'
+# Error: (404) No se encontró
+```
+
+**Causa raíz:** El servidor HTTP que estaba corriendo era una instancia vieja (antes de agregar el endpoint `/api/rag/browse`). Sincronizar archivos no reinicia el servidor automáticamente.
+
+## Solución
+
+Terminar los procesos Python del servidor HTTP viejo:
+```powershell
+Get-Process python* | ... # Encontró PIDs 86348 y 94980
+Stop-Process -Id 86348 -Force
+Stop-Process -Id 94980 -Force
+```
+
+Al reabrir Excel, el servidor se iniciará con el código actualizado.
+
+## Lección aprendida
+
+**IMPORTANTE:** Después de modificar `neven_http_server.py`, es necesario:
+1. Cerrar Excel completamente
+2. O matar los procesos Python que ejecutan el servidor
+3. Luego reabrir Excel
+
+Solo copiar archivos no es suficiente — el proceso Python en memoria sigue ejecutando el código viejo.
+
+---
+
+### Pendientes actualizados
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Reabrir Excel y probar botón browse | Pendiente |
+| **ALTA** | Probar instalador en máquina limpia | Pendiente |
+| MEDIA | Documentar formatos en RAG_GUIDE.md | Pendiente |
+
+---
