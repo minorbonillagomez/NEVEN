@@ -10,7 +10,13 @@ sidebar_position: 0
 ## Sistema Multilenguaje para el Analisis de Datos en Microsoft Excel
 
 $
-\text{Excel} \xrightarrow{\text{Named Pipes}} \begin{cases} \text{R 4.4.1} & \text{(Estadistica)} \\ \text{Julia 1.12.6} & \text{(Matematica / ML)} \\ \text{Python 3.12} & \text{(Data Science / IA)} \end{cases} \xrightarrow{\text{WebView2}} \text{Visualizacion Interactiva}
+\begin{array}{c}
+\text{Excel} \\
+\downarrow_{\scriptsize\text{Named Pipes}} \\
+\begin{cases} \text{R 4.4.1} & \text{(Estadistica)} \\ \text{Julia 1.12.6} & \text{(Matematica / ML)} \\ \text{Python 3.12} & \text{(Data Science / IA)} \end{cases} \\
+\downarrow_{\scriptsize\text{WebView2}} \\
+\text{Visualizacion Interactiva}
+\end{array}
 $
 
 **<span style="color:#ffffff">Buklo</span><span style="color:#e53935">LAB</span>**
