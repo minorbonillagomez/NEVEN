@@ -1427,27 +1427,17 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_About_Dialog() {
     rslt.val.num = 1;
 
     std::string msg =
-        "NEVEN v2.0\n"
+        "NEvƎИ v3.2\n"
         "Open Source Polyglot Infrastructure for Excel\n\n"
-        "Creado por Minor Bonilla G.\n"
-        "Licencia: GPL v3 — Software libre para todos\n\n"
-        "R: Estadistica | Julia: Matematica/ML\n"
-        "WebView2: Visualizacion interactiva\n"
-        "Pluto.jl: Notebooks reactivos\n\n"
-        "---\n\n"
-        "Creo fielmente en un mundo mas igualitario\n"
-        "en el que todos podamos colaborar.\n\n"
-        "NEVEN es una invitacion a construir comunidad,\n"
-        "a compartir conocimiento sin barreras,\n"
-        "y a inspirar a otros a crear un mundo donde\n"
-        "la humanidad avance junta, no dividida.\n\n"
-        "Si este proyecto te es util, compartelo.\n"
-        "Si puedes mejorarlo, contribuye.\n"
-        "Juntos llegamos mas lejos.\n\n"
+        "La historia completa del proyecto se encuentra\n"
+        "en la pestana Ayuda de NEVEN Studio.\n\n"
+        "Autor : Minor Bonilla-Gomez\n"
+        "Inst. : Universidad de Costa Rica\n"
+        "Lic.  : GPL v3 (core) / Comercial (Studio)\n\n"
         "github.com/minor-bonilla/NEVEN";
 
     MessageBoxA(FindWindowA("XLMAIN", nullptr), msg.c_str(),
-                "Acerca de NEVEN", MB_OK | MB_ICONINFORMATION);
+                "Acerca de NEvƎИ", MB_OK | MB_ICONINFORMATION);
     return &rslt;
 }
 
