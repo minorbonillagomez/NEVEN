@@ -2,7 +2,7 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-19 (sesión MarkItDown completada)
+> **Última actualización:** 2026-08-19 (sesión MarkItDown + evaluaciones)
 
 ---
 
@@ -43,6 +43,41 @@
 - 10 documentos indexados (antes 9)
 - 3,709 chunks totales (antes 3,690)
 - Dominios: excel (3), econometria (4), estadistica (2), neven (1)
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Re-indexar libros existentes con MarkItDown para comparar calidad |
+| **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **BAJA** | Evaluar plugin `markitdown-ocr` para PDFs con imágenes |
+
+---
+
+### Sesión 2026-08-19 (~continuación) — Actualización de Evaluaciones
+
+## 📋 Documentación actualizada
+
+### Logros
+Actualización de los 3 documentos de evaluación principales con la integración de MarkItDown completada.
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Evaluaciones/Evaluacion_doctoral.md` | Nueva sección 2.21 MarkItDown |
+| `NEVEN/docs/Evaluaciones/Evaluacion_comercial.md` | Fortaleza #23, nuevo argumento ventas |
+| `NEVEN/docs/Evaluaciones/EVALUACION_MIBOGO.md` | Sesión 19-ago + notas actualizadas |
+
+### Commits realizados
+| Hash | Descripción |
+|------|-------------|
+| `0059535` | feat(rag): integrate Microsoft MarkItDown for PDF/DOCX extraction |
+| `523ecc8` | docs(chat): registrar integración de MarkItDown completada |
+| `5e55186` | docs(chat): agregar pendientes de sesión MarkItDown |
+| `e361f87` | docs(eval): actualizar evaluaciones con integración de MarkItDown |
+
+### Notas actualizadas en EVALUACION_MIBOGO
+- Hábitos de ingeniería: 8.6 → **8.7** (+0.1)
+- Nota Global Desarrollador: 8.3 → **8.35**
 
 ### Pendientes próxima sesión
 | Prioridad | Tarea |
