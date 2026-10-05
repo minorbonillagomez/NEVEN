@@ -1487,3 +1487,87 @@ Archivadas primeras 11,000 líneas a CHAT_LARGO.md (que ahora tiene 17,550 líne
 | BAJA | Agregar botón browse al panel de indexado de ontologías también |
 
 ---
+
+---
+
+### Sesión 2026-08-19 (~madrugada) — Tareas MEDIA y BAJA completadas
+
+## Logros principales
+
+### 1. MEDIA: RAG_GUIDE.md actualizado con todos los formatos
+
+**Cambios en `NEVEN/docs/RAG_GUIDE.md` (antes solo en Dist, ahora trackeado en git):**
+
+- Tabla de formatos ampliada de 5 a 12 entradas:
+
+| Formato | Extensión | Dependencia | Calidad |
+|---------|-----------|-------------|---------|
+| PDF | .pdf | markitdown[pdf], pdfplumber | ★★★★★ |
+| Word | .docx | markitdown[docx] | ★★★★★ |
+| PowerPoint | .pptx | markitdown[pptx] | ★★★★☆ |
+| Excel nuevo | .xlsx | markitdown[xlsx] | ★★★★☆ |
+| Excel legacy | .xls | markitdown[xls] | ★★★☆☆ |
+| EPUB | .epub | ebooklib | ★★★★★ |
+| HTML | .html, .htm | (built-in) | ★★★★☆ |
+| CSV | .csv | (built-in) | ★★★★★ |
+| JSON | .json | (built-in) | ★★★★★ |
+| XML | .xml | (built-in) | ★★★★☆ |
+| Texto/MD | .txt, .md | (built-in) | ★★★★★ |
+| ZIP | .zip | (built-in, itera contenido) | ★★★☆☆ |
+
+- Sección de dependencias corregida (agregados `ebooklib`, `markitdown[xls]`)
+- Endpoint `GET /api/rag/browse` documentado
+- Versión actualizada de v2.7 a v3.2
+
+**Decisión de diseño:** Se copió el archivo a `NEVEN/docs/RAG_GUIDE.md` (trackeado por git) porque `Install/Dist/` está en `.gitignore`. Desde ahora el archivo fuente es `NEVEN/docs/RAG_GUIDE.md` y debe copiarse a `Dist/docs/` al regenerar el ZIP.
+
+### 2. BAJA: Botón browse en panel de ontología
+
+**Problema:** `btn-ontology-browse` existía en el HTML pero no tenía event listener (mismo problema que tuvo el browse del RAG).
+
+**Solución:** Agregado listener que reutiliza el mismo endpoint `/api/rag/browse`:
+
+```javascript
+var ontologyBrowseBtn = document.getElementById('btn-ontology-browse');
+if (ontologyBrowseBtn) {
+  ontologyBrowseBtn.addEventListener('click', async function() {
+    var response = await fetch(API + '/api/rag/browse');
+    var data = await response.json();
+    if (data.status === 'ok' && data.path) {
+      document.getElementById('ontology-file-path').value = data.path;
+      showToast('Archivo seleccionado: ' + data.filename);
+    }
+  });
+}
+```
+
+**Decisión de diseño:** Se reutilizó `/api/rag/browse` en lugar de crear un segundo endpoint. El diálogo ya filtra por PDF, DOCX, EPUB, TXT, MD — que son los formatos relevantes para el procesador de libros de ontología.
+
+También actualizado el hint text: "Solo archivos PDF con texto seleccionable" → "PDF, DOCX, EPUB, TXT, MD con texto seleccionable"
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/RAG_GUIDE.md` | Creado en ubicación trackeada por git (antes solo en Dist) |
+| `NEVEN/Install/Dist/docs/RAG_GUIDE.md` | Actualizado (formatos, deps, endpoint, versión) |
+| `NEVEN/TaskPane/taskpane.html` | +handler btn-ontology-browse, +hint text actualizado |
+| `NEVEN/Install/Dist/taskpane/taskpane.html` | Sincronizado |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado (21.96 MB) |
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `44daf55` | docs(rag): update RAG_GUIDE with all formats + add ontology browse button |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| MEDIA | Actualizar script de build del ZIP para copiar desde `NEVEN/docs/RAG_GUIDE.md` a `Dist/docs/` automáticamente |
+| BAJA | Verificar que el procesador de libros de ontología acepta los nuevos formatos (DOCX, EPUB) además de PDF |
+
+---
