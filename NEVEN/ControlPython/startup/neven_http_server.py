@@ -3043,6 +3043,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
         question = body.get("question") or body.get("query")
         domain = body.get("domain")
         top_k = int(body.get("top_k", 5))
+        min_score = float(body.get("min_score", 0.0))  # 0 = sin filtro
         use_ontology = body.get("use_ontology", True)
         
         if not question:
@@ -3062,6 +3063,12 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     "ontology_guided": False,
                     "results": results
                 }
+            
+            # Filtrar por score mínimo si se especificó
+            if min_score > 0 and result.get("results"):
+                filtered = [r for r in result["results"] if r.get("score", 0) >= min_score]
+                result["results"] = filtered
+                result["filtered_by_score"] = min_score
             
             self._send_json({
                 "status": "ok",

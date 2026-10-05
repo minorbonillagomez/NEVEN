@@ -1339,6 +1339,12 @@
               <option value="10">10</option>
             </select>
           </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+            <label style="font-size:10px;color:var(--text-secondary)">Score minimo:</label>
+            <input type="range" id="rag-min-score" min="0" max="0.9" step="0.05" value="0.5"
+                   style="flex:1;height:4px;cursor:pointer">
+            <span id="rag-min-score-value" style="font-size:10px;color:var(--text-secondary);min-width:28px">0.50</span>
+          </div>
           <button class="btn btn-primary" id="rag-search-btn">Buscar</button>
         </div>
       </div>
@@ -6339,6 +6345,7 @@ window._renderCreateFunctionBlock = function(jsonStr) {
     var queryInput = document.getElementById('rag-query-input');
     var useOntology = document.getElementById('rag-use-ontology').checked;
     var topK = parseInt(document.getElementById('rag-top-k').value) || 5;
+    var minScore = parseFloat(document.getElementById('rag-min-score').value) || 0;
     var resultsCard = document.getElementById('rag-results-card');
     var resultsList = document.getElementById('rag-results-list');
     var resultsMeta = document.getElementById('rag-results-meta');
@@ -6356,7 +6363,7 @@ window._renderCreateFunctionBlock = function(jsonStr) {
     fetch(API + '/api/rag/query', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: question, use_ontology: useOntology, top_k: topK })
+      body: JSON.stringify({ question: question, use_ontology: useOntology, top_k: topK, min_score: minScore })
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -6429,6 +6436,15 @@ window._renderCreateFunctionBlock = function(jsonStr) {
     var searchBtn = document.getElementById('rag-search-btn');
     if (searchBtn) {
       searchBtn.addEventListener('click', ragSearch);
+    }
+    
+    // Slider de minScore - actualizar valor mostrado
+    var minScoreSlider = document.getElementById('rag-min-score');
+    var minScoreValue = document.getElementById('rag-min-score-value');
+    if (minScoreSlider && minScoreValue) {
+      minScoreSlider.addEventListener('input', function() {
+        minScoreValue.textContent = parseFloat(this.value).toFixed(2);
+      });
     }
     
     // Enter en textarea de busqueda
