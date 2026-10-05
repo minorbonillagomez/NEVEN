@@ -2,7 +2,71 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-19 (sesión completa: MarkItDown + evaluaciones + instalador + Docusaurus)
+> **Última actualización:** 2026-08-19 (sesión completa: MarkItDown + evaluaciones + instalador + Docusaurus + HTML)
+
+---
+
+### Sesión 2026-08-19 (~cierre) — HTML Documentación Regenerado ✅
+
+## 📋 Documentación visible en Ayuda
+
+### Problema
+El capítulo 15 de Docusaurus no aparecía en la ayuda porque:
+1. `_build_docs.js` tiene lista fija de CHAPTERS (no lee automáticamente)
+2. El HTML no se había regenerado
+3. El HTML no se había copiado al instalador (Dist)
+
+### Solución
+1. Agregar capítulo 15 al array CHAPTERS en `_build_docs.js`
+2. Ejecutar `node _build_docs.js` para regenerar HTML
+3. Copiar a Dist, Docusaurus, y producción
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/_build_docs.js` | +1 línea (capítulo 15) |
+| `NEVEN/docs/neven-docs.html` | Regenerado (245 KB, 16 caps) |
+| `NEVEN/docs/Docusaurus/neven-docs.html` | Copiado |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Copiado |
+| `C:\NEVEN\docs\neven-docs.html` | Copiado (producción) |
+
+### Commits realizados
+| Hash | Descripción |
+|------|-------------|
+| `5f31ed6` | docs: regenerate HTML with Chapter 15 RAG |
+
+### Lección aprendida
+> **Cuando agregas capítulos a Docusaurus, hay 3 lugares que actualizar:**
+> 1. `sidebars.js` — navegación Docusaurus
+> 2. `_build_docs.js` — array CHAPTERS para HTML
+> 3. Ejecutar `node _build_docs.js` y copiar a Dist/
+
+---
+
+## 📊 Resumen completo de sesión 2026-08-19
+
+### Todos los commits de hoy
+| Hash | Descripción |
+|------|-------------|
+| `0059535` | feat(rag): integrate Microsoft MarkItDown for PDF/DOCX extraction |
+| `523ecc8` | docs(chat): registrar integración de MarkItDown completada |
+| `5e55186` | docs(chat): agregar pendientes de sesión MarkItDown |
+| `e361f87` | docs(eval): actualizar evaluaciones con integración de MarkItDown |
+| `6d5f607` | docs(chat): registrar actualización de evaluaciones con MarkItDown |
+| `86cacdd` | feat(installer): add RAG + MarkItDown support |
+| `92b1772` | docs(chat): registrar actualización del instalador con RAG |
+| `58bfa4a` | docs(docusaurus): add Chapter 15 - RAG with Ontology as Metaheuristic |
+| `47ca053` | docs(chat): registrar documentación Docusaurus capítulo 15 RAG |
+| `5f31ed6` | docs: regenerate HTML with Chapter 15 RAG |
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Regenerar NEVEN-v3.2-Setup.zip con nuevos archivos |
+| **MEDIA** | Re-indexar libros existentes con MarkItDown |
+| **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **BAJA** | Evaluar plugin `markitdown-ocr` para PDFs con imágenes |
 
 ---
 
