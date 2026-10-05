@@ -1847,3 +1847,48 @@ Sesión de consulta solamente. No se realizaron cambios en archivos.
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-4) — Fix BukloLAB color blanco
+
+## Logro
+
+Corrección de una línea en dos archivos: `color:#111` → `color:#ffffff` para que "Buklo" sea visible sobre fondo oscuro.
+
+## Causa raíz
+
+El color original `#111` (casi negro) era invisible sobre el fondo `#1e1e1e` del tema oscuro del TaskPane y neven-docs.html. Se había omitido que ambas ubicaciones usan fondo dark al momento de especificar "negro".
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/taskpane.html` | `color:#111` → `color:#ffffff` en span Buklo |
+| `NEVEN/docs/Docusaurus/00-portada.md` | `color:#111` → `color:#ffffff` en span Buklo |
+| `NEVEN/docs/neven-docs.html` | Regenerado con `node _build_docs.js` |
+| `NEVEN/Install/Dist/taskpane/taskpane.html` | Sincronizado |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado (22.05 MB) |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `4649ea3` | fix(branding): BukloLAB - Buklo white (#fff) on dark background |
+
+## Resultado visual
+
+`BukloLAB` — "Buklo" en blanco (`#ffffff`) + "LAB" en rojo (`#e53935`) sobre fondo `#1e1e1e`. Alta legibilidad en ambas ubicaciones.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
