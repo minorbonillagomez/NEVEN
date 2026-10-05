@@ -640,24 +640,57 @@ function Install-NEVENFiles {
         }
     }
 
-    # Startup scripts
+    # Startup scripts and Python modules (all .py, .r, .jl files)
     $startupDir = Join-Path $TargetDir 'startup'
     if (-not (Test-Path $startupDir)) {
         New-Item -Path $startupDir -ItemType Directory -Force | Out-Null
     }
-    foreach ($file in @('startup.r', 'startup.jl', 'startup.py')) {
-        $src = Join-Path $SourceDir "startup\$file"
-        $dst = Join-Path $startupDir $file
-        if (Test-Path $src) {
+    
+    # Copy ALL Python modules from startup (RAG, ontology, handlers, etc.)
+    $srcStartup = Join-Path $SourceDir 'startup'
+    if (Test-Path $srcStartup) {
+        Get-ChildItem -Path $srcStartup -File | ForEach-Object {
+            $dst = Join-Path $startupDir $_.Name
             try {
-                Copy-Item -Path $src -Destination $dst -Force
-                Write-Log "Copied startup\$file"
+                Copy-Item -Path $_.FullName -Destination $dst -Force
+                Write-Log "Copied startup\$($_.Name)"
             } catch {
-                Write-Log "Failed to copy startup\${file}: $_" -Level ERROR
+                Write-Log "Failed to copy startup\$($_.Name): $_" -Level WARN
                 $script:HasWarnings = $true
             }
-        } else {
-            Write-Log "startup\$file not found - skipping" -Level WARN
+        }
+    }
+
+    # Documentation and ontologies (for RAG engine)
+    $srcDocs = Join-Path $SourceDir 'docs'
+    $dstDocs = Join-Path $TargetDir 'docs'
+    if (Test-Path $srcDocs) {
+        try {
+            if (-not (Test-Path $dstDocs)) {
+                New-Item -Path $dstDocs -ItemType Directory -Force | Out-Null
+            }
+            Copy-Item -Path (Join-Path $srcDocs '*') -Destination $dstDocs -Recurse -Force
+            Write-Log 'Copied docs directory (includes ontologies and RAG guide)'
+        } catch {
+            Write-Log "Failed to copy docs: $_" -Level ERROR
+            $script:HasWarnings = $true
+        }
+    } else {
+        Write-Log "Docs directory not found in $SourceDir - skipping" -Level WARN
+    }
+
+    # Data directory for RAG index
+    $srcData = Join-Path $SourceDir 'data'
+    $dstData = Join-Path $TargetDir 'data'
+    if (-not (Test-Path $dstData)) {
+        New-Item -Path $dstData -ItemType Directory -Force | Out-Null
+        Write-Log 'Created data directory for RAG index'
+    }
+    if (Test-Path $srcData) {
+        # Only copy non-database files (README, configs) - index is created on first use
+        Get-ChildItem -Path $srcData -File | Where-Object { $_.Extension -notin @('.duckdb', '.wal') } | ForEach-Object {
+            $dst = Join-Path $dstData $_.Name
+            Copy-Item -Path $_.FullName -Destination $dst -Force -ErrorAction SilentlyContinue
         }
     }
 
@@ -1365,10 +1398,17 @@ function Install-PythonPackages {
     Write-Log 'Installing Python packages...'
     Write-Host '  Installing Python packages...' -ForegroundColor Cyan
 
-    # Python packages used by NEVEN ML and utility functions
-    $pipPkgs = @('scikit-learn','numpy','PyPDF2','python-docx','folium','duckdb')
+    # Python packages used by NEVEN ML, RAG engine, and utility functions
+    # Core ML/utilities
+    $pipPkgsCore = @('scikit-learn','numpy','PyPDF2','python-docx','folium','duckdb')
+    # RAG Engine + MarkItDown
+    $pipPkgsRAG = @('fastembed','pyyaml','pdfplumber','pymupdf','httpx','openai')
+    # MarkItDown with document format support (PDF, DOCX, XLSX, PPTX)
+    $pipPkgsMarkItDown = @('markitdown[pdf,docx,xlsx,pptx]')
+    
+    $pipPkgs = $pipPkgsCore + $pipPkgsRAG + $pipPkgsMarkItDown
 
-    Write-Host '  Installing pip packages (ML + utilities)...' -ForegroundColor White
+    Write-Host '  Installing pip packages (ML + RAG + MarkItDown)...' -ForegroundColor White
     Write-Log "Python packages to install: $($pipPkgs -join ', ')"
     try {
         & $PythonExePath -m pip install --quiet --upgrade $pipPkgs 2>&1 | ForEach-Object { Write-Log "  pip: $_" }

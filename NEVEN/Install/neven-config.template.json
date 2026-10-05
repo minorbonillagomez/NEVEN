@@ -67,5 +67,12 @@
     "staticDir": "C:\\NEVEN\\taskpane\\",
     "functionsDir": "C:\\NEVEN\\functions\\"
   },
+  "RAG": {
+    "enabled": true,
+    "topK": 3,
+    "minScore": 0.5,
+    "ontologyPath": "C:\\NEVEN\\docs\\ontologia",
+    "indexPath": "C:\\NEVEN\\data\\rag_index.duckdb"
+  },
   "auto_load_xll": true
 }
