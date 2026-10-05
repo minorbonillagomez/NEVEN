@@ -1631,3 +1631,35 @@ Script que sincroniza archivos del repo a `Dist/` y genera el ZIP:
 | BAJA | Verificar que el procesador de libros de ontología acepta DOCX, EPUB además de PDF |
 
 ---
+
+---
+
+### Sesión 2026-08-19 (~cierre) — Resumen final del día
+
+## Todo lo completado hoy (sesión completa)
+
+| # | Tarea | Prioridad | Commit |
+|---|-------|-----------|--------|
+| 1 | Eliminar emojis de Docusaurus | ALTA | `ff31c4e` |
+| 2 | Slider minScore en RAG Settings | MEDIA | `b9f227d` |
+| 3 | Re-indexar libros con MarkItDown | MEDIA | — |
+| 4 | Visualización interactiva NEVEN-core | BAJA | `0acc6b4` |
+| 5 | Evaluar markitdown-ocr (NO integrar) | BAJA | `0ecf651` |
+| 6 | Soporte 12+ formatos en RAG | ALTA | `3edbbca` |
+| 7 | Instalar ebooklib + markitdown[xls] | ALTA | `3edbbca` |
+| 8 | Botón browse RAG (explorador nativo) | ALTA | `3edbbca` |
+| 9 | Lista de formatos visible en UI RAG | MEDIA | `3edbbca` |
+| 10 | "16 capítulos" en Tab Ayuda | MEDIA | `3edbbca` |
+| 11 | Botón browse en panel ontología | BAJA | `44daf55` |
+| 12 | RAG_GUIDE.md actualizado (v3.2) | MEDIA | `44daf55` |
+| 13 | Build-Setup.ps1 (automatizar ZIP) | MEDIA | `c855625` |
+| 14 | Archivado CHAT.md → CHAT_LARGO.md | — | `ecd380c` |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar que procesador de libros de ontología acepta DOCX/EPUB además de PDF |
+
+---
