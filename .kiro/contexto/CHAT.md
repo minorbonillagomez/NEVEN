@@ -2,7 +2,75 @@
 
 > **Propósito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-08-19 (sesión completa: MarkItDown + evaluaciones + instalador + Docusaurus + HTML)
+> **Última actualización:** 2026-08-19 (sesión completa: MarkItDown + evaluaciones + instalador + Docusaurus + HTML + visualizaciones)
+
+---
+
+### Sesión 2026-08-19 (~final) — Visualizaciones en Capítulo 14 ✅
+
+## 📋 Documentación de visualizaciones interactivas
+
+### Logro
+Agregada sección 14.7 "Visualizaciones Interactivas" al capítulo 14 de Docusaurus, documentando los exploradores de grafos 2D y 3D de ontologías.
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/14-ontologias-excel-consultant.md` | +sección 14.7 visualizaciones |
+| `NEVEN/docs/neven-docs.html` | Regenerado (247.9 KB) |
+| `NEVEN/docs/Docusaurus/neven-docs.html` | Copiado |
+
+### Commits realizados
+| Hash | Descripción |
+|------|-------------|
+| `b6e074e` | docs: add interactive visualization section to Chapter 14 |
+
+### Visualizaciones incluidas en instalador
+Las visualizaciones ya estaban en `Dist/docs/ontologia/econometrics/`:
+- `graph_visualization.html` (174 KB) — explorador 2D con vis-network
+- `graph_visualization_3d.html` (181 KB) — explorador 3D rotable
+
+### Decisión de diseño
+Se optó por **links a archivos HTML separados** en lugar de incrustar las visualizaciones porque:
+1. Las visualizaciones usan librerías externas (vis-network)
+2. Son interactivas y requieren pantalla completa
+3. El visor de documentación no soporta iframes complejos
+
+---
+
+## 📊 Resumen FINAL sesión 2026-08-19
+
+### Todos los commits de hoy (12 total)
+| Hash | Descripción |
+|------|-------------|
+| `0059535` | feat(rag): integrate Microsoft MarkItDown for PDF/DOCX extraction |
+| `523ecc8` | docs(chat): registrar integración de MarkItDown completada |
+| `5e55186` | docs(chat): agregar pendientes de sesión MarkItDown |
+| `e361f87` | docs(eval): actualizar evaluaciones con integración de MarkItDown |
+| `6d5f607` | docs(chat): registrar actualización de evaluaciones con MarkItDown |
+| `86cacdd` | feat(installer): add RAG + MarkItDown support |
+| `92b1772` | docs(chat): registrar actualización del instalador con RAG |
+| `58bfa4a` | docs(docusaurus): add Chapter 15 - RAG with Ontology as Metaheuristic |
+| `47ca053` | docs(chat): registrar documentación Docusaurus capítulo 15 RAG |
+| `5f31ed6` | docs: regenerate HTML with Chapter 15 RAG |
+| `b778b4f` | docs(chat): resumen completo sesión 2026-08-19 (10 commits) |
+| `b6e074e` | docs: add interactive visualization section to Chapter 14 |
+
+### Áreas actualizadas
+- ✅ **RAG Engine** — MarkItDown integrado como extractor primario
+- ✅ **Evaluaciones** — 3 documentos actualizados
+- ✅ **Instalador** — RAG + MarkItDown + ontologías para usuario final
+- ✅ **Docusaurus** — Capítulo 15 RAG + sección visualizaciones Cap 14
+- ✅ **HTML** — Regenerado con 16 capítulos
+
+### Pendientes próxima sesión
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Regenerar NEVEN-v3.2-Setup.zip con nuevos archivos |
+| **MEDIA** | Re-indexar libros existentes con MarkItDown |
+| **MEDIA** | Agregar slider de minScore en Settings de TaskPane |
+| **BAJA** | Crear visualización interactiva para ontología NEVEN-core |
 
 ---
 
