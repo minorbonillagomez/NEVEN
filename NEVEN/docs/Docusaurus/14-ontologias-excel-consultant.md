@@ -168,11 +168,11 @@ NEVEN incluye visualizadores interactivos para explorar las ontologías de forma
 - **Pan:** Arrastrar el fondo
 - **Selección:** Click en nodo muestra detalles
 - **Colores por tipo:**
-  - 🔵 Métodos estadísticos
-  - 🟠 Conceptos teóricos
-  - 🔴 Supuestos
-  - 🟢 Paquetes R
-  - 🟣 Frameworks
+  - Azul: Métodos estadísticos
+  - Naranja: Conceptos teóricos
+  - Rojo: Supuestos
+  - Verde: Paquetes R
+  - Morado: Frameworks
 
 ### Características del explorador 3D
 

@@ -120,10 +120,10 @@ Permite cargar datos al `dataset` activo que usa el Data Lab.
 
 | Formato | Soporte |
 |:---|:---|
-| CSV | ✅ Auto-detección de separador y encoding |
-| Parquet | ✅ |
-| JSON | ✅ (array de objetos) |
-| Excel (via Bridge) | ✅ Desde NEVEN para Excel |
+| CSV | Si - Auto-detección de separador y encoding |
+| Parquet | Si |
+| JSON | Si (array de objetos) |
+| Excel (via Bridge) | Si - Desde NEVEN para Excel |
 
 Los datos se almacenan en **DuckDB in-memory** como la tabla `dataset`.
 
@@ -206,18 +206,18 @@ Ver guía completa: `C:\NEVEN\functions\COMO_AGREGAR_FUNCIONES.md`
 
 | Característica | NEVEN Excel | NEVEN Studio |
 |:---|:---:|:---:|
-| Requiere Excel | ✅ | ❌ |
-| Funciones como fórmulas `=R.func()` | ✅ | ❌ |
-| Data Lab punto-y-clic | ❌ | ✅ |
-| Run Script (R/Julia/Python) | Parcial | ✅ |
-| Carga de archivos CSV/Parquet | ❌ | ✅ |
-| AI / LMStudio integration | Parcial | ✅ |
-| WebView2 Viewer | ✅ | ❌ |
-| Pluto.jl Notebooks | ✅ | ❌ |
-| Quarto Reportes | ✅ | ❌ |
-| Ribbon COM nativo | ✅ | ❌ |
-| Mismos motores R/Julia/Python | ✅ | ✅ |
-| Mismos binarios C++ | ✅ | ✅ |
+| Requiere Excel | Si | No |
+| Funciones como fórmulas `=R.func()` | Si | No |
+| Data Lab punto-y-clic | No | Si |
+| Run Script (R/Julia/Python) | Parcial | Si |
+| Carga de archivos CSV/Parquet | No | Si |
+| AI / LMStudio integration | Parcial | Si |
+| WebView2 Viewer | Si | No |
+| Pluto.jl Notebooks | Si | No |
+| Quarto Reportes | Si | No |
+| Ribbon COM nativo | Si | No |
+| Mismos motores R/Julia/Python | Si | Si |
+| Mismos binarios C++ | Si | Si |
 
 Ambos modos se instalan juntos — la misma instalación en `C:\NEVEN\` sirve para los dos.
 

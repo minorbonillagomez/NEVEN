@@ -80,13 +80,13 @@ A partir de julio 2026, NEVEN puede usarse **sin Microsoft Excel**. NEVEN Studio
 
 | | NEVEN para Excel | NEVEN Studio |
 |:---|:---:|:---:|
-| Requiere Excel | ✅ | ❌ |
-| Funciones como fórmulas (`=R.func()`) | ✅ | ❌ |
-| Data Lab (punto y clic) | ❌ | ✅ |
-| Run Script (R/Julia/Python) | ❌ | ✅ |
-| Carga de archivos CSV/Parquet | ❌ | ✅ |
-| AI / LLM Integration | Parcial | ✅ |
-| Mismos motores R/Julia/Python | ✅ | ✅ |
+| Requiere Excel | Si | No |
+| Funciones como fórmulas (`=R.func()`) | Si | No |
+| Data Lab (punto y clic) | No | Si |
+| Run Script (R/Julia/Python) | No | Si |
+| Carga de archivos CSV/Parquet | No | Si |
+| AI / LLM Integration | Parcial | Si |
+| Mismos motores R/Julia/Python | Si | Si |
 
 ### Cómo abrir NEVEN Studio
 

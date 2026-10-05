@@ -17,22 +17,22 @@ NEVEN incluye un sistema de **Retrieval Augmented Generation (RAG)** que usa la 
 
 ### Sin RAG
 El modelo de lenguaje responde basándose solo en su entrenamiento. Las respuestas pueden ser:
-- ❌ Desactualizadas (el modelo no conoce libros nuevos)
-- ❌ Genéricas (no específicas al dominio del usuario)
-- ❌ No verificables (no hay fuentes)
+- Desactualizadas (el modelo no conoce libros nuevos)
+- Genéricas (no específicas al dominio del usuario)
+- No verificables (no hay fuentes)
 
 ### Con RAG
 El modelo consulta una base de conocimiento antes de responder:
-- ✅ Respuestas fundamentadas en libros de referencia
-- ✅ Fuentes verificables (libro, página, score de relevancia)
-- ✅ Conocimiento específico del dominio
+- Respuestas fundamentadas en libros de referencia
+- Fuentes verificables (libro, página, score de relevancia)
+- Conocimiento específico del dominio
 
 ### Con RAG + Ontología (NEVEN)
 La ontología **guía la búsqueda** para que sea más rápida y precisa:
-- ✅ Detecta el dominio de la pregunta automáticamente
-- ✅ Expande la query con sinónimos y términos relacionados
-- ✅ Filtra la búsqueda al dominio relevante (reduce espacio de búsqueda)
-- ✅ Traduce entre idiomas (EN/ES/PT/FR)
+- Detecta el dominio de la pregunta automáticamente
+- Expande la query con sinónimos y términos relacionados
+- Filtra la búsqueda al dominio relevante (reduce espacio de búsqueda)
+- Traduce entre idiomas (EN/ES/PT/FR)
 
 ---
 
@@ -282,16 +282,16 @@ python -c "import yaml; yaml.safe_load(open('mi-archivo.yaml', encoding='utf-8')
 ### Errores comunes de YAML
 
 ```yaml
-# ❌ MAL - escapes inválidos en comillas dobles
+# MAL - escapes inválidos en comillas dobles
 path: "C:\NEVEN\functions"
 
-# ✅ BIEN - usar comillas simples para paths Windows
+# BIEN - usar comillas simples para paths Windows
 path: 'C:\NEVEN\functions'
 
-# ❌ MAL - falta espacio después de :
+# MAL - falta espacio después de :
 key:value
 
-# ✅ BIEN
+# BIEN
 key: value
 ```
 
