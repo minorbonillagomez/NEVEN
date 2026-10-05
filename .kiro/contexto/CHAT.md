@@ -1671,3 +1671,65 @@ Script que sincroniza archivos del repo a `Dist/` y genera el ZIP:
 No hubo cambios técnicos. El usuario cerró la sesión después de confirmar que fue productiva.
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana) — Acerca de movido al TaskPane
+
+## Logros principales
+
+### 1. Sección "Acerca de" del TaskPane actualizada
+
+**Problema:** La sección "Acerca de NEVEN" en el tab Ayuda solo contenía una tabla de metadata con datos desactualizados (institución: "BukloLAB", sin texto narrativo). El Ribbon tenía un botón "Acerca de" que mostraba un MessageBox con texto corto e igualmente desactualizado (v2.0).
+
+**Solución:** Se reemplazó la sección con:
+- Tabla de metadata actualizada: versión v3.2, autor con guión (Bonilla-Gómez), institución = Universidad de Costa Rica, fila nueva de repositorio
+- Ensayo completo tomado literalmente de `docs/NEVEN Acerca de.md` (historia D.A.T.E. 2009 → ALIRO → BERT 2017 → abandono 2018 → arquitectura microservicios 2025 → NEvƎИ v3.2)
+- Área con scroll (max-height: 320px), texto justificado, line-height: 1.8
+
+**Metadata corregida:**
+| Campo | Antes | Después |
+|-------|-------|---------|
+| Institución | BukloLAB | Universidad de Costa Rica |
+| Autor | Minor Bonilla Gómez | Minor Bonilla-Gómez |
+| Repositorio | (no existía) | github.com/minor-bonilla/NEVEN |
+
+### 2. RJ_About_Dialog() en C++ simplificado
+
+El botón "Acerca de" del Ribbon llamaba a `RJ_About_Dialog()` con un mensaje largo desactualizado (v2.0). Se reemplazó por un mensaje breve que redirige al usuario a la pestaña Ayuda de NEVEN Studio, donde ahora vive el contenido completo.
+
+**Importante:** Este cambio en C++ requiere un **rebuild del Core** (`NEVEN64.xll`) para tomar efecto. El código fuente está actualizado en el repo pero el binario desplegado todavía muestra el mensaje viejo hasta la próxima compilación.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/taskpane.html` | Sección "Acerca de" con ensayo completo + metadata actualizada |
+| `NEVEN/Core/src/basic_functions.cc` | `RJ_About_Dialog()` simplificado, redirige a TaskPane |
+| `NEVEN/Install/Dist/taskpane/taskpane.html` | Sincronizado |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado via Build-Setup.ps1 (22.05 MB) |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `2621cb4` | feat(ayuda): move Acerca de content to TaskPane |
+
+## Decisiones de diseño
+
+| Decisión | Razón |
+|----------|-------|
+| Texto completo en TaskPane, no en MessageBox | El MessageBox de Windows es limitado en formato y tamaño; el TaskPane permite scroll, tipografía y estructura |
+| RJ_About_Dialog() solo redirige | Evita duplicar contenido en C++ y HTML; la fuente de verdad es el TaskPane |
+| NEvƎИ (con caracteres especiales) en HTML | El archivo es UTF-8, los navegadores Chromium/WebView2 los renderizan correctamente |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) para que RJ_About_Dialog() muestre el nuevo mensaje en el Ribbon |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar que el procesador de libros de ontología acepta DOCX/EPUB además de PDF |
+
+---
