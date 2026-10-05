@@ -7,7 +7,7 @@ sidebar_position: 5
 
 # Capitulo 5: Funciones R
 
-R es el motor estadistico de NEVEN. La libreria incluye ~90 procedimientos organizados en 34 archivos, cubriendo desde regresion lineal hasta mineria de texto. Todas las funciones siguen el patron **TipoOutput** para seleccionar el procedimiento deseado.
+R es el motor estadistico de NEVEN. La libreria incluye **~90 procedimientos organizados en 63 archivos**, cubriendo desde regresion lineal hasta mineria de texto, incluyendo wrappers Studio para el Data Lab. Todas las funciones siguen el patron **TipoOutput** para seleccionar el procedimiento deseado.
 
 $
 \texttt{=R.Funcion(SetDatosY, SetDatosX, Categorica, Filtro, Escala, ..., TipoOutput)}
@@ -139,6 +139,38 @@ Verificacion de supuestos de regresion: normalidad, homocedasticidad, autocorrel
 ### Pronostico -- `R.ST_Pronostico`
 
 Modelos de pronostico: ARIMA, suavizamiento exponencial.
+
+### Minimos Cuadrados en Dos Etapas (2SLS) -- `R.RG_2SLS`
+
+Estimador IV para modelos con variables endogenas.
+
+$$
+y = \beta_0 + \beta_1 x_1 + \beta_2 z + \varepsilon, \quad \text{con } z \text{ potencialmente endogena}
+$$
+
+| TipoOutput | Procedimiento |
+|:---:|:---|
+| 0 | Lista de procedimientos |
+| 1 | Estimacion 2SLS (primera y segunda etapa) |
+| 2 | Residuos y valores ajustados |
+| 3 | Test de endogeneidad (Hausman) |
+| 4 | Test de sobreidentificacion (Sargan) |
+
+### Modelo de Heckman (HECKIT) -- `R.RG_HECKIT`
+
+Corrige el sesgo de seleccion de muestra cuando la observacion de $y$ no es aleatoria.
+
+$$
+y = X\beta + \sigma \lambda(\hat{z}_i \gamma) + \varepsilon, \quad \lambda = \frac{\phi(z_i\gamma)}{\Phi(z_i\gamma)}
+$$
+
+| TipoOutput | Procedimiento |
+|:---:|:---|
+| 0 | Lista de procedimientos |
+| 1 | Estimacion en dos etapas (seleccion + resultado) |
+| 2 | Inversa del ratio de Mills ($\lambda$) |
+| 3 | Coeficientes de la ecuacion de seleccion |
+| 4 | Predicciones corregidas por sesgo |
 
 ---
 

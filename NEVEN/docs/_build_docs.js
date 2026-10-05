@@ -29,6 +29,7 @@ const CHAPTERS = [
   { file: 'docusaurus/13-neven-studio.md',          title: 'NEVEN Studio' },
   { file: 'docusaurus/14-ontologias-excel-consultant.md', title: 'Ontologias y Excel Consultant' },
   { file: 'docusaurus/15-rag-ontologia-metaheuristica.md', title: 'RAG y Ontologia' },
+  { file: 'docusaurus/16-python-ejemplos.md',        title: 'Python en NEVEN' },
 ];
 
 const docsDir = __dirname;

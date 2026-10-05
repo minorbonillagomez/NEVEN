@@ -15,14 +15,11 @@ $
 
 ## 4.0 Activacion de Julia
 
-Julia utiliza compilacion JIT (Just-In-Time) que requiere tiempo la primera vez. Para evitar retrasos al abrir Excel, Julia se activa **bajo demanda**:
+Gracias a la sysimage precompilada (`neven_julia.dll`, ~415 MB), Julia arranca en segundos en lugar de minutos. Las funciones `=J.*` quedan disponibles automaticamente al abrir Excel.
 
-1. Abra Excel normalmente (R y Python se conectan instantaneamente)
-2. Cuando necesite funciones Julia, haga clic en **"Actualizar"** en la pestana NEVEN del Ribbon (grupo Motores)
-3. Espere ~30-60 segundos mientras Julia compila las funciones
-4. Las funciones `=J.*` quedan disponibles para toda la sesion
+> Si es la primera instalacion o la sysimage no esta presente, Julia compilara sus funciones la primera vez (puede tomar 1-2 minutos). Las ejecuciones siguientes son inmediatas.
 
-> **Ejecucion directa:** Puede ejecutar codigo Julia sin activar las funciones registradas usando `=NEVEN.j("codigo")`. Por ejemplo: `=NEVEN.j("sqrt(144)")` retorna 12 inmediatamente.
+> **Ejecucion directa:** Use `=NEVEN.j("codigo")` para ejecutar Julia sin necesidad de funciones registradas. Ejemplo: `=NEVEN.j("sqrt(144)")` retorna 12.
 
 ## 4.1 Utilidades y generacion de datos
 
@@ -210,3 +207,52 @@ La condicion $x \geq 0$ es implicita en el metodo Simplex.
 | `=J.Transformar(A1:D20,2,0,2)` | Ordenar por columna 2 |
 | `=J.Transformar(A1:D20,1,0,5)` | Valores unicos de columna 1 |
 | `=J.Transformar(A1:D20,1,0,6)` | Tabla de frecuencias |
+
+
+## 4.11 Conectividad y Archivos
+
+### Archivos CSV -- `J.Archivos`
+
+**Firma:** `=J.Archivos(Ruta, Datos, Delimitador, TipoOutput)`
+
+| Formula | Resultado |
+|:---|:---|
+| `=J.Archivos("C:\datos.csv",0,",",1)` | Leer archivo CSV |
+| `=J.Archivos("C:\datos.csv",A1:C10,",",2)` | Escribir datos a CSV |
+| `=J.Archivos("C:\datos.txt",0,"\t",3)` | Leer archivo delimitado por tabulador |
+| `=J.Archivos("C:\datos.csv",0,0,4)` | Informacion del archivo (tamano, fechas) |
+| `=J.Archivos("C:\datos",0,0,5)` | Listar archivos en directorio |
+
+### Transformacion de datos -- `J.Transformar`
+
+**Firma:** `=J.Transformar(Datos, Columna, Valor, TipoOutput)`
+
+| Formula | Resultado |
+|:---|:---|
+| `=J.Transformar(A1:D20,0,0,1)` | Transponer $A^T$ |
+| `=J.Transformar(A1:D20,2,0,2)` | Ordenar por columna 2 |
+| `=J.Transformar(A1:D20,1,"M",3)` | Filtrar filas donde col 1 = "M" |
+| `=J.Transformar(A1:D20,1,0,6)` | Valores unicos de columna 1 |
+| `=J.Transformar(A1:D20,1,0,7)` | Tabla de frecuencias |
+
+### Utilidades -- `J.Utilidades` (ampliado)
+
+**Firma:** `=J.Utilidades(P1, P2, P3, TipoOutput)`
+
+| Formula | Resultado |
+|:---|:---|
+| `=J.Utilidades(0,0,0,1)` | Fecha, hora, dia de la semana, semana del ano |
+| `=J.Utilidades(1,100,2,2)` | Secuencia $\{1, 3, 5, \ldots, 99\}$ (paso=2) |
+| `=J.Utilidades(50,0,1,3)` | 50 valores $\sim \mathcal{N}(0, 1)$ |
+| `=J.Utilidades(50,0,10,4)` | 50 valores $\sim \text{U}(0, 10)$ |
+| `=J.Utilidades(A1:A10,B1:B10,0,5)` | Tabla de frecuencias cruzadas |
+| `=J.Utilidades(A1:D10,0,0,7)` | Redondear a 0 decimales |
+
+## 4.12 Wrappers Studio (Data Lab)
+
+Julia tambien tiene wrappers para el Data Lab de NEVEN Studio:
+
+| Archivo | Funcion en Studio |
+|:---|:---|
+| `J4XCL-AD-Descriptiva.Studio.jl` | Estadistica descriptiva sin codigo |
+| `J4XCL-RG-Lineal.Studio.jl` | Regresion lineal interactiva |
