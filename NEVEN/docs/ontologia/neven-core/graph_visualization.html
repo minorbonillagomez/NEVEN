@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEVEN Core — Arquitectura del Sistema</title>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    :root {
+      --bg-main: #0f1115;
+      --bg-panel: #16181d;
+      --bg-card: #1e2028;
+      --border-subtle: #2a2d35;
+      --border-focus: #3e424c;
+      --text-primary: #e6e8ec;
+      --text-secondary: #9da3af;
+      --text-muted: #656a76;
+      --accent: #6366f1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+    }
+    #network { flex: 1; height: 100%; }
+    #sidebar {
+      width: 380px;
+      background: var(--bg-panel);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .sidebar-header h2 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--accent);
+    }
+    .sidebar-header p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .search-box {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-top: 10px;
+    }
+    .search-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 13px;
+    }
+    .stats {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .stats-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      background: var(--bg-card);
+      padding: 3px 6px;
+      border-radius: 3px;
+    }
+    .stat-color {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .stat-label { color: var(--text-secondary); }
+    .stat-count { color: var(--text-primary); font-weight: 600; }
+    #node-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .node-item {
+      padding: 10px 12px;
+      margin-bottom: 4px;
+      background: var(--bg-card);
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .node-item:hover {
+      border-color: var(--border-focus);
+      background: #252830;
+    }
+    .node-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .node-item-name {
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .node-item-priority {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .node-item-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #detail-panel {
+      padding: 16px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      max-height: 220px;
+      overflow-y: auto;
+      display: none;
+    }
+    #detail-panel h3 {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    #detail-panel .detail-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    #detail-panel p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      right: 400px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .control-btn {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .control-btn:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+    .legend {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 10px;
+      z-index: 10;
+    }
+    .legend-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div id="network"></div>
+  
+  <div class="legend">
+    <div class="legend-title">Prioridad</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ef4444"></div> P1 Critico</div>
+    <div class="legend-item"><div class="legend-color" style="background:#f97316"></div> P2 Alto</div>
+    <div class="legend-item"><div class="legend-color" style="background:#eab308"></div> P3 Medio</div>
+    <div class="legend-item"><div class="legend-color" style="background:#22c55e"></div> P4 Soporte</div>
+  </div>
+  
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <h2>NEVEN Core Architecture</h2>
+      <p>16 componentes | 21 dependencias</p>
+      <div class="search-box">
+        <input type="text" id="search" placeholder="Buscar componente...">
+      </div>
+    </div>
+    
+    <div class="stats">
+      <div class="stats-label">Por Prioridad</div>
+      <div class="stats-row"><div class="stat-item"><span class="stat-color" style="background:#ef4444"></span><span class="stat-label">P1</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#f97316"></span><span class="stat-label">P2</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#eab308"></span><span class="stat-label">P3</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#22c55e"></span><span class="stat-label">P4</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P5</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P6</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P7</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P8</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P9</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P10</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P11</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P12</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P13</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P14</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P15</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#9ca3af"></span><span class="stat-label">P16</span><span class="stat-count">1</span></div></div>
+      <div class="stats-label" style="margin-top:8px">Por Tipo</div>
+      <div class="stats-row"><div class="stat-item"><span class="stat-color" style="background:#7c3aed"></span><span class="stat-label">control</span><span class="stat-count">2</span></div><div class="stat-item"><span class="stat-color" style="background:#dc2626"></span><span class="stat-label">core</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#059669"></span><span class="stat-label">ribbon</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#2563eb"></span><span class="stat-label">common</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#65a30d"></span><span class="stat-label">startup</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#ca8a04"></span><span class="stat-label">dispatcher</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#4f46e5"></span><span class="stat-label">studio</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#a855f7"></span><span class="stat-label">sidecar</span><span class="stat-count">1</span></div><div class="stat-item"><span class="stat-color" style="background:#d97706"></span><span class="stat-label">taskpane</span><span class="stat-count">1</span></div></div>
+    </div>
+    
+    <div id="node-list"></div>
+    
+    <div id="detail-panel">
+      <h3 id="detail-name"></h3>
+      <div class="detail-meta" id="detail-meta"></div>
+      <p id="detail-desc"></p>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="control-btn" onclick="network.fit()">Fit</button>
+    <button class="control-btn" onclick="togglePhysics()">Physics</button>
+    <button class="control-btn" onclick="filterByPriority()">Filter P</button>
+  </div>
+
+<script>
+const nodesData = [{"id": "core_xll", "label": "core\nxll", "title": "<b>NEVEN64.xll (Core)</b><br><i>Prioridad: 1</i><br>Singleton RJ2XCL_Engine. Entry point de todo el sistema. Registra funciones en Excel, lanza procesos hijo, gestiona el ciclo de vida de los motores.\n...<br>Invariantes: 4 | Deps: 5", "color": {"background": "#dc2626", "border": "#dc2626", "highlight": {"background": "#fff", "border": "#dc2626"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": 21, "type": "core", "priority": 1, "fullName": "NEVEN64.xll (Core)", "description": "Singleton RJ2XCL_Engine. Entry point de todo el sistema. Registra funciones en Excel, lanza procesos hijo, gestiona el ciclo de vida de los motores.\n", "invariants": 4, "source": "neven-ontology-p1.yaml"}, {"id": "ribbon_dll", "label": "ribbon\ndll", "title": "<b>NEVENRibbon.dll (COM Add-in)</b><br><i>Prioridad: 2</i><br>COM Add-in con el Ribbon de Excel. Siempre carga al inicio (LoadBehavior=3). Carga NEVEN64.xll via RegisterXLL si auto_load_xll=true en el config.\n...<br>Invariantes: 5 | Deps: 1", "color": {"background": "#059669", "border": "#059669", "highlight": {"background": "#fff", "border": "#059669"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": 17, "type": "ribbon", "priority": 2, "fullName": "NEVENRibbon.dll (COM Add-in)", "description": "COM Add-in con el Ribbon de Excel. Siempre carga al inicio (LoadBehavior=3). Carga NEVEN64.xll via RegisterXLL si auto_load_xll=true en el config.\n", "invariants": 5, "source": "neven-ontology-p1.yaml"}, {"id": "controlr_exe", "label": "controlr\nexe", "title": "<b>ControlR.exe</b><br><i>Prioridad: 3</i><br>Proceso hijo que embebe R via C API (carga dinamica de R.dll). Comunicacion con el XLL via Named Pipe + Protobuf. Un proceso por sesion de Excel.\n...<br>Invariantes: 3 | Deps: 3", "color": {"background": "#7c3aed", "border": "#7c3aed", "highlight": {"background": "#fff", "border": "#7c3aed"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": 13, "type": "control", "priority": 3, "fullName": "ControlR.exe", "description": "Proceso hijo que embebe R via C API (carga dinamica de R.dll). Comunicacion con el XLL via Named Pipe + Protobuf. Un proceso por sesion de Excel.\n", "invariants": 3, "source": "neven-ontology-p1.yaml"}, {"id": "common_lib", "label": "common\nlib", "title": "<b>Common.lib</b><br><i>Prioridad: 4</i><br>Biblioteca estatica compartida por Core, ControlR, ControlJulia, ControlPython y NEVENRibbon. Contiene toda la infraestructura: IPC, config, seguridad...<br>Invariantes: 3 | Deps: 0", "color": {"background": "#2563eb", "border": "#2563eb", "highlight": {"background": "#fff", "border": "#2563eb"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": 9, "type": "common", "priority": 4, "fullName": "Common.lib", "description": "Biblioteca estatica compartida por Core, ControlR, ControlJulia, ControlPython y NEVENRibbon. Contiene toda la infraestructura: IPC, config, seguridad, viewers WebView2, Pluto, diagnosticos.\n", "invariants": 3, "source": "neven-ontology-p1.yaml"}, {"id": "startup_r", "label": "startup\nr", "title": "<b>startup/startup.r</b><br><i>Prioridad: 5</i><br>Primer archivo R que ejecuta ControlR al conectarse. Define el entorno NEVEN, el mecanismo de discovery de funciones (NEVEN$list.functions), el graphi...<br>Invariantes: 5 | Deps: 1", "color": {"background": "#65a30d", "border": "#65a30d", "highlight": {"background": "#fff", "border": "#65a30d"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": 5, "type": "startup", "priority": 5, "fullName": "startup/startup.r", "description": "Primer archivo R que ejecuta ControlR al conectarse. Define el entorno NEVEN, el mecanismo de discovery de funciones (NEVEN$list.functions), el graphics device, y carga los modulos base: r_object_to_slots.R, R4XCL-NEVEN-pluto-read.R, R4XCL-0-NevenX.R (dispatcher NevenX).\n", "invariants": 5, "source": "neven-ontology-p1.yaml"}, {"id": "dispatcher_nevenx", "label": "dispatcher\nnevenx", "title": "<b>R4XCL-0-NevenX.R (Dispatcher NevenX v5)</b><br><i>Prioridad: 6</i><br>Dispatcher generico que permite llamar cualquier funcion R/Julia/Python desde Excel con sintaxis uniforme =NevenX.R(\"proceso\", Y, X, TipoOutput). Carg...<br>Invariantes: 4 | Deps: 3", "color": {"background": "#ca8a04", "border": "#ca8a04", "highlight": {"background": "#fff", "border": "#ca8a04"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": 1, "type": "dispatcher", "priority": 6, "fullName": "R4XCL-0-NevenX.R (Dispatcher NevenX v5)", "description": "Dispatcher generico que permite llamar cualquier funcion R/Julia/Python desde Excel con sintaxis uniforme =NevenX.R(\"proceso\", Y, X, TipoOutput). Cargado por startup.r via source(). Registra funciones en el entorno NEVEN.\n", "invariants": 4, "source": "neven-ontology-p2.yaml"}, {"id": "studio_backend", "label": "studio\nbackend", "title": "<b>NEVEN Studio Backend (neven_http_server.py + datalab_handler.py)</b><br><i>Prioridad: 7</i><br>Servidor HTTP que corre dentro de ControlPython.exe en un daemon thread. Sirve la UI del Task Pane (taskpane.html) y expone endpoints REST para DuckDB...<br>Invariantes: 5 | Deps: 4", "color": {"background": "#4f46e5", "border": "#4f46e5", "highlight": {"background": "#fff", "border": "#4f46e5"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -3, "type": "studio", "priority": 7, "fullName": "NEVEN Studio Backend (neven_http_server.py + datalab_handler.py)", "description": "Servidor HTTP que corre dentro de ControlPython.exe en un daemon thread. Sirve la UI del Task Pane (taskpane.html) y expone endpoints REST para DuckDB, DataLab, agente IA, scripts R/Python/Julia, y gestion de archivos.\n", "invariants": 5, "source": "neven-ontology-p2.yaml"}, {"id": "sidecars_json", "label": "sidecars\njson", "title": "<b>Sidecars JSON (Install/functions/*.json)</b><br><i>Prioridad: 8</i><br>Archivos JSON que describen cada funcion analitica para dos canales: DataLab (NEVEN Studio) y NevenX (funciones XLL directas). Son la fuente de verdad...<br>Invariantes: 5 | Deps: 2", "color": {"background": "#a855f7", "border": "#a855f7", "highlight": {"background": "#fff", "border": "#a855f7"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -7, "type": "sidecar", "priority": 8, "fullName": "Sidecars JSON (Install/functions/*.json)", "description": "Archivos JSON que describen cada funcion analitica para dos canales: DataLab (NEVEN Studio) y NevenX (funciones XLL directas). Son la fuente de verdad unica para parametros, roles, TipoOutputs y metadatos de cada proceso.\n", "invariants": 5, "source": "neven-ontology-p2.yaml"}, {"id": "libreria_r", "label": "libreria\nr", "title": "<b>libreria/R (~90 funciones, 32+ archivos .R)</b><br><i>Prioridad: 9</i><br>Coleccion de funciones analiticas R que se cargan en C:/NEVEN/functions/ al inicio de ControlR. Cada funcion sigue un protocolo estandar de entrada (r...<br>Invariantes: 4 | Deps: 2", "color": {"background": "#9ca3af", "border": "#9ca3af", "highlight": {"background": "#fff", "border": "#9ca3af"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -11, "type": "default", "priority": 9, "fullName": "libreria/R (~90 funciones, 32+ archivos .R)", "description": "Coleccion de funciones analiticas R que se cargan en C:/NEVEN/functions/ al inicio de ControlR. Cada funcion sigue un protocolo estandar de entrada (rangos Excel con header) y salida (data.frame con prefijo R4XCL_). Incluye funciones XLL directas (MR_*, AD_*, etc.) y wrappers Studio (*.Studio.R).\n", "invariants": 4, "source": "neven-ontology-p2.yaml"}, {"id": "controljulia_exe", "label": "controljulia\nexe", "title": "<b>ControlJulia.exe</b><br><i>Prioridad: 10</i><br>Proceso hijo que embebe Julia via C API. Comunicacion con el XLL via Named Pipe + Protobuf (igual que ControlR). Soporta sysimage pre-compilada (neven...<br>Invariantes: 3 | Deps: 2", "color": {"background": "#7c3aed", "border": "#7c3aed", "highlight": {"background": "#fff", "border": "#7c3aed"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -15, "type": "control", "priority": 10, "fullName": "ControlJulia.exe", "description": "Proceso hijo que embebe Julia via C API. Comunicacion con el XLL via Named Pipe + Protobuf (igual que ControlR). Soporta sysimage pre-compilada (neven_julia.dll) para eliminar el cold start de JIT (~2-5 min -> ~2 seg). Startup script enviado con wait=false (no-bloqueante) por el JIT.\n", "invariants": 3, "source": "neven-ontology-p3.yaml"}, {"id": "agent_service", "label": "agent\nservice", "title": "<b>AgentService (neven_ai_service.py)</b><br><i>Prioridad: 11</i><br>Microservicio FastAPI independiente que expone el Agente IA de NEVEN. Corre en puerto 5556 (separado del servidor Studio en 5555). Puede correr localm...<br>Invariantes: 3 | Deps: 1", "color": {"background": "#9ca3af", "border": "#9ca3af", "highlight": {"background": "#fff", "border": "#9ca3af"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -19, "type": "default", "priority": 11, "fullName": "AgentService (neven_ai_service.py)", "description": "Microservicio FastAPI independiente que expone el Agente IA de NEVEN. Corre en puerto 5556 (separado del servidor Studio en 5555). Puede correr localmente o en cloud. Sirve agent.html como Office Add-in standalone. Gestiona historial de chat y contexto de Excel por sesion.\n", "invariants": 3, "source": "neven-ontology-p3.yaml"}, {"id": "taskpane_frontend", "label": "taskpane\nfrontend", "title": "<b>TaskPane Frontend (taskpane.html + datalab.js + taskpane.js)</b><br><i>Prioridad: 12</i><br>UI web del NEVEN Studio servida por neven_http_server.py desde C:/NEVEN/taskpane/. Contiene los tabs: Data Studio, Data Lab, Run Script, SQL, Presenta...<br>Invariantes: 4 | Deps: 1", "color": {"background": "#d97706", "border": "#d97706", "highlight": {"background": "#fff", "border": "#d97706"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -23, "type": "taskpane", "priority": 12, "fullName": "TaskPane Frontend (taskpane.html + datalab.js + taskpane.js)", "description": "UI web del NEVEN Studio servida por neven_http_server.py desde C:/NEVEN/taskpane/. Contiene los tabs: Data Studio, Data Lab, Run Script, SQL, Presentaciones, AI. JavaScript vanilla (sin frameworks). Se comunica con el backend via REST.\n", "invariants": 4, "source": "neven-ontology-p3.yaml"}, {"id": "build_cmake", "label": "build\ncmake", "title": "<b>Build/CMake (CMakeLists.txt + build.ps1)</b><br><i>Prioridad: 13</i><br>Sistema de build del proyecto. CMakeLists.txt raiz configura C++17, runtime estatico /MT, flags de seguridad globales, y FetchContent de dependencias....<br>Invariantes: 4 | Deps: 0", "color": {"background": "#9ca3af", "border": "#9ca3af", "highlight": {"background": "#fff", "border": "#9ca3af"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -27, "type": "default", "priority": 13, "fullName": "Build/CMake (CMakeLists.txt + build.ps1)", "description": "Sistema de build del proyecto. CMakeLists.txt raiz configura C++17, runtime estatico /MT, flags de seguridad globales, y FetchContent de dependencias. build.ps1 automatiza el ciclo completo: configure, build, test, package.\n", "invariants": 4, "source": "neven-ontology-p4.yaml"}, {"id": "tests_suite", "label": "tests\nsuite", "title": "<b>tests/ (Suite GTest + rapidcheck)</b><br><i>Prioridad: 14</i><br>342 tests C++ con Google Test v1.14.0, GMock y rapidcheck (property-based). Corren sin Excel, sin R, sin Julia via NEVEN_Core_Objects y mock_engine_ba...<br>Invariantes: 3 | Deps: 0", "color": {"background": "#9ca3af", "border": "#9ca3af", "highlight": {"background": "#fff", "border": "#9ca3af"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -31, "type": "default", "priority": 14, "fullName": "tests/ (Suite GTest + rapidcheck)", "description": "342 tests C++ con Google Test v1.14.0, GMock y rapidcheck (property-based). Corren sin Excel, sin R, sin Julia via NEVEN_Core_Objects y mock_engine_backend. Cubren seguridad, IPC, conversion de tipos, sandbox, funciones XLL y mas.\n", "invariants": 3, "source": "neven-ontology-p4.yaml"}, {"id": "install_scripts", "label": "install\nscripts", "title": "<b>Install/ (instalador + config template)</b><br><i>Prioridad: 15</i><br>Install-NEVEN.ps1 es el instalador completo en 6 fases. Auto-detecta R, Julia y Python, registra el XLL y el COM Add-in en el registro de Windows, gen...<br>Invariantes: 4 | Deps: 0", "color": {"background": "#9ca3af", "border": "#9ca3af", "highlight": {"background": "#fff", "border": "#9ca3af"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -35, "type": "default", "priority": 15, "fullName": "Install/ (instalador + config template)", "description": "Install-NEVEN.ps1 es el instalador completo en 6 fases. Auto-detecta R, Julia y Python, registra el XLL y el COM Add-in en el registro de Windows, genera certificado HTTPS auto-firmado, instala paquetes, y genera el desinstalador. neven-config.template.json es la plantilla publica de configuracion (", "invariants": 4, "source": "neven-ontology-p4.yaml"}, {"id": "creador_presentaciones", "label": "creador\npresentaciones", "title": "<b>CreadorPresentaciones (editor Impress.js)</b><br><i>Prioridad: 16</i><br>Editor visual de presentaciones 3D basado en Impress.js 1.1.0. JavaScript ES6 vanilla sin frameworks. Integrado en NEVEN Studio via iframe y postMessa...<br>Invariantes: 3 | Deps: 2", "color": {"background": "#9ca3af", "border": "#9ca3af", "highlight": {"background": "#fff", "border": "#9ca3af"}}, "font": {"color": "#fff", "size": 10}, "shape": "box", "size": -39, "type": "default", "priority": 16, "fullName": "CreadorPresentaciones (editor Impress.js)", "description": "Editor visual de presentaciones 3D basado en Impress.js 1.1.0. JavaScript ES6 vanilla sin frameworks. Integrado en NEVEN Studio via iframe y postMessage. Permite crear presentaciones con slides en espacio 3D, recibir graficos de DataLab, y exportar a HTML standalone.\n", "invariants": 3, "source": "neven-ontology-p4.yaml"}];
+const edgesData = [{"from": "core_xll", "to": "common_lib", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "core_xll", "to": "controlr_exe", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "core_xll", "to": "controljulia_exe", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "ribbon_dll", "to": "core_xll", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "controlr_exe", "to": "common_lib", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "startup_r", "to": "controlr_exe", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "dispatcher_nevenx", "to": "startup_r", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "dispatcher_nevenx", "to": "sidecars_json", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "dispatcher_nevenx", "to": "common_lib", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "studio_backend", "to": "controlr_exe", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "studio_backend", "to": "sidecars_json", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "studio_backend", "to": "libreria_r", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "sidecars_json", "to": "studio_backend", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "sidecars_json", "to": "dispatcher_nevenx", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "libreria_r", "to": "startup_r", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "libreria_r", "to": "common_lib", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "controljulia_exe", "to": "common_lib", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "agent_service", "to": "studio_backend", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "taskpane_frontend", "to": "studio_backend", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "creador_presentaciones", "to": "studio_backend", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}, {"from": "creador_presentaciones", "to": "taskpane_frontend", "arrows": "to", "color": {"color": "#4b5563", "opacity": 0.6}, "smooth": {"type": "curvedCW", "roundness": 0.15}}];
+
+const nodes = new vis.DataSet(nodesData);
+const edges = new vis.DataSet(edgesData);
+
+const container = document.getElementById('network');
+const data = { nodes, edges };
+const options = {
+  physics: {
+    enabled: true,
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: {
+      gravitationalConstant: -80,
+      centralGravity: 0.015,
+      springLength: 120,
+      springConstant: 0.06,
+      damping: 0.4
+    },
+    stabilization: { iterations: 200 }
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 100,
+    zoomView: true,
+    dragView: true
+  },
+  nodes: {
+    borderWidth: 2,
+    shadow: { enabled: true, size: 10, x: 3, y: 3 }
+  },
+  edges: {
+    width: 1.5,
+    shadow: false
+  },
+  layout: {
+    improvedLayout: true
+  }
+};
+
+const network = new vis.Network(container, data, options);
+
+// Priority colors for badges
+const priorityColors = { 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#22c55e' };
+
+// Render node list
+const nodeList = document.getElementById('node-list');
+const sortedNodes = [...nodesData].sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id));
+
+sortedNodes.forEach(node => {
+  const div = document.createElement('div');
+  div.className = 'node-item';
+  div.innerHTML = `
+    <div class="node-item-header">
+      <span class="node-item-name" style="color:${node.color.background}">${node.id}</span>
+      <span class="node-item-priority" style="background:${priorityColors[node.priority] || '#6b7280'}">P${node.priority}</span>
+    </div>
+    <div class="node-item-desc">${node.fullName}</div>
+  `;
+  div.onclick = () => {
+    network.focus(node.id, { scale: 1.2, animation: true });
+    network.selectNodes([node.id]);
+    showDetail(node);
+  };
+  nodeList.appendChild(div);
+});
+
+// Search
+document.getElementById('search').addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase();
+  document.querySelectorAll('.node-item').forEach(item => {
+    const name = item.querySelector('.node-item-name').textContent.toLowerCase();
+    const desc = item.querySelector('.node-item-desc').textContent.toLowerCase();
+    item.style.display = (name.includes(query) || desc.includes(query)) ? '' : 'none';
+  });
+});
+
+// Show detail
+function showDetail(node) {
+  document.getElementById('detail-panel').style.display = 'block';
+  document.getElementById('detail-name').textContent = node.fullName;
+  document.getElementById('detail-name').style.color = node.color.background;
+  document.getElementById('detail-meta').textContent = `P${node.priority} | ${node.invariants} invariantes | ${node.source}`;
+  document.getElementById('detail-desc').textContent = node.description || 'Sin descripcion';
+}
+
+network.on('click', (params) => {
+  if (params.nodes.length > 0) {
+    const node = nodesData.find(n => n.id === params.nodes[0]);
+    if (node) showDetail(node);
+  }
+});
+
+let physicsEnabled = true;
+function togglePhysics() {
+  physicsEnabled = !physicsEnabled;
+  network.setOptions({ physics: { enabled: physicsEnabled } });
+}
+
+let currentPriorityFilter = null;
+const priorities = [1, 2, 3, 4];
+function filterByPriority() {
+  const idx = currentPriorityFilter === null ? 0 : (priorities.indexOf(currentPriorityFilter) + 1) % (priorities.length + 1);
+  currentPriorityFilter = idx === priorities.length ? null : priorities[idx];
+  
+  if (currentPriorityFilter === null) {
+    nodes.update(nodesData.map(n => ({ id: n.id, hidden: false })));
+  } else {
+    nodes.update(nodesData.map(n => ({ id: n.id, hidden: n.priority !== currentPriorityFilter })));
+  }
+}
+
+// Initial fit after stabilization
+network.once('stabilizationIterationsDone', () => {
+  network.fit();
+});
+</script>
+</body>
+</html>
