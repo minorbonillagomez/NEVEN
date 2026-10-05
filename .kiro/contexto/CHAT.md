@@ -2239,3 +2239,78 @@ El fix `\boxed{9.6/10}` → `\boxed{9.71 \approx 9.7/10}` había sido escrito en
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~tarde-2) — Capítulos 4, 5 actualizados y Cap 16 Python creado
+
+## Logros principales
+
+### 1. Capítulo 4 (Julia) actualizado
+
+**Cambios:**
+- **Sección 4.0 Activación:** eliminado el proceso manual de "Actualizar en Ribbon / esperar 30-60s". Con la sysimage (`neven_julia.dll`, ~415MB), Julia arranca en segundos. El capítulo ya no decía la verdad.
+- **Nueva sección 4.11 Conectividad:** documentadas funciones `J.Archivos` (leer/escribir CSV, info, directorio) y `J.Transformar` (transponer, ordenar, filtrar, únicos, frecuencias). Fuente: `J4XCL-CN-Conectividad.jl`.
+- **Nueva sección 4.12 Studio wrappers:** `J4XCL-AD-Descriptiva.Studio.jl` y `J4XCL-RG-Lineal.Studio.jl`.
+
+### 2. Capítulo 5 (R) actualizado
+
+**Cambios:**
+- **Conteo de archivos corregido:** "34 archivos" → "63 archivos" (el capítulo contaba solo los archivos principales, no los .Studio.R).
+- **Nueva sección 2SLS:** `R.RG_2SLS` — Mínimos Cuadrados en Dos Etapas para variables endógenas (test de Hausman, Sargan).
+- **Nueva sección HECKIT:** `R.RG_HECKIT` — Modelo de Heckman para sesgo de selección de muestra (inversa del ratio de Mills).
+
+### 3. Capítulo 16 (Python) creado desde cero
+
+Nuevo capítulo completo documentando Python como tercer motor:
+
+| Sección | Contenido |
+|---------|-----------|
+| 16.0 | Formas de uso (NEVEN.py, NEVEN.p, Studio, Data Lab) |
+| 16.1 | `=NEVEN.py()` — código directo desde celda |
+| 16.2 | `=NEVEN.chart.p()` — gráficos matplotlib en Excel |
+| 16.3 | IA: `ai_call`, `ai_apply_template` (6 plantillas) |
+| 16.4 | Quarto: `quarto_render`, `quarto_check`, `quarto_preview` |
+| 16.5 | NEVEN Studio: Run Script + Data Lab con Python |
+| 16.6 | Gestión de paquetes + tabla de paquetes preinstalados |
+| 16.7 | Configuración en neven-config.json |
+| 16.8 | Tabla comparativa R vs Julia vs Python |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/04-funciones-julia.md` | +sysimage en 4.0, +secciones 4.11 y 4.12 |
+| `NEVEN/docs/Docusaurus/05-funciones-r.md` | +2SLS, +HECKIT, conteo 34→63 |
+| `NEVEN/docs/Docusaurus/16-python-ejemplos.md` | Creado (capítulo nuevo) |
+| `NEVEN/docs/_build_docs.js` | +registro capítulo 16 |
+| `NEVEN/docs/neven-docs.html` | Regenerado (17 capítulos, 264.4 KB) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `dce78f1` | docs: update chapters 4,5 and add chapter 16 Python |
+
+## Decisiones de diseño
+
+| Decisión | Razón |
+|----------|-------|
+| Cap 16 separado de Cap 4/5 | Python tiene paradigma distinto (no TipoOutput), merece capítulo propio |
+| Documentar `=NEVEN.chart.p()` | Es la forma más directa de usar Python desde Excel (no requiere NEVEN Studio) |
+| Tabla comparativa R vs Julia vs Python | Ayuda al usuario a elegir el motor correcto para cada tarea |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Actualizar Tab Ayuda para mostrar "17 capítulos" (actualmente dice 16) |
+| MEDIA | Revisar capítulos 7 (WebView2/Ribbon) y 9 (Mantenimiento) — probablemente desactualizados |
+| MEDIA | Agregar `16-python-ejemplos.md` a `Build-Setup.ps1` (falta en el mapa de Dist) |
+| BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
+
+---
