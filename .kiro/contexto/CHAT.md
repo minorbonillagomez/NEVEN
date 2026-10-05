@@ -1733,3 +1733,82 @@ El botón "Acerca de" del Ribbon llamaba a `RJ_About_Dialog()` con un mensaje la
 | BAJA | Verificar que el procesador de libros de ontología acepta DOCX/EPUB además de PDF |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~mañana-2) — Branding BukloLAB + Acerca de al TaskPane
+
+## Logros principales
+
+### 1. "Acerca de" movido del Ribbon al TaskPane
+
+**Problema:** El Ribbon tenía un botón "Acerca de" que abría un MessageBox de Windows con texto desactualizado (v2.0, mensaje corto). La sección "Acerca de" del TaskPane solo mostraba una tabla de metadata con datos incorrectos (institución: BukloLAB → se había cambiado erróneamente a UCR en sesión anterior).
+
+**Solución aplicada:**
+- `taskpane.html`: Sección "Acerca de NEvƎИ" reemplazada con ensayo completo de `docs/NEVEN Acerca de.md` (historia D.A.T.E. 2009 → ALIRO → BERT 2017 → NEVEN 2025) en área con scroll (max-height: 320px, text-align: justify)
+- `basic_functions.cc`: `RJ_About_Dialog()` simplificado a mensaje breve que redirige al TaskPane
+
+### 2. Branding BukloLAB corregido (2 ubicaciones)
+
+**Causa raíz:** En sesión anterior se cambió erróneamente "BukloLAB" a "Universidad de Costa Rica" en el TaskPane. Adicionalmente, la portada de la documentación (`00-portada.md`) aún tenía datos de tesis (UCR, Maestría, autor, fecha) que debían eliminarse.
+
+**Estilo aplicado:** `Buklo` en color del tema (negro en claro, blanco en oscuro) y `LAB` en rojo `#e53935`. Implementado con `<span>` inline en HTML y en Markdown.
+
+**Verificación base64:** El markdown del portada se almacena como base64 en `neven-docs.html` — no se puede buscar el texto plano en el archivo HTML. Se confirmó que el fragmento base64 de "Buklo" (`QnVrbG8`) SÍ aparece en el HTML generado.
+
+### 3. Build-Setup.ps1 mejorado
+
+Agregada sincronización de `docs/neven-docs.html` → `Dist/docs/neven-docs.html` al script de build. Antes requería copia manual.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/taskpane.html` | Ensayo completo en Acerca de + BukloLAB con colores |
+| `NEVEN/Core/src/basic_functions.cc` | `RJ_About_Dialog()` simplificado → redirige a TaskPane |
+| `NEVEN/docs/Docusaurus/00-portada.md` | Eliminados UCR/Maestría/Autor/Fecha → BukloLAB estilizado |
+| `NEVEN/docs/neven-docs.html` | Regenerado con `node _build_docs.js` (BukloLAB en portada) |
+| `NEVEN/Install/Build-Setup.ps1` | +sync de `docs/neven-docs.html` al mapa de Dist |
+| `NEVEN/Install/Dist/taskpane/taskpane.html` | Sincronizado |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado (18.98 MB) |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `2621cb4` | feat(ayuda): move Acerca de content to TaskPane |
+| `8bcf260` | fix(branding): replace UCR with BukloLAB branding |
+
+## Intentos fallidos / Gotchas
+
+| Problema | Causa | Lección |
+|----------|-------|---------|
+| `Select-String` no encontraba "Buklo" en neven-docs.html | El contenido de los capítulos se almacena como base64 en el HTML | Buscar el fragmento base64 del texto (`QnVrbG8`) en lugar del texto plano |
+| `_build_docs.js` retornaba `MODULE_NOT_FOUND` | El script está en `docs/`, no en `docs/Docusaurus/` | Usar `Push-Location 'F:\...\NEVEN\docs'` antes de ejecutar |
+
+## Decisiones de diseño
+
+| Decisión | Razón |
+|----------|-------|
+| `Buklo` con `var(--text-primary)` en TaskPane | Adapta al tema oscuro/claro; "negro" en contexto claro = color de texto normal |
+| `LAB` en `#e53935` | Rojo standard Material Design — visible en ambos temas |
+| Ensayo con scroll en TaskPane | El texto es largo (9 párrafos); max-height:320px evita que empuje el resto del tab |
+| RJ_About_Dialog() solo redirige | Evita duplicar contenido; la fuente de verdad es el TaskPane |
+
+## Notas de implementación
+
+- `basic_functions.cc` modificado requiere **rebuild del Core** para que el Ribbon muestre el nuevo mensaje. El binario `NEVEN64.xll` actual sigue mostrando el texto viejo.
+- El script `_build_docs.js` está en `NEVEN/docs/`, no en `docs/Docusaurus/`.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` actualizado requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Verificar que el procesador de libros de ontología acepta DOCX/EPUB además de PDF |
+
+---
