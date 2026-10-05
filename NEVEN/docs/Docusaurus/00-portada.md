@@ -13,7 +13,9 @@ $
 \begin{array}{c}
 \text{Excel} \\
 \downarrow_{\scriptsize\text{Named Pipes}} \\
-\begin{cases} \text{R 4.4.1} & \text{(Estadistica)} \\ \text{Julia 1.12.6} & \text{(Matematica / ML)} \\ \text{Python 3.12} & \text{(Data Science / IA)} \end{cases} \\
+\text{R 4.4.1} \quad \text{(Estadistica)} \\
+\text{Julia 1.12.6} \quad \text{(Matematica / ML)} \\
+\text{Python 3.12} \quad \text{(Data Science / IA)} \\
 \downarrow_{\scriptsize\text{WebView2}} \\
 \text{Visualizacion Interactiva}
 \end{array}
