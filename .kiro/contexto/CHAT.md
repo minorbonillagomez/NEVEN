@@ -2460,3 +2460,90 @@ Estos archivos tienen cambios locales no commiteados. Revisar antes de la próxi
 | BAJA | Verificar que procesador de libros de ontología acepta DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~tarde-4) — Corrección de ejemplos Julia (cap10) y diccionario (cap11)
+
+## Logros principales
+
+### 1. Capítulo 10 (Ejemplos) — Sección Julia corregida
+
+**Causa raíz:** Las funciones `J.KNN` y `J.Regresion` existen como aliases en `functions.jl`, pero apuntan a `JML_KNN` y `JML_Regresion` que **no existen en el codebase**. La función real que implementa KNN y regresión es `JML_Clasificacion` → alias `J.Clasificacion`. Los TipoOutput del capítulo eran completamente incorrectos (basados en funciones fantasma).
+
+**Correcciones aplicadas:**
+- `J.KNN(...)` → `J.Clasificacion(...)` en sección 1.6
+- `J.Regresion(...)` → `J.Clasificacion(...)` en sección 1.7
+- TipoOutput corregidos según `J4XCL-ML-Aprendizaje.jl`:
+  - TipoOutput 1 = KNN in-sample
+  - TipoOutput 3 = Regresión lineal completa (era TipoOutput 1 incorrecto)
+  - TipoOutput 4 = Valores ajustados
+  - TipoOutput 5 = Coeficientes + R²
+  - TipoOutput 6 = Residuos
+- EDO sección 1.4: eliminada nota "procedimientos 2, 3 y 4 en desarrollo" — los métodos RK4, oscilador y EDO 2do orden **SÍ están implementados** en `functions.jl`
+- Header: "v2.0 / UCR / Tesis" → "v3.2 / BukloLAB"
+- Footer (2 instancias): "UCR / Tesis" → "BukloLAB"
+
+### 2. Capítulo 11 (Diccionario de funciones) — Actualización integral
+
+**Correcciones:**
+- Secciones `J.KNN` + `J.Regresion` FUSIONADAS en una sola sección `J.Clasificacion` con tabla de 8 TipoOutput correcta
+- `J.Utilidades` TipoOutput expandido: se añadieron procedimientos 5-8 (frecuencias cruzadas, buscar/reemplazar, redondear, convertir) que estaban omitidos
+- Funciones nuevas agregadas:
+  - `R.RG_2SLS` (Mínimos Cuadrados en Dos Etapas)
+  - `R.RG_HECKIT` (Modelo de Heckman)
+  - `NEVEN.py()` (ejecutar Python desde celda)
+  - `NEVEN.p()` (llamar función Python registrada)
+  - `NEVEN.chart.p()` (gráfico matplotlib en Excel)
+- `NEVEN.about()` resultado: "v1.0" → "v3.2 con Python"
+- Header: fecha 2025-01-15 → 2026-08-20, conteo 95 → 102 funciones
+- Índice cruzado: referencias a `J.KNN` y `J.Regresion` → `J.Clasificacion`
+- Footer: "UCR — Tesis de Maestría" → "BukloLAB — Agosto 2026"
+
+### 3. neven-docs.html regenerado
+
+17 capítulos, 271.3 KB (subió de 267.7 KB por contenido nuevo).
+
+## Hallazgo técnico crítico
+
+**`JML_KNN` y `JML_Regresion` en `functions.jl` son aliases muertos:**
+
+```julia
+KNN(a...) = JML_KNN(a...)         # JML_KNN no existe → ERROR en runtime
+Regresion(a...) = JML_Regresion(a...)  # JML_Regresion no existe → ERROR en runtime
+```
+
+La función correcta que hace KNN + regresión es `JML_Clasificacion` → alias `J.Clasificacion`.
+El archivo `J4XCL-ML-Aprendizaje.jl` define la versión autorizada con 8 TipoOutput.
+
+**Pendiente técnico:** Eliminar los aliases muertos `KNN` y `Regresion` de `functions.jl` o redirigirlos a `JML_Clasificacion`.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/10-ejemplos.md` | J.KNN/J.Regresion→J.Clasificacion, EDO fix, branding |
+| `NEVEN/docs/Docusaurus/11-diccionario-funciones.md` | Fusión KNN+Regresion, +2SLS, +HECKIT, +py/p/chart.p, TipoOutput fix |
+| `NEVEN/docs/neven-docs.html` | Regenerado (271.3 KB, 17 caps) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `67f2808` | fix(cap10,11): correct Julia function names and update dictionary |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commitear cambios sin stagear: caps 01, 02, 07, 08 (modificados localmente) |
+| **ALTA** | Corregir aliases muertos en `functions.jl`: `KNN(a...) = JML_KNN(a...)` y `Regresion(a...) = JML_Regresion(a...)` |
+| **ALTA** | Tab Ayuda taskpane.html: "16 capítulos" → "17 capítulos" |
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` actualizado |
+| **ALTA** | Probar instalador en máquina limpia |
+| MEDIA | `Build-Setup.ps1`: agregar sync de archivos Docusaurus `.md` al mapa |
+| MEDIA | Revisar capítulo 7 (WebView2/Ribbon) para actualizar |
+
+---
