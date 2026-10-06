@@ -2314,3 +2314,48 @@ Nuevo capítulo completo documentando Python como tercer motor:
 | BAJA | Verificar procesador de libros de ontología con DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~tarde-3) — Capítulo 9 actualizado con Python
+
+## Logro
+
+Python agregado en 5 secciones del capítulo 9 (Mantenimiento) donde estaba completamente ausente.
+
+## Cambios aplicados
+
+| Sección | Adición |
+|---------|---------|
+| 9.2 Agregar funciones | Ejemplo Python: `def mi_funcion(datos, parametro=0)`, ruta `C:\NEVEN\startup\`, nota sobre reinicio |
+| 9.3 Troubleshooting | 3 filas nuevas: ControlPython no responde, paquete faltante, ModuleNotFoundError |
+| 9.4 Archivos fuente | 6 archivos nuevos: `language_service.cc` (actualizado), `neven_http_server.py`, `rag_engine.py`, `ontology_service.py`, `ai_functions.py`, `quarto_functions.py` |
+| 9.7 Data Lab | Wrapper Python como alternativa al wrapper R + instrucción sobre sidecar JSON |
+| 9.8 Studio Troubleshooting | 3 filas: wrapper no encontrado, ImportError, RAG/EPUB no indexa |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/docs/Docusaurus/09-mantenimiento.md` | 59 inserciones en 5 secciones |
+| `NEVEN/docs/neven-docs.html` | Regenerado (17 caps, 267.7 KB) |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `ee6a8a2` | docs(cap9): add Python to maintenance chapter |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Actualizar Tab Ayuda: "16 capítulos" → "17 capítulos" |
+| **ALTA** | Rebuild del Core (NEVEN64.xll) |
+| **ALTA** | Probar instalador en máquina limpia |
+| MEDIA | `Build-Setup.ps1` — agregar `16-python-ejemplos.md` a Docusaurus sync |
+| MEDIA | Revisar capítulo 7 (WebView2/Ribbon) |
+
+---
