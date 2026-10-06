@@ -85,16 +85,38 @@ end
 
 Recargar con el boton **Actualizar** del Ribbon o `=RJ_UpdateFunctions()`.
 
+### Funcion Python
+
+Crear archivo `.py` en `C:\NEVEN\startup\` o en el directorio de funciones de usuario.
+
+```python
+def mi_funcion(datos, parametro=0):
+    """Mi funcion personalizada de Python."""
+    import numpy as np
+    return float(np.sum(datos) * parametro)
+```
+
+La funcion queda disponible en Excel como:
+
+```excel
+=NEVEN.p("mi_funcion", A1:A10, 2.5)
+```
+
+> **Sin reinicio:** Los cambios a funciones Python se aplican al reiniciar ControlPython. Desde NEVEN Studio: *Configuracion → Reiniciar Python*.
+
 ## 9.3 Solucion de problemas
 
 | Problema | Solucion |
 |:---|:---|
 | `#NOMBRE?` en todas las funciones | XLL no cargado --> Archivo --> Opciones --> Complementos |
 | Ribbon no aparece | `regsvr32 C:\NEVEN\NEVENRibbon.dll` + limpiar resiliency |
-| Excel se congela | `Stop-Process -Name "EXCEL","ControlR","ControlJulia" -Force` |
+| Excel se congela | `Stop-Process -Name "EXCEL","ControlR","ControlJulia","ControlPython" -Force` |
 | Paquete R faltante | `=NEVEN.r("install.packages('nombre')")` |
 | Julia exception | Verificar datos del rango (tipos numericos) |
 | Pluto no abre | Matar procesos Julia: `Stop-Process -Name "julia" -Force` |
+| Python no responde | `Stop-Process -Name "ControlPython" -Force` — se reinicia automaticamente |
+| Paquete Python faltante | `=NEVEN.py("import subprocess; subprocess.run(['pip','install','paquete'])")` |
+| `ModuleNotFoundError` en Python | Python no encontro el paquete — verificar que `pip install` uso el Python correcto |
 
 ## 9.4 Archivos clave del codigo fuente
 
@@ -102,14 +124,20 @@ Recargar con el boton **Actualizar** del Ribbon o `=RJ_UpdateFunctions()`.
 |:---|:---|
 | `RJ2XCL/src/rj2xcl.cc` | Singleton principal, Init, xlAutoOpen |
 | `RJ2XCL/src/basic_functions.cc` | ~200 funciones exportadas |
-| `RJ2XCL/src/language_service.cc` | Comunicacion con ControlR/Julia |
+| `RJ2XCL/src/language_service.cc` | Comunicacion con ControlR/Julia/Python |
 | `Common/ViewerManager.cc` | WebView2 lifecycle |
 | `Common/PlutoManager.cc` | Pluto.jl lifecycle |
 | `Common/ConfigService.cc` | Configuracion centralizada |
 | `Common/SandboxVerifier.cc` | Validacion de seguridad |
 | `Ribbon/ribbon_connect.h` | Ribbon COM callbacks |
 | `startup/startup.jl` | Modulo NEVEN Julia |
+| `startup/startup.r` | Dispatcher R (carga libreria R4XCL) |
+| `startup/neven_http_server.py` | Servidor HTTP Studio (puerto 5555) |
+| `startup/rag_engine.py` | Motor RAG con DuckDB VSS |
+| `startup/ontology_service.py` | Servicio de ontologias YAML |
 | `libreria/JULIA/functions.jl` | Funciones Julia (9 modulos + aliases) |
+| `libreria/Python/ai_functions.py` | Funciones IA (ai_call, plantillas) |
+| `libreria/Python/quarto_functions.py` | Renderizado Quarto via Python |
 
 ## 9.5 Fixes criticos (no revertir)
 
@@ -153,6 +181,31 @@ MiFuncion.Studio <- function(data_X, K = 3L) {
 }
 ```
 
+**1b. Wrapper Python** (alternativa — en `NEVEN/libreria/Python/` y copiar a `C:\NEVEN\startup\`):
+
+```python
+def MiFuncion_Studio(data_X, K=3):
+    """Wrapper Python para Data Lab."""
+    import numpy as np
+    resultado = mi_analisis(data_X, K)
+    return [
+        {"name": "tabla", "label": "Resultado", "type": "table",
+         "value": resultado, "tier": 1}
+    ]
+```
+
+Para usar Python en el sidecar, cambiar `"languages": ["r"]` → `"languages": ["python"]` y ajustar `"file"` y `"function_name"`.
+
+**2. Sidecar JSON** (en `NEVEN/Install/functions/` y copiar a `C:\NEVEN\functions\`):
+
+```r
+MiFuncion.Studio <- function(data_X, K = 3L) {
+  resultado <- list(tabla = mi_analisis(data_X))
+  tier_map  <- c(tabla = 1L)
+  return(r_object_to_slots(resultado, tier_map = tier_map))
+}
+```
+
 **2. Sidecar JSON** (en `NEVEN/Install/functions/` y copiar a `C:\NEVEN\functions\`):
 
 ```json
@@ -180,3 +233,6 @@ Reiniciar NEVEN Studio — el catálogo se actualiza automáticamente al llamar 
 | Error 400 en filtro WHERE | SQL inválido — el mensaje de error DuckDB aparece en Results Panel |
 | Resumen IA ausente | LMStudio apagado o `AI.enabled=false` en `neven-config.json` |
 | Puerto 5555 ocupado | Cambiar puerto en `start_studio.py` |
+| Wrapper Python no encontrado | Verificar que el `.py` esta en `C:\NEVEN\startup\` y que el sidecar usa `"languages": ["python"]` |
+| `ImportError` en wrapper Python | Instalar el paquete faltante: `pip install nombre_paquete` en el Python de NEVEN |
+| RAG no indexa EPUB | Verificar `pip install ebooklib` en el entorno Python de NEVEN |
