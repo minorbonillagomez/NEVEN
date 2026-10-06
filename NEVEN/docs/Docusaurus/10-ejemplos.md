@@ -4,9 +4,9 @@ title: "Capitulo 10 - Ejemplos Completos"
 sidebar_label: 10. Ejemplos
 sidebar_position: 10
 ---
-# NEVEN v2.0 -- Guia de Ejemplos para el Usuario
+# NEVEN v3.2 — Guia de Ejemplos para el Usuario
 
-**Universidad de Costa Rica -- Tesis de Maestria**
+**BukloLAB**
 
 Ejemplos listos para copiar y pegar en celdas de Excel.
 
@@ -120,8 +120,9 @@ Datos en la hoja:
 |:---|:---|
 | `=J.EDO(A1:A2,B1:B2,0.01,0)` | Lista de 4 procedimientos |
 | `=J.EDO(A1:A2,B1:B2,0.01,1)` | Euler explicito dy/dt=-y --> tabla [t, y] (y decae de 1 a ~0.007) |
-
-**Nota:** Siempre usar B1:B2 como rango, poner B2=0. Los procedimientos 2, 3 y 4 estan en desarrollo.
+| `=J.EDO(A1:A2,B1:B2,0.01,2)` | Runge-Kutta 4 dy/dt=-y --> tabla [t, y] (mas preciso que Euler) |
+| `=J.EDO(A1:A2,B1:B2,0.01,3)` | Sistema EDOs RK4 (oscilador) --> tabla [t, y1, y2] |
+| `=J.EDO(A1:A2,B1:B2,0.01,4)` | EDO 2do orden RK4 y''+y=0 --> tabla [t, y, y'] |
 
 ### 1.5 Estadistica descriptiva
 
@@ -154,9 +155,11 @@ Datos de ejemplo en A1:C10 (3 columnas, 10 registros):
 | `=J.Estadistica(A1:A10,0,7)` | Percentiles de Edad (1,5,10,25,50,75,90,95,99) |
 | `=J.Estadistica(A1:C10,0,8)` | Deteccion de outliers IQR --> Q1, Q3, IQR, #outliers por columna |
 
-### 1.6 KNN -- Clasificacion
+### 1.6 Clasificacion KNN
 
-Firma: `=J.KNN(SetDatosX, SetDatosY, K, TipoOutput)`
+Firma: `=J.Clasificacion(SetDatosX, SetDatosY, K, TipoOutput)`
+
+> **Nota:** La funcion `J.KNN` no existe. El nombre correcto es `J.Clasificacion`, que engloba KNN y regresion.
 
 Usar el dataset Iris. Columnas A:D = medidas, E = especie (1, 2, 3):
 
@@ -177,29 +180,30 @@ X = A1:D10, Y = E1:E10:
 
 | Formula | Resultado |
 |:---|:---|
-| `=J.KNN(A1:D10,E1:E10,3,0)` | Lista de 5 procedimientos |
-| `=J.KNN(A1:D10,E1:E10,3,1)` | Clasificacion KNN (K=3) --> accuracy y predicciones |
-| `=J.KNN(A1:D10,E1:E10,3,2)` | Precision, Recall y F1 por clase |
-| `=J.KNN(A1:D10,E1:E10,3,3)` | Matriz de confusion 3x3 |
-| `=J.KNN(A1:D10,E1:E10,3,4)` | Tabla real vs predicho |
-| `=J.KNN(A1:D10,E1:E10,3,5)` | Distancia al vecino mas cercano |
+| `=J.Clasificacion(A1:D10,E1:E10,3,0)` | Lista de 8 procedimientos |
+| `=J.Clasificacion(A1:D10,E1:E10,3,1)` | KNN in-sample (K=3) --> accuracy y tabla obs/real/predicho |
+| `=J.Clasificacion(A1:D10,E1:E10,3,3)` | Regresion lineal --> R², R² ajustado, coeficientes |
+| `=J.Clasificacion(A1:D10,E1:E10,3,4)` | Valores ajustados (prediccion) |
+| `=J.Clasificacion(A1:D10,E1:E10,3,5)` | Coeficientes + R² (forma numerica) |
+| `=J.Clasificacion(A1:D10,E1:E10,3,6)` | Residuos |
 
-**Nota:** K=3 es el valor tipico. Probar con K=1, K=5, K=7 para comparar accuracy.
+**Nota:** K=3 es el valor tipico para KNN. El tercer argumento solo aplica a TipoOutput=1.
 
 ### 1.7 Regresion lineal
 
-Firma: `=J.Regresion(SetDatosX, SetDatosY, Parametro, TipoOutput)`
+Firma: `=J.Clasificacion(SetDatosX, SetDatosY, K, TipoOutput)`
+
+> **Nota:** La funcion `J.Regresion` no existe. La regresion lineal esta dentro de `J.Clasificacion` (TipoOutput 3-6).
 
 Usar los mismos datos Iris: X = A1:D10 (medidas), Y = E1:E10 (especie):
 
 | Formula | Resultado |
 |:---|:---|
-| `=J.Regresion(A1:D10,E1:E10,0,0)` | Lista de 5 procedimientos |
-| `=J.Regresion(A1:D10,E1:E10,0,1)` | Coeficientes + R2 |
-| `=J.Regresion(A1:D10,E1:E10,0,2)` | Valores ajustados (prediccion) |
-| `=J.Regresion(A1:D10,E1:E10,0,3)` | Residuos |
-| `=J.Regresion(A1:D10,E1:E10,0,4)` | Resumen completo (R2, MSE, SE, t-stats) |
-| `=J.Regresion(A1:D10,E1:E10,0,5)` | Intervalos de confianza 95% |
+| `=J.Clasificacion(A1:D10,E1:E10,0,0)` | Lista de 8 procedimientos |
+| `=J.Clasificacion(A1:D10,E1:E10,0,3)` | Regresion lineal completa: R², R² ajustado, error estandar, coeficientes |
+| `=J.Clasificacion(A1:D10,E1:E10,0,4)` | Valores ajustados (y estimado) |
+| `=J.Clasificacion(A1:D10,E1:E10,0,5)` | Coeficientes + R² en formato numerico |
+| `=J.Clasificacion(A1:D10,E1:E10,0,6)` | Residuos (e = y - y_estimado) |
 
 ### 1.8 Clustering K-Medias
 
@@ -610,7 +614,7 @@ Para usarlos: `=NEVEN.pluto.start()` → `=NEVEN.notebook.open("nombre")`
 
 ------------------------------------------------------------------------
 
-*NEVEN v2.0 -- Universidad de Costa Rica -- Tesis de Maestria*
+*NEVEN v3.2 — BukloLAB*
 
 ------------------------------------------------------------------------
 
@@ -723,4 +727,4 @@ Ver: `C:\NEVEN\functions\COMO_AGREGAR_FUNCIONES.md`
 
 ------------------------------------------------------------------------
 
-*NEVEN v2.1 -- Universidad de Costa Rica -- Tesis de Maestria*
+*NEVEN v3.2 — BukloLAB*

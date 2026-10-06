@@ -6,8 +6,8 @@ sidebar_position: 11
 ---
 
 
-**Última actualización:** 2025-01-15  
-**Total de funciones documentadas:** 95 (R: 32 funciones, Julia: 52 procedimientos en 11 módulos, Python: 4 funciones, Sistema: 13 funciones)
+**Última actualización:** 2026-08-20
+**Total de funciones documentadas:** 102 (R: 34 funciones, Julia: 60 procedimientos en 10 módulos, Python: 7 funciones, Sistema: 15 funciones)
 
 ---
 
@@ -28,8 +28,7 @@ sidebar_position: 11
   - [Álgebra Lineal — J.Algebra](#álgebra-lineal--jalgebra)
   - [Cálculo Numérico — J.Calculo](#cálculo-numérico--jcalculo)
   - [Ecuaciones Diferenciales — J.EDO](#ecuaciones-diferenciales--jedo)
-  - [Clasificación/KNN — J.KNN](#clasificaciónknn--jknn)
-  - [Regresión Julia — J.Regresion](#regresión-julia--jregresion)
+  - [Clasificación y Regresión — J.Clasificacion](#clasificación-y-regresión--jclasificacion)
   - [Clustering — J.Clustering](#clustering--jclustering)
   - [Estadística — J.Estadistica](#estadística--jestadistica)
   - [Optimización — J.Optimizar](#optimización--joptimizar)
@@ -301,6 +300,54 @@ Datos dummy (A1:D20):
 **Resultado esperado:** Tabla comparativa de 6 modelos de panel con coeficientes.
 
 **Paquetes requeridos:** `plm`, `stargazer`, `tseries`
+
+---
+
+#### RG_2SLS
+
+**Nombre Excel:** `=R.RG_2SLS(SetDatosY, SetDatosX, Categorica, Filtro, TipoOutput)`
+
+**Descripción:** Mínimos Cuadrados en Dos Etapas (2SLS/IV) para modelos con variables endógenas.
+
+**TipoOutput:**
+
+| Valor | Resultado |
+|-------|-----------|
+| 0 | Lista de procedimientos |
+| 1 | Estimación 2SLS (primera y segunda etapa) |
+| 2 | Residuos y valores ajustados |
+| 3 | Test de endogeneidad (Hausman) |
+| 4 | Test de sobreidentificación (Sargan) |
+
+**Ejemplo:**
+
+```
+=R.RG_2SLS(A1:A50, B1:D50, , , 1)
+```
+
+---
+
+#### RG_HECKIT
+
+**Nombre Excel:** `=R.RG_HECKIT(SetDatosY, SetDatosX, Categorica, Filtro, TipoOutput)`
+
+**Descripción:** Modelo de Heckman (HECKIT) para corrección de sesgo de selección de muestra.
+
+**TipoOutput:**
+
+| Valor | Resultado |
+|-------|-----------|
+| 0 | Lista de procedimientos |
+| 1 | Estimación en dos etapas (selección + resultado) |
+| 2 | Inversa del ratio de Mills (λ) |
+| 3 | Coeficientes de la ecuación de selección |
+| 4 | Predicciones corregidas por sesgo |
+
+**Ejemplo:**
+
+```
+=R.RG_HECKIT(A1:A50, B1:D50, , , 1)
+```
 
 ---
 
@@ -1213,75 +1260,52 @@ Datos: A1=0, A2=1 (intervalo [0,1]), B1=1 (y₀=1), paso h=0.1
 
 ---
 
-### Clasificación/KNN — J.KNN
+### Clasificación y Regresión — J.Clasificacion
 
-**Nombre Excel:** `=J.KNN(SetDatosX, SetDatosY, K, TipoOutput)`
+**Nombre Excel:** `=J.Clasificacion(SetDatosX, SetDatosY, K, TipoOutput)`
 
-**Descripción:** Clasificación K-Nearest Neighbors con validación leave-one-out.
+> **Nota:** Las funciones `J.KNN` y `J.Regresion` no existen. Ambas funcionalidades están integradas en `J.Clasificacion`.
+
+**Descripción:** Clasificación KNN y regresión lineal múltiple.
 
 **Parámetros:**
 
 | Parámetro | Tipo | Default | Descripción |
 |-----------|------|---------|-------------|
-| SetDatosX | rango | (requerido) | Features (variables predictoras) |
-| SetDatosY | rango | (requerido) | Etiquetas de clase |
-| K | número | 3 | Número de vecinos |
+| SetDatosX | rango | (requerido) | Variables predictoras |
+| SetDatosY | rango | (requerido) | Etiquetas (KNN) o variable dependiente (regresión) |
+| K | número | 3 | Número de vecinos (solo para TipoOutput=1) |
 | TipoOutput | número | 0 | Tipo de resultado |
 
 **TipoOutput:**
 
 | Valor | Resultado |
 |-------|-----------|
-| 0 | Lista de procedimientos |
-| 1 | Clasificación con accuracy |
-| 2 | Precisión, recall y F1 por clase |
-| 3 | Matriz de confusión |
-| 4 | Predicciones (real vs predicho) |
-| 5 | Distancias al vecino más cercano |
+| 0 | Lista de procedimientos (8 procedimientos) |
+| 1 | KNN in-sample: accuracy + tabla obs/real/predicho |
+| 2 | KNN fuera de muestra (requiere datos separados) |
+| 3 | Regresión lineal completa: R², R²adj, SE, coeficientes |
+| 4 | Valores ajustados (predicción) |
+| 5 | Coeficientes + R² (formato numérico) |
+| 6 | Residuos (e = y − ŷ) |
+| 7 | Matriz de confusión (pasa predicciones en parámetro K) |
+| 8 | Métricas: accuracy, correctos, incorrectos |
 
-**Ejemplo:**
-
-```
-=J.KNN(A1:C30, D1:D30, 5, 1)
-```
-
-**Resultado esperado:** "Accuracy: 86.67%" seguido de predicciones por observación.
-
----
-
-### Regresión Julia — J.Regresion
-
-**Nombre Excel:** `=J.Regresion(SetDatosX, SetDatosY, Parametro, TipoOutput)`
-
-**Descripción:** Regresión lineal múltiple con diagnósticos.
-
-**Parámetros:**
-
-| Parámetro | Tipo | Default | Descripción |
-|-----------|------|---------|-------------|
-| SetDatosX | rango | (requerido) | Variables independientes |
-| SetDatosY | rango | (requerido) | Variable dependiente |
-| Parametro | número | 0 | No utilizado |
-| TipoOutput | número | 0 | Tipo de resultado |
-
-**TipoOutput:**
-
-| Valor | Resultado |
-|-------|-----------|
-| 0 | Lista de procedimientos |
-| 1 | Coeficientes + R² |
-| 2 | Valores ajustados (predicción) |
-| 3 | Residuos |
-| 4 | Resumen completo (SE, t-stats, R²adj) |
-| 5 | Intervalos de confianza 95% |
-
-**Ejemplo:**
+**Ejemplo (KNN):**
 
 ```
-=J.Regresion(A1:B20, C1:C20, , 1)
+=J.Clasificacion(A1:D30, E1:E30, 5, 1)
 ```
 
-**Resultado esperado:** "R2 = 0.85", "Intercepto = 2.34", "B1 = 1.56", "B2 = -0.42"
+**Resultado esperado:** "Accuracy in-sample: 86.67%" + predicciones por observación.
+
+**Ejemplo (Regresión):**
+
+```
+=J.Clasificacion(A1:C30, D1:D30, 0, 3)
+```
+
+**Resultado esperado:** R², R² ajustado, intercepto y coeficientes.
 
 ---
 
@@ -1462,7 +1486,10 @@ Datos: A=matriz definida positiva 3×3, D=vector b
 | 2 | Secuencia numérica | inicio | fin | paso |
 | 3 | Aleatorios Normal | N | media | desviación |
 | 4 | Aleatorios Uniforme | N | min | max |
-| 5 | Redondear datos | datos/valor | decimales | — |
+| 5 | Tabla de frecuencias cruzadas | vector1 | vector2 | — |
+| 6 | Buscar y reemplazar en datos | datos | buscar | reemplazar |
+| 7 | Redondear datos | valor/datos | decimales | — |
+| 8 | Convertir tipos | datos | — | — |
 
 **Ejemplo:**
 
@@ -1621,6 +1648,64 @@ Las funciones del sistema se invocan con el prefijo `=NEVEN.`.
 ```
 
 **Resultado esperado:** 15
+
+---
+
+#### NEVEN.py()
+
+**Nombre Excel:** `=NEVEN.py(expresion)`
+
+**Descripción:** Ejecuta una expresión Python y retorna el resultado a la celda de Excel.
+
+**Ejemplo:**
+
+```
+=NEVEN.py("import math; math.pi")
+=NEVEN.py("sum(range(1, 101))")
+```
+
+**Resultado esperado:** 3.14159... / 5050
+
+---
+
+#### NEVEN.p()
+
+**Nombre Excel:** `=NEVEN.p(nombre_funcion, arg1, arg2, ...)`
+
+**Descripción:** Llama a una función Python registrada en la librería NEVEN, pasando rangos de Excel como argumentos.
+
+**Ejemplo:**
+
+```
+=NEVEN.p("ai_call", A1, "analizar")
+=NEVEN.p("quarto_render", "C:\reporte.qmd", "html")
+```
+
+**Resultado esperado:** Resultado de la función Python invocada.
+
+---
+
+#### NEVEN.chart.p()
+
+**Nombre Excel:** `=NEVEN.chart.p(rango, tipo, nombre, ancho, alto)`
+
+**Descripción:** Genera un gráfico con matplotlib e incrusta la imagen directamente en la hoja de Excel como Shape.
+
+| tipo | Gráfico |
+|------|---------|
+| 1 | Líneas |
+| 2 | Barras |
+| 3 | Scatter |
+| 4 | Histograma |
+| 5 | Pie |
+| 6 | BoxPlot |
+| 7 | Heatmap |
+
+**Ejemplo:**
+
+```
+=NEVEN.chart.p(A1:B20, 3, "Scatter", 600, 400)
+```
 
 ---
 
@@ -1810,7 +1895,7 @@ Paso 4: =NEVEN.pluto.stop()
 =NEVEN.about()
 ```
 
-**Resultado esperado:** "NEVEN v1.0 — R 4.4.1, Julia 1.12.6"
+**Resultado esperado:** "NEvƎИ v3.2 — R 4.4.1, Julia 1.12.6, Python 3.12"
 
 ---
 
@@ -1841,8 +1926,9 @@ Paso 4: =NEVEN.pluto.stop()
 | [R.MR_Poisson.C](#mr_poissonc) | R | Regresión Poisson (conteo) |
 | [R.MR_Tobit.C](#mr_tobitc) | R | Regresión Tobit (censurada) |
 | [R.MR_PanelData.C](#mr_paneldatac) | R | Datos de panel |
-| [J.Regresion](#regresión-julia--jregresion) | Julia | Regresión lineal con diagnósticos |
-| [J.KNN (TipoOutput=2)](#clasificaciónknn--jknn) | Julia | Regresión lineal via clasificación |
+| [R.RG_2SLS](#rg_2sls) | R | Mínimos cuadrados en dos etapas (IV) |
+| [R.RG_HECKIT](#rg_heckit) | R | Modelo de Heckman (sesgo de selección) |
+| [J.Clasificacion (TipoOutput=3)](#clasificación-y-regresión--jclasificacion) | Julia | Regresión lineal múltiple |
 
 ### Clasificación / Machine Learning
 
@@ -1850,8 +1936,7 @@ Paso 4: =NEVEN.pluto.stop()
 |---------|----------|-------------|
 | [R.MR_SVM](#mr_svm) | R | Support Vector Machine |
 | [R.AD_ArbolDeDecision.C](#ad_arboldedecisionc) | R | Árboles de decisión |
-| [J.KNN](#clasificaciónknn--jknn) | Julia | K-Nearest Neighbors |
-| [J.Regresion](#regresión-julia--jregresion) | Julia | Regresión lineal |
+| [J.Clasificacion](#clasificación-y-regresión--jclasificacion) | Julia | K-Nearest Neighbors |
 
 ### Clustering
 
@@ -1932,7 +2017,9 @@ Paso 4: =NEVEN.pluto.stop()
 
 | Función | Lenguaje | Descripción |
 |---------|----------|-------------|
-| [P.ai_call](#ai_call) | Python | Invocar modelo de lenguaje |
+| [NEVEN.py](#nevenpython-nevenpy) | Sistema | Ejecutar Python desde celda |
+| [NEVEN.p](#nevenpython-nevenp) | Sistema | Llamar función Python registrada |
+| [NEVEN.chart.p](#nevenpython-nevenchartp) | Sistema | Gráfico matplotlib en hoja Excel |
 | [P.ai_setup](#ai_setup) | Python | Configurar AI |
 | [P.ai_list_prompts](#ai_list_prompts) | Python | Listar prompts disponibles |
 | [P.quarto_render](#quarto_render) | Python | Renderizar documentos Quarto |
@@ -1976,5 +2063,5 @@ Para agregar una nueva función al diccionario, copie esta plantilla:
 
 ---
 
-*Documento generado para NEVEN — Add-in XLL para Microsoft Excel*  
-*Universidad de Costa Rica — Tesis de Maestría*
+*Documento generado para NEVEN — Add-in XLL para Microsoft Excel*
+*BukloLAB — Agosto 2026*
