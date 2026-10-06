@@ -2359,3 +2359,104 @@ Python agregado en 5 secciones del capítulo 9 (Mantenimiento) donde estaba comp
 | MEDIA | Revisar capítulo 7 (WebView2/Ribbon) |
 
 ---
+
+---
+
+### Sesión 2026-08-20 — Resumen final del día (docs + branding)
+
+## Logros de la sesión completa
+
+Esta fue una sesión enfocada en documentación, branding y mantenimiento. Sin cambios a código C++/Python/R/Julia.
+
+### 1. Sección "Acerca de" movida del Ribbon al TaskPane
+
+- **taskpane.html:** reemplazada tabla vacía por ensayo completo de `docs/NEVEN Acerca de.md` (historia D.A.T.E. 2009 → ALIRO → BERT → NEVEN) con área scrollable
+- **basic_functions.cc:** `RJ_About_Dialog()` simplificado para redirigir al TaskPane (pendiente rebuild)
+
+### 2. Branding BukloLAB corregido
+
+Proceso de corrección en múltiples iteraciones:
+
+| Iteración | Problema | Solución |
+|-----------|----------|---------|
+| 1 | Instit. era "BukloLAB" → se cambió a "UCR" por error | Revertido a BukloLAB |
+| 2 | `color:#111` (negro) invisible en fondo dark `#1e1e1e` | `color:#ffffff` para Buklo |
+| 3 | Portada tenía UCR/Maestría/Autor/Fecha | Reemplazado por BukloLAB estilizado |
+
+**Resultado final:** `<span style="color:#ffffff">Buklo</span><span style="color:#e53935">LAB</span>`
+
+### 3. Diagrama de flujo de portada eliminado
+
+4 intentos fallidos antes de la decisión correcta:
+
+| Intento | Enfoque | Por qué falló |
+|---------|---------|---------------|
+| 1 | `$...\xrightarrow...$` (horizontal) | KaTeX inline, todo en una línea |
+| 2 | `$...\begin{array}{c}...$` | Sigue siendo `$` inline |
+| 3 | `$$...\begin{array}{c}...$$` | Comando interrumpido antes de ejecutar |
+| 4 | HTML `<div>` con `<br>` | Correcto técnicamente pero redundante con el texto |
+| **5** | **Eliminar el diagrama** | **El texto ya lo explica; menos es más** |
+
+**Lección:** `$...$` = inline, ignora `\\`. `$$...$$` = display, respeta `\\`. Para flujos simples, mejor HTML o eliminar.
+
+### 4. Score corregido en portada
+
+`\boxed{9.6/10}` → `\boxed{9.71 \approx 9.7/10}` (el cálculo ya daba 9.71, el boxed estaba mal)
+
+### 5. Documentación reescrita / actualizada
+
+| Capítulo | Acción | Cambios clave |
+|----------|--------|---------------|
+| **03 Arquitectura** | Reescritura completa | +Python, +RAG Engine, +sysimage Julia, 342 tests, API routes actualizadas |
+| **04 Julia** | Actualización | Sección 4.0 (sysimage, no más espera), +4.11 Conectividad, +4.12 Studio |
+| **05 R** | Actualización | Conteo 34→63 archivos, +2SLS, +HECKIT |
+| **09 Mantenimiento** | Actualización | Python en 9.2, 9.3, 9.4, 9.7, 9.8 |
+| **16 Python** | **Nuevo** | `NEVEN.py`, `NEVEN.p`, `NEVEN.chart.p`, IA, Quarto, Studio, paquetes |
+
+**neven-docs.html:** 17 capítulos, 267.7 KB
+
+### 6. Build-Setup.ps1 mejorado
+
+Agregado sync de `docs/neven-docs.html` al mapa de Dist (antes requería copia manual)
+
+## Archivos con cambios sin commitear al cierre de sesión
+
+```
+modified: NEVEN/docs/Docusaurus/01-introduccion.md
+modified: NEVEN/docs/Docusaurus/02-instalacion.md
+modified: NEVEN/docs/Docusaurus/07-webview2-ribbon.md
+modified: NEVEN/docs/Docusaurus/08-seguridad-testing.md
+```
+
+Estos archivos tienen cambios locales no commiteados. Revisar antes de la próxima sesión.
+
+## Commits del día
+
+| Hash | Descripción |
+|------|-------------|
+| `2621cb4` | feat(ayuda): move Acerca de content to TaskPane |
+| `8bcf260` | fix(branding): replace UCR with BukloLAB branding |
+| `4649ea3` | fix(branding): BukloLAB - Buklo white (#fff) on dark background |
+| `30b9148` | fix(portada): change flow diagram from horizontal to vertical layout |
+| `e670578` | fix(portada): each engine on its own row, remove cases block |
+| `eb9e00b` | fix(portada): replace KaTeX flow with HTML for reliable vertical layout |
+| `cee791d` | fix(portada): remove flow diagram - explained in body text |
+| `a1a3257` | fix(portada): correct score 9.6/10 -> 9.71 ~= 9.7/10 |
+| `de188bf` | docs(cap3): rewrite architecture chapter for v3.2 |
+| `dce78f1` | docs: update chapters 4,5 and add chapter 16 Python |
+| `ee6a8a2` | docs(cap9): add Python to maintenance chapter |
+| `0be3c4c` | docs(chat): session summary 2026-08-20 ch09 Python additions |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commitear cambios en caps 01, 02, 07, 08 (modificados sin commitear) |
+| **ALTA** | Tab Ayuda taskpane.html: "16 capítulos" → "17 capítulos" |
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` actualizado requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| MEDIA | `Build-Setup.ps1`: agregar sync de archivos Docusaurus `.md` al mapa (actualmente solo synca `neven-docs.html`) |
+| MEDIA | Revisar capítulo 7 (WebView2/Ribbon) para actualizar con cambios recientes |
+| BAJA | Verificar que procesador de libros de ontología acepta DOCX/EPUB |
+
+---
