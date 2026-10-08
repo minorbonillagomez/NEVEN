@@ -2808,3 +2808,11 @@ También agregado: listener en el select que muestra/oculta el campo "Nuevo domi
 | BAJA | Probar "Procesar Libro" en producción con un libro real |
 
 ---
+
+---
+
+### Sesión 2026-08-21 (~cierre noche) — Sin cambios adicionales
+
+El resumen completo de esta sesión ya fue documentado en la entrada anterior (Sesión 2026-08-21 ~noche). No hubo cambios técnicos adicionales después de ese punto.
+
+---
