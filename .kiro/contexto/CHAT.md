@@ -2547,3 +2547,26 @@ El archivo `J4XCL-ML-Aprendizaje.jl` define la versión autorizada con 8 TipoOut
 | MEDIA | Revisar capítulo 7 (WebView2/Ribbon) para actualizar |
 
 ---
+
+---
+
+### Sesión 2026-08-20 (~cierre) — Consulta de pendientes únicamente
+
+## Sin cambios técnicos
+
+Sesión de consulta solamente. El usuario solicitó un resumen de las tareas pendientes.
+
+## Pendientes confirmados (sin cambios respecto a sesión anterior)
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir aliases muertos en `functions.jl`: `KNN(a...) = JML_KNN(a...)` y `Regresion(a...) = JML_Regresion(a...)` → redirigir a `JML_Clasificacion` |
+| **ALTA** | Tab Ayuda `taskpane.html`: "16 capítulos" → "17 capítulos" |
+| **ALTA** | Commitear cambios sin stagear: caps 01, 02, 07, 08 |
+| **ALTA** | Rebuild del Core (NEVEN64.xll) — `RJ_About_Dialog()` actualizado requiere recompilación |
+| **ALTA** | Probar instalador en máquina limpia |
+| MEDIA | `Build-Setup.ps1`: agregar sync de archivos `.md` Docusaurus al mapa de Dist |
+| MEDIA | Revisar capítulo 7 (WebView2/Ribbon) para actualizar |
+| MEDIA | Verificar procesador de libros de ontología acepta DOCX/EPUB |
+
+---
