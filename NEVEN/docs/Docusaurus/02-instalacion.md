@@ -9,7 +9,7 @@ sidebar_position: 2
 
 ## 2.1 Requisitos del sistema
 
-| Componente | Version minima | Descarga |
+| Componente | Versión mínima | Descarga |
 |:---|:---|:---|
 | Windows | 10/11 (64 bits) | -- |
 | Microsoft Excel | 2016+ o Microsoft 365 | -- |
@@ -20,7 +20,7 @@ sidebar_position: 2
 | Quarto | 1.9.18 | [quarto.org](https://quarto.org/docs/download) |
 | WebView2 Runtime | -- | Preinstalado en Windows 10/11 |
 
-## 2.2 Pasos de instalacion
+## 2.2 Pasos de instalación
 
 ### Paso 1: Copiar archivos
 
@@ -51,21 +51,29 @@ regsvr32 "C:\NEVEN\NEVENRibbon.dll"
 3. En "Administrar", seleccionar "Complementos de Excel" --> Ir
 4. Examinar --> `C:\NEVEN\NEVEN64.xll`
 
-## 2.3 Verificacion rapida
+## 2.3 Verificacion rápida
 
-Despues de la instalacion, verificar en celdas de Excel:
+Después de la instalación, verificar en celdas de Excel:
 
-$
-\texttt{=NEVEN.r("1+1")} \rightarrow 2 \qquad \texttt{=NEVEN.j("sqrt(144)")} \rightarrow 12 \qquad \texttt{=NEVEN.py("1+1")} \rightarrow 2
-$
+$$
+\texttt{=Neven.R("1+1")} \rightarrow 2 \\ 
+\texttt{=NevenX.J("sqrt",144)} \rightarrow 12 \\ 
+\texttt{=NevenX.P("distancia", 3, 4)} \rightarrow 5
+$$
+
+Es importante notar que Neven es capaz de recibir por parámetro una ejecución a realizar en R, mientras que NevenX.R llamaría un procedimiento en R pasando los parámetros auxiliares, por ejemplo 
+
+$$
+\texttt{=NevenX.R(text"AD\_ACP.C", B1:D13, 0, 99))} \rightarrow ACP \\
+$$
 
 ## 2.4 Checklist completo
 
-| # | Verificacion | Formula | Resultado esperado |
+| # | Verificación | Formula | Resultado esperado |
 |:---|:---|:---|:---|
-| 1 | R operativo | `=NEVEN.r("1+1")` | $2$ |
-| 2 | Julia operativa | `=NEVEN.j("1+1")` | $2$ |
-| 3 | Python operativo | `=NEVEN.py("1+1")` | $2$ |
+| 1 | R operativo | `=Neven.r("1+1")` | $2$ |
+| 2 | Julia operativa | `=Neven.j("1+1")` | $2$ |
+| 3 | Python operativo | `=Neven.p("1+1")` | $2$ |
 | 4 | WebView2 | `=NEVEN.v("<html><body>OK</body></html>")` | Ventana |
 | 5 | Pluto.jl | `=NEVEN.pluto.status()` | "stopped" |
 | 6 | Quarto | `=NEVEN.q("C:/NEVEN/quarto/test_report.qmd")` | Reporte |
@@ -113,13 +121,13 @@ El boton "Iniciar Servidor" inicia el servidor HTTP en el puerto 5555 si no esta
 
 ```
 C:\NEVEN\
-+-- NEVEN64.xll              # Add-in Excel
-+-- NEVENRibbon.dll           # Ribbon COM
++-- NEVEN64.xll                # Add-in Excel
++-- NEVENRibbon.dll            # Ribbon COM
 +-- ControlR.exe               # Motor R
 +-- ControlJulia.exe           # Motor Julia
 +-- ControlPython.exe          # Motor Python
-+-- neven-config.json         # Configuracion
-+-- neven-languages.json      # R + Julia + Python
++-- neven-config.json          # Configuracion
++-- neven-languages.json       # R + Julia + Python
 +-- startup\                   # Scripts de inicio
 +-- notebooks\                 # 15 notebooks Pluto
 +-- data\                      # Datasets Excel<-->Pluto
@@ -141,18 +149,18 @@ C:\NEVEN\
 ## 2.7 Paquetes R recomendados
 
 ```r
-install.packages(c(
-    "plotly", "htmlwidgets", "ggplot2",
-    "lme4", "survival", "psych", "forecast",
-    "car", "Hmisc", "rstanarm", "plm",
-    "stargazer", "sandwich", "lmtest"
-), repos = "https://cran.r-project.org")
+install.packages(
+        c("plotly", "htmlwidgets", "ggplot2",
+        "lme4", "survival", "psych", "forecast",
+        "car", "Hmisc", "rstanarm", "plm",
+        "stargazer", "sandwich", "lmtest"), 
+        repos = "https://cran.r-project.org"
+                )
 ```
 
 ## 2.8 Paquetes Julia recomendados
 
 ```julia
 import Pkg
-Pkg.add(["Pluto", "Plots", "DataFrames", "CSV",
-         "MultivariateStats", "JuMP", "HiGHS"])
+Pkg.add(["Pluto", "Plots", "DataFrames", "CSV", "MultivariateStats", "JuMP", "HiGHS"])
 ```

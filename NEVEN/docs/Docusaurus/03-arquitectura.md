@@ -110,15 +110,15 @@ $$
 ```
 xlAutoOpen()
   +-- LogService::Initialize()
-  +-- ConfigService::Initialize()              <-- neven-config.json
+  +-- ConfigService::Initialize()             <-- neven-config.json
   +-- SecurityService::Initialize()
-  +-- LanguageManager::ConfigureLanguages()    <-- neven-languages.json
-  |    +-- LanguageService[R]::Connect()    --> ControlR.exe
-  |    +-- LanguageService[Julia]::Connect() -> ControlJulia.exe
-  |    +-- LanguageService[Python]::Connect() -> ControlPython.exe
-  +-- ViewerManager::Initialize()              <-- WebView2 STA thread
+  +-- LanguageManager::ConfigureLanguages()   <-- neven-languages.json
+  |    +-- LanguageService[R]::Connect()      --> ControlR.exe
+  |    +-- LanguageService[Julia]::Connect()  --> ControlJulia.exe
+  |    +-- LanguageService[Python]::Connect() --> ControlPython.exe
+  +-- ViewerManager::Initialize()             <-- WebView2 STA thread
   +-- PlutoManager::Initialize()
-  +-- MapFunctions() + xlfRegister             <-- ~200 funciones
+  +-- MapFunctions() + xlfRegister            <-- ~200 funciones
   +-- Timer(5s) --> UpdateFunctions()
 ```
 

@@ -5,35 +5,36 @@ sidebar_label: 8. Seguridad y Testing
 sidebar_position: 8
 ---
 
-# Capitulo 8: Seguridad y Testing
+# Capitulo 8: Seguridad y Testeo
 
 ## 8.1 Sandbox de seguridad
 
-Cuando el usuario ejecuta codigo arbitrario con `=NEVEN.r("...")` o `=NEVEN.j("...")`, el sandbox bloquea operaciones peligrosas **antes** de enviarlas al motor.
+Cuando el usuario ejecuta codigo arbitrario con `=NEVEN.r("...")` o `=NEVEN.j("...")`, el 'sandbox' bloquea operaciones peligrosas **antes** de enviarlas al motor.
 
 ### Patrones bloqueados en R
 
-| Categoria | Comandos bloqueados |
+| Categoría | Comandos bloqueados |
 |:---|:---|
 | Shell | `system()`, `system2()`, `shell()`, `shell.exec()`, `pipe()` |
 | Archivos | `file.remove()`, `unlink()`, `file.rename()` |
 | Red | `download.file()`, `url()`, `socketConnection()` |
-| Codigo dinamico | `eval(parse())`, `do.call()`, `get()`, `.Call()` |
+| Codigo dinámico | `eval(parse())`, `do.call()`, `get()`, `.Call()` |
 | Entorno | `Sys.setenv()`, `setwd()` |
 
 ### Patrones bloqueados en Julia
 
-| Categoria | Comandos bloqueados |
+| Categoría | Comandos bloqueados |
 |:---|:---|
 | Shell | `run()`, `pipeline()`, backtick literals |
-| Codigo nativo | `ccall()`, `@ccall`, `cglobal()`, `unsafe_*` |
-| Codigo dinamico | `eval()`, `Meta.parse()`, `include()` |
+| Código nativo | `ccall()`, `@ccall`, `cglobal()`, `unsafe_*` |
+| Código dinámico | `eval()`, `Meta.parse()`, `include()` |
 
-### Proteccion contra bypass
+### Protección contra bypass
 
-$
-\texttt{sys tem()} \xrightarrow{\text{strip whitespace}} \texttt{system()} \xrightarrow{\text{match}} \text{BLOQUEADO}
-$
+$$
+\texttt{sys tem()} \xrightarrow{\text{strip whitespace}} 
+\texttt{system()}  \xrightarrow{\text{match}} \text{BLOQUEADO}
+$$
 
 - Whitespace stripping normaliza antes de comparar
 - String concatenation (`paste0("sys","tem()")`) se detecta
@@ -41,17 +42,23 @@ $
 
 ### Verificacion de integridad SHA-256
 
-Al iniciar, NEVEN calcula el hash SHA-256 de los scripts criticos (`startup.r`, `startup.jl`) y lo compara con el valor almacenado. Si el hash no coincide, el motor correspondiente no se carga y se registra una advertencia en el log. Esto previene la ejecucion de scripts modificados por terceros.
+Al iniciar, NEVEN calcula el hash SHA-256 de los scripts críticos (`startup.r`, `startup.jl`) y lo compara con el valor almacenado. Si el hash no coincide, el motor correspondiente no se carga y se registra una advertencia en el log. Esto previene la ejecución de scripts modificados por terceros.
 
-$
-\text{SHA-256}(\texttt{startup.r}) = h_{\text{actual}} \stackrel{?}{=} h_{\text{esperado}} \quad \Rightarrow \quad \begin{cases} \text{OK: cargar motor} \\ \text{FAIL: bloquear + log} \end{cases}
-$
+$$
+\text{SHA-256}(\texttt{startup.r}) = 
+h_{\text{actual}} \stackrel{?}{=} h_{\text{esperado}} \quad \Rightarrow \quad 
+ \begin{cases} 
+    \text{OK: cargar motor} \\ 
+    \text{FAIL: bloquear + log} 
+ \end{cases}
+$$
 
-:::note
-Las funciones registradas (`=R.MR_Lineal(...)`, `=J.Algebra(...)`) **no** pasan por el sandbox -- se ejecutan directamente via el pipe.
-:::
+```
+Las funciones registradas (`=R.MR_Lineal(...)`, `=J.Algebra(...)`)
+no pasan por el sandbox, se ejecutan directamente via el pipe.
+```
 
-## 8.2 Validacion de configuracion
+## 8.2 Validación de configuración
 
 `ConfigService` valida `neven-config.json` al cargar:
 
@@ -80,11 +87,11 @@ Las funciones registradas (`=R.MR_Lineal(...)`, `=J.Algebra(...)`) **no** pasan 
 
 Los tests PBT verifican propiedades universales con entradas aleatorias:
 
-$
-\forall V \in \mathbb{Z}: \text{clamp}(V, 1, 16) = \max(1, \min(16, V))
-$
+$$
+\forall ~V \in \mathbb{Z}: \text{clamp}(V, 1, 16) = \max(1, \min(16, V))
+$$
 
-Cada propiedad se verifica con 150 iteraciones minimo usando `std::mt19937`.
+Cada propiedad se verifica con 150 iteraciones mínimo usando `std::mt19937`.
 
 ## 8.4 Compilacion y ejecucion de tests
 
