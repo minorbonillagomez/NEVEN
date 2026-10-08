@@ -2896,3 +2896,37 @@ DESPUÉS (criterio claro):
 | `c910d18` | refactor(ontology): clarify PyMuPDF vs MarkItDown usage |
 
 ---
+
+---
+
+### Sesión 2026-08-21 (~cierre final) — Sin cambios adicionales
+
+El resumen completo de esta sesión ya fue documentado en las entradas anteriores de hoy. No hubo cambios técnicos adicionales después de ese punto.
+
+## Resumen del día completo (2026-08-21)
+
+| Commit | Descripción |
+|--------|-------------|
+| `fba33b7` | fix: dead Julia aliases + chapter count + doc improvements |
+| `daca316` | docs(chat): session summary 2026-08-21 ALTA tasks completed |
+| `293f448` | docs(chat): session close note |
+| `58e962e` | feat: MEDIA priority tasks completed |
+| `f79b769` | docs(chat): session summary MEDIA tasks completed |
+| `3b11c7d` | docs(chat): session close note tarde |
+| `00a6c51` | feat(ontology): implement Procesar Libro button end-to-end |
+| `232d96d` | docs(chat): session summary Procesar Libro |
+| `5ee3987` | docs(chat): session close note noche |
+| `b5ea09e` | docs(chat): PyMuPDF redundancy discussion |
+| `c910d18` | refactor(ontology): clarify PyMuPDF vs MarkItDown usage |
+| `c7af4de` | docs(chat): session note PyMuPDF refactor |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Corregir tests e2e en `e2e_tests.cc` (`callTemplates`, `RJ_Version`) |
+| MEDIA | Regenerar ZIP con Build-Setup.ps1 (incluye ahora .md de Docusaurus) |
+| BAJA | Probar "Procesar Libro" en producción con un libro real |
+
+---
