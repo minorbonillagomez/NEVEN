@@ -2930,3 +2930,22 @@ El resumen completo de esta sesión ya fue documentado en las entradas anteriore
 | BAJA | Probar "Procesar Libro" en producción con un libro real |
 
 ---
+
+---
+
+### Sesión 2026-08-22 (~inicio) — Consulta de pendientes únicamente
+
+## Sin cambios técnicos
+
+Sesión de consulta. El usuario preguntó qué tareas quedan pendientes.
+
+## Pendientes confirmados (sin cambios)
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Corregir tests e2e en `e2e_tests.cc` (`callTemplates`, `RJ_Version`) |
+| MEDIA | Regenerar ZIP con Build-Setup.ps1 |
+| BAJA | Probar "Procesar Libro" con un libro real en producción |
+
+---
