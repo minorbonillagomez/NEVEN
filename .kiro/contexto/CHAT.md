@@ -2816,3 +2816,48 @@ También agregado: listener en el select que muestra/oculta el campo "Nuevo domi
 El resumen completo de esta sesión ya fue documentado en la entrada anterior (Sesión 2026-08-21 ~noche). No hubo cambios técnicos adicionales después de ese punto.
 
 ---
+
+---
+
+### Sesión 2026-08-21 (~noche-2) — Discusión técnica: redundancia PyMuPDF vs MarkItDown
+
+## Sin cambios técnicos aplicados
+
+Sesión de consulta técnica únicamente. No se modificó ningún archivo.
+
+## Discusión
+
+**Pregunta del usuario:** ¿Es redundante mantener PyMuPDF como fallback para PDF si MarkItDown ya procesa PDF?
+
+**Conclusión:** Mayormente sí, hay redundancia. MarkItDown usa internamente `pdfminer-six` + `pdfplumber` para extraer PDF — los mismos componentes que ya están instalados en NEVEN.
+
+**El único caso donde PyMuPDF agrega valor real:**
+
+El parámetro `max_pages` en `_extract_document_text()`:
+- MarkItDown convierte TODAS las páginas antes de retornar (ineficiente para libros de 400+ páginas)
+- PyMuPDF para en la página N solicitada (eficiente para procesar solo las primeras N páginas)
+
+**Refactor pendiente propuesto:**
+
+```python
+if ext == '.pdf' and max_pages:
+    # PyMuPDF: solo cuando hay límite de páginas (más eficiente)
+    return _extract_pdf_text(file_path, max_pages, chunk_size)
+else:
+    # MarkItDown: todos los demás casos (incluye PDF sin límite)
+    ...
+```
+
+Esto elimina la redundancia y aclara el propósito de PyMuPDF: únicamente para `max_pages` en PDF.
+
+## Pendiente INMEDIATO para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Aplicar refactor de `_extract_document_text()` en `ontology_manager.py` |
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Corregir tests e2e (`callTemplates`, `RJ_Version`) |
+| MEDIA | Regenerar ZIP con Build-Setup.ps1 |
+| BAJA | Probar "Procesar Libro" con un libro real |
+
+---
