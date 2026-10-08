@@ -2949,3 +2949,55 @@ Sesión de consulta. El usuario preguntó qué tareas quedan pendientes.
 | BAJA | Probar "Procesar Libro" con un libro real en producción |
 
 ---
+
+---
+
+### Sesión 2026-08-22 (~mañana) — Tests e2e corregidos + ZIP regenerado
+
+## Logros principales
+
+### 1. Tests e2e — 8/8 pasando
+
+**Causa raíz de los 2 errores:**
+
+| Error | Causa |
+|-------|-------|
+| `callTemplates` no declarado | El array `callTemplates` fue eliminado. Las funciones `NEVEN.Call`/`NEVEN.Exec` fueron reemplazadas por el dispatcher `NevenX.R`/`NevenX.J` en `funcTemplates`. Los tests quedaron obsoletos. |
+| `RJ_Version` no declarado | La función existe en `basic_functions.cc` e incluso está registrada en `funcTemplates`, pero nunca se declaró como `extern` en `basic_functions.h`. El test la llamaba directamente. |
+
+**Fixes:**
+
+`basic_functions.h`:
+- Agregada declaración: `extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Version();`
+
+`e2e_tests.cc`:
+- `CallTemplatesHaveNevenCategory`: reescrito para buscar `NevenX.R` y `NevenX.J` en `funcTemplates`
+- `CallTemplatesUseNevenPrefix`: reescrito igual
+- `FuncTemplatesUseNevenPrefix`: agregado `NevenX.` como prefijo válido
+
+### 2. ZIP regenerado — 22.13 MB, 469 archivos
+
+Build-Setup.ps1 ahora incluye los 17 capítulos `.md` de Docusaurus (nuevo desde sesión anterior). El ZIP subió de 453 → 469 archivos.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/tests/e2e_tests.cc` | Reemplazados tests de callTemplates, agregado prefijo NevenX. |
+| `NEVEN/Core/include/basic_functions.h` | +declaración `extern RJ_Version()` |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado (22.13 MB, 469 archivos) |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `083e65c` | fix(tests): fix e2e_tests.cc compilation errors |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Probar "Procesar Libro" con un libro real en producción |
+
+---
