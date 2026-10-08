@@ -2736,3 +2736,75 @@ if not file_path.lower().endswith('.pdf'):
 El resumen completo de esta sesión ya fue documentado en la entrada anterior (Sesión 2026-08-21 ~tarde). No hubo cambios técnicos adicionales después de ese punto.
 
 ---
+
+---
+
+### Sesión 2026-08-21 (~noche) — Botón "Procesar Libro" implementado end-to-end
+
+## Logros principales
+
+### Botón "Procesar Libro" en panel de ontología — completamente funcional
+
+**Problema:** El botón `btn-ontology-process` existía en el HTML, el select de dominios nunca se llenaba, y no había endpoint ni handler JS conectado. Era UI sin funcionalidad.
+
+**Tres capas implementadas:**
+
+#### 1. Endpoint HTTP — `POST /api/ontology/process-book`
+
+Agregado en `neven_http_server.py`. Recibe `file_path`, `domain_id`, `max_pages`, `chunk_size`, llama a `ontology_manager.process_book()` y retorna el resultado.
+
+#### 2. Carga de dominios — `ontologyLoadDomains()`
+
+Nueva función JS que:
+- Llama a `GET /api/ontology/domains`
+- Actualiza la lista visual de dominios (con conteo de entidades)
+- Rellena el `<select>` de dominio destino con la opción "+ Nuevo dominio..."
+
+Conectada al botón `btn-ontology-refresh`.
+
+#### 3. Handler del botón Procesar Libro
+
+- Valida archivo y dominio
+- Si dominio = `__new__`, usa el campo de texto libre
+- Muestra barra de progreso durante la llamada
+- Muestra resultado: entidades creadas, relaciones creadas, chunks procesados
+- Manejo de errores con mensajes claros
+
+También agregado: listener en el select que muestra/oculta el campo "Nuevo dominio" según la selección.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/TaskPane/neven_http_server.py` | +endpoint POST /api/ontology/process-book |
+| `NEVEN/ControlPython/startup/neven_http_server.py` | Sincronizado |
+| `NEVEN/Install/Dist/startup/neven_http_server.py` | Sincronizado |
+| `NEVEN/TaskPane/taskpane.html` | +ontologyLoadDomains(), +btn-ontology-refresh handler, +btn-ontology-process handler, +dominio select/hide logic |
+| `C:\NEVEN\startup\neven_http_server.py` | Sincronizado a producción |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `00a6c51` | feat(ontology): implement Procesar Libro button end-to-end |
+
+## Cómo usar
+
+1. Reiniciar servidor HTTP (Ribbon → Detener → Iniciar, o cerrar/abrir Excel)
+2. Settings → Base de Conocimiento
+3. Clic en **⟳** para cargar dominios disponibles
+4. Seleccionar archivo con **...**
+5. Elegir dominio destino (o "+ Nuevo dominio...")
+6. Clic en **Procesar Libro**
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Corregir tests e2e en `e2e_tests.cc` (`callTemplates`, `RJ_Version` no declarados) |
+| MEDIA | Regenerar ZIP con Build-Setup.ps1 |
+| BAJA | Probar "Procesar Libro" en producción con un libro real |
+
+---
