@@ -739,13 +739,16 @@ def process_book(
     on_progress: callable = None
 ) -> Dict[str, Any]:
     """
-    Process a PDF book and extract knowledge entities to the ontology.
+    Process a document and extract knowledge entities to the ontology.
+    
+    Supported formats: PDF, DOCX, PPTX, XLSX, EPUB, HTML, TXT, MD
+    Uses MarkItDown as primary extractor (offline, no API required).
     
     Args:
-        file_path: Path to the PDF file
+        file_path: Path to the document file
         domain_id: Target domain ID (e.g., 'excel', 'econometrics')
         config_manager: ConfigManager instance for AI profile access
-        max_pages: Maximum pages to process (None = all)
+        max_pages: Maximum pages to process (None = all, only applies to PDF)
         chunk_size: Characters per chunk for LLM processing
         on_progress: Callback function(current, total, message)
         
@@ -759,8 +762,16 @@ def process_book(
     if not os.path.isfile(file_path):
         return {"status": "error", "error": f"File not found: {file_path}"}
     
-    if not file_path.lower().endswith('.pdf'):
-        return {"status": "error", "error": "Only PDF files are supported"}
+    SUPPORTED_EXTENSIONS = {
+        '.pdf', '.docx', '.pptx', '.xlsx', '.xls', '.epub',
+        '.html', '.htm', '.txt', '.md', '.csv', '.xml'
+    }
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext not in SUPPORTED_EXTENSIONS:
+        return {
+            "status": "error",
+            "error": f"Format '{ext}' not supported. Use: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
+        }
     
     # Get domain info
     manager = get_manager()
@@ -787,14 +798,14 @@ def process_book(
         with open(graph_path, 'w', encoding='utf-8') as f:
             pass  # Empty file
     
-    # Step 1: Extract text from PDF
+    # Step 1: Extract text from document
     if on_progress:
-        on_progress(0, 100, "Extracting text from PDF...")
+        on_progress(0, 100, f"Extracting text from {os.path.splitext(file_path)[1].upper()} file...")
     
     try:
-        text_chunks = _extract_pdf_text(file_path, max_pages, chunk_size)
+        text_chunks = _extract_document_text(file_path, max_pages, chunk_size)
     except Exception as e:
-        return {"status": "error", "error": f"PDF extraction failed: {e}"}
+        return {"status": "error", "error": f"Text extraction failed: {e}"}
     
     if not text_chunks:
         return {"status": "error", "error": "No text extracted from PDF"}
@@ -906,6 +917,59 @@ def _find_domain_by_name(name: str) -> Optional[str]:
             return domain.id
     
     return None
+
+
+def _extract_document_text(file_path: str, max_pages: int = None, chunk_size: int = 4000) -> List[str]:
+    """
+    Extract text from any supported document format using MarkItDown.
+    Falls back to PyMuPDF for PDF if MarkItDown is unavailable.
+    Supports: PDF, DOCX, PPTX, XLSX, EPUB, HTML, TXT, MD and more.
+    """
+    ext = os.path.splitext(file_path)[1].lower()
+    
+    # Try MarkItDown first (supports 15+ formats offline)
+    try:
+        from markitdown import MarkItDown
+        md = MarkItDown(enable_plugins=False)
+        result = md.convert(file_path)
+        full_text = result.markdown.strip()
+        if full_text:
+            return _split_into_chunks(full_text, chunk_size)
+    except ImportError:
+        pass  # Fall through to per-format fallbacks
+    except Exception as e:
+        print(f"[Ontology] MarkItDown failed for {os.path.basename(file_path)}: {e}")
+    
+    # Fallback for PDF: PyMuPDF (page-by-page)
+    if ext == '.pdf':
+        return _extract_pdf_text(file_path, max_pages, chunk_size)
+    
+    # Fallback for plain text formats
+    if ext in {'.txt', '.md', '.csv', '.xml', '.html', '.htm'}:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            return _split_into_chunks(f.read(), chunk_size)
+    
+    raise ValueError(
+        f"Cannot extract text from '{ext}'. "
+        "Install MarkItDown: pip install 'markitdown[pdf,docx,pptx,xlsx,xls]' ebooklib"
+    )
+
+
+def _split_into_chunks(full_text: str, chunk_size: int = 4000) -> List[str]:
+    """Split text into chunks at paragraph boundaries."""
+    chunks = []
+    current_chunk = ""
+    paragraphs = full_text.split("\n\n")
+    for para in paragraphs:
+        if len(current_chunk) + len(para) < chunk_size:
+            current_chunk += para + "\n\n"
+        else:
+            if current_chunk.strip():
+                chunks.append(current_chunk.strip())
+            current_chunk = para + "\n\n"
+    if current_chunk.strip():
+        chunks.append(current_chunk.strip())
+    return chunks
 
 
 def _extract_pdf_text(file_path: str, max_pages: int = None, chunk_size: int = 4000) -> List[str]:

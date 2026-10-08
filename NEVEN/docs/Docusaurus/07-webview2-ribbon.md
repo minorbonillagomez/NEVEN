@@ -28,6 +28,18 @@ El viewer WebView2 usa un fondo grafito (#2D2D2D) por defecto, proporcionando un
 | `=NEVEN.v(R.Map(...))` | Mapa interactivo Leaflet |
 | `=NEVEN.editor()` | Editor de presentaciones Impress.js |
 
+### Gráficos embebidos en hoja (Shapes)
+
+A diferencia del viewer flotante, estas funciones insertan el gráfico directamente en la hoja de Excel como una imagen Shape:
+
+| Fórmula | Motor | Descripción |
+|:---|:---|:---|
+| `=NEVEN.chart.r(rango, tipo, nombre, ancho, alto)` | R | Gráfico R base incrustado |
+| `=NEVEN.chart.p(rango, tipo, nombre, ancho, alto)` | Python | Gráfico matplotlib incrustado |
+| `=NEVEN.chart.j(rango, tipo, nombre, ancho, alto)` | Julia | Gráfico Julia incrustado |
+
+**Tipos de gráfico:** 1=Líneas, 2=Barras, 3=Scatter, 4=Histograma, 5=Pie, 6=BoxPlot, 7=Heatmap
+
 ### Seguridad del viewer
 
 El filtro de navegacion permite solo contenido confiable:
@@ -78,8 +90,8 @@ La pestaña **NEVEN** en la cinta de Excel proporciona acceso directo a todas la
 | | Iniciar Servidor | ServerConnection | Inicia servidor HTTP puerto 5555 |
 | | Detener Servidor | RecordStop | Detiene servidor HTTP puerto 5555 |
 | | Presentaciones | SlideshowFromBeginning | Editor Impress.js |
-| **Ayuda** | Documentacion | Help | Abre documentacion NEVEN |
-| | Acerca de | Info | Información del proyecto |
+| **Ayuda** | Documentacion | Help | Abre documentacion NEVEN (17 capitulos) |
+| | Acerca de | Info | Muestra mensaje breve → ver Tab Ayuda en NEVEN Studio |
 
 ### Botón "Iniciar Servidor"
 

@@ -5,10 +5,11 @@
 .DESCRIPTION
     Este script es la fuente de verdad para construir el ZIP del instalador.
     Debe ejecutarse cada vez que se modifiquen archivos en:
-      - NEVEN/TaskPane/   (servidor HTTP, RAG engine, taskpane HTML/JS)
-      - NEVEN/docs/       (documentacion, RAG_GUIDE.md)
-      - NEVEN/libreria/   (funciones R, Julia, Python)
-      - NEVEN/startup/    (scripts de inicio)
+      - NEVEN/TaskPane/        (servidor HTTP, RAG engine, taskpane HTML/JS)
+      - NEVEN/docs/            (documentacion, RAG_GUIDE.md, neven-docs.html)
+      - NEVEN/docs/Docusaurus/ (capitulos .md fuente)
+      - NEVEN/libreria/        (funciones R, Julia, Python)
+      - NEVEN/startup/         (scripts de inicio)
 
     La carpeta Dist/ esta en .gitignore. Este script la mantiene sincronizada
     con los archivos trackeados en git antes de empacar el ZIP.
@@ -94,6 +95,9 @@ if (-not $SkipSync) {
     # -- docs (documentacion trackeada en git) --
     Sync-File (Join-Path $repoRoot 'docs\RAG_GUIDE.md')             (Join-Path $distDir 'docs\RAG_GUIDE.md')
     Sync-File (Join-Path $repoRoot 'docs\neven-docs.html')          (Join-Path $distDir 'docs\neven-docs.html')
+
+    # -- Docusaurus markdown sources (para regenerar HTML si se desea) --
+    Sync-Dir  (Join-Path $repoRoot 'docs\Docusaurus')               (Join-Path $distDir 'docs\Docusaurus') '*.md'
 
     # -- ontologias (docs/ontologia/) --
     Sync-Dir  (Join-Path $repoRoot 'docs\ontologia')                (Join-Path $distDir 'docs\ontologia')
