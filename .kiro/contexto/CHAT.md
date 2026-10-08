@@ -3043,3 +3043,52 @@ Los 8 tests de `e2e_tests.cc` verifican el pipeline sin necesitar Excel, R ni Ju
 | BAJA | Probar "Procesar Libro" con un libro real |
 
 ---
+
+---
+
+### Sesión 2026-08-22 (~noche) — NevenX.P agregado a tests e2e
+
+## Logro
+
+El usuario señaló que `NevenX.P` (dispatcher Python) estaba ausente en los tests e2e a pesar de existir en `funcTemplates`. Se corrigió.
+
+## Causa raíz de la omisión
+
+Los tests fueron escritos en el contexto original donde Python era secundario. Al reescribir los tests de `callTemplates` en la sesión anterior, solo se consideraron R y Julia por inercia histórica, sin verificar si Python tenía su propio dispatcher registrado. `NevenX.P` lleva en `funcTemplates` desde que Python se integró completamente.
+
+## Cambio aplicado
+
+En `e2e_tests.cc`, los dos tests de dispatchers ahora verifican los tres motores:
+
+```cpp
+// ANTES
+bool found_nevenx_r = false, found_nevenx_j = false;
+// solo buscaba NevenX.R y NevenX.J
+
+// DESPUÉS  
+bool found_r = false, found_j = false, found_p = false;
+// busca NevenX.R, NevenX.J y NevenX.P
+```
+
+Resultado: **8/8 tests pasando** incluyendo verificación de NevenX.P.
+
+## Archivo modificado
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/tests/e2e_tests.cc` | +NevenX.P en CallTemplatesHaveNevenCategory y CallTemplatesUseNevenPrefix |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `a89fb91` | fix(tests): add NevenX.P to e2e dispatcher tests |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Probar "Procesar Libro" con un libro real en producción |
+
+---
