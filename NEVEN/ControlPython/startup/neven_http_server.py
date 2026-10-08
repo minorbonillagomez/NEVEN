@@ -1077,6 +1077,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
         elif path == 'api/rag/delete':
             self._handle_rag_delete(body)
         # ══════════════════════════════════════════════════════════════════════
+        # Ontology — Book Processing
+        # ══════════════════════════════════════════════════════════════════════
+        elif path == 'api/ontology/process-book':
+            self._handle_ontology_process_book(body)
+        # ══════════════════════════════════════════════════════════════════════
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
 
@@ -3052,6 +3057,39 @@ else:
             self._send_error_json("Tiempo agotado esperando selección de archivo")
         except Exception as e:
             self._send_error_json(f"Error al abrir diálogo: {e}")
+
+    def _handle_ontology_process_book(self, body: dict):
+        """POST /api/ontology/process-book — Process a document and extract knowledge to ontology."""
+        file_path   = body.get("file_path", "").strip()
+        domain_id   = body.get("domain_id", "").strip()
+        max_pages   = body.get("max_pages")   # None = all
+        chunk_size  = int(body.get("chunk_size", 4000))
+
+        if not file_path:
+            self._send_error_json("Missing 'file_path'", 400)
+            return
+        if not domain_id:
+            self._send_error_json("Missing 'domain_id'", 400)
+            return
+        if not os.path.isfile(file_path):
+            self._send_error_json(f"File not found: {file_path}", 404)
+            return
+
+        try:
+            from ontology_manager import process_book
+            from config_manager import ConfigManager
+            config_mgr = ConfigManager()
+
+            result = process_book(
+                file_path=file_path,
+                domain_id=domain_id,
+                config_manager=config_mgr,
+                max_pages=int(max_pages) if max_pages else None,
+                chunk_size=chunk_size
+            )
+            self._send_json(result)
+        except Exception as e:
+            self._send_error_json(f"Error processing book: {e}")
 
     def _handle_rag_upload(self, body: dict):
         """POST /api/rag/upload — Upload and index a document file."""

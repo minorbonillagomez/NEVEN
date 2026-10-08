@@ -6518,6 +6518,141 @@ window._renderCreateFunctionBlock = function(jsonStr) {
       });
     }
 
+    // Boton refresh ontología — cargar/recargar dominios
+    var ontologyRefreshBtn = document.getElementById('btn-ontology-refresh');
+
+    async function ontologyLoadDomains() {
+      var listEl   = document.getElementById('ontology-domains-list');
+      var selectEl = document.getElementById('ontology-target-domain');
+      if (listEl) listEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">Cargando...</div>';
+      try {
+        var resp = await fetch(API + '/api/ontology/domains');
+        var data = await resp.json();
+        var domains = data.domains || [];
+
+        // Actualizar lista visual
+        if (listEl) {
+          if (domains.length === 0) {
+            listEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">Sin dominios configurados</div>';
+          } else {
+            listEl.innerHTML = domains.map(function(d) {
+              return '<div style="padding:4px 8px;font-size:10px;background:var(--bg-tertiary);border-radius:3px">' +
+                '<strong>' + d.id + '</strong> — ' + (d.entity_count || 0) + ' entidades' +
+                '</div>';
+            }).join('');
+          }
+        }
+
+        // Actualizar select de destino
+        if (selectEl) {
+          selectEl.innerHTML = '<option value="">Seleccionar dominio...</option>' +
+            domains.map(function(d) {
+              return '<option value="' + d.id + '">' + d.id + ' (' + (d.entity_count || 0) + ' entidades)</option>';
+            }).join('') +
+            '<option value="__new__">+ Nuevo dominio...</option>';
+        }
+      } catch(e) {
+        if (listEl) listEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--error)">Error al cargar dominios</div>';
+      }
+    }
+
+    if (ontologyRefreshBtn) {
+      ontologyRefreshBtn.addEventListener('click', ontologyLoadDomains);
+    }
+
+    // Mostrar/ocultar campo de nuevo dominio según selección
+    var targetDomainSel = document.getElementById('ontology-target-domain');
+    var newDomainRow    = document.getElementById('ontology-new-domain-row');
+    if (targetDomainSel && newDomainRow) {
+      targetDomainSel.addEventListener('change', function() {
+        newDomainRow.style.display = this.value === '__new__' ? 'block' : 'none';
+      });
+    }
+
+    // Boton Procesar Libro (ontología)
+    var processBookBtn = document.getElementById('btn-ontology-process');
+    if (processBookBtn) {
+      processBookBtn.addEventListener('click', async function() {
+        var filePath   = (document.getElementById('ontology-file-path').value || '').trim();
+        var domainSel  = document.getElementById('ontology-target-domain');
+        var domainId   = domainSel ? domainSel.value.trim() : '';
+        var newDomain  = (document.getElementById('ontology-new-domain-name').value || '').trim();
+        var maxPages   = document.getElementById('ontology-max-pages').value || null;
+        var chunkSize  = parseInt(document.getElementById('ontology-chunk-size').value) || 4000;
+        var progressEl = document.getElementById('ontology-progress');
+        var progressBar = document.getElementById('ontology-progress-bar');
+        var progressTxt = document.getElementById('ontology-progress-text');
+        var progressPct = document.getElementById('ontology-progress-percent');
+        var resultEl   = document.getElementById('ontology-result');
+
+        // Usar nuevo dominio si se seleccionó "nuevo"
+        if (domainId === '__new__' && newDomain) domainId = newDomain;
+
+        if (!filePath) { showToast('Selecciona un archivo primero'); return; }
+        if (!domainId) { showToast('Selecciona un dominio destino'); return; }
+
+        // Mostrar progreso
+        processBookBtn.disabled = true;
+        processBookBtn.textContent = 'Procesando...';
+        if (progressEl) progressEl.style.display = 'block';
+        if (resultEl)   resultEl.style.display = 'none';
+        if (progressBar) progressBar.style.width = '10%';
+        if (progressTxt) progressTxt.textContent = 'Enviando al servidor...';
+        if (progressPct) progressPct.textContent = '10%';
+
+        try {
+          var resp = await fetch(API + '/api/ontology/process-book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_path:  filePath,
+              domain_id:  domainId,
+              max_pages:  maxPages ? parseInt(maxPages) : null,
+              chunk_size: chunkSize
+            })
+          });
+
+          if (progressBar) progressBar.style.width = '90%';
+          if (progressPct) progressPct.textContent = '90%';
+
+          var data = await resp.json();
+
+          if (progressBar) progressBar.style.width = '100%';
+          if (progressPct) progressPct.textContent = '100%';
+
+          if (resultEl) {
+            resultEl.style.display = 'block';
+            if (data.status === 'ok' || data.status === 'success') {
+              resultEl.style.background = 'rgba(0,200,100,0.1)';
+              resultEl.style.color = 'var(--success, #4caf50)';
+              resultEl.innerHTML =
+                '<strong>Procesado correctamente</strong><br>' +
+                'Entidades creadas: ' + (data.entities_created || 0) + '<br>' +
+                'Relaciones creadas: ' + (data.relations_created || 0) + '<br>' +
+                'Chunks procesados: ' + (data.chunks_processed || 0);
+              showToast('Libro procesado: ' + (data.entities_created || 0) + ' entidades');
+            } else {
+              resultEl.style.background = 'rgba(255,80,80,0.1)';
+              resultEl.style.color = 'var(--error, #f44336)';
+              resultEl.textContent = 'Error: ' + (data.error || data.message || 'Error desconocido');
+              showToast('Error al procesar el libro');
+            }
+          }
+        } catch (e) {
+          if (resultEl) {
+            resultEl.style.display = 'block';
+            resultEl.style.background = 'rgba(255,80,80,0.1)';
+            resultEl.style.color = 'var(--error, #f44336)';
+            resultEl.textContent = 'Error de conexión: ' + e.message;
+          }
+          showToast('Error al conectar con el servidor');
+        } finally {
+          processBookBtn.disabled = false;
+          processBookBtn.textContent = 'Procesar Libro';
+        }
+      });
+    }
+
     // Boton subir texto
     var uploadTextBtn = document.getElementById('rag-upload-text-btn');
     if (uploadTextBtn) {
