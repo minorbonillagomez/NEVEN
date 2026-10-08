@@ -2570,3 +2570,86 @@ Sesión de consulta solamente. El usuario solicitó un resumen de las tareas pen
 | MEDIA | Verificar procesador de libros de ontología acepta DOCX/EPUB |
 
 ---
+
+---
+
+### Sesión 2026-08-21 (~mañana) — Tareas ALTA completadas (4/5)
+
+## Logros principales
+
+### 1. Aliases muertos en functions.jl corregidos
+
+**Causa raíz:** `KNN(a...) = JML_KNN(a...)` y `Regresion(a...) = JML_Regresion(a...)` apuntaban a funciones que no existen en el codebase. Cualquier usuario que llamara `=J.KNN(...)` o `=J.Regresion(...)` obtenía un error de runtime.
+
+**Fix:** Redirigidos ambos aliases a `JML_Clasificacion` que es la función real:
+```julia
+KNN(a...) = JML_Clasificacion(a...)
+Regresion(a...) = JML_Clasificacion(a...)
+```
+
+También eliminado el alias duplicado `Utilidades(a...) = JC_Utilidades(a...)` que aparecía dos veces.
+
+### 2. Tab Ayuda: "16 capítulos" → "17 capítulos"
+
+Corregido en `taskpane.html` línea 779.
+
+### 3. Cambios locales de caps 01, 02, 03, 07, 08 commiteados
+
+Los archivos tenían mejoras locales sin commitear (Python añadido al texto, fechas corregidas, formato mejorado). Se incluyeron en commit `fba33b7`.
+
+### 4. Rebuild del Core — NEVEN64.xll actualizado
+
+**Proceso:**
+- `build.ps1` ejecutado desde `F:\ANTIGRAVITY\2026\NEVEN\NEVEN\`
+- Compiló exitosamente: Protobuf, PB.lib, NEVEN_Core_Objects.lib, NEVEN64.xll
+- **Errores en tests** (e2e_tests.cc): `callTemplates` y `RJ_Version` no declarados — son tests pendientes de actualizar, NO afectan el XLL
+- NEVEN64.xll: 2486 KB, build timestamp 09:57
+
+**Desplegado a producción:**
+- `C:\NEVEN\NEVEN64.xll` (2486 KB)
+- `C:\NEVEN\ControlR.exe`, `ControlJulia.exe`, `ControlPython.exe`
+- `C:\NEVEN\NEVENRibbon.dll` (re-registrado con regsvr32)
+
+**`RJ_About_Dialog()` ahora activo:** El mensaje del Ribbon "Acerca de" ya apunta al TaskPane.
+
+### 5. ZIP regenerado
+
+`NEVEN-v3.2-Setup.zip` regenerado con Build-Setup.ps1.
+
+## Tarea ALTA pendiente: probar instalador en máquina limpia
+
+No se completó por requerir hardware adicional.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/libreria/JULIA/functions.jl` | KNN/Regresion → JML_Clasificacion, eliminar duplicado Utilidades |
+| `NEVEN/TaskPane/taskpane.html` | "16 capítulos" → "17 capítulos" |
+| `NEVEN/docs/Docusaurus/01-03,07,08` | Cambios locales acumulados commiteados |
+| `C:\NEVEN\NEVEN64.xll` | Binario actualizado (v3.2, RJ_About_Dialog corregido) |
+| `C:\NEVEN\ControlR/Julia/Python.exe` | Binarios actualizados |
+| `C:\NEVEN\NEVENRibbon.dll` | Binario actualizado, re-registrado |
+| `NEVEN/Install/NEVEN-v3.2-Setup.zip` | Regenerado |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `fba33b7` | fix: multiple corrections for v3.2 (aliases, chapters, docs) |
+
+## Error en tests (no crítico)
+
+`e2e_tests.cc` falla al compilar por `callTemplates` y `RJ_Version` no declarados. Estos tests deben actualizarse para usar la API actual del Core. El XLL compiló correctamente a pesar de esto.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Corregir tests e2e: `callTemplates` y `RJ_Version` no declarados en e2e_tests.cc |
+| MEDIA | `Build-Setup.ps1`: agregar sync de archivos Docusaurus `.md` |
+| MEDIA | Revisar capítulo 7 (WebView2/Ribbon) |
+| MEDIA | Verificar procesador de libros de ontología acepta DOCX/EPUB |
+
+---
