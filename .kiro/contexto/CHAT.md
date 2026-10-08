@@ -2661,3 +2661,70 @@ No se completó por requerir hardware adicional.
 El resumen completo de esta sesión ya fue documentado en la entrada anterior (Sesión 2026-08-21 ~mañana). No hubo cambios técnicos adicionales después de ese punto.
 
 ---
+
+---
+
+### Sesión 2026-08-21 (~tarde) — Tareas MEDIA completadas (3/3)
+
+## Logros principales
+
+### 1. Build-Setup.ps1 — sync de archivos Docusaurus .md
+
+Añadida línea en la sección de docs:
+```powershell
+Sync-Dir (Join-Path $repoRoot 'docs\Docusaurus') (Join-Path $distDir 'docs\Docusaurus') '*.md'
+```
+Ahora los 17 capítulos `.md` se incluyen en el ZIP del instalador, permitiendo regenerar el HTML desde el instalador si se desea.
+
+### 2. Capítulo 7 (WebView2/Ribbon) actualizado
+
+**Cambios:**
+- Nueva tabla "Gráficos embebidos en hoja (Shapes)" documentando `NEVEN.chart.r()`, `NEVEN.chart.p()`, `NEVEN.chart.j()` — la diferencia con el viewer flotante
+- Botón "Acerca de" en Ribbon: actualizada descripción a "Muestra mensaje breve → ver Tab Ayuda en NEVEN Studio"
+- Documentación: "Abre documentacion NEVEN (17 capitulos)"
+
+### 3. Procesador de libros de ontología — soporte multi-formato
+
+**Causa raíz:** `process_book()` en `ontology_manager.py` tenía una validación hardcodeada que solo aceptaba PDF (línea 764):
+```python
+if not file_path.lower().endswith('.pdf'):
+    return {"status": "error", "error": "Only PDF files are supported"}
+```
+
+**Fix:**
+- Reemplazada la validación por lista de extensiones soportadas: `{'.pdf', '.docx', '.pptx', '.xlsx', '.xls', '.epub', '.html', '.htm', '.txt', '.md', '.csv', '.xml'}`
+- Nueva función `_extract_document_text()` que usa MarkItDown como extractor primario (soporta todos los formatos offline), con fallback a PyMuPDF para PDF
+- Nueva función `_split_into_chunks()` extraída del código de `_extract_pdf_text()` para reutilización
+- Label de la UI actualizado: "Archivo PDF" → "Archivo (PDF, DOCX, EPUB, TXT, MD)"
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/Install/Build-Setup.ps1` | +sync de Docusaurus .md sources |
+| `NEVEN/docs/Docusaurus/07-webview2-ribbon.md` | +tabla NEVEN.chart.*, actualizar Acerca de |
+| `NEVEN/ControlPython/startup/ontology_manager.py` | Soporte multi-formato en process_book() |
+| `NEVEN/TaskPane/taskpane.html` | "Archivo PDF" → "Archivo (PDF, DOCX, EPUB...)" |
+| `NEVEN/docs/neven-docs.html` | Regenerado (272.1 KB) |
+| `NEVEN/Install/Dist/taskpane/taskpane.html` | Sincronizado |
+| `NEVEN/Install/Dist/docs/neven-docs.html` | Sincronizado |
+| `C:\NEVEN\startup\ontology_manager.py` | Sincronizado a producción |
+| `C:\NEVEN\TaskPane\taskpane.html` | Sincronizado a producción |
+| `C:\NEVEN\docs\neven-docs.html` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `58e962e` | feat: MEDIA priority tasks completed |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| **ALTA** | Corregir tests e2e: `callTemplates` y `RJ_Version` no declarados en `e2e_tests.cc` |
+| MEDIA | Regenerar ZIP con Build-Setup.ps1 (incluye ahora los .md de Docusaurus) |
+| BAJA | Agregar endpoint `POST /api/ontology/process-book` en neven_http_server.py para que el botón "Procesar Libro" del TaskPane funcione end-to-end |
+
+---
