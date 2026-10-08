@@ -2728,3 +2728,11 @@ if not file_path.lower().endswith('.pdf'):
 | BAJA | Agregar endpoint `POST /api/ontology/process-book` en neven_http_server.py para que el botón "Procesar Libro" del TaskPane funcione end-to-end |
 
 ---
+
+---
+
+### Sesión 2026-08-21 (~cierre) — Sin cambios adicionales
+
+El resumen completo de esta sesión ya fue documentado en la entrada anterior (Sesión 2026-08-21 ~tarde). No hubo cambios técnicos adicionales después de ese punto.
+
+---
