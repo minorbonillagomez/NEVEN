@@ -3009,3 +3009,37 @@ Build-Setup.ps1 ahora incluye los 17 capítulos `.md` de Docusaurus (nuevo desde
 El resumen completo de esta sesión ya fue documentado en la entrada anterior (Sesión 2026-08-22 ~mañana). No hubo cambios técnicos adicionales después de ese punto.
 
 ---
+
+---
+
+### Sesión 2026-08-22 (~tarde) — Consulta sobre tests e2e
+
+## Sin cambios técnicos
+
+Sesión de consulta. El usuario preguntó en qué consisten los tests e2e.
+
+## Resumen explicado
+
+Los 8 tests de `e2e_tests.cc` verifican el pipeline sin necesitar Excel, R ni Julia activos:
+
+| Test | Qué verifica |
+|------|-------------|
+| FuncTemplatesHaveNevenCategory | Todas las funciones usan categoría "NEVEN" en el Asistente de Funciones |
+| CallTemplatesHaveNevenCategory | NevenX.R y NevenX.J existen con categoría "NEVEN" |
+| FuncTemplatesUseNevenPrefix | Nombres visibles empiezan con NEVEN., NevenX. o RJ_ |
+| CallTemplatesUseNevenPrefix | NevenX.R y NevenX.J tienen nombres correctos |
+| ConfigServiceUsesNevenKey | ConfigService lee desde clave "NEVEN" (no la vieja "RJ2XCL") |
+| SandboxBlocksInclude | include("malicious.jl") es rechazado por el sandbox |
+| SandboxAllowsSqrt | sqrt(144) es permitido por el sandbox |
+| VersionContainsNeven | RJ_Version() devuelve string con "NEVEN" |
+
+**Propósito principal:** detectar regresiones en el renaming RJ2XCL→NEVEN y en las reglas de seguridad.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar instalador en máquina limpia |
+| BAJA | Probar "Procesar Libro" con un libro real |
+
+---
