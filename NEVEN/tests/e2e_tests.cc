@@ -24,22 +24,27 @@ TEST(E2ETest, FuncTemplatesHaveNevenCategory) {
 }
 
 TEST(E2ETest, CallTemplatesHaveNevenCategory) {
-    // NevenX.R and NevenX.J (replacements for old callTemplates) should use "NEVEN" category
-    bool found_nevenx_r = false, found_nevenx_j = false;
+    // NevenX.R, NevenX.J and NevenX.P should exist in funcTemplates with category "NEVEN"
+    bool found_r = false, found_j = false, found_p = false;
     for (int i = 0; funcTemplates[i][0] != 0; i++) {
         std::wstring name(funcTemplates[i][2]);
         std::wstring category(funcTemplates[i][5]);
         if (name == L"NevenX.R") {
             EXPECT_EQ(category, L"NEVEN") << "NevenX.R has wrong category";
-            found_nevenx_r = true;
+            found_r = true;
         }
         if (name == L"NevenX.J") {
             EXPECT_EQ(category, L"NEVEN") << "NevenX.J has wrong category";
-            found_nevenx_j = true;
+            found_j = true;
+        }
+        if (name == L"NevenX.P") {
+            EXPECT_EQ(category, L"NEVEN") << "NevenX.P has wrong category";
+            found_p = true;
         }
     }
-    EXPECT_TRUE(found_nevenx_r) << "NevenX.R not found in funcTemplates";
-    EXPECT_TRUE(found_nevenx_j) << "NevenX.J not found in funcTemplates";
+    EXPECT_TRUE(found_r) << "NevenX.R not found in funcTemplates";
+    EXPECT_TRUE(found_j) << "NevenX.J not found in funcTemplates";
+    EXPECT_TRUE(found_p) << "NevenX.P not found in funcTemplates";
 }
 
 TEST(E2ETest, FuncTemplatesUseNevenPrefix) {
@@ -56,15 +61,17 @@ TEST(E2ETest, FuncTemplatesUseNevenPrefix) {
 }
 
 TEST(E2ETest, CallTemplatesUseNevenPrefix) {
-    // NevenX.R and NevenX.J should exist with correct names in funcTemplates
-    bool found_nevenx_r = false, found_nevenx_j = false;
+    // NevenX.R, NevenX.J and NevenX.P should exist with correct names in funcTemplates
+    bool found_r = false, found_j = false, found_p = false;
     for (int i = 0; funcTemplates[i][0] != 0; i++) {
         std::wstring name(funcTemplates[i][2]);
-        if (name == L"NevenX.R") found_nevenx_r = true;
-        if (name == L"NevenX.J") found_nevenx_j = true;
+        if (name == L"NevenX.R") found_r = true;
+        if (name == L"NevenX.J") found_j = true;
+        if (name == L"NevenX.P") found_p = true;
     }
-    EXPECT_TRUE(found_nevenx_r) << "NevenX.R not found in funcTemplates";
-    EXPECT_TRUE(found_nevenx_j) << "NevenX.J not found in funcTemplates";
+    EXPECT_TRUE(found_r) << "NevenX.R not found in funcTemplates";
+    EXPECT_TRUE(found_j) << "NevenX.J not found in funcTemplates";
+    EXPECT_TRUE(found_p) << "NevenX.P not found in funcTemplates";
 }
 
 TEST(E2ETest, ConfigServiceUsesNevenKey) {
