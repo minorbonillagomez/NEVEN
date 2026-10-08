@@ -921,13 +921,22 @@ def _find_domain_by_name(name: str) -> Optional[str]:
 
 def _extract_document_text(file_path: str, max_pages: int = None, chunk_size: int = 4000) -> List[str]:
     """
-    Extract text from any supported document format using MarkItDown.
-    Falls back to PyMuPDF for PDF if MarkItDown is unavailable.
-    Supports: PDF, DOCX, PPTX, XLSX, EPUB, HTML, TXT, MD and more.
+    Extract text from any supported document format.
+
+    Strategy:
+    - PDF + max_pages → PyMuPDF (stops at page N, efficient for large books)
+    - All other cases  → MarkItDown (handles PDF, DOCX, EPUB, PPTX, XLSX, HTML, TXT, MD…)
+    - Plain text fallback if MarkItDown is not installed
+
+    Supports: PDF, DOCX, PPTX, XLSX, XLS, EPUB, HTML, TXT, MD and more.
     """
     ext = os.path.splitext(file_path)[1].lower()
-    
-    # Try MarkItDown first (supports 15+ formats offline)
+
+    # PDF with page limit: use PyMuPDF — converts only the requested pages (efficient)
+    if ext == '.pdf' and max_pages:
+        return _extract_pdf_text(file_path, max_pages, chunk_size)
+
+    # All other cases: use MarkItDown (supports 15+ formats offline, including full PDF)
     try:
         from markitdown import MarkItDown
         md = MarkItDown(enable_plugins=False)
@@ -936,19 +945,15 @@ def _extract_document_text(file_path: str, max_pages: int = None, chunk_size: in
         if full_text:
             return _split_into_chunks(full_text, chunk_size)
     except ImportError:
-        pass  # Fall through to per-format fallbacks
+        pass  # MarkItDown not installed — fall through to plain-text fallback
     except Exception as e:
         print(f"[Ontology] MarkItDown failed for {os.path.basename(file_path)}: {e}")
-    
-    # Fallback for PDF: PyMuPDF (page-by-page)
-    if ext == '.pdf':
-        return _extract_pdf_text(file_path, max_pages, chunk_size)
-    
-    # Fallback for plain text formats
+
+    # Last-resort fallback for plain text formats when MarkItDown is unavailable
     if ext in {'.txt', '.md', '.csv', '.xml', '.html', '.htm'}:
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             return _split_into_chunks(f.read(), chunk_size)
-    
+
     raise ValueError(
         f"Cannot extract text from '{ext}'. "
         "Install MarkItDown: pip install 'markitdown[pdf,docx,pptx,xlsx,xls]' ebooklib"
