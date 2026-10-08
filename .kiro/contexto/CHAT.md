@@ -2861,3 +2861,38 @@ Esto elimina la redundancia y aclara el propósito de PyMuPDF: únicamente para 
 | BAJA | Probar "Procesar Libro" con un libro real |
 
 ---
+
+---
+
+### Sesión 2026-08-21 (~noche-3) — Refactor _extract_document_text aplicado
+
+## Logro
+
+Aplicado el refactor discutido en la sesión anterior. PyMuPDF y MarkItDown ahora tienen roles claros y no redundantes.
+
+## Cambio
+
+```
+ANTES (redundante):
+  MarkItDown primero → si falla → PyMuPDF como fallback general para PDF
+
+DESPUÉS (criterio claro):
+  PDF + max_pages  → PyMuPDF  (para en página N, eficiente)
+  Todo lo demás    → MarkItDown (incluye PDF sin límite, DOCX, EPUB, etc.)
+  Fallback texto   → lectura directa (si MarkItDown no instalado)
+```
+
+## Archivo modificado
+
+| Archivo | Cambio |
+|---------|--------|
+| `NEVEN/ControlPython/startup/ontology_manager.py` | Refactor `_extract_document_text()` |
+| `C:\NEVEN\startup\ontology_manager.py` | Sincronizado a producción |
+
+## Commit
+
+| Hash | Descripción |
+|------|-------------|
+| `c910d18` | refactor(ontology): clarify PyMuPDF vs MarkItDown usage |
+
+---
