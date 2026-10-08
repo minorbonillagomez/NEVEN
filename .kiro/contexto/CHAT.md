@@ -3001,3 +3001,11 @@ Build-Setup.ps1 ahora incluye los 17 capítulos `.md` de Docusaurus (nuevo desde
 | BAJA | Probar "Procesar Libro" con un libro real en producción |
 
 ---
+
+---
+
+### Sesión 2026-08-22 (~cierre) — Sin cambios adicionales
+
+El resumen completo de esta sesión ya fue documentado en la entrada anterior (Sesión 2026-08-22 ~mañana). No hubo cambios técnicos adicionales después de ese punto.
+
+---
