@@ -143,6 +143,9 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Chart_J(
   LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
   LPXLOPER12 width, LPXLOPER12 height);
 
+// Version and about
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Version();
+
 
 #define BCALL(num) \
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_CallLanguage_ ## num ( \

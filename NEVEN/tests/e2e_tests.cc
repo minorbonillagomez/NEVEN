@@ -24,30 +24,47 @@ TEST(E2ETest, FuncTemplatesHaveNevenCategory) {
 }
 
 TEST(E2ETest, CallTemplatesHaveNevenCategory) {
-    // callTemplates should use "NEVEN" as category
-    for (int i = 0; i < 2; i++) {
-        std::wstring category(callTemplates[i][5]);
-        EXPECT_EQ(category, L"NEVEN")
-            << "callTemplates[" << i << "] has wrong category";
+    // NevenX.R and NevenX.J (replacements for old callTemplates) should use "NEVEN" category
+    bool found_nevenx_r = false, found_nevenx_j = false;
+    for (int i = 0; funcTemplates[i][0] != 0; i++) {
+        std::wstring name(funcTemplates[i][2]);
+        std::wstring category(funcTemplates[i][5]);
+        if (name == L"NevenX.R") {
+            EXPECT_EQ(category, L"NEVEN") << "NevenX.R has wrong category";
+            found_nevenx_r = true;
+        }
+        if (name == L"NevenX.J") {
+            EXPECT_EQ(category, L"NEVEN") << "NevenX.J has wrong category";
+            found_nevenx_j = true;
+        }
     }
+    EXPECT_TRUE(found_nevenx_r) << "NevenX.R not found in funcTemplates";
+    EXPECT_TRUE(found_nevenx_j) << "NevenX.J not found in funcTemplates";
 }
 
 TEST(E2ETest, FuncTemplatesUseNevenPrefix) {
-    // All user-visible function names (column 3) should start with "NEVEN." or "RJ_"
+    // All user-visible function names (column 3) should start with "NEVEN.", "NevenX.", or "RJ_"
     for (int i = 0; funcTemplates[i][0] != 0; i++) {
         std::wstring name(funcTemplates[i][2]);
-        bool is_neven = (name.find(L"NEVEN.") == 0);
-        bool is_internal = (name.find(L"RJ_") == 0);
-        EXPECT_TRUE(is_neven || is_internal)
-            << "funcTemplates[" << i << "] name doesn't start with NEVEN. or RJ_";
+        bool is_neven   = (name.find(L"NEVEN.")  == 0);
+        bool is_nevenx  = (name.find(L"NevenX.") == 0);
+        bool is_internal = (name.find(L"RJ_")    == 0);
+        EXPECT_TRUE(is_neven || is_nevenx || is_internal)
+            << "funcTemplates[" << i << "] name '" << std::string(name.begin(), name.end())
+            << "' doesn't start with NEVEN., NevenX. or RJ_";
     }
 }
 
 TEST(E2ETest, CallTemplatesUseNevenPrefix) {
-    std::wstring call_name(callTemplates[0][2]);
-    std::wstring exec_name(callTemplates[1][2]);
-    EXPECT_EQ(call_name, L"NEVEN.Call");
-    EXPECT_EQ(exec_name, L"NEVEN.Exec");
+    // NevenX.R and NevenX.J should exist with correct names in funcTemplates
+    bool found_nevenx_r = false, found_nevenx_j = false;
+    for (int i = 0; funcTemplates[i][0] != 0; i++) {
+        std::wstring name(funcTemplates[i][2]);
+        if (name == L"NevenX.R") found_nevenx_r = true;
+        if (name == L"NevenX.J") found_nevenx_j = true;
+    }
+    EXPECT_TRUE(found_nevenx_r) << "NevenX.R not found in funcTemplates";
+    EXPECT_TRUE(found_nevenx_j) << "NevenX.J not found in funcTemplates";
 }
 
 TEST(E2ETest, ConfigServiceUsesNevenKey) {
