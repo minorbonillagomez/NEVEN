@@ -836,6 +836,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_ontology_search()
             return
 
+        if path.startswith('api/ontology/books'):
+            # GET /api/ontology/books?domain=econometrics
+            self._handle_ontology_books()
+            return
+
         # ── Ayuda / Diccionario de Funciones NevenX ───────────────────────────
         if path == 'api/ayuda/funciones':
             self._handle_ayuda_funciones()
@@ -2851,6 +2856,45 @@ class NEVENHandler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             self._send_error_json(f"Search error: {e}")
+
+    def _handle_ontology_books(self):
+        """GET /api/ontology/books?domain=econometrics — List processed books for a domain."""
+        from urllib.parse import urlparse, parse_qs
+        query_params = parse_qs(urlparse(self.path).query)
+        
+        domain = query_params.get("domain", [None])[0]
+        
+        try:
+            from ontology_manager import list_processed_books
+            books_raw = list_processed_books(domain_id=domain)
+            
+            # Transform to UI-expected format
+            books = []
+            for b in books_raw:
+                books.append({
+                    "filename": b.get("book_name", "Unknown"),
+                    "domain": b.get("domain", domain or "general"),
+                    "entities": b.get("entity_count", 0),
+                    "pages": None,  # Not tracked yet
+                    "processed_date": None  # Not tracked yet
+                })
+            
+            self._send_json({
+                "status": "ok",
+                "domain": domain,
+                "books": books,
+                "count": len(books)
+            })
+        except ImportError:
+            self._send_json({
+                "status": "ok",
+                "domain": domain,
+                "books": [],
+                "count": 0,
+                "warning": "ontology_manager not available"
+            })
+        except Exception as e:
+            self._send_error_json(f"Books list error: {e}")
 
     def _handle_ayuda_funciones(self):
         """GET /api/ayuda/funciones — Diccionario dinámico de funciones NevenX.
