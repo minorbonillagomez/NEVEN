@@ -4,6 +4,7 @@ const sidebars = {
     'portada',
     'introduccion',
     'instalacion',
+    'inicio-rapido',
     'arquitectura',
     'funciones-julia',
     'funciones-r',
@@ -17,6 +18,11 @@ const sidebars = {
     'neven-studio',
     'ontologias-excel-consultant',
     'rag-ontologia-metaheuristica',
+    'python-ejemplos',
+    'identidad-marca',
+    'metricas-proyecto',
+    'bert-vs-neven',
+    'evolucion-arquitectura',
   ],
 };
 

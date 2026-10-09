@@ -1,16 +1,16 @@
-# Estado del Arte -- NEVEN v2.0
+# Estado del Arte — NEVEN v3.2
 
-**Fecha**: 9 de mayo de 2026
-**Universidad de Costa Rica -- Tesis de Maestria**
+**Fecha**: 19 de agosto de 2026
+**BukloLAB**
 
 ------------------------------------------------------------------------
 
 ## 1. Contexto Academico
 
 ### La Tesis
-- **Titulo**: NEVEN -- Sistema Multilenguaje para la Democratizacion del Analisis de Datos en Microsoft Excel
-- **Autor**: Minor Bonilla Gomez
-- **Programa**: Maestria en Matematica Aplicada, Universidad de Costa Rica
+- **Titulo**: NEVEN — Sistema Multilenguaje para la Democratizacion del Analisis de Datos en Microsoft Excel
+- **Autor**: Minor Bonilla-Gómez
+- **Afiliación**: BukloLAB
 
 ### Problema que Resuelve
 Excel es universal pero estadisticamente limitado. R y Julia son potentes pero requieren programacion. NEVEN cierra esta brecha exponiendo funciones de R y Julia como formulas nativas de Excel, con visualizacion interactiva via WebView2 y notebooks reactivos via Pluto.jl.
@@ -21,15 +21,12 @@ Excel es universal pero estadisticamente limitado. R y Julia son potentes pero r
 | R4XCL (tesis original) | 2023 | R en Excel via BERT, 50+ funciones estadisticas |
 | NEVEN v1.0 | Ene-Mar 2026 | Fork de BERT, R 4.4.1 + Julia 1.12.6 |
 | NEVEN v2.0 | Abr 2026 | WebView2, Pluto.jl, Quarto, Ribbon COM, 125+ funciones |
-| **NEVEN v2.0** | **May 2026** | **Rename, R.Pivot, R.Esquisse, R.D3, R.Dashboard, R.Map, dark viewer, 228 tests** |
-| **NEVEN v2.0** | **May 2026** | **Reorganizacion: Core/, libreria/, Ejemplos/, Build/, neven-config.json limpio** |
-| **NEVEN v2.0** | **May 2026** | **Viewer Snap Layout, =NEVEN.status(), fix SetPointers race condition, investigacion xlfRegister** |
-| **NEVEN v2.0** | **May 2026** | **Zombie Process Killer, Extraer_outputs (TipoOutput universal en 11 funciones), Viewer Professional parcial (💾, PDF/TXT/DOCX, hash)** |
-| **NEVEN v2.0** | **May 2026** | **Security remediation: 36/36 hallazgos cerrados, Console/Electron eliminado, ControlPython reactivado, 357 tests, score 6.0→9.4** |
-| **NEVEN v2.1** | **Jul 2026** | **NEVEN Studio Standalone (sin Excel), Data Lab V1 (18 Studio wrappers, punto-y-clic), AI integration LMStudio, Text Mining con WordCloud y resumen LLM, catálogo UC extensible** |
-| **NEVEN v2.1** | **Jul 2026** | **DataLab: GR_Barras (apilado/múltiple Y/ordenar), selector paletas visual, X opcional GR_Lineas/SeriesTiempo, GR_Burbujas color continuo, GR_Scatter eliminado, fixes parse slots, descarga PNG/SVG gráficos** |
-| **NEVEN v2.2** | **Ago 2026** | **Creador de Presentaciones V2: zoom de contenido (`transform:scale`), offset X/Y del contenido, overlay de propiedades en Preview con glassmorphism, propiedades independientes por slide (propMap selectivo), selector de slide en panel** |
-| **NEVEN v2.3** | **Ago 2026** | **Depuración Fase A: limpieza de 18 hallazgos de código muerto (GCMonitor, RuntimeLoader, AutoLoader eliminados del build; R_Environment/Julia_Environment a legacy/; SandboxVerifier limpiado; RJ_Q en .def; startup.r deduplicado; Extraer_outputs canónica en librería; UT_INSTALACION_LOCAL reescrita con versiones actuales; TestAdd/EigenValues Julia eliminados). 8 funciones econométricas avanzadas: RESET, Davidson-MacKinnon, Newey-West HAC, FGLS, 2SLS/IV, Heckman, VAR, ECM/VECM** |
+| NEVEN v2.1 | Jul 2026 | NEVEN Studio Standalone, Data Lab V1, AI integration |
+| NEVEN v2.2 | Ago 2026 | Creador de Presentaciones V2, Depuración Fase A |
+| NEVEN v2.3 | Ago 2026 | 8 funciones econométricas avanzadas (2SLS, HECKIT, VAR, ECM) |
+| **NEVEN v3.0** | **Ago 2026** | **RAG Engine (DuckDB + fastembed), 12 formatos offline** |
+| **NEVEN v3.1** | **Ago 2026** | **Ontología NEVEN-core, procesador de libros multi-formato** |
+| **NEVEN v3.2** | **Ago 2026** | **342 tests, 200+ UDFs, documentación 17 capítulos, score 9.71/10** |
 
 ------------------------------------------------------------------------
 
@@ -41,8 +38,8 @@ Excel es universal pero estadisticamente limitado. R y Julia son potentes pero r
 |:---|:---|:---|:---|
 | **R** | 4.4.1 | Estadistica, econometria, graficos | ~90 procedimientos en 9 modulos |
 | **Julia** | 1.12.6 | Matematica, ML, optimizacion | ~70 procedimientos en 9 modulos + aliases |
-| **Python** | 3.13 | AI/LLM integration, Quarto | Funciones AI (ai_call, ai_setup, ai_list_prompts) |
-| **Quarto** | 1.9.18 | Reportes profesionales (.qmd --> HTML) | Renderizado via CreateProcess |
+| **Python** | 3.12 | AI/LLM, Data Science, Quarto | Funciones AI, RAG, procesamiento de texto |
+| **Quarto** | 1.9.18 | Reportes profesionales (.qmd → HTML) | Renderizado via CreateProcess |
 
 ### Subsistemas
 
@@ -51,20 +48,14 @@ Excel es universal pero estadisticamente limitado. R y Julia son potentes pero r
 | **WebView2** | Edge Chromium | Visualizacion interactiva (Plotly, D3.js, HTML) |
 | **Pluto.jl** | Julia notebooks | Notebooks reactivos con datos de Excel |
 | **Ribbon COM** | ATL/COM DLL | Pestana nativa en Excel con iconos R/Julia/Quarto |
-| **PostMessage Bridge** | JS <--> C++ | Comunicacion bidireccional WebView2-Excel |
-| **Viewer Snap Layout** | Win32 API | Ajuste automatico Excel (izquierda) + Viewer (derecha) via SetWindowPos + SPI_GETWORKAREA |
-| **Zombie Process Killer** | Win32 CreateProcess | Mata procesos huérfanos (ControlR/Julia/Python) al inicio con taskkill /F /IM + CREATE_NO_WINDOW |
-| **InputSanitizer** | C++17 allowlist | Validacion allowlist para paths de CreateProcess — solo ejecutables conocidos permitidos |
-| **MessageValidator** | C++17 + Protobuf | Validacion de frames Protobuf antes de deserializacion — previene mensajes malformados |
-| **CreadorPresentaciones** | Impress.js | Editor drag-and-drop de presentaciones |
-| **rpivotTable** | R/htmlwidgets | Tablas pivote interactivas drag-and-drop |
-| **Plotly.js** | JavaScript | Explorador de datos con selectores de ejes |
-| **D3.js v7** | JavaScript | Treemap, Sankey, Sunburst, Force Graph |
-| **Leaflet.js** | JavaScript | Mapas interactivos con tiles CartoDB dark |
-| **NEVEN Studio** | Python + HTML | Servidor HTTP standalone (puerto 5555), taskpane web sin Excel |
-| **Data Lab** | Python + JS | Catálogo de funciones punto-y-clic con sidecar JSON convention |
-| **DuckDB** | Python in-memory | Base de datos SQL embebida en Studio para el `dataset` activo |
-| **LMStudio API** | HTTP OpenAI-compatible | Resumen contextual IA en Text Mining (localhost:1234) |
+| **PostMessage Bridge** | JS ↔ C++ | Comunicacion bidireccional WebView2-Excel |
+| **Viewer Snap Layout** | Win32 API | Ajuste automatico Excel (izquierda) + Viewer (derecha) |
+| **RAG Engine** | DuckDB + fastembed | Busqueda semantica en 12 formatos de documentos |
+| **Ontología NEVEN-core** | YAML + SPARQL-like | 300+ entidades técnicas, relaciones jerárquicas |
+| **NEVEN Studio** | Python + HTML | Servidor HTTP standalone (puerto 5555), taskpane web |
+| **Data Lab** | Python + JS | Catálogo de funciones punto-y-clic con sidecar JSON |
+| **DuckDB** | Python in-memory | Base de datos SQL embebida para dataset activo + RAG |
+| **Julia Sysimage** | neven_julia.dll | Sysimage precompilada (~415 MB), elimina cold start |
 
 ### Comunicacion
 
@@ -211,30 +202,29 @@ Funciones accesibles desde la pestaña Data Lab de NEVEN Studio. Cada función t
 
 | Fecha | Nota | Hito |
 |:---|:---:|:---|
-| 14 abril | 4.3 | Estado original -- prototipo con deuda tecnica |
+| 14 abril | 4.3 | Estado original — prototipo con deuda tecnica |
 | 15 abril | 6.8 | Seguridad, RAII, mutex, retry limits |
 | 16 abril | 8.1 | Python, mantenibilidad, confiabilidad |
 | 19 abril | 8.9 | WebView2, Plotly interactivo |
 | 22 abril | 9.0 | Pluto.jl, PLUTO.DATA, toolbar |
 | 23 abril | 9.1 | Quarto, notebook generico |
-| **27 abril** | **9.2** | **Ribbon COM, callback thread, depuracion, KNN/Regresion** |
-| **2 mayo** | **9.6** | **Rename NEVEN, 5 nuevas visualizaciones, 228 tests, Doxygen completo** |
-| **3 mayo** | **9.6** | **Reorganizacion repositorio: Core/, libreria/, Build/, config limpio** |
-| **Mayo 2026** | **9.4** | **Security remediation: 36/36 hallazgos cerrados, Console/Electron eliminado, ControlPython reactivado, 357 tests** |
-| **Julio 2026** | **9.5** | **NEVEN Studio Standalone, Data Lab V1, AI integration, 18 Studio wrappers, catálogo extensible UC** |
-| **Julio 2026** | **9.5** | **DataLab V2: GR_Barras mejorado, selector paletas visual, fixes datalab_handler, descarga gráficos** |
+| 27 abril | 9.2 | Ribbon COM, callback thread, depuracion, KNN/Regresion |
+| 2 mayo | 9.6 | Rename NEVEN, 5 nuevas visualizaciones, 228 tests |
+| Mayo 2026 | 9.4 | Security remediation: 36/36 hallazgos cerrados |
+| Julio 2026 | 9.5 | NEVEN Studio Standalone, Data Lab V1, AI integration |
+| **Agosto 2026** | **9.71** | **RAG Engine, 342 tests, 200+ UDFs, 17 capítulos documentación** |
 
-### Dimensiones Actuales
+### Dimensiones Actuales (v3.2)
 
 | Dimension | Nota | Detalle |
 |:---|:---:|:---|
-| Funcionalidad | 10 | R + Julia + Quarto + Pluto + WebView2 + Ribbon |
+| Funcionalidad | 10 | R + Julia + Python + Quarto + Pluto + WebView2 + RAG |
 | Calidad de Codigo | 9.5 | 0 std::cout en produccion, Doxygen completo |
-| Seguridad | 9.5 | 36/36 audit findings resolved, InputSanitizer, MessageValidator, SafePipeHandle, MSVC flags, SHA-256 startup integrity |
-| Mantenibilidad | 9.7 | Repositorio reorganizado (Core/, libreria/, Build/), Common/ con Security/ e IPC/ subdirs, config limpio, paths centralizados |
-| Confiabilidad | 9.5 | CI/CD pipeline, delayed Julia reload |
-| Testing | 10 | 357 tests (GTest + rapidcheck PBT), E2E + sandbox + InputSanitizer + IPC |
-| Documentacion | 10 | Arquitectura, evaluacion, ejemplos, dependencias |
+| Seguridad | 9.5 | 36/36 audit findings resolved, InputSanitizer, MessageValidator |
+| Mantenibilidad | 9.5 | Repositorio reorganizado, Common/ con Security/ e IPC/ |
+| Confiabilidad | 9.5 | CI/CD pipeline, Julia sysimage (elimina cold start) |
+| Testing | 10 | 342 tests (GTest + rapidcheck PBT), E2E + sandbox |
+| Documentacion | 10 | 17 capítulos, arquitectura, RAG guide, diccionario 102 funciones |
 
 ### Testing
 
@@ -254,8 +244,7 @@ Funciones accesibles desde la pestaña Data Lab de NEVEN Studio. Cada función t
 | NewFunctionsSandboxTest | 16 |
 | R Library | 1 |
 | Env Lookup | 4 |
-| Otros | 12 |
-| **Total** | **357** |
+| **Total** | **342** |
 
 ------------------------------------------------------------------------
 
@@ -402,29 +391,22 @@ Secciones eliminadas en la reorganizacion de mayo 2026:
 
 | Tema | Prioridad | Estado |
 |:---|:---|:---|
-| Instalador MSI/NSIS | Completado | `Install-NEVEN.exe` (78 KB) — doble clic para instalar |
-| PLUTO.READ (Pluto --> Excel) | Media | Patron TSV inverso |
-| Viewer reuse (actualizar sin crear nuevo) | Completado | Navigate + cache invalidation |
+| Instalador MSI/NSIS | Completado | `Install-NEVEN.exe` + ZIP portable |
+| PLUTO.READ (Pluto → Excel) | Media | Patron TSV inverso |
+| Viewer reuse | Completado | Navigate + cache invalidation |
 | CrashHandler (telemetria local) | Media | Implementado, pendiente integracion estable |
 | CI/CD pipeline | Completado | GitHub Actions |
-| Idioma toggle (ES/EN) en Ribbon | Baja | Infraestructura lista |
-| Correccion EDO TipoOutput 2-4 | Baja | Bug de scope en Julia 1.12 |
-| Viewer titulo NEVEN | Media | Requiere debugging del wstring resize |
-| Viewer Snap Layout | Completado | Excel (izquierda) + Viewer (derecha) automatico con SetWindowPos |
-| `=NEVEN.status()` diagnostico | Completado | Estado de conexion, salud, prefijo y funciones de cada motor |
-| R.Network (grafos de red con vis.js) | Baja | Propuesta |
-| Tab IA en NEVEN Studio | Media | Consolidar funcionalidad AI dispersa en un tab dedicado |
-| Data Lab Python/Julia | Media | Soporte multi-lenguaje en Data Lab (actualmente solo R) |
-| Tests Studio wrappers (tarea 15) | Alta | test_uc_funciones.R, test_ad_funciones.R, test_rg_funciones.R |
-| Selector visual de paletas en Data Lab | Completado | Tipo `"palette"` con swatches en GR_Barras, GR_Lineas, GR_SeriesTiempo, GR_Histograma, GR_Correlaciones, GR_EjemploAvanzado, GR_EjemploBasico |
-| Zombie Process Killer | Completado | `Init()` mata ControlR/Julia/Python huérfanos con `taskkill /F /IM` via `CreateProcess(CREATE_NO_WINDOW)` |
-| Extraer_outputs (TipoOutput universal) | Completado | `Extraer_outputs(modelo)` retorna ALL outputs como data.frame. Integrado en 11 funciones R4XCL |
-| Viewer Professional (parcial) | En progreso | Botón 💾, detección PDF/TXT/DOCX, hash de contenido. Auto-refresh revertido (deadlock STA) |
+| Julia sysimage | Completado | `neven_julia.dll` (~415 MB), elimina cold start |
+| `=NEVEN.status()` diagnostico | Completado | Estado de conexion, salud, prefijo y funciones |
+| Viewer Snap Layout | Completado | Excel (izquierda) + Viewer (derecha) |
+| RAG Engine | Completado | DuckDB + fastembed, 12 formatos offline |
+| Ontología NEVEN-core | Completado | 300+ entidades, relaciones jerárquicas |
+| Procesador de libros multi-formato | Completado | PDF, DOCX, EPUB, PPTX, XLSX via MarkItDown |
+| Tab IA en NEVEN Studio | Media | Consolidar funcionalidad AI dispersa |
+| Data Lab Python/Julia | Media | Soporte multi-lenguaje (actualmente solo R) |
+| Probar instalador en máquina limpia | Alta | Pendiente |
 
 ------------------------------------------------------------------------
 
-*NEVEN v2.1 -- De 4.3 a 9.5. 357 tests. Studio Standalone. Data Lab V2. AI Integration. R + Julia + Python + D3 + Leaflet + Plotly + Snap Layout + Extraer_outputs. Security remediation: 36/36 findings resolved.*
-*Repositorio reorganizado: Core/, Common/Security/, Common/IPC/, libreria/R/, libreria/JULIA/, Ejemplos/, Build/*
-*Universidad de Costa Rica -- Team Vikingos -- SKAL!*
-
-| **NEVEN v2.2** | **Ago 2026** | **Creador de Presentaciones V2: zoom de contenido (`transform:scale`), offset X/Y del contenido, overlay de propiedades en Preview con glassmorphism, propiedades independientes por slide (propMap selectivo), selector de slide en panel** |
+*NEVEN v3.2 — De 4.3 a 9.71. 342 tests. 200+ UDFs. RAG Engine. R + Julia + Python + Quarto.*
+*BukloLAB — Team Vikingos — SKÅL!*

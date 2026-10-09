@@ -1,9 +1,9 @@
-﻿# Estado de las Cosas — NEVEN 2.0
+﻿# Estado de las Cosas — NEVEN 3.2
 
 ## Análisis Profundo y Ruta de Acción
 
-**Fecha**: 11 de abril de 2026\
-**Contexto**: Análisis completo del repositorio NEVEN, comparación con BERT Toolkit original (bert-toolkit.com, github.com/sdllc/Basic-Excel-R-Toolkit), y diagnóstico de por qué las funciones no se muestran al usuario en Excel.
+**Fecha**: 19 de agosto de 2026\
+**Contexto**: Bitácora histórica del desarrollo de NEVEN desde abril 2026 hasta la versión 3.2 actual.
 
 ------------------------------------------------------------------------
 
@@ -764,3 +764,139 @@ Los handlers de propiedades llamaban `_renderList()` en cada keystroke, reconstr
 | Tab IA en NEVEN Studio | Media | Pendiente |
 | PLUTO.READ (Pluto → Excel) | Media | Pendiente |
 | Log debug neven_r_debug.log | Baja | Desactivado en producción |
+
+------------------------------------------------------------------------
+
+## ACTUALIZACIÓN MAYOR — Agosto 2026 (Semanas 2-3)
+
+### RAG Engine (v3.0) — Búsqueda semántica en documentos
+
+Nueva infraestructura de Retrieval Augmented Generation integrada en NEVEN Studio:
+
+**Arquitectura:**
+- `rag_engine.py` — Motor principal con DuckDB + fastembed (bge-small-en-v1.5)
+- DuckDB VSS (Vector Similarity Search) para búsqueda semántica
+- Embeddings generados localmente (sin APIs externas)
+- `MIN_RAG_SCORE` configurable en `neven-config.json` (default 0.50)
+
+**12 formatos soportados (todos offline, via MarkItDown):**
+| Formato | Extensión | Dependencia |
+|:---|:---|:---|
+| PDF | .pdf | pdfminer-six, pdfplumber |
+| Word | .docx | mammoth |
+| PowerPoint | .pptx | python-pptx |
+| Excel nuevo | .xlsx | openpyxl, pandas |
+| Excel legacy | .xls | xlrd |
+| EPUB | .epub | ebooklib |
+| HTML | .html, .htm | (built-in) |
+| CSV | .csv | (built-in) |
+| JSON | .json | (built-in) |
+| XML | .xml | (built-in) |
+| Texto | .txt, .md | (built-in) |
+| ZIP | .zip | (built-in, itera contenido) |
+
+**Traducción multilingüe:**
+- Diccionario ES↔EN↔PT↔FR con ~40 términos econométricos
+- Query "ACP" se expande a "ACP PCA principal component analysis componentes principais"
+- Libros en inglés encuentran queries en español
+
+### Ontología NEVEN-core (v3.1)
+
+Sistema de conocimiento estructurado con 300+ entidades técnicas:
+
+**Estructura:**
+- Archivos YAML en `C:\NEVEN\docs\ontologia\neven-core\`
+- 4 capas (P1-P4): IPC, servicios, frontend, build
+- Relaciones: `implementa`, `depende_de`, `expone`, `usa`
+- Invariantes técnicas documentadas (INV-*)
+
+**Procesador de libros multi-formato:**
+- Botón "Procesar Libro" en Settings → Base de Conocimiento
+- Extrae texto con MarkItDown, genera chunks, crea entidades
+- Dominios: econometria, estadistica, excel, general
+
+### NEVEN Studio — Tabs actualizados (7 tabs)
+
+| Tab | Función |
+|:---|:---|
+| Data Lab | Funciones R punto-y-clic |
+| Run Script | Ejecutar código R/Python/Julia |
+| Chat | Chat con contexto RAG |
+| Datos | Gestión del dataset activo |
+| Slides | Creador de presentaciones |
+| Settings | Configuración RAG, ontología, AI |
+| Ayuda | Documentación 17 capítulos |
+
+### Documentación actualizada a 17 capítulos
+
+| Capítulo | Cambio |
+|:---|:---|
+| 03 Arquitectura | Reescritura completa: +Python, +RAG Engine, +sysimage Julia |
+| 04 Julia | +sysimage (no más cold start), +secciones Conectividad y Studio |
+| 05 R | +2SLS, +HECKIT, conteo 34→63 archivos |
+| 07 WebView2/Ribbon | +NEVEN.chart.r/p/j, Acerca de → TaskPane |
+| 09 Mantenimiento | Python en 5 secciones |
+| 10 Ejemplos | Julia KNN/Regresion → J.Clasificacion |
+| 11 Diccionario | 95→102 funciones, Python agregado |
+| **16 Python** | **Nuevo** — NEVEN.py, NEVEN.p, chart.p, IA, Quarto |
+
+### Branding BukloLAB
+
+- Portada de documentación: `<span style="color:#fff">Buklo</span><span style="color:#e53935">LAB</span>`
+- TaskPane "Acerca de": ensayo completo D.A.T.E. 2009 → NEVEN 2026
+- Ribbon "Acerca de" simplificado → redirige al TaskPane
+- Score corregido: `\boxed{9.71 \approx 9.7/10}`
+
+### Correcciones técnicas
+
+| Fix | Descripción |
+|:---|:---|
+| Aliases Julia muertos | `KNN(a...)` y `Regresion(a...)` → `JML_Clasificacion(a...)` |
+| Botón browse RAG | Endpoint `/api/rag/browse` con subprocess + tkinter |
+| rag_sources no inicializada | Variable no existía antes del bloque RAG |
+| Servidores HTTP duplicados | Diagnóstico: procesos viejos en puerto 5555 |
+| __pycache__ con código viejo | Siempre limpiar después de actualizar .py |
+| BOM en JSON | PowerShell `Set-Content -Encoding UTF8` agrega BOM → usar `[System.IO.File]::WriteAllText()` |
+
+### Métricas actuales (v3.2)
+
+| Métrica | Valor |
+|:---|:---|
+| Tests | 342 (8 e2e, 154 sandbox, 24 PBT) |
+| UDFs | 200+ (R ~90, Julia ~70, Python ~40) |
+| Score | 9.71/10 |
+| Documentación | 17 capítulos, 271 KB |
+| RAG entidades | 300+ |
+| Formatos RAG | 12 (offline) |
+
+------------------------------------------------------------------------
+
+### Estado Actual (19 agosto 2026)
+
+| Componente | Estado |
+|:---|:---|
+| R 4.4.1 desde Excel | ✅ ~90 procedimientos |
+| Julia 1.12.6 desde Excel | ✅ ~70 procedimientos + sysimage |
+| Python 3.12 desde Excel | ✅ AI, RAG, Quarto |
+| WebView2 / Plotly / D3 / Leaflet | ✅ Visualización interactiva |
+| NEVEN Studio (7 tabs) | ✅ Standalone sin Excel |
+| Data Lab V2 | ✅ 25+ funciones, punto-y-clic |
+| RAG Engine | ✅ 12 formatos, búsqueda semántica |
+| Ontología NEVEN-core | ✅ 300+ entidades |
+| Documentación | ✅ 17 capítulos |
+| Tests | ✅ 342 tests |
+| Score | **9.71/10** |
+
+### Pendientes
+
+| Tarea | Prioridad |
+|:---|:---|
+| Probar instalador en máquina limpia | Alta |
+| Data Lab Python/Julia | Media |
+| Tab IA en NEVEN Studio | Media |
+| PLUTO.READ (Pluto → Excel) | Media |
+
+------------------------------------------------------------------------
+
+*Team Vikingos ⚔️ — De 4.3 a 9.71. SKÅL!*
+*Documento actualizado: 19 de agosto de 2026*

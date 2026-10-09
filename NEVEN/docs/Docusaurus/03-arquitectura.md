@@ -318,3 +318,100 @@ cmake --build . --target RUN_TESTS
 # O directamente:
 .\Build\tests\Release\NEVEN_tests.exe
 ```
+
+---
+
+## 3.11 Auditoria por Capas
+
+### Capa 1: Interface Excel (XLL)
+
+| Componente | Estado | Descripcion |
+|:---|:---:|:---|
+| `RJ2XCL_Engine` | ✅ Optimo | Singleton principal: Init/Close/callbacks |
+| `basic_functions` | ✅ Optimo | 200+ funciones exportadas a Excel |
+| `NEVENRibbon.dll` | ✅ Optimo | Ribbon COM con 17 botones |
+| `RaiiXlOper` | ✅ Optimo | Wrapper RAII para XLOPER12 |
+
+### Capa 2: Servicios del Nucleo
+
+| Servicio | Estado | Descripcion |
+|:---|:---:|:---|
+| `ConfigService` | ✅ Optimo | Lee `neven-config.json`, getters tipados |
+| `LanguageManager` | ✅ Optimo | Orquesta R, Julia, Python |
+| `LanguageService` | ✅ Optimo | Un proceso hijo: pipe, timeout, reconnect |
+| `SandboxVerifier` | ✅ Optimo | 30+ patrones bloqueados por lenguaje |
+| `SecurityService` | ✅ Optimo | SHA-256 integridad de scripts |
+| `DiscoveryService` | ✅ Optimo | Detecta R, Julia, Python |
+| `LogService` | ✅ Optimo | Logging estructurado |
+
+### Capa 3: Subsistemas Especializados
+
+| Subsistema | Estado | Componentes |
+|:---|:---:|:---|
+| WebView2 | ✅ Optimo | ViewerManager, ViewerWindow, PostMessageBridge |
+| Pluto.jl | ✅ Optimo | PlutoManager, NotebookLibrary |
+| Quarto | ✅ Optimo | CreateProcess externo |
+| HTTP Server | ✅ Optimo | neven_http_server.py (puerto 5555) |
+| RAG Engine | ✅ Optimo | rag_engine.py, DuckDB VSS, FastEmbed |
+
+### Capa 4: Herramientas Comunes
+
+| Herramienta | Estado | Uso |
+|:---|:---:|:---|
+| `Pipe` | ✅ Optimo | Named Pipe wrapper |
+| `type_conversions` | ✅ Optimo | XLOPER12 <-> Protobuf |
+| `json11` | ✅ Optimo | Parser JSON |
+| Protocol Buffers | ✅ Optimo | v21.12 para IPC |
+
+---
+
+## 3.12 Metricas de Calidad
+
+| Dimension | Nota | Evidencia |
+|:---|:---:|:---|
+| Funcionalidad | 10/10 | 200+ UDFs, 7 tabs Studio, RAG |
+| Calidad de Codigo | 9.5/10 | 0 TODOs, RAII, Result<T,E> |
+| Seguridad | 9.5/10 | Sandbox, SHA-256, MSVC hardening |
+| Mantenibilidad | 9.7/10 | 4 capas desacopladas |
+| Confiabilidad | 9.5/10 | Health monitoring, reconnect |
+| Testing | 10/10 | 342 tests, 100% pass |
+| Documentacion | 10/10 | 22 capitulos Docusaurus |
+| **Promedio** | **9.71/10** | |
+
+---
+
+## 3.13 Extensibilidad
+
+### Agregar nuevo lenguaje
+
+1. Crear `ControlNuevoLenguaje.exe` siguiendo el protocolo Protobuf existente
+2. Implementar `LanguageService` para el nuevo lenguaje en C++
+3. Registrar en `LanguageManager`
+4. Agregar seccion correspondiente en `neven-config.json`
+
+### Agregar nueva funcion R
+
+1. Crear archivo `.R` en `C:\NEVEN\functions\`
+2. Agregar atributos `description` y `category`
+3. Hot-reload automatico — NEVEN detecta cambios cada 5 segundos
+
+```r
+# Ejemplo: mi_funcion.R
+mi_funcion <- function(x, y) {
+    return(x + y)
+}
+attr(mi_funcion, "description") <- "Suma dos valores"
+attr(mi_funcion, "category") <- "Matematicas"
+```
+
+### Agregar tab a NEVEN Studio
+
+1. Agregar HTML de la nueva tab en `taskpane.html`
+2. Implementar handlers JavaScript correspondientes
+3. Agregar endpoint en `neven_http_server.py` si la tab requiere backend
+
+### Agregar funcion a Data Lab
+
+1. Crear archivo `.Studio.R` (o `.Studio.py`) en `C:\NEVEN\functions\`
+2. Crear sidecar JSON con metadatos (ver `SIDECAR_FORMAT.md`)
+3. La funcion aparece automaticamente en el catalogo de Data Lab
