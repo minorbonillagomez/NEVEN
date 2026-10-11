@@ -6520,26 +6520,78 @@ window._renderCreateFunctionBlock = function(jsonStr) {
 
     // Boton refresh ontología — cargar/recargar dominios
     var ontologyRefreshBtn = document.getElementById('btn-ontology-refresh');
+    var _selectedOntologyDomain = null;
 
-    async function ontologyLoadDomains() {
+    async function ontologyLoadBooks(domainId) {
+      var booksListEl = document.getElementById('ontology-books-list');
+      if (!booksListEl) return;
+      
+      if (!domainId) {
+        booksListEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">Selecciona un dominio para ver libros</div>';
+        return;
+      }
+      
+      booksListEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">Cargando libros...</div>';
+      
+      try {
+        var resp = await fetch(API + '/api/ontology/books?domain=' + encodeURIComponent(domainId));
+        var data = await resp.json();
+        var books = data.books || [];
+        
+        if (books.length === 0) {
+          booksListEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">No hay libros procesados en este dominio</div>';
+        } else {
+          booksListEl.innerHTML = books.map(function(b) {
+            return '<div style="padding:4px 8px;font-size:10px;background:var(--bg-tertiary);border-radius:3px;display:flex;justify-content:space-between">' +
+              '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px" title="' + b.filename + '">' + b.filename + '</span>' +
+              '<span style="color:var(--accent);font-weight:500">' + (b.entities || 0) + '</span>' +
+              '</div>';
+          }).join('');
+        }
+      } catch(e) {
+        booksListEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--error)">Error al cargar libros</div>';
+      }
+    }
+
+    async function ontologyLoadDomains(forceReload) {
       var listEl   = document.getElementById('ontology-domains-list');
       var selectEl = document.getElementById('ontology-target-domain');
       if (listEl) listEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">Cargando...</div>';
       try {
-        var resp = await fetch(API + '/api/ontology/domains');
+        var url = API + '/api/ontology/domains';
+        if (forceReload) url += '?reload=1';
+        var resp = await fetch(url);
         var data = await resp.json();
         var domains = data.domains || [];
 
-        // Actualizar lista visual
+        // Actualizar lista visual (con click para seleccionar)
         if (listEl) {
           if (domains.length === 0) {
             listEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">Sin dominios configurados</div>';
           } else {
             listEl.innerHTML = domains.map(function(d) {
-              return '<div style="padding:4px 8px;font-size:10px;background:var(--bg-tertiary);border-radius:3px">' +
-                '<strong>' + d.id + '</strong> — ' + (d.entity_count || 0) + ' entidades' +
+              var isSelected = d.id === _selectedOntologyDomain;
+              return '<div class="ontology-domain-item" data-domain="' + d.id + '" style="padding:6px 8px;font-size:10px;background:' + (isSelected ? 'var(--accent-dim)' : 'var(--bg-tertiary)') + ';border-radius:3px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border:1px solid ' + (isSelected ? 'var(--accent)' : 'transparent') + '">' +
+                '<div><strong>' + d.id + '</strong><br><span style="font-size:9px;color:var(--text-secondary)">' + (d.entity_count || 0) + ' entidades</span></div>' +
+                '<span style="color:var(--accent);font-size:11px">' + (d.book_count || '?') + ' libros</span>' +
                 '</div>';
             }).join('');
+            
+            // Agregar event listeners para click
+            listEl.querySelectorAll('.ontology-domain-item').forEach(function(el) {
+              el.addEventListener('click', function() {
+                var domainId = this.getAttribute('data-domain');
+                _selectedOntologyDomain = domainId;
+                // Actualizar visual de selección
+                listEl.querySelectorAll('.ontology-domain-item').forEach(function(item) {
+                  var isThis = item.getAttribute('data-domain') === domainId;
+                  item.style.background = isThis ? 'var(--accent-dim)' : 'var(--bg-tertiary)';
+                  item.style.border = isThis ? '1px solid var(--accent)' : '1px solid transparent';
+                });
+                // Cargar libros del dominio seleccionado
+                ontologyLoadBooks(domainId);
+              });
+            });
           }
         }
 
@@ -6551,13 +6603,18 @@ window._renderCreateFunctionBlock = function(jsonStr) {
             }).join('') +
             '<option value="__new__">+ Nuevo dominio...</option>';
         }
+        
+        // Si hay un dominio seleccionado, cargar sus libros
+        if (_selectedOntologyDomain) {
+          ontologyLoadBooks(_selectedOntologyDomain);
+        }
       } catch(e) {
         if (listEl) listEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--error)">Error al cargar dominios</div>';
       }
     }
 
     if (ontologyRefreshBtn) {
-      ontologyRefreshBtn.addEventListener('click', ontologyLoadDomains);
+      ontologyRefreshBtn.addEventListener('click', function() { ontologyLoadDomains(true); });
     }
 
     // Mostrar/ocultar campo de nuevo dominio según selección
@@ -6631,6 +6688,9 @@ window._renderCreateFunctionBlock = function(jsonStr) {
                 processBookBtn.disabled = false;
                 processBookBtn.textContent = 'Procesar Libro';
                 showToast('Libro procesado: ' + entities + ' entidades');
+                
+                // Refrescar la lista de dominios y libros (con reload para forzar actualización)
+                ontologyLoadDomains(true);
               }
             }
           } catch (e) {

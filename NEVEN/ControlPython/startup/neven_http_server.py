@@ -2804,9 +2804,20 @@ class NEVENHandler(BaseHTTPRequestHandler):
     
     def _handle_ontology_domains(self):
         """GET /api/ontology/domains — List available ontology domains."""
+        from urllib.parse import urlparse, parse_qs
+        query_params = parse_qs(urlparse(self.path).query)
+        force_reload = query_params.get("reload", [""])[0].lower() in ("1", "true", "yes")
+        
         try:
             from ontology_manager import get_manager
             manager = get_manager()
+            
+            # Optionally force reload all domains
+            if force_reload:
+                manager.discover_domains()
+                for domain_id in list(manager.domains.keys()):
+                    manager.load_domain(domain_id)
+            
             domains = manager.list_domains()
             self._send_json({
                 "status": "ok",

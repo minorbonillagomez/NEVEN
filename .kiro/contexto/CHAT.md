@@ -55,24 +55,118 @@
 | `C:\NEVEN\startup\ontology_manager.py` | +300 líneas: funciones de procesamiento incremental |
 | `C:\NEVEN\startup\process_wooldridge_incremental.py` | Script de procesamiento con barra visual |
 
-## Proceso en ejecución
+## Proceso en ejecución → ✅ COMPLETADO
 
-- **Terminal:** `term_1791731026315_6leppwjkna`
-- **Estado:** Procesando batch 1, chunk 6/18
-- **Estimación total:** ~44 batches × ~2 min = ~1.5 horas
+**Resultados finales del libro Wooldridge:**
+- **Páginas procesadas:** 883/883 (100%)
+- **Entidades creadas:** 5,079
+- **Batches completados:** 45
+- **Tiempo total:** 1:42:10
+- **Errores recuperados:** 14 chunks (batch 9) — conexión intermitente, proceso continuó
 
-## Sin commits
-- Código nuevo, falta sincronizar al repositorio
+## Commit realizado
+
+```
+d34564f feat: incremental book processing with checkpoints and progress API
+```
+
+**Archivos incluidos:**
+- `NEVEN/ControlPython/startup/ontology_manager.py`
+- `NEVEN/ControlPython/startup/neven_http_server.py`
+- `NEVEN/TaskPane/taskpane.html`
+- `NEVEN/TaskPane/neven_http_server.py`
+- `.kiro/contexto/CHAT.md`
 
 ## Pendientes
 
-| Prioridad | Tarea | Notas |
-|-----------|-------|-------|
-| **ALTA** | Endpoint `/api/ontology/progress` | Para que TaskPane consulte `get_book_progress()` |
-| **ALTA** | UI barra de progreso en TaskPane | Mostrar `[████░░░░] 45% - Pág 401/883` |
-| **ALTA** | Monitorear proceso actual | Verificar que complete los 44 batches |
-| **MEDIA** | Sincronizar `ontology_manager.py` al repo | Copiar a `NEVEN/ControlPython/startup/` |
-| **BAJA** | Botón "Cancelar" en TaskPane | Para abortar proceso largo |
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| ~~ALTA~~ | ~~Endpoint `/api/ontology/progress`~~ | ✅ Implementado |
+| ~~ALTA~~ | ~~UI barra de progreso en TaskPane~~ | ✅ Implementado |
+| ~~ALTA~~ | ~~Monitorear proceso actual~~ | ✅ Completado: 5,079 entidades |
+| ~~MEDIA~~ | ~~Sincronizar al repo~~ | ✅ Commit `d34564f` |
+| **MEDIA** | Probar UI desde TaskPane en Excel | Pendiente |
+| **BAJA** | Botón "Cancelar" en TaskPane | Pendiente |
+
+### Cierre de sesión (~10:50)
+
+**Logros de la sesión completa:**
+1. Implementado sistema de procesamiento incremental con checkpoints
+2. Libro Wooldridge español procesado completamente: 5,079 entidades
+3. Endpoint `/api/ontology/progress` funcionando
+4. TaskPane actualizado con barra de progreso y polling
+5. Commit `d34564f` con todos los cambios
+
+**Métricas de rendimiento medidas:**
+- 883 páginas en 1:42:10 = ~6.9 segundos/página
+- ~45 batches de 20 páginas cada uno
+- ~113 entidades promedio por batch
+
+**Servidor HTTP corriendo:** `term_1791739492477_hasthpeko2c` (puerto 5555)
+
+---
+
+### Sesión 2026-10-11 (~11:00) — Fix: TaskPane no mostraba libros dinámicamente
+
+## Problema reportado
+El TaskPane no actualizaba la lista de libros después de procesar el Wooldridge español. Seguía mostrando 14 libros del dominio `econometrics` en lugar del nuevo libro en `econometria`.
+
+## Diagnóstico
+1. La API `/api/ontology/books?domain=econometria` **sí retornaba** el libro nuevo correctamente
+2. El TaskPane no tenía función para cargar libros por dominio
+3. No había interactividad para seleccionar dominios y ver sus libros
+4. Faltaba parámetro para forzar recarga de datos cacheados
+
+## Solución implementada
+
+### Nuevas funciones JavaScript en `taskpane.html`
+
+```javascript
+async function ontologyLoadBooks(domainId)  // Carga libros de un dominio
+async function ontologyLoadDomains(forceReload)  // Acepta parámetro para forzar recarga
+```
+
+### Cambios en la UI
+- **Dominios clickeables:** Al hacer clic en un dominio, se resalta y muestra sus libros
+- **Lista de libros dinámica:** Muestra nombre del libro y conteo de entidades
+- **Auto-refresh:** Después de procesar un libro, se actualiza la lista automáticamente
+
+### Cambios en el servidor (`neven_http_server.py`)
+- Endpoint `/api/ontology/domains` ahora acepta `?reload=1` para forzar recarga de datos
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.html` | +60 líneas: funciones de carga de libros, dominios clickeables |
+| `C:\NEVEN\startup\neven_http_server.py` | `_handle_ontology_domains` con parámetro reload |
+
+## Verificación
+```bash
+curl "http://localhost:5555/api/ontology/books?domain=econometria"
+# Retorna: "Introduccion a la econometria-Wooldridge.pdf" con 3,608 entidades ✓
+```
+
+## Libro Wooldridge español — Clasificación correcta
+- **Dominio:** `econometria` ✓
+- **Entidades:** 3,608 (de 5,079 totales, algunas sin referencia de libro)
+- **Nombre en API:** `Introduccion a la econometria-Wooldridge.pdf`
+
+## Sin commit aún
+- Archivos sincronizados al repositorio pero pendiente commit
+
+## Para que el usuario vea los cambios
+1. Cerrar y reabrir el TaskPane en Excel (para cargar nuevo HTML)
+2. Hacer clic en el botón refresh (↻) en "Dominios de Conocimiento"
+3. Hacer clic en el dominio `econometria` para ver sus libros
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Commit de cambios de UI | Pendiente |
+| **MEDIA** | Normalizar nombres de libros | Hay duplicados (con/sin .pdf) |
+| **BAJA** | Agregar fecha de procesamiento a libros | Pendiente |
 
 ---
 
