@@ -1787,6 +1787,117 @@ def list_processed_books(domain_id: str = None) -> List[Dict[str, Any]]:
     return list(books.values())
 
 
+def delete_book_entities(domain_id: str, book_name: str) -> Dict[str, Any]:
+    """
+    Delete all entities from a book in a domain.
+    
+    Removes entries from graph.jsonl where reference.book or source_book matches.
+    Also removes the associated checkpoint file if it exists.
+    
+    Args:
+        domain_id: Domain ID (e.g., "econometria")
+        book_name: Exact book name to match (e.g., "Introduccion a la econometria-Wooldridge.pdf")
+        
+    Returns:
+        {"status": "ok", "deleted_count": int, "remaining_count": int}
+    """
+    manager = get_manager()
+    
+    # Find domain
+    if domain_id not in manager.domains:
+        found_id = _find_domain_by_name(domain_id)
+        if found_id:
+            domain_id = found_id
+        else:
+            return {"status": "error", "error": f"Domain not found: {domain_id}"}
+    
+    domain = manager.domains[domain_id]
+    graph_path = os.path.join(domain.path, "graph.jsonl")
+    
+    if not os.path.isfile(graph_path):
+        return {"status": "error", "error": f"No graph.jsonl in domain: {domain_id}"}
+    
+    # Read all lines, filter out matching book
+    kept_lines = []
+    deleted_count = 0
+    
+    with open(graph_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            
+            try:
+                record = json.loads(line)
+                
+                # Check for book reference
+                entity = record.get("entity", {})
+                props = entity.get("properties", {})
+                
+                source = props.get("source_book", "")
+                if not source:
+                    ref = props.get("reference", {})
+                    source = ref.get("book", "") if isinstance(ref, dict) else ""
+                
+                # Compare (case-insensitive, handle .pdf suffix)
+                source_norm = source.lower().replace(".pdf", "")
+                book_norm = book_name.lower().replace(".pdf", "")
+                
+                if source_norm == book_norm or source == book_name:
+                    deleted_count += 1
+                else:
+                    kept_lines.append(line)
+                    
+            except json.JSONDecodeError:
+                # Keep malformed lines
+                kept_lines.append(line)
+    
+    if deleted_count == 0:
+        return {"status": "ok", "deleted_count": 0, "remaining_count": len(kept_lines),
+                "message": f"No entities found for book: {book_name}"}
+    
+    # Backup original
+    _backup_graph_file(graph_path)
+    
+    # Write filtered content
+    with open(graph_path, 'w', encoding='utf-8') as f:
+        for line in kept_lines:
+            f.write(line + '\n')
+    
+    # Remove checkpoint file if exists
+    checkpoint_path = _get_checkpoint_path_for_book(book_name, domain_id)
+    if checkpoint_path and os.path.exists(checkpoint_path):
+        try:
+            os.remove(checkpoint_path)
+        except Exception:
+            pass  # Non-critical
+    
+    # Reload domain to refresh in-memory cache
+    manager.load_domain(domain_id)
+    
+    return {
+        "status": "ok",
+        "deleted_count": deleted_count,
+        "remaining_count": len(kept_lines),
+        "message": f"Deleted {deleted_count} entities from '{book_name}'"
+    }
+
+
+def _get_checkpoint_path_for_book(book_name: str, domain_id: str) -> str:
+    """Find checkpoint file for a book (may have hash suffix)."""
+    import glob
+    checkpoint_dir = r"C:\NEVEN\docs\ontologia\checkpoints"
+    if not os.path.isdir(checkpoint_dir):
+        return None
+    
+    # Normalize book name for pattern
+    base = os.path.splitext(book_name)[0]  # Remove .pdf
+    pattern = os.path.join(checkpoint_dir, f"{base}_{domain_id}_*.json")
+    
+    matches = glob.glob(pattern)
+    return matches[0] if matches else None
+
+
 # ─── Export ───────────────────────────────────────────────────────────────────
 
 __all__ = [
@@ -1799,6 +1910,7 @@ __all__ = [
     "search_knowledge",
     "process_book",
     "list_processed_books",
+    "delete_book_entities",
     # Incremental processing
     "process_book_incremental",
     "get_book_progress",

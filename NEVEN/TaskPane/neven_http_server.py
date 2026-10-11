@@ -856,6 +856,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_ontology_reset_progress()
             return
 
+        if path.startswith('api/ontology/delete-book'):
+            # POST /api/ontology/delete-book — Delete all entities from a book
+            self._handle_ontology_delete_book()
+            return
+
         # ── Ayuda / Diccionario de Funciones NevenX ───────────────────────────
         if path == 'api/ayuda/funciones':
             self._handle_ayuda_funciones()
@@ -3047,6 +3052,39 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_error_json("ontology_manager not available")
         except Exception as e:
             self._send_error_json(f"Reset error: {e}")
+
+    def _handle_ontology_delete_book(self):
+        """POST /api/ontology/delete-book — Delete all entities from a book."""
+        if self.command != 'POST':
+            self._send_error_json("POST required", 405)
+            return
+        
+        body = self._read_json_body()
+        if not body:
+            self._send_error_json("Invalid JSON body")
+            return
+        
+        book_name = body.get("book_name") or body.get("book")
+        domain_id = body.get("domain_id") or body.get("domain")
+        
+        if not book_name:
+            self._send_error_json("Missing book_name")
+            return
+        
+        if not domain_id:
+            self._send_error_json("Missing domain_id")
+            return
+        
+        try:
+            from ontology_manager import delete_book_entities
+            
+            result = delete_book_entities(domain_id, book_name)
+            self._send_json(result)
+            
+        except ImportError:
+            self._send_error_json("ontology_manager not available")
+        except Exception as e:
+            self._send_error_json(f"Delete error: {e}")
 
     def _handle_ayuda_funciones(self):
         """GET /api/ayuda/funciones — Diccionario dinámico de funciones NevenX.

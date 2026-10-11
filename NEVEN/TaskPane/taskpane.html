@@ -6542,14 +6542,61 @@ window._renderCreateFunctionBlock = function(jsonStr) {
           booksListEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">No hay libros procesados en este dominio</div>';
         } else {
           booksListEl.innerHTML = books.map(function(b) {
-            return '<div style="padding:4px 8px;font-size:10px;background:var(--bg-tertiary);border-radius:3px;display:flex;justify-content:space-between">' +
-              '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px" title="' + b.filename + '">' + b.filename + '</span>' +
-              '<span style="color:var(--accent);font-weight:500">' + (b.entities || 0) + '</span>' +
+            var bookId = btoa(b.filename).replace(/[^a-zA-Z0-9]/g, '');  // Safe ID
+            return '<div style="padding:4px 8px;font-size:10px;background:var(--bg-tertiary);border-radius:3px;display:flex;justify-content:space-between;align-items:center">' +
+              '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px" title="' + b.filename + '">' + b.filename + '</span>' +
+              '<div style="display:flex;align-items:center;gap:6px">' +
+                '<span style="color:var(--accent);font-weight:500">' + (b.entities || 0) + '</span>' +
+                '<button class="ontology-delete-book-btn" data-book="' + encodeURIComponent(b.filename) + '" data-domain="' + domainId + '" ' +
+                  'style="background:transparent;border:none;color:var(--error);cursor:pointer;padding:2px;font-size:12px" title="Eliminar libro">🗑️</button>' +
+              '</div>' +
               '</div>';
           }).join('');
+          
+          // Add delete button handlers
+          booksListEl.querySelectorAll('.ontology-delete-book-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              var bookName = decodeURIComponent(this.getAttribute('data-book'));
+              var domain = this.getAttribute('data-domain');
+              ontologyDeleteBook(bookName, domain);
+            });
+          });
         }
       } catch(e) {
         booksListEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--error)">Error al cargar libros</div>';
+      }
+    }
+    
+    async function ontologyDeleteBook(bookName, domainId) {
+      if (!confirm('¿Eliminar TODAS las entidades del libro "' + bookName + '" del dominio "' + domainId + '"?\n\nEsta acción no se puede deshacer.')) {
+        return;
+      }
+      
+      try {
+        showToast('Eliminando libro...');
+        
+        var resp = await fetch(API + '/api/ontology/delete-book', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            book_name: bookName,
+            domain_id: domainId
+          })
+        });
+        
+        var data = await resp.json();
+        
+        if (data.status === 'ok') {
+          showToast('✓ ' + (data.message || 'Libro eliminado'));
+          // Refresh both domains and books lists
+          ontologyLoadDomains(true);  // Force reload to update entity counts
+          ontologyLoadBooks(domainId);
+        } else {
+          showToast('Error: ' + (data.error || 'No se pudo eliminar'), 'error');
+        }
+      } catch(e) {
+        showToast('Error de conexión: ' + e.message, 'error');
       }
     }
 
