@@ -441,7 +441,11 @@ class OntologyManager:
     # ─── Info ─────────────────────────────────────────────────────────────────
     
     def list_domains(self) -> List[Dict[str, Any]]:
-        """Get list of available domains with metadata."""
+        """Get list of available domains with metadata.
+        
+        Only returns domains that have at least 1 entity or 1 book.
+        Empty domains are excluded from the list.
+        """
         if not self.domains:
             self.discover_domains()
         
@@ -459,6 +463,10 @@ class OntologyManager:
                     if source:
                         books.add(source)
                 book_count = len(books)
+            
+            # Skip empty domains (no entities AND no books)
+            if d.entity_count == 0 and book_count == 0:
+                continue
             
             result.append({
                 "id": d.id,
