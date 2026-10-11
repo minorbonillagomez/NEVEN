@@ -1783,7 +1783,7 @@ def list_processed_books(domain_id: str = None) -> List[Dict[str, Any]]:
     """
     List books that have been processed for a domain (based on source_book references).
     
-    Returns list of {book_name, domain, entity_count, first_seen}
+    Returns list of {book_name, domain, entity_count, pages}
     """
     manager = get_manager()
     books = {}
@@ -1808,9 +1808,21 @@ def list_processed_books(domain_id: str = None) -> List[Dict[str, Any]]:
                     books[key] = {
                         "book_name": source,
                         "domain": did,
-                        "entity_count": 0
+                        "entity_count": 0,
+                        "pages": None
                     }
                 books[key]["entity_count"] += 1
+    
+    # Try to get page counts from checkpoints
+    for key, book_info in books.items():
+        checkpoint_path = _get_checkpoint_path_for_book(book_info["book_name"], book_info["domain"])
+        if checkpoint_path and os.path.exists(checkpoint_path):
+            try:
+                with open(checkpoint_path, 'r', encoding='utf-8') as f:
+                    checkpoint = json.load(f)
+                    book_info["pages"] = checkpoint.get("total_pages")
+            except Exception:
+                pass
     
     return list(books.values())
 

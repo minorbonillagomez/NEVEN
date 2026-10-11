@@ -2906,7 +2906,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     "filename": b.get("book_name", "Unknown"),
                     "domain": b.get("domain", domain or "general"),
                     "entities": b.get("entity_count", 0),
-                    "pages": None,  # Not tracked yet
+                    "pages": b.get("pages"),  # From checkpoint if available
                     "processed_date": None  # Not tracked yet
                 })
             
