@@ -6569,16 +6569,18 @@ window._renderCreateFunctionBlock = function(jsonStr) {
       });
     }
 
-    // Boton Procesar Libro (ontología)
+    // Boton Procesar Libro (ontología) — Procesamiento INCREMENTAL con polling
     var processBookBtn = document.getElementById('btn-ontology-process');
     if (processBookBtn) {
+      // Variable para controlar polling
+      var _ontologyPollingActive = false;
+      var _ontologyPollingInterval = null;
+      
       processBookBtn.addEventListener('click', async function() {
         var filePath   = (document.getElementById('ontology-file-path').value || '').trim();
         var domainSel  = document.getElementById('ontology-target-domain');
         var domainId   = domainSel ? domainSel.value.trim() : '';
         var newDomain  = (document.getElementById('ontology-new-domain-name').value || '').trim();
-        var maxPages   = document.getElementById('ontology-max-pages').value || null;
-        var chunkSize  = parseInt(document.getElementById('ontology-chunk-size').value) || 4000;
         var progressEl = document.getElementById('ontology-progress');
         var progressBar = document.getElementById('ontology-progress-bar');
         var progressTxt = document.getElementById('ontology-progress-text');
@@ -6591,53 +6593,128 @@ window._renderCreateFunctionBlock = function(jsonStr) {
         if (!filePath) { showToast('Selecciona un archivo primero'); return; }
         if (!domainId) { showToast('Selecciona un dominio destino'); return; }
 
-        // Mostrar progreso
+        // Función para actualizar la barra de progreso
+        async function updateProgressBar() {
+          try {
+            var resp = await fetch(API + '/api/ontology/progress?file=' + encodeURIComponent(filePath) + '&domain=' + encodeURIComponent(domainId));
+            var progress = await resp.json();
+            
+            if (progress.status === 'ok' || progress.pages_processed !== undefined) {
+              var pct = progress.percent_complete || 0;
+              var pages = progress.pages_processed || 0;
+              var total = progress.total_pages || 0;
+              var entities = progress.entities_created || 0;
+              
+              if (progressBar) progressBar.style.width = pct + '%';
+              if (progressPct) progressPct.textContent = pct.toFixed(1) + '%';
+              if (progressTxt) progressTxt.textContent = 'Página ' + pages + '/' + total + ' — ' + entities + ' entidades';
+              
+              // Si completó, detener polling
+              if (progress.status === 'completed' || pct >= 100) {
+                _ontologyPollingActive = false;
+                if (_ontologyPollingInterval) {
+                  clearInterval(_ontologyPollingInterval);
+                  _ontologyPollingInterval = null;
+                }
+                
+                // Mostrar resultado final
+                if (resultEl) {
+                  resultEl.style.display = 'block';
+                  resultEl.style.background = 'rgba(0,200,100,0.1)';
+                  resultEl.style.color = 'var(--success, #4caf50)';
+                  resultEl.innerHTML =
+                    '<strong>✓ Procesamiento completado</strong><br>' +
+                    'Páginas: ' + pages + '/' + total + '<br>' +
+                    'Entidades creadas: ' + entities + '<br>' +
+                    'Batches completados: ' + (progress.batches_completed || 0);
+                }
+                processBookBtn.disabled = false;
+                processBookBtn.textContent = 'Procesar Libro';
+                showToast('Libro procesado: ' + entities + ' entidades');
+              }
+            }
+          } catch (e) {
+            console.warn('Progress poll error:', e);
+          }
+        }
+
+        // Mostrar progreso inicial
         processBookBtn.disabled = true;
         processBookBtn.textContent = 'Procesando...';
         if (progressEl) progressEl.style.display = 'block';
         if (resultEl)   resultEl.style.display = 'none';
-        if (progressBar) progressBar.style.width = '10%';
-        if (progressTxt) progressTxt.textContent = 'Enviando al servidor...';
-        if (progressPct) progressPct.textContent = '10%';
+        if (progressBar) progressBar.style.width = '0%';
+        if (progressTxt) progressTxt.textContent = 'Iniciando procesamiento...';
+        if (progressPct) progressPct.textContent = '0%';
 
         try {
-          var resp = await fetch(API + '/api/ontology/process-book', {
+          // Iniciar procesamiento incremental (no bloqueante en servidor - hace 1 batch y retorna)
+          var resp = await fetch(API + '/api/ontology/process-incremental', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               file_path:  filePath,
               domain_id:  domainId,
-              max_pages:  maxPages ? parseInt(maxPages) : null,
-              chunk_size: chunkSize
+              batch_size: 20
             })
           });
 
-          if (progressBar) progressBar.style.width = '90%';
-          if (progressPct) progressPct.textContent = '90%';
-
           var data = await resp.json();
 
-          if (progressBar) progressBar.style.width = '100%';
-          if (progressPct) progressPct.textContent = '100%';
+          if (data.status === 'error') {
+            // Error inmediato
+            if (resultEl) {
+              resultEl.style.display = 'block';
+              resultEl.style.background = 'rgba(255,80,80,0.1)';
+              resultEl.style.color = 'var(--error, #f44336)';
+              resultEl.textContent = 'Error: ' + (data.error || 'Error desconocido');
+            }
+            processBookBtn.disabled = false;
+            processBookBtn.textContent = 'Procesar Libro';
+            showToast('Error: ' + (data.error || 'Error desconocido'));
+            return;
+          }
 
-          if (resultEl) {
-            resultEl.style.display = 'block';
-            if (data.status === 'ok' || data.status === 'success') {
+          // Si ya estaba completo
+          if (data.is_complete) {
+            if (progressBar) progressBar.style.width = '100%';
+            if (progressPct) progressPct.textContent = '100%';
+            if (progressTxt) progressTxt.textContent = 'Completado';
+            if (resultEl) {
+              resultEl.style.display = 'block';
               resultEl.style.background = 'rgba(0,200,100,0.1)';
               resultEl.style.color = 'var(--success, #4caf50)';
               resultEl.innerHTML =
-                '<strong>Procesado correctamente</strong><br>' +
-                'Entidades creadas: ' + (data.entities_created || 0) + '<br>' +
-                'Relaciones creadas: ' + (data.relations_created || 0) + '<br>' +
-                'Chunks procesados: ' + (data.chunks_processed || 0);
-              showToast('Libro procesado: ' + (data.entities_created || 0) + ' entidades');
-            } else {
-              resultEl.style.background = 'rgba(255,80,80,0.1)';
-              resultEl.style.color = 'var(--error, #f44336)';
-              resultEl.textContent = 'Error: ' + (data.error || data.message || 'Error desconocido');
-              showToast('Error al procesar el libro');
+                '<strong>✓ Ya procesado anteriormente</strong><br>' +
+                'Entidades: ' + (data.entities_created || 0) + '<br>' +
+                (data.message || '');
             }
+            processBookBtn.disabled = false;
+            processBookBtn.textContent = 'Procesar Libro';
+            showToast(data.message || 'Libro ya procesado');
+            return;
           }
+
+          // Procesamiento en progreso - iniciar polling
+          _ontologyPollingActive = true;
+          
+          // Actualizar inmediatamente
+          await updateProgressBar();
+          
+          // Polling cada 3 segundos
+          _ontologyPollingInterval = setInterval(async function() {
+            if (!_ontologyPollingActive) {
+              clearInterval(_ontologyPollingInterval);
+              return;
+            }
+            await updateProgressBar();
+          }, 3000);
+
+          // Mostrar resultado parcial del primer batch
+          if (data.status === 'ok' || data.status === 'partial') {
+            showToast('Procesando... ' + (data.pages_processed || 0) + ' páginas');
+          }
+
         } catch (e) {
           if (resultEl) {
             resultEl.style.display = 'block';
@@ -6645,10 +6722,9 @@ window._renderCreateFunctionBlock = function(jsonStr) {
             resultEl.style.color = 'var(--error, #f44336)';
             resultEl.textContent = 'Error de conexión: ' + e.message;
           }
-          showToast('Error al conectar con el servidor');
-        } finally {
           processBookBtn.disabled = false;
           processBookBtn.textContent = 'Procesar Libro';
+          showToast('Error al conectar con el servidor');
         }
       });
     }

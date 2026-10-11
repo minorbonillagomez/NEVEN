@@ -3106,7 +3106,7 @@ else:
         """POST /api/ontology/process-book — Process a document and extract knowledge to ontology."""
         file_path   = body.get("file_path", "").strip()
         domain_id   = body.get("domain_id", "").strip()
-        max_pages   = body.get("max_pages")   # None = all
+        max_pages   = body.get("max_pages")   # None = all pages
         chunk_size  = int(body.get("chunk_size", 4000))
 
         if not file_path:
@@ -3121,8 +3121,7 @@ else:
 
         try:
             from ontology_manager import process_book
-            from config_manager import ConfigManager
-            config_mgr = ConfigManager()
+            config_mgr = _get_config_manager()
 
             result = process_book(
                 file_path=file_path,
@@ -3133,6 +3132,7 @@ else:
             )
             self._send_json(result)
         except Exception as e:
+            _log.error(f"[Ontology] Error processing book: {e}", exc_info=True)
             self._send_error_json(f"Error processing book: {e}")
 
     def _handle_rag_upload(self, body: dict):

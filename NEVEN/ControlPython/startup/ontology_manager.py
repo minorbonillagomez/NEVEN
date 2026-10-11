@@ -924,19 +924,19 @@ def _extract_document_text(file_path: str, max_pages: int = None, chunk_size: in
     Extract text from any supported document format.
 
     Strategy:
-    - PDF + max_pages → PyMuPDF (stops at page N, efficient for large books)
-    - All other cases  → MarkItDown (handles PDF, DOCX, EPUB, PPTX, XLSX, HTML, TXT, MD…)
+    - PDF → PyMuPDF (fast and reliable for all PDF sizes)
+    - Other formats → MarkItDown (handles DOCX, EPUB, PPTX, XLSX, HTML, TXT, MD…)
     - Plain text fallback if MarkItDown is not installed
 
     Supports: PDF, DOCX, PPTX, XLSX, XLS, EPUB, HTML, TXT, MD and more.
     """
     ext = os.path.splitext(file_path)[1].lower()
 
-    # PDF with page limit: use PyMuPDF — converts only the requested pages (efficient)
-    if ext == '.pdf' and max_pages:
+    # PDF: always use PyMuPDF (fast, handles large files well)
+    if ext == '.pdf':
         return _extract_pdf_text(file_path, max_pages, chunk_size)
 
-    # All other cases: use MarkItDown (supports 15+ formats offline, including full PDF)
+    # Other formats: use MarkItDown (handles DOCX, EPUB, PPTX, XLSX, etc.)
     try:
         from markitdown import MarkItDown
         md = MarkItDown(enable_plugins=False)
@@ -977,19 +977,534 @@ def _split_into_chunks(full_text: str, chunk_size: int = 4000) -> List[str]:
     return chunks
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# INCREMENTAL BOOK PROCESSING (with checkpoints)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _get_checkpoint_path(pdf_path: str, domain_id: str) -> str:
+    """Get the path for a book's processing checkpoint file."""
+    import hashlib
+    path_hash = hashlib.md5(pdf_path.encode('utf-8')).hexdigest()[:12]
+    base_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    checkpoint_dir = r"C:\NEVEN\docs\ontologia\checkpoints"
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    return os.path.join(checkpoint_dir, f"{base_name}_{domain_id}_{path_hash}.json")
+
+
+def get_book_progress(pdf_path: str, domain_id: str) -> Dict[str, Any]:
+    """
+    Get the current processing progress for a book.
+    Used by TaskPane to show progress bar.
+    
+    Returns:
+        {
+            "status": "not_started" | "in_progress" | "completed",
+            "pages_processed": int,
+            "total_pages": int,
+            "percent_complete": float,
+            "entities_created": int,
+            "batches_completed": int,
+            "started_at": str,
+            "updated_at": str
+        }
+    """
+    checkpoint_path = _get_checkpoint_path(pdf_path, domain_id)
+    
+    if not os.path.exists(checkpoint_path):
+        try:
+            idx = get_pdf_page_index(pdf_path)
+            total_pages = len(idx.get("pages_with_text", []))
+        except:
+            total_pages = 0
+            
+        return {
+            "status": "not_started",
+            "pages_processed": 0,
+            "total_pages": total_pages,
+            "percent_complete": 0.0,
+            "entities_created": 0,
+            "batches_completed": 0
+        }
+    
+    try:
+        with open(checkpoint_path, 'r', encoding='utf-8') as f:
+            cp = json.load(f)
+        
+        total = cp.get("total_pages", 1)
+        processed = cp.get("pages_processed", 0)
+        percent = (processed / total * 100) if total > 0 else 0
+        status = "completed" if cp.get("status") == "completed" else ("in_progress" if processed > 0 else "not_started")
+        
+        return {
+            "status": status,
+            "pages_processed": processed,
+            "total_pages": total,
+            "percent_complete": round(percent, 1),
+            "entities_created": cp.get("entities_created", 0),
+            "batches_completed": cp.get("batches_completed", 0),
+            "started_at": cp.get("started_at"),
+            "updated_at": cp.get("updated_at")
+        }
+    except:
+        return {"status": "error", "error": "Could not read checkpoint"}
+
+
+def _save_checkpoint(checkpoint_path: str, data: Dict[str, Any]):
+    """Save checkpoint data to disk."""
+    from datetime import datetime
+    data["updated_at"] = datetime.now().isoformat()
+    with open(checkpoint_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def reset_book_progress(pdf_path: str, domain_id: str) -> bool:
+    """Reset/delete checkpoint for a book (start fresh)."""
+    checkpoint_path = _get_checkpoint_path(pdf_path, domain_id)
+    try:
+        if os.path.exists(checkpoint_path):
+            os.unlink(checkpoint_path)
+        return True
+    except:
+        return False
+
+
+def process_book_incremental(
+    file_path: str,
+    domain_id: str,
+    config_manager=None,
+    batch_size: int = 20,
+    chunk_size: int = 4000,
+    on_progress: callable = None,
+    on_batch_complete: callable = None
+) -> Dict[str, Any]:
+    """
+    Process a PDF book incrementally with checkpoints.
+    
+    Processes pages in batches, saving progress after each batch.
+    Can be interrupted and resumed from where it left off.
+    
+    Args:
+        file_path: Path to the PDF file
+        domain_id: Target domain ID
+        config_manager: ConfigManager instance for AI profile
+        batch_size: Number of pages per batch (default 20)
+        chunk_size: Characters per text chunk (default 4000)
+        on_progress: Callback(current_page, total_pages, message)
+        on_batch_complete: Callback(batch_num, pages_in_batch, entities_created)
+        
+    Returns:
+        {
+            "status": "ok" | "error" | "partial",
+            "pages_processed": int,
+            "total_pages": int,
+            "entities_created": int,
+            "batches_completed": int,
+            "resumed_from_page": int,  # 0 if started fresh
+            "is_complete": bool
+        }
+    """
+    import time
+    from datetime import datetime
+    
+    start_time = time.time()
+    
+    # Validate file
+    if not os.path.isfile(file_path):
+        return {"status": "error", "error": f"File not found: {file_path}"}
+    
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext != '.pdf':
+        return {"status": "error", "error": "Incremental processing only supports PDF"}
+    
+    # Get/create domain
+    manager = get_manager()
+    if domain_id not in manager.domains:
+        found_id = _find_domain_by_name(domain_id)
+        if found_id:
+            domain_id = found_id
+        else:
+            create_result = manager.create_domain(domain_id)
+            if create_result.get("status") == "error":
+                return create_result
+            manager.discover_domains()
+    
+    domain = manager.domains[domain_id]
+    graph_path = os.path.join(domain.path, "graph.jsonl")
+    
+    if not os.path.isfile(graph_path):
+        os.makedirs(os.path.dirname(graph_path), exist_ok=True)
+        with open(graph_path, 'w', encoding='utf-8') as f:
+            pass
+    
+    # Get page index
+    try:
+        idx = get_pdf_page_index(file_path)
+        pages_with_text = idx["pages_with_text"]
+        total_pages = len(pages_with_text)
+    except Exception as e:
+        return {"status": "error", "error": f"Could not index PDF: {e}"}
+    
+    if total_pages == 0:
+        return {"status": "error", "error": "PDF has no pages with text"}
+    
+    # Load or create checkpoint
+    checkpoint_path = _get_checkpoint_path(file_path, domain_id)
+    
+    if os.path.exists(checkpoint_path):
+        with open(checkpoint_path, 'r', encoding='utf-8') as f:
+            checkpoint = json.load(f)
+        resumed_from = checkpoint.get("pages_processed", 0)
+        start_page_idx = resumed_from
+        total_entities = checkpoint.get("entities_created", 0)
+        total_chunks = checkpoint.get("chunks_processed", 0)
+        batches_done = checkpoint.get("batches_completed", 0)
+    else:
+        checkpoint = {
+            "pdf_path": file_path,
+            "pdf_name": os.path.basename(file_path),
+            "domain_id": domain_id,
+            "total_pages": total_pages,
+            "pages_processed": 0,
+            "chunks_processed": 0,
+            "entities_created": 0,
+            "batches_completed": 0,
+            "started_at": datetime.now().isoformat()
+        }
+        resumed_from = 0
+        start_page_idx = 0
+        total_entities = 0
+        total_chunks = 0
+        batches_done = 0
+        _save_checkpoint(checkpoint_path, checkpoint)
+    
+    # Check if already complete
+    if start_page_idx >= total_pages:
+        return {
+            "status": "ok",
+            "pages_processed": total_pages,
+            "total_pages": total_pages,
+            "entities_created": total_entities,
+            "batches_completed": batches_done,
+            "resumed_from_page": resumed_from,
+            "is_complete": True,
+            "message": "Book already fully processed"
+        }
+    
+    # Get AI profile
+    ai_profile = _get_active_ai_profile(config_manager)
+    if not ai_profile:
+        return {"status": "error", "error": "No active AI profile configured"}
+    
+    # Load prompt
+    prompt_path = r"C:\NEVEN\prompts\ontology_extraction.txt"
+    if not os.path.isfile(prompt_path):
+        return {"status": "error", "error": f"Prompt not found: {prompt_path}"}
+    
+    with open(prompt_path, 'r', encoding='utf-8') as f:
+        system_prompt = f.read()
+    
+    # Open PDF
+    try:
+        import fitz
+    except ImportError:
+        return {"status": "error", "error": "PyMuPDF required"}
+    
+    doc = fitz.open(file_path)
+    book_name = os.path.basename(file_path)
+    
+    # Process in batches
+    current_page_idx = start_page_idx
+    batch_num = batches_done
+    errors = []
+    
+    try:
+        while current_page_idx < total_pages:
+            batch_num += 1
+            batch_start = current_page_idx
+            batch_end = min(current_page_idx + batch_size, total_pages)
+            batch_pages = pages_with_text[batch_start:batch_end]
+            
+            if on_progress:
+                on_progress(current_page_idx, total_pages, 
+                           f"Batch {batch_num}: pages {batch_start+1}-{batch_end}/{total_pages}")
+            
+            # Extract text for this batch
+            batch_text = []
+            for page_num in batch_pages:
+                text = doc[page_num].get_text()
+                if text.strip():
+                    batch_text.append(text)
+            
+            # Chunk the batch text
+            full_text = "\n\n".join(batch_text)
+            chunks = _split_into_chunks(full_text, chunk_size)
+            
+            # Process chunks with LLM
+            batch_entities = []
+            batch_relations = []
+            
+            for i, chunk in enumerate(chunks):
+                if on_progress:
+                    on_progress(current_page_idx, total_pages, 
+                               f"Chunk {i+1}/{len(chunks)} of batch {batch_num}")
+                
+                try:
+                    jsonl_output = _call_llm_for_extraction(
+                        ai_profile, system_prompt, chunk, book_name=book_name
+                    )
+                    entities, relations = _parse_jsonl_output(jsonl_output)
+                    batch_entities.extend(entities)
+                    batch_relations.extend(relations)
+                    total_chunks += 1
+                except Exception as e:
+                    errors.append(f"Batch {batch_num}, chunk {i+1}: {e}")
+            
+            # Deduplicate and write batch results
+            unique_entities = _deduplicate_entities(batch_entities)
+            
+            with open(graph_path, 'a', encoding='utf-8') as f:
+                for entity in unique_entities:
+                    f.write(json.dumps({"op": "create", "entity": entity}, ensure_ascii=False) + '\n')
+                    total_entities += 1
+                for relation in batch_relations:
+                    f.write(json.dumps({"op": "relate", "relation": relation}, ensure_ascii=False) + '\n')
+            
+            # Update checkpoint after each batch
+            current_page_idx = batch_end
+            checkpoint["pages_processed"] = current_page_idx
+            checkpoint["chunks_processed"] = total_chunks
+            checkpoint["entities_created"] = total_entities
+            checkpoint["batches_completed"] = batch_num
+            _save_checkpoint(checkpoint_path, checkpoint)
+            
+            if on_batch_complete:
+                on_batch_complete(batch_num, len(batch_pages), len(unique_entities))
+    
+    except KeyboardInterrupt:
+        doc.close()
+        return {
+            "status": "partial",
+            "pages_processed": current_page_idx,
+            "total_pages": total_pages,
+            "entities_created": total_entities,
+            "batches_completed": batch_num,
+            "resumed_from_page": resumed_from,
+            "is_complete": False,
+            "message": "Interrupted. Progress saved, can resume."
+        }
+    except Exception as e:
+        doc.close()
+        return {
+            "status": "error",
+            "error": str(e),
+            "pages_processed": current_page_idx,
+            "total_pages": total_pages,
+            "entities_created": total_entities
+        }
+    
+    doc.close()
+    
+    # Mark as complete
+    checkpoint["status"] = "completed"
+    _save_checkpoint(checkpoint_path, checkpoint)
+    
+    manager.load_domain(domain_id)
+    elapsed = time.time() - start_time
+    
+    return {
+        "status": "ok",
+        "pages_processed": total_pages,
+        "total_pages": total_pages,
+        "entities_created": total_entities,
+        "batches_completed": batch_num,
+        "resumed_from_page": resumed_from,
+        "is_complete": True,
+        "processing_time_seconds": round(elapsed, 1),
+        "errors": errors if errors else None
+    }
+
+
+def _split_into_chunks(text: str, chunk_size: int = 4000) -> List[str]:
+    """Split text into chunks at paragraph boundaries."""
+    if len(text) <= chunk_size:
+        return [text] if text.strip() else []
+    
+    chunks = []
+    current = ""
+    
+    for para in text.split("\n\n"):
+        if len(current) + len(para) + 2 <= chunk_size:
+            current += para + "\n\n"
+        else:
+            if current.strip():
+                chunks.append(current.strip())
+            current = para + "\n\n" if len(para) <= chunk_size else ""
+            
+            # Handle very long paragraphs
+            if len(para) > chunk_size:
+                words = para.split()
+                temp = ""
+                for word in words:
+                    if len(temp) + len(word) + 1 <= chunk_size:
+                        temp += word + " "
+                    else:
+                        if temp.strip():
+                            chunks.append(temp.strip())
+                        temp = word + " "
+                if temp.strip():
+                    current = temp
+    
+    if current.strip():
+        chunks.append(current.strip())
+    
+    return chunks
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PDF PAGE INDEX (Tabu/Exclusion Table)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _get_pdf_index_path(pdf_path: str) -> str:
+    """Get the path for the PDF's page index file."""
+    import hashlib
+    # Use hash of full path to create unique index filename
+    path_hash = hashlib.md5(pdf_path.encode('utf-8')).hexdigest()[:12]
+    base_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    # Store in ontology directory
+    index_dir = r"C:\NEVEN\docs\ontologia\page_index"
+    os.makedirs(index_dir, exist_ok=True)
+    return os.path.join(index_dir, f"{base_name}_{path_hash}.json")
+
+
+def get_pdf_page_index(pdf_path: str, min_chars: int = 100, force_rebuild: bool = False) -> Dict[str, Any]:
+    """
+    Get or create the page index (tabu table) for a PDF.
+    
+    The index identifies which pages have text content and which are empty.
+    Once created, it's cached to disk and reused in future runs.
+    
+    Args:
+        pdf_path: Path to the PDF file
+        min_chars: Minimum characters to consider a page as having content
+        force_rebuild: If True, rebuild index even if cached version exists
+    
+    Returns:
+        {
+            "pdf_path": str,
+            "pdf_name": str,
+            "total_pages": int,
+            "pages_with_text": [int],  # Page numbers with content
+            "pages_excluded": [int],    # Page numbers to skip (tabu list)
+            "text_coverage": float,
+            "estimated_words": int,
+            "indexed_at": str (ISO timestamp),
+            "min_chars_threshold": int
+        }
+    """
+    import json
+    from datetime import datetime
+    
+    index_path = _get_pdf_index_path(pdf_path)
+    
+    # Try to load existing index
+    if not force_rebuild and os.path.exists(index_path):
+        try:
+            with open(index_path, 'r', encoding='utf-8') as f:
+                index = json.load(f)
+            # Verify it's for the same file (check total pages as sanity check)
+            if index.get("pdf_path") == pdf_path:
+                return index
+        except (json.JSONDecodeError, KeyError):
+            pass  # Rebuild if corrupted
+    
+    # Build new index
+    try:
+        import fitz
+    except ImportError:
+        raise ImportError("PyMuPDF required: pip install pymupdf")
+    
+    doc = fitz.open(pdf_path)
+    total_pages = len(doc)
+    
+    pages_with_text = []
+    pages_excluded = []
+    total_words = 0
+    
+    for i in range(total_pages):
+        text = doc[i].get_text()
+        chars = len(text.strip())
+        
+        if chars >= min_chars:
+            pages_with_text.append(i)
+            total_words += len(text.split())
+        else:
+            pages_excluded.append(i)
+    
+    doc.close()
+    
+    index = {
+        "pdf_path": pdf_path,
+        "pdf_name": os.path.basename(pdf_path),
+        "total_pages": total_pages,
+        "pages_with_text": pages_with_text,
+        "pages_excluded": pages_excluded,
+        "text_coverage": len(pages_with_text) / total_pages if total_pages > 0 else 0,
+        "estimated_words": total_words,
+        "indexed_at": datetime.now().isoformat(),
+        "min_chars_threshold": min_chars
+    }
+    
+    # Save index to disk
+    try:
+        with open(index_path, 'w', encoding='utf-8') as f:
+            json.dump(index, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"[PageIndex] Warning: Could not save index: {e}")
+    
+    return index
+
+
+def print_pdf_index_summary(pdf_path: str) -> None:
+    """Print a summary of the PDF page index."""
+    index = get_pdf_page_index(pdf_path)
+    
+    print(f"PDF: {index['pdf_name']}")
+    print(f"Total pages: {index['total_pages']}")
+    print(f"Pages with text: {len(index['pages_with_text'])} ({index['text_coverage']*100:.1f}%)")
+    print(f"Pages excluded (tabu): {len(index['pages_excluded'])}")
+    print(f"Estimated words: {index['estimated_words']:,}")
+    
+    if index['pages_excluded']:
+        excluded_preview = index['pages_excluded'][:10]
+        print(f"Excluded pages: {excluded_preview}{'...' if len(index['pages_excluded']) > 10 else ''}")
+
+
 def _extract_pdf_text(file_path: str, max_pages: int = None, chunk_size: int = 4000) -> List[str]:
-    """Extract text from PDF and split into chunks."""
+    """
+    Extract text from PDF and split into chunks.
+    Uses the page index (tabu table) to skip empty pages efficiently.
+    """
     try:
         import fitz  # PyMuPDF
     except ImportError:
         raise ImportError("PyMuPDF (fitz) is required. Install with: pip install pymupdf")
     
+    # Get page index (uses cached version if available)
+    index = get_pdf_page_index(file_path)
+    pages_to_extract = index["pages_with_text"]
+    
+    # Limit to max_pages if specified
+    if max_pages and len(pages_to_extract) > max_pages:
+        pages_to_extract = pages_to_extract[:max_pages]
+    
+    if not pages_to_extract:
+        return []
+    
+    # Extract text only from pages with content
     doc = fitz.open(file_path)
-    
     all_text = []
-    pages_to_process = min(len(doc), max_pages) if max_pages else len(doc)
     
-    for page_num in range(pages_to_process):
+    for page_num in pages_to_extract:
         page = doc[page_num]
         text = page.get_text()
         if text.strip():
@@ -1029,10 +1544,8 @@ def _get_active_ai_profile(config_manager) -> Optional[Dict[str, Any]]:
             return None
     
     try:
-        profiles = config_manager.list_ai_profiles()
-        for profile in profiles:
-            if profile.get("is_active"):
-                return profile
+        # Use ConfigManager's built-in method which returns profile with decrypted API key
+        return config_manager.get_active_ai_profile()
     except Exception:
         pass
     
@@ -1047,6 +1560,8 @@ def _call_llm_for_extraction(
 ) -> str:
     """Call the LLM to extract entities from a text chunk."""
     import requests
+    import subprocess
+    import tempfile
     
     provider = ai_profile.get("provider", "").lower()
     endpoint = ai_profile.get("endpoint", "")
@@ -1071,28 +1586,67 @@ INSTRUCCIONES:
     # Build request based on provider
     if provider in ("openai", "azure", "lmstudio"):
         if provider == "azure":
-            url = endpoint
+            # Azure OpenAI uses a specific URL format and api-key header
+            api_version = ai_profile.get("api_version", "2024-02-01")
+            url = f"{endpoint.rstrip('/')}/openai/deployments/{model}/chat/completions?api-version={api_version}"
+            
+            payload = {
+                "messages": messages,
+                "temperature": 0.3,
+                "max_tokens": 4000
+            }
+            
+            # Use curl for Azure due to SSL issues with requests library
+            import json
+            temp_path = os.path.join(os.environ.get('TEMP', 'C:\\temp'), 'neven_llm_payload.json')
+            # Use ensure_ascii=True to escape all non-ASCII chars as \uXXXX (avoids encoding issues with curl on Windows)
+            with open(temp_path, 'w', encoding='utf-8') as f:
+                json.dump(payload, f, ensure_ascii=True)
+            
+            try:
+                # Use shell=True to avoid argument escaping issues with api-key header
+                cmd = f'curl.exe -s --max-time 120 -H "Content-Type: application/json; charset=utf-8" -H "api-key: {api_key}" -d @"{temp_path}" "{url}"'
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding='utf-8', timeout=130)
+                
+                if result.returncode != 0:
+                    raise RuntimeError(f"curl failed with code {result.returncode}: {result.stderr}")
+                
+                if not result.stdout:
+                    raise RuntimeError("Empty response from Azure")
+                
+                response_data = json.loads(result.stdout)
+                return response_data["choices"][0]["message"]["content"]
+            finally:
+                try:
+                    os.unlink(temp_path)
+                except:
+                    pass
+                    
         elif provider == "lmstudio":
             url = endpoint or "http://localhost:1234/v1/chat/completions"
+            headers = {"Content-Type": "application/json"}
+            if api_key:
+                headers["Authorization"] = f"Bearer {api_key}"
         else:
             url = endpoint or "https://api.openai.com/v1/chat/completions"
+            headers = {"Content-Type": "application/json"}
+            if api_key:
+                headers["Authorization"] = f"Bearer {api_key}"
         
-        headers = {"Content-Type": "application/json"}
-        if api_key:
-            headers["Authorization"] = f"Bearer {api_key}"
-        
-        payload = {
-            "model": model,
-            "messages": messages,
-            "temperature": 0.3,
-            "max_tokens": 4000
-        }
-        
-        response = requests.post(url, json=payload, headers=headers, timeout=120)
-        response.raise_for_status()
-        
-        result = response.json()
-        return result["choices"][0]["message"]["content"]
+        # For non-Azure providers, use requests
+        if provider != "azure":
+            payload = {
+                "model": model,
+                "messages": messages,
+                "temperature": 0.3,
+                "max_tokens": 4000
+            }
+            
+            response = requests.post(url, json=payload, headers=headers, timeout=120)
+            response.raise_for_status()
+            
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
     
     elif provider == "ollama":
         url = endpoint or "http://localhost:11434/api/chat"
@@ -1245,4 +1799,9 @@ __all__ = [
     "search_knowledge",
     "process_book",
     "list_processed_books",
+    # Incremental processing
+    "process_book_incremental",
+    "get_book_progress",
+    "reset_book_progress",
+    "get_pdf_page_index",
 ]

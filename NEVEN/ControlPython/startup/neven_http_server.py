@@ -841,6 +841,21 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_ontology_books()
             return
 
+        if path.startswith('api/ontology/progress'):
+            # GET /api/ontology/progress?file=path&domain=id
+            self._handle_ontology_progress()
+            return
+
+        if path.startswith('api/ontology/process-incremental'):
+            # POST /api/ontology/process-incremental — Start incremental processing
+            self._handle_ontology_process_incremental()
+            return
+
+        if path.startswith('api/ontology/reset-progress'):
+            # POST /api/ontology/reset-progress — Reset checkpoint for a book
+            self._handle_ontology_reset_progress()
+            return
+
         # ── Ayuda / Diccionario de Funciones NevenX ───────────────────────────
         if path == 'api/ayuda/funciones':
             self._handle_ayuda_funciones()
@@ -2896,6 +2911,132 @@ class NEVENHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._send_error_json(f"Books list error: {e}")
 
+    def _handle_ontology_progress(self):
+        """GET /api/ontology/progress?file=path&domain=id — Get processing progress for a book."""
+        from urllib.parse import urlparse, parse_qs, unquote
+        query_params = parse_qs(urlparse(self.path).query)
+        
+        file_path = query_params.get("file", [None])[0]
+        domain_id = query_params.get("domain", ["econometria"])[0]
+        
+        if not file_path:
+            self._send_error_json("Missing 'file' parameter")
+            return
+        
+        # Decode URL-encoded path
+        file_path = unquote(file_path)
+        
+        try:
+            from ontology_manager import get_book_progress, get_pdf_page_index
+            
+            progress = get_book_progress(file_path, domain_id)
+            
+            # Add PDF info if available
+            try:
+                idx = get_pdf_page_index(file_path)
+                progress["pdf_name"] = idx.get("pdf_name", os.path.basename(file_path))
+                progress["estimated_words"] = idx.get("estimated_words", 0)
+            except:
+                progress["pdf_name"] = os.path.basename(file_path)
+            
+            self._send_json({
+                "status": "ok",
+                **progress
+            })
+        except ImportError:
+            self._send_error_json("ontology_manager not available")
+        except Exception as e:
+            self._send_error_json(f"Progress error: {e}")
+
+    def _handle_ontology_process_incremental(self):
+        """POST /api/ontology/process-incremental — Start incremental book processing."""
+        if self.command != 'POST':
+            self._send_error_json("POST required", 405)
+            return
+        
+        body = self._read_json_body()
+        if not body:
+            self._send_error_json("Invalid JSON body")
+            return
+        
+        file_path = body.get("file_path") or body.get("file")
+        domain_id = body.get("domain_id") or body.get("domain", "econometria")
+        batch_size = body.get("batch_size", 20)
+        
+        if not file_path:
+            self._send_error_json("Missing file_path")
+            return
+        
+        if not os.path.isfile(file_path):
+            self._send_error_json(f"File not found: {file_path}")
+            return
+        
+        try:
+            from ontology_manager import process_book_incremental, get_book_progress
+            
+            # Check current progress first
+            progress = get_book_progress(file_path, domain_id)
+            if progress.get("status") == "completed":
+                self._send_json({
+                    "status": "ok",
+                    "message": "Book already fully processed",
+                    "is_complete": True,
+                    **progress
+                })
+                return
+            
+            # Get config manager
+            config_mgr = _get_config_manager() if _CONFIG_MANAGER_AVAILABLE else None
+            
+            # Start processing (this runs synchronously - for async, use threading)
+            result = process_book_incremental(
+                file_path=file_path,
+                domain_id=domain_id,
+                config_manager=config_mgr,
+                batch_size=batch_size
+            )
+            
+            self._send_json(result)
+            
+        except ImportError as e:
+            self._send_error_json(f"Module not available: {e}")
+        except Exception as e:
+            self._send_error_json(f"Processing error: {e}")
+
+    def _handle_ontology_reset_progress(self):
+        """POST /api/ontology/reset-progress — Reset checkpoint for a book."""
+        if self.command != 'POST':
+            self._send_error_json("POST required", 405)
+            return
+        
+        body = self._read_json_body()
+        if not body:
+            self._send_error_json("Invalid JSON body")
+            return
+        
+        file_path = body.get("file_path") or body.get("file")
+        domain_id = body.get("domain_id") or body.get("domain", "econometria")
+        
+        if not file_path:
+            self._send_error_json("Missing file_path")
+            return
+        
+        try:
+            from ontology_manager import reset_book_progress
+            
+            success = reset_book_progress(file_path, domain_id)
+            
+            self._send_json({
+                "status": "ok" if success else "error",
+                "message": "Progress reset" if success else "Could not reset progress",
+                "file": file_path,
+                "domain": domain_id
+            })
+        except ImportError:
+            self._send_error_json("ontology_manager not available")
+        except Exception as e:
+            self._send_error_json(f"Reset error: {e}")
+
     def _handle_ayuda_funciones(self):
         """GET /api/ayuda/funciones — Diccionario dinámico de funciones NevenX.
         
@@ -3106,7 +3247,7 @@ else:
         """POST /api/ontology/process-book — Process a document and extract knowledge to ontology."""
         file_path   = body.get("file_path", "").strip()
         domain_id   = body.get("domain_id", "").strip()
-        max_pages   = body.get("max_pages")   # None = all
+        max_pages   = body.get("max_pages")   # None = all pages
         chunk_size  = int(body.get("chunk_size", 4000))
 
         if not file_path:
@@ -3121,8 +3262,7 @@ else:
 
         try:
             from ontology_manager import process_book
-            from config_manager import ConfigManager
-            config_mgr = ConfigManager()
+            config_mgr = _get_config_manager()
 
             result = process_book(
                 file_path=file_path,
@@ -3133,6 +3273,7 @@ else:
             )
             self._send_json(result)
         except Exception as e:
+            _log.error(f"[Ontology] Error processing book: {e}", exc_info=True)
             self._send_error_json(f"Error processing book: {e}")
 
     def _handle_rag_upload(self, body: dict):
