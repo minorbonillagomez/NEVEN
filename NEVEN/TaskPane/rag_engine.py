@@ -50,6 +50,81 @@ def generate_embedding(text: str) -> List[float]:
     return generate_embeddings([text])[0]
 
 
+def clean_pdf_text(text: str) -> str:
+    """
+    Limpia texto extraído de PDFs con problemas de encoding.
+    
+    Problemas comunes:
+    - Fuentes Symbol/Math con mapeo incorrecto a Unicode
+    - Caracteres de control invisibles
+    - Secuencias de guiones/espacios repetidos
+    - Ligaduras rotas (fi, fl, ff)
+    
+    Args:
+        text: Texto crudo del PDF
+        
+    Returns:
+        Texto limpio y normalizado
+    """
+    if not text:
+        return text
+    
+    # 1. Reemplazar caracteres de fuentes matemáticas mal mapeados
+    # Estos son comunes en PDFs académicos con fórmulas
+    math_replacements = {
+        'φ': 'phi',      # phi griego
+        'μ': 'mu',       # mu griego
+        'σ': 'sigma',    # sigma griego
+        'ρ': 'rho',      # rho (correlación)
+        'β': 'beta',     # beta
+        'α': 'alpha',    # alpha
+        'γ': 'gamma',    # gamma
+        'δ': 'delta',    # delta
+        'ε': 'epsilon',  # epsilon
+        'θ': 'theta',    # theta
+        'λ': 'lambda',   # lambda
+        'π': 'pi',       # pi
+        'Σ': 'SUM',      # sumatoria
+        'Π': 'PROD',     # productoria
+        '∞': 'inf',      # infinito
+        '≈': '~',        # aproximado
+        '≠': '!=',       # diferente
+        '≤': '<=',       # menor o igual
+        '≥': '>=',       # mayor o igual
+        '→': '->',       # flecha derecha
+        '←': '<-',       # flecha izquierda
+        '∈': 'in',       # pertenece
+        '∂': 'd',        # derivada parcial
+        '√': 'sqrt',     # raíz cuadrada
+    }
+    
+    for char, replacement in math_replacements.items():
+        text = text.replace(char, replacement)
+    
+    # 2. Eliminar caracteres de control (excepto newline y tab)
+    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
+    
+    # 3. Normalizar espacios múltiples y guiones repetidos
+    text = re.sub(r'-{3,}', '---', text)  # Máximo 3 guiones seguidos
+    text = re.sub(r'\.{4,}', '...', text)  # Máximo 3 puntos
+    text = re.sub(r' {3,}', '  ', text)    # Máximo 2 espacios
+    
+    # 4. Detectar y marcar texto probablemente corrupto
+    # Si hay demasiados caracteres raros seguidos, es texto basura
+    # Patrón: más de 5 caracteres no-alfanuméricos consecutivos (excepto espacios y puntuación común)
+    text = re.sub(r'[^\w\s.,;:!?()[\]{}"\'-]{6,}', ' [FORMULA] ', text)
+    
+    # 5. Limpiar secuencias como "( ) Var Yt ( )" que son fórmulas mal extraídas
+    # Detectar patrones de fórmulas rotas y simplificar
+    text = re.sub(r'\(\s*\)\s*(?=[A-Z])', '', text)  # "( ) Var" -> "Var"
+    text = re.sub(r'(?<=[a-z])\s*\(\s*\)\s*(?=[A-Z])', ' ', text)  # "x ( ) Y" -> "x Y"
+    
+    # 6. Normalizar saltos de línea
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    
+    return text.strip()
+
+
 # ---------------------------------------------------------------------------
 # Chunking de documentos
 # ---------------------------------------------------------------------------
@@ -142,6 +217,7 @@ def extract_text_with_pages_markitdown(file_path: str) -> List[Dict[str, Any]]:
             with pdfplumber.open(file_path) as pdf:
                 for i, page in enumerate(pdf.pages, start=1):
                     text = page.extract_text() or ""
+                    text = clean_pdf_text(text)  # Limpiar texto extraído
                     if text.strip():
                         pages.append({"page": i, "text": text})
             
@@ -150,7 +226,7 @@ def extract_text_with_pages_markitdown(file_path: str) -> List[Dict[str, Any]]:
                 md = MarkItDown(enable_plugins=False)
                 result = md.convert(file_path)
                 if result.markdown.strip():
-                    return [{"page": 1, "text": result.markdown}]
+                    return [{"page": 1, "text": clean_pdf_text(result.markdown)}]
             
             return pages
             
@@ -208,6 +284,7 @@ def extract_text_with_pages(file_path: str) -> List[Dict[str, Any]]:
         pages = []
         for i, page in enumerate(doc, start=1):
             text = page.get_text()
+            text = clean_pdf_text(text)  # Limpiar texto extraído
             if text.strip():  # Solo páginas con contenido
                 pages.append({"page": i, "text": text})
         doc.close()
@@ -298,7 +375,8 @@ def extract_text_from_file(file_path: str) -> str:
             doc = fitz.open(file_path)
             text = ""
             for page in doc:
-                text += page.get_text() + "\n"
+                page_text = page.get_text()
+                text += clean_pdf_text(page_text) + "\n"
             doc.close()
             return text
         except ImportError:
