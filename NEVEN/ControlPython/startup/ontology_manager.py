@@ -902,10 +902,30 @@ def process_book(
     }
 
 
+# Domain aliases - maps alternative names to canonical domain IDs
+_DOMAIN_ALIASES = {
+    "econometrics": "econometria",  # English → Spanish
+    "excel": "excel-functions",
+    "excel_functions": "excel-functions",
+}
+
+
 def _find_domain_by_name(name: str) -> Optional[str]:
-    """Find domain ID by display name."""
+    """Find domain ID by display name or alias."""
     manager = get_manager()
     name_lower = name.lower().replace(" ", "_").replace("-", "_")
+    
+    # Check aliases first
+    if name_lower in _DOMAIN_ALIASES:
+        alias_target = _DOMAIN_ALIASES[name_lower]
+        if alias_target in manager.domains:
+            return alias_target
+    
+    # Also check with original casing
+    if name in _DOMAIN_ALIASES:
+        alias_target = _DOMAIN_ALIASES[name]
+        if alias_target in manager.domains:
+            return alias_target
     
     for domain in manager.domains.values():
         if domain.id == name_lower:
