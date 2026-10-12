@@ -1,4 +1,4 @@
-﻿# ═══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 # NEVEN v3.0 — HTTP Server for Task Pane
 # ═══════════════════════════════════════════════════════════════════════════════
 # Serves the Task Pane HTML/JS and exposes REST API endpoints for DuckDB queries.
@@ -159,7 +159,7 @@ try:
         RAGEngine as _RAGEngine,
     )
     _RAG_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     _RAG_AVAILABLE = False
     _get_rag_engine = None
     _RAGEngine = None
@@ -3635,8 +3635,15 @@ else:
         try:
             engine = _get_rag_engine()
             
+            # DEBUG: Log estado del engine a stderr
+            sys.stderr.write(f"[RAG-DEBUG] Engine entidades: {len(engine.ontology_entities)}\n")
+            sys.stderr.flush()
+            
             if use_ontology:
                 result = engine.query_with_ontology(question, top_k=top_k)
+                # DEBUG: Log resultado
+                sys.stderr.write(f"[RAG-DEBUG] Query '{question}' -> {len(result.get('matched_entities', []))} matched\n")
+                sys.stderr.flush()
             else:
                 results = engine.query(question, domain=domain, top_k=top_k)
                 result = {

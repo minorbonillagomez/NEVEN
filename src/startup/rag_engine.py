@@ -1155,6 +1155,9 @@ class RAGEngine:
                 
                 score = 0
                 
+                # Extraer palabras significativas de la pregunta (>3 chars)
+                query_words = [w for w in question_lower.split() if len(w) > 3]
+                
                 # Match por nombre completo (score alto, pero solo si nombre es significativo)
                 if entity_name and len(entity_name) > 3 and entity_name in question_lower:
                     score = 100
@@ -1172,13 +1175,31 @@ class RAGEngine:
                     elif matches_in_question == 1 and len(matching_parts[0]) > 7:
                         # Una sola palabra larga es suficiente para match bajo
                         score = 20
+                    elif matches_in_question == 1 and len(matching_parts[0]) > 4:
+                        # Palabra mediana (5-7 chars) con baja prioridad
+                        score = 15
                 
-                # Match por keywords (score medio)
+                # Match por keywords (bidireccional: kw en query O query_word en kw)
                 if score == 0:
                     for kw in entity_keywords:
-                        if kw and len(kw) > 3 and kw in question_lower:
-                            # Keywords más largos tienen más peso
-                            score = min(30, 10 + len(kw))
+                        if not kw or len(kw) <= 3:
+                            continue
+                        kw_lower = kw.lower() if isinstance(kw, str) else str(kw).lower()
+                        
+                        # Caso 1: keyword está contenido en la pregunta
+                        if kw_lower in question_lower:
+                            score = min(30, 10 + len(kw_lower))
+                            break
+                        
+                        # Caso 2: alguna palabra de la pregunta está contenida en el keyword
+                        # (ej: "hosmer" está en "hosmer-lemeshow")
+                        for qw in query_words:
+                            if qw in kw_lower:
+                                # Score proporcional a cuánto del keyword cubre la palabra
+                                coverage = len(qw) / len(kw_lower)
+                                score = max(score, int(15 * coverage) + 10)
+                        
+                        if score > 0:
                             break
                 
                 if score > 0:
@@ -1370,9 +1391,14 @@ def get_rag_engine(db_path: str = None) -> RAGEngine:
         ]:
             if candidate.exists():
                 ontology_path = str(candidate)
+                print(f"[RAG] Usando ontologia: {ontology_path}")
                 break
         
+        if ontology_path is None:
+            print("[RAG] WARNING: No se encontró directorio de ontología")
+        
         _rag_instance = RAGEngine(db_path=db_path, ontology_path=ontology_path)
+        print(f"[RAG] Singleton creado: {len(_rag_instance.ontology_entities)} entidades")
     
     return _rag_instance
 

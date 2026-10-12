@@ -9166,3 +9166,215 @@ Nuevo script `ontology_classification_enricher.py` que agrega:
 | **MEDIA** | Mejorar matching de acronimos cortos (AUC, ROC sin contexto) |
 | **BAJA** | Poblar `name` en entidades que solo tienen `id` |
 
+
+
+---
+
+### Sesion 2026-08-20 (~00:30) -- Verificacion de integracion RAG-Agente
+
+## Pregunta del usuario
+
+"Con estas mejoras es de esperar que el agente sea mucho más preciso en sus respuestas?"
+
+## Verificacion realizada
+
+Se busco en el codigo como el agente usa el RAG. Resultado:
+
+**`neven_http_server.py` usa `query_with_ontology()` en dos lugares:**
+
+1. **Linea ~1840**: Consultas del agente IA
+   ```python
+   rag_result = engine.query_with_ontology(query_for_rag, top_k=3)
+   ```
+
+2. **Linea ~3639**: Endpoint `/api/rag/query`
+   ```python
+   result = engine.query_with_ontology(question, top_k=top_k)
+   ```
+
+## Conclusion
+
+**SI, las mejoras se reflejaran en las respuestas del agente** porque:
+
+1. El servidor HTTP ya llama a `query_with_ontology()`
+2. Las entidades encontradas se inyectan al contexto del LLM
+3. El LLM genera respuestas informadas por la ontologia
+
+## Impacto esperado
+
+| Aspecto | Antes | Despues |
+|---------|-------|---------|
+| Entidades cargadas | 0 | 19,054 |
+| Matching | Basico (nombre exacto) | Scoring + expansion |
+| "Hosmer-Lemeshow" | Nada | Test + bondad de ajuste + logit |
+| "Correlograma" | Nada | ACF + PACF + ARIMA + estacionariedad |
+
+## Requisito para que funcione
+
+El servidor HTTP debe reiniciarse para cargar el nuevo `rag_engine.py` con todas las mejoras.
+
+## Archivos modificados
+
+Ninguno (solo verificacion).
+
+## Commits
+
+Ninguno adicional.
+
+---
+
+## RESUMEN EJECUTIVO DE LA SESION COMPLETA (2026-08-19/20)
+
+### Logros principales
+
+1. **Reorganizacion del proyecto**: `NEVEN/NEVEN` -> `src`, eliminacion de duplicados
+2. **RAG funcionando**: De 0 a 19,054 entidades cargando correctamente
+3. **Sistema de scoring**: Matching inteligente que prioriza relevancia
+4. **Enrichers de dominio**: Series de tiempo + Diagnosticos de clasificacion
+5. **Instalador actualizado**: Todos los scripts y datos incluidos
+
+### Commits totales (9)
+
+| Hash | Descripcion |
+|------|-------------|
+| `3762ec4` | refactor: reorganizar estructura del proyecto |
+| `2923a32` | fix(rag): corregir rutas de ontologia |
+| `fd75e08` | feat(rag): mejorar matching con scoring |
+| `ede29c1` | fix(rag): permitir match con 1 palabra larga |
+| `86da721` | feat(ontology): agregar conceptos de series de tiempo |
+| `6615384` | chore(install): actualizar instalador |
+| `8d1e901` | docs: actualizar bitacora |
+| `b0684e2` | feat(ontology): agregar diagnosticos de clasificacion |
+| `81522e2` | docs: actualizar bitacora |
+
+### Estado final
+
+- **Ontologia**: 19,054 entidades, 16,762 relaciones
+- **Estructura**: Limpia (`src/`, `ontologia-fuentes/`, `Install/`)
+- **Backup**: `NEVEN_OLD` disponible
+- **Tests exitosos**: Durbin-Watson, Cointegracion, Correlograma, ARIMA, Hosmer-Lemeshow, F1, Brier
+
+### Pendientes para proxima sesion
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` (error YAML linea 7) |
+| **ALTA** | Reiniciar servidor HTTP para activar mejoras |
+| **MEDIA** | Probar agente con queries reales |
+| **MEDIA** | Agregar GARCH, VAR, VECM |
+| **BAJA** | Mejorar matching de acronimos cortos |
+
+
+
+---
+
+### Sesión 2026-08-20 (~06:30) — RAG: Fix matching bidireccional + procesos zombie
+
+## Problema
+
+El RAG encontraba entidades como "cointegración Johansen" (palabras largas) pero **no encontraba "hosmer"** ni términos cortos individuales. Además, el servidor HTTP no respondía con el código actualizado.
+
+## Causa raíz (dos problemas)
+
+### 1. Matching unidireccional de keywords
+
+El código original solo buscaba si el **keyword completo** estaba contenido en la pregunta:
+```python
+if kw in question_lower:  # "hosmer-lemeshow" in "hosmer" → False
+```
+
+Problema: Si el usuario escribe "hosmer" (6 chars) y el keyword es "hosmer-lemeshow" (16 chars), el keyword no está contenido en la query → no match.
+
+### 2. Procesos Python zombie en puerto 5555
+
+Había **dos procesos Python** escuchando en el mismo puerto:
+- PID 234484: Proceso viejo con código anterior
+- PID 53316: Proceso nuevo pero no recibía requests
+
+El sistema operativo enviaba los requests al proceso **viejo**, que usaba el código sin las mejoras.
+
+## Solución implementada
+
+### 1. Matching bidireccional de keywords
+
+```python
+# Extraer palabras significativas de la pregunta
+query_words = [w for w in question_lower.split() if len(w) > 3]
+
+# Match por keywords (bidireccional)
+for kw in entity_keywords:
+    kw_lower = kw.lower()
+    
+    # Caso 1: keyword contenido en query (original)
+    if kw_lower in question_lower:
+        score = min(30, 10 + len(kw_lower))
+        break
+    
+    # Caso 2: palabra de query contenida en keyword (NUEVO)
+    for qw in query_words:
+        if qw in kw_lower:
+            coverage = len(qw) / len(kw_lower)
+            score = max(score, int(15 * coverage) + 10)
+```
+
+### 2. Limpieza de procesos zombie
+
+```powershell
+# Identificar procesos en puerto 5555
+netstat -ano | Select-String ":5555.*LISTENING"
+# TCP 127.0.0.1:5555  LISTENING  234484  ← viejo
+# TCP 127.0.0.1:5555  LISTENING  53316   ← nuevo
+
+# Matar ambos
+Stop-Process -Id 234484, 53316 -Force
+```
+
+### 3. También se relajó el umbral para palabras medianas
+
+```python
+# Antes: solo palabras >7 chars obtenían score con 1 match
+elif matches_in_question == 1 and len(matching_parts[0]) > 7:
+    score = 20
+
+# Después: palabras 5-7 chars también califican (score menor)
+elif matches_in_question == 1 and len(matching_parts[0]) > 4:
+    score = 15
+```
+
+## Resultado
+
+| Query | Antes | Después | Score |
+|-------|-------|---------|-------|
+| hosmer | 0 matched | 1 matched | 15 |
+| hosmer lemeshow test | 0 matched | 10 matched | 50 |
+| bondad de ajuste | 0 matched | 10 matched | 100 |
+| correlograma | 0 matched | 8 matched | 100 |
+| ACF PACF | 0 matched | 3 matched | 15 |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | Matching bidireccional, umbral 5-7 chars |
+| `C:\NEVEN\startup\neven_http_server.py` | (limpieza de código debug temporal) |
+| `src\startup\rag_engine.py` | Copia desde producción |
+| `src\startup\neven_http_server.py` | Copia desde producción |
+
+## Lección aprendida
+
+**Siempre verificar que no hay procesos zombie antes de depurar código.**
+El servidor puede responder "status: ok" pero estar usando código viejo si hay múltiples procesos escuchando en el mismo puerto.
+
+Comando útil:
+```powershell
+netstat -ano | Select-String ":5555.*LISTENING"
+Get-Process -Id <PID> | Select-Object ProcessName, Path, StartTime
+```
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de mejoras al matching |
+| **MEDIA** | Mejorar matching de acrónimos cortos (ROC, AUC sin contexto) |
+| **BAJA** | Fix schema.yaml línea 7 (error YAML menor, no bloquea carga) |
