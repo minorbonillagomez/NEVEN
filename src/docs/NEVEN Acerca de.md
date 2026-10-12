@@ -1,0 +1,22 @@
+NEvƎИ es la evolución de una idea que se ha venido gestando durante más de quince años en la mente de quien cree firmemente que el conocimiento debe estar disponible para todo aquel que busque acercarse a él. A lo largo de los milenios, la humanidad ha construido un vasto andamiaje en su incansable búsqueda de la verdad. Ese progreso no habría sido posible si cada sociedad hubiera monopolizado sus avances; por el contrario, cada conquista permitió que otras culturas, en diversos momentos del espacio-tiempo, pudieran acceder a ella, ampliarla y, con frecuencia, transformarla para erigir nuevos campos de pensamiento sobre esos cimientos. Bajo este principio colaborativo y evolutivo, NEvƎИ nace en las aulas de la Universidad de Costa Rica en 2010. 
+
+Al trabajar con las primeras versiones de R, vislumbramos el potencial de o que una sociedad impulsada por hojas de cálculo podría lograr, apostando por un desarrollo fundamentado en la apertura y la superación de retos técnicos. 
+
+La primera versión de la herramienta -2009- llevó por nombre D.A.T.E. (*Data Analysis to Excel*). Basada principalmente en procesos de VBA (*Visual Basic for Applications*), arrojó sus primeros resultados aplicados en instituciones financieras de Costa Rica. Su evolución natural hacia ALIRO introdujo nuevas formas de integrar ensamblajes (*assemblies*) con motores de bases de datos, incorporando además módulos orientados al cálculo complejo mediante álgebra matricial. 
+
+El primer gran salto estructural —la sustitución del procesamiento local por un motor dedicado— ocurrió en 2017 con la llegada del *toolkit* BERT, el cual permitió ejecutar procesos en R utilizando Excel como interfaz de usuario (*frontend*). Se migró entonces lo avanzado en ALIRO bajo una nueva arquitectura donde el procesamiento recaía en un motor más potente y especializado en el análisis de datos. 
+
+Aunque el proyecto BERT fue abandonado en 2018, la funcionalidad continuó creciendo hasta chocar con un muro infranqueable: el sistema estaba anclado a la versión 3.5 de R. Se tomó entonces la difícil decisión de modificar el núcleo (*core*) de BERT, un desafío sin avances visibles durante años en muchas latitudes del planeta. Esto no impidió que la lógica funcional siguiera expandiéndose hasta consolidarse en una tesis de maestría. 
+
+Con el advenimiento de la Inteligencia Artificial moderna, se retomó esta empresa y se lograron los primeros avances decisivos en 2025. Tras demostrar su viabilidad, se optó por redefinir completamente la arquitectura bajo un modelo de microservicios, incrementando notablemente el rendimiento y la seguridad, y abriendo la puerta a la integración con motores distintos a R. Así se incorporó Python, logrando la convivencia armoniosa de los dos lenguajes analíticos más empleados a ese momento. El resultado fue tan satisfactorio que impulsó la integración de Julia, el veloz motor de cálculo científico indispensable para operaciones de alta complejidad. 
+
+De este recorrido surge NEvƎИ como una plataforma integral que fusiona los más potentes motores de cómputo dentro de la hoja electrónica con conexiones directas a bases de datos. Operando internamente con DuckDB, es capaz de manipular volúmenes masivos de información que superan las limitaciones naturales de la propia herramienta que la aloja. NEvƎИ integra además un generador de presentaciones moderno en formato HTML, que permite al usuario incrustar objetos interactivos de Plotly o D3.js. 
+
+Pensando rigurosamente en el entorno científico y académico, NEvƎИ incorpora KaTeX para el renderizado avanzado de ecuaciones, junto con un agente de inteligencia artificial especializado como consultor econométrico y técnico. Entrenado mediante literatura especializada y una ontología propia, el agente responde con precisión gracias a un sistema de generación aumentada por recuperación (*RAG*), brindando al usuario la flexibilidad de expandir el conocimiento base según sus necesidades profesionales específicas. 
+
+NEvƎИ es una herramienta concebida para poner un laboratorio completo de análisis al alcance de estudiantes, profesionales, pymes y grandes corporaciones, guiada por una única premisa: el conocimiento es de todos. 
+
+
+Atentamente,
+
+Minor Bonilla-Gómez

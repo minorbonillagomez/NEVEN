@@ -1,0 +1,709 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEVEN - Explorador de Ontologia</title>
+  
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════════════
+       NEVEN Color Palette
+       ═══════════════════════════════════════════════════════════════════════════ */
+    :root {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #242424;
+      --bg-card: rgba(40, 40, 40, 0.85);
+      --bg-elevated: #2a2a2a;
+      --accent: #d7a538;
+      --accent-dim: rgba(215, 165, 56, 0.15);
+      --accent-hover: #c4922a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #888;
+      --text-muted: #555;
+      --border: rgba(215, 165, 56, 0.12);
+      --border-subtle: #333;
+      --error: #ff4444;
+      --success: #4caf50;
+      --radius: 6px;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Header */
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+    .header select, .header input {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-family: inherit;
+    }
+    .header select:focus, .header input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .stats-badge {
+      font-size: 0.7rem;
+      background: var(--bg-card);
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      color: var(--text-secondary);
+    }
+    .btn-refresh {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: var(--bg-primary);
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .btn-refresh:hover { background: var(--accent-hover); }
+    .btn-refresh:disabled { background: var(--text-muted); cursor: not-allowed; }
+    
+    /* Main container */
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    /* Network */
+    #network {
+      flex: 1;
+      height: 100%;
+      background: var(--bg-primary);
+    }
+    
+    /* Sidebar */
+    #sidebar {
+      width: 340px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .sidebar-section {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-section h3 {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    
+    /* Search */
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: 2px 10px;
+    }
+    .search-box:focus-within { border-color: var(--accent); }
+    .search-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 8px 6px;
+      color: var(--text-primary);
+      font-size: 0.8rem;
+    }
+    .search-box input::placeholder { color: var(--text-muted); }
+    
+    /* Legend */
+    .legend-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: var(--radius);
+      transition: background 0.15s ease;
+    }
+    .legend-item:hover { background: var(--bg-card); }
+    .legend-item.dimmed { opacity: 0.4; }
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+    .legend-count {
+      margin-left: auto;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+    
+    /* Details card */
+    #details-card {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+    }
+    #details-card.empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+    .card-type {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .card-description {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .card-connections {
+      margin-top: 12px;
+    }
+    .card-connections h4 {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .connection-item {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      padding: 6px 8px;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .connection-item:hover { background: var(--border-subtle); color: var(--text-primary); }
+    .connection-type {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      margin-left: 6px;
+    }
+    
+    /* Loading overlay */
+    #loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(26, 26, 26, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 1000;
+    }
+    #loading-overlay.hidden { display: none; }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-subtle);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 0.85rem; color: var(--text-secondary); }
+    
+    /* Error state */
+    .error-message {
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid var(--error);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      color: var(--error);
+      font-size: 0.8rem;
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Cargando grafo de conocimiento...</div>
+  </div>
+  
+  <header class="header">
+    <h1>Explorador de Ontologia</h1>
+    <div class="header-controls">
+      <select id="domain-select">
+        <option value="econometria">Econometria</option>
+        <option value="estadistica">Estadistica</option>
+        <option value="excel">Excel</option>
+      </select>
+      <input type="number" id="limit-input" value="500" min="50" max="5000" step="50" title="Limite de nodos">
+      <span class="stats-badge" id="stats-badge">-- nodos, -- edges</span>
+      <button class="btn-refresh" id="btn-refresh">Actualizar</button>
+    </div>
+  </header>
+  
+  <div class="main-container">
+    <div id="network"></div>
+    
+    <aside id="sidebar">
+      <div class="sidebar-section">
+        <h3>Buscar</h3>
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Buscar entidad...">
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Leyenda</h3>
+        <div class="legend-grid" id="legend-grid"></div>
+      </div>
+      
+      <div id="details-card" class="empty">
+        <span>Selecciona un nodo para ver detalles</span>
+      </div>
+    </aside>
+  </div>
+  
+  <script>
+    // ═══════════════════════════════════════════════════════════════════════════
+    // NEVEN Ontology Graph Viewer - Dynamic Visualizer
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const API_BASE = window.location.origin || 'http://localhost:5555';
+    
+    // NEVEN Color Palette - harmonized with accent gold/amber theme
+    const TYPE_COLORS = {
+      Concept:      { background: '#d7a538', border: '#c4922a' },  // Primary accent - gold
+      Model:        { background: '#8b6914', border: '#6d5210' },  // Dark gold
+      Estimator:    { background: '#4caf50', border: '#388e3c' },  // Success green
+      Test:         { background: '#ff7043', border: '#e64a19' },  // Warm orange
+      Technique:    { background: '#7986cb', border: '#5c6bc0' },  // Soft indigo
+      Package:      { background: '#81c784', border: '#66bb6a' },  // Light green
+      Function:     { background: '#ffb74d', border: '#ffa726' },  // Amber
+      Dataset:      { background: '#4dd0e1', border: '#26c6da' },  // Cyan
+      BestPractice: { background: '#a1887f', border: '#8d6e63' },  // Warm brown
+      Pattern:      { background: '#ba68c8', border: '#ab47bc' },  // Purple
+    };
+    const DEFAULT_COLOR = { background: '#757575', border: '#616161' };
+    
+    // State
+    let network = null;
+    let allNodes = [];
+    let allEdges = [];
+    let typeCounts = {};
+    let hiddenTypes = new Set();
+    
+    // Elements
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const domainSelect = document.getElementById('domain-select');
+    const limitInput = document.getElementById('limit-input');
+    const statsBadge = document.getElementById('stats-badge');
+    const btnRefresh = document.getElementById('btn-refresh');
+    const searchInput = document.getElementById('search-input');
+    const legendGrid = document.getElementById('legend-grid');
+    const detailsCard = document.getElementById('details-card');
+    const networkContainer = document.getElementById('network');
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // API
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    async function fetchGraph(domain, limit) {
+      const url = `${API_BASE}/api/ontology/graph?domain=${encodeURIComponent(domain)}&limit=${limit}&format=vis`;
+      console.log('[Graph] Fetching:', url);
+      
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`HTTP ${resp.status}: ${text}`);
+      }
+      
+      const data = await resp.json();
+      console.log('[Graph] Received:', data.stats);
+      return data;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Render
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    async function loadGraph() {
+      loadingOverlay.classList.remove('hidden');
+      btnRefresh.disabled = true;
+      
+      try {
+        const domain = domainSelect.value;
+        const limit = parseInt(limitInput.value) || 500;
+        
+        const data = await fetchGraph(domain, limit);
+        
+        if (data.status !== 'ok') {
+          throw new Error(data.message || 'Error desconocido');
+        }
+        
+        allNodes = data.nodes || [];
+        allEdges = data.edges || [];
+        
+        console.log('[Graph] Nodes:', allNodes.length, 'Edges:', allEdges.length);
+        
+        // Count types
+        typeCounts = {};
+        allNodes.forEach(n => {
+          typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
+        });
+        
+        // Update stats
+        const stats = data.stats;
+        // Show visual orphan percentage (nodes without connections in visible subset)
+        // This is more relevant than global orphan count since user sees the subset
+        const visualOrphanInfo = stats.visualOrphanPct !== undefined 
+          ? ` | ${stats.visualOrphanPct}% sin conexiones visibles` 
+          : (stats.orphanPct !== undefined ? ` | ${stats.orphanPct}% huerfanos` : '');
+        const ratioInfo = stats.relationsPerEntity !== undefined ? ` | ratio: ${stats.relationsPerEntity}` : '';
+        statsBadge.textContent = `${stats.totalNodes || stats.nodeCount} nodos, ${stats.totalEdges || stats.edgeCount} relaciones${visualOrphanInfo}${ratioInfo}`;
+        
+        // Render legend
+        renderLegend();
+        
+        // Render network
+        renderNetwork();
+        
+        // Clear details
+        showEmptyDetails();
+        
+      } catch (err) {
+        console.error('[Graph] Error:', err);
+        networkContainer.innerHTML = `<div class="error-message">Error cargando grafo: ${err.message}</div>`;
+        statsBadge.textContent = 'Error';
+      } finally {
+        loadingOverlay.classList.add('hidden');
+        btnRefresh.disabled = false;
+      }
+    }
+    
+    function renderLegend() {
+      legendGrid.innerHTML = '';
+      
+      const sortedTypes = Object.entries(typeCounts)
+        .sort((a, b) => b[1] - a[1]);
+      
+      if (sortedTypes.length === 0) {
+        legendGrid.innerHTML = '<div style="color:var(--text-muted);font-size:0.75rem;grid-column:span 2;">Sin datos</div>';
+        return;
+      }
+      
+      sortedTypes.forEach(([type, count]) => {
+        const color = TYPE_COLORS[type] || DEFAULT_COLOR;
+        const item = document.createElement('div');
+        item.className = 'legend-item' + (hiddenTypes.has(type) ? ' dimmed' : '');
+        item.innerHTML = `
+          <span class="legend-color" style="background:${color.background};border:1px solid ${color.border}"></span>
+          <span>${type}</span>
+          <span class="legend-count">${count}</span>
+        `;
+        item.onclick = () => toggleType(type);
+        legendGrid.appendChild(item);
+      });
+    }
+    
+    function toggleType(type) {
+      if (hiddenTypes.has(type)) {
+        hiddenTypes.delete(type);
+      } else {
+        hiddenTypes.add(type);
+      }
+      renderLegend();
+      renderNetwork();
+    }
+    
+    function renderNetwork() {
+      if (allNodes.length === 0) {
+        networkContainer.innerHTML = '<div class="error-message">No hay nodos para mostrar. Verifica que el dominio tenga datos.</div>';
+        return;
+      }
+      
+      // Filter nodes by hidden types
+      const visibleNodes = allNodes.filter(n => !hiddenTypes.has(n.type));
+      const visibleIds = new Set(visibleNodes.map(n => n.id));
+      const visibleEdges = allEdges.filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
+      
+      console.log('[Graph] Rendering:', visibleNodes.length, 'visible nodes');
+      
+      // Apply NEVEN colors to nodes
+      const nodesWithColors = visibleNodes.map(n => {
+        const color = TYPE_COLORS[n.type] || DEFAULT_COLOR;
+        return {
+          id: n.id,
+          label: n.label,
+          group: n.type,
+          title: n.title || n.label,
+          color: {
+            background: color.background,
+            border: color.border,
+            highlight: { background: color.background, border: '#d7a538' },
+            hover: { background: color.background, border: '#d7a538' }
+          },
+          font: { color: '#e0e0e0', size: 11 }
+        };
+      });
+      
+      // Create datasets
+      const nodesDataset = new vis.DataSet(nodesWithColors);
+      
+      const edgesDataset = new vis.DataSet(visibleEdges.map(e => ({
+        from: e.from,
+        to: e.to,
+        label: e.label,
+        arrows: e.arrows || 'to',
+        color: { color: '#555', highlight: '#d7a538', hover: '#888' },
+        font: { color: '#888', size: 9, strokeWidth: 0 }
+      })));
+      
+      // Network options
+      const options = {
+        nodes: {
+          shape: 'dot',
+          size: 16,
+          borderWidth: 2,
+          shadow: { enabled: true, color: 'rgba(0,0,0,0.4)', size: 6 }
+        },
+        edges: {
+          smooth: { type: 'continuous', roundness: 0.2 },
+          width: 1
+        },
+        physics: {
+          enabled: true,
+          solver: 'forceAtlas2Based',
+          forceAtlas2Based: {
+            gravitationalConstant: -50,
+            centralGravity: 0.01,
+            springLength: 100,
+            springConstant: 0.08,
+            damping: 0.4
+          },
+          stabilization: { iterations: 200, fit: true }
+        },
+        interaction: {
+          hover: true,
+          tooltipDelay: 100,
+          hideEdgesOnDrag: true,
+          navigationButtons: false,
+          keyboard: true
+        }
+      };
+      
+      // Clear container and destroy old network
+      if (network) {
+        network.destroy();
+        network = null;
+      }
+      networkContainer.innerHTML = '';
+      
+      // Create network
+      try {
+        network = new vis.Network(networkContainer, { nodes: nodesDataset, edges: edgesDataset }, options);
+        
+        // Events
+        network.on('click', (params) => {
+          if (params.nodes.length > 0) {
+            const nodeId = params.nodes[0];
+            const node = allNodes.find(n => n.id === nodeId);
+            if (node) showNodeDetails(node);
+          } else {
+            showEmptyDetails();
+          }
+        });
+        
+        network.on('stabilizationIterationsDone', () => {
+          console.log('[Graph] Stabilization complete');
+          network.setOptions({ physics: { enabled: false } });
+        });
+        
+        console.log('[Graph] Network created successfully');
+      } catch (err) {
+        console.error('[Graph] Network creation error:', err);
+        networkContainer.innerHTML = `<div class="error-message">Error creando visualizacion: ${err.message}</div>`;
+      }
+    }
+    
+    function showEmptyDetails() {
+      detailsCard.className = 'empty';
+      detailsCard.innerHTML = '<span>Selecciona un nodo para ver detalles</span>';
+    }
+    
+    function showNodeDetails(node) {
+      const color = TYPE_COLORS[node.type] || DEFAULT_COLOR;
+      
+      // Find connections
+      const connections = allEdges
+        .filter(e => e.from === node.id || e.to === node.id)
+        .map(e => {
+          const otherId = e.from === node.id ? e.to : e.from;
+          const otherNode = allNodes.find(n => n.id === otherId);
+          return {
+            id: otherId,
+            label: otherNode ? otherNode.label : otherId,
+            type: e.label,
+            direction: e.from === node.id ? '->' : '<-'
+          };
+        });
+      
+      let connectionsHtml = '';
+      if (connections.length > 0) {
+        connectionsHtml = `
+          <div class="card-connections">
+            <h4>Conexiones (${connections.length})</h4>
+            ${connections.slice(0, 15).map(c => `
+              <div class="connection-item" onclick="focusNode('${c.id}')">
+                ${c.direction} ${c.label}
+                <span class="connection-type">${c.type}</span>
+              </div>
+            `).join('')}
+            ${connections.length > 15 ? `<div style="font-size:0.7rem;color:var(--text-muted);padding:6px;">+${connections.length - 15} mas...</div>` : ''}
+          </div>
+        `;
+      }
+      
+      detailsCard.className = '';
+      detailsCard.innerHTML = `
+        <div class="card-header">
+          <div class="card-title">${node.label}</div>
+          <span class="card-type" style="background:${color.background};color:#1a1a1a">${node.type}</span>
+        </div>
+        <div class="card-description">${node.title || 'Sin descripcion'}</div>
+        ${connectionsHtml}
+      `;
+    }
+    
+    function focusNode(nodeId) {
+      if (network) {
+        network.focus(nodeId, { scale: 1.5, animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+        network.selectNodes([nodeId]);
+        const node = allNodes.find(n => n.id === nodeId);
+        if (node) showNodeDetails(node);
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Search
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (q.length < 2) return;
+      
+      const matches = allNodes.filter(n => 
+        n.label.toLowerCase().includes(q) || 
+        (n.title && n.title.toLowerCase().includes(q))
+      ).slice(0, 5);
+      
+      if (matches.length === 1) {
+        focusNode(matches[0].id);
+      }
+    });
+    
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const q = e.target.value.toLowerCase().trim();
+        const match = allNodes.find(n => n.label.toLowerCase().includes(q));
+        if (match) focusNode(match.id);
+      }
+    });
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Event handlers
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    btnRefresh.onclick = loadGraph;
+    domainSelect.onchange = loadGraph;
+    limitInput.onchange = loadGraph;
+    
+    // Read domain from URL query param if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlDomain = urlParams.get('domain');
+    if (urlDomain && domainSelect) {
+      // Check if domain exists in select
+      const option = Array.from(domainSelect.options).find(o => o.value === urlDomain);
+      if (option) {
+        domainSelect.value = urlDomain;
+      } else {
+        // Add it as an option
+        const newOption = document.createElement('option');
+        newOption.value = urlDomain;
+        newOption.textContent = urlDomain.charAt(0).toUpperCase() + urlDomain.slice(1);
+        domainSelect.appendChild(newOption);
+        domainSelect.value = urlDomain;
+      }
+    }
+    
+    // Initial load
+    console.log('[Graph] Starting initial load...');
+    loadGraph();
+  </script>
+</body>
+</html>

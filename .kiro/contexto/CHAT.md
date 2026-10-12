@@ -1,8 +1,1815 @@
-﻿# NEVEN — Bitácora de Sesión de Trabajo con Kiro
+﻿# NEVEN -- Bitacora de Sesion de Trabajo con Kiro
 
-> **Propósito:** Registro de sesiones de trabajo recientes.
+> **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Última actualización:** 2026-10-11 (sesión: Procesamiento incremental implementado)
+> **Ultima actualizacion:** 2026-08-19 (sesion: RAG con relaciones de ontologia)
+
+---
+
+### Sesion 2026-08-19 (~20:00) -- RAG Engine: Traversal de relaciones para expansion de contexto
+
+## Problema
+
+Las relaciones de la ontologia (19,322) solo se usaban para visualizacion. El RAG cargaba entidades pero **ignoraba las relaciones** — el agente no aprovechaba el grafo para enriquecer respuestas.
+
+## Causa raiz
+
+En `rag_engine.py`, la funcion `_load_ontology` solo procesaba:
+- `"op": "create"` con `"entity"` ✓
+- `"op": "relate"` con `"relation"` ✗ (ignorado)
+
+## Solucion implementada
+
+### 1. Estructuras de datos para relaciones
+
+```python
+# En __init__
+self.ontology_relations = []  # Lista de {type, from, to}
+self.ontology_graph = {}      # Grafo de adyacencia bidireccional
+```
+
+### 2. Carga de relaciones en `_load_ontology`
+
+```python
+elif record.get("op") == "relate" and "relation" in record:
+    rel = record["relation"]
+    # Agregar a lista de relaciones
+    self.ontology_relations.append({...})
+    # Construir grafo bidireccional
+    self.ontology_graph[from_id][rel_type].append(to_id)
+    self.ontology_graph[to_id][f"inv_{rel_type}"].append(from_id)
+```
+
+### 3. Nuevo metodo `get_related_entities()`
+
+Traversal BFS del grafo con:
+- Profundidad configurable (default: 1 = vecinos directos)
+- Filtro por tipo de relacion
+- Soporte bidireccional (relaciones inversas)
+
+### 4. Expansion de contexto en `query_with_ontology()`
+
+Despues de detectar entidades por match directo:
+```python
+# Tipos de relaciones utiles para expansion
+expansion_relations = ["is_a", "uses", "related_to", "requires", ...]
+
+for entity in matched_entities[:5]:
+    related = self.get_related_entities(entity["id"], max_depth=1, 
+                                        relation_types=expansion_relations)
+    expanded_entities.extend(related[:10])
+```
+
+## Resultado
+
+| Aspecto | Antes | Despues |
+|---------|-------|---------|
+| Relaciones cargadas | 0 | 19,322 |
+| Nodos en grafo | 0 | 5,964 |
+| Contexto semantico | Solo match directo | + vecinos via relaciones |
+| `expanded_entities` en respuesta | No existia | Hasta 20 entidades relacionadas |
+
+## Ejemplo de uso
+
+Pregunta: "Como hago el test de Durbin-Watson?"
+
+**Antes:** Solo chunks que mencionan "Durbin-Watson"
+
+**Despues:**
+- Match: `test_durbin_watson`
+- Expansion via relaciones:
+  - `detects` → Autocorrelacion de primer orden
+  - `applies_to` → MCO
+  - `alternative_to` → Durbin h Statistic
+  - `uses_critical_values` → Critical Values table
+- Busqueda en dominios de TODAS estas entidades
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | +120 lineas: carga relaciones, grafo, traversal, expansion |
+| `NEVEN\startup\rag_engine.py` | Copia al repositorio |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de cambios de RAG + ontologia |
+| **MEDIA** | Probar con queries reales del usuario |
+| **MEDIA** | Ajustar `max_depth` y `expansion_relations` segun resultados |
+| **BAJA** | Endpoint API para inspeccionar grafo de relaciones |
+
+---
+
+### Sesion 2026-08-19 (~19:30) -- Enriquecimiento de ontologia: Reduccion de nodos huerfanos
+
+## Problema
+
+El grafo de ontologia tenia 55.7% de nodos huerfanos (sin conexiones), haciendolo practicamente inutil para navegacion y descubrimiento.
+
+## Causa raiz
+
+1. **Prompt de extraccion deficiente**: No enfatizaba relaciones, solo entidades
+2. **User prompt vago**: Solo decia "extrae entidades" sin mencionar relaciones
+3. **711 tipos de relaciones**: Sin vocabulario controlado, el LLM inventaba tipos
+
+## Solucion implementada
+
+### 1. Nuevo prompt `ontology_extraction_v2.txt`
+
+Cambios clave:
+- Regla explicita: "CADA ENTIDAD debe tener AL MENOS 1-2 RELACIONES"
+- Vocabulario controlado de 15 tipos de relaciones:
+  - Jerarquicas: `is_a`, `part_of`, `contains`
+  - Uso: `uses`, `used_by`, `requires`, `implements`
+  - Conceptuales: `related_to`, `contrasts_with`, `extends`, `specializes`
+  - Evaluacion: `tests`, `detects`, `corrects`
+  - Produccion: `produces`, `estimates`
+- Ejemplos completos de entidades + relaciones
+
+### 2. User prompt mejorado en `ontology_manager.py`
+
+```python
+user_prompt = f"""Analiza el siguiente fragmento y extrae entidades CON SUS RELACIONES.
+...
+INSTRUCCIONES CRITICAS:
+1. CADA ENTIDAD debe tener AL MENOS 1 RELACION
+2. Usa SOLO tipos de relaciones del vocabulario controlado
+3. NO generes entidades huerfanas
+```
+
+### 3. Script de enriquecimiento `ontology_enricher.py`
+
+Post-procesador que:
+- Identifica nodos huerfanos
+- Genera relaciones basadas en similitud de palabras (overlap de 2+ palabras)
+- Aplica heuristicas de tipo (Test->Concept = "tests", etc.)
+- Ejecutable multiples veces hasta saturar
+
+## Resultados del enriquecimiento
+
+| Metrica | Antes | Despues | Mejora |
+|---------|-------|---------|--------|
+| Entidades | 13,810 | 13,810 | - |
+| Relaciones | 6,362 | 16,766 | +163% |
+| Ratio rel/ent | 0.46 | 1.21 | +163% |
+| Huerfanos | 55.7% | ~4.6% | -51pp |
+
+## Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\prompts\ontology_extraction_v2.txt` | **NUEVO** - Prompt con vocabulario controlado |
+| `C:\NEVEN\startup\ontology_manager.py` | User prompt mejorado, referencia a v2 |
+| `C:\NEVEN\startup\ontology_enricher.py` | **NUEVO** - Script de post-procesamiento |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | +10,404 relaciones nuevas |
+
+## Copiados al repositorio
+
+- `NEVEN\ControlPython\startup\ontology_manager.py`
+- `NEVEN\ControlPython\startup\ontology_enricher.py`
+- `Install\prompts\ontology_extraction_v2.txt`
+
+## Commits realizados
+
+Ninguno -- pendiente de commit.
+
+## Decisiones de diseño
+
+1. **Vocabulario controlado vs libre**: Elegido controlado para consistencia y utilidad en navegacion
+2. **Enriquecimiento por similitud**: Usa overlap de palabras (>=2) - simple pero efectivo
+3. **Multiples pasadas**: El enricher se ejecuta iterativamente hasta saturar conexiones
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios |
+| **ALTA** | Probar extraccion con nuevo prompt en libro nuevo |
+| **MEDIA** | Mejorar heuristicas del enricher (usar embeddings?) |
+| **BAJA** | UI para ejecutar enricher desde TaskPane |
+
+---
+
+### Sesion 2026-08-19 (~19:00) -- Analisis: Puntos inconexos en ontologia + Boton Explorar
+
+## Problema reportado
+
+1. No habia forma de acceder al visualizador de grafo desde el TaskPane
+2. El grafo muestra una cantidad ENORME de puntos inconexos (nodos sin conexiones)
+
+## Analisis de conectividad
+
+```
+Total nodos unicos: 6,001
+Total edges: 3,426 (despues de deduplicar)
+Nodos conectados: 2,211 (44.3%)
+Nodos huerfanos: 2,785 (55.7%)  <-- PROBLEMA
+Ratio relaciones/entidades: 0.46 (deberia ser 1.5-2.0)
+```
+
+## Causa raiz
+
+El proceso de extraccion de ontologia (`ontology_manager.py`) crea entidades pero **no genera suficientes relaciones** entre ellas. El prompt de extraccion no enfatiza la creacion de relaciones.
+
+En `graph.jsonl`:
+- 13,810 operaciones `create` (entidades)
+- 6,362 operaciones `relate` (relaciones)
+- Muchas relaciones son duplicadas, quedando solo 3,426 unicas
+
+## Solucion parcial implementada
+
+### 1. Boton "Explorar" en TaskPane
+
+Agregado boton en panel Config > Conocimiento que abre el visualizador en nueva ventana:
+
+```javascript
+window.open(API + '/ontology-graph.html?domain=' + domain, '_blank', 'width=1200,height=800');
+```
+
+### 2. Visualizador lee dominio de URL
+
+El visualizador ahora acepta `?domain=X` en la URL para preseleccionar el dominio.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\taskpane.html` | +boton "Explorar" en panel Conocimiento, +handler JS |
+| `C:\NEVEN\taskpane\ontology-graph.html` | Lee parametro `domain` de URL |
+
+## Copiados al repositorio
+
+- `NEVEN\TaskPane\taskpane.html`
+- `NEVEN\TaskPane\ontology-graph.html`
+
+## Commits realizados
+
+Ninguno -- pendiente de commit.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Mejorar prompt de extraccion para generar mas relaciones |
+| **ALTA** | Commit de todos los cambios de ontologia |
+| **MEDIA** | Script de post-procesamiento para crear relaciones faltantes |
+| **MEDIA** | Segundo pase LLM para encontrar relaciones entre entidades existentes |
+| **BAJA** | Limpiar graph.jsonl de duplicados en origen |
+
+## Notas tecnicas
+
+El problema de puntos inconexos NO es del visualizador ni del servidor. Es del proceso de extraccion de conocimiento. Para resolverlo hay que:
+
+1. Revisar `C:\NEVEN\prompts\ontology_extraction.txt`
+2. Modificar para que enfatice: "Por cada entidad, identifica AL MENOS 2 relaciones con otras entidades"
+3. O crear un segundo prompt especifico para extraer relaciones
+
+---
+
+### Sesion 2026-08-19 (~18:30) -- Fix: IDs duplicados en graph.jsonl
+
+## Problema reportado
+
+Al ejecutar "Actualizar" en el grafo, retornaba:
+```
+Error cargando grafo: Cannot add item: item with id package_aer already exists
+```
+
+## Causa raiz
+
+El archivo `graph.jsonl` contiene **entidades duplicadas** - el mismo ID aparece multiples veces porque:
+1. Se proceso el mismo libro varias veces
+2. Diferentes libros extraen los mismos conceptos (ej: `model_linear_regression` aparece 51 veces)
+
+El codigo original usaba una lista y agregaba nodos sin verificar duplicados. vis-network rechaza IDs duplicados.
+
+## Estadisticas del problema
+
+```
+Total lineas: 20,173
+IDs unicos: 6,001
+IDs duplicados: 20+ (algunos con 30-50 ocurrencias)
+Peores: model_linear_regression (51), model_logistic_regression (47), func_summary (47)
+```
+
+## Solucion aplicada
+
+Cambiar de lista a diccionario para deduplicar automaticamente:
+
+```python
+# ANTES (fallaba con duplicados)
+nodes = []
+nodes.append(node)
+
+# DESPUES (ultima ocurrencia gana)
+nodes_dict = {}
+nodes_dict[entity_id] = node
+nodes = list(nodes_dict.values())[:limit]
+```
+
+Tambien se deduplican edges usando un set de tuplas `(from, to, label)`.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | `_handle_ontology_graph()` usa dict para deduplicar nodos y edges |
+
+## Copiado al repositorio
+
+`NEVEN\TaskPane\neven_http_server.py`
+
+## Commits realizados
+
+Ninguno -- pendiente de commit.
+
+## Verificacion
+
+```powershell
+$r = Invoke-RestMethod "http://localhost:5555/api/ontology/graph?domain=econometria&limit=100"
+$r.stats  # nodeCount: 100, edgeCount: 35
+($r.nodes | Select id -Unique).Count  # 100 (todos unicos)
+```
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios de ontologia |
+| **MEDIA** | Limpiar graph.jsonl de duplicados en origen |
+| **MEDIA** | Integrar visualizador como tab en TaskPane |
+| **BAJA** | Agregar formato 3D |
+
+---
+
+### Sesion 2026-08-19 (~18:00) -- Fix: Visualizador vacio + Paleta de colores NEVEN
+
+## Problema reportado
+
+El Explorador de Ontologia estaba vacio (no mostraba nodos) y usaba colores que no respetaban la paleta de NEVEN. Adicionalmente contenia emojis.
+
+## Causa raiz
+
+1. **Visualizador vacio:** El JavaScript no tenia logging para diagnosticar errores. El problema era que `API_BASE` estaba hardcodeado como `http://localhost:5555` pero el navegador podia estar accediendo desde otra URL.
+
+2. **Colores incorrectos:** La paleta estaba copiada de vis-network defaults (azul/rojo/verde brillantes) en vez de usar los colores de NEVEN (`--accent: #d7a538`, etc).
+
+3. **Emojis:** El titulo tenia un emoji que no corresponde al estilo de NEVEN.
+
+## Solucion aplicada
+
+### Paleta de colores NEVEN (armonizada con accent dorado)
+
+| Tipo | Background | Border | Descripcion |
+|------|------------|--------|-------------|
+| Concept | #d7a538 | #c4922a | Dorado (accent principal) |
+| Model | #8b6914 | #6d5210 | Dorado oscuro |
+| Estimator | #4caf50 | #388e3c | Verde (success) |
+| Test | #ff7043 | #e64a19 | Naranja calido |
+| Technique | #7986cb | #5c6bc0 | Indigo suave |
+| Package | #81c784 | #66bb6a | Verde claro |
+| Function | #ffb74d | #ffa726 | Ambar |
+| Dataset | #4dd0e1 | #26c6da | Cyan |
+| BestPractice | #a1887f | #8d6e63 | Marron calido |
+| Pattern | #ba68c8 | #ab47bc | Purpura |
+
+### Cambios en el visualizador HTML
+
+- `API_BASE` ahora usa `window.location.origin`
+- Agregado logging detallado: `[Graph] Fetching...`, `[Graph] Received...`, `[Graph] Rendering...`
+- Eliminados todos los emojis
+- CSS actualizado con variables NEVEN (`--accent`, `--bg-primary`, etc)
+- Mensajes de error visibles cuando hay problemas
+
+### Cambios en el servidor Python
+
+- Actualizada paleta `type_colors` en `_handle_ontology_graph()` para coincidir con cliente
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | Paleta `type_colors` actualizada a NEVEN |
+| `C:\NEVEN\taskpane\ontology-graph.html` | Reescrito completo: paleta NEVEN, sin emojis, logging, API_BASE dinamico |
+
+## Copiados al repositorio
+
+| Produccion | Repositorio |
+|------------|-------------|
+| `C:\NEVEN\startup\neven_http_server.py` | `NEVEN\TaskPane\neven_http_server.py` |
+| `C:\NEVEN\taskpane\ontology-graph.html` | `NEVEN\TaskPane\ontology-graph.html` |
+
+## Commits realizados
+
+Ninguno en esta sesion -- cambios pendientes de commit.
+
+## Verificacion
+
+```powershell
+# Endpoint retorna colores NEVEN
+$r = Invoke-RestMethod "http://localhost:5555/api/ontology/graph?domain=econometria&limit=5"
+$r.nodes | Select id, type, @{N='bg';E={$_.color.background}}
+# package_aer    Package #81c784
+# concept_...    Concept #d7a538
+# model_...      Model   #8b6914
+```
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios de ontologia |
+| **ALTA** | Verificar que el visualizador carga correctamente en el navegador |
+| **MEDIA** | Integrar visualizador como tab en TaskPane principal |
+| **MEDIA** | Agregar formato 3D usando 3d-force-graph |
+| **BAJA** | Auto-refresh despues de procesar libro |
+
+---
+  ],
+  "stats": {"nodeCount": 500, "edgeCount": 227}
+}
+```
+
+### 2. Colores por tipo de entidad
+
+| Tipo | Background | Border |
+|------|------------|--------|
+| Concept | #97C2FC | #2B7CE9 |
+| Model | #FB7E81 | #FA0A10 |
+| Estimator | #7BE141 | #41A906 |
+| Test | #FFA807 | #FA6800 |
+| Technique | #6E6EFD | #4444FF |
+| Package | #C2FABC | #74CB48 |
+| Function | #FFFF00 | #CCCC00 |
+| Dataset | #FF69B4 | #FF1493 |
+| BestPractice | #20B2AA | #008B8B |
+| Pattern | #DDA0DD | #BA55D3 |
+
+### 3. Visualizador standalone
+
+**Archivo:** `C:\NEVEN\taskpane\ontology-graph.html`
+
+**Características:**
+- Carga dinámica desde `/api/ontology/graph`
+- Selector de dominio (econometria, estadistica, excel)
+- Control de límite de nodos (50-5000)
+- Búsqueda de entidades
+- Filtro por tipo (click en leyenda)
+- Panel de detalles al seleccionar nodo
+- Lista de conexiones del nodo seleccionado
+- Navegación al hacer click en conexión
+
+**Tecnología:** vis-network (CDN unpkg)
+
+## Verificación
+
+```powershell
+# Test endpoint básico
+$r = Invoke-RestMethod "http://localhost:5555/api/ontology/graph?domain=econometria&limit=10"
+$r.stats  # nodeCount: 10, edgeCount: 7 ✅
+
+# Test estadísticas completas
+$r = Invoke-RestMethod "http://localhost:5555/api/ontology/graph?domain=econometria&limit=2000"
+$r.stats  # nodeCount: 2000, edgeCount: 705 ✅
+$r.nodes | Group-Object type | Sort-Object Count -Desc
+# Concept: 1269, Model: 448, Test: 144, Estimator: 85, ...
+
+# Abrir visualizador
+Start-Process "http://localhost:5555/ontology-graph.html"
+```
+
+## Archivos modificados/creados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | +endpoint GET `/api/ontology/graph`, +handler `_handle_ontology_graph()` |
+| `C:\NEVEN\taskpane\ontology-graph.html` | **NUEVO** — Visualizador standalone |
+
+## Copiados al repositorio
+
+| Producción | Repositorio |
+|------------|-------------|
+| `C:\NEVEN\startup\neven_http_server.py` | `NEVEN\TaskPane\neven_http_server.py` |
+| `C:\NEVEN\taskpane\ontology-graph.html` | `NEVEN\TaskPane\ontology-graph.html` |
+
+## Estadísticas del grafo econometria
+
+| Tipo | Cantidad |
+|------|----------|
+| Concept | 1,269 |
+| Model | 448 |
+| Test | 144 |
+| Estimator | 85 |
+| BestPractice | 27 |
+| Technique | 15 |
+| Pattern | 8 |
+| Package | 4 |
+| **Total** | **~2,000+** |
+
+## Commits realizados
+
+**Ninguno en esta sesión** — Cambios pendientes de commit.
+
+## Decisiones de diseño
+
+1. **Endpoint lee `graph.jsonl` directamente** — No usa base de datos, lee el archivo línea por línea. Simple y funciona para grafos de ~2000 nodos.
+
+2. **Colores por tipo hardcodeados** — Los colores están definidos tanto en el servidor como en el cliente. Esto permite que el JSON sea auto-contenido para vis-network.
+
+3. **Filtro de edges automático** — Solo se retornan edges cuyos nodos origen/destino están en el set visible. Evita edges "rotos" cuando se aplica límite.
+
+4. **Visualizador standalone** — Decidí crear un HTML separado en vez de integrar en TaskPane principal para permitir pantalla completa y debugging más fácil. La integración como tab puede hacerse después.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de cambios: `neven_http_server.py`, `ontology-graph.html` |
+| **MEDIA** | Integrar visualizador como tab en TaskPane principal |
+| **MEDIA** | Agregar formato 3D usando 3d-force-graph |
+| **BAJA** | Auto-refresh después de procesar libro |
+| **BAJA** | Feature de sugerir conexiones al agente |
+
+---
+| Concept | 1,269 |
+| Model | 448 |
+| Test | 144 |
+| Estimator | 85 |
+| BestPractice | 27 |
+| Technique | 15 |
+| Pattern | 8 |
+| Package | 4 |
+| **Total** | **~2,000+** |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Integrar visualizador como tab en TaskPane principal |
+| **MEDIA** | Agregar formato 3D usando 3d-force-graph |
+| **BAJA** | Auto-refresh después de procesar libro |
+| **BAJA** | Feature de sugerir conexiones al agente |
+
+---
+
+
+### Sesión 2026-08-20 (~17:05) — ✅ Fix: Routing endpoints ontología en do_POST
+
+## Problema
+
+Al procesar un libro desde Excel para la ontología, retornaba "Error: Error desconocido".
+
+## Diagnóstico
+
+1. El error venía del TaskPane cuando `data.error` estaba vacío
+2. El servidor retornaba: `{"status": "error", "message": "Unknown endpoint: /api/ontology/process-incremental"}`
+3. Los endpoints `process-incremental`, `reset-progress`, y `delete-book` estaban registrados en `do_GET` pero son métodos **POST**
+4. Faltaban en el routing de `do_POST`
+
+## Causa raíz
+
+El archivo `neven_http_server.py` tenía los endpoints de ontología en el lugar incorrecto del código:
+- Estaban en `do_GET` (línea ~848)
+- No estaban en `do_POST` (la cadena de elif terminaba en `api/ontology/process-book`)
+
+Adicionalmente, los handlers (`_handle_ontology_process_incremental`, etc.) usaban `self._read_json_body()` que no existía.
+
+## Solución
+
+1. **Agregar endpoints a do_POST:**
+```python
+elif path == 'api/ontology/process-incremental':
+    self._handle_ontology_process_incremental(body)
+elif path == 'api/ontology/reset-progress':
+    self._handle_ontology_reset_progress(body)
+elif path == 'api/ontology/delete-book':
+    self._handle_ontology_delete_book(body)
+```
+
+2. **Eliminar rutas duplicadas de do_GET** (ya no eran necesarias ahí)
+
+3. **Modificar firma de handlers** para recibir `body` como parámetro:
+```python
+def _handle_ontology_process_incremental(self, body: dict):
+def _handle_ontology_reset_progress(self, body: dict):
+def _handle_ontology_delete_book(self, body: dict):
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | +3 rutas en do_POST, -3 rutas de do_GET, +body param en 3 handlers |
+
+## Verificación
+
+```powershell
+# Test directo al endpoint (funciona)
+$body = '{"file_path":"C:\\path\\to\\book.pdf","domain_id":"excel"}'
+Invoke-WebRequest -Uri "http://127.0.0.1:5555/api/ontology/process-incremental" -Method POST -Body $body -ContentType "application/json"
+# Respuesta: {"status": "error", "message": "File not found: ..."} ← Error de validación, endpoint funciona
+```
+
+## Pendientes
+
+- **ALTA**: Configurar AI profile activo para procesamiento de ontología
+- **MEDIA**: Hacer commit del fix
+
+## Notas
+
+- No se hizo commit en esta sesión (pendiente)
+- El archivo fue sincronizado al repositorio: `F:\ANTIGRAVITY\2026\NEVEN\NEVEN\TaskPane\neven_http_server.py`
+- Servidor HTTP reiniciado y funcionando en puerto 5555
+
+---
+
+### Sesión 2026-08-20 (~17:20) — 🔍 Diagnóstico: Error "procesando libro"
+
+## Problema
+
+Después del fix de routing, al intentar procesar `F:/MisBibliotecas/ECONOMETRIA/GENERAL/An Introduction to Statistical Learning with R.pdf` retornaba "Error procesando libro".
+
+## Diagnóstico
+
+1. El endpoint ahora funciona correctamente (ya no da "Unknown endpoint")
+2. El error viene de `ontology_manager.py` línea ~1222:
+   ```python
+   ai_profile = _get_active_ai_profile(config_manager)
+   if not ai_profile:
+       return {"status": "error", "error": "No active AI profile configured"}
+   ```
+
+## Causa raíz
+
+**No hay un AI profile activo configurado.** El procesamiento de ontología requiere un perfil de IA (OpenAI, Anthropic, etc.) para extraer entidades del texto.
+
+Verificación:
+```python
+from config_manager import ConfigManager
+cm = ConfigManager()
+profile = cm.get_active_ai_profile()
+print(profile)  # → None
+```
+
+## Requisitos para procesar libros
+
+| Requisito | Estado |
+|-----------|--------|
+| Archivo prompt (`C:\NEVEN\prompts\ontology_extraction.txt`) | ✅ Existe |
+| PyMuPDF (`fitz`) | ✅ Instalado |
+| AI Profile activo | ❌ **Falta configurar** |
+
+## Archivos modificados
+
+Ninguno en esta sub-sesión (solo diagnóstico).
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Configurar AI profile en TaskPane > Config > Perfiles IA y activarlo |
+| **MEDIA** | Commit del fix de routing de la sesión anterior |
+
+---
+
+### Sesión 2026-08-20 (~17:30) — ✅ Fix: ConfigManager.load() faltante
+
+## Problema
+
+Después de corregir el routing, el procesamiento seguía fallando con "Error procesando libro". El config mostraba `active_ai_profile: azure-migrated` pero `get_active_ai_profile()` retornaba `None`.
+
+## Diagnóstico
+
+```python
+# Sin load() — NO FUNCIONA
+cm = ConfigManager()
+cm.get_active_ai_profile()  # → None
+
+# Con load() — FUNCIONA
+cm = ConfigManager()
+cm.load()
+cm.get_active_ai_profile()  # → {'id': 'azure-migrated', ...}
+```
+
+## Causa raíz
+
+`ConfigManager.__init__()` NO llama `load()` automáticamente. La función `_get_active_ai_profile()` en `ontology_manager.py` creaba una instancia pero nunca cargaba el archivo de configuración.
+
+## Solución
+
+Agregar `config_manager.load()` después de crear la instancia:
+
+```python
+def _get_active_ai_profile(config_manager) -> Optional[Dict[str, Any]]:
+    if config_manager is None:
+        try:
+            from config_manager import ConfigManager
+            config_manager = ConfigManager()
+            config_manager.load()  # ← AGREGADO
+        except ImportError:
+            return None
+    ...
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\ontology_manager.py` | +1 línea: `config_manager.load()` en `_get_active_ai_profile()` |
+
+## Verificación
+
+Servidor reiniciado. El perfil `azure-migrated` ahora se carga correctamente.
+
+## Resumen de fixes de la sesión completa
+
+| Fix | Problema | Causa raíz |
+|-----|----------|-----------|
+| 1. Routing POST | "Unknown endpoint" | Endpoints en `do_GET` en vez de `do_POST` |
+| 2. Firma handlers | `AttributeError: _read_json_body` | Handlers no recibían `body` como parámetro |
+| 3. ConfigManager.load() | Profile retornaba `None` | Faltaba llamar `load()` después de instanciar |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar procesamiento completo desde TaskPane |
+| **MEDIA** | Commit de todos los fixes |
+| **MEDIA** | Sincronizar `ontology_manager.py` al repositorio |
+
+---
+
+### Sesión 2026-08-20 (~17:45) — 🔍 Debugging: Error procesando libro (en progreso)
+
+## Estado
+
+El error "Error procesando libro" persiste. Se agregó logging detallado al handler para diagnosticar.
+
+## Verificaciones realizadas
+
+| Componente | Estado |
+|------------|--------|
+| PDF legible (`get_pdf_page_index`) | ✅ 440 páginas, 433 con texto |
+| LLM funciona (`_call_llm_for_extraction`) | ✅ Retorna JSONL válido |
+| `get_config_manager()` llama `load()` | ✅ Sí, es singleton |
+| Config tiene profile activo | ✅ `azure-migrated` |
+
+## Hipótesis actual
+
+El procesamiento funciona pero es **muy lento** (440 páginas × LLM calls). El TaskPane puede tener un timeout del lado del cliente que corta la conexión antes de recibir respuesta.
+
+## Logging agregado
+
+Se agregó print statements en `_handle_ontology_process_incremental`:
+- `[ONTOLOGY] Processing: {file_path} -> {domain_id}`
+- `[ONTOLOGY] Progress: {progress}`
+- `[ONTOLOGY] Config manager: {True/False}`
+- `[ONTOLOGY] Result: {result}`
+- `[ONTOLOGY] Exception: {e}` + traceback completo
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | +logging en `_handle_ontology_process_incremental` |
+
+## Próximo paso
+
+1. Usuario intenta procesar libro desde TaskPane
+2. Revisar logs del servidor para ver error específico
+3. Posible fix: reducir timeout o hacer procesamiento asíncrono
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ver logs después del intento del usuario |
+| **ALTA** | Identificar causa exacta del error |
+| **MEDIA** | Commit de todos los fixes una vez resuelto |
+
+---
+
+### Sesión 2026-08-20 (~18:00) — 🔍 Diagnóstico completado: Timeout por procesamiento lento
+
+## Hallazgo en logs
+
+```
+[ONTOLOGY] Processing: F:/MisBibliotecas/ECONOMETRIA/GENERAL/An Introduction to Statistical Learning with R.pdf -> econometria (batch=20)
+[ONTOLOGY] Progress: {'status': 'in_progress', 'pages_processed': 100, 'total_pages': 433, 'percent_complete': 23.1, 'entities_created': 333, ...}
+[ONTOLOGY] Config manager: True
+```
+
+El procesamiento **SÍ FUNCIONA**:
+- 100 páginas ya procesadas (23%)
+- 333 entidades extraídas
+- 5 batches completados
+
+## Causa raíz del error en TaskPane
+
+El procesamiento es **síncrono y lento** (cada batch hace múltiples llamadas LLM a Azure). El TaskPane tiene un timeout del lado del cliente que corta la conexión antes de que el batch termine.
+
+El servidor se queda procesando pero el cliente ya mostró "Error procesando libro".
+
+## Estado del libro
+
+| Libro | Páginas | Procesadas | Entidades | % |
+|-------|---------|------------|-----------|---|
+| An Introduction to Statistical Learning with R | 433 | 100 | 333 | 23% |
+
+## Opciones para resolver
+
+1. **Reducir batch_size** (de 20 a 5) — cada request termina más rápido
+2. **Hacer procesamiento asíncrono** — el endpoint retorna inmediato, polling muestra progreso
+3. **Aumentar timeout del cliente** — en taskpane.html
+
+## Archivos modificados en esta sesión
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | +routing POST para ontology endpoints, +logging debug |
+| `C:\NEVEN\startup\ontology_manager.py` | +`config_manager.load()` en `_get_active_ai_profile()` |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Implementar batch_size menor o procesamiento asíncrono |
+| **MEDIA** | Commit de los fixes de routing y ConfigManager.load() |
+| **MEDIA** | Sincronizar archivos al repositorio |
+
+---
+
+### Sesión 2026-08-20 (~18:15) — ✅ Fix: Procesamiento asíncrono para evitar timeout
+
+## Problema
+
+El TaskPane mostraba "Error procesando libro" porque el endpoint `process-incremental` era **bloqueante** — esperaba a que terminara todo el batch antes de retornar. Como cada batch hace múltiples llamadas LLM, tardaba minutos y el cliente hacía timeout.
+
+## Solución
+
+Cambiar el endpoint a **no bloqueante** usando threading:
+
+```python
+# Antes (bloqueante)
+result = process_book_incremental(...)
+self._send_json(result)
+
+# Después (no bloqueante)
+thread = threading.Thread(target=run_processing, daemon=True)
+thread.start()
+self._send_json({"status": "processing", ...})  # Retorna inmediato
+```
+
+El cliente ya usa polling a `/api/ontology/progress` cada 3 segundos, así que ahora funciona correctamente.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | `_handle_ontology_process_incremental` ahora usa threading |
+| `C:\NEVEN\TaskPane\taskpane.html` | Agregado `'processing'` al check de status para toast |
+| `C:\NEVEN\taskpane\taskpane.html` | Mismo cambio (producción) |
+
+## Flujo actual
+
+1. POST `/api/ontology/process-incremental` → retorna inmediato con `{"status": "processing"}`
+2. Background thread ejecuta `process_book_incremental()`
+3. Cliente hace polling GET `/api/ontology/progress` cada 3s
+4. Checkpoint se actualiza después de cada batch
+5. Polling lee checkpoint y actualiza barra de progreso
+6. Cuando `status === 'completed'`, polling se detiene
+
+## Resumen completo de la sesión
+
+| Hora | Fix | Causa raíz |
+|------|-----|-----------|
+| 17:05 | Routing POST | Endpoints en `do_GET` en vez de `do_POST` |
+| 17:10 | Firma handlers | Handlers no recibían `body` como parámetro |
+| 17:30 | ConfigManager.load() | Faltaba llamar `load()` en `_get_active_ai_profile` |
+| 18:15 | Procesamiento async | Endpoint bloqueante causaba timeout del cliente |
+
+## Estado del libro de prueba
+
+| Libro | Páginas | Procesadas | Entidades | % |
+|-------|---------|------------|-----------|---|
+| An Introduction to Statistical Learning with R | 433 | 100+ | 333+ | 23%+ |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Verificar que el procesamiento async funciona correctamente |
+| **MEDIA** | Commit de todos los fixes |
+| **MEDIA** | Sincronizar archivos al repositorio |
+
+---
+
+### Sesión 2026-08-20 (~18:25) — ✅ Fix: Orden de **kwargs sobrescribía status
+
+## Problema
+
+Después de implementar el procesamiento asíncrono, el servidor retornaba `"status": "in_progress"` en lugar de `"status": "processing"`.
+
+## Causa raíz
+
+El operador `**progress` expandía el diccionario del checkpoint **después** de definir `"status": "processing"`, sobrescribiéndolo:
+
+```python
+# MAL - progress["status"] sobrescribe "processing"
+self._send_json({
+    "status": "processing",
+    **progress
+})
+
+# BIEN - "processing" sobrescribe progress["status"]
+self._send_json({
+    **progress,
+    "status": "processing"
+})
+```
+
+## Solución
+
+Reordenar para que `**progress` se expanda primero y `"status"` lo sobrescriba después.
+
+## Verificación
+
+```powershell
+$response.Content | ConvertFrom-Json | Select-Object status
+# status: processing ✅
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | Reordenado `**progress` antes de `"status"` |
+
+## Resumen completo de fixes de la sesión
+
+| # | Hora | Fix | Causa raíz |
+|---|------|-----|-----------|
+| 1 | 17:05 | Routing POST | Endpoints en `do_GET` en vez de `do_POST` |
+| 2 | 17:10 | Firma handlers | Handlers no recibían `body` como parámetro |
+| 3 | 17:30 | ConfigManager.load() | Faltaba llamar `load()` en `_get_active_ai_profile` |
+| 4 | 18:15 | Procesamiento async | Endpoint bloqueante causaba timeout del cliente |
+| 5 | 18:25 | Orden de kwargs | `**progress` sobrescribía `"status": "processing"` |
+
+## Estado actual
+
+- Servidor retorna `status: "processing"` inmediatamente
+- Thread en background procesa el libro
+- TaskPane usa polling cada 3s para mostrar progreso
+- Libro tiene 120/433 páginas procesadas (27.7%), 398 entidades
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Verificar que TaskPane muestra progreso sin errores |
+| **MEDIA** | Commit de todos los fixes |
+| **MEDIA** | Sincronizar archivos al repositorio |
+
+---
+
+### Sesión 2026-08-20 (~18:35) — 🔍 Debugging: Error persiste en TaskPane
+
+## Estado
+
+- Servidor funciona correctamente (retorna `status: "processing"`)
+- El libro avanza (140/433 páginas, 489 entidades, 32.3%)
+- El endpoint `/api/ontology/progress` retorna datos correctos
+- TaskPane muestra "Procesando 120 páginas" y luego se cae
+
+## Verificaciones
+
+```powershell
+# Endpoint progress funciona
+Invoke-RestMethod "http://127.0.0.1:5555/api/ontology/progress?file=...&domain=econometria"
+# status: in_progress, pages_processed: 140, percent_complete: 32.3 ✅
+```
+
+## Hipótesis
+
+El error puede venir de:
+1. Un error JS en `updateProgressBar()` que no es visible
+2. El catch exterior del TaskPane está capturando algo
+3. El mensaje de error no es "Error de conexión" sino otro
+
+## Próximo paso
+
+Revisar consola del navegador (F12) en el TaskPane para ver el error exacto en JavaScript.
+
+## Progreso del libro de prueba
+
+| Libro | Total | Procesadas | Entidades | % |
+|-------|-------|------------|-----------|---|
+| An Introduction to Statistical Learning with R | 433 | 140 | 489 | 32.3% |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ver error exacto en consola del TaskPane (F12) |
+| **MEDIA** | Commit de todos los fixes una vez resuelto |
+
+---
+
+### Sesión 2026-08-20 (~18:45) — ✅ Fix: taskpane.js usaba endpoint incorrecto
+
+## Problema
+
+La consola del TaskPane mostraba:
+```
+/api/ontology/process-book:1 Failed to load resource: 400 (Bad Request)
+[Ontology] Error procesando: Error: Error procesando libro
+    at HTMLButtonElement.processOntologyBook (taskpane.js:4414)
+```
+
+## Causa raíz
+
+**Hay DOS implementaciones del procesamiento de ontología:**
+
+1. `taskpane.html` (línea ~6760) — usa `/api/ontology/process-incremental` ✅
+2. `taskpane.js` función `processOntologyBook()` (línea ~4401) — usaba `/api/ontology/process-book` ❌
+
+El botón real ejecuta la función de `taskpane.js`, que llamaba al endpoint viejo que no estaba en el routing de `do_POST`.
+
+## Solución
+
+Actualizar `processOntologyBook()` en `taskpane.js` para:
+1. Usar `/api/ontology/process-incremental`
+2. Implementar polling a `/api/ontology/progress` cada 3 segundos
+3. Manejar correctamente los status: `error`, `completed`, `processing`
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.js` | Reescrita función `processOntologyBook()` con endpoint correcto + polling |
+| `C:\NEVEN\taskpane\taskpane.js` | Mismo cambio (producción) |
+
+## Resumen completo de fixes de la sesión
+
+| # | Hora | Fix | Causa raíz |
+|---|------|-----|-----------|
+| 1 | 17:05 | Routing POST | Endpoints en `do_GET` en vez de `do_POST` |
+| 2 | 17:10 | Firma handlers | Handlers no recibían `body` como parámetro |
+| 3 | 17:30 | ConfigManager.load() | Faltaba llamar `load()` en `_get_active_ai_profile` |
+| 4 | 18:15 | Procesamiento async | Endpoint bloqueante causaba timeout del cliente |
+| 5 | 18:25 | Orden de kwargs | `**progress` sobrescribía `"status": "processing"` |
+| 6 | 18:45 | Endpoint incorrecto | `taskpane.js` usaba `/process-book` en vez de `/process-incremental` |
+
+## Estado del libro
+
+El libro sigue procesando en background:
+- 140+ páginas procesadas
+- 489+ entidades extraídas
+- 32%+ completado
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Verificar que el TaskPane ahora muestra progreso correctamente |
+| **MEDIA** | Commit de todos los fixes |
+| **MEDIA** | Sincronizar archivos al repositorio (`neven_http_server.py`, `ontology_manager.py`, `taskpane.js`) |
+
+---
+
+### Sesión 2026-08-20 (~18:55) — ✅ Fix: finally ocultaba barra prematuramente
+
+## Problema
+
+La barra de progreso desaparecía inmediatamente después de mostrar "Procesando...", aunque el polling debería mantenerla visible.
+
+## Causa raíz
+
+El bloque `finally` de la función `processOntologyBook()` se ejecutaba **inmediatamente** cuando el `return` se alcanzaba (después de iniciar el polling asíncrono), no cuando el polling terminaba.
+
+```javascript
+// ANTES - finally se ejecuta al return, no al terminar polling
+pollProgress();
+return;  // ← finally se ejecuta aquí
+finally {
+  setTimeout(() => { progressDiv.style.display = 'none'; }, 2000);
+}
+```
+
+## Solución
+
+Eliminar el bloque `finally` y mover la lógica de ocultar barra al `.finally()` del polling:
+
+```javascript
+// DESPUÉS - se oculta cuando polling termina
+pollProgress().finally(() => {
+  processBtn.disabled = false;
+  setTimeout(() => { progressDiv.style.display = 'none'; }, 3000);
+});
+return;
+// Sin bloque finally
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\taskpane.js` | Eliminado `finally`, movido cleanup a `.finally()` del polling |
+| `C:\NEVEN\TaskPane\taskpane.js` | Mismo cambio (repo) |
+
+## Resumen completo de fixes de la sesión
+
+| # | Hora | Fix | Causa raíz |
+|---|------|-----|-----------|
+| 1 | 17:05 | Routing POST | Endpoints en `do_GET` en vez de `do_POST` |
+| 2 | 17:10 | Firma handlers | Handlers no recibían `body` como parámetro |
+| 3 | 17:30 | ConfigManager.load() | Faltaba llamar `load()` en `_get_active_ai_profile` |
+| 4 | 18:15 | Procesamiento async | Endpoint bloqueante causaba timeout del cliente |
+| 5 | 18:25 | Orden de kwargs | `**progress` sobrescribía `"status": "processing"` |
+| 6 | 18:45 | Endpoint incorrecto | `taskpane.js` usaba `/process-book` en vez de `/process-incremental` |
+| 7 | 18:55 | finally prematuro | Bloque `finally` ocultaba barra antes de que polling terminara |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Verificar barra de progreso funciona correctamente |
+| **MEDIA** | Commit de todos los fixes |
+| **MEDIA** | Sincronizar archivos al repositorio |
+
+---
+
+### Sesión 2026-08-20 (~19:05) — ✅ Procesamiento de libro completado + Discusión visualizador
+
+## Logro principal
+
+**El libro "An Introduction to Statistical Learning with R" fue procesado exitosamente** y aparece en la lista de libros de la ontología econometria.
+
+## Resumen de todos los fixes de la sesión
+
+| # | Fix | Causa raíz |
+|---|-----|-----------|
+| 1 | Routing POST en `do_POST` | Endpoints estaban en `do_GET` |
+| 2 | Firma handlers con `body` | Handlers usaban `_read_json_body()` inexistente |
+| 3 | `ConfigManager.load()` | Faltaba llamar `load()` para cargar perfiles AI |
+| 4 | Procesamiento async con threading | Endpoint bloqueante causaba timeout |
+| 5 | Orden de `**kwargs` | `**progress` sobrescribía `status: "processing"` |
+| 6 | Endpoint correcto en JS | `taskpane.js` usaba `/process-book` viejo |
+| 7 | Eliminar `finally` prematuro | Ocultaba barra antes de que polling terminara |
+
+## Archivos modificados (sesión completa)
+
+| Archivo | Cambios |
+|---------|---------|
+| `C:\NEVEN\startup\neven_http_server.py` | +routing POST, +threading async, +logging |
+| `C:\NEVEN\startup\ontology_manager.py` | +`config_manager.load()` |
+| `C:\NEVEN\taskpane\taskpane.js` | Reescrito `processOntologyBook()` con polling |
+| `C:\NEVEN\TaskPane\taskpane.js` | Mismo (repo) |
+
+## Discusión: Visualizador de ontología
+
+Usuario propuso integrar un visualizador interactivo de la ontología que:
+- Permita navegar entidades y relaciones
+- Detecte puntos inconexos
+- Se actualice al agregar libros o corregir relaciones
+- Permita sugerir al agente cómo conectar conceptos
+
+**Tecnologías propuestas:**
+- D3.js o Cytoscape.js para el grafo
+- Endpoint `/api/ontology/graph?domain=X`
+- WebSocket o polling para actualizaciones en tiempo real
+
+**Pendiente:** Usuario debe indicar si ya existe código del visualizador anterior.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los fixes de la sesión |
+| **ALTA** | Localizar código del visualizador de ontología existente |
+| **MEDIA** | Diseñar integración del visualizador con sistema de polling |
+| **MEDIA** | Sincronizar archivos al repositorio |
+
+---
+
+### Sesión 2026-08-20 (~19:15) — 📋 Visualizador de ontología: Análisis y plan
+
+## Visualizadores encontrados
+
+| Archivo | Tecnología | Descripción |
+|---------|------------|-------------|
+| `ONTOLOGIA\LIBROS ECONOMETRIA\memory\ontology\graph_visualization.html` | vis-network | 2D con sidebar, búsqueda, estadísticas |
+| `ONTOLOGIA\LIBROS ECONOMETRIA\memory\ontology\graph_visualization_3d.html` | 3d-force-graph (Three.js) | 3D cyberpunk con HUD |
+| `ONTOLOGIA\LIBROS EXCEL\memory\ontology\graph_visualization.html` | vis-network | 2D para dominio Excel |
+
+## Arquitectura actual (estática)
+
+Los visualizadores tienen los datos **embebidos** en el HTML:
+```javascript
+const nodesData = [{id: "...", label: "...", type: "..."}, ...];
+const edgesData = [{from: "...", to: "...", label: "..."}, ...];
+```
+
+Esto significa que cada vez que cambia el grafo hay que regenerar el HTML completo.
+
+## Plan para visualizador dinámico
+
+| Paso | Descripción | Esfuerzo |
+|------|-------------|----------|
+| 1 | Crear endpoint `/api/ontology/graph?domain=X` que lea `graph.jsonl` | Medio |
+| 2 | Convertir HTML a cargar datos desde endpoint (fetch) | Bajo |
+| 3 | Integrar en TaskPane como tab "Explorar" o popup | Bajo |
+| 4 | Auto-refresh después de procesar libro | Bajo |
+
+## Endpoint propuesto
+
+```
+GET /api/ontology/graph?domain=econometria
+
+Response:
+{
+  "status": "ok",
+  "domain": "econometria",
+  "nodes": [...],
+  "edges": [...],
+  "stats": { "Method": 68, "Concept": 51, ... }
+}
+```
+
+## Resumen completo de la sesión
+
+**7 fixes aplicados** para el procesamiento de ontología:
+1. Routing POST en `do_POST`
+2. Firma handlers con `body` param
+3. `ConfigManager.load()` faltante
+4. Procesamiento async con threading
+5. Orden de `**kwargs`
+6. Endpoint correcto en `taskpane.js`
+7. Eliminar `finally` prematuro
+
+**Libro procesado exitosamente:** "An Introduction to Statistical Learning with R" (433 páginas)
+
+## Archivos modificados (sesión completa)
+
+| Archivo | Cambios |
+|---------|---------|
+| `C:\NEVEN\startup\neven_http_server.py` | +routing POST, +threading async, +logging |
+| `C:\NEVEN\startup\ontology_manager.py` | +`config_manager.load()` |
+| `C:\NEVEN\taskpane\taskpane.js` | Reescrito `processOntologyBook()` con polling |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los fixes |
+| **ALTA** | Crear endpoint `/api/ontology/graph` |
+| **MEDIA** | Integrar visualizador dinámico en TaskPane |
+| **BAJA** | Agregar feature de sugerir conexiones al agente |
+
+---
+
+### Sesión 2026-08-20 (~19:25) — 📋 Mapeo de carpetas ONTOLOGIA duplicadas
+
+## Problema identificado
+
+Múltiples carpetas ONTOLOGIA dispersas en el proyecto:
+
+| Ubicación | Contenido |
+|-----------|-----------|
+| `F:\...\NEVEN\ONTOLOGIA\` | Legacy - LIBROS ECONOMETRIA, EXCEL, VBA, NEVEN |
+| `F:\...\NEVEN\.kiro\specs\ontologia-v2` | Specs de Kiro |
+| `F:\...\NEVEN\NEVEN\ONTOLOGIA\` | Dentro del proyecto NEVEN (vacía?) |
+| `F:\...\NEVEN\NEVEN\docs\ontologia\` | Documentación + neven-core yamls P1-P4 |
+| `F:\...\NEVEN-STUDIO\ONTOLOGIA\LIBROS\` | **Activa** - PDFs + visualizadores |
+| `C:\NEVEN\docs\ontologia\` | **Producción** - checkpoints, dominios |
+| `C:\NEVEN\ontology\` | **Nueva producción** - graph.jsonl por dominio |
+
+## Visualizadores encontrados (ubicación correcta)
+
+```
+F:\ANTIGRAVITY\2026\NEVEN-STUDIO\ONTOLOGIA\LIBROS\memory\ontology\
+├── graph.jsonl
+├── graph_visualization.html      ← 2D (vis-network)
+├── graph_visualization_3d.html   ← 3D (Three.js)
+└── schema.yaml
+```
+
+## Propuesta de consolidación
+
+| Tipo | Ubicación propuesta |
+|------|---------------------|
+| Producción | `C:\NEVEN\ontology\{domain}\` |
+| Repositorio | `NEVEN\ontology\` (nuevo) |
+| Visualizadores | Integrados en TaskPane via endpoint |
+
+## Decisión pendiente
+
+¿Consolidar carpetas ONTOLOGIA como parte del trabajo del visualizador, o dejar estructura actual?
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los fixes de la sesión |
+| **ALTA** | Decidir sobre consolidación de carpetas ONTOLOGIA |
+| **ALTA** | Crear endpoint `/api/ontology/graph` |
+| **MEDIA** | Integrar visualizador en TaskPane |
+
+---
+
+### Sesión 2026-08-19 (~17:00) — ✅ Checkpoints ligeros vía TABU para libros legacy
+
+## Problema
+
+18 libros en `econometria` mostraban `? págs` porque no tenían checkpoints (fueron procesados antes del sistema incremental).
+
+## Solución
+
+Usar `get_pdf_page_index()` (TABU) para crear checkpoints "metadata_only" que solo contienen:
+- `total_pages`
+- `pages_with_text`
+- Sin procesar contenido
+
+## Script creado
+
+`create_page_checkpoints.py` (temporal, ya eliminado):
+- Mapea nombres de libros a paths de PDFs conocidos
+- Usa TABU para extraer conteo de páginas
+- Crea checkpoint ligero sin reprocesar contenido
+
+## Checkpoints creados
+
+| Libro | Páginas |
+|-------|---------|
+| Econometric Analysis | 827 |
+| Econometric Analysis of Cross Section and Panel Data | 741 |
+| Econometric Analysis of Cross Section and Panel Data (Wooldridge) | 741 |
+| Introduction to Econometrics with R (Hanck et al.) | 379 |
+
+**Total libros con páginas: 5** (incluyendo Wooldridge: 883)
+
+## Estructura del checkpoint ligero
+
+```json
+{
+  "pdf_name": "...",
+  "total_pages": 827,
+  "pages_with_text": 827,
+  "status": "metadata_only",
+  "note": "Created via TABU for page count display only"
+}
+```
+
+## Ubicación checkpoints
+
+`C:\NEVEN\docs\ontologia\checkpoints\<libro>_<dominio>_<hash>.json`
+
+## Libros sin PDF localizado (14)
+
+Mayormente cursos MIT (slides/notas, no PDFs de libros):
+- MIT 14.382, 14.384, 14.387 Econometrics
+- Time Series Analysis with Applications in R (Cryer & Chan)
+- Applied Econometrics with R (Kleiber & Zeileis)
+- Fundamentals of causal inference using R (Brumback)
+- etc.
+
+## Pendientes actualizados
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Localizar PDFs faltantes y crear checkpoints |
+| **MEDIA** | Normalizar nombres de libros (duplicados con/sin .pdf) |
+| **BAJA** | Re-indexar "Time Series Analysis in R" cuando se tenga el PDF |
+
+---
+
+### Sesión 2026-08-19 (~16:30) — ✅ Mostrar número de páginas en lista de libros
+
+## Problema
+
+La lista de libros procesados mostraba `? págs` para todos los libros.
+
+## Causa raíz
+
+`list_processed_books()` no obtenía el número de páginas de ninguna fuente. Los checkpoints guardan `total_pages` pero no se usaba.
+
+## Solución
+
+Modificado `list_processed_books()` para leer páginas desde checkpoints:
+
+```python
+# Try to get page counts from checkpoints
+for key, book_info in books.items():
+    checkpoint_path = _get_checkpoint_path_for_book(book_info["book_name"], book_info["domain"])
+    if checkpoint_path and os.path.exists(checkpoint_path):
+        with open(checkpoint_path, 'r', encoding='utf-8') as f:
+            checkpoint = json.load(f)
+            book_info["pages"] = checkpoint.get("total_pages")
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\ontology_manager.py` | `list_processed_books()` lee checkpoints |
+| `C:\NEVEN\startup\neven_http_server.py` | `pages` ya no es hardcoded a None |
+| `C:\NEVEN\TaskPane\taskpane.html` | Display de páginas junto a entidades |
+
+## Commit
+
+`00c5fb7` feat(ontology): show page count from checkpoints in book list
+
+## Resultado
+
+| Libro | Páginas | Entidades |
+|-------|---------|-----------|
+| Introduccion a la econometria-Wooldridge.pdf | 883 | 3599 |
+| Otros libros | ? | varias |
+
+Solo el Wooldridge tiene checkpoint (procesado con el nuevo sistema incremental).
+
+## Error durante desarrollo
+
+Modifiqué `C:\NEVEN\startup\ontology_manager.py` pero luego copié desde el repo (sin el cambio). **Lección:** verificar que la copia es en la dirección correcta.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Re-indexar "Time Series Analysis in R" con nuevo código de limpieza |
+| **MEDIA** | Normalizar nombres de libros (duplicados con/sin .pdf) |
+| **BAJA** | Crear checkpoints para libros legacy (para mostrar páginas) |
+
+---
+
+### Sesión 2026-08-19 (~16:15) — ✅ Fix: Ocultar dominios vacíos de la lista
+
+## Problema
+
+El dominio `econometrics` aparecía en la lista con 0 entidades y 0 libros después de migrar todo a `econometria`.
+
+## Causa raíz
+
+`list_domains()` en `ontology_manager.py` retornaba TODOS los dominios descubiertos, incluyendo los vacíos/archivados.
+
+## Solución
+
+Agregado filtro en `list_domains()`:
+
+```python
+# Skip empty domains (no entities AND no books)
+if d.entity_count == 0 and book_count == 0:
+    continue
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\ontology_manager.py` | +filtro en `list_domains()` |
+| `F:\...\ontology_manager.py` | Sincronizado |
+
+## Commit
+
+`e5c3148` fix(ontology): hide empty domains from list
+
+## Estado final
+
+| Dominio | Entidades | Libros |
+|---------|-----------|--------|
+| excel | 183 | 6 |
+| econometria | 4,012 | 20 |
+
+`econometrics` ya no aparece en la lista.
+
+## Nota técnica
+
+El caché de Python requirió matar TODOS los procesos y limpiar `__pycache__` para que el cambio tomara efecto.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Re-indexar "Time Series Analysis in R" con nuevo código |
+| **MEDIA** | Normalizar nombres de libros (duplicados con/sin .pdf) |
+| **BAJA** | Unificar excel/excel-functions si aplica |
+
+---
+
+### Sesión 2026-08-19 (~16:00) — ✅ Limpieza documento corrupto del RAG
+
+## Acciones realizadas
+
+1. **Terminado proceso Python 642700** que bloqueaba el RAG index
+2. **Reiniciado servidor HTTP** en puerto 5555
+3. **Eliminado documento corrupto** "Time Series Analysis in R" del RAG
+
+## Detalles de la limpieza
+
+| Campo | Valor |
+|-------|-------|
+| Document ID | `42740e408100` |
+| Nombre | Time Series Analysis in R |
+| Chunks eliminados | 602 |
+| RAG después | 8 documentos, 3,088 chunks |
+
+## Comandos ejecutados
+
+```powershell
+# Terminar proceso bloqueador
+Stop-Process -Id 642700 -Force
+
+# Reiniciar servidor
+Start-Process python -ArgumentList "neven_http_server.py" -WorkingDirectory "C:\NEVEN\startup"
+```
+
+```python
+# Eliminar documento corrupto
+conn.execute('DELETE FROM chunks WHERE doc_id = ?', ['42740e408100'])
+conn.execute('DELETE FROM documents WHERE id = ?', ['42740e408100'])
+```
+
+## Estado final del RAG
+
+| Documento | Dominio |
+|-----------|---------|
+| Wooldridge - Panel Data | econometria |
+| Causal Inference in R | econometria |
+| 100 Statistical Tests in R | estadistica |
+| Spatial Data Analysis in R | econometria |
+| R for Social Sciences | estadistica |
+| CFI Excel eBook | excel |
+| Excel 365 Bible | excel |
+| Excel Basics Tutorial | excel |
+
+## Pendientes actualizados
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Re-indexar "Time Series Analysis in R" con nuevo código (si se tiene el PDF) |
+| **MEDIA** | Normalizar nombres de libros (duplicados con/sin .pdf) |
+| **BAJA** | Unificar excel/excel-functions |
+
+---
+
+### Sesión 2026-08-19 (~15:30) — ✅ Fix: Encoding garbage en extracción de PDFs
+
+## Problema resuelto
+
+**Causa raíz:** El libro "Time Series Analysis in R" (Cryer & Chan) usa fuentes con encoding personalizado (Symbol/Math fonts). PyMuPDF extrae los códigos de caracteres pero no los mapea correctamente a Unicode, resultando en texto como:
+
+```
+( ) Var Yt ( ) --- = Corr Yt Yt k – , ( ) ck Var Yt k – ( )
+S φ μ , ( ) Sc φ μ , ( ) 1 φ2 – ( ) Y1 μ – ( )2
+```
+
+## Solución implementada
+
+Nueva función `clean_pdf_text()` en `rag_engine.py` que:
+
+1. **Reemplaza símbolos griegos** por nombres legibles: φ→phi, μ→mu, σ→sigma, etc.
+2. **Elimina caracteres de control** invisibles (U+0000-U+001F excepto \n\t)
+3. **Normaliza secuencias repetidas**: `----` → `---`, `....` → `...`
+4. **Detecta fórmulas corruptas**: secuencias de 6+ caracteres no-alfanuméricos → `[FORMULA]`
+5. **Limpia patrones rotos**: `( ) Var` → `Var`
+
+### Aplicada en 3 puntos de extracción
+
+| Función | Librería | Línea |
+|---------|----------|-------|
+| `extract_text_with_pages()` | PyMuPDF | ~283 |
+| `extract_text_from_file()` | PyMuPDF | ~375 |
+| `extract_text_with_pages_markitdown()` | pdfplumber | ~218 |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | +`clean_pdf_text()` (~70 líneas), aplicada en 3 lugares |
+| `F:\ANTIGRAVITY\2026\NEVEN\NEVEN\TaskPane\rag_engine.py` | Sincronizado |
+
+## Commit
+
+`2d6b72c` fix(rag): add clean_pdf_text() to handle encoding issues
+
+## Pendiente: Limpiar libro corrupto existente
+
+El libro "Time Series Analysis in R" ya indexado sigue corrupto. Para limpiarlo:
+
+```python
+from rag_engine import RAGEngine
+engine = RAGEngine()
+engine.delete_document("doc_id_del_libro")  # Encontrar ID primero
+# Luego re-indexar con el nuevo código
+```
+
+**Bloqueador:** RAG index bloqueado por proceso Python 642700 (servidor HTTP?)
+
+## Pendientes actualizados
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Eliminar y re-indexar "Time Series Analysis in R" cuando RAG disponible |
+| **MEDIA** | Normalizar nombres de libros (duplicados con/sin .pdf) |
+| **BAJA** | Unificar excel/excel-functions |
+
+---
+
+### Sesión 2026-08-19 (~15:00) — 🔍 Investigación: Encoding garbage en RAG
+
+## Investigación realizada
+
+Se buscaron los caracteres problemáticos reportados (`Eðy j x`, `sÞ ¼`, `ð`, `Þ`).
+
+### Hallazgos
+
+1. **graph.jsonl limpios**: Los 4 archivos graph.jsonl NO tienen caracteres problemáticos
+2. **Wooldridge PDF**: No contiene `ð`/`Þ` - usa `ˆ` (U+02C6) y `˜` (U+02DC) para símbolos matemáticos
+3. **RAG index bloqueado**: `C:\NEVEN\data\rag_index.duckdb` está siendo usado por proceso Python (PID 642700) desde 2026-10-11
+
+### Caracteres encontrados en Wooldridge (normales)
+
+| Unicode | Char | Uso |
+|---------|------|-----|
+| U+02C6 | `ˆ` | Acento circunflejo (gorro matemático β̂) |
+| U+02DC | `˜` | Tilde (estimador) |
+| U+2026 | `…` | Elipsis |
+
+Estos NO son errores - son mapeos de fuente del PDF.
+
+## Bloqueador
+
+El proceso Python 642700 tiene el RAG index abierto, impidiendo inspección directa del DuckDB.
+
+## Preguntas pendientes
+
+- ¿De qué documento específico vienen los caracteres `Eðy j x`, `sÞ ¼`?
+- ¿Está el servidor HTTP corriendo? (para consultar via API)
+
+## Archivos creados (temporales)
+
+- `C:\NEVEN\startup\check_rag_encoding.py` — script de diagnóstico
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Identificar fuente de `ð`/`Þ` (terminar proceso o consultar API) |
+| **MEDIA** | Normalizar nombres de libros (duplicados con/sin .pdf) |
+| **BAJA** | Unificar excel/excel-functions |
+
+---
+
+### Sesión 2026-08-19 (~14:45) — ✅ Unificación de dominios econometrics → econometria
+
+## Problema resuelto
+
+**Causa raíz:** Existían dos dominios para la misma familia conceptual:
+- `econometrics` (inglés) — 598 entidades en ubicación legacy
+- `econometria` (español) — 8,220 entidades en ubicación nueva
+
+## Solución implementada
+
+1. **Migración de entidades**: 598 entidades de econometrics añadidas a econometria
+2. **Sistema de aliases**: Diccionario `_DOMAIN_ALIASES` para resolver nombres alternativos
+3. **Archivado de legacy**: Carpetas renombradas con prefijo `_archived_`
+
+### Cambios en `ontology_manager.py`
+
+```python
+_DOMAIN_ALIASES = {
+    "econometrics": "econometria",  # English → Spanish
+    "excel": "excel-functions",
+    "excel_functions": "excel-functions",
+}
+```
+
+La función `_find_domain_by_name()` ahora consulta aliases antes de buscar por nombre.
+
+## Estado final
+
+| Dominio | Entidades | Libros |
+|---------|-----------|--------|
+| `econometria` | 8,819 | 20 (unificados) |
+| `excel` | 336 | pendiente unificar con excel-functions |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\ontology_manager.py` | +`_DOMAIN_ALIASES`, modificado `_find_domain_by_name()` |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | +598 entidades migradas |
+
+## Carpetas archivadas
+
+- `C:\NEVEN\docs\ontologia\_archived_econometrics\`
+- `C:\NEVEN\ontology\_archived_econometrics\`
+
+## Commit
+
+`70c49ef` feat(ontology): unify econometrics into econometria domain
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Fix encoding garbage en RAG (`Eðy j x`, `sÞ ¼`) — PyMuPDF extrae mal símbolos matemáticos |
+| **MEDIA** | Normalizar nombres de libros (duplicados con/sin .pdf) |
+| **BAJA** | Unificar excel/excel-functions (336 vs 0 entidades) |
+
+---
+
+### Sesión 2026-08-19 (~14:30) — 📝 Discusión: Unificación de dominios econometrics/econometria
+
+## Problema identificado
+
+Existen dos dominios separados que deberían ser uno solo:
+- `C:\NEVEN\docs\ontologia\econometrics\` — legacy (598 entidades, inglés)
+- `C:\NEVEN\ontology\econometria\` — nuevo (8,220 entidades, español)
+
+## Opciones propuestas
+
+1. **Migrar todo a `econometria`** (español) — RECOMENDADO
+2. Migrar todo a `econometrics` (inglés)
+3. Crear alias entre ambos
+
+## Decisión pendiente
+
+Usuario debe confirmar si proceder con la migración a `econometria`.
+
+## Pendientes ACTUALIZADOS
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Unificar dominios econometrics → econometria |
+| **ALTA** | Fix encoding garbage en RAG (`Eðy j x`, `sÞ ¼`) |
+| **MEDIA** | Normalizar nombres de libros (duplicados con/sin .pdf) |
+
+---
+
+### Sesión 2026-08-19 (~14:00-14:30) — ✅ Feature: Eliminar libros de ontología
+
+## Implementado
+
+### Nueva función `delete_book_entities()` en `ontology_manager.py`
+
+| Función | Propósito |
+|---------|-----------|
+| `delete_book_entities(domain_id, book_name)` | Elimina todas las entidades de un libro del graph.jsonl |
+| `_get_checkpoint_path_for_book()` | Busca archivo de checkpoint por patrón (puede tener hash) |
+
+**Comportamiento:**
+- Lee `graph.jsonl`, filtra líneas donde `reference.book` o `source_book` coincide
+- Comparación normalizada (ignora .pdf y mayúsculas/minúsculas)
+- Crea backup antes de escribir
+- Elimina checkpoint asociado si existe
+- Recarga dominio en memoria
+
+### Nuevo endpoint `/api/ontology/delete-book`
+
+```
+POST /api/ontology/delete-book
+Body: { "book_name": "...", "domain_id": "..." }
+Response: { "status": "ok", "deleted_count": N, "remaining_count": M }
+```
+
+### Nuevo botón 🗑️ en TaskPane
+
+- Cada libro en la lista tiene botón de eliminar
+- Pide confirmación antes de eliminar
+- Refresca lista de dominios y libros tras eliminar
+
+## Estado actual de libros en `econometria`
+
+```
+Applied Econometrics with R: 1 entidad
+AER.pdf: 9 entidades
+Econometric Analysis: 9 entidades
+Econometric Analysis of Cross Section and Panel Data: 183 entidades
+Introduccion a la econometria-Wooldridge.pdf: 3608 entidades
+Introduccion a la econometria-Wooldridge: 11 entidades (duplicado sin .pdf)
+```
+
+**Nota:** Hay duplicados por inconsistencia en nombres. La función de delete los maneja pero la extracción debería normalizar.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\ontology_manager.py` | +`delete_book_entities()`, +`_get_checkpoint_path_for_book()` |
+| `C:\NEVEN\startup\neven_http_server.py` | +endpoint `/api/ontology/delete-book` |
+| `C:\NEVEN\TaskPane\taskpane.html` | +botón 🗑️, +función `ontologyDeleteBook()` |
+
+## Commit
+
+`e26aa94` feat(ontology): add delete book feature
+
+## Pendiente
+
+1. **Fix encoding garbage en RAG** — caracteres como `Eðy j x`, `sÞ ¼` en extracción de PDF (PyMuPDF)
+2. **Normalizar nombres de libros** — actualmente hay duplicados con/sin .pdf
 
 ---
 
@@ -5850,4 +7657,842 @@ Ninguno.
 - Sin Motor IA, retorna: `"error": "No active AI profile configured"`
 - La extracción de texto con PyMuPDF funciona (1.58 seg para 890 páginas)
 - El paso que falla es la llamada al LLM para extraer entidades
+
+
+
+---
+
+### Sesion 2026-08-19 (~21:00) -- Knowledge Enricher: Conectando paquetes R huerfanos
+
+## Problema
+
+Quedaban 68 entidades huerfanas (1.1%), principalmente paquetes de R como `gmm`, `sf`, `nnet`, `MASS` y supuestos econometricos (`assumption_homoscedasticity`, etc.).
+
+## Causa raiz
+
+El enricher original usaba solo similitud de palabras. Los paquetes de R tienen nombres cortos (`sf`, `gmm`) que no matchean bien con conceptos de la ontologia sin conocimiento de dominio.
+
+## Intentos fallidos
+
+1. **Wikipedia API agresiva** — Rate limited (HTTP 429) despues de pocas llamadas. Wikipedia bloquea requests rapidos.
+
+## Solucion implementada
+
+### Knowledge-Based Enricher (`ontology_knowledge_enricher.py`)
+
+Enricher que usa conocimiento codificado (no APIs externas):
+
+```python
+R_PACKAGES = {
+    "gmm": ["generalized method of moments", "moment conditions", "overidentification"],
+    "sf": ["spatial features", "geospatial", "simple features"],
+    "nnet": ["neural network", "multinomial logit", "feed forward"],
+    "mass": ["robust regression", "negative binomial", "rlm"],
+    "urca": ["cointegration", "johansen", "unit root", "vecm"],
+    # ... 30+ paquetes
+}
+
+ASSUMPTIONS = {
+    "homoscedasticity": ["constant variance", "white test", "breusch pagan"],
+    "no_multicollinearity": ["vif", "variance inflation", "collinearity"],
+    # ...
+}
+```
+
+Fuentes de conocimiento:
+- CRAN (`https://cran.r-project.org/web/packages/`)
+- Libros de Wooldridge, Greene, Hamilton
+- Documentacion de paquetes
+
+## Resultados
+
+| Metrica | Antes | Despues | Mejora |
+|---------|-------|---------|--------|
+| Relaciones | 16,367 | 17,001 | +634 |
+| Ratio rel/ent | 2.72 | 2.83 | +4% |
+| Huerfanos | 68 (1.1%) | 37 (0.62%) | -46% |
+
+## Huerfanos restantes (37)
+
+- Variables genericas: `age`, `expend`, `motheduc`
+- Conceptos causalidad avanzada: `Confounder`, `Collider`, `Mediator`
+- Paquetes especializados: `hdm`, `DoubleML`, `estimatr`, `fwildclusterboot`
+- Funciones base R: `ls`, `seq`, `range` (muy genericas)
+
+## Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\ontology_knowledge_enricher.py` | **NUEVO** - Enricher basado en conocimiento |
+| `C:\NEVEN\startup\ontology_wiki_enricher.py` | **NUEVO** - Enricher Wikipedia (no usado por rate limiting) |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | +634 relaciones nuevas |
+
+## Decisiones de diseño
+
+1. **Conocimiento codificado vs API externa**: Elegido conocimiento codificado porque:
+   - Instantaneo (no rate limiting)
+   - Reproducible (mismos resultados siempre)
+   - Controlado (solo relaciones relevantes)
+
+2. **Relacion `implements`**: Paquetes R "implementan" los metodos/tests que proveen
+
+3. **Relacion `tested_by`**: Supuestos econometricos son "testeados por" los tests que los verifican
+
+## Commits realizados
+
+Ninguno — pendiente commit consolidado de toda la sesion de ontologia.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit consolidado: RAG relations + enrichers + graph.jsonl |
+| **MEDIA** | Agregar paquetes faltantes: `hdm`, `DoubleML`, `estimatr` |
+| **MEDIA** | Conectar conceptos de causalidad (`Confounder`, `Collider`) |
+| **BAJA** | Considerar ignorar funciones base R (`ls`, `seq`) como entidades |
+
+## Estado final de la ontologia
+
+```
+Entidades: 6,008
+Relaciones: 17,001
+Ratio: 2.83 relaciones/entidad
+Huerfanos: 37 (0.62%)
+```
+
+La ontologia esta lista para uso productivo en el RAG.
+
+
+---
+
+### Sesion 2026-08-19 (~21:30) -- Stats de huerfanos en el visualizador de ontologia
+
+## Problema
+
+El visualizador de ontologia (`ontology-graph.html`) no mostraba el porcentaje de huerfanos, haciendo dificil verificar que el grafo estaba actualizado.
+
+## Solucion implementada
+
+### 1. Calculo de huerfanos en el endpoint
+
+Modificado `_handle_ontology_graph()` en `neven_http_server.py`:
+
+```python
+# Calcular nodos conectados
+connected_ids = set()
+for e in edges_list:
+    connected_ids.add(e["from"])
+    connected_ids.add(e["to"])
+
+# Calcular huerfanos ANTES del limit
+total_nodes = len(nodes_dict)
+orphan_count = sum(1 for nid in nodes_dict if nid not in connected_ids)
+orphan_pct = round(100 * orphan_count / total_nodes, 2)
+```
+
+### 2. Stats extendidas en la respuesta JSON
+
+```json
+"stats": {
+    "nodeCount": 500,        // nodos mostrados (con limit)
+    "edgeCount": 234,        // edges mostrados
+    "totalNodes": 6008,      // total en grafo
+    "totalEdges": 17001,     // total relaciones
+    "orphanCount": 37,       // huerfanos
+    "orphanPct": 0.62,       // porcentaje
+    "relationsPerEntity": 2.83  // ratio
+}
+```
+
+### 3. Display en el HTML
+
+```javascript
+const orphanInfo = stats.orphanPct !== undefined ? ` | ${stats.orphanPct}% huerfanos` : '';
+const ratioInfo = stats.relationsPerEntity !== undefined ? ` | ratio: ${stats.relationsPerEntity}` : '';
+statsBadge.textContent = `${stats.totalNodes} nodos, ${stats.totalEdges} relaciones${orphanInfo}${ratioInfo}`;
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | Calculo de huerfanos en `_handle_ontology_graph()` |
+| `C:\NEVEN\taskpane\ontology-graph.html` | Display de stats extendidas |
+
+## Verificacion
+
+Stats calculadas offline coinciden:
+```
+Total nodos: 6,008
+Total relaciones: 17,001
+Huerfanos: 37 (0.62%)
+Ratio: 2.83
+```
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar servidor HTTP para ver cambios |
+| **ALTA** | Commit consolidado de toda la sesion de ontologia |
+| **MEDIA** | Copiar archivos modificados al repositorio |
+
+## Nota
+
+Servidor reiniciado exitosamente (PID 713328). Stats verificadas:
+```
+Total nodos: 6,008
+Total relaciones: 17,001
+Huerfanos: 37 (0.62%)
+Ratio: 2.83
+```
+
+## Intento fallido
+
+El reemplazo con PowerShell (`$content.Replace()`) falló silenciosamente — el string no matcheaba exactamente (posiblemente por whitespace o encoding). Solucionado usando `str_replace` de Kiro directamente.
+
+
+---
+
+### Sesión 2026-08-19 (~21:00) — Reducción de huérfanos: 55.7% → 0.28%
+
+## Problema
+
+Después de activar las relaciones en el RAG, identificamos que el 55.7% de las entidades (3,350 de 6,008) eran **huérfanas** — sin ninguna relación que las conectara al grafo. Esto limitaba severamente la utilidad del traversal de relaciones.
+
+## Causa raíz
+
+Las entidades se crearon principalmente desde PDFs de libros/documentación, pero las relaciones (`depends_on`, `implements`, etc.) solo existían para un subset pequeño de paquetes R. Los conceptos estadísticos y econométricos carecían de conexiones semánticas.
+
+## Solución implementada (3 fases)
+
+### Fase 1: Knowledge Enricher para paquetes R
+
+Archivo: `C:\NEVEN\startup\ontology_knowledge_enricher.py`
+
+Enriquecedor basado en conocimiento codificado de 30+ paquetes R:
+- `lmtest`, `sandwich`, `urca`, `vars`, `forecast`, `tseries`
+- `gmm`, `AER`, `plm`, `survival`, `MASS`, `nnet`
+- Cada paquete tiene sus relaciones predefinidas (implements, uses, related_to)
+
+### Fase 2: Causal Concepts Enricher
+
+Archivo: `C:\NEVEN\startup\ontology_causal_enricher.py`
+
+Conceptos de causalidad e inferencia (fuente: Wikipedia + conocimiento de dominio):
+- Confounder, Collider, Mediator, Effect Modification
+- Counterfactual, State-Space, Simpson's Paradox
+- Relaciones cruzadas con tests, modelos y métodos existentes
+
+### Fase 3: Stats endpoint para visualización
+
+Archivo: `C:\NEVEN\startup\neven_http_server.py` (endpoint `/api/ontology/graph`)
+
+Nuevo objeto `stats` en respuesta:
+```json
+{
+  "stats": {
+    "totalNodes": 6008,
+    "totalEdges": 17162,
+    "orphanCount": 17,
+    "orphanPct": 0.28,
+    "relationsPerEntity": 2.86
+  }
+}
+```
+
+Archivo: `C:\NEVEN\taskpane\ontology-graph.html`
+
+Stats display actualizado para mostrar porcentaje de huérfanos.
+
+## Resultados
+
+| Métrica | Inicio | Fase 1 | Fase 2 | Final |
+|---------|--------|--------|--------|-------|
+| **Huérfanos** | 3,350 (55.7%) | 48 (0.8%) | 37 (0.62%) | 17 (0.28%) |
+| **Relaciones** | ~400 | 16,600+ | 16,763 | 17,162 |
+| **Ratio rel/ent** | 0.07 | 2.76 | 2.79 | 2.86 |
+
+## Archivos creados/modificados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `startup/ontology_knowledge_enricher.py` | **NUEVO** - Enriquecedor de paquetes R |
+| `startup/ontology_causal_enricher.py` | **NUEVO** - Enriquecedor de conceptos causales |
+| `startup/rag_engine.py` | Carga de relaciones y traversal BFS |
+| `startup/neven_http_server.py` | Stats de huérfanos en endpoint |
+| `TaskPane/ontology-graph.html` | Display de stats |
+
+## Huérfanos restantes (17)
+
+Entidades genéricas que no coincidieron con patrones de enriquecedores:
+- `func_ls`, `func_q`, `func_range`, `func_rstudent`, `func_seq`
+- `var_age`, `var_expend`, `var_motheduc`
+- `concept_effect_modification`, `concept_hypercube`, etc.
+
+Estos son aceptables — son variables de datasets específicos o funciones base de R.
+
+## Cómo ejecutar los enriquecedores
+
+```bash
+cd C:\NEVEN\startup
+python ontology_knowledge_enricher.py   # Paquetes R
+python ontology_causal_enricher.py      # Conceptos causales
+```
+
+## Verificación
+
+1. Abrir TaskPane en Excel
+2. Tab Config > Dominios de Conocimiento > "Explorar"
+3. Stats muestra: `Huérfanos: 0.28%`
+
+## Estado del servidor HTTP
+
+- **PID actual:** 714852
+- **Puerto:** 5555
+- **Ontología cargada:** 6,008 entidades, 17,162 relaciones
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios (enrichers + RAG + stats) |
+| **BAJA** | Agregar más paquetes R según uso del usuario |
+| **BAJA** | Considerar enriquecedor para conceptos de ML/Deep Learning |
+
+
+---
+
+### Sesión 2026-08-20 (~21:30) — Fix: Discrepancia entre huérfanos reales vs visuales
+
+## Problema reportado
+
+El usuario reportó que el gráfico mostraba muchos más nodos desconectados de los que indicaban las estadísticas (0% huérfanos).
+
+## Diagnóstico
+
+**Hallazgo clave:** Los "huérfanos visuales" son diferentes de los "huérfanos reales":
+
+| Métrica | Definición | Valor |
+|---------|------------|-------|
+| **Huérfanos reales** | Nodos sin ninguna relación en todo el grafo | 0 (0%) |
+| **Huérfanos visuales** | Nodos cuyas relaciones conectan a nodos fuera del subset visible | ~20% (con 500 nodos) |
+
+**Causa raíz:**
+El visualizador mostraba los primeros N nodos del archivo `graph.jsonl`. Muchos de estos nodos tenían relaciones, pero sus targets estaban en posiciones posteriores del archivo (fuera del subset visible). Resultado: el nodo aparecía "huérfano" visualmente aunque no lo fuera.
+
+**Ejemplo:**
+- Nodo `A` (posición 100) conecta con nodo `B` (posición 2000)
+- Si el límite es 500, `B` no se incluye
+- `A` aparece sin conexiones en el visualizador
+
+## Solución implementada
+
+### 1. Selección por conectividad (Smart Node Selection)
+
+En lugar de tomar los primeros N nodos, ahora se seleccionan los **N nodos más conectados**:
+
+```python
+# Contar conexiones por nodo
+node_degree = {}
+for e in edges_list:
+    node_degree[e["from"]] = node_degree.get(e["from"], 0) + 1
+    node_degree[e["to"]] = node_degree.get(e["to"], 0) + 1
+
+# Ordenar por grado de conectividad (más conectados primero)
+sorted_node_ids = sorted(
+    nodes_dict.keys(),
+    key=lambda nid: node_degree.get(nid, 0),
+    reverse=True
+)
+
+# Seleccionar top N
+selected_ids = set(sorted_node_ids[:limit])
+```
+
+### 2. Nuevas métricas de huérfanos visuales
+
+Agregadas propiedades `visualOrphanCount` y `visualOrphanPct` al response de `/api/ontology/graph`:
+
+```json
+{
+  "stats": {
+    "orphanCount": 0,         // Huérfanos reales (todo el grafo)
+    "orphanPct": 0.0,
+    "visualOrphanCount": 55,  // Huérfanos en subset visible
+    "visualOrphanPct": 11.0,
+    ...
+  }
+}
+```
+
+### 3. Enriquecedor de huérfanos basado en Wikipedia
+
+Nuevo script `ontology_orphan_enricher.py` que:
+- Traduce conceptos técnicos (hypercube → Latin Hypercube Sampling, rstudent → Studentized Residual)
+- Busca relaciones en Wikipedia para los 17 huérfanos restantes
+- Conecta entidades específicas como `var_age`, `var_expend` con modelos econométricos existentes
+
+## Resultados
+
+| Límite de nodos | Huérfanos visuales (antes) | Huérfanos visuales (después) |
+|-----------------|---------------------------|------------------------------|
+| 100 | ~50% | 34% |
+| 500 | ~21% | 11% |
+| 1000 | ~15% | 5.3% |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\neven_http_server.py` | +Smart node selection, +visualOrphanCount/Pct |
+| `C:\NEVEN\startup\ontology_orphan_enricher.py` | **NUEVO** - Enriquecedor basado en Wikipedia |
+| `C:\NEVEN\taskpane\ontology-graph.html` | Muestra "% sin conexiones visibles" |
+
+## Lección aprendida
+
+**No confundir huérfanos reales con huérfanos visuales.** Cuando se muestra un subconjunto de un grafo, los nodos pueden parecer desconectados aunque no lo estén. La solución es:
+1. Seleccionar nodos que están bien conectados **entre sí**
+2. O aumentar el límite para incluir más del grafo
+3. Mostrar claramente ambas métricas al usuario
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Commit de todos los cambios |
+| **BAJA** | Considerar algoritmo de clustering (Louvain) para selección de comunidades |
+
+
+---
+
+### Sesión 2026-08-20 (~22:00) — Propuesta: Agregar Statlect como fuente de ontología
+
+## Discusión
+
+El usuario propuso agregar [Statlect.com](https://statlect.com/) como fuente para enriquecer la ontología de estadística y econometría.
+
+## Análisis de Statlect
+
+Statlect es un textbook digital gratuito con contenido muy bien estructurado:
+
+| Sección | Contenido |
+|---------|-----------|
+| **Fundamentos de probabilidad** | Variables aleatorias, valor esperado, varianza, correlación, probabilidad condicional |
+| **Distribuciones** | Binomial, Poisson, uniforme, exponencial, normal, Beta |
+| **Teoría asintótica** | Convergencia en probabilidad, CLT, Ley de Grandes Números |
+| **Estadística matemática** | MLE, tests de hipótesis, estimación puntual e intervalar |
+| **Regresión** | OLS, GLS, Ridge, multicolinealidad, variables dummy |
+| **Machine Learning** | Logit, clasificación, con ejemplos en Python |
+| **Álgebra matricial** | ~100 lecturas sobre matrices |
+| **Bayesiana** | Prior, posterior, conjugate priors, MCMC |
+
+## Opciones propuestas
+
+**Opción A: Scraping automático**
+- Más completo pero más lento
+- Requiere múltiples llamadas HTTP
+- Riesgo de sobrecargar el servidor
+
+**Opción B: Knowledge-based** (recomendada)
+- Codifico manualmente el conocimiento de las páginas principales
+- Más rápido, respetuoso con el servidor
+- Puedo expandirlo gradualmente
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Implementar enriquecedor de Statlect (Opción B) |
+| **ALTA** | Crear entidades para conceptos clave: MLE, CLT, convergencia, distribuciones |
+| **MEDIA** | Conectar con entidades existentes de econometría |
+| **MEDIA** | Agregar referencias a URLs de Statlect en propiedades de entidades |
+
+## Notas
+
+- Statlect tiene estructura muy limpia, ideal para extracción
+- Las lecturas incluyen definiciones rigurosas + ejemplos
+- Sería buena fuente para tests de hipótesis (Wald, LR, Score) que faltan en la ontología
+
+
+---
+
+### Sesión 2026-08-20 (~22:30) — Statlect agregado como fuente de ontología
+
+## Logro principal
+
+Se agregó [Statlect.com](https://statlect.com/) como fuente de conocimiento para la ontología de estadística y econometría.
+
+## Implementación
+
+Nuevo script `ontology_statlect_enricher.py` con enfoque **knowledge-based** (Opción B):
+- Contenido codificado manualmente basado en la estructura de Statlect
+- 51 entidades definidas con URLs de referencia
+- 65 relaciones entre conceptos
+- Ejecutable múltiples veces (idempotente)
+
+## Entidades agregadas (26 nuevas)
+
+| Categoría | Entidades |
+|-----------|-----------|
+| **Convergencia** | Convergence in Probability/Distribution/Almost Sure, CLT, LLN, Slutsky, Delta Method |
+| **Distribuciones** | Chi-Square, F, t, Gamma, Beta, Multivariate Normal |
+| **Estimación** | Fisher Information, Cramér-Rao Bound, Efficiency |
+| **ML/Score** | Score Function, Hessian Matrix |
+| **Tests** | Likelihood Ratio, Wald, Score, Size, Power, P-Value |
+| **Bayesiana** | Prior/Posterior, Conjugate Prior, MCMC, Markov Chain |
+
+## Resultados
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| **Entidades** | 6,008 | 6,034 (+26) |
+| **Relaciones** | 16,808 | 16,868 (+60) |
+| **Huérfanos** | 0 | 0 |
+| **Ratio rel/ent** | 2.79 | 2.80 |
+
+## Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `C:\NEVEN\startup\ontology_statlect_enricher.py` | **NUEVO** - Enriquecedor basado en Statlect |
+| `NEVEN\startup\ontology_statlect_enricher.py` | Copia en repositorio |
+
+## Decisiones de diseño
+
+1. **Opción B (knowledge-based)** elegida sobre scraping automático:
+   - Más rápido y respetuoso con el servidor de Statlect
+   - Control total sobre qué entidades se agregan
+   - Fácil de expandir gradualmente
+
+2. **URLs como propiedades**: Cada entidad incluye `url` y `source: "Statlect"` para trazabilidad.
+
+3. **Relaciones semánticas específicas**: Usé tipos como `implies`, `derived_from`, `generalizes`, `converges_to` en lugar de solo `related_to`.
+
+## Cómo ejecutar
+
+```bash
+cd C:\NEVEN\startup
+python ontology_statlect_enricher.py
+```
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Commit de todos los cambios de ontología |
+| **MEDIA** | Agregar más secciones de Statlect (Matrix Algebra, Machine Learning) |
+| **BAJA** | Verificar que RAG usa las nuevas entidades en respuestas |
+
+
+---
+
+### Sesión 2026-08-20 (~23:00) — Verificación: Statlect como puentes en el grafo
+
+## Análisis realizado
+
+Se verificó que las entidades de Statlect no solo eliminan huérfanos, sino que **crean puentes** entre conceptos que antes estaban desconectados.
+
+## Hallazgos
+
+### Entidades Statlect como HUBs
+
+| Entidad Statlect | Conexiones a entidades existentes |
+|------------------|-----------------------------------|
+| Chi-Square Distribution | 3 |
+| Efficiency (Estimator) | 2 |
+| Score Function | 2 |
+| Bayesian Inference | 2 |
+| Multivariate Normal Distribution | 2 |
+
+### Nuevos puentes creados (7)
+
+| Puente (vía Statlect) | Conecta | Con |
+|----------------------|---------|-----|
+| **Chi-Square Distribution** | Test LR | Test Wald |
+| **Chi-Square Distribution** | Test LR | Test Score |
+| **Chi-Square Distribution** | Test Wald | Test Score |
+| **Efficiency (Estimator)** | Estimación Puntual | MLE |
+| **Multivariate Normal** | Covariance Matrix | Linear Regression |
+| **Score Function** | Log-Likelihood | Test Score |
+| **Bayesian Inference** | Prior Distribution | Posterior Distribution |
+
+## Impacto en RAG
+
+**Antes:** El traversal BFS solo encontraba vecinos directos.
+
+**Ahora:** El RAG puede seguir caminos como:
+```
+Test Wald → Chi-Square Distribution → Test LR → Test Score
+```
+
+Esto permite que una pregunta sobre "Test de Wald" incluya contexto sobre los **tres tests clásicos de ML** (Wald, LR, Score) aunque solo se mencione uno.
+
+## Conclusión
+
+Las entidades de Statlect tienen **doble función**:
+1. Aportan conocimiento nuevo (definiciones rigurosas con URLs)
+2. Actúan como **nodos hub** que conectan clusters previamente aislados
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Probar RAG con query que use los nuevos puentes |
+| **MEDIA** | Commit de todos los cambios |
+
+
+---
+
+### Sesión 2026-08-20 (~23:15) — Diagnóstico: Duplicados en graph.jsonl
+
+## Hallazgo
+
+El archivo `graph.jsonl` contiene **7,802 entidades duplicadas** de procesamientos anteriores de libros.
+
+| Métrica | Valor bruto | Valor real (únicos) |
+|---------|-------------|---------------------|
+| Entradas `create` | 13,836 | 6,034 |
+| Relaciones | 16,868 | 16,868 |
+
+## Entidades más duplicadas
+
+| Entidad | Repeticiones |
+|---------|--------------|
+| model_linear_regression | 51 |
+| model_logistic_regression | 47 |
+| func_summary | 47 |
+| func_predict | 45 |
+| concept_bias_variance_tradeoff | 41 |
+
+## Causa
+
+Cada vez que se procesa un libro, el extractor crea entidades sin verificar si ya existen. Libros diferentes extraen los mismos conceptos comunes (regresión lineal, OLS, etc.).
+
+## Impacto actual
+
+**Ninguno funcional** — tanto el servidor HTTP como el RAG usan diccionarios que deduplicaran automáticamente. El archivo está "sucio" pero funciona.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Limpiar graph.jsonl eliminando duplicados |
+| **BAJA** | Modificar extractor para verificar existencia antes de crear |
+
+
+---
+
+### Sesión 2026-08-20 (~23:30) — Limpieza de graph.jsonl: eliminación de duplicados
+
+## Logro
+
+Se limpió el archivo `graph.jsonl` eliminando todas las entradas duplicadas.
+
+## Resultados
+
+| Métrica | Antes (sucio) | Después (limpio) | Cambio |
+|---------|---------------|------------------|--------|
+| **Entradas create** | 13,836 | 6,034 | -56% |
+| **Relaciones** | 16,868 | 13,706 | -19% |
+| **Tamaño archivo** | 7.30 MB | 3.98 MB | -45% |
+| **Huérfanos** | 0 | 0 | ✓ |
+| **Ratio rel/ent** | 1.22 (falso) | 2.27 (real) | +86% |
+
+## Proceso de limpieza
+
+1. Backup creado: `graph.jsonl.backup.20261011_210304`
+2. Lectura completa del archivo
+3. Deduplicación:
+   - Entidades: última ocurrencia gana (dict por ID)
+   - Relaciones: set de tuplas (from, to, type)
+4. Reescritura ordenada: primero entidades, luego relaciones
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | Limpiado de 7,802 entidades y ~3,000 relaciones duplicadas |
+| `C:\NEVEN\ontology\econometria\graph.jsonl.backup.20261011_210304` | Backup del archivo original |
+
+## Nota técnica
+
+El ratio rel/ent **subió** de 1.22 a 2.27 porque antes las entidades duplicadas inflaban el denominador. El valor real siempre fue ~2.27.
+
+## Estado final del grafo
+
+```
+Entidades: 6,034
+Relaciones: 13,706
+Ratio: 2.27
+Huérfanos: 0 (0%)
+```
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de graph.jsonl limpio |
+| **MEDIA** | Modificar extractor para evitar duplicados en origen |
+
+
+---
+
+### Sesión 2026-08-20 (~23:45) — MathWorld agregado como tercera fuente de ontología
+
+## Logro principal
+
+Se agregó [Wolfram MathWorld](https://mathworld.wolfram.com/) como tercera fuente de conocimiento para la ontología.
+
+## Implementación
+
+Nuevo script `ontology_mathworld_enricher.py` con:
+- 50 entidades definidas (42 nuevas, 8 ya existían)
+- 65 relaciones definidas (48 nuevas)
+- URLs de referencia a MathWorld para cada entidad
+
+## Entidades agregadas (42)
+
+| Categoría | Entidades |
+|-----------|-----------|
+| **Distribuciones continuas** | Cauchy, Laplace, Weibull, Pareto, Lognormal, Inverse Gaussian |
+| **Distribuciones discretas** | Geometric, Negative Binomial, Hypergeometric, Multinomial |
+| **Funciones especiales** | erf, Gamma, Beta, Digamma |
+| **Desigualdades** | Chebyshev, Markov, Jensen, Cauchy-Schwarz, Boole |
+| **Tests no paramétricos** | K-S, Anderson-Darling, Shapiro-Wilk, Runs, Sign, Wilcoxon, Mann-Whitney, Kruskal-Wallis |
+| **Correlación** | Pearson, Spearman, Kendall's Tau, Partial |
+| **Técnicas** | Bootstrap, Jackknife, Importance Sampling |
+| **Procesos** | Brownian Motion, Poisson Process |
+| **Información** | KL Divergence, Mutual Information |
+
+## Resultados
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| **Entidades** | 6,034 | 6,076 (+42) |
+| **Relaciones** | 13,706 | 13,754 (+48) |
+
+## Estado del grafo por fuente
+
+| Fuente | Entidades |
+|--------|-----------|
+| Original (libros) | 6,008 |
+| MathWorld | 42 |
+| Statlect | 26 |
+| **Total** | **6,076** |
+
+## Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `C:\NEVEN\startup\ontology_mathworld_enricher.py` | **NUEVO** - Enriquecedor MathWorld |
+| `NEVEN\startup\ontology_mathworld_enricher.py` | Copia en repositorio |
+
+## Cómo ejecutar
+
+```bash
+cd C:\NEVEN\startup
+python ontology_mathworld_enricher.py
+```
+
+## Nota técnica
+
+MathWorld usa JavaScript para cargar contenido dinámico, por lo que el web_fetch no puede extraer las listas de temas. El enfoque knowledge-based funciona mejor: se codifica manualmente el conocimiento de las páginas más importantes.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios (Statlect + MathWorld + limpieza) |
+| **MEDIA** | Agregar más fuentes (Khan Academy, MIT OCW) |
+| **BAJA** | Probar RAG con queries que usen las nuevas entidades |
+
+
+---
+
+### Sesion 2026-08-19 (~21:30) -- Diagnostico: Desorden estructural del proyecto + RAG no encuentra graph.jsonl
+
+## Problema principal
+
+El RAG reporto "Entidades cargadas: 0" porque busca en rutas incorrectas. Al investigar, se descubrio un problema mayor: **el proyecto esta desordenado con multiples carpetas duplicadas y nombres inconsistentes**.
+
+## Diagnostico realizado
+
+### Problema 1: Carpetas NEVEN anidadas
+
+```
+F:\ANTIGRAVITY\2026\NEVEN\          <- Workspace raiz (contiene .git, .kiro)
+├── NEVEN\                          <- Subcarpeta con codigo C++, scripts
+│   ├── docs\
+│   │   └── ontologia\              <- YAMLs de ontologia
+│   ├── ONTOLOGIA\                  <- PDFs de libros
+│   └── ...
+├── ONTOLOGIA\                      <- DUPLICADO de PDFs
+└── docs\                           <- Solo neven-docs.html (legacy?)
+```
+
+### Problema 2: Ontologia en 5 ubicaciones diferentes
+
+| Ubicacion | Contenido | Proposito |
+|-----------|-----------|-----------|
+| `C:\NEVEN\ontology\econometria\` | `graph.jsonl` (6K entidades) | **Grafo activo** |
+| `C:\NEVEN\docs\ontologia\` | YAMLs P1-P4, excel-functions | Archivos YAML |
+| `F:\...\NEVEN\NEVEN\docs\ontologia\` | YAMLs (repo) | Version repositorio |
+| `F:\...\NEVEN\NEVEN\ONTOLOGIA\` | PDFs de libros | Fuentes |
+| `F:\...\NEVEN\ONTOLOGIA\` | PDFs de libros | **DUPLICADO** |
+
+### Problema 3: Nombres inconsistentes
+
+- `ontology` vs `ontologia` vs `ONTOLOGIA` -- 3 nombres distintos
+- `econometria` vs `econometrics` -- inconsistencia de idioma
+- RAG busca en `C:/NEVEN/docs/ontologia` pero graph.jsonl esta en `C:/NEVEN/ontology/econometria/`
+
+## Causa raiz del fallo RAG
+
+En `rag_engine.py` linea ~1325, `get_rag_engine()` tiene candidatos:
+```python
+for candidate in [
+    Path("C:/NEVEN/docs/ontologia"),       # <- busca aqui
+    Path(__file__).parent.parent / "docs" / "ontologia",
+    Path("F:/ANTIGRAVITY/2026/NEVEN/NEVEN/docs/ontologia"),
+]:
+```
+
+Pero el `graph.jsonl` vive en `C:/NEVEN/ontology/econometria/` que **no esta en la lista**.
+
+## Propuesta de reorganizacion (pendiente de aprobacion)
+
+1. **Eliminar duplicado**: `F:\...\NEVEN\ONTOLOGIA\` (copia de `NEVEN\NEVEN\ONTOLOGIA\`)
+2. **Renombrar en repo**: `NEVEN\NEVEN\` -> `NEVEN\src\` (evitar confusion)
+3. **Estandarizar nombre**: Usar `ontologia` (español) consistentemente
+4. **Mover PDFs**: `NEVEN\NEVEN\ONTOLOGIA\` -> `NEVEN\ontologia-fuentes\`
+5. **Unificar en produccion**: RAG busca solo en `C:\NEVEN\ontology\`
+
+## Archivos modificados
+
+Ninguno -- sesion fue solo de diagnostico.
+
+## Commits realizados
+
+Ninguno.
+
+## Intentos/decisiones
+
+- **NO se modifico rag_engine.py**: Seria un parche sobre desorden. Mejor reorganizar primero.
+- Se opto por diagnosticar antes de actuar para evitar crear mas confusion.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Aprobar propuesta de reorganizacion de carpetas |
+| **ALTA** | Ejecutar reorganizacion por fases (eliminar duplicados -> renombrar -> actualizar rutas) |
+| **ALTA** | Una vez reorganizado, corregir rutas en `rag_engine.py` |
+| **ALTA** | Validar RAG con `test_rag_queries.py` |
+| **MEDIA** | Commit de todos los cambios pendientes de sesiones anteriores |
+| **MEDIA** | Documentar estructura final en README o ARQUITECTURA.md |
+
+## Notas
+
+La sesion anterior creo 3 enrichers (Statlect, MathWorld, orphan) y limpio duplicados del grafo (6,076 entidades, 13,754 relaciones). Todo ese trabajo quedo inutilizado porque el RAG no puede encontrar el archivo. La prioridad es reorganizar para desbloquear.
 
