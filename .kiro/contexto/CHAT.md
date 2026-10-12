@@ -9378,3 +9378,25 @@ Get-Process -Id <PID> | Select-Object ProcessName, Path, StartTime
 | **ALTA** | Commit de mejoras al matching |
 | **MEDIA** | Mejorar matching de acrónimos cortos (ROC, AUC sin contexto) |
 | **BAJA** | Fix schema.yaml línea 7 (error YAML menor, no bloquea carga) |
+
+
+## Commits de esta sesión
+
+| Hash | Descripción |
+|------|-------------|
+| `d855845` | fix(rag): bidirectional keyword matching for short queries |
+| `95bcf90` | docs: actualizar bitacora con fix de matching bidireccional |
+| `16ccda8` | build(install): actualizar rag_engine.py y graph.jsonl |
+
+## Instalador actualizado
+
+- `src/Install/scripts/rag_engine.py` — con matching bidireccional
+- `src/Install/ontology/econometria/graph.jsonl` — 6105 entidades, 13808 relaciones
+
+## Estado al cerrar
+
+- Servidor HTTP detenido
+- Todos los cambios commiteados y pusheados
+- RAG funcionando correctamente con 19,054 entidades en producción
+
+---
