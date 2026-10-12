@@ -8961,3 +8961,60 @@ keywords = entity.get("keywords") or props.get("keywords", [])
 - Servidor HTTP: puerto 5555
 - Backup: `NEVEN_OLD` disponible
 
+
+
+---
+
+### Sesion 2026-08-19 (~23:45) -- Actualizacion del instalador y push final
+
+## Acciones realizadas
+
+Se actualizo el instalador con todos los archivos nuevos de la sesion.
+
+## Archivos agregados al instalador
+
+**Install/scripts/** (8 archivos nuevos):
+- `rag_engine.py` - Motor RAG con scoring mejorado
+- `ontology_timeseries_enricher.py` - Correlograma, ACF, ARIMA
+- `ontology_statlect_enricher.py`
+- `ontology_mathworld_enricher.py`
+- `ontology_orphan_enricher.py`
+- `ontology_knowledge_enricher.py`
+- `ontology_causal_enricher.py`
+- `test_rag_queries.py`
+
+**Install/data/ontology/** (2 archivos nuevos):
+- `econometria/graph.jsonl` (4.01 MB, 19K entidades, 17K relaciones)
+- `domains.json`
+
+## Commits de toda la sesion
+
+| Hash | Descripcion |
+|------|-------------|
+| `3762ec4` | refactor: reorganizar estructura del proyecto (NEVEN/NEVEN -> src) |
+| `2923a32` | fix(rag): corregir rutas de ontologia |
+| `fd75e08` | feat(rag): mejorar matching con scoring |
+| `ede29c1` | fix(rag): permitir match con 1 palabra larga (>7 chars) |
+| `86da721` | feat(ontology): agregar conceptos de series de tiempo |
+| `6615384` | chore(install): actualizar instalador con ontologia y scripts |
+
+## Push realizado
+
+Todos los commits fueron pusheados exitosamente a `origin/master`.
+
+## Resumen ejecutivo de la sesion completa
+
+1. **Reorganizacion del proyecto**: `NEVEN/NEVEN` -> `src`, `ONTOLOGIA` -> `ontologia-fuentes`
+2. **RAG funcionando**: 19,038 entidades, 16,733 relaciones cargando correctamente
+3. **Matching mejorado**: Sistema de scoring, match por palabras largas, deduplicacion
+4. **Series de tiempo**: Correlograma, ACF, PACF, ARIMA, tests de raiz unitaria
+5. **Instalador actualizado**: Todos los scripts y datos incluidos
+
+## Pendientes para proxima sesion
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` (error YAML linea 7) |
+| **MEDIA** | Agregar mas conceptos (GARCH, VAR, coeficiente de correlacion Pearson/Spearman) |
+| **BAJA** | Mejorar soporte para acronimos cortos (ACF, ADF sin contexto) |
+
