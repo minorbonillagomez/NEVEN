@@ -9065,3 +9065,104 @@ Ninguno (solo prueba de validacion).
 
 Ninguno adicional.
 
+
+
+---
+
+### Sesion 2026-08-20 (~00:15) -- Enricher de diagnosticos de clasificacion
+
+## Problema resuelto
+
+El test de Hosmer-Lemeshow y otras metricas de clasificacion (ROC-AUC, matriz de confusion, etc.) no existian en la ontologia.
+
+## Solucion implementada
+
+Nuevo script `ontology_classification_enricher.py` que agrega:
+
+### Entidades creadas (16)
+
+**Tests y conceptos:**
+- `test_hosmer_lemeshow` - Test de Hosmer-Lemeshow
+- `concept_goodness_of_fit_test` - Prueba de Bondad de Ajuste
+- `concept_roc_curve` - Curva ROC
+- `concept_confusion_matrix` - Matriz de Confusion
+- `concept_calibration` - Calibracion de Probabilidades
+- `concept_type_i_error`, `concept_type_ii_error`
+- `concept_classification_threshold`
+
+**Metricas:**
+- `metric_auc` - Area Bajo la Curva ROC
+- `metric_sensitivity` - Sensibilidad (Recall)
+- `metric_specificity` - Especificidad
+- `metric_precision` - Precision
+- `metric_f1_score` - F1 Score
+- `metric_accuracy` - Exactitud
+- `metric_brier_score` - Brier Score
+- `metric_log_likelihood` - Log-Verosimilitud
+- `metric_pseudo_r2_mcfadden` - Pseudo R² de McFadden
+
+**Tecnicas y funciones R:**
+- `tech_stratified_cv` - Validacion Cruzada Estratificada
+- `rfunc_hoslem_test`, `rfunc_roc`, `rfunc_confusionMatrix`
+
+### Relaciones creadas (29)
+
+- Hosmer-Lemeshow -> bondad de ajuste -> logit
+- ROC curve -> sensibilidad/especificidad
+- Matriz confusion -> precision/recall/accuracy/F1
+- Calibracion -> Brier score
+
+## Resultados de tests
+
+| Query | Score | Estado |
+|-------|-------|--------|
+| Test de Hosmer-Lemeshow | 50 | ✓ |
+| F1 Score | 100 | ✓ |
+| Brier Score | 100 | ✓ |
+| Especificidad | 100 | ✓ |
+| Sensibilidad | 22 | ✓ (via keyword) |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\ontology_classification_enricher.py` | **NUEVO** |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | +16 entidades, +29 relaciones |
+| `F:\...\src\startup\ontology_classification_enricher.py` | Copia al repo |
+| `F:\...\src\Install\scripts\ontology_classification_enricher.py` | Copia al instalador |
+| `F:\...\src\Install\data\ontology\econometria\graph.jsonl` | Actualizado |
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `b0684e2` | feat(ontology): agregar diagnosticos de clasificacion |
+
+## Estado final de la ontologia
+
+- **Entidades**: 19,054
+- **Relaciones**: 16,762
+- **Enrichers creados en esta sesion**: 2 (timeseries, classification)
+
+## Commits totales de la sesion completa (2026-08-19/20)
+
+| Hash | Descripcion |
+|------|-------------|
+| `3762ec4` | refactor: reorganizar estructura del proyecto |
+| `2923a32` | fix(rag): corregir rutas de ontologia |
+| `fd75e08` | feat(rag): mejorar matching con scoring |
+| `ede29c1` | fix(rag): permitir match con 1 palabra larga |
+| `86da721` | feat(ontology): agregar conceptos de series de tiempo |
+| `6615384` | chore(install): actualizar instalador |
+| `8d1e901` | docs: actualizar bitacora |
+| `b0684e2` | feat(ontology): agregar diagnosticos de clasificacion |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` (error YAML linea 7) |
+| **MEDIA** | Agregar conceptos de series de tiempo avanzados (GARCH, VAR, VECM) |
+| **MEDIA** | Mejorar matching de acronimos cortos (AUC, ROC sin contexto) |
+| **BAJA** | Poblar `name` en entidades que solo tienen `id` |
+
