@@ -1218,6 +1218,63 @@
         </div>
       </div>
 
+      <!-- Explorador de Grafo (nuevo) -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Explorador de Grafo</span>
+          <button class="btn btn-secondary" id="btn-graph-stats" style="padding:3px 8px;font-size:9px" title="Ver estadísticas">Stats</button>
+        </div>
+        
+        <!-- Búsqueda de entidad -->
+        <div style="display:flex;gap:4px;margin-bottom:8px">
+          <input type="text" id="graph-entity-search" placeholder="Buscar entidad (ej: OLS, GARCH, regression)" 
+                 style="flex:1;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:5px 8px;font-size:11px">
+          <button class="btn btn-primary" id="btn-graph-search" style="padding:4px 10px;font-size:10px">🔍</button>
+        </div>
+        
+        <!-- Resultados de búsqueda -->
+        <div id="graph-search-results" style="display:none;max-height:100px;overflow-y:auto;margin-bottom:8px;border:1px solid #333;border-radius:4px">
+        </div>
+        
+        <!-- Detalle de entidad seleccionada -->
+        <div id="graph-entity-detail" style="display:none">
+          <div style="background:var(--bg-tertiary);border-radius:4px;padding:8px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div>
+                <div id="graph-entity-name" style="font-weight:600;font-size:12px;color:var(--accent)"></div>
+                <div id="graph-entity-type" style="font-size:9px;color:var(--text-muted);margin-top:2px"></div>
+              </div>
+              <button class="btn btn-secondary" id="btn-graph-close" style="padding:2px 6px;font-size:9px">✕</button>
+            </div>
+          </div>
+          
+          <!-- Relaciones -->
+          <div style="font-size:10px">
+            <div style="font-weight:600;color:var(--text-secondary);margin-bottom:4px">Relaciones salientes:</div>
+            <div id="graph-outgoing" style="max-height:80px;overflow-y:auto;margin-bottom:8px"></div>
+            
+            <div style="font-weight:600;color:var(--text-secondary);margin-bottom:4px">Relaciones entrantes:</div>
+            <div id="graph-incoming" style="max-height:80px;overflow-y:auto"></div>
+          </div>
+        </div>
+        
+        <!-- Stats del grafo (oculto por defecto) -->
+        <div id="graph-stats-panel" style="display:none;font-size:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div style="background:var(--bg-tertiary);padding:8px;border-radius:4px;text-align:center">
+              <div id="graph-stat-nodes" style="font-size:16px;font-weight:600;color:var(--accent)">-</div>
+              <div style="font-size:9px;color:var(--text-muted)">Nodos</div>
+            </div>
+            <div style="background:var(--bg-tertiary);padding:8px;border-radius:4px;text-align:center">
+              <div id="graph-stat-edges" style="font-size:16px;font-weight:600;color:var(--accent)">-</div>
+              <div style="font-size:9px;color:var(--text-muted)">Relaciones</div>
+            </div>
+          </div>
+          <div style="font-weight:600;color:var(--text-secondary);margin-bottom:4px">Top entidades conectadas:</div>
+          <div id="graph-top-connected" style="max-height:100px;overflow-y:auto"></div>
+        </div>
+      </div>
+
       <!-- Agregar libro -->
       <div class="card">
         <div class="card-title">Agregar Libro</div>
@@ -6676,6 +6733,182 @@ window._renderCreateFunctionBlock = function(jsonStr) {
 
     if (ontologyRefreshBtn) {
       ontologyRefreshBtn.addEventListener('click', function() { ontologyLoadDomains(true); });
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Explorador de Grafo — navegación de entidades y relaciones
+    // ══════════════════════════════════════════════════════════════════════════
+    
+    // Botón Stats del grafo
+    var graphStatsBtn = document.getElementById('btn-graph-stats');
+    if (graphStatsBtn) {
+      graphStatsBtn.addEventListener('click', async function() {
+        var statsPanel = document.getElementById('graph-stats-panel');
+        var detailPanel = document.getElementById('graph-entity-detail');
+        var searchResults = document.getElementById('graph-search-results');
+        
+        // Toggle stats panel
+        if (statsPanel.style.display === 'block') {
+          statsPanel.style.display = 'none';
+          return;
+        }
+        
+        // Ocultar otros paneles
+        if (detailPanel) detailPanel.style.display = 'none';
+        if (searchResults) searchResults.style.display = 'none';
+        statsPanel.style.display = 'block';
+        
+        try {
+          graphStatsBtn.textContent = '...';
+          var resp = await fetch(API + '/api/rag/graph');
+          var data = await resp.json();
+          
+          if (data.status === 'ok' && data.stats) {
+            document.getElementById('graph-stat-nodes').textContent = (data.stats.total_nodes || 0).toLocaleString();
+            document.getElementById('graph-stat-edges').textContent = (data.stats.total_relations || 0).toLocaleString();
+            
+            // Top conectadas
+            var topEl = document.getElementById('graph-top-connected');
+            if (topEl && data.stats.top_connected) {
+              topEl.innerHTML = data.stats.top_connected.slice(0, 10).map(function(e) {
+                return '<div style="padding:3px 6px;font-size:9px;background:var(--bg-tertiary);border-radius:3px;margin-bottom:2px;cursor:pointer;display:flex;justify-content:space-between" ' +
+                  'onclick="graphLoadEntity(\'' + e.id + '\')">' +
+                  '<span style="color:var(--accent)">' + e.id.replace(/_/g, ' ') + '</span>' +
+                  '<span style="color:var(--text-muted)">' + e.connections + '</span></div>';
+              }).join('');
+            }
+          }
+        } catch(e) {
+          showToast('Error al cargar stats del grafo');
+        } finally {
+          graphStatsBtn.textContent = 'Stats';
+        }
+      });
+    }
+    
+    // Búsqueda de entidad en grafo
+    var graphSearchBtn = document.getElementById('btn-graph-search');
+    var graphSearchInput = document.getElementById('graph-entity-search');
+    
+    async function graphSearchEntity() {
+      var query = (graphSearchInput ? graphSearchInput.value : '').trim();
+      if (!query || query.length < 2) {
+        showToast('Escribe al menos 2 caracteres');
+        return;
+      }
+      
+      var resultsEl = document.getElementById('graph-search-results');
+      var detailEl = document.getElementById('graph-entity-detail');
+      var statsEl = document.getElementById('graph-stats-panel');
+      
+      if (statsEl) statsEl.style.display = 'none';
+      if (detailEl) detailEl.style.display = 'none';
+      
+      try {
+        // Usar el endpoint de query para buscar entidades
+        var resp = await fetch(API + '/api/rag/query', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ query: query, top_k: 1 })  // Solo para obtener entidades matched
+        });
+        var data = await resp.json();
+        
+        var entities = data.matched_entities || [];
+        
+        if (entities.length === 0) {
+          resultsEl.style.display = 'block';
+          resultsEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-muted)">No se encontraron entidades</div>';
+          return;
+        }
+        
+        resultsEl.style.display = 'block';
+        resultsEl.innerHTML = entities.map(function(e) {
+          return '<div style="padding:6px 8px;font-size:10px;cursor:pointer;border-bottom:1px solid #333" ' +
+            'onclick="graphLoadEntity(\'' + e.id + '\')" ' +
+            'onmouseover="this.style.background=\'var(--bg-tertiary)\'" onmouseout="this.style.background=\'transparent\'">' +
+            '<div style="font-weight:600;color:var(--accent)">' + (e.name || e.id.replace(/_/g, ' ')) + '</div>' +
+            '<div style="font-size:9px;color:var(--text-muted)">' + e.type + ' • ' + e.domain + ' • score: ' + e.match_score + '</div>' +
+            '</div>';
+        }).join('');
+        
+      } catch(e) {
+        showToast('Error en búsqueda: ' + e.message);
+      }
+    }
+    
+    if (graphSearchBtn) {
+      graphSearchBtn.addEventListener('click', graphSearchEntity);
+    }
+    if (graphSearchInput) {
+      graphSearchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') graphSearchEntity();
+      });
+    }
+    
+    // Función global para cargar entidad (llamada desde onclick)
+    window.graphLoadEntity = async function(entityId) {
+      var detailEl = document.getElementById('graph-entity-detail');
+      var resultsEl = document.getElementById('graph-search-results');
+      var statsEl = document.getElementById('graph-stats-panel');
+      
+      if (resultsEl) resultsEl.style.display = 'none';
+      if (statsEl) statsEl.style.display = 'none';
+      
+      try {
+        var resp = await fetch(API + '/api/rag/graph?entity_id=' + encodeURIComponent(entityId));
+        var data = await resp.json();
+        
+        if (data.status !== 'ok') {
+          showToast(data.error || 'Entidad no encontrada');
+          return;
+        }
+        
+        detailEl.style.display = 'block';
+        
+        // Nombre y tipo
+        var entity = data.entity || {};
+        document.getElementById('graph-entity-name').textContent = entity.name || entityId.replace(/_/g, ' ');
+        document.getElementById('graph-entity-type').textContent = (entity.type || 'unknown') + ' • ' + (entity.domain || 'general');
+        
+        // Relaciones salientes
+        var outEl = document.getElementById('graph-outgoing');
+        var outgoing = data.outgoing || [];
+        if (outgoing.length === 0) {
+          outEl.innerHTML = '<div style="color:var(--text-muted);font-size:9px;padding:4px">Sin relaciones salientes</div>';
+        } else {
+          outEl.innerHTML = outgoing.map(function(r) {
+            return '<div style="padding:2px 4px;font-size:9px;margin-bottom:2px">' +
+              '<span style="color:var(--text-secondary)">' + r.type + '</span> → ' +
+              '<span style="color:var(--accent);cursor:pointer" onclick="graphLoadEntity(\'' + r.target + '\')">' + r.target.replace(/_/g, ' ') + '</span>' +
+              '</div>';
+          }).join('');
+        }
+        
+        // Relaciones entrantes
+        var inEl = document.getElementById('graph-incoming');
+        var incoming = data.incoming || [];
+        if (incoming.length === 0) {
+          inEl.innerHTML = '<div style="color:var(--text-muted);font-size:9px;padding:4px">Sin relaciones entrantes</div>';
+        } else {
+          inEl.innerHTML = incoming.map(function(r) {
+            return '<div style="padding:2px 4px;font-size:9px;margin-bottom:2px">' +
+              '<span style="color:var(--accent);cursor:pointer" onclick="graphLoadEntity(\'' + r.source + '\')">' + r.source.replace(/_/g, ' ') + '</span>' +
+              ' <span style="color:var(--text-secondary)">' + r.type + '</span> →' +
+              '</div>';
+          }).join('');
+        }
+        
+      } catch(e) {
+        showToast('Error al cargar entidad: ' + e.message);
+      }
+    };
+    
+    // Botón cerrar detalle
+    var graphCloseBtn = document.getElementById('btn-graph-close');
+    if (graphCloseBtn) {
+      graphCloseBtn.addEventListener('click', function() {
+        document.getElementById('graph-entity-detail').style.display = 'none';
+      });
     }
 
     // Mostrar/ocultar campo de nuevo dominio según selección
