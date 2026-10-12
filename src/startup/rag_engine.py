@@ -1437,11 +1437,10 @@ def get_rag_engine(db_path: str = None) -> RAGEngine:
                 db_path = ":memory:"
         
         # Determinar ruta de ontologia
-        # Prioridad: 1) Grafo activo en producción, 2) YAMLs de documentación
+        # Prioridad: directorio raíz que contiene todos los dominios
         ontology_path = None
         for candidate in [
-            Path("C:/NEVEN/ontology/econometria"),  # Grafo principal (graph.jsonl)
-            Path("C:/NEVEN/ontology"),               # Raíz de ontologías
+            Path("C:/NEVEN/ontology"),               # Raíz de ontologías (carga todos los dominios)
             Path("C:/NEVEN/docs/ontologia"),         # YAMLs P1-P4
             Path(__file__).parent.parent / "docs" / "ontologia",
             Path("F:/ANTIGRAVITY/2026/NEVEN/src/docs/ontologia"),  # Repo (nueva ruta)
