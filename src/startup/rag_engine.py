@@ -1135,31 +1135,60 @@ class RAGEngine:
         }
         
         # 1. Buscar coincidencias con entidades de la ontologia
+        # Usamos scoring para priorizar matches más específicos
         if hasattr(self, 'ontology_entities') and self.ontology_entities:
+            candidates = []  # Lista de (score, entity)
+            seen_ids = set()  # Para deduplicar
+            
             for entity in self.ontology_entities:
                 entity_name = entity.get("name", "").lower()
+                entity_id = entity.get("id", "").lower().replace("_", " ")
                 entity_keywords = entity.get("keywords", [])
                 
-                # Verificar si alguna keyword de la entidad aparece en la pregunta
-                if entity_name and entity_name in question_lower:
-                    matched_entities.append({
-                        "id": entity["id"],
-                        "name": entity["name"],
-                        "type": entity["type"],
-                        "domain": entity["domain"]
-                    })
-                    detected_domains.add(entity["domain"])
-                else:
+                # Skip si ya vimos este ID
+                if entity["id"] in seen_ids:
+                    continue
+                
+                score = 0
+                
+                # Match por nombre completo (score alto, pero solo si nombre es significativo)
+                if entity_name and len(entity_name) > 3 and entity_name in question_lower:
+                    score = 100
+                
+                # Match por ID (score proporcional a palabras que coinciden)
+                if score == 0 and entity_id and len(entity_id) > 3:
+                    id_parts = entity_id.split()
+                    # Solo contar partes de 3+ caracteres
+                    matches_in_question = sum(1 for part in id_parts if len(part) > 2 and part in question_lower)
+                    if matches_in_question >= 2:
+                        # Score = porcentaje de palabras que coinciden * 50
+                        score = int((matches_in_question / len(id_parts)) * 50)
+                
+                # Match por keywords (score medio)
+                if score == 0:
                     for kw in entity_keywords:
-                        if kw and len(kw) > 2 and kw in question_lower:
-                            matched_entities.append({
-                                "id": entity["id"],
-                                "name": entity["name"],
-                                "type": entity["type"],
-                                "domain": entity["domain"]
-                            })
-                            detected_domains.add(entity["domain"])
+                        if kw and len(kw) > 3 and kw in question_lower:
+                            # Keywords más largos tienen más peso
+                            score = min(30, 10 + len(kw))
                             break
+                
+                if score > 0:
+                    candidates.append((score, entity))
+                    seen_ids.add(entity["id"])
+            
+            # Ordenar por score descendente y tomar los mejores
+            candidates.sort(key=lambda x: -x[0])
+            
+            for score, entity in candidates[:10]:
+                matched_entities.append({
+                    "id": entity["id"],
+                    "name": entity.get("name") or entity["id"].replace("_", " ").title(),
+                    "type": entity.get("type", "unknown"),
+                    "domain": entity.get("domain", "general"),
+                    "match_score": score
+                })
+                if entity.get("domain"):
+                    detected_domains.add(entity["domain"])
         
         # 1.5 Expandir contexto usando relaciones de la ontologia
         expanded_entities = []
