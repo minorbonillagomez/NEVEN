@@ -1,0 +1,129 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Excel Ontology Schema
+# ═══════════════════════════════════════════════════════════════════════════════
+# Defines entity types and valid relationships for Excel/Financial Modeling domain.
+# Based on the pattern established by the Econometrics ontology.
+#
+# Sources: CFI Excel eBook, Microsoft documentation, professional best practices
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # ─── Core Excel Entities ────────────────────────────────────────────────────
+  
+  ExcelFunction:
+    description: "Built-in Excel function (SUM, VLOOKUP, INDEX, etc.)"
+    required: [name, category, description]
+    optional: [syntax, common_errors, best_practices, reference]
+  
+  Technique:
+    description: "A specific Excel technique or method (e.g., Data Validation, Pivot Tables)"
+    required: [name, description]
+    optional: [steps, use_cases, reference, excel_version]
+  
+  Pattern:
+    description: "A common formula pattern or model structure"
+    required: [name, description, example]
+    optional: [functions_used, use_cases, reference]
+  
+  BestPractice:
+    description: "Professional best practice for Excel work"
+    required: [name, description]
+    optional: [rationale, examples, anti_pattern, reference]
+  
+  CommonError:
+    description: "Frequent mistake or error in Excel usage"
+    required: [name, description]
+    optional: [cause, solution, prevention, reference]
+  
+  # ─── Financial Modeling Entities ────────────────────────────────────────────
+  
+  FinancialModel:
+    description: "Type of financial model (DCF, LBO, M&A, etc.)"
+    required: [name, description, purpose]
+    optional: [components, outputs, reference]
+  
+  ModelComponent:
+    description: "Building block of a financial model (Revenue Build, Depreciation Schedule)"
+    required: [name, description]
+    optional: [inputs, outputs, formulas, reference]
+  
+  FinancialConcept:
+    description: "Financial/accounting concept used in modeling"
+    required: [name, definition]
+    optional: [formula, interpretation, reference]
+  
+  # ─── Organizational Entities ────────────────────────────────────────────────
+  
+  Domain:
+    description: "Knowledge domain or topic area (Financial Modeling, Data Analysis)"
+    required: [name, description]
+    optional: [source_book, chapters]
+  
+  Shortcut:
+    description: "Keyboard shortcut for Excel efficiency"
+    required: [name, keys, action]
+    optional: [context, reference]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Relations
+# ═══════════════════════════════════════════════════════════════════════════════
+
+relations:
+  # ─── Structural Relations ───────────────────────────────────────────────────
+  
+  part_of:
+    description: "Entity belongs to a larger container (technique part_of domain)"
+    from_types: [Technique, Pattern, BestPractice, CommonError, ExcelFunction, 
+                 FinancialModel, ModelComponent, FinancialConcept, Shortcut, Domain]
+    to_types: [Domain, FinancialModel]
+  
+  contains:
+    description: "Container includes entity (model contains component)"
+    from_types: [FinancialModel, Domain]
+    to_types: [ModelComponent, Technique, Pattern]
+  
+  # ─── Functional Relations ───────────────────────────────────────────────────
+  
+  uses_function:
+    description: "Technique or pattern uses a specific Excel function"
+    from_types: [Technique, Pattern, ModelComponent]
+    to_types: [ExcelFunction]
+  
+  implements:
+    description: "Pattern implements a financial concept"
+    from_types: [Pattern, ModelComponent, FinancialModel]
+    to_types: [FinancialConcept]
+  
+  requires:
+    description: "Entity requires another as prerequisite"
+    from_types: [Technique, Pattern, FinancialModel]
+    to_types: [Technique, ExcelFunction, FinancialConcept]
+  
+  # ─── Quality Relations ──────────────────────────────────────────────────────
+  
+  prevents:
+    description: "Best practice or pattern prevents an error"
+    from_types: [BestPractice, Pattern, Technique]
+    to_types: [CommonError]
+  
+  causes:
+    description: "Action or pattern causes an error"
+    from_types: [Pattern, Technique]
+    to_types: [CommonError]
+  
+  alternative_to:
+    description: "One approach is an alternative to another"
+    from_types: [Technique, Pattern, ExcelFunction]
+    to_types: [Technique, Pattern, ExcelFunction]
+  
+  improves:
+    description: "Technique or practice improves another"
+    from_types: [BestPractice, Technique]
+    to_types: [Technique, Pattern, FinancialModel]
+  
+  # ─── Efficiency Relations ───────────────────────────────────────────────────
+  
+  accelerates:
+    description: "Shortcut accelerates a technique"
+    from_types: [Shortcut]
+    to_types: [Technique]
