@@ -8496,3 +8496,468 @@ Ninguno.
 
 La sesion anterior creo 3 enrichers (Statlect, MathWorld, orphan) y limpio duplicados del grafo (6,076 entidades, 13,754 relaciones). Todo ese trabajo quedo inutilizado porque el RAG no puede encontrar el archivo. La prioridad es reorganizar para desbloquear.
 
+
+
+---
+
+### Sesion 2026-08-19 (~22:00) -- Reorganizacion completa del proyecto + RAG funcionando
+
+## Problema resuelto
+
+El proyecto tenia una estructura caotica con carpetas duplicadas y nombres confusos:
+- `NEVEN\NEVEN\` — carpeta anidada confusa
+- `ONTOLOGIA` vs `ontologia` vs `ontology` — 3 nombres distintos
+- `NEVEN\NEVEN\ONTOLOGIA` — duplicado parcial de PDFs
+- `docs\` en raiz — legacy con archivo viejo
+
+El RAG no encontraba `graph.jsonl` porque buscaba en rutas incorrectas.
+
+## Solucion implementada
+
+### Fase 1: Backup de seguridad
+
+```powershell
+Copy-Item -Path "F:\ANTIGRAVITY\2026\NEVEN" -Destination "F:\ANTIGRAVITY\2026\NEVEN_OLD" -Recurse
+```
+
+### Fase 2: Reorganizacion de carpetas
+
+| Antes | Despues | Razon |
+|-------|---------|-------|
+| `NEVEN\NEVEN\` | `src\` | Evitar confusion de nombres |
+| `ONTOLOGIA\` | `ontologia-fuentes\` | Nombre descriptivo |
+| `NEVEN\NEVEN\ONTOLOGIA\` | (eliminado) | Duplicado parcial |
+| `docs\` en raiz | (eliminado) | Legacy, solo tenia neven-docs.html viejo |
+
+### Fase 3: Correccion de rutas en RAG
+
+```python
+# Antes (no encontraba graph.jsonl):
+for candidate in [
+    Path("C:/NEVEN/docs/ontologia"),
+    Path("F:/ANTIGRAVITY/2026/NEVEN/NEVEN/docs/ontologia"),
+]:
+
+# Despues (funciona):
+for candidate in [
+    Path("C:/NEVEN/ontology/econometria"),  # Grafo principal
+    Path("C:/NEVEN/ontology"),
+    Path("C:/NEVEN/docs/ontologia"),
+    Path("F:/ANTIGRAVITY/2026/NEVEN/src/docs/ontologia"),  # Nueva ruta
+]:
+```
+
+## Estructura final
+
+```
+F:\ANTIGRAVITY\2026\NEVEN\
+├── src\                    <- codigo C++, Python, R, JS (5739 archivos)
+├── ontologia-fuentes\      <- PDFs y scripts de procesamiento (52 archivos)
+├── Install\                <- scripts de instalacion
+├── .kiro\                  <- configuracion Kiro
+├── .agents\                <- skills personalizados
+├── .gitignore
+└── MIGRACION.md
+```
+
+## Resultado RAG
+
+| Metrica | Antes | Despues |
+|---------|-------|---------|
+| Entidades cargadas | 0 | 19,025 |
+| Relaciones cargadas | 0 | 16,708 |
+| Nodos en grafo | 0 | 6,090 |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | Rutas de ontologia corregidas |
+| `F:\...\src\startup\rag_engine.py` | Copia al repositorio |
+| `F:\...\src\TaskPane\rag_engine.py` | Copia al repositorio |
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `3762ec4` | refactor: reorganizar estructura del proyecto |
+| `2923a32` | fix(rag): corregir rutas de ontologia para nueva estructura |
+
+## Decisiones de diseno
+
+1. **Backup antes de reorganizar**: Creado `NEVEN_OLD` como red de seguridad
+2. **`src` en lugar de codigo especifico**: Nombre generico porque contiene C++, Python, R, JS, tests, docs
+3. **`ontologia-fuentes` con guion**: Distinguir de carpetas tecnicas (`ontology` en produccion)
+4. **Conservar ONTOLOGIA de raiz**: Tiene PDFs originales completos; la de NEVEN\NEVEN solo tenia grafos generados
+
+## Intentos/observaciones
+
+- `Rename-Item` fallo con "Acceso denegado" (Kiro tenia archivos abiertos)
+- `Move-Item` funciono como alternativa
+- Git detecto 943 archivos cambiados pero reconocio los renames correctamente
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` en `C:\NEVEN\ontology\econometria\` (error YAML linea 7) |
+| **ALTA** | Probar RAG con queries reales para validar expansion de contexto |
+| **MEDIA** | Actualizar steering files si referencian rutas viejas (NEVEN/NEVEN) |
+| **MEDIA** | Verificar que CMake y scripts de build funcionan con nueva estructura |
+| **BAJA** | Documentar estructura final en README del proyecto |
+
+## Backup disponible
+
+`F:\ANTIGRAVITY\2026\NEVEN_OLD` — copia completa del estado anterior a la reorganizacion.
+
+
+
+---
+
+### Sesion 2026-08-19 (~22:30) -- Mejora del matching de entidades en RAG con scoring
+
+## Problema resuelto
+
+Despues de corregir las rutas, el RAG cargaba 19,025 entidades pero **no encontraba entidades especificas** como "Durbin-Watson". Al investigar, se descubrio que Durbin-Watson estaba en la posicion 81 de 456 matches porque la palabra "test" aparece en muchas entidades.
+
+## Causa raiz
+
+El algoritmo de matching original era booleano (match o no match) sin priorizar relevancia. Cualquier entidad con "test" en el ID hacia match porque "test" aparece en la pregunta "Como interpreto el test de Durbin-Watson?".
+
+## Solucion implementada
+
+### Sistema de scoring para priorizar matches
+
+```python
+# Match por nombre completo (score alto, solo si nombre > 3 chars)
+if entity_name and len(entity_name) > 3 and entity_name in question_lower:
+    score = 100
+
+# Match por ID (score proporcional a palabras coincidentes)
+if score == 0 and entity_id:
+    id_parts = entity_id.split()
+    matches = sum(1 for part in id_parts if len(part) > 2 and part in question_lower)
+    if matches >= 2:
+        score = int((matches / len(id_parts)) * 50)
+
+# Match por keywords
+if score == 0:
+    for kw in entity_keywords:
+        if kw and len(kw) > 3 and kw in question_lower:
+            score = min(30, 10 + len(kw))
+            break
+```
+
+### Mejoras adicionales
+
+1. **Deduplicacion**: `seen_ids` set para evitar entidades repetidas
+2. **Filtro de terminos cortos**: Ignora nombres/keywords < 4 caracteres
+3. **Ordenamiento por score**: Los mejores matches aparecen primero
+
+## Resultados
+
+| Query | Antes | Despues |
+|-------|-------|---------|
+| "Durbin-Watson" | Posicion 81 de 456 | Primero (score 50) |
+| "Bootstrap" | Funcionaba | Multiples entidades relevantes |
+| "Maximum Likelihood" | Parcial | EMV y variantes |
+
+### Ejemplo de salida mejorada
+
+```
+Query: Como interpreto el test de Durbin-Watson?
+  [ 50] Prueba de Durbin-Watson
+  [ 37] Estadistico Durbin-Watson modificado
+  [ 33] Durbin h Statistic
+  [ 33] F-test
+  [ 33] Prueba de sobreidentificacion
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | Sistema de scoring, deduplicacion, filtros |
+| `C:\NEVEN\startup\test_rag_queries.py` | Corregido para usar `get_rag_engine()` |
+| `F:\...\src\startup\rag_engine.py` | Copia al repositorio |
+| `F:\...\src\TaskPane\rag_engine.py` | Copia al repositorio |
+| `F:\...\src\startup\test_rag_queries.py` | Nuevo archivo de test |
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `fd75e08` | feat(rag): mejorar matching de entidades con scoring |
+
+## Decisiones de diseno
+
+1. **Scoring vs booleano**: Score permite rankear resultados por relevancia
+2. **Umbral de 2 palabras**: Requiere al menos 2 partes del ID para hacer match (evita falsos positivos con "test")
+3. **Filtro de 4 chars**: Evita matches espurios con "I", "s", "R" contenidos en la pregunta
+4. **Score proporcional al ID**: `(matches / total_parts) * 50` favorece IDs donde mas palabras coinciden
+
+## Intentos/observaciones
+
+- El singleton `get_rag_engine()` cachea la instancia, requiere limpiar `__pycache__` para probar cambios
+- Multiples procesos Python del servidor HTTP estaban corriendo, necesitaron limpieza
+- Las entidades de Statlect/MathWorld ya existian en el grafo pero sin campo `source` (creadas por extraccion original)
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` en `C:\NEVEN\ontology\econometria\` (error YAML linea 7) |
+| **MEDIA** | Agregar campo `source` a entidades existentes para tracking de origen |
+| **MEDIA** | Considerar TF-IDF o embeddings para mejor matching semantico |
+| **BAJA** | Limpiar entidades duplicadas sin `name` (ej: multiples "Bootstrap") |
+
+## Estado del servidor
+
+- HTTP Server corriendo en `http://127.0.0.1:5555`
+- Terminal ID: `term_1791775476543_cruoqewl2yc`
+
+
+
+---
+
+### Sesion 2026-08-19 (~23:00) -- Fix: matching de terminos largos como "cointegracion"
+
+## Problema resuelto
+
+El termino "cointegracion" no encontraba ninguna entidad a pesar de existir 11 entidades relacionadas en el grafo (concept_cointegracion, model_cointegracion, test_prueba_cointegracion, etc.).
+
+## Causa raiz
+
+El algoritmo de matching requeria **2+ palabras coincidentes** para hacer match por ID. Pero en la pregunta "Que es la cointegracion?" solo hay 1 termino relevante, y el ID `concept_cointegracion` se convierte a "concept cointegracion" donde solo 1 de las 2 palabras coincide.
+
+Ademas, las 11 entidades de cointegracion tienen `name: None` y `keywords: []`, por lo que solo podian encontrarse por ID.
+
+## Solucion implementada
+
+Agregar excepcion para palabras largas (>7 caracteres):
+
+```python
+# Permitir match con 1 palabra si es larga (>7 chars) y especifica
+if matches_in_question >= 2:
+    score = int((matches_in_question / len(id_parts)) * 50)
+elif matches_in_question == 1 and len(matching_parts[0]) > 7:
+    # Una sola palabra larga es suficiente para match bajo
+    score = 20
+```
+
+## Resultado
+
+| Query | Antes | Despues |
+|-------|-------|---------|
+| "Que es la cointegracion?" | 0 entidades | 5 entidades (score 20) |
+
+### Salida del test
+
+```
+Que es la cointegracion?
+  Top 3: ['Cointegracion', 'Integracion de Orden I(1) e I(0)', 'Parametro de cointegracion']
+
+Entidades expandidas:
+  - Modelo de correccion del error
+  - Datos de panel
+  - Pruebas para correlacion serial AR(1)
+```
+
+## Verificacion de no regresion
+
+Todos los tests anteriores siguen funcionando:
+- Durbin-Watson ✓
+- Bootstrap ✓
+- Heterocedasticidad ✓
+- Variables instrumentales ✓
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | Excepcion para palabras largas |
+| `F:\...\src\startup\rag_engine.py` | Copia al repositorio |
+| `F:\...\src\TaskPane\rag_engine.py` | Copia al repositorio |
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `ede29c1` | fix(rag): permitir match con 1 palabra larga (>7 chars) |
+
+## Decisiones de diseno
+
+1. **Umbral de 7 caracteres**: Palabras como "cointegracion" (12), "heterocedasticidad" (17), "multicolinealidad" (16) son terminos tecnicos especificos que merecen match aunque solo aparezca 1
+2. **Score de 20**: Menor que match por 2+ palabras (25-50) pero suficiente para aparecer en resultados
+3. **No afecta palabras cortas**: "test", "modelo", "error" (<=7 chars) siguen requiriendo 2+ coincidencias
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` en `C:\NEVEN\ontology\econometria\` (error YAML linea 7) |
+| **MEDIA** | Poblar `name` y `keywords` en entidades que solo tienen `id` |
+| **BAJA** | Considerar stemming para variantes (cointegracion/cointegration) |
+
+## Resumen de commits de la sesion completa
+
+| Hash | Descripcion |
+|------|-------------|
+| `3762ec4` | refactor: reorganizar estructura del proyecto |
+| `2923a32` | fix(rag): corregir rutas de ontologia |
+| `fd75e08` | feat(rag): mejorar matching con scoring |
+| `ede29c1` | fix(rag): permitir match con 1 palabra larga |
+
+
+
+---
+
+### Sesion 2026-08-19 (~23:15) -- Validacion de terminos econometricos adicionales
+
+## Pruebas realizadas
+
+Se probaron tres terminos adicionales de series de tiempo:
+
+| Termino | Resultado | Detalles |
+|---------|-----------|----------|
+| **Autocorrelacion** | ✅ Funciona | Score 20, encuentra "Autocorrelacion", "Autocorrelacion de Primer Orden", expandidas: Heterocedasticidad, Multicolinealidad |
+| **Estacionariedad** | ✅ Funciona | Score 100 (match perfecto por nombre), encuentra variantes como "Estacionariedad en Covarianza" |
+| **Correlograma** | ❌ No existe | Termino no presente en la ontologia |
+
+## Diagnostico de correlograma
+
+Busqueda en el grafo:
+- `correlograma`: 0 entidades
+- `correlogram`: 0 entidades  
+- `acf`: 1 entidad (solo `rfunc_eacf`, una funcion R)
+- `pacf`: 0 entidades
+
+**Conclusion**: No es un problema del RAG, es una laguna en la ontologia de series de tiempo.
+
+## Archivos modificados
+
+Ninguno en esta mini-sesion (solo pruebas).
+
+## Commits realizados
+
+Ninguno adicional.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` (error YAML linea 7) |
+| **ALTA** | Agregar entidades de series de tiempo: correlograma, ACF, PACF |
+| **MEDIA** | Poblar `name` y `keywords` en entidades que solo tienen `id` |
+| **MEDIA** | Crear enricher de series de tiempo con conceptos faltantes |
+
+## Resumen de estado del RAG
+
+El sistema de matching funciona correctamente para todos los terminos que existen en la ontologia:
+- Cointegracion ✓
+- Durbin-Watson ✓
+- Autocorrelacion ✓
+- Estacionariedad ✓
+- Heterocedasticidad ✓
+- Bootstrap ✓
+- Maximum Likelihood ✓
+
+Las lagunas identificadas son de **contenido** (entidades faltantes), no de **algoritmo**.
+
+
+
+---
+
+### Sesion 2026-08-19 (~23:30) -- Enricher de series de tiempo + fix carga de entidades
+
+## Problema resuelto
+
+1. **Correlograma no existia** en la ontologia (ni ACF, PACF, ARIMA, tests de raiz unitaria)
+2. **Entidades nuevas no se cargaban** correctamente porque el RAG asumia formato `entity.properties.name` pero el enricher usaba `entity.name` directo
+
+## Causa raiz del problema de carga
+
+El codigo de `_load_ontology` en `rag_engine.py` solo buscaba:
+```python
+props = entity.get("properties", {})
+name = props.get("name", "")
+```
+
+Pero las entidades del enricher tienen formato flat:
+```json
+{"entity": {"id": "...", "name": "Correlograma", ...}}
+```
+
+## Solucion implementada
+
+### 1. Time Series Enricher
+
+Nuevo script `ontology_timeseries_enricher.py` que agrega:
+
+**Entidades (13):**
+- `concept_correlograma` - Grafico ACF/PACF
+- `concept_acf` - Funcion de Autocorrelacion
+- `concept_pacf` - Funcion de Autocorrelacion Parcial
+- `model_arima`, `model_ar`, `model_ma`
+- `test_adf`, `test_kpss`, `test_phillips_perron`, `test_ljung_box`
+- `concept_raiz_unitaria`, `concept_diferenciacion`, `concept_white_noise`
+- `rfunc_acf`, `rfunc_pacf`, `rfunc_adf_test`
+
+**Relaciones (25):**
+- Correlograma visualizes ACF/PACF
+- ARIMA contains AR/MA, requires diferenciacion
+- Tests relacionados con raiz_unitaria y estacionariedad
+
+### 2. Fix en carga de entidades
+
+```python
+# Soportar ambos formatos: properties nested o flat
+props = entity.get("properties", {})
+name = entity.get("name") or props.get("name", "")
+keywords = entity.get("keywords") or props.get("keywords", [])
+```
+
+## Resultados de tests
+
+| Query | Antes | Despues |
+|-------|-------|---------|
+| Correlograma | No existe | Score 100, expandidas: Autocorrelacion, Estacionariedad |
+| ARIMA | No existe | Encuentra "Modelo ARIMA" |
+| ADF raiz unitaria | Parcial | Encuentra test ADF y Raiz Unitaria |
+| Ruido blanco | No existe | Encuentra "Ruido Blanco" |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | Fix carga de entidades flat |
+| `C:\NEVEN\startup\ontology_timeseries_enricher.py` | **NUEVO** |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | +13 entidades, +25 relaciones |
+| `F:\...\src\startup\rag_engine.py` | Copia al repo |
+| `F:\...\src\startup\ontology_timeseries_enricher.py` | Copia al repo |
+
+## Commits realizados en toda la sesion
+
+| Hash | Descripcion |
+|------|-------------|
+| `3762ec4` | refactor: reorganizar estructura del proyecto |
+| `2923a32` | fix(rag): corregir rutas de ontologia |
+| `fd75e08` | feat(rag): mejorar matching con scoring |
+| `ede29c1` | fix(rag): permitir match con 1 palabra larga |
+| `86da721` | feat(ontology): agregar conceptos de series de tiempo |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` (error YAML linea 7) |
+| **MEDIA** | Agregar mas conceptos de series de tiempo (GARCH, VAR, etc.) |
+| **MEDIA** | Poblar `name` y `keywords` en entidades antiguas que solo tienen `id` |
+| **BAJA** | Soporte para acronimos cortos (ACF, ADF) sin contexto adicional |
+
+## Estado final
+
+- RAG: 19,038 entidades, 16,733 relaciones
+- Servidor HTTP: puerto 5555
+- Backup: `NEVEN_OLD` disponible
+

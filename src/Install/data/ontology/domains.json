@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "description": "NEVEN Multi-Domain Ontology Registry",
+  "last_updated": "2026-10-09",
+  "domains": [
+    {
+      "id": "excel",
+      "name": "Microsoft Excel",
+      "description": "Excel functions, formulas, shortcuts, patterns, and best practices for financial modeling. Source: CFI Excel eBook, Excel Bible.",
+      "path": "excel",
+      "entity_types": [
+        "ExcelFunction",
+        "Technique",
+        "Pattern",
+        "BestPractice",
+        "CommonError",
+        "FinancialModel",
+        "ModelComponent",
+        "FinancialConcept",
+        "Shortcut",
+        "Domain"
+      ],
+      "source_books": [
+        "CFI-Excel-eBook.pdf",
+        "Curso-Practico-Paso-a-Paso-de-Cero-a-Avanzado.pdf",
+        "Microsoft Excel 365 Bible"
+      ]
+    },
+    {
+      "id": "econometrics",
+      "name": "Econometrics & Statistics",
+      "description": "Econometric methods, statistical tests, R packages, causal inference frameworks, panel data, time series. Source: Wooldridge, Brumback, Cryer & Chan.",
+      "path": "econometrics",
+      "entity_types": [
+        "Method",
+        "Concept",
+        "Assumption",
+        "Framework",
+        "RPackage",
+        "RFunction",
+        "Dataset"
+      ],
+      "source_books": [
+        "Econometric Analysis of Cross Section and Panel Data (Wooldridge)",
+        "Fundamentals of Causal Inference Using R (Brumback)",
+        "Time Series Analysis with Applications in R (Cryer & Chan)",
+        "Introduction to Econometrics with R (Hanck et al.)",
+        "Applied Econometrics with R (Kleiber & Zeileis)"
+      ]
+    },
+    {
+      "id": "econometria",
+      "name": "Econometria",
+      "description": "Knowledge domain: Econometria",
+      "path": "econometria",
+      "entity_types": [
+        "Concept",
+        "Method",
+        "BestPractice"
+      ],
+      "source_books": []
+    }
+  ]
+}
