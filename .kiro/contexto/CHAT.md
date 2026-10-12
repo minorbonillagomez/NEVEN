@@ -2,7 +2,7 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-08-19 (sesion: RAG con relaciones de ontologia)
+> **Ultima actualizacion:** 2026-08-20 (sesion: RAG matching bidireccional + procesos zombie)
 
 ---
 
