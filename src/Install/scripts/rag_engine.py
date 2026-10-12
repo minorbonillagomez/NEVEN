@@ -1267,9 +1267,23 @@ class RAGEngine:
         expanded_entities = []
         if matched_entities and hasattr(self, 'ontology_graph') and self.ontology_graph:
             # Tipos de relaciones útiles para expansión de contexto
+            # Seleccionadas por frecuencia y utilidad semántica
             expansion_relations = [
-                "is_a", "uses", "related_to", "requires", "part_of",
-                "implements", "tests", "similar_to", "depends_on"
+                # Jerárquicas y taxonómicas
+                "is_a", "part_of", "component_of", "subtype_of", "instance_of",
+                # Uso y dependencia
+                "uses", "uses_concept", "uses_method", "uses_function", "uses_estimator",
+                "requires", "depends_on", "requires_assumption",
+                # Implementación y aplicación
+                "implements", "applies_to", "applied_to", "used_in", "used_for", "used_by",
+                # Testing y evaluación
+                "tests", "tests_for", "tested_by", "evaluated_by", "diagnostic_for",
+                # Alternativas y variantes
+                "alternative_to", "variant_of", "extension_of", "extends", "generalizes",
+                # Propiedades y supuestos
+                "assumption_of", "property_of", "has_property", "affected_by",
+                # Relaciones generales (usar con cautela por volumen)
+                "related_to", "similar_to",
             ]
             
             for entity in matched_entities[:5]:  # Limitar a top 5 para no explotar
