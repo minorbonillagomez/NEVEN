@@ -598,19 +598,23 @@ class RAGEngine:
                             record = json.loads(line)
                             if record.get("op") == "create" and "entity" in record:
                                 entity = record["entity"]
-                                props = entity.get("properties", {})
-                                name = props.get("name", "")
-                                desc = props.get("description", "")
                                 
-                                # Extraer keywords del nombre y descripcion
-                                keywords = [w.lower() for w in name.split() if len(w) > 3]
+                                # Soportar ambos formatos: properties nested o flat
+                                props = entity.get("properties", {})
+                                name = entity.get("name") or props.get("name", "")
+                                desc = entity.get("description") or props.get("description", "")
+                                keywords = entity.get("keywords") or props.get("keywords", [])
+                                
+                                # Si no hay keywords, extraer del nombre
+                                if not keywords and name:
+                                    keywords = [w.lower() for w in name.split() if len(w) > 3]
                                 
                                 self.ontology_entities.append({
                                     "id": entity.get("id", ""),
                                     "type": entity.get("type", ""),
                                     "name": name,
                                     "description": desc,
-                                    "domain": jsonl_file.parent.name,
+                                    "domain": entity.get("domain") or jsonl_file.parent.name,
                                     "keywords": keywords
                                 })
                             
