@@ -1159,10 +1159,15 @@ class RAGEngine:
                 if score == 0 and entity_id and len(entity_id) > 3:
                     id_parts = entity_id.split()
                     # Solo contar partes de 3+ caracteres
-                    matches_in_question = sum(1 for part in id_parts if len(part) > 2 and part in question_lower)
+                    matching_parts = [part for part in id_parts if len(part) > 2 and part in question_lower]
+                    matches_in_question = len(matching_parts)
+                    
+                    # Permitir match con 1 palabra si es larga (>7 chars) y específica
                     if matches_in_question >= 2:
-                        # Score = porcentaje de palabras que coinciden * 50
                         score = int((matches_in_question / len(id_parts)) * 50)
+                    elif matches_in_question == 1 and len(matching_parts[0]) > 7:
+                        # Una sola palabra larga es suficiente para match bajo
+                        score = 20
                 
                 # Match por keywords (score medio)
                 if score == 0:
