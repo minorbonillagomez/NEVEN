@@ -1138,6 +1138,25 @@ class RAGEngine:
             "ml": "machine_learning",
         }
         
+        # Acrónimos conocidos en estadística/econometría/ML que son cortos pero significativos
+        # Estos se buscan como match exacto aunque tengan <=3 caracteres
+        known_acronyms = {
+            # Curvas y métricas de clasificación
+            "roc", "auc", "tpr", "fpr", "tnr", "fnr",
+            # Modelos de series de tiempo
+            "var", "vec", "ecm", "ar", "ma", "arma", "arch", "dcc",
+            # Tests estadísticos
+            "adf", "kpss", "bds", "lm", "lrt", "aic", "bic", "hqc",
+            # Métodos de estimación
+            "ols", "mco", "gls", "wls", "gmm", "iv", "2sls", "3sls", "sur",
+            # Análisis multivariado
+            "pca", "acp", "ica", "lda", "qda", "cca", "mds",
+            # Machine Learning
+            "svm", "knn", "ann", "mlp", "rnn", "cnn", "gan", "vae", "gbm", "xgb",
+            # Otros
+            "vif", "dw", "jb", "ks", "ad", "sw", "bp", "bg", "het", "hac", "nw",
+        }
+        
         # 1. Buscar coincidencias con entidades de la ontologia
         # Usamos scoring para priorizar matches más específicos
         if hasattr(self, 'ontology_entities') and self.ontology_entities:
@@ -1155,11 +1174,35 @@ class RAGEngine:
                 
                 score = 0
                 
-                # Extraer palabras significativas de la pregunta (>3 chars)
-                query_words = [w for w in question_lower.split() if len(w) > 3]
+                # Extraer palabras significativas de la pregunta:
+                # - Palabras largas (>3 chars)
+                # - Acrónimos conocidos (aunque sean cortos)
+                query_words = []
+                for w in question_lower.split():
+                    w_clean = w.strip(".,;:!?()[]{}\"'")
+                    if len(w_clean) > 3:
+                        query_words.append(w_clean)
+                    elif w_clean in known_acronyms:
+                        query_words.append(w_clean)
+                
+                # Match por acrónimo conocido (score alto, match exacto)
+                for qw in query_words:
+                    if qw in known_acronyms:
+                        # Buscar match exacto del acrónimo en nombre, ID o keywords
+                        if qw == entity_name or qw in entity_id.split():
+                            score = 80  # Alta prioridad para acrónimos exactos
+                            break
+                        # Buscar en keywords
+                        for kw in entity_keywords:
+                            kw_lower = kw.lower() if isinstance(kw, str) else str(kw).lower()
+                            if qw == kw_lower or qw in kw_lower.split():
+                                score = 70
+                                break
+                        if score > 0:
+                            break
                 
                 # Match por nombre completo (score alto, pero solo si nombre es significativo)
-                if entity_name and len(entity_name) > 3 and entity_name in question_lower:
+                if score == 0 and entity_name and len(entity_name) > 3 and entity_name in question_lower:
                     score = 100
                 
                 # Match por ID (score proporcional a palabras que coinciden)
