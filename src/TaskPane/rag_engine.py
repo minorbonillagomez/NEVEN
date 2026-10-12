@@ -1,4 +1,4 @@
-"""
+﻿"""
 NEVEN RAG Engine - Ontology-Guided Retrieval Augmented Generation
 ==================================================================
 Motor de busqueda semantica con filtrado por ontologia.
@@ -422,6 +422,8 @@ class RAGEngine:
         # Inicializar ontologia
         self.ontology = {}
         self.ontology_entities = []
+        self.ontology_relations = []  # Lista de relaciones {type, from, to}
+        self.ontology_graph = {}  # Grafo de adyacencia: entity_id -> {relation_type -> [entity_ids]}
         self.ontology_path = ontology_path
         self._ontology_file_hashes = {}  # Para detectar cambios
         self._last_ontology_scan = 0
@@ -547,6 +549,8 @@ class RAGEngine:
         
         # Inicializar almacenes
         self.ontology_entities = []
+        self.ontology_relations = []
+        self.ontology_graph = {}
         
         # Cargar archivos YAML (schemas y ontologias estructuradas)
         for yaml_file in path.rglob("*.yaml"):
@@ -609,13 +613,108 @@ class RAGEngine:
                                     "domain": jsonl_file.parent.name,
                                     "keywords": keywords
                                 })
+                            
+                            # Cargar relaciones (op: relate)
+                            elif record.get("op") == "relate" and "relation" in record:
+                                rel = record["relation"]
+                                rel_type = rel.get("type", "")
+                                from_id = rel.get("from", "")
+                                to_id = rel.get("to", "")
+                                
+                                if from_id and to_id:
+                                    self.ontology_relations.append({
+                                        "type": rel_type,
+                                        "from": from_id,
+                                        "to": to_id
+                                    })
+                                    
+                                    # Construir grafo de adyacencia bidireccional
+                                    if from_id not in self.ontology_graph:
+                                        self.ontology_graph[from_id] = {}
+                                    if rel_type not in self.ontology_graph[from_id]:
+                                        self.ontology_graph[from_id][rel_type] = []
+                                    if to_id not in self.ontology_graph[from_id][rel_type]:
+                                        self.ontology_graph[from_id][rel_type].append(to_id)
+                                    
+                                    # Agregar direccion inversa para traversal bidireccional
+                                    if to_id not in self.ontology_graph:
+                                        self.ontology_graph[to_id] = {}
+                                    inv_type = f"inv_{rel_type}"
+                                    if inv_type not in self.ontology_graph[to_id]:
+                                        self.ontology_graph[to_id][inv_type] = []
+                                    if from_id not in self.ontology_graph[to_id][inv_type]:
+                                        self.ontology_graph[to_id][inv_type].append(from_id)
             except Exception as e:
                 print(f"[RAG] Error cargando {jsonl_file}: {e}")
         
-        print(f"[RAG] Ontologia cargada: {len(self.ontology)} schemas, {len(self.ontology_entities)} entidades")
+        print(f"[RAG] Ontologia cargada: {len(self.ontology)} schemas, {len(self.ontology_entities)} entidades, {len(self.ontology_relations)} relaciones")
         
         # Actualizar hashes de archivos para detectar cambios futuros
         self._ontology_file_hashes = self._scan_ontology_files(ontology_path)
+    
+    def get_related_entities(self, entity_id: str, max_depth: int = 1, 
+                            relation_types: Optional[List[str]] = None) -> List[Dict]:
+        """
+        Obtiene entidades relacionadas usando el grafo de ontologia.
+        
+        Traversal de relaciones para expandir contexto semántico.
+        
+        Args:
+            entity_id: ID de la entidad inicial
+            max_depth: Profundidad máxima de traversal (1 = vecinos directos)
+            relation_types: Tipos de relaciones a seguir (None = todas)
+        
+        Returns:
+            Lista de entidades relacionadas con metadata de la relación
+        """
+        if entity_id not in self.ontology_graph:
+            return []
+        
+        related = []
+        visited = {entity_id}
+        queue = [(entity_id, 0)]  # (entity_id, depth)
+        
+        # Crear lookup rápido de entidades por ID
+        entity_lookup = {e["id"]: e for e in self.ontology_entities}
+        
+        while queue:
+            current_id, depth = queue.pop(0)
+            
+            if depth >= max_depth:
+                continue
+            
+            if current_id not in self.ontology_graph:
+                continue
+            
+            for rel_type, targets in self.ontology_graph[current_id].items():
+                # Filtrar por tipo de relación si se especificó
+                if relation_types and rel_type not in relation_types:
+                    # Permitir relaciones inversas también
+                    if not any(rel_type == f"inv_{rt}" for rt in relation_types):
+                        continue
+                
+                for target_id in targets:
+                    if target_id not in visited:
+                        visited.add(target_id)
+                        
+                        # Obtener info de la entidad si existe
+                        entity_info = entity_lookup.get(target_id, {"id": target_id})
+                        
+                        related.append({
+                            "id": target_id,
+                            "name": entity_info.get("name", target_id),
+                            "type": entity_info.get("type", "unknown"),
+                            "domain": entity_info.get("domain", ""),
+                            "relation_type": rel_type,
+                            "relation_from": current_id,
+                            "depth": depth + 1
+                        })
+                        
+                        # Agregar a cola si no alcanzamos max_depth
+                        if depth + 1 < max_depth:
+                            queue.append((target_id, depth + 1))
+        
+        return related
     
     def add_document(self, file_path: str, domain: str = "general", 
                      metadata: Optional[Dict] = None) -> str:
@@ -1062,6 +1161,34 @@ class RAGEngine:
                             detected_domains.add(entity["domain"])
                             break
         
+        # 1.5 Expandir contexto usando relaciones de la ontologia
+        expanded_entities = []
+        if matched_entities and hasattr(self, 'ontology_graph') and self.ontology_graph:
+            # Tipos de relaciones útiles para expansión de contexto
+            expansion_relations = [
+                "is_a", "uses", "related_to", "requires", "part_of",
+                "implements", "tests", "similar_to", "depends_on"
+            ]
+            
+            for entity in matched_entities[:5]:  # Limitar a top 5 para no explotar
+                related = self.get_related_entities(
+                    entity["id"], 
+                    max_depth=1,
+                    relation_types=expansion_relations
+                )
+                for rel in related[:10]:  # Máximo 10 relacionados por entidad
+                    expanded_entities.append({
+                        "id": rel["id"],
+                        "name": rel["name"],
+                        "type": rel["type"],
+                        "domain": rel["domain"],
+                        "via_relation": rel["relation_type"],
+                        "via_entity": entity["name"]
+                    })
+                    # Agregar dominio de entidad relacionada
+                    if rel["domain"]:
+                        detected_domains.add(rel["domain"])
+        
         # 2. Fallback a keywords estaticos si no se encontraron entidades
         if not detected_domains:
             for domain, keywords in domain_keywords.items():
@@ -1099,6 +1226,7 @@ class RAGEngine:
             "detected_domains": detected_domains,
             "ontology_guided": len(detected_domains) > 0 or len(matched_entities) > 0,
             "matched_entities": matched_entities,
+            "expanded_entities": expanded_entities[:20],  # Entidades via relaciones
             "results": results
         }
     
@@ -1193,11 +1321,14 @@ def get_rag_engine(db_path: str = None) -> RAGEngine:
                 db_path = ":memory:"
         
         # Determinar ruta de ontologia
+        # Prioridad: 1) Grafo activo en producción, 2) YAMLs de documentación
         ontology_path = None
         for candidate in [
-            Path("C:/NEVEN/docs/ontologia"),
+            Path("C:/NEVEN/ontology/econometria"),  # Grafo principal (graph.jsonl)
+            Path("C:/NEVEN/ontology"),               # Raíz de ontologías
+            Path("C:/NEVEN/docs/ontologia"),         # YAMLs P1-P4
             Path(__file__).parent.parent / "docs" / "ontologia",
-            Path("F:/ANTIGRAVITY/2026/NEVEN/NEVEN/docs/ontologia"),
+            Path("F:/ANTIGRAVITY/2026/NEVEN/src/docs/ontologia"),  # Repo (nueva ruta)
         ]:
             if candidate.exists():
                 ontology_path = str(candidate)
