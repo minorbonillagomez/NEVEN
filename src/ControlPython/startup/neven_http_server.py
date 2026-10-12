@@ -24,6 +24,7 @@
 #   GET  /api/ontology/domains → List available ontology domains
 #   GET  /api/ontology/domain/{id}/stats → Get domain statistics
 #   GET  /api/ontology/search?q=term&domain=excel → Search knowledge graph
+#   GET  /api/ontology/graph?domain=X&format=vis|3d → Graph data for visualizer
 #   GET  /api/ayuda/funciones → Diccionario dinámico de funciones NevenX
 
 import os
@@ -158,7 +159,7 @@ try:
         RAGEngine as _RAGEngine,
     )
     _RAG_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     _RAG_AVAILABLE = False
     _get_rag_engine = None
     _RAGEngine = None
@@ -846,14 +847,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_ontology_progress()
             return
 
-        if path.startswith('api/ontology/process-incremental'):
-            # POST /api/ontology/process-incremental — Start incremental processing
-            self._handle_ontology_process_incremental()
-            return
-
-        if path.startswith('api/ontology/reset-progress'):
-            # POST /api/ontology/reset-progress — Reset checkpoint for a book
-            self._handle_ontology_reset_progress()
+        if path.startswith('api/ontology/graph'):
+            # GET /api/ontology/graph?domain=econometria&format=vis
+            self._handle_ontology_graph()
             return
 
         # ── Ayuda / Diccionario de Funciones NevenX ───────────────────────────
@@ -933,6 +929,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
         
         if path == 'api/rag/stats':
             self._handle_rag_stats()
+            return
+        
+        if path == 'api/rag/graph' or path.startswith('api/rag/graph?'):
+            self._handle_rag_graph()
             return
         
         if path == 'api/rag/browse':
@@ -1101,6 +1101,12 @@ class NEVENHandler(BaseHTTPRequestHandler):
         # ══════════════════════════════════════════════════════════════════════
         elif path == 'api/ontology/process-book':
             self._handle_ontology_process_book(body)
+        elif path == 'api/ontology/process-incremental':
+            self._handle_ontology_process_incremental(body)
+        elif path == 'api/ontology/reset-progress':
+            self._handle_ontology_reset_progress(body)
+        elif path == 'api/ontology/delete-book':
+            self._handle_ontology_delete_book(body)
         # ══════════════════════════════════════════════════════════════════════
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
@@ -2901,7 +2907,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     "filename": b.get("book_name", "Unknown"),
                     "domain": b.get("domain", domain or "general"),
                     "entities": b.get("entity_count", 0),
-                    "pages": None,  # Not tracked yet
+                    "pages": b.get("pages"),  # From checkpoint if available
                     "processed_date": None  # Not tracked yet
                 })
             
@@ -2959,13 +2965,228 @@ class NEVENHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._send_error_json(f"Progress error: {e}")
 
-    def _handle_ontology_process_incremental(self):
-        """POST /api/ontology/process-incremental — Start incremental book processing."""
+    def _handle_ontology_graph(self):
+        """GET /api/ontology/graph?domain=econometria&format=vis — Get graph data for visualization.
+        
+        Returns nodes and edges in a format compatible with vis-network and 3d-force-graph.
+        
+        Query params:
+        - domain: Domain ID (default: econometria)
+        - format: Output format - 'vis' (default), '3d', or 'raw'
+        - type: Filter by entity type (optional, e.g., 'Model', 'Concept')
+        - limit: Max nodes to return (default: 500)
+        """
+        from urllib.parse import urlparse, parse_qs
+        query_params = parse_qs(urlparse(self.path).query)
+        
+        domain = query_params.get("domain", ["econometria"])[0]
+        output_format = query_params.get("format", ["vis"])[0]
+        type_filter = query_params.get("type", [None])[0]
+        limit = int(query_params.get("limit", [500])[0])
+        
+        try:
+            # Path to graph.jsonl
+            graph_path = os.path.join(r"C:\NEVEN\ontology", domain, "graph.jsonl")
+            
+            if not os.path.isfile(graph_path):
+                self._send_json({
+                    "status": "ok",
+                    "domain": domain,
+                    "nodes": [],
+                    "edges": [],
+                    "stats": {"nodeCount": 0, "edgeCount": 0}
+                })
+                return
+            
+            nodes_dict = {}  # Use dict to deduplicate by ID
+            edges_list = []
+            
+            # Parse JSONL file - last occurrence wins for duplicates
+            with open(graph_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        entry = json.loads(line)
+                        op = entry.get("op")
+                        
+                        if op == "create":
+                            entity = entry.get("entity", {})
+                            entity_id = entity.get("id", "")
+                            entity_type = entity.get("type", "Unknown")
+                            props = entity.get("properties", {})
+                            
+                            # Apply type filter if specified
+                            if type_filter and entity_type != type_filter:
+                                continue
+                            
+                            # Add color based on type (vis-network) - NEVEN palette
+                            type_colors = {
+                                "Concept": {"background": "#d7a538", "border": "#c4922a"},      # Primary accent gold
+                                "Model": {"background": "#8b6914", "border": "#6d5210"},        # Dark gold
+                                "Estimator": {"background": "#4caf50", "border": "#388e3c"},    # Success green
+                                "Test": {"background": "#ff7043", "border": "#e64a19"},         # Warm orange
+                                "Technique": {"background": "#7986cb", "border": "#5c6bc0"},    # Soft indigo
+                                "Package": {"background": "#81c784", "border": "#66bb6a"},      # Light green
+                                "Function": {"background": "#ffb74d", "border": "#ffa726"},     # Amber
+                                "Dataset": {"background": "#4dd0e1", "border": "#26c6da"},      # Cyan
+                                "BestPractice": {"background": "#a1887f", "border": "#8d6e63"}, # Warm brown
+                                "Pattern": {"background": "#ba68c8", "border": "#ab47bc"},      # Purple
+                            }
+                            
+                            # Build node for vis-network format (overwrites if duplicate)
+                            nodes_dict[entity_id] = {
+                                "id": entity_id,
+                                "label": props.get("name", entity_id),
+                                "type": entity_type,
+                                "group": entity_type,
+                                "title": props.get("description", "")[:200] if props.get("description") else "",
+                                "properties": props,
+                                "color": type_colors.get(entity_type, {"background": "#757575", "border": "#616161"})
+                            }
+                        
+                        elif op == "relate":
+                            relation = entry.get("relation", {})
+                            from_id = relation.get("from", "")
+                            to_id = relation.get("to", "")
+                            rel_type = relation.get("type", "related_to")
+                            
+                            edges_list.append({
+                                "from": from_id,
+                                "to": to_id,
+                                "label": rel_type,
+                                "arrows": "to",
+                                "title": rel_type
+                            })
+                    except json.JSONDecodeError:
+                        continue
+            
+            # Calculate connected nodes (for orphan stats)
+            connected_ids = set()
+            for e in edges_list:
+                connected_ids.add(e["from"])
+                connected_ids.add(e["to"])
+            
+            # Calculate orphans BEFORE applying limit
+            total_nodes = len(nodes_dict)
+            total_edges = len(edges_list)
+            orphan_count = sum(1 for nid in nodes_dict if nid not in connected_ids)
+            orphan_pct = round(100 * orphan_count / total_nodes, 2) if total_nodes > 0 else 0
+            rel_ratio = round(total_edges / total_nodes, 2) if total_nodes > 0 else 0
+            
+            # ─── SMART NODE SELECTION ───────────────────────────────────────
+            # Instead of taking first N nodes (which leaves many visually disconnected),
+            # select nodes that are well-connected to each other.
+            # Strategy: pick nodes with most connections, prioritizing mutual connections.
+            
+            # Count connections per node
+            node_degree = {}
+            for e in edges_list:
+                node_degree[e["from"]] = node_degree.get(e["from"], 0) + 1
+                node_degree[e["to"]] = node_degree.get(e["to"], 0) + 1
+            
+            # Sort nodes by degree (most connected first)
+            sorted_node_ids = sorted(
+                nodes_dict.keys(),
+                key=lambda nid: node_degree.get(nid, 0),
+                reverse=True
+            )
+            
+            # Select top N nodes by connectivity
+            selected_ids = set(sorted_node_ids[:limit])
+            nodes = [nodes_dict[nid] for nid in sorted_node_ids[:limit]]
+            node_ids = selected_ids
+            
+            # Filter edges: only include those between visible nodes, deduplicate
+            seen_edges = set()
+            edges = []
+            for e in edges_list:
+                if e["from"] in node_ids and e["to"] in node_ids:
+                    edge_key = (e["from"], e["to"], e["label"])
+                    if edge_key not in seen_edges:
+                        seen_edges.add(edge_key)
+                        edges.append(e)
+            
+            # Calculate VISUAL orphans (nodes without edges in the selected subset)
+            visual_connected = set()
+            for e in edges:
+                visual_connected.add(e["from"])
+                visual_connected.add(e["to"])
+            visual_orphan_count = len(node_ids - visual_connected)
+            visual_orphan_pct = round(100 * visual_orphan_count / len(nodes), 2) if nodes else 0
+            
+            # Build response based on format
+            if output_format == "3d":
+                # 3d-force-graph format
+                response = {
+                    "status": "ok",
+                    "domain": domain,
+                    "nodes": [{
+                        "id": n["id"],
+                        "name": n["label"],
+                        "group": n["type"],
+                        "val": 1,  # Node size
+                        "desc": n.get("title", "")
+                    } for n in nodes],
+                    "links": [{
+                        "source": e["from"],
+                        "target": e["to"],
+                        "type": e["label"]
+                    } for e in edges],
+                    "stats": {
+                        "nodeCount": len(nodes),
+                        "edgeCount": len(edges)
+                    }
+                }
+            elif output_format == "raw":
+                # Raw format (all properties)
+                response = {
+                    "status": "ok",
+                    "domain": domain,
+                    "nodes": nodes,
+                    "edges": edges,
+                    "stats": {
+                        "nodeCount": len(nodes),
+                        "edgeCount": len(edges)
+                    }
+                }
+            else:
+                # Default: vis-network format
+                response = {
+                    "status": "ok",
+                    "domain": domain,
+                    "nodes": nodes,
+                    "edges": edges,
+                    "stats": {
+                        "nodeCount": len(nodes),
+                        "edgeCount": len(edges),
+                        "totalNodes": total_nodes,
+                        "totalEdges": total_edges,
+                        "orphanCount": orphan_count,
+                        "orphanPct": orphan_pct,
+                        "visualOrphanCount": visual_orphan_count,
+                        "visualOrphanPct": visual_orphan_pct,
+                        "relationsPerEntity": rel_ratio
+                    }
+                }
+            
+            self._send_json(response)
+            
+        except Exception as e:
+            _log.error(f"Graph endpoint error: {e}")
+            self._send_error_json(f"Error reading graph: {e}")
+
+    def _handle_ontology_process_incremental(self, body: dict):
+        """POST /api/ontology/process-incremental — Start incremental book processing.
+        
+        Non-blocking: starts processing in background thread and returns immediately.
+        Client should poll /api/ontology/progress to track status.
+        """
         if self.command != 'POST':
             self._send_error_json("POST required", 405)
             return
         
-        body = self._read_json_body()
         if not body:
             self._send_error_json("Invalid JSON body")
             return
@@ -2973,6 +3194,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
         file_path = body.get("file_path") or body.get("file")
         domain_id = body.get("domain_id") or body.get("domain", "econometria")
         batch_size = body.get("batch_size", 20)
+        
+        print(f"[ONTOLOGY] Processing: {file_path} -> {domain_id} (batch={batch_size})")
         
         if not file_path:
             self._send_error_json("Missing file_path")
@@ -2984,9 +3207,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
         
         try:
             from ontology_manager import process_book_incremental, get_book_progress
+            import threading
             
             # Check current progress first
             progress = get_book_progress(file_path, domain_id)
+            print(f"[ONTOLOGY] Progress: {progress}")
             if progress.get("status") == "completed":
                 self._send_json({
                     "status": "ok",
@@ -2998,29 +3223,50 @@ class NEVENHandler(BaseHTTPRequestHandler):
             
             # Get config manager
             config_mgr = _get_config_manager() if _CONFIG_MANAGER_AVAILABLE else None
+            print(f"[ONTOLOGY] Config manager: {config_mgr is not None}")
             
-            # Start processing (this runs synchronously - for async, use threading)
-            result = process_book_incremental(
-                file_path=file_path,
-                domain_id=domain_id,
-                config_manager=config_mgr,
-                batch_size=batch_size
-            )
+            # Start processing in background thread (non-blocking)
+            def run_processing():
+                try:
+                    result = process_book_incremental(
+                        file_path=file_path,
+                        domain_id=domain_id,
+                        config_manager=config_mgr,
+                        batch_size=batch_size
+                    )
+                    print(f"[ONTOLOGY] Background result: {result}")
+                except Exception as e:
+                    import traceback
+                    print(f"[ONTOLOGY] Background error: {e}")
+                    traceback.print_exc()
             
-            self._send_json(result)
+            thread = threading.Thread(target=run_processing, daemon=True)
+            thread.start()
+            
+            # Return immediately — client will poll for progress
+            self._send_json({
+                **progress,  # Include current progress first
+                "status": "processing",  # Override status
+                "message": "Processing started in background",
+                "file": file_path,
+                "domain": domain_id
+            })
             
         except ImportError as e:
+            print(f"[ONTOLOGY] ImportError: {e}")
             self._send_error_json(f"Module not available: {e}")
         except Exception as e:
+            import traceback
+            print(f"[ONTOLOGY] Exception: {e}")
+            traceback.print_exc()
             self._send_error_json(f"Processing error: {e}")
 
-    def _handle_ontology_reset_progress(self):
+    def _handle_ontology_reset_progress(self, body: dict):
         """POST /api/ontology/reset-progress — Reset checkpoint for a book."""
         if self.command != 'POST':
             self._send_error_json("POST required", 405)
             return
         
-        body = self._read_json_body()
         if not body:
             self._send_error_json("Invalid JSON body")
             return
@@ -3047,6 +3293,38 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_error_json("ontology_manager not available")
         except Exception as e:
             self._send_error_json(f"Reset error: {e}")
+
+    def _handle_ontology_delete_book(self, body: dict):
+        """POST /api/ontology/delete-book — Delete all entities from a book."""
+        if self.command != 'POST':
+            self._send_error_json("POST required", 405)
+            return
+        
+        if not body:
+            self._send_error_json("Invalid JSON body")
+            return
+        
+        book_name = body.get("book_name") or body.get("book")
+        domain_id = body.get("domain_id") or body.get("domain")
+        
+        if not book_name:
+            self._send_error_json("Missing book_name")
+            return
+        
+        if not domain_id:
+            self._send_error_json("Missing domain_id")
+            return
+        
+        try:
+            from ontology_manager import delete_book_entities
+            
+            result = delete_book_entities(domain_id, book_name)
+            self._send_json(result)
+            
+        except ImportError:
+            self._send_error_json("ontology_manager not available")
+        except Exception as e:
+            self._send_error_json(f"Delete error: {e}")
 
     def _handle_ayuda_funciones(self):
         """GET /api/ayuda/funciones — Diccionario dinámico de funciones NevenX.
@@ -3183,6 +3461,129 @@ class NEVENHandler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             self._send_error_json(f"RAG stats error: {e}")
+
+    def _handle_rag_graph(self):
+        """GET /api/rag/graph — Inspect ontology graph relationships.
+        
+        Query params:
+            entity_id: ID de entidad para ver sus relaciones (opcional)
+            depth: Profundidad de traversal (default 1, max 3)
+            limit: Máximo de relaciones a retornar (default 50)
+        
+        Sin entity_id retorna estadísticas generales del grafo.
+        Con entity_id retorna relaciones entrantes y salientes.
+        """
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        try:
+            from urllib.parse import parse_qs, urlparse
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            
+            engine = _get_rag_engine()
+            
+            entity_id = params.get('entity_id', [None])[0]
+            depth = min(int(params.get('depth', [1])[0]), 3)  # Max depth 3
+            limit = min(int(params.get('limit', [50])[0]), 200)  # Max 200
+            
+            if not hasattr(engine, 'ontology_graph') or not engine.ontology_graph:
+                self._send_json({
+                    "status": "ok",
+                    "message": "Grafo no cargado",
+                    "stats": {"nodes": 0, "edges": 0}
+                })
+                return
+            
+            if entity_id:
+                # Buscar relaciones de una entidad específica
+                if entity_id not in engine.ontology_graph:
+                    self._send_error_json(f"Entidad '{entity_id}' no encontrada en el grafo", 404)
+                    return
+                
+                # Obtener entidades relacionadas usando el método existente
+                related = engine.get_related_entities(entity_id, max_depth=depth)
+                
+                # Formatear relaciones salientes
+                outgoing = []
+                if entity_id in engine.ontology_graph:
+                    for rel_type, targets in engine.ontology_graph[entity_id].items():
+                        if not rel_type.startswith('inv_'):  # Solo relaciones directas
+                            for target in targets[:limit]:
+                                outgoing.append({
+                                    "type": rel_type,
+                                    "target": target
+                                })
+                
+                # Formatear relaciones entrantes (inversas)
+                incoming = []
+                if entity_id in engine.ontology_graph:
+                    for rel_type, sources in engine.ontology_graph[entity_id].items():
+                        if rel_type.startswith('inv_'):  # Solo inversas
+                            for source in sources[:limit]:
+                                incoming.append({
+                                    "type": rel_type[4:],  # Quitar 'inv_'
+                                    "source": source
+                                })
+                
+                # Buscar metadatos de la entidad
+                entity_meta = None
+                for ent in engine.ontology_entities:
+                    if ent.get('id') == entity_id:
+                        entity_meta = {
+                            "id": ent.get('id'),
+                            "name": ent.get('name'),
+                            "type": ent.get('type'),
+                            "domain": ent.get('domain'),
+                            "keywords": ent.get('keywords', [])[:10]
+                        }
+                        break
+                
+                self._send_json({
+                    "status": "ok",
+                    "entity_id": entity_id,
+                    "entity": entity_meta,
+                    "outgoing": outgoing[:limit],
+                    "incoming": incoming[:limit],
+                    "related_entities": related[:limit],
+                    "counts": {
+                        "outgoing": len(outgoing),
+                        "incoming": len(incoming),
+                        "related": len(related)
+                    }
+                })
+            else:
+                # Estadísticas generales del grafo
+                total_nodes = len(engine.ontology_graph)
+                total_relations = len(engine.ontology_relations) if hasattr(engine, 'ontology_relations') else 0
+                
+                # Contar tipos de relaciones
+                relation_types = {}
+                if hasattr(engine, 'ontology_relations'):
+                    for rel in engine.ontology_relations:
+                        rt = rel.get('type', 'unknown')
+                        relation_types[rt] = relation_types.get(rt, 0) + 1
+                
+                # Top entidades por conectividad
+                connectivity = []
+                for node_id, edges in engine.ontology_graph.items():
+                    edge_count = sum(len(targets) for targets in edges.values())
+                    connectivity.append((node_id, edge_count))
+                connectivity.sort(key=lambda x: -x[1])
+                top_connected = [{"id": n, "connections": c} for n, c in connectivity[:20]]
+                
+                self._send_json({
+                    "status": "ok",
+                    "stats": {
+                        "total_nodes": total_nodes,
+                        "total_relations": total_relations,
+                        "relation_types": relation_types,
+                        "top_connected": top_connected
+                    }
+                })
+        except Exception as e:
+            self._send_error_json(f"RAG graph error: {e}")
 
     def _handle_rag_browse(self):
         """GET /api/rag/browse — Open native file dialog and return selected path."""
@@ -3361,8 +3762,15 @@ else:
         try:
             engine = _get_rag_engine()
             
+            # DEBUG: Log estado del engine a stderr
+            sys.stderr.write(f"[RAG-DEBUG] Engine entidades: {len(engine.ontology_entities)}\n")
+            sys.stderr.flush()
+            
             if use_ontology:
                 result = engine.query_with_ontology(question, top_k=top_k)
+                # DEBUG: Log resultado
+                sys.stderr.write(f"[RAG-DEBUG] Query '{question}' -> {len(result.get('matched_entities', []))} matched\n")
+                sys.stderr.flush()
             else:
                 results = engine.query(question, domain=domain, top_k=top_k)
                 result = {

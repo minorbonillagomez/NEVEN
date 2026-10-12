@@ -159,7 +159,7 @@ try:
         RAGEngine as _RAGEngine,
     )
     _RAG_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     _RAG_AVAILABLE = False
     _get_rag_engine = None
     _RAGEngine = None
@@ -929,6 +929,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
         
         if path == 'api/rag/stats':
             self._handle_rag_stats()
+            return
+        
+        if path == 'api/rag/graph' or path.startswith('api/rag/graph?'):
+            self._handle_rag_graph()
             return
         
         if path == 'api/rag/browse':
@@ -3058,9 +3062,41 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     except json.JSONDecodeError:
                         continue
             
-            # Convert dict to list and apply limit
-            nodes = list(nodes_dict.values())[:limit]
-            node_ids = set(n["id"] for n in nodes)
+            # Calculate connected nodes (for orphan stats)
+            connected_ids = set()
+            for e in edges_list:
+                connected_ids.add(e["from"])
+                connected_ids.add(e["to"])
+            
+            # Calculate orphans BEFORE applying limit
+            total_nodes = len(nodes_dict)
+            total_edges = len(edges_list)
+            orphan_count = sum(1 for nid in nodes_dict if nid not in connected_ids)
+            orphan_pct = round(100 * orphan_count / total_nodes, 2) if total_nodes > 0 else 0
+            rel_ratio = round(total_edges / total_nodes, 2) if total_nodes > 0 else 0
+            
+            # ─── SMART NODE SELECTION ───────────────────────────────────────
+            # Instead of taking first N nodes (which leaves many visually disconnected),
+            # select nodes that are well-connected to each other.
+            # Strategy: pick nodes with most connections, prioritizing mutual connections.
+            
+            # Count connections per node
+            node_degree = {}
+            for e in edges_list:
+                node_degree[e["from"]] = node_degree.get(e["from"], 0) + 1
+                node_degree[e["to"]] = node_degree.get(e["to"], 0) + 1
+            
+            # Sort nodes by degree (most connected first)
+            sorted_node_ids = sorted(
+                nodes_dict.keys(),
+                key=lambda nid: node_degree.get(nid, 0),
+                reverse=True
+            )
+            
+            # Select top N nodes by connectivity
+            selected_ids = set(sorted_node_ids[:limit])
+            nodes = [nodes_dict[nid] for nid in sorted_node_ids[:limit]]
+            node_ids = selected_ids
             
             # Filter edges: only include those between visible nodes, deduplicate
             seen_edges = set()
@@ -3071,6 +3107,14 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     if edge_key not in seen_edges:
                         seen_edges.add(edge_key)
                         edges.append(e)
+            
+            # Calculate VISUAL orphans (nodes without edges in the selected subset)
+            visual_connected = set()
+            for e in edges:
+                visual_connected.add(e["from"])
+                visual_connected.add(e["to"])
+            visual_orphan_count = len(node_ids - visual_connected)
+            visual_orphan_pct = round(100 * visual_orphan_count / len(nodes), 2) if nodes else 0
             
             # Build response based on format
             if output_format == "3d":
@@ -3116,7 +3160,14 @@ class NEVENHandler(BaseHTTPRequestHandler):
                     "edges": edges,
                     "stats": {
                         "nodeCount": len(nodes),
-                        "edgeCount": len(edges)
+                        "edgeCount": len(edges),
+                        "totalNodes": total_nodes,
+                        "totalEdges": total_edges,
+                        "orphanCount": orphan_count,
+                        "orphanPct": orphan_pct,
+                        "visualOrphanCount": visual_orphan_count,
+                        "visualOrphanPct": visual_orphan_pct,
+                        "relationsPerEntity": rel_ratio
                     }
                 }
             
@@ -3411,6 +3462,129 @@ class NEVENHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._send_error_json(f"RAG stats error: {e}")
 
+    def _handle_rag_graph(self):
+        """GET /api/rag/graph — Inspect ontology graph relationships.
+        
+        Query params:
+            entity_id: ID de entidad para ver sus relaciones (opcional)
+            depth: Profundidad de traversal (default 1, max 3)
+            limit: Máximo de relaciones a retornar (default 50)
+        
+        Sin entity_id retorna estadísticas generales del grafo.
+        Con entity_id retorna relaciones entrantes y salientes.
+        """
+        if not _RAG_AVAILABLE:
+            self._send_error_json("RAG Engine no disponible", 503)
+            return
+        
+        try:
+            from urllib.parse import parse_qs, urlparse
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            
+            engine = _get_rag_engine()
+            
+            entity_id = params.get('entity_id', [None])[0]
+            depth = min(int(params.get('depth', [1])[0]), 3)  # Max depth 3
+            limit = min(int(params.get('limit', [50])[0]), 200)  # Max 200
+            
+            if not hasattr(engine, 'ontology_graph') or not engine.ontology_graph:
+                self._send_json({
+                    "status": "ok",
+                    "message": "Grafo no cargado",
+                    "stats": {"nodes": 0, "edges": 0}
+                })
+                return
+            
+            if entity_id:
+                # Buscar relaciones de una entidad específica
+                if entity_id not in engine.ontology_graph:
+                    self._send_error_json(f"Entidad '{entity_id}' no encontrada en el grafo", 404)
+                    return
+                
+                # Obtener entidades relacionadas usando el método existente
+                related = engine.get_related_entities(entity_id, max_depth=depth)
+                
+                # Formatear relaciones salientes
+                outgoing = []
+                if entity_id in engine.ontology_graph:
+                    for rel_type, targets in engine.ontology_graph[entity_id].items():
+                        if not rel_type.startswith('inv_'):  # Solo relaciones directas
+                            for target in targets[:limit]:
+                                outgoing.append({
+                                    "type": rel_type,
+                                    "target": target
+                                })
+                
+                # Formatear relaciones entrantes (inversas)
+                incoming = []
+                if entity_id in engine.ontology_graph:
+                    for rel_type, sources in engine.ontology_graph[entity_id].items():
+                        if rel_type.startswith('inv_'):  # Solo inversas
+                            for source in sources[:limit]:
+                                incoming.append({
+                                    "type": rel_type[4:],  # Quitar 'inv_'
+                                    "source": source
+                                })
+                
+                # Buscar metadatos de la entidad
+                entity_meta = None
+                for ent in engine.ontology_entities:
+                    if ent.get('id') == entity_id:
+                        entity_meta = {
+                            "id": ent.get('id'),
+                            "name": ent.get('name'),
+                            "type": ent.get('type'),
+                            "domain": ent.get('domain'),
+                            "keywords": ent.get('keywords', [])[:10]
+                        }
+                        break
+                
+                self._send_json({
+                    "status": "ok",
+                    "entity_id": entity_id,
+                    "entity": entity_meta,
+                    "outgoing": outgoing[:limit],
+                    "incoming": incoming[:limit],
+                    "related_entities": related[:limit],
+                    "counts": {
+                        "outgoing": len(outgoing),
+                        "incoming": len(incoming),
+                        "related": len(related)
+                    }
+                })
+            else:
+                # Estadísticas generales del grafo
+                total_nodes = len(engine.ontology_graph)
+                total_relations = len(engine.ontology_relations) if hasattr(engine, 'ontology_relations') else 0
+                
+                # Contar tipos de relaciones
+                relation_types = {}
+                if hasattr(engine, 'ontology_relations'):
+                    for rel in engine.ontology_relations:
+                        rt = rel.get('type', 'unknown')
+                        relation_types[rt] = relation_types.get(rt, 0) + 1
+                
+                # Top entidades por conectividad
+                connectivity = []
+                for node_id, edges in engine.ontology_graph.items():
+                    edge_count = sum(len(targets) for targets in edges.values())
+                    connectivity.append((node_id, edge_count))
+                connectivity.sort(key=lambda x: -x[1])
+                top_connected = [{"id": n, "connections": c} for n, c in connectivity[:20]]
+                
+                self._send_json({
+                    "status": "ok",
+                    "stats": {
+                        "total_nodes": total_nodes,
+                        "total_relations": total_relations,
+                        "relation_types": relation_types,
+                        "top_connected": top_connected
+                    }
+                })
+        except Exception as e:
+            self._send_error_json(f"RAG graph error: {e}")
+
     def _handle_rag_browse(self):
         """GET /api/rag/browse — Open native file dialog and return selected path."""
         try:
@@ -3588,8 +3762,15 @@ else:
         try:
             engine = _get_rag_engine()
             
+            # DEBUG: Log estado del engine a stderr
+            sys.stderr.write(f"[RAG-DEBUG] Engine entidades: {len(engine.ontology_entities)}\n")
+            sys.stderr.flush()
+            
             if use_ontology:
                 result = engine.query_with_ontology(question, top_k=top_k)
+                # DEBUG: Log resultado
+                sys.stderr.write(f"[RAG-DEBUG] Query '{question}' -> {len(result.get('matched_entities', []))} matched\n")
+                sys.stderr.flush()
             else:
                 results = engine.query(question, domain=domain, top_k=top_k)
                 result = {
