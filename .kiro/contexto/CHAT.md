@@ -9018,3 +9018,50 @@ Todos los commits fueron pusheados exitosamente a `origin/master`.
 | **MEDIA** | Agregar mas conceptos (GARCH, VAR, coeficiente de correlacion Pearson/Spearman) |
 | **BAJA** | Mejorar soporte para acronimos cortos (ACF, ADF sin contexto) |
 
+
+
+---
+
+### Sesion 2026-08-19 (~23:55) -- Prueba final: Hosmer-Lemeshow
+
+## Prueba realizada
+
+Se probo el termino "Test Hosmer-Lemeshow" para validar cobertura de la ontologia.
+
+## Resultado
+
+**Hosmer-Lemeshow NO existe** en la ontologia. Busquedas realizadas:
+- `hosmer`: 0 entidades
+- `lemeshow`: 0 entidades
+- `test_hl`: 0 entidades (solo falsos positivos como "monthly", "highly")
+- `goodness_of_fit`: 1 entidad pero sin `name`
+
+## Diagnostico
+
+Es una **laguna de contenido**, no un problema del RAG. El test Hosmer-Lemeshow es importante para:
+- Evaluar bondad de ajuste en regresion logistica
+- Comparar probabilidades predichas vs observadas
+- Diagnostico de modelos de clasificacion
+
+## Pendientes actualizados
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Corregir `schema.yaml` (error YAML linea 7) |
+| **ALTA** | Crear enricher de diagnosticos para modelos de clasificacion |
+| | - Test Hosmer-Lemeshow |
+| | - ROC-AUC, Curva ROC |
+| | - Brier Score |
+| | - Matriz de confusion |
+| | - Sensibilidad, Especificidad |
+| **MEDIA** | Agregar mas conceptos (GARCH, VAR) |
+| **BAJA** | Poblar `name` en entidades que solo tienen `id` |
+
+## Archivos modificados
+
+Ninguno (solo prueba de validacion).
+
+## Commits
+
+Ninguno adicional.
+
