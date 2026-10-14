@@ -1,0 +1,166 @@
+# NEVEN Self-Documentation Ontology Schema
+# Version: 1.0
+# Purpose: Knowledge graph of the NEVEN project itself for maintenance and development guidance
+
+name: neven
+description: 'Self-documenting ontology of the NEVEN add-in project. Used to guide development, understand dependencies, and prevent regressions.'
+version: '1.0'
+last_updated: '2026-08-19'
+
+# Entity Types
+entity_types:
+  # Core Components
+  Component:
+    description: 'Major architectural component (XLL, EXE, DLL, Server)'
+    properties:
+      name: string
+      type: enum[xll, exe, dll, server, script, config]
+      description: string
+      location: string  # File path
+      dependencies: list[string]  # IDs of other components
+      layer: enum[interface, core, subsystem, common]
+
+  # Source Files
+  SourceFile:
+    description: 'Important source code file'
+    properties:
+      name: string
+      path: string
+      language: enum[cpp, python, r, julia, javascript, html, json, yaml]
+      component: string  # ID of parent component
+      purpose: string
+      key_functions: list[string]
+
+  # Functions and APIs
+  ExposedFunction:
+    description: 'Function exposed to Excel users'
+    properties:
+      name: string
+      signature: string
+      description: string
+      category: string
+      language: enum[excel, r, julia, python]
+      component: string
+      examples: list[string]
+
+  InternalFunction:
+    description: 'Internal function critical for maintenance'
+    properties:
+      name: string
+      file: string
+      description: string
+      callers: list[string]
+      callees: list[string]
+
+  # Configuration
+  ConfigFile:
+    description: 'Configuration file'
+    properties:
+      name: string
+      path: string
+      format: enum[json, yaml, txt]
+      purpose: string
+      key_settings: list[string]
+
+  # Data Flows
+  DataFlow:
+    description: 'Data flow between components'
+    properties:
+      name: string
+      description: string
+      source: string  # Component ID
+      target: string  # Component ID
+      protocol: enum[named_pipe, http, file, protobuf, com]
+      data_format: string
+
+  # Patterns and Conventions
+  Pattern:
+    description: 'Code pattern or convention used in the project'
+    properties:
+      name: string
+      description: string
+      rationale: string
+      examples: list[string]
+      anti_patterns: list[string]
+
+  # Known Issues and Workarounds
+  Workaround:
+    description: 'Known issue with documented workaround'
+    properties:
+      name: string
+      issue: string
+      solution: string
+      affected_components: list[string]
+      date_identified: string
+
+  # Build and Deploy
+  BuildTarget:
+    description: 'Build target or artifact'
+    properties:
+      name: string
+      type: enum[xll, exe, dll, lib, py, r]
+      output_path: string
+      dependencies: list[string]
+      cmake_option: string
+
+  # Directories
+  Directory:
+    description: 'Important directory in the project structure'
+    properties:
+      name: string
+      path: string
+      purpose: string
+      key_files: list[string]
+
+# Relation Types
+relation_types:
+  depends_on:
+    description: 'A depends on B (A cannot function without B)'
+    inverse: required_by
+  
+  contains:
+    description: 'A contains B (parent-child)'
+    inverse: part_of
+  
+  calls:
+    description: 'A calls B (function invocation)'
+    inverse: called_by
+  
+  communicates_with:
+    description: 'A communicates with B (IPC, HTTP, etc.)'
+    inverse: receives_from
+  
+  configures:
+    description: 'A configures B (config file defines behavior)'
+    inverse: configured_by
+  
+  produces:
+    description: 'A produces B (build output)'
+    inverse: produced_by
+  
+  implements:
+    description: 'A implements B (code implements pattern/concept)'
+    inverse: implemented_by
+  
+  workaround_for:
+    description: 'A is workaround for issue B'
+    inverse: has_workaround
+  
+  related_to:
+    description: 'A is related to B (general association)'
+    symmetric: true
+
+# Domains for categorization
+domains:
+  - architecture
+  - build
+  - configuration
+  - data_flow
+  - excel_interface
+  - r_integration
+  - julia_integration
+  - python_integration
+  - webview
+  - ontology
+  - studio
+  - simulation

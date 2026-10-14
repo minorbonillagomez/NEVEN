@@ -385,6 +385,7 @@ def enrich_with_ontology(function_counts: Dict[str, int]) -> List[Dict[str, Any]
     - category, description, syntax
     - best_practices, common_errors
     - related patterns
+    - source_book (from Wiley books when available)
     
     Args:
         function_counts: Dict from extract_functions()
@@ -410,6 +411,12 @@ def enrich_with_ontology(function_counts: Dict[str, int]) -> List[Dict[str, Any]
             # Include patterns if available
             if info.get("patterns"):
                 entry["patterns"] = [p.get("name") for p in info["patterns"][:2]]
+            # Include source book reference (Wiley books, etc.)
+            if info.get("source_book"):
+                entry["source_book"] = info["source_book"]
+            # Include function type (ExcelFunction vs Function/VBA)
+            if info.get("type"):
+                entry["function_type"] = info["type"]
             enriched.append(entry)
         else:
             # Function not in ontology (might be custom, newer, or misspelled)

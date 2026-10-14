@@ -56,3 +56,14 @@
 {"op": "relate", "relation": {"type": "contrasts_with", "from": "concept_kronecker_product", "to": "concept_hadamard_product"}}
 {"op": "relate", "relation": {"type": "used_in", "from": "concept_kronecker_product", "to": "model_var"}}
 {"op": "relate", "relation": {"type": "implements", "from": "excel_kron", "to": "concept_kronecker_product"}}
+
+# === CONEXIONES A ECONOMETRÍA (Econometría 04.md) ===
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_orthogonal_projection", "to": "model_mcrl_ols_root"}}
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_kronecker_product", "to": "branch_panel_data"}}
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_cholesky", "to": "estimator_fgls"}}
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_eigenvalue", "to": "concept_stationarity"}}
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_matrix_rank", "to": "concept_cointegration"}}
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_qr_decomposition", "to": "method_qr_decomposition_ols"}}
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_svd", "to": "concept_condition_number"}}
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_vector_space", "to": "concept_column_space"}}
+{"op": "relate", "relation": {"type": "applied_in", "from": "concept_linear_transformation", "to": "concept_hat_matrix"}}

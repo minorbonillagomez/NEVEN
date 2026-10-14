@@ -675,12 +675,18 @@ def get_excel_function(name: str) -> Optional[Dict[str, Any]]:
     """
     Quick lookup for an Excel function by name.
     
+    Searches both ExcelFunction (native Excel) and Function (VBA/custom) types.
     Returns dict with category, description, syntax, best_practices, common_errors.
     """
     manager = get_manager()
     entity = manager.get_by_name("excel", name)
     
-    if entity and entity.type == "ExcelFunction":
+    # Accept both ExcelFunction (native) and Function (VBA/custom) types
+    if entity and entity.type in ("ExcelFunction", "Function"):
+        # Get reference info if available (from Wiley books)
+        ref = entity.properties.get("reference", {})
+        source_book = entity.properties.get("source_book") or (ref.get("book") if isinstance(ref, dict) else None)
+        
         return {
             "id": entity.id,
             "name": entity.properties.get("name"),
@@ -689,6 +695,8 @@ def get_excel_function(name: str) -> Optional[Dict[str, Any]]:
             "syntax": entity.properties.get("syntax", ""),
             "best_practices": entity.properties.get("best_practices", []),
             "common_errors": entity.properties.get("common_errors", []),
+            "source_book": source_book,  # Include book reference for provenance
+            "type": entity.type,  # Distinguish native vs VBA
         }
     return None
 
@@ -1788,15 +1796,30 @@ def _backup_graph_file(graph_path: str):
 
 def list_processed_books(domain_id: str = None) -> List[Dict[str, Any]]:
     """
-    List books that have been processed for a domain (based on source_book references).
+    List books that have been processed for a domain.
+    
+    Combines two sources:
+    1. Entities in graph.jsonl that have source_book references
+    2. Checkpoint files (for books indexed in RAG but without ontology entities)
     
     Returns list of {book_name, domain, entity_count, pages}
     """
+    import glob
+    
     manager = get_manager()
     books = {}
     
+    # Normalize domain for checkpoint search
+    domain_map = {
+        "econometrics": "econometria",
+        "economics": "econometria",
+        "statistics": "estadistica",
+        "linear_algebra": "algebra_lineal"
+    }
+    
     domains_to_check = [domain_id] if domain_id else list(manager.domains.keys())
     
+    # --- Source 1: Entities in graph.jsonl ---
     for did in domains_to_check:
         if not manager.ensure_loaded(did):
             continue
@@ -1820,16 +1843,102 @@ def list_processed_books(domain_id: str = None) -> List[Dict[str, Any]]:
                     }
                 books[key]["entity_count"] += 1
     
-    # Try to get page counts from checkpoints
-    for key, book_info in books.items():
-        checkpoint_path = _get_checkpoint_path_for_book(book_info["book_name"], book_info["domain"])
-        if checkpoint_path and os.path.exists(checkpoint_path):
+    # --- Source 2: Checkpoint files ---
+    checkpoint_dir = r"C:\NEVEN\docs\ontologia\checkpoints"
+    if os.path.isdir(checkpoint_dir):
+        # Build list of checkpoint domains to scan
+        checkpoint_domains = set()
+        for did in domains_to_check:
+            checkpoint_domains.add(did)
+            # Also check mapped domain (e.g., econometrics -> econometria)
+            mapped = domain_map.get(did)
+            if mapped:
+                checkpoint_domains.add(mapped)
+            # Reverse map (e.g., econometria might be queried as econometrics)
+            for eng, esp in domain_map.items():
+                if esp == did:
+                    checkpoint_domains.add(eng)
+        
+        # Scan checkpoint files for each domain
+        for cp_domain in checkpoint_domains:
+            pattern = os.path.join(checkpoint_dir, f"*_{cp_domain}_*.json")
+            for checkpoint_path in glob.glob(pattern):
+                try:
+                    with open(checkpoint_path, 'r', encoding='utf-8') as f:
+                        checkpoint = json.load(f)
+                    
+                    book_name = checkpoint.get("book_name")
+                    if not book_name:
+                        # Derive from filename: BookName_domain_hash.json
+                        fname = os.path.basename(checkpoint_path)
+                        parts = fname.rsplit('_', 2)
+                        if len(parts) >= 3:
+                            book_name = parts[0]
+                    
+                    if not book_name:
+                        continue
+                    
+                    # Use the original domain_id for consistency
+                    actual_domain = domain_id if domain_id else cp_domain
+                    key = f"{actual_domain}:{book_name}"
+                    
+                    if key not in books:
+                        books[key] = {
+                            "book_name": book_name,
+                            "domain": actual_domain,
+                            "entity_count": checkpoint.get("entities_created", 0),
+                            "pages": checkpoint.get("total_pages")
+                        }
+                    else:
+                        # Checkpoint might have page count that entity scan doesn't
+                        if books[key]["pages"] is None:
+                            books[key]["pages"] = checkpoint.get("total_pages")
+                except Exception:
+                    pass
+    
+    # --- Build checkpoint lookup for fuzzy matching ---
+    checkpoint_lookup = {}  # normalized_name -> (checkpoint_path, total_pages)
+    if os.path.isdir(checkpoint_dir):
+        for cp_file in glob.glob(os.path.join(checkpoint_dir, "*.json")):
             try:
-                with open(checkpoint_path, 'r', encoding='utf-8') as f:
-                    checkpoint = json.load(f)
-                    book_info["pages"] = checkpoint.get("total_pages")
-            except Exception:
+                with open(cp_file, 'r', encoding='utf-8') as f:
+                    cp = json.load(f)
+                book_name = cp.get("book_name")
+                if not book_name:
+                    fname = os.path.basename(cp_file)
+                    parts = fname.rsplit('_', 2)
+                    if len(parts) >= 3:
+                        book_name = parts[0]
+                if book_name:
+                    # Normalize: lowercase, remove .pdf, remove extra spaces
+                    normalized = book_name.lower().replace('.pdf', '').strip()
+                    checkpoint_lookup[normalized] = cp.get("total_pages")
+            except:
                 pass
+    
+    # --- Final pass: Try to get page counts with fuzzy matching ---
+    for key, book_info in books.items():
+        if book_info["pages"] is None:
+            book_name = book_info["book_name"]
+            normalized = book_name.lower().replace('.pdf', '').strip()
+            
+            # Try exact match first
+            if normalized in checkpoint_lookup:
+                book_info["pages"] = checkpoint_lookup[normalized]
+                continue
+            
+            # Try fuzzy match: check if checkpoint name is contained in book name or vice versa
+            for cp_normalized, pages in checkpoint_lookup.items():
+                # Check containment both ways
+                if cp_normalized in normalized or normalized in cp_normalized:
+                    book_info["pages"] = pages
+                    break
+                # Check if main title matches (before parentheses)
+                book_main = normalized.split('(')[0].strip()
+                cp_main = cp_normalized.split('(')[0].strip()
+                if book_main and cp_main and (book_main in cp_main or cp_main in book_main):
+                    book_info["pages"] = pages
+                    break
     
     return list(books.values())
 
