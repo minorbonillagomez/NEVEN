@@ -256,6 +256,21 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+  #lab-econometria .chat-sources-btn {
+    display: block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    font-size: 10px;
+    background: var(--bg-tertiary, #2a2a2a);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  #lab-econometria .chat-sources-btn:hover {
+    background: var(--accent);
+    color: #1a1a1a;
+  }
 </style>
 
 <div id="lab-econometria">
@@ -349,13 +364,31 @@
 
     function renderEquation() {
       var el = document.getElementById('lab-equation');
-      if (el && window.katex) {
-        try {
-          katex.render(equations[labMode], el, { displayMode: false, throwOnError: false });
-        } catch(e) { el.textContent = equations[labMode]; }
-      } else if (el) {
-        el.textContent = equations[labMode];
+      if (!el) return;
+      
+      // Si KaTeX no está disponible aún, esperar y reintentar (polling)
+      if (typeof katex === 'undefined' || !window.katex) {
+        var retryCount = 0;
+        var maxRetries = 30; // 3 segundos max
+        var pollInterval = setInterval(function() {
+          retryCount++;
+          if (typeof katex !== 'undefined' && window.katex) {
+            clearInterval(pollInterval);
+            try {
+              katex.render(equations[labMode], el, { displayMode: false, throwOnError: false });
+            } catch(e) { el.textContent = equations[labMode]; }
+          } else if (retryCount >= maxRetries) {
+            clearInterval(pollInterval);
+            el.textContent = equations[labMode]; // Fallback
+            console.warn('[NEVEN Lab] KaTeX no disponible despues de 3s');
+          }
+        }, 100);
+        return;
       }
+      
+      try {
+        katex.render(equations[labMode], el, { displayMode: false, throwOnError: false });
+      } catch(e) { el.textContent = equations[labMode]; }
     }
 
     function renderSuggestions() {
@@ -386,50 +419,72 @@
 
       // Agregar indicador de carga
       var loadingId = 'loading-' + Date.now();
-      messages.innerHTML += '<div class="chat-msg assistant" id="' + loadingId + '">Consultando RAG...</div>';
+      messages.innerHTML += '<div class="chat-msg assistant" id="' + loadingId + '">Consultando libros de econometria...</div>';
       messages.scrollTop = messages.scrollHeight;
 
       try {
-        // Llamar al endpoint RAG con contexto de econometria
-        var resp = await fetch('/api/rag/query', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: q,
-            domain: 'econometria',
-            limit: 3,
-            use_ontology: true
-          })
-        });
-        var data = await resp.json();
-
-        // Construir contexto de los chunks
-        var context = '';
-        if (data.results && data.results.length > 0) {
-          context = data.results.map(function(r) {
-            return r.text || r.content || '';
-          }).join('\n\n---\n\n');
-        }
-
-        // Llamar al LLM con el contexto
-        var llmResp = await fetch('/api/ai/chat', {
+        // Llamar directamente a /api/ai/chat — hace RAG internamente y devuelve rag_sources
+        var resp = await fetch('/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: [
-              { role: 'system', content: 'Eres un profesor de econometria. Responde de forma clara y concisa (max 3 oraciones). Usa el siguiente contexto de libros de econometria:\n\n' + context },
+              { role: 'system', content: 'Eres un profesor de econometria experto. Responde de forma pedagogica, clara y concisa. Si la respuesta involucra formulas matematicas,usalas con notacion LaTeX (ej: $\\beta$, $\\hat{y}$). Siempre basa tu respuesta en el contexto RAG de libros indexados.' },
               { role: 'user', content: q }
             ],
-            max_tokens: 200
+            context: ''
           })
         });
-        var llmData = await llmResp.json();
+        var data = await resp.json();
 
-        // Mostrar respuesta
+        // Mostrar respuesta con KaTeX + fuentes
         var loadingEl = document.getElementById(loadingId);
         if (loadingEl) {
-          var answer = llmData.choices?.[0]?.message?.content || llmData.response || 'No pude obtener una respuesta.';
-          loadingEl.innerHTML = escapeHtml(answer);
+          var answer = data.reply || data.response || 'No pude obtener una respuesta.';
+          
+          // Renderizar con markdown + KaTeX (reutilizar funciones globales de taskpane)
+          if (typeof _markdownToHtml === 'function') {
+            loadingEl.innerHTML = _markdownToHtml(answer);
+          } else {
+            loadingEl.innerHTML = answer.replace(/\n/g, '<br>');
+          }
+          
+          // Aplicar KaTeX a formulas inline ($...$) y display ($$...$$)
+          if (typeof katex !== 'undefined') {
+            var html = loadingEl.innerHTML;
+            // Display mode: $$...$$
+            html = html.replace(/\$\$([^$]+)\$\$/g, function(m, tex) {
+              try { return katex.renderToString(tex.trim(), { displayMode: true, throwOnError: false }); }
+              catch(e) { return m; }
+            });
+            // Inline mode: $...$
+            html = html.replace(/\$([^$\n]+)\$/g, function(m, tex) {
+              try { return katex.renderToString(tex.trim(), { displayMode: false, throwOnError: false }); }
+              catch(e) { return m; }
+            });
+            loadingEl.innerHTML = html;
+          }
+          
+          // Mostrar boton de fuentes RAG si hay sources
+          if (data.rag_sources && data.rag_sources.length > 0) {
+            var sourcesBtn = document.createElement('button');
+            sourcesBtn.className = 'chat-sources-btn';
+            sourcesBtn.textContent = 'Ver fuentes (' + data.rag_sources.length + ' libros)';
+            sourcesBtn.onclick = function() {
+              // Usar la funcion global de taskpane.html
+              if (typeof _showRagSourcesPopup === 'function') {
+                _showRagSourcesPopup(data.rag_sources);
+              } else {
+                // Fallback: mostrar en alert
+                var info = data.rag_sources.map(function(s, i) {
+                  var pages = s.page ? (s.page === s.page_end ? 'p.' + s.page : 'pp.' + s.page + '-' + s.page_end) : '';
+                  return (i+1) + '. ' + s.filename + (pages ? ' (' + pages + ')' : '') + ' [' + s.domain + ']';
+                }).join('\n');
+                alert('Fuentes consultadas:\n\n' + info);
+              }
+            };
+            loadingEl.appendChild(sourcesBtn);
+          }
         }
       } catch(err) {
         var loadingEl = document.getElementById(loadingId);
