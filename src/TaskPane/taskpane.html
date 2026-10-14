@@ -3793,7 +3793,27 @@ async function loadEconometriaLab() {
     var resp = await fetch('laboratorio-econometria.html');
     if (resp.ok) {
       var html = await resp.text();
-      container.innerHTML = html;
+      // Separar HTML y scripts
+      var tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      // Extraer scripts antes de insertar
+      var scripts = tempDiv.querySelectorAll('script');
+      var scriptContents = [];
+      scripts.forEach(function(s) {
+        scriptContents.push(s.textContent);
+        s.remove();
+      });
+      // Insertar HTML sin scripts
+      container.innerHTML = tempDiv.innerHTML;
+      // Ejecutar scripts manualmente
+      scriptContents.forEach(function(code) {
+        try {
+          var fn = new Function(code);
+          fn();
+        } catch(e) {
+          console.error('[NEVEN] Script error:', e);
+        }
+      });
       _econometriaLabLoaded = true;
       console.log('[NEVEN] Laboratorio de Econometria cargado');
     } else {
