@@ -12497,3 +12497,144 @@ Enriquecidos los textos de los 4 modulos del Laboratorio Visual para que el usua
 - [ ] **MEDIA** Agregar Modulo 5: Cointegracion (rango reducido de Pi, relaciones de equilibrio)
 - [ ] **MEDIA** Agregar mas visualizaciones al canvas (etiquetas dinamicas, animaciones)
 - [ ] **BAJA** Permitir exportar graficos del laboratorio como PNG
+
+
+---
+
+### Sesion 2026-08-19 (~23:00) -- Discusion de arquitectura: Profesor de Econometria
+
+## Contexto
+
+El usuario propuso dos mejoras para el Tab Econometria:
+1. Agregar un agente IA que responda preguntas usando el RAG de econometria
+2. Renderizar ecuaciones con KaTeX (actualmente se ven como texto plano)
+
+## Discusion de arquitectura
+
+Se discutio la idea de convertir el Tab Econometria en un "Profesor de Econometria" integrado:
+
+```
+Tab Econometria
++------------------------------------------+
+|  [1.OLS] [2.Panel] [3.GLS] [4.RaizUnit]  |
++------------------+-----------------------+
+| Controles        |    Canvas             |
+| Sliders          |    (visualizacion)    |
+| Explicaciones    |                       |
++------------------+-----------------------+
+| Mini-chat del Profesor                   |  <- PROPUESTO
+| [Pregunta...]                    [Enviar]|
++------------------------------------------+
+```
+
+## Ventajas identificadas
+
+1. **Contexto automatico** - El agente sabe en que modulo esta el usuario
+2. **Preguntas guiadas** - Sugerir preguntas relevantes al modulo activo
+3. **Aprendizaje integrado** - No cambiar de tab para aprender
+
+## Problema identificado: KaTeX
+
+Las ecuaciones en el canvas se muestran como texto plano:
+- `y_t = lambda * y_{t-1} + epsilon_t` en lugar de $y_t = \lambda y_{t-1} + \varepsilon_t$
+
+Opciones discutidas:
+1. Renderizar con KaTeX en el panel de texto (recomendado, KaTeX ya cargado)
+2. Dibujar en canvas (complejo, requiere pre-renderizado)
+
+## Decision
+
+Orden de implementacion recomendado:
+1. Arreglar KaTeX en las explicaciones (rapido)
+2. Agregar mini-chat del profesor (mas trabajo, alto impacto)
+
+## No hubo cambios de codigo en esta sesion
+
+Solo discusion de arquitectura.
+
+## Pendientes actualizados
+
+- [ ] **ALTA** Integrar KaTeX en las explicaciones del laboratorio
+- [ ] **ALTA** Agregar mini-chat "Profesor de Econometria" con RAG
+- [ ] **MEDIA** Agregar preguntas guiadas por modulo
+- [ ] **MEDIA** Agregar Modulo 5: Cointegracion
+- [ ] **BAJA** Exportar graficos como PNG
+
+
+---
+
+### Sesion 2026-08-19 (~23:30) -- Profesor de Econometria con RAG + KaTeX
+
+## Logros principales
+
+1. **Mini-chat "Profesor de Econometria"** integrado en el tab
+2. **Ecuaciones KaTeX** renderizadas correctamente
+3. **Preguntas sugeridas** por modulo (3 chips clickeables)
+
+## Arquitectura implementada
+
+```
++------------------------------------------+
+|  [1.OLS] [2.Panel] [3.GLS] [4.RaizUnit]  |
++------------------+-----------------------+
+| Controles        | Ecuacion KaTeX        |
+| Sliders          +-----------------------+
+| Metricas KaTeX   |    Canvas             |
++------------------+-----------------------+
+| Profesor de Econometria (RAG)            |
+| [Chip1] [Chip2] [Chip3]                  |
+| [mensajes...]                            |
+| [input...........................][Enviar]|
++------------------------------------------+
+```
+
+## Flujo del chat
+
+1. Usuario escribe pregunta (o hace clic en chip sugerido)
+2. Frontend llama `POST /api/rag/query` con `domain: econometria`
+3. Recibe chunks relevantes de los 10 libros indexados
+4. Frontend llama `POST /api/ai/chat` con contexto de los chunks
+5. Muestra respuesta del LLM (max 3 oraciones)
+
+## Ecuaciones KaTeX por modulo
+
+| Modulo | Ecuacion |
+|--------|----------|
+| 1. OLS | `\hat{y} = P_X y = X(X'X)^{-1}X'y` |
+| 2. Panel | `y_{it} = \alpha_i + \beta x_{it} + \varepsilon_{it}` |
+| 3. GLS | `\hat{\beta}_{GLS} = (X'\Omega^{-1}X)^{-1}X'\Omega^{-1}y` |
+| 4. Raiz Unitaria | `y_t = \lambda y_{t-1} + \varepsilon_t` |
+
+## Preguntas sugeridas por modulo
+
+| Modulo | Preguntas |
+|--------|-----------|
+| 1. OLS | Que es la proyeccion ortogonal? / Por que R^2 es cos^2? / Que significa M_X? |
+| 2. Panel | Que es el sesgo de variable omitida? / Explicame el teorema FWL / Cuando usar efectos fijos? |
+| 3. GLS | Por que OLS es ineficiente? / Que es la matriz Omega? / Como funciona GLS? |
+| 4. Raiz Unitaria | Que es una raiz unitaria? / Que es regresion espuria? / Cuando hay cointegracion? |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\laboratorio-econometria.html` | Reescrito completo (28.3 KB) |
+| `F:\...\src\TaskPane\laboratorio-econometria.html` | Copia repo |
+
+## Commit
+
+`e3a9c2a` - feat(lab): Profesor de Econometria con RAG + ecuaciones KaTeX
+
+## Decisiones de diseno
+
+1. **KaTeX en div separado** (no en canvas): KaTeX ya esta cargado en taskpane.html, solo hay que llamar `katex.render()`
+2. **Chat abajo del canvas**: Permite ver visualizacion mientras se pregunta
+3. **Preguntas como chips**: Reduce friccion, el usuario puede hacer clic sin escribir
+4. **Respuestas cortas (3 oraciones)**: El contexto visual ya da mucha informacion
+
+## Pendientes
+
+- [ ] **ALTA** Probar el chat (requiere servidor HTTP corriendo + LLM activo)
+- [ ] **MEDIA** Agregar indicador de fuentes (que libro respondio)
+- [ ] **MEDIA** Agregar Modulo 5: Cointegracion
+- [ ] **BAJA** Persistir historial del chat entre cambios de modulo
