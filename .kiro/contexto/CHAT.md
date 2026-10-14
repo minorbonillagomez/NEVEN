@@ -12261,3 +12261,126 @@ docs(skills): skill ontology-book-processor + guía agregar libros
 - [ ] **ALTA** Reiniciar Excel para cargar ontologías actualizadas
 - [ ] **MEDIA** Probar búsquedas cross-domain en TaskPane
 - [ ] **BAJA** Commit de CHAT.md actualizado
+
+
+---
+
+### Sesión 2026-08-19 (~21:00) — Documento "Econometría Visual" + Decisión de diseño
+
+## Contexto
+
+El usuario compartió el documento `ontologia-fuentes/LIBROS ECONOMETRIA/Econometría Visual.md` que contiene un **Laboratorio Visual Interactivo** completo con 5 módulos pedagógicos:
+
+| Módulo | Concepto Econométrico | Concepto Álgebra Lineal |
+|--------|----------------------|------------------------|
+| 1. La Sombra Ortogonal | OLS, Residuos, R², Multicolinealidad | Proyección ortogonal P_X, M_X, Teorema de Pitágoras |
+| 2. El Elipsoide Deformado | Heterocedasticidad, GLS/FGLS | Cambio de producto interno Ω⁻¹, Cholesky |
+| 3. La Proyección Oblicua | Endogeneidad, 2SLS/IV | Ruptura de ortogonalidad, proyección sobre C(P_Z X) |
+| 4. El Purgador de Panel (FWL) | Efectos Fijos, DiD | Aniquilación de subespacios M_{D_N}, Paradoja de Simpson |
+| 5. El Círculo Unitario | Estacionariedad I(0)/I(1), Cointegración | Valores propios de Matriz Compañera, rango reducido |
+
+El documento incluye:
+- Diagrama Mermaid del flujo de interacción
+- **Prototipo HTML5+Canvas+JS completo y funcional** (4 de los 5 módulos implementados)
+- Guía de escalamiento para Quarto/Reveal.js/Shiny
+
+## Decisión de diseño IMPORTANTE
+
+**Pregunta del usuario:** ¿Agregar a la ontología o como Laboratorio Visual en Studio?
+
+**Respuesta correcta:** Son cosas completamente diferentes:
+
+| Destino | Qué es | Propósito |
+|---------|--------|-----------|
+| **Ontología** | Entidades + relaciones JSON | Búsqueda semántica, RAG, conexiones conceptuales |
+| **Laboratorio Visual** | HTML interactivo con Canvas/JS | **Visualizar geometría** de operaciones matriciales en tiempo real |
+
+**Decisión:** Integrar como **Tab "ECONOMETRÍA"** en NEVEN Studio (TaskPane), NO como ontología.
+
+## Beneficio pedagógico
+
+El estudiante puede:
+1. Mover slider de multicolinealidad → **ver** el plano C(X) colapsar
+2. Mover θ de 0→1 en Panel → **ver** grupos centrarse y pendiente corregirse  
+3. Mover λ hacia 1.0 → **ver** serie explotar en caminata aleatoria
+
+## Commits realizados
+
+### Commit 3: `9df830a` — Bitácora
+```
+docs(bitacora): sesión 2026-08-19 — ontologías NEVEN + econometria enriquecida
+```
+**Archivos:** 1 changed, 9,254 insertions(+), 6,393 deletions(-)
+
+## Stats verificados de ontología econometria
+
+| Métrica | Valor |
+|---------|-------|
+| Entidades | 6,208 |
+| Relaciones | 13,981 |
+| Total líneas | 20,193 |
+
+Entidades del curriculum confirmadas presentes:
+- ✓ concept_hat_matrix
+- ✓ theorem_frisch_waugh_lovell
+- ✓ concept_companion_matrix
+- ✓ method_irls
+- ✓ concept_kronecker_panel
+- ✓ method_did
+- ✓ model_twfe
+- ✓ estimator_callaway_santanna
+
+## Pendientes
+
+- [ ] **ALTA** Integrar laboratorio visual como Tab "ECONOMETRÍA" en TaskPane
+  - Crear `C:\NEVEN\TaskPane\laboratorio-econometria.html`
+  - Agregar tab en `taskpane.html`
+  - Cargar via iframe o inline
+- [ ] **ALTA** Reiniciar Excel para cargar ontologías actualizadas
+- [ ] **MEDIA** Probar búsquedas cross-domain en TaskPane
+- [ ] **BAJA** Implementar Módulo 5 (Cointegración) en el laboratorio visual
+
+
+---
+
+### Sesion 2026-08-19 (~21:30) -- Tab Econometria con Laboratorio Visual
+
+## Logro principal
+
+Integrado el Laboratorio Visual de Econometria como nuevo Tab en NEVEN Studio.
+
+## Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\laboratorio-econometria.html` | NUEVO - 20.9 KB |
+| `C:\NEVEN\TaskPane\taskpane.html` | Agregado tab + loader |
+| `F:\...\src\TaskPane\laboratorio-econometria.html` | Copia repo |
+| `F:\...\src\TaskPane\taskpane.html` | Copia repo |
+
+## Modulos implementados
+
+| Modulo | Concepto | Controles |
+|--------|----------|-----------|
+| 1. Proyeccion OLS | P_X, M_X, R-cuadrado, ortogonalidad | Angulo subespacio, direccion vector y |
+| 2. Panel / FWL | Efectos Fijos vs Pooled, operador Within | theta (0=Pooled, 1=FE) |
+| 3. GLS / Cholesky | Elipsoides Mahalanobis, transformacion | hetero, rho, % Cholesky |
+| 4. Raiz Unitaria | Circulo unitario, I(0)/I(1), series temporales | lambda (autovalor) |
+
+## Decisiones tecnicas
+
+1. **Carga dinamica**: El laboratorio se carga via fetch() solo cuando el usuario activa el tab (no al inicio)
+2. **Sin iframe**: Contenido insertado directamente en el DOM para acceso a variables CSS
+3. **Paleta NEVEN**: Adaptado colores del prototipo original a variables CSS de NEVEN
+4. **Sin emojis**: Removidos todos los emojis del codigo original
+5. **Sin dependencias**: Canvas nativo, sin Plotly ni D3
+
+## Commit
+
+`67e6ae7` - feat(studio): agregar Tab Econometria con Laboratorio Visual Interactivo
+
+## Pendientes
+
+- [ ] **ALTA** Reiniciar Excel para probar el nuevo tab
+- [ ] **MEDIA** Agregar Modulo 5: Cointegracion (rango reducido de Pi)
+- [ ] **BAJA** Agregar tooltips explicativos en los sliders
