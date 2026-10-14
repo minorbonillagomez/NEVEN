@@ -224,6 +224,7 @@
          Ver CHAT.md sesión 2026-08-19 para detalles completos -->
     <!-- <div class="tab" data-tab="excel-analysis">Excel</div> -->
     <div class="tab" data-tab="presentaciones">Presentaciones</div>
+    <div class="tab" data-tab="econometria">Econometria</div>
     <div class="tab" data-tab="ai">IA</div>
     <div class="tab" data-tab="ayuda">Ayuda</div>
     <div class="tab" data-tab="settings" title="Configuracion NEVEN"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
@@ -573,6 +574,11 @@
       style="width:100%;height:100%;border:none;display:block"
       allow="clipboard-read; clipboard-write"
     ></iframe>
+  </div>
+
+  <!-- Tab: Econometria - Laboratorio Visual -->
+  <div class="tab-content" id="econometria" style="padding:0;height:calc(100vh - 80px)">
+    <!-- Contenido cargado dinamicamente desde laboratorio-econometria.html -->
   </div>
 
   <!-- Tab: IA -->
@@ -3771,8 +3777,33 @@ document.querySelectorAll('.tab').forEach(function(tab) {
     if (tab.dataset.tab === 'data-lab') {
       setTimeout(onDataLabTabActivated, 50);
     }
+    if (tab.dataset.tab === 'econometria') {
+      setTimeout(loadEconometriaLab, 50);
+    }
   });
 });
+
+// Cargar laboratorio de econometria bajo demanda
+var _econometriaLabLoaded = false;
+async function loadEconometriaLab() {
+  if (_econometriaLabLoaded) return;
+  var container = document.getElementById('econometria');
+  if (!container) return;
+  try {
+    var resp = await fetch('laboratorio-econometria.html');
+    if (resp.ok) {
+      var html = await resp.text();
+      container.innerHTML = html;
+      _econometriaLabLoaded = true;
+      console.log('[NEVEN] Laboratorio de Econometria cargado');
+    } else {
+      container.innerHTML = '<div class="msg-error" style="margin:20px">Error al cargar laboratorio-econometria.html</div>';
+    }
+  } catch(err) {
+    console.error('[NEVEN] Error loading econometria lab:', err);
+    container.innerHTML = '<div class="msg-error" style="margin:20px">Error: ' + err.message + '</div>';
+  }
+}
 
 async function refreshEngineStatusRS() {
   ['r','python','julia'].forEach(function(lang) {
