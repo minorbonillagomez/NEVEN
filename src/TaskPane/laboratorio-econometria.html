@@ -1,5 +1,6 @@
 <!-- NEVEN Studio - Laboratorio Visual de Econometria -->
 <!-- Modulos interactivos: OLS, Panel/FWL, GLS/Cholesky, Raiz Unitaria -->
+<!-- Incluye: Mini-chat con RAG de econometria + KaTeX para ecuaciones -->
 <style>
   #lab-econometria {
     height: 100%;
@@ -8,7 +9,7 @@
     background: var(--bg-primary);
   }
   #lab-econometria .lab-header {
-    padding: 8px 12px;
+    padding: 6px 12px;
     border-bottom: 1px solid var(--border);
   }
   #lab-econometria .lab-title {
@@ -24,13 +25,13 @@
   #lab-econometria .lab-tabs {
     display: flex;
     gap: 4px;
-    padding: 6px 8px;
+    padding: 5px 8px;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
   }
   #lab-econometria .lab-tab {
-    padding: 6px 10px;
+    padding: 5px 9px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     color: var(--text-secondary);
@@ -49,13 +50,20 @@
     color: #1a1a1a;
     border-color: var(--accent);
   }
+  #lab-econometria .lab-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
   #lab-econometria .lab-workspace {
     flex: 1;
     display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 8px;
-    padding: 8px;
+    grid-template-columns: 280px 1fr;
+    gap: 6px;
+    padding: 6px;
     overflow: hidden;
+    min-height: 0;
   }
   @media (max-width: 600px) {
     #lab-econometria .lab-workspace {
@@ -67,18 +75,18 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 10px;
+    padding: 8px;
     overflow-y: auto;
   }
   #lab-econometria .control-group {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   #lab-econometria .control-group label {
     display: flex;
     justify-content: space-between;
     font-size: 10px;
     color: var(--text-secondary);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
   #lab-econometria .control-group label span:last-child {
     color: var(--accent);
@@ -93,18 +101,18 @@
   #lab-econometria .lab-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-top: 10px;
+    gap: 5px;
+    margin-top: 8px;
   }
   #lab-econometria .metric {
     background: var(--bg-primary);
-    padding: 6px;
+    padding: 5px;
     border-radius: 4px;
     text-align: center;
     border: 1px solid var(--border);
   }
   #lab-econometria .metric .val {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--success);
   }
@@ -116,45 +124,144 @@
   #lab-econometria .math-card {
     background: var(--bg-primary);
     border-left: 2px solid var(--accent);
-    padding: 8px 10px;
+    padding: 6px 8px;
     border-radius: 4px;
     font-size: 9px;
-    line-height: 1.5;
+    line-height: 1.4;
     color: var(--text-secondary);
-    margin-top: 10px;
+    margin-top: 8px;
   }
   #lab-econometria .math-card b {
     color: var(--text-primary);
   }
-  #lab-econometria .math-card code {
-    background: rgba(215,165,56,0.1);
-    padding: 1px 4px;
-    border-radius: 2px;
+  #lab-econometria .eq {
+    display: block;
+    text-align: center;
+    margin: 6px 0;
     color: var(--accent);
-    font-family: 'Consolas', monospace;
-    font-size: 9px;
   }
   #lab-econometria .lab-canvas-box {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
     overflow: hidden;
   }
+  #lab-econometria .canvas-eq {
+    padding: 4px 8px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
   #lab-econometria canvas {
+    flex: 1;
     background: #0d0d0d;
-    border-radius: 4px;
     max-width: 100%;
-    max-height: 100%;
+  }
+  /* Chat del Profesor */
+  #lab-econometria .lab-chat {
+    border-top: 1px solid var(--border);
+    background: var(--bg-secondary);
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 180px;
+  }
+  #lab-econometria .chat-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  #lab-econometria .chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  #lab-econometria .chat-chip {
+    padding: 3px 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  #lab-econometria .chat-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  #lab-econometria .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 40px;
+    max-height: 80px;
+  }
+  #lab-econometria .chat-msg {
+    font-size: 9px;
+    line-height: 1.4;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  #lab-econometria .chat-msg.user {
+    background: var(--accent);
+    color: #1a1a1a;
+    align-self: flex-end;
+    max-width: 80%;
+  }
+  #lab-econometria .chat-msg.assistant {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    align-self: flex-start;
+    max-width: 90%;
+    border: 1px solid var(--border);
+  }
+  #lab-econometria .chat-input-row {
+    display: flex;
+    gap: 4px;
+  }
+  #lab-econometria .chat-input {
+    flex: 1;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 10px;
+    color: var(--text-primary);
+    outline: none;
+  }
+  #lab-econometria .chat-input:focus {
+    border-color: var(--accent);
+  }
+  #lab-econometria .chat-send {
+    padding: 5px 12px;
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    color: #1a1a1a;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #lab-econometria .chat-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>
 
 <div id="lab-econometria">
   <div class="lab-header">
     <div class="lab-title">Laboratorio Geometrico: Algebra Lineal y Econometria</div>
-    <div class="lab-subtitle">Interactua con los deslizadores para observar como los operadores matriciales gobiernan cada modelo econometrico.</div>
+    <div class="lab-subtitle">Interactua con los deslizadores y pregunta al Profesor IA.</div>
   </div>
 
   <div class="lab-tabs">
@@ -164,462 +271,466 @@
     <button class="lab-tab" onclick="labSetMode(3)">4. Raiz Unitaria</button>
   </div>
 
-  <div class="lab-workspace">
-    <div class="lab-controls" id="lab-controls-panel"></div>
-    <div class="lab-canvas-box">
-      <canvas id="labCanvas" width="520" height="360"></canvas>
+  <div class="lab-main">
+    <div class="lab-workspace">
+      <div class="lab-controls" id="lab-controls-panel"></div>
+      <div class="lab-canvas-box">
+        <div class="canvas-eq" id="lab-equation"></div>
+        <canvas id="labCanvas" width="520" height="280"></canvas>
+      </div>
+    </div>
+
+    <!-- Chat del Profesor -->
+    <div class="lab-chat">
+      <div class="chat-header">
+        <span>Profesor de Econometria</span>
+        <span style="font-weight:400;color:var(--text-muted)">(usa RAG con 10 libros indexados)</span>
+      </div>
+      <div class="chat-suggestions" id="lab-suggestions"></div>
+      <div class="chat-messages" id="lab-chat-messages"></div>
+      <div class="chat-input-row">
+        <input type="text" class="chat-input" id="lab-chat-input" 
+               placeholder="Pregunta sobre lo que ves..." 
+               onkeydown="if(event.key==='Enter')labSendChat()">
+        <button class="chat-send" id="lab-chat-send" onclick="labSendChat()">Preguntar</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 (function() {
-  // Esperar un tick para asegurar que el DOM este actualizado
   setTimeout(function() {
     var canvas = document.getElementById('labCanvas');
-    if (!canvas) {
-      console.error('[NEVEN Lab] Canvas not found');
-      return;
-    }
+    if (!canvas) { console.error('[NEVEN Lab] Canvas not found'); return; }
     var ctx = canvas.getContext('2d');
     var labMode = 0;
 
-  // Colores de la paleta NEVEN
-  var C = {
-    bg: '#0d0d0d',
-    accent: '#d7a538',
-    accentDim: 'rgba(215,165,56,0.3)',
-    text: '#e0e0e0',
-    muted: '#888',
-    success: '#4caf50',
-    error: '#ff4444',
-    grid: '#333'
-  };
+    var C = {
+      bg: '#0d0d0d', accent: '#d7a538', accentDim: 'rgba(215,165,56,0.3)',
+      text: '#e0e0e0', muted: '#888', success: '#4caf50', error: '#ff4444', grid: '#333'
+    };
 
-  // Estado global de parametros
-  var state = {
-    // Modo 0: Proyeccion OLS
-    angleX: 25, yAngle: 68,
-    // Modo 1: Panel FWL
-    theta: 0.0,
-    // Modo 2: GLS / Cholesky
-    hetero: 2.8, rho: 0.65, applyCholesky: 0,
-    // Modo 3: Series de Tiempo
-    lambda: 0.85
-  };
+    var state = {
+      angleX: 25, yAngle: 68,
+      theta: 0.0,
+      hetero: 2.8, rho: 0.65, applyCholesky: 0,
+      lambda: 0.85
+    };
 
-  // Semilla determinista
-  function seededRandom(seed) {
-    var x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-  }
+    // Preguntas sugeridas por modulo
+    var suggestions = [
+      ['Que es la proyeccion ortogonal?', 'Por que R-cuadrado es cos^2?', 'Que significa M_X?'],
+      ['Que es el sesgo de variable omitida?', 'Explicame el teorema FWL', 'Cuando usar efectos fijos?'],
+      ['Por que OLS es ineficiente con heterocedasticidad?', 'Que es la matriz Omega?', 'Como funciona GLS?'],
+      ['Que es una raiz unitaria?', 'Que es regresion espuria?', 'Cuando hay cointegracion?']
+    ];
 
-  window.labSetMode = function(m) {
-    labMode = m;
-    document.querySelectorAll('#lab-econometria .lab-tab').forEach(function(t, i) {
-      t.classList.toggle('active', i === m);
-    });
-    renderControls();
-    draw();
-  };
+    // Ecuaciones por modulo (para KaTeX)
+    var equations = [
+      '\\hat{y} = P_X y = X(X\'X)^{-1}X\'y \\quad \\text{donde} \\quad \\hat{\\varepsilon} = M_X y \\perp \\mathcal{C}(X)',
+      'y_{it} = \\alpha_i + \\beta x_{it} + \\varepsilon_{it} \\quad \\xrightarrow{\\text{Within}} \\quad \\tilde{y}_{it} = \\beta \\tilde{x}_{it} + \\tilde{\\varepsilon}_{it}',
+      '\\hat{\\beta}_{GLS} = (X\'\\Omega^{-1}X)^{-1}X\'\\Omega^{-1}y \\quad \\text{donde} \\quad \\Omega^{-1} = C\'C',
+      'y_t = \\lambda y_{t-1} + \\varepsilon_t \\quad \\Rightarrow \\quad |\\lambda| < 1 \\text{ (estacionario)}, \\; |\\lambda| = 1 \\text{ (raiz unitaria)}'
+    ];
 
-  function renderControls() {
-    var panel = document.getElementById('lab-controls-panel');
-    if (labMode === 0) {
-      // MODULO 1: PROYECCION OLS
-      panel.innerHTML = 
-        '<div class="control-group">' +
-          '<label><span>Angulo del Subespacio C(X)</span><span id="v_ax">' + state.angleX + ' grados</span></label>' +
-          '<input type="range" min="5" max="45" value="' + state.angleX + '" oninput="labState.angleX=+this.value; labUpdateUI()">' +
-          '<div style="font-size:8px;color:' + C.muted + ';margin-top:2px">Representa la inclinacion del plano donde viven tus regresores X. Angulos pequenos = regresores casi colineales.</div>' +
-        '</div>' +
-        '<div class="control-group">' +
-          '<label><span>Direccion del Vector y</span><span id="v_ya">' + state.yAngle + ' grados</span></label>' +
-          '<input type="range" min="15" max="85" value="' + state.yAngle + '" oninput="labState.yAngle=+this.value; labUpdateUI()">' +
-          '<div style="font-size:8px;color:' + C.muted + ';margin-top:2px">La variable dependiente observada. Cuanto mas cerca de C(X), mayor R-cuadrado.</div>' +
-        '</div>' +
-        '<div class="lab-metrics">' +
-          '<div class="metric"><div class="val" id="m_r2">0.00</div><div class="lbl">R-cuadrado = cos^2(angulo)</div></div>' +
-          '<div class="metric"><div class="val" id="m_orth">0.00</div><div class="lbl">Ortogonalidad (y-hat, epsilon)</div></div>' +
-        '</div>' +
-        '<div class="math-card">' +
-          '<b>Que estas viendo:</b><br>' +
-          'El vector <span style="color:' + C.text + '">y</span> (tus datos) se proyecta sobre el subespacio <span style="color:' + C.accent + '">C(X)</span> (lo que tus regresores pueden explicar).<br><br>' +
-          '<b>y-hat</b> (verde) = la sombra ortogonal de y sobre C(X). Es tu prediccion.<br>' +
-          '<b>epsilon</b> (rojo) = lo que queda sin explicar. Siempre perpendicular a C(X).<br><br>' +
-          '<b>Experimento:</b> Acerca y hacia C(X). El R-cuadrado sube porque mas variacion queda explicada. La ortogonalidad siempre es cero: OLS garantiza que los residuos no correlacionan con X.' +
-        '</div>';
-    } else if (labMode === 1) {
-      // MODULO 2: PANEL / FWL
-      panel.innerHTML = 
-        '<div class="control-group">' +
-          '<label><span>Operador Within (theta)</span><span id="v_th">' + state.theta.toFixed(2) + '</span></label>' +
-          '<input type="range" min="0" max="1" step="0.02" value="' + state.theta + '" oninput="labState.theta=+this.value; labUpdateUI()">' +
-          '<div style="font-size:8px;color:' + C.muted + ';margin-top:2px">0 = Pooled OLS (ignora individuos), 1 = Efectos Fijos (centra cada grupo).</div>' +
-        '</div>' +
-        '<div class="lab-metrics">' +
-          '<div class="metric"><div class="val" id="m_b_pool">0.00</div><div class="lbl">Pendiente estimada beta(theta)</div></div>' +
-          '<div class="metric"><div class="val" style="color:' + C.accent + '">+0.80</div><div class="lbl">Verdadero efecto causal</div></div>' +
-        '</div>' +
-        '<div class="math-card">' +
-          '<b>Que estas viendo:</b><br>' +
-          'Tres individuos con diferentes niveles base (alpha_i). El individuo 1 (dorado) tiene alpha alto, el 3 (gris) tiene alpha bajo.<br><br>' +
-          '<b>El problema:</b> Con theta=0, OLS ve una pendiente NEGATIVA porque confunde las diferencias entre individuos con el efecto de X.<br><br>' +
-          '<b>La solucion:</b> Sube theta a 1. Esto aplica el operador Within que centra cada grupo en su media. Los tres grupos se superponen y emerge la verdadera pendiente positiva (+0.80).<br><br>' +
-          '<b>Esto es el Teorema Frisch-Waugh-Lovell:</b> Controlar por efectos fijos = proyectar los datos en el espacio ortogonal a las dummies individuales.' +
-        '</div>';
-    } else if (labMode === 2) {
-      // MODULO 3: GLS / CHOLESKY
-      panel.innerHTML = 
-        '<div class="control-group">' +
-          '<label><span>Heterocedasticidad (sigma2 / sigma1)</span><span id="v_het">' + state.hetero.toFixed(1) + 'x</span></label>' +
-          '<input type="range" min="1" max="4" step="0.1" value="' + state.hetero + '" oninput="labState.hetero=+this.value; labUpdateUI()">' +
-          '<div style="font-size:8px;color:' + C.muted + ';margin-top:2px">Ratio de varianzas. 1x = homocedastico, >1x = varianza crece con X.</div>' +
-        '</div>' +
-        '<div class="control-group">' +
-          '<label><span>Autocorrelacion (rho)</span><span id="v_rho">' + state.rho.toFixed(2) + '</span></label>' +
-          '<input type="range" min="-0.8" max="0.8" step="0.05" value="' + state.rho + '" oninput="labState.rho=+this.value; labUpdateUI()">' +
-          '<div style="font-size:8px;color:' + C.muted + ';margin-top:2px">Correlacion entre errores consecutivos. Inclina el elipsoide.</div>' +
-        '</div>' +
-        '<div class="control-group">' +
-          '<label><span>Transformacion Cholesky (C)</span><span id="v_chol">' + Math.round(state.applyCholesky * 100) + '%</span></label>' +
-          '<input type="range" min="0" max="1" step="0.02" value="' + state.applyCholesky + '" oninput="labState.applyCholesky=+this.value; labUpdateUI()">' +
-          '<div style="font-size:8px;color:' + C.muted + ';margin-top:2px">Aplica la descomposicion de Cholesky para transformar el espacio.</div>' +
-        '</div>' +
-        '<div class="math-card">' +
-          '<b>Que estas viendo:</b><br>' +
-          'Las elipses son curvas de isodensidad de los errores. Con homocedasticidad serian circulos perfectos.<br><br>' +
-          '<b>El problema:</b> Cuando Var(epsilon) != sigma^2 I, OLS sigue siendo insesgado pero pierde eficiencia. Los errores estandar son incorrectos.<br><br>' +
-          '<b>La solucion GLS:</b> Desliza Cholesky al 100%. Esto premultiplica todo el modelo por la matriz C (donde Omega^-1 = C\'C). El elipsoide se transforma en esfera.<br><br>' +
-          '<b>Geometricamente:</b> GLS cambia la metrica del espacio. Lo que antes era un elipsoide inclinado ahora es una esfera, y OLS en este espacio transformado es eficiente.' +
-        '</div>';
-    } else if (labMode === 3) {
-      // MODULO 4: RAIZ UNITARIA
-      panel.innerHTML = 
-        '<div class="control-group">' +
-          '<label><span>Autovalor Dominante |lambda|</span><span id="v_lam">' + state.lambda.toFixed(2) + '</span></label>' +
-          '<input type="range" min="0.20" max="1.05" step="0.01" value="' + state.lambda + '" oninput="labState.lambda=+this.value; labUpdateUI()">' +
-          '<div style="font-size:8px;color:' + C.muted + ';margin-top:2px">Posicion del autovalor dominante de la matriz compañera F.</div>' +
-        '</div>' +
-        '<div class="lab-metrics">' +
-          '<div class="metric"><div class="val" id="m_stat">I(0)</div><div class="lbl">Orden de Integracion</div></div>' +
-          '<div class="metric"><div class="val" id="m_spec">Estable</div><div class="lbl">Condicion Espectral</div></div>' +
-        '</div>' +
-        '<div class="math-card">' +
-          '<b>Que estas viendo:</b><br>' +
-          'Izquierda: El circulo unitario en el plano complejo. El punto es el autovalor dominante lambda de la matriz F.<br>' +
-          'Derecha: Una trayectoria simulada de la serie Y_t = lambda * Y_{t-1} + epsilon_t.<br><br>' +
-          '<b>lambda < 1 (dentro del circulo):</b> Serie estacionaria I(0). Los shocks se disipan, la serie vuelve a su media. OLS funciona bien.<br><br>' +
-          '<b>lambda = 1 (sobre el borde):</b> Raiz unitaria I(1). Memoria infinita. La serie es una caminata aleatoria. OLS produce regresion espuria: R-cuadrado alto aunque no haya relacion causal.<br><br>' +
-          '<b>lambda > 1 (fuera del circulo):</b> Proceso explosivo. La serie diverge exponencialmente. Raro en economia real.<br><br>' +
-          '<b>Experimento:</b> Arrastra lambda de 0.85 a 1.0 y observa como la trayectoria deja de revertir a la media.' +
-        '</div>';
-    }
-    labUpdateUI();
-  }
+    function seededRandom(seed) { var x = Math.sin(seed) * 10000; return x - Math.floor(x); }
 
-  window.labState = state;
-
-  window.labUpdateUI = function() {
-    if (labMode === 0) {
-      var el_ax = document.getElementById('v_ax');
-      var el_ya = document.getElementById('v_ya');
-      if (el_ax) el_ax.textContent = state.angleX + ' grados';
-      if (el_ya) el_ya.textContent = state.yAngle + ' grados';
-      var diffRad = (state.yAngle - state.angleX) * Math.PI / 180;
-      var r2 = Math.pow(Math.cos(diffRad), 2);
-      var el_r2 = document.getElementById('m_r2');
-      if (el_r2) el_r2.textContent = r2.toFixed(3);
-      var el_orth = document.getElementById('m_orth');
-      if (el_orth) el_orth.textContent = '0.000';
-    } else if (labMode === 1) {
-      var el_th = document.getElementById('v_th');
-      if (el_th) el_th.textContent = state.theta.toFixed(2);
-    } else if (labMode === 2) {
-      var el_het = document.getElementById('v_het');
-      var el_rho = document.getElementById('v_rho');
-      var el_chol = document.getElementById('v_chol');
-      if (el_het) el_het.textContent = state.hetero.toFixed(1) + 'x';
-      if (el_rho) el_rho.textContent = state.rho.toFixed(2);
-      if (el_chol) el_chol.textContent = Math.round(state.applyCholesky * 100) + '%';
-    } else if (labMode === 3) {
-      var el_lam = document.getElementById('v_lam');
-      if (el_lam) el_lam.textContent = state.lambda.toFixed(2);
-      var st = document.getElementById('m_stat');
-      var sp = document.getElementById('m_spec');
-      if (st && sp) {
-        if (state.lambda < 0.99) {
-          st.textContent = 'I(0)'; st.style.color = C.success;
-          sp.textContent = '|lambda| < 1'; sp.style.color = C.success;
-        } else if (state.lambda <= 1.01) {
-          st.textContent = 'I(1)'; st.style.color = C.accent;
-          sp.textContent = '|lambda| = 1'; sp.style.color = C.accent;
-        } else {
-          st.textContent = 'Explosiva'; st.style.color = C.error;
-          sp.textContent = '|lambda| > 1'; sp.style.color = C.error;
-        }
-      }
-    }
-    draw();
-  };
-
-  function drawArrow(x1, y1, x2, y2, color, width, label) {
-    var headlen = 8;
-    var angle = Math.atan2(y2 - y1, x2 - x1);
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.lineWidth = width || 2;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
-    ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
-    ctx.closePath();
-    ctx.fill();
-    if (label) {
-      ctx.font = '10px Segoe UI';
-      ctx.fillText(label, x2 + 6, y2 - 4);
-    }
-  }
-
-  function draw() {
-    ctx.fillStyle = C.bg;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    if (labMode === 0) {
-      // MODO 0: PROYECCION ORTOGONAL OLS
-      var ox = 100, oy = 280;
-      var radX = -state.angleX * Math.PI / 180;
-      var radY = -state.yAngle * Math.PI / 180;
-      var scale = 1.4;
-      var yLenPx = 140 * scale;
-
-      // Subespacio C(X)
-      ctx.strokeStyle = C.grid;
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 3]);
-      ctx.beginPath();
-      ctx.moveTo(ox - 40 * Math.cos(radX), oy - 40 * Math.sin(radX));
-      ctx.lineTo(ox + 380 * Math.cos(radX), oy + 380 * Math.sin(radX));
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = C.accent;
-      ctx.font = '10px Segoe UI';
-      ctx.fillText('Subespacio C(X)', ox + 280 * Math.cos(radX), oy + 280 * Math.sin(radX) + 16);
-
-      // Vector y
-      var yx = ox + yLenPx * Math.cos(radY);
-      var yy = oy + yLenPx * Math.sin(radY);
-
-      // Proyeccion y-hat
-      var diff = radY - radX;
-      var yhatLen = yLenPx * Math.cos(diff);
-      var yhx = ox + yhatLen * Math.cos(radX);
-      var yhy = oy + yhatLen * Math.sin(radX);
-
-      // Angulo recto
-      var sq = 10;
-      var ux = Math.cos(radX), uy = Math.sin(radX);
-      var nx = -uy, ny = ux;
-      ctx.strokeStyle = C.muted;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(yhx - sq * ux, yhy - sq * uy);
-      ctx.lineTo(yhx - sq * ux - sq * nx, yhy - sq * uy - sq * ny);
-      ctx.lineTo(yhx - sq * nx, yhy - sq * ny);
-      ctx.stroke();
-
-      // Vectores
-      drawArrow(ox, oy, yhx, yhy, C.success, 3, 'y-hat = P_X y');
-      drawArrow(yhx, yhy, yx, yy, C.error, 2, 'epsilon = M_X y');
-      drawArrow(ox, oy, yx, yy, C.text, 2, 'Vector y');
-
-    } else if (labMode === 1) {
-      // MODO 1: DATOS DE PANEL Y OPERADOR WITHIN
-      var cx = 260, cy = 180;
-      var groups = [
-        { meanX: -100, meanY: 70, color: C.accent },
-        { meanX: 0, meanY: 0, color: C.success },
-        { meanX: 100, meanY: -70, color: '#888' }
-      ];
-      var trueSlope = 0.8;
-      var sumX = 0, sumY = 0, sumXY = 0, sumXX = 0, n = 0;
-
-      // Ejes
-      ctx.strokeStyle = C.grid;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(30, cy);
-      ctx.lineTo(490, cy);
-      ctx.moveTo(cx, 20);
-      ctx.lineTo(cx, 340);
-      ctx.stroke();
-
-      // Etiquetas
-      ctx.fillStyle = C.muted;
-      ctx.font = '9px Segoe UI';
-      ctx.fillText('X', 480, cy - 5);
-      ctx.fillText('Y', cx + 5, 28);
-
-      groups.forEach(function(g, gi) {
-        var curMeanX = g.meanX * (1 - state.theta);
-        var curMeanY = g.meanY * (1 - state.theta);
-        for (var t = 0; t < 10; t++) {
-          var dx = (seededRandom(gi * 100 + t) - 0.5) * 70;
-          var noise = (seededRandom(gi * 200 + t) - 0.5) * 28;
-          var dy = trueSlope * dx + noise;
-          var px = cx + curMeanX + dx;
-          var py = cy - (curMeanY + dy);
-
-          ctx.fillStyle = g.color;
-          ctx.beginPath();
-          ctx.arc(px, py, 4, 0, Math.PI * 2);
-          ctx.fill();
-
-          var xVal = curMeanX + dx;
-          var yVal = curMeanY + dy;
-          sumX += xVal;
-          sumY += yVal;
-          sumXY += xVal * yVal;
-          sumXX += xVal * xVal;
-          n++;
-        }
+    window.labSetMode = function(m) {
+      labMode = m;
+      document.querySelectorAll('#lab-econometria .lab-tab').forEach(function(t, i) {
+        t.classList.toggle('active', i === m);
       });
+      renderControls();
+      renderSuggestions();
+      renderEquation();
+      draw();
+    };
 
-      var betaHat = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-      var el_bp = document.getElementById('m_b_pool');
-      if (el_bp) {
-        el_bp.textContent = (betaHat >= 0 ? '+' : '') + betaHat.toFixed(2);
-        el_bp.style.color = betaHat > 0 ? C.success : C.error;
+    function renderEquation() {
+      var el = document.getElementById('lab-equation');
+      if (el && window.katex) {
+        try {
+          katex.render(equations[labMode], el, { displayMode: false, throwOnError: false });
+        } catch(e) { el.textContent = equations[labMode]; }
+      } else if (el) {
+        el.textContent = equations[labMode];
+      }
+    }
+
+    function renderSuggestions() {
+      var el = document.getElementById('lab-suggestions');
+      if (!el) return;
+      el.innerHTML = suggestions[labMode].map(function(q) {
+        return '<span class="chat-chip" onclick="labAskSuggestion(\'' + q.replace(/'/g, "\\'") + '\')">' + q + '</span>';
+      }).join('');
+    }
+
+    window.labAskSuggestion = function(q) {
+      document.getElementById('lab-chat-input').value = q;
+      labSendChat();
+    };
+
+    window.labSendChat = async function() {
+      var input = document.getElementById('lab-chat-input');
+      var messages = document.getElementById('lab-chat-messages');
+      var btn = document.getElementById('lab-chat-send');
+      var q = input.value.trim();
+      if (!q) return;
+
+      // Agregar mensaje del usuario
+      messages.innerHTML += '<div class="chat-msg user">' + escapeHtml(q) + '</div>';
+      input.value = '';
+      btn.disabled = true;
+      messages.scrollTop = messages.scrollHeight;
+
+      // Agregar indicador de carga
+      var loadingId = 'loading-' + Date.now();
+      messages.innerHTML += '<div class="chat-msg assistant" id="' + loadingId + '">Consultando RAG...</div>';
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        // Llamar al endpoint RAG con contexto de econometria
+        var resp = await fetch('/api/rag/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: q,
+            domain: 'econometria',
+            limit: 3,
+            use_ontology: true
+          })
+        });
+        var data = await resp.json();
+
+        // Construir contexto de los chunks
+        var context = '';
+        if (data.results && data.results.length > 0) {
+          context = data.results.map(function(r) {
+            return r.text || r.content || '';
+          }).join('\n\n---\n\n');
+        }
+
+        // Llamar al LLM con el contexto
+        var llmResp = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: 'Eres un profesor de econometria. Responde de forma clara y concisa (max 3 oraciones). Usa el siguiente contexto de libros de econometria:\n\n' + context },
+              { role: 'user', content: q }
+            ],
+            max_tokens: 200
+          })
+        });
+        var llmData = await llmResp.json();
+
+        // Mostrar respuesta
+        var loadingEl = document.getElementById(loadingId);
+        if (loadingEl) {
+          var answer = llmData.choices?.[0]?.message?.content || llmData.response || 'No pude obtener una respuesta.';
+          loadingEl.innerHTML = escapeHtml(answer);
+        }
+      } catch(err) {
+        var loadingEl = document.getElementById(loadingId);
+        if (loadingEl) {
+          loadingEl.innerHTML = 'Error: ' + escapeHtml(err.message);
+          loadingEl.style.color = C.error;
+        }
       }
 
-      // Linea de regresion
-      ctx.strokeStyle = betaHat > 0 ? C.success : C.error;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(cx - 200, cy - (-200 * betaHat));
-      ctx.lineTo(cx + 200, cy - (200 * betaHat));
-      ctx.stroke();
+      btn.disabled = false;
+      messages.scrollTop = messages.scrollHeight;
+    };
 
-      // Leyenda
-      ctx.fillStyle = C.muted;
-      ctx.font = '9px Segoe UI';
-      ctx.fillText('Ind 1 (alpha alto)', 20, 25);
-      ctx.fillStyle = C.accent;
-      ctx.fillRect(5, 18, 10, 10);
-      ctx.fillStyle = C.muted;
-      ctx.fillText('Ind 2 (alpha medio)', 20, 40);
-      ctx.fillStyle = C.success;
-      ctx.fillRect(5, 33, 10, 10);
-      ctx.fillStyle = C.muted;
-      ctx.fillText('Ind 3 (alpha bajo)', 20, 55);
-      ctx.fillStyle = '#888';
-      ctx.fillRect(5, 48, 10, 10);
+    function escapeHtml(t) {
+      return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 
-    } else if (labMode === 2) {
-      // MODO 2: ELIPSOIDES Y CHOLESKY
-      var cx = 260, cy = 180;
-      var t = state.applyCholesky;
-      var curHet = state.hetero * (1 - t) + 1.0 * t;
-      var curRho = state.rho * (1 - t);
+    function renderControls() {
+      var panel = document.getElementById('lab-controls-panel');
+      if (labMode === 0) {
+        panel.innerHTML = 
+          '<div class="control-group">' +
+            '<label><span>Angulo del Subespacio C(X)</span><span id="v_ax">' + state.angleX + '</span></label>' +
+            '<input type="range" min="5" max="45" value="' + state.angleX + '" oninput="labState.angleX=+this.value; labUpdateUI()">' +
+            '<div style="font-size:8px;color:' + C.muted + '">Inclinacion del plano de regresores. Angulos pequenos = multicolinealidad.</div>' +
+          '</div>' +
+          '<div class="control-group">' +
+            '<label><span>Direccion del Vector y</span><span id="v_ya">' + state.yAngle + '</span></label>' +
+            '<input type="range" min="15" max="85" value="' + state.yAngle + '" oninput="labState.yAngle=+this.value; labUpdateUI()">' +
+            '<div style="font-size:8px;color:' + C.muted + '">Variable dependiente. Mas cerca de C(X) = mayor R^2.</div>' +
+          '</div>' +
+          '<div class="lab-metrics">' +
+            '<div class="metric"><div class="val" id="m_r2">0.00</div><div class="lbl" id="lbl_r2"></div></div>' +
+            '<div class="metric"><div class="val" id="m_orth">0.00</div><div class="lbl">Ortogonalidad</div></div>' +
+          '</div>' +
+          '<div class="math-card">' +
+            '<b>Geometria OLS:</b> El vector <b>y</b> se proyecta sobre C(X). La proyeccion es <b>y-hat</b> (verde), el residuo es <b>epsilon</b> (rojo, siempre perpendicular).<br><br>' +
+            '<b>Experimento:</b> Acerca y a C(X) y observa como sube el R^2.' +
+          '</div>';
+        // Renderizar R^2 con KaTeX
+        setTimeout(function() {
+          var lbl = document.getElementById('lbl_r2');
+          if (lbl && window.katex) katex.render('R^2 = \\cos^2(\\theta)', lbl, {throwOnError:false});
+          else if (lbl) lbl.textContent = 'R^2 = cos^2(theta)';
+        }, 0);
+      } else if (labMode === 1) {
+        panel.innerHTML = 
+          '<div class="control-group">' +
+            '<label><span>Operador Within</span><span id="v_th">' + state.theta.toFixed(2) + '</span></label>' +
+            '<input type="range" min="0" max="1" step="0.02" value="' + state.theta + '" oninput="labState.theta=+this.value; labUpdateUI()">' +
+            '<div style="font-size:8px;color:' + C.muted + '">0 = Pooled OLS, 1 = Efectos Fijos (centra cada grupo).</div>' +
+          '</div>' +
+          '<div class="lab-metrics">' +
+            '<div class="metric"><div class="val" id="m_b_pool">0.00</div><div class="lbl" id="lbl_beta"></div></div>' +
+            '<div class="metric"><div class="val" style="color:' + C.accent + '">+0.80</div><div class="lbl">Verdadero efecto</div></div>' +
+          '</div>' +
+          '<div class="math-card">' +
+            '<b>Paradoja de Simpson:</b> Tres individuos con diferentes interceptos. Pooled OLS ve pendiente negativa porque confunde efectos individuales con el efecto de X.<br><br>' +
+            '<b>Solucion:</b> Sube theta a 1. El operador Within centra cada grupo, revelando la verdadera pendiente +0.80.' +
+          '</div>';
+        setTimeout(function() {
+          var lbl = document.getElementById('lbl_beta');
+          if (lbl && window.katex) katex.render('\\hat{\\beta}(\\theta)', lbl, {throwOnError:false});
+          else if (lbl) lbl.textContent = 'beta(theta)';
+        }, 0);
+      } else if (labMode === 2) {
+        panel.innerHTML = 
+          '<div class="control-group">' +
+            '<label><span>Heterocedasticidad</span><span id="v_het">' + state.hetero.toFixed(1) + 'x</span></label>' +
+            '<input type="range" min="1" max="4" step="0.1" value="' + state.hetero + '" oninput="labState.hetero=+this.value; labUpdateUI()">' +
+            '<div style="font-size:8px;color:' + C.muted + '">Ratio de varianzas. 1x = homocedastico.</div>' +
+          '</div>' +
+          '<div class="control-group">' +
+            '<label><span>Autocorrelacion</span><span id="v_rho">' + state.rho.toFixed(2) + '</span></label>' +
+            '<input type="range" min="-0.8" max="0.8" step="0.05" value="' + state.rho + '" oninput="labState.rho=+this.value; labUpdateUI()">' +
+            '<div style="font-size:8px;color:' + C.muted + '">Correlacion serial. Inclina el elipsoide.</div>' +
+          '</div>' +
+          '<div class="control-group">' +
+            '<label><span>Transformacion Cholesky</span><span id="v_chol">' + Math.round(state.applyCholesky * 100) + '%</span></label>' +
+            '<input type="range" min="0" max="1" step="0.02" value="' + state.applyCholesky + '" oninput="labState.applyCholesky=+this.value; labUpdateUI()">' +
+            '<div style="font-size:8px;color:' + C.muted + '">Aplica C tal que Omega^-1 = C\'C.</div>' +
+          '</div>' +
+          '<div class="math-card">' +
+            '<b>GLS transforma el espacio:</b> Las elipses son curvas de isodensidad de epsilon. Con heterocedasticidad/autocorrelacion, OLS pierde eficiencia.<br><br>' +
+            '<b>Solucion:</b> Desliza Cholesky al 100%. El elipsoide se vuelve esfera: OLS = GLS.' +
+          '</div>';
+      } else if (labMode === 3) {
+        panel.innerHTML = 
+          '<div class="control-group">' +
+            '<label><span>Autovalor Dominante</span><span id="v_lam">' + state.lambda.toFixed(2) + '</span></label>' +
+            '<input type="range" min="0.20" max="1.05" step="0.01" value="' + state.lambda + '" oninput="labState.lambda=+this.value; labUpdateUI()">' +
+            '<div style="font-size:8px;color:' + C.muted + '">Posicion de lambda en el plano complejo.</div>' +
+          '</div>' +
+          '<div class="lab-metrics">' +
+            '<div class="metric"><div class="val" id="m_stat">I(0)</div><div class="lbl">Integracion</div></div>' +
+            '<div class="metric"><div class="val" id="m_spec">Estable</div><div class="lbl">Espectro</div></div>' +
+          '</div>' +
+          '<div class="math-card">' +
+            '<b>Circulo unitario:</b> Si |lambda| < 1, la serie es estacionaria I(0). Si |lambda| = 1, es raiz unitaria I(1) con memoria infinita.<br><br>' +
+            '<b>Peligro:</b> Con I(1), OLS produce regresion espuria (R^2 alto sin causalidad).<br><br>' +
+            '<b>Experimento:</b> Lleva lambda a 1.0 y observa como la trayectoria deja de revertir a la media.' +
+          '</div>';
+      }
+      labUpdateUI();
+    }
 
-      // Ejes
-      ctx.strokeStyle = C.grid;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(50, cy);
-      ctx.lineTo(470, cy);
-      ctx.moveTo(cx, 30);
-      ctx.lineTo(cx, 330);
-      ctx.stroke();
+    window.labState = state;
 
-      // Elipses de isodensidad
-      [35, 65, 95].forEach(function(r, idx) {
-        ctx.save();
-        ctx.translate(cx, cy);
-        var angle = 0.5 * Math.atan2(2 * curRho * curHet, 1 - curHet * curHet);
-        ctx.rotate(-angle);
-        ctx.strokeStyle = t > 0.9 ? C.success : C.accent;
-        ctx.lineWidth = idx === 1 ? 2 : 1;
+    window.labUpdateUI = function() {
+      if (labMode === 0) {
+        var el_ax = document.getElementById('v_ax');
+        var el_ya = document.getElementById('v_ya');
+        if (el_ax) el_ax.textContent = state.angleX + ' grados';
+        if (el_ya) el_ya.textContent = state.yAngle + ' grados';
+        var diffRad = (state.yAngle - state.angleX) * Math.PI / 180;
+        var r2 = Math.pow(Math.cos(diffRad), 2);
+        var el_r2 = document.getElementById('m_r2');
+        if (el_r2) el_r2.textContent = r2.toFixed(3);
+        var el_orth = document.getElementById('m_orth');
+        if (el_orth) el_orth.textContent = '0.000';
+      } else if (labMode === 1) {
+        var el_th = document.getElementById('v_th');
+        if (el_th) el_th.textContent = state.theta.toFixed(2);
+      } else if (labMode === 2) {
+        var el_het = document.getElementById('v_het');
+        var el_rho = document.getElementById('v_rho');
+        var el_chol = document.getElementById('v_chol');
+        if (el_het) el_het.textContent = state.hetero.toFixed(1) + 'x';
+        if (el_rho) el_rho.textContent = state.rho.toFixed(2);
+        if (el_chol) el_chol.textContent = Math.round(state.applyCholesky * 100) + '%';
+      } else if (labMode === 3) {
+        var el_lam = document.getElementById('v_lam');
+        if (el_lam) el_lam.textContent = state.lambda.toFixed(2);
+        var st = document.getElementById('m_stat');
+        var sp = document.getElementById('m_spec');
+        if (st && sp) {
+          if (state.lambda < 0.99) {
+            st.textContent = 'I(0)'; st.style.color = C.success;
+            sp.textContent = '|lambda| < 1'; sp.style.color = C.success;
+          } else if (state.lambda <= 1.01) {
+            st.textContent = 'I(1)'; st.style.color = C.accent;
+            sp.textContent = '|lambda| = 1'; sp.style.color = C.accent;
+          } else {
+            st.textContent = 'Explosiva'; st.style.color = C.error;
+            sp.textContent = '|lambda| > 1'; sp.style.color = C.error;
+          }
+        }
+      }
+      draw();
+    };
+
+    function drawArrow(x1, y1, x2, y2, color, width, label) {
+      var headlen = 8;
+      var angle = Math.atan2(y2 - y1, x2 - x1);
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width || 2;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath(); ctx.fill();
+      if (label) { ctx.font = '10px Segoe UI'; ctx.fillText(label, x2 + 6, y2 - 4); }
+    }
+
+    function draw() {
+      ctx.fillStyle = C.bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (labMode === 0) {
+        var ox = 80, oy = 220;
+        var radX = -state.angleX * Math.PI / 180;
+        var radY = -state.yAngle * Math.PI / 180;
+        var yLenPx = 160;
+
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
         ctx.beginPath();
-        ctx.ellipse(0, 0, r * curHet * 0.7, r * 0.7 * (1 - Math.abs(curRho) * 0.4), 0, 0, Math.PI * 2);
+        ctx.moveTo(ox - 30 * Math.cos(radX), oy - 30 * Math.sin(radX));
+        ctx.lineTo(ox + 350 * Math.cos(radX), oy + 350 * Math.sin(radX));
+        ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = C.accent; ctx.font = '10px Segoe UI';
+        ctx.fillText('C(X)', ox + 280 * Math.cos(radX), oy + 280 * Math.sin(radX) + 14);
+
+        var yx = ox + yLenPx * Math.cos(radY);
+        var yy = oy + yLenPx * Math.sin(radY);
+        var diff = radY - radX;
+        var yhatLen = yLenPx * Math.cos(diff);
+        var yhx = ox + yhatLen * Math.cos(radX);
+        var yhy = oy + yhatLen * Math.sin(radX);
+
+        var sq = 10, ux = Math.cos(radX), uy = Math.sin(radX), nx = -uy, ny = ux;
+        ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(yhx - sq * ux, yhy - sq * uy);
+        ctx.lineTo(yhx - sq * ux - sq * nx, yhy - sq * uy - sq * ny);
+        ctx.lineTo(yhx - sq * nx, yhy - sq * ny);
         ctx.stroke();
-        ctx.restore();
-      });
 
-      ctx.fillStyle = C.text;
-      ctx.font = '10px Segoe UI';
-      ctx.fillText(t > 0.9 ? 'Espacio Transformado C*epsilon: Esferico (OLS = GLS)' : 'Espacio Original epsilon: Elipsoide Deformado (Omega != sigma^2 I)', 20, 25);
+        drawArrow(ox, oy, yhx, yhy, C.success, 3, 'y-hat');
+        drawArrow(yhx, yhy, yx, yy, C.error, 2, 'epsilon');
+        drawArrow(ox, oy, yx, yy, C.text, 2, 'y');
 
-    } else if (labMode === 3) {
-      // MODO 3: CIRCULO UNITARIO Y SERIE DE TIEMPO
-      // Izquierda: Plano complejo
-      var cx = 130, cy = 180, rad = 80;
+      } else if (labMode === 1) {
+        var cx = 260, cy = 140;
+        var groups = [
+          { meanX: -100, meanY: 70, color: C.accent },
+          { meanX: 0, meanY: 0, color: C.success },
+          { meanX: 100, meanY: -70, color: '#888' }
+        ];
+        var trueSlope = 0.8;
+        var sumX = 0, sumY = 0, sumXY = 0, sumXX = 0, n = 0;
 
-      ctx.strokeStyle = C.grid;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(20, cy);
-      ctx.lineTo(240, cy);
-      ctx.moveTo(cx, 70);
-      ctx.lineTo(cx, 290);
-      ctx.stroke();
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(30, cy); ctx.lineTo(490, cy);
+        ctx.moveTo(cx, 10); ctx.lineTo(cx, 270); ctx.stroke();
 
-      // Circulo unitario
-      ctx.strokeStyle = C.success;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 3]);
-      ctx.beginPath();
-      ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
+        groups.forEach(function(g, gi) {
+          var curMeanX = g.meanX * (1 - state.theta);
+          var curMeanY = g.meanY * (1 - state.theta);
+          for (var t = 0; t < 10; t++) {
+            var dx = (seededRandom(gi * 100 + t) - 0.5) * 70;
+            var noise = (seededRandom(gi * 200 + t) - 0.5) * 28;
+            var dy = trueSlope * dx + noise;
+            var px = cx + curMeanX + dx;
+            var py = cy - (curMeanY + dy);
+            ctx.fillStyle = g.color;
+            ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
+            sumX += curMeanX + dx; sumY += curMeanY + dy;
+            sumXY += (curMeanX + dx) * (curMeanY + dy);
+            sumXX += (curMeanX + dx) * (curMeanX + dx); n++;
+          }
+        });
 
-      ctx.fillStyle = C.muted;
-      ctx.font = '9px Segoe UI';
-      ctx.fillText('|lambda| = 1', cx - 25, cy + rad + 15);
+        var betaHat = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        var el_bp = document.getElementById('m_b_pool');
+        if (el_bp) {
+          el_bp.textContent = (betaHat >= 0 ? '+' : '') + betaHat.toFixed(2);
+          el_bp.style.color = betaHat > 0 ? C.success : C.error;
+        }
 
-      // Autovalor lambda
-      var lx = cx + state.lambda * rad;
-      ctx.fillStyle = state.lambda >= 1 ? C.error : C.accent;
-      ctx.beginPath();
-      ctx.arc(lx, cy, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillText('lambda = ' + state.lambda.toFixed(2), lx - 22, cy - 10);
+        ctx.strokeStyle = betaHat > 0 ? C.success : C.error; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - 180, cy - (-180 * betaHat));
+        ctx.lineTo(cx + 180, cy - (180 * betaHat));
+        ctx.stroke();
 
-      // Derecha: Trayectoria de la serie
-      var sx = 270, sy = 180, w = 230;
-      ctx.strokeStyle = C.grid;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(sx, sy);
-      ctx.lineTo(sx + w, sy);
-      ctx.stroke();
+      } else if (labMode === 2) {
+        var cx = 260, cy = 140;
+        var t = state.applyCholesky;
+        var curHet = state.hetero * (1 - t) + 1.0 * t;
+        var curRho = state.rho * (1 - t);
 
-      ctx.strokeStyle = state.lambda >= 1 ? C.accent : C.success;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      var yVal = 0;
-      for (var t = 0; t < 70; t++) {
-        var shock = (seededRandom(t + 42) - 0.48) * 18;
-        yVal = state.lambda * yVal + shock;
-        var px = sx + (t / 69) * w;
-        var py = Math.max(30, Math.min(330, sy - yVal));
-        if (t === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(50, cy); ctx.lineTo(470, cy);
+        ctx.moveTo(cx, 20); ctx.lineTo(cx, 260); ctx.stroke();
+
+        [30, 55, 80].forEach(function(r, idx) {
+          ctx.save(); ctx.translate(cx, cy);
+          var angle = 0.5 * Math.atan2(2 * curRho * curHet, 1 - curHet * curHet);
+          ctx.rotate(-angle);
+          ctx.strokeStyle = t > 0.9 ? C.success : C.accent;
+          ctx.lineWidth = idx === 1 ? 2 : 1;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, r * curHet * 0.7, r * 0.7 * (1 - Math.abs(curRho) * 0.4), 0, 0, Math.PI * 2);
+          ctx.stroke(); ctx.restore();
+        });
+
+      } else if (labMode === 3) {
+        var cx = 110, cy = 140, rad = 70;
+
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(15, cy); ctx.lineTo(205, cy);
+        ctx.moveTo(cx, 50); ctx.lineTo(cx, 230); ctx.stroke();
+
+        ctx.strokeStyle = C.success; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+
+        var lx = cx + state.lambda * rad;
+        ctx.fillStyle = state.lambda >= 1 ? C.error : C.accent;
+        ctx.beginPath(); ctx.arc(lx, cy, 5, 0, Math.PI * 2); ctx.fill();
+
+        var sx = 240, sy = 140, w = 260;
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + w, sy); ctx.stroke();
+
+        ctx.strokeStyle = state.lambda >= 1 ? C.accent : C.success; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        var yVal = 0;
+        for (var i = 0; i < 70; i++) {
+          var shock = (seededRandom(i + 42) - 0.48) * 18;
+          yVal = state.lambda * yVal + shock;
+          var px = sx + (i / 69) * w;
+          var py = Math.max(20, Math.min(260, sy - yVal));
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
       }
-      ctx.stroke();
-
-      ctx.fillStyle = C.text;
-      ctx.font = '10px Segoe UI';
-      ctx.fillText('Trayectoria: y_t = lambda * y_{t-1} + epsilon_t', sx, 25);
     }
-  }
 
-  // Inicializar
-  renderControls();
-  }, 10); // fin setTimeout
+    // Inicializar
+    renderControls();
+    renderSuggestions();
+    renderEquation();
+  }, 10);
 })();
 </script>
