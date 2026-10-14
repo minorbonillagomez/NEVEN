@@ -5538,24 +5538,35 @@ function _cleanPdfArtifacts(text) {
   if (!text) return text;
   var cleaned = text
     // ═══════════════════════════════════════════════════════════════════
-    // ARTEFACTOS DE GRÁFICOS Y TABLAS
+    // ARTEFACTOS DE GRÁFICOS Y TABLAS (prioridad alta)
     // ═══════════════════════════════════════════════════════════════════
-    // Puntos repetidos (●●●●) - artefactos de gráficos/scatter plots
-    .replace(/[●○◦•·]{3,}/g, '[grafico]')
+    // Puntos de cualquier tipo repetidos (bullet points, scatter plots)
+    // Usar código Unicode directo para bullet: \u2022, \u25CF, \u25CB, \u00B7
+    .replace(/[\u2022\u25CF\u25CB\u25E6\u2023\u2043\u204C\u204D\u00B7\u2219\u22C5●○◦•·∙◉◎⚫⚪]{2,}/g, '')
+    // Líneas que son solo puntos/símbolos repetidos
+    .replace(/^[●○◦•·\s\u2022\u25CF\u00B7]+$/gm, '')
     // Guiones repetidos (----) - separadores de tabla
-    .replace(/-{4,}/g, '---')
-    // Asteriscos repetidos
-    .replace(/\*{3,}/g, '***')
-    // Líneas de números sueltos (0.1 0.2 0.3...) - ejes de gráficos
-    .replace(/(\d+\.?\d*\s+){5,}/g, '[datos] ')
+    .replace(/-{4,}/g, ' ')
+    // Barras y slashes repetidos
+    .replace(/[\/\\|]{3,}/g, ' ')
+    // Líneas de números sueltos con espacios (ejes de gráficos: 0.1 0.2 0.3...)
+    .replace(/(?:\d+\.?\d*\s+){4,}\d+\.?\d*/g, '')
+    // Coordenadas de gráficos (t 1 --- 4 ---+0.3)
+    .replace(/\bt\s+\d+\s+[-─]+\s+\d+\s+[-─]+[+\d.]+/g, '')
+    // Secuencias como "0 20 40 60 80" (escalas de ejes)
+    .replace(/\b(?:\d{1,3}\s+){3,}\d{1,3}\b/g, '')
     
     // ═══════════════════════════════════════════════════════════════════
-    // CÓDIGO R - detectar y preservar como código
+    // CÓDIGO R - eliminar en lugar de formatear (es ruido en este contexto)
     // ═══════════════════════════════════════════════════════════════════
-    // Funciones R comunes con paréntesis
-    .replace(/(plot|lm|summary|arima|acf|pacf|ts|diff|log|exp|sqrt|mean|var|sd|cov|cor|aov|glm|nls|optim|predict|fitted|residuals|coef)\s*\([^)]{1,100}\)/g, '<code>$&</code>')
-    // Asignaciones R (x <- valor o x = valor seguido de función)
-    .replace(/(\w+)\s*<-\s*(\w+)\s*\(/g, '<code>$1 <- $2(</code>')
+    // Llamadas a funciones R con paréntesis (plot(...), expression(...))
+    .replace(/\b(plot|expression|lm|summary|arima|acf|pacf|ts|lines|points|abline|legend|axis|title|text|mtext|par|layout)\s*\([^)]*\)/g, '[codigo R]')
+    // Asignaciones R
+    .replace(/\b\w+\s*<-\s*\w+/g, '')
+    // Fragmentos de código sueltos
+    .replace(/type\s*=\s*['"][^'"]+['"]/g, '')
+    .replace(/ylab\s*=\s*['"][^'"]+['"]/g, '')
+    .replace(/xlab\s*=\s*['"][^'"]+['"]/g, '')
     
     // ═══════════════════════════════════════════════════════════════════
     // SÍMBOLOS MATEMÁTICOS UNICODE -> LaTeX
@@ -5611,7 +5622,6 @@ function _cleanPdfArtifacts(text) {
     .replace(/%o/g, 'ffi')
     .replace(/%u/g, 'ffi')
     .replace(/%ce/g, 'ffi')
-    .replace(/%/g, 'ff')
     .replace(/ﬀ/g, 'ff')
     .replace(/ﬁ/g, 'fi')
     .replace(/ﬂ/g, 'fl')
@@ -5628,14 +5638,20 @@ function _cleanPdfArtifacts(text) {
     // ═══════════════════════════════════════════════════════════════════
     // LIMPIEZA FINAL
     // ═══════════════════════════════════════════════════════════════════
+    // Tags HTML rotos o incompletos
+    .replace(/<code>[^<]*$/g, '')  // <code> sin cerrar al final
+    .replace(/^[^>]*<\/code>/g, '')  // </code> sin abrir al inicio
+    .replace(/<\/?code>/g, '')  // Eliminar todos los tags code
     // Guiones de separación de palabras
     .replace(/- \n/g, '')
     .replace(/-\n/g, '')
     .replace(/- (?=[a-z])/g, '')
-    // Espacios múltiples
-    .replace(/\s{2,}/g, ' ')
-    // Líneas vacías múltiples
-    .replace(/\n{3,}/g, '\n\n')
+    // Espacios múltiples y líneas vacías
+    .replace(/\s{3,}/g, ' ')
+    .replace(/\n{2,}/g, '\n')
+    // Palabras corruptas comunes de OCR
+    .replace(/\bsenisoC\b/gi, 'Cosine')
+    .replace(/\b(\d+)\s*y\s*t\s*(\d+)/g, '')  // "2- 4- t y t 13.1"
     .trim();
   
   return cleaned;
