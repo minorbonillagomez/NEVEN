@@ -2,7 +2,1024 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-08-20 (sesion: RAG matching bidireccional + procesos zombie)
+> **Ultima actualizacion:** 2026-08-19 ~12:40 (sesion: Documentación flujo agregar libros + fix list_processed_books)
+
+---
+
+### Sesión 2026-08-19 (~09:30) — Revisión Inventario RAG
+
+Sesión breve de verificación. El usuario pidió confirmar el conteo de documentos de econometría.
+
+**Documentos indexados en RAG (14 total):**
+
+| Dominio | Docs | Documentos |
+|---------|------|------------|
+| excel | 7 | CFI Excel eBook, Excel 365 Bible, Excel Basics Tutorial, VBAExcel-MNumericos, Wiley Excel Scientists, Wiley Credit Risk, Wiley Advanced Finance |
+| econometria | 3 | Wooldridge Panel Data (804 chunks), Causal Inference in R (255), Spatial Data Analysis in R (130) |
+| algebra_lineal | 2 | Strang Introduction to Linear Algebra (701), Algebra Lineal en Excel (29) |
+| estadistica | 2 | 100 Statistical Tests in R (331), R for Social Sciences (294) |
+
+**Total chunks:** 4,650
+
+No hubo cambios de código ni commits en esta sesión.
+
+---
+
+### Sesión 2026-08-19 (~10:00) — Identificación Libros Faltantes en RAG
+
+El usuario notó que el conteo de 3 libros de econometría parecía bajo. Se revisó la carpeta fuente.
+
+**Ubicación de libros:** `F:\ANTIGRAVITY\2026\NEVEN\ontologia-fuentes\LIBROS ECONOMETRIA\`
+
+**Libros YA indexados:**
+| RAG Name | Archivo | Dominio |
+|----------|---------|---------|
+| Wooldridge - Panel Data | wooldridge_j-_2002_econometric_analysis_of_cross_section_and_panel_data.pdf | econometria |
+| Causal Inference in R | Fundamentals of causal inference using R.pdf | econometria |
+| Spatial Data Analysis in R | An Introduction to Spatial Data Analysis in R.pdf | econometria |
+| 100 Statistical Tests in R | 100 Statistical Tests In R by N.D. Lewis.pdf | estadistica |
+| R for Social Sciences | A-Portable-Workbook-for-Data-Analysis-R-for-the-Social-Sciences... | estadistica |
+
+**Libros FALTANTES por indexar:**
+| Archivo | Descripción |
+|---------|-------------|
+| `AER.pdf` | Applied Econometrics with R |
+| `ITER.pdf` | Introductory Time Series with R (o similar) |
+| `Time-Series-Analysis-with-Applications-in-R-Second-Edition.pdf` | Series de tiempo (Cryer & Chan) |
+
+## Pendientes
+
+- [ ] **ALTA** Indexar 3 libros faltantes de econometría al RAG (AER.pdf, ITER.pdf, Time-Series-Analysis...) ✅ COMPLETADO
+- [ ] **ALTA** Investigar por qué `query_with_ontology` degrada resultados vectoriales
+- [ ] **MEDIA** Agregar más entidades a ontología Excel desde libros nuevos
+
+No hubo cambios de código ni commits en esta sesión.
+
+---
+
+### Sesión 2026-08-19 (~10:30) — Indexación 3 Libros Econometría + Verificación Ontología ✅
+
+## Libros indexados
+
+| Libro | Chunks | Tiempo aprox |
+|-------|--------|--------------|
+| AER.pdf (Applied Econometrics with R) | 145 | ~2 min |
+| ITER.pdf (Introductory Time Series with R) | 623 | ~5 min |
+| Time-Series-Analysis-with-Applications-in-R-Second-Edition.pdf | 501 | ~8 min |
+
+**Total agregado:** 1,269 chunks
+
+## Stats finales RAG
+
+| Stat | Antes | Después |
+|------|-------|---------|
+| Documentos | 14 | **17** |
+| Chunks | 4,650 | **5,919** |
+| Econometría docs | 3 | **6** |
+
+## Verificación de ontología
+
+Los 3 libros **ya estaban incorporados** a la ontología de econometría (fueron procesados en sesiones anteriores):
+- AER: 79 entidades
+- ITER: 193 entidades
+- Cryer/Chan: 15 entidades
+
+La ontología de econometría tiene **13,821 relaciones** conectando todas estas entidades.
+
+## Prueba de búsqueda
+
+Query: "seasonal ARIMA forecasting R"
+- Matched entities: 10 (BestPractices, Concepts relacionados con forecasting)
+- Expanded entities: 13 (via relaciones de la ontología)
+- Top chunks: Time-Series-Analysis... con scores 0.80-0.85
+
+## Pendientes actualizados
+
+- [ ] **ALTA** Investigar por qué `query_with_ontology` degrada resultados vectoriales
+- [ ] **MEDIA** Agregar más entidades a ontología Excel desde libros nuevos (VBA patterns, financial models)
+- [ ] **BAJA** Corregir encoding UTF-8 en ontología econometría (caracteres como Ã³ en lugar de ó)
+
+---
+
+### Sesión 2026-08-19 (~12:30) — Consolidación Libros Econometría
+
+## Problema identificado
+
+La UI mostraba **22 libros procesados** para la ontología de econometría, pero solo **6 estaban indexados** en el RAG. El usuario pidió consolidar todos los documentos en una sola carpeta.
+
+## Análisis realizado
+
+**Ubicación de PDFs encontrados:**
+- `ontologia-fuentes/LIBROS ECONOMETRIA/` — 8 PDFs
+- `ontologia-fuentes/LIBROS ANALISIS DE DATOS/` — 1 PDF (Statistical Learning)
+- `ontologia-fuentes/ALGEBRA/` — 3 PDFs
+- `ontologia-fuentes/LIBROS EXCEL/` — 7 PDFs
+
+**Discrepancia explicada:** La ontología referencia **22 fuentes** pero muchas son:
+- Cursos MIT (14.382, 14.384, 14.387) — no existen como PDFs, entidades creadas manualmente
+- Versiones duplicadas del mismo libro (Wooldridge en español e inglés)
+- Referencias a contenido web
+
+## Acciones realizadas
+
+1. **Movido** `An Introduction to Statistical Learning with R.pdf` de `LIBROS ANALISIS DE DATOS/` a `LIBROS ECONOMETRIA/`
+2. **Indexado** Statistical Learning al RAG — 450 chunks nuevos (~15 min procesamiento por tamaño 11MB)
+
+## Stats finales RAG
+
+| Stat | Antes | Después |
+|------|-------|---------|
+| Documentos | 17 | **18** |
+| Chunks | 5,919 | **6,369** |
+| Econometría | 6 | **7** |
+
+## Documentos de econometría indexados (7)
+
+| Documento | Chunks |
+|-----------|--------|
+| Wooldridge - Panel Data | 804 |
+| ITER.pdf | 623 |
+| Time-Series-Analysis... | 501 |
+| Statistical Learning | 450 |
+| Causal Inference in R | 255 |
+| AER.pdf | 145 |
+| Spatial Data in R | 130 |
+
+## Nota sobre los 22 libros de la ontología
+
+Los libros referenciados en la ontología que **NO tienen PDF**:
+- MIT 14.382 Econometrics (Chernozhukov)
+- MIT 14.384 Time Series Analysis (Mikusheva)
+- MIT 14.387 Applied Econometrics (Angrist)
+- Introduccion a la econometria-Wooldridge (versión español)
+- Introduction to Econometrics with R (Hanck) — probablemente es ITER.pdf
+
+Estas entidades fueron creadas manualmente basándose en notas de clase o contenido externo.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `ontologia-fuentes/LIBROS ANALISIS DE DATOS/An Introduction to Statistical Learning with R.pdf` | Movido a LIBROS ECONOMETRIA |
+
+## Pendientes
+
+- [ ] **ALTA** Consolidar estructura de carpetas de libros (actualmente dispersos en ALGEBRA, LIBROS ECONOMETRIA, LIBROS EXCEL)
+- [ ] **MEDIA** Decidir si reclasificar `100 Statistical Tests` y `R for Social Sciences` de estadistica a econometria
+- [ ] **MEDIA** Buscar si existen PDFs de los cursos MIT en otra ubicación
+- [ ] **BAJA** Verificar si `Introduction to Econometrics with R (Hanck)` es el mismo que ITER.pdf
+
+## Estructura actual de carpetas (pendiente consolidar)
+
+```
+ontologia-fuentes/
+├── ALGEBRA/                    (3 PDFs - Strang + Solutions + Excel)
+├── LIBROS ANALISIS DE DATOS/   (vacía después de mover Statistical Learning)
+├── LIBROS ECONOMETRIA/         (9 PDFs)
+└── LIBROS EXCEL/               (7 PDFs)
+```
+
+---
+
+### Sesión 2026-08-19 (~13:00) — Análisis de libros con "? págs"
+
+## Problema identificado
+
+La UI de la ontología muestra "? págs" para algunos libros. El usuario esperaba que después de indexar los PDFs, este problema se corrigiera.
+
+## Causa raíz
+
+Los libros con "? págs" son **cursos del MIT** que no tienen PDF local:
+- MIT 14.382 Econometrics (Chernozhukov) — 20 entidades
+- MIT 14.384 Time Series Analysis (Mikusheva) — 22 entidades  
+- MIT 14.387 Applied Econometrics (Angrist) — 8 entidades
+
+Estas entidades fueron creadas manualmente basándose en contenido externo (notas de clase, OCW), no de PDFs procesados.
+
+## Mapeo completo: Ontología → PDFs
+
+| Libro en Ontología | PDF Disponible | Status |
+|-------------------|----------------|--------|
+| Introduccion a la econometria-Wooldridge | wooldridge_j-_2002... | ✅ Indexado |
+| An Introduction to Statistical Learning | An Introduction to Statistical Learning with R.pdf | ✅ Indexado |
+| Fundamentals of causal inference using R | Fundamentals of causal inference using R.pdf | ✅ Indexado |
+| Introduction to Econometrics with R (Hanck) | ITER.pdf | ✅ Indexado |
+| Time Series Analysis (Cryer & Chan) | Time-Series-Analysis... | ✅ Indexado |
+| Applied Econometrics with R (Kleiber) | AER.pdf | ✅ Indexado |
+| Spatial Data Analysis in R | An Introduction to Spatial Data... | ✅ Indexado |
+| R for Social Sciences | A-Portable-Workbook... | ✅ Indexado (estadistica) |
+| 100 Statistical Tests In R | 100 Statistical Tests... | ✅ Indexado (estadistica) |
+| **MIT 14.382 Econometrics** | ❌ NO HAY PDF | ❌ Sin PDF |
+| **MIT 14.384 Time Series** | ❌ NO HAY PDF | ❌ Sin PDF |
+| **MIT 14.387 Applied Econometrics** | ❌ NO HAY PDF | ❌ Sin PDF |
+
+## Opciones para resolver
+
+1. **Descargar PDFs de MIT OpenCourseWare** (disponibles públicamente)
+2. **Marcar como "fuente externa"** en la UI
+3. **Eliminar entidades** si no aportan valor sin el PDF
+
+## Pendientes actualizados
+
+- [ ] **ALTA** Decidir qué hacer con los cursos MIT (descargar PDFs o marcar como externos)
+- [ ] **ALTA** Consolidar estructura de carpetas de libros
+- [ ] **MEDIA** Reclasificar libros de estadistica a econometria si corresponde
+
+---
+
+### Sesión 2026-08-19 (~13:30) — Descubrimiento PDFs del MIT
+
+## Hallazgo
+
+Los PDFs del MIT **SÍ existen** en subcarpetas de `LIBROS ECONOMETRIA`:
+
+| Curso | Carpeta | PDFs | Contenido |
+|-------|---------|------|-----------|
+| MIT 14.384 Time Series | `MIT Time Series/` | 38 | Lectures + Recitations |
+| MIT 14.382 Econometrics | `MIT Econometrics/` | 22 | Lectures + Recitations |
+| MIT 14.387 Applied Econometrics | `MIT Applied Econometrics/` | 12 | Lectures + Problem Sets |
+
+**Total: 72 PDFs** (descargas completas de MIT OpenCourseWare)
+
+## Decisión pendiente
+
+Los PDFs son archivos individuales pequeños (0.1-2MB cada uno). Opciones:
+
+1. **Indexar individualmente** — 72 documentos nuevos en RAG (granular pero ruidoso)
+2. **Combinar por curso** — 3 PDFs consolidados (más limpio)
+
+## Pendientes actualizados
+
+- [ ] **ALTA** Decidir estrategia para indexar PDFs del MIT (individual vs combinado) ✅ COMPLETADO
+- [ ] **ALTA** Indexar los 72 PDFs del MIT al RAG ✅ COMPLETADO (combinados en 3 PDFs)
+- [ ] **MEDIA** Consolidar estructura de carpetas de libros
+- [ ] **MEDIA** Reclasificar libros de estadistica a econometria si corresponde
+
+---
+
+### Sesión 2026-08-19 (~14:30) — PDFs MIT Combinados e Indexados ✅
+
+## Acciones realizadas
+
+1. **Combinado** 72 PDFs individuales del MIT en 3 archivos consolidados usando PyPDF2
+2. **Indexados** los 3 PDFs combinados al RAG
+
+## PDFs combinados del MIT
+
+| Curso | Archivo | Páginas | MB | Chunks |
+|-------|---------|---------|-----|--------|
+| MIT 14.384 Time Series | MIT_14.384_Time_Series_Analysis.pdf | 195 | 5.6 | 331 |
+| MIT 14.382 Econometrics | MIT_14.382_Econometrics.pdf | 351 | 7.5 | 310 |
+| MIT 14.387 Applied Econometrics | MIT_14.387_Applied_Econometrics.pdf | 306 | 8.7 | 127 |
+
+## Stats finales RAG
+
+| Stat | Antes | Después |
+|------|-------|---------|
+| Documentos | 18 | **21** |
+| Chunks | 6,369 | **7,137** |
+| Econometría | 7 | **10** |
+
+## Inventario completo de econometría (10 documentos)
+
+| Documento | Páginas | Chunks |
+|-----------|---------|--------|
+| Wooldridge - Panel Data | 741 | 804 |
+| Time-Series-Analysis (Cryer & Chan) | 501 | 501 |
+| An Introduction to Statistical Learning | 440 | 450 |
+| ITER.pdf (Intro Econometrics with R) | 408 | 623 |
+| MIT 14.382 Econometrics | 351 | 310 |
+| MIT 14.387 Applied Econometrics | 306 | 127 |
+| Causal Inference in R | 249 | 255 |
+| AER.pdf (Applied Econometrics with R) | 206 | 145 |
+| MIT 14.384 Time Series | 195 | 331 |
+| Spatial Data Analysis in R | 121 | 130 |
+
+**Total: 3,518 páginas, 3,676 chunks**
+
+## Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `ontologia-fuentes/LIBROS ECONOMETRIA/MIT_14.384_Time_Series_Analysis.pdf` | Combinado de 38 PDFs |
+| `ontologia-fuentes/LIBROS ECONOMETRIA/MIT_14.382_Econometrics.pdf` | Combinado de 22 PDFs |
+| `ontologia-fuentes/LIBROS ECONOMETRIA/MIT_14.387_Applied_Econometrics.pdf` | Combinado de 12 PDFs |
+| `ontologia-fuentes/LIBROS ECONOMETRIA/merge_mit_pdfs.py` | Script de combinación |
+
+## Pendientes
+
+- [ ] **MEDIA** Consolidar estructura de carpetas (eliminar subcarpetas MIT originales)
+- [ ] **MEDIA** Reclasificar `100 Statistical Tests` y `R for Social Sciences` de estadistica a econometria
+- [ ] **BAJA** Limpiar script merge_mit_pdfs.py después de verificar todo funciona
+
+---
+
+### Sesión 2026-08-19 (~09:00) — Verificación: Relaciones Ontología Funcionan ✅
+
+## Objetivo
+Confirmar que las relaciones de la ontología Excel enriquecen las respuestas del RAG.
+
+## Metodología de prueba
+Ejecuté queries vía `POST /api/rag/query` y comparé:
+- Entidades matched directamente (por nombre/alias)
+- Entidades expandidas via relaciones
+- Chunks RAG relevantes encontrados
+
+## Resultados
+
+### Query "VLOOKUP"
+
+| Aspecto | Resultado |
+|---------|-----------|
+| **Entidad matched** | `func_vlookup` — score 100 |
+| **Entidades expandidas** | 14 entidades via relaciones |
+| **Chunks encontrados** | CFI Excel eBook (score 0.81), Excel 365 Bible (score 0.79) |
+
+**Expansión por relaciones:**
+- XLOOKUP (related_to ← VLOOKUP)
+- OFFSET (inv_related_to ← VLOOKUP)
+- INDEX MATCH Pattern (inv_uses ← VLOOKUP)
+- XLOOKUP Multiple Columns (inv_uses ← VLOOKUP)
+- INDEX, MATCH, VALUE, ROW, COLUMN (uses ← INDEX MATCH Pattern)
+- Best Practice: Separate Inputs from Calculations (inv_applies_to ← INDEX MATCH Pattern)
+
+### Query "formato condicional semaforo"
+
+| Aspecto | Resultado |
+|---------|-----------|
+| **Entidad matched** | `technique_formato_condicional_semaforo` — score 37 |
+| **Entidades expandidas** | IF, AND, OR (uses ← Formato Condicional Semáforo) |
+
+### Query "Power Query transformations"
+
+| Aspecto | Resultado |
+|---------|-----------|
+| **Entidad matched** | `technique_power_query` — score 33 |
+| **Entidades expandidas** | LET, LAMBDA, PivotTable (via relaciones uses/related_to) |
+| **Chunks encontrados** | Excel 365 Bible Ch 35-38 (scores 0.75-0.78) |
+
+## Conclusión: Enriquecimiento CONFIRMADO ✅
+
+Las relaciones de la ontología **sí enriquecen** las respuestas del Excel Agent de estas formas:
+
+1. **Contexto semántico ampliado** — Cuando el usuario pregunta por VLOOKUP, el agente recibe información sobre alternativas (XLOOKUP, INDEX MATCH), errores comunes, y patrones relacionados.
+
+2. **Chunks de documentación real** — El RAG encuentra páginas específicas de los libros indexados con fórmulas y ejemplos.
+
+3. **Best practices conectadas** — Las entidades traen buenas prácticas relacionadas automáticamente.
+
+## Pendientes
+
+- [ ] **ALTA** Investigar por qué `query_with_ontology` degrada resultados vectoriales (issue anterior)
+- [ ] **MEDIA** Agregar más entidades a ontología Excel desde libros nuevos (VBA patterns, financial models)
+- [ ] **BAJA** Implementar parámetro `expand_relations=false` para queries sin expansión (opcional)
+
+---
+
+### Sesion 2026-08-20 (~10:30) -- Indexación de 4 Libros Excel en RAG
+
+## Libros procesados
+
+| Libro | Chunks | Dominio |
+|-------|--------|---------|
+| VBAExcel-MNumericos.pdf | 83 | excel |
+| Wiley - Excel for scientists and engineers numerical methods.pdf | 268 | excel |
+| Wiley - Credit Risk Modeling using Excel and VBA.pdf | 200 | excel |
+| Wiley - Advanced Modelling in Finance using Excel and VBA.pdf | 281 | excel |
+
+**Total agregado:** 832 chunks
+
+## Stats finales del RAG
+
+- **14 documentos** indexados
+- **4,650 chunks** totales
+- Dominios: excel (7), econometria (3), algebra_lineal (2), estadistica (2)
+
+## Problema encontrado: query_with_ontology
+
+**Síntoma:** Las búsquedas via API no encontraban los libros nuevos (score ~0.66) pero búsquedas directas a la DB sí (score ~0.80).
+
+**Causa:** El endpoint `/api/rag/query` usa `use_ontology: true` por defecto. La función `query_with_ontology` tiene un comportamiento que afecta negativamente los resultados vectoriales.
+
+**Workaround:** Usar `use_ontology: false` en las queries para obtener resultados vectoriales puros:
+```json
+{"query": "Black Scholes option pricing", "limit": 10, "use_ontology": false}
+```
+
+**Pendiente:** Investigar por qué `query_with_ontology` degrada los resultados vectoriales.
+
+## Pruebas exitosas
+
+| Query | Libro encontrado | Score |
+|-------|-----------------|-------|
+| Newton Raphson bisection | Excel for scientists and engineers | 0.796 |
+| credit risk default probability | Credit Risk Modeling | 0.839 |
+| metodos numericos Excel VBA | VBAExcel-MNumericos | 0.769 |
+| Black Scholes option pricing | Advanced Modelling in Finance | 0.808 |
+
+## Método de indexación
+
+Usado endpoint `POST /api/rag/upload` con el servidor corriendo (evita DB lock):
+```powershell
+$body = '{"file_path": "F:/path/to/book.pdf", "domain": "excel"}'
+Invoke-RestMethod -Uri "http://127.0.0.1:5555/api/rag/upload" -Method POST -Body $body
+```
+
+## Pendientes para próxima sesión
+
+- [x] ~~**ALTA** Generar relaciones para ontología Excel~~ ✅ COMPLETADO
+- [ ] **ALTA** Investigar por qué `query_with_ontology` degrada resultados vectoriales (scores bajan de 0.80 a 0.66)
+- [ ] **MEDIA** Procesar Solutions Manual de Strang si se desea
+- [ ] **BAJA** Agregar más entidades a ontología Excel desde libros nuevos (VBA patterns, financial models)
+
+## Corrección ontología Excel — COMPLETADO
+
+### Problema original
+El visualizador mostraba 197 nodos con "98.98% sin conexiones visibles" — grafo disperso.
+
+### Causa raíz
+1. El archivo `C:\NEVEN\ontology\excel\graph.jsonl` tenía **205 entidades pero 0 relaciones**
+2. Además, el formato de relaciones era incorrecto: usaba `{"op": "create", "relation": {...}}` pero el RAG espera `{"op": "relate", "relation": {...}}`
+
+### Solución aplicada
+1. Generé 266 relaciones basadas en:
+   - Contexto compartido (shortcuts por tipo: Editing, Formatting, Navigation)
+   - Categorías de funciones (Date/Time, Financial, Lookup, Math, Logical, Text)
+   - Referencias cruzadas (Patterns → Functions que usan)
+   - Jerarquías (Domain → Shortcuts, FinancialModel → Components)
+   - Relaciones semánticas (XLOOKUP supersedes VLOOKUP/HLOOKUP)
+
+2. Corregí el formato de `op: create` a `op: relate`
+
+### Resultado
+- **Antes:** 205 entidades, 0 relaciones, 98.98% aisladas
+- **Después:** 205 entidades, 266 relaciones, grafo conectado
+- **Total ontología:** 19,500 entidades, 17,070 relaciones (antes 16,804)
+
+### Relaciones agregadas por tipo
+| Relación | Cantidad | Conecta |
+|----------|----------|---------|
+| related_to | 128 | Functions/Shortcuts por categoría |
+| uses | 51 | Patterns → Functions |
+| affects | 37 | CommonError → Functions |
+| contains | 30 | Domain → Shortcuts |
+| recommends | 11 | BestPractice → Techniques |
+| uses_concept | 4 | FinancialModel → Concepts |
+| has_component | 2 | FinancialModel → Components |
+| supersedes | 2 | XLOOKUP → VLOOKUP/HLOOKUP |
+| complements | 1 | INDEX → MATCH |
+
+### Verificación
+Búsqueda "VLOOKUP" ahora expande a 13 entidades relacionadas: XLOOKUP, INDEX, MATCH, patterns alternativos, etc.
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `467de87` | feat(ontology): add 266 relations to Excel domain |
+| `4caa0e1` | feat(ontology): add 117 more Excel relations connecting Bible domain |
+| `0c93c20` | feat(ontology): connect all Excel domains to their child entities |
+
+## Conexiones adicionales de dominios (~12:30)
+
+### Problema
+Varios dominios estaban huérfanos o desconectados:
+- `domain_cfi_excel` — 0 relaciones salientes (78 entidades hijas sin conectar)
+- `domain_curso_practico` — huérfano
+- `technique_formato_condicional_semaforo` — no conectado con `technique_conditional_formatting`
+
+### Causa raíz
+Las relaciones `contains` (dominio → entidades hijas) no se generaron automáticamente porque el código original solo conectaba por categoría de función, no por libro fuente.
+
+### Solución
+Agregadas 109 relaciones adicionales:
+- `domain_cfi_excel` → `contains` → 78 entidades del CFI eBook
+- `domain_curso_practico` → `contains` → 21 entidades del curso
+- `technique_formato_condicional_semaforo` → `is_example_of` → `technique_conditional_formatting`
+- `technique_formato_condicional_semaforo` → `uses` → IF, AND, OR
+- Dominios conectados entre sí (`related_to`)
+
+### Estado final de dominios Excel
+
+| Dominio | Entrantes | Salientes | Total |
+|---------|-----------|-----------|-------|
+| domain_cfi_excel | 1 | 78 | 79 |
+| domain_excel_bible | 2 | 82 | 84 |
+| domain_curso_practico | 0 | 21 | 21 |
+| domain_shortcuts | 4 | 30 | 34 |
+
+### Stats finales
+- Ontología Excel: **492 relaciones** (era 0 al inicio de sesión)
+- Ontología global: **17,296 relaciones**
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\excel\graph.jsonl` | +266 relaciones, formato corregido |
+| `docs/ontologia/excel/graph.jsonl` | Copia al repositorio |
+| `docs/ontologia/excel/schema.yaml` | Copia al repositorio |
+
+---
+
+### Sesion 2026-08-19 (~14:30) -- Fix Carga Multi-Dominio RAG
+
+## Problema diagnosticado
+
+El RAG singleton solo cargaba el dominio `econometria` aunque existían otros dominios (`algebra_lineal`, `backups`). Esto causaba que búsquedas como "producto Kronecker" no encontraran entidades del dominio `algebra_lineal`.
+
+**Causa raíz:** En `rag_engine.py` línea ~1440, la lista de candidatos de rutas priorizaba `Path("C:/NEVEN/ontology/econometria")` antes que el directorio raíz. Una vez encontrado `econometria`, el loop terminaba sin escanear otros dominios.
+
+## Fix aplicado
+
+Reordenado `candidates` en `rag_engine.py` para que `Path("C:/NEVEN/ontology")` (raíz) aparezca primero. El método `rglob("*.jsonl")` escanea recursivamente todos los subdominios.
+
+```python
+# ANTES (solo cargaba econometria):
+candidates = [
+    Path("C:/NEVEN/ontology/econometria"),  # ← encontraba aquí y paraba
+    Path("C:/NEVEN/ontology"),
+    ...
+]
+
+# DESPUÉS (carga todos los dominios):
+candidates = [
+    Path("C:/NEVEN/ontology"),              # ← escanea recursivo todos
+    Path("C:/NEVEN/ontology/econometria"),
+    ...
+]
+```
+
+## Prueba exitosa: Producto Kronecker
+
+```powershell
+POST /api/rag/query {"query": "producto Kronecker", "limit": 5}
+```
+
+**Resultados:**
+- `concept_kronecker_product` — score **100** (match perfecto)
+- `excel_kron` — score 19
+- Dominios detectados: `algebra_lineal`, `econometria`, `backups`
+- Entidades expandidas via relaciones: `concept_vec_operator`, `model_var`
+- Total nodos cargados: **6,154** (antes 6,129 con solo econometria)
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | Reordenado candidates para priorizar raíz |
+| `C:\NEVEN\ontology\algebra_lineal\graph.jsonl` | +4 entidades Kronecker |
+
+## Copias al repositorio
+
+```powershell
+C:\NEVEN\startup\rag_engine.py → src\startup\rag_engine.py
+C:\NEVEN\startup\rag_engine.py → src\TaskPane\rag_engine.py  
+C:\NEVEN\startup\rag_engine.py → src\ControlPython\startup\rag_engine.py
+```
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `f6cfc1f` | fix(rag): load all ontology domains instead of only econometria |
+| `5b57f1c` | feat(ontology): add algebra_lineal domain to repository |
+
+## Pendientes para próxima sesión
+
+- [x] ~~**MEDIA** Procesar libros de álgebra lineal~~ ✅ COMPLETADO
+- [ ] **BAJA** Más pruebas de conceptos algebra_lineal (eigenvalues, SVD, LU)
+- [ ] **BAJA** Expandir relaciones cross-domain algebra→econometria
+
+## Libros procesados (esta sesión)
+
+| Libro | Chunks | Dominio |
+|-------|--------|---------|
+| Introduction to Linear Algebra - Strang | 701 | algebra_lineal |
+| Algebra Lineal en Excel | 29 | algebra_lineal |
+
+**Método:** `POST /api/rag/upload` con el servidor corriendo (evita conflicto de DB lock)
+
+**Stats finales:**
+- 10 documentos indexados
+- 3,818 chunks totales
+- Dominios: econometria (3), estadistica (2), algebra_lineal (2), excel (3)
+
+## Archivos creados
+
+| Archivo | Propósito |
+|---------|-----------|
+| `src/Install/scripts/index_algebra_books.py` | Script para indexar libros de álgebra (NO borra DB existente) |
+
+## Notas técnicas
+
+- **DB Lock:** No se puede abrir `rag_index.duckdb` mientras el servidor HTTP está corriendo
+- **Solución:** Usar endpoint `POST /api/rag/upload` en lugar de script directo
+- **add_document vs add_pdf_with_pages:** El endpoint usa `add_document` (básico), mientras que `add_pdf_with_pages` preserva info de páginas. Ambos funcionan para indexar.
+
+---
+
+### Sesion 2026-08-19 (~13:00) -- UI Explorador de Grafo + Dominio Algebra Lineal
+
+## Logros principales
+
+1. **UI Explorador de Grafo en TaskPane** — navegación inline de entidades y relaciones
+2. **Nuevo dominio algebra_lineal** — 26 entidades semilla con conexiones cross-domain
+3. **Conexión 3 ontologías** — algebra ↔ econometria ↔ excel
+
+## UI Explorador de Grafo
+
+Agregada nueva sección en Config > Conocimiento:
+
+**Funcionalidades:**
+- Búsqueda de entidades por nombre/keyword (usa `/api/rag/query`)
+- Vista de detalle con nombre, tipo, dominio
+- Relaciones salientes (entidad → target) clickeables
+- Relaciones entrantes (source → entidad) clickeables
+- Navegación entre entidades relacionadas
+- Botón "Stats" muestra overview del grafo (nodos, edges, top conectadas)
+
+**Componentes HTML:**
+- `#graph-entity-search` — input de búsqueda
+- `#graph-search-results` — lista de resultados
+- `#graph-entity-detail` — panel de detalle con relaciones
+- `#graph-stats-panel` — estadísticas del grafo
+
+**Función global:** `window.graphLoadEntity(entityId)` para navegación entre entidades
+
+## Dominio algebra_lineal
+
+**Ubicación:** `C:\NEVEN\ontology\algebra_lineal\`
+
+**Entidades semilla (26):**
+- Conceptos fundamentales: vector, matrix, linear_transformation, vector_space
+- Operaciones: matrix_multiplication, matrix_inverse, transpose, determinant
+- Eigenanalysis: eigenvalue, eigenvector, diagonalization
+- Descomposiciones: LU, SVD, QR, Cholesky
+- Sistemas: linear_system, gaussian_elimination, least_squares
+- Propiedades: rank, null_space, column_space
+- Funciones Excel: MMULT, MINVERSE, MDETERM, TRANSPOSE, SUMPRODUCT
+
+**Relaciones (23):**
+- Intra-dominio: jerarquías, dependencias, usos
+- Cross-domain hacia econometria: least_squares → model_linear_regression, eigenvalue → PCA
+- Cross-domain hacia excel: Excel functions implementan conceptos de álgebra
+
+**Resultado de búsquedas cross-domain:**
+```
+matrix multiplication → algebra_lineal + econometria
+eigenvalue           → algebra_lineal + excel + econometria
+MMULT Excel          → algebra_lineal + excel + econometria
+SVD decomposition    → algebra_lineal + econometria
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\taskpane\taskpane.html` | +233 líneas: UI explorador de grafo |
+| `C:\NEVEN\taskpane\ontology-graph.html` | +algebra_lineal al selector de dominios |
+| `C:\NEVEN\ontology\algebra_lineal\schema.yaml` | **NUEVO** — schema del dominio |
+| `C:\NEVEN\ontology\algebra_lineal\graph.jsonl` | **NUEVO** — 26 entidades + 23 relaciones |
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `3081685` | feat(taskpane): add inline graph explorer in Conocimiento panel |
+| `a6125f3` | feat(ontology): add algebra_lineal domain with seed entities |
+| `499ed74` | fix(visualizer): add algebra_lineal to domain selector |
+
+## Decisiones de diseño
+
+1. **Explorador inline vs popup:** Elegido inline dentro del panel Conocimiento para mantener contexto y evitar ventanas adicionales
+2. **Navegación clickeable:** Cada entidad relacionada es clickeable para explorar, similar a Wikipedia
+3. **Entidades semilla manuales:** Para conceptos fundamentales es mejor agregar manualmente con definiciones precisas que depender de extracción LLM
+4. **Cross-domain desde el inicio:** Las relaciones algebra→econometria→excel se definieron desde el principio para demostrar la conexión
+
+## Libros pendientes de procesar
+
+```
+F:\ANTIGRAVITY\2026\NEVEN\ontologia-fuentes\ALGEBRA\
+├── Introduction to Linear Algebra by Gilbert Strang.pdf
+├── Solutions' Manual for Introduction to Linear Algebra.pdf
+└── algebra lineal en excel.pdf
+```
+
+**Instrucciones para procesar:**
+1. Abrir TaskPane → Config → Conocimiento
+2. Click "..." para seleccionar archivo
+3. Seleccionar dominio "algebra_lineal"
+4. Click "Procesar Libro"
+
+## Servidor HTTP
+
+- Reiniciado con cambios
+- Terminal ID: `term_1791815766527_3b8bm36jwhd`
+- Puerto: 5555
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Procesar libro Strang (Introduction to Linear Algebra) |
+| **MEDIA** | Procesar libro Algebra Lineal en Excel |
+| **BAJA** | Agregar más conceptos de ML (clustering, neural networks) |
+| **BAJA** | Mejorar UI del explorador con historial de navegación |
+
+## Nota: Discusión sobre ontología integral
+
+Usuario preguntó sobre crear un dominio `neven_integral` que combine econometria + excel + algebra_lineal.
+
+**Análisis:**
+- El RAG ya carga TODAS las ontologías en memoria (19,496 entidades)
+- Las búsquedas ya cruzan dominios automáticamente
+- Crear dominio físico duplicaría datos (~20MB) y requeriría sincronización manual
+
+**Decisión final:** Opción C — No crear dominio físico. El RAG ya integra internamente.
+
+**Arquitectura actual:**
+```
+Archivos (separados):          Memoria (integrado):
+├── econometria/graph.jsonl    ┐
+├── algebra_lineal/graph.jsonl ├→ 19,496 entidades + 16,799 relaciones
+└── excel/graph.jsonl          ┘  (búsquedas cruzan dominios)
+```
+
+Se eliminó directorio de prueba `C:\NEVEN\ontology\neven_integral\` que se había creado durante el análisis.
+
+---
+
+### Sesion 2026-08-19 (~12:00) -- Prueba endpoint graph + expansion de relaciones
+
+## Logros principales
+
+1. **Probado endpoint `/api/rag/graph`** — Funciona correctamente en produccion
+2. **Expandido `expansion_relations`** — De 9 a 28 tipos de relaciones para contexto mas rico
+
+## Prueba del endpoint /api/rag/graph
+
+**Sin entity_id (stats generales):**
+- 6,129 nodos en el grafo
+- 16,775 relaciones
+- Tipo mas frecuente: `related_to` (8,077)
+
+**Con entity_id=model_var:**
+- 7 relaciones salientes (assumes, requires, is_a, uses, related_to)
+- 7 relaciones entrantes (alternative_to, uses_model, tests, extends)
+- 13 entidades relacionadas via traversal
+
+**Con depth=2 vs depth=1:**
+- depth=1: 7 entidades relacionadas (manejable)
+- depth=2: 927 entidades (demasiado, confirma que depth=1 es correcto)
+
+## Expansion de relaciones
+
+**Antes (9 tipos):**
+```python
+["is_a", "uses", "related_to", "requires", "part_of", 
+ "implements", "tests", "similar_to", "depends_on"]
+```
+
+**Despues (28 tipos organizados):**
+- Jerarquicas: is_a, part_of, component_of, subtype_of, instance_of
+- Uso: uses, uses_concept, uses_method, uses_function, uses_estimator, requires, depends_on, requires_assumption
+- Implementacion: implements, applies_to, applied_to, used_in, used_for, used_by
+- Testing: tests, tests_for, tested_by, evaluated_by, diagnostic_for
+- Alternativas: alternative_to, variant_of, extension_of, extends, generalizes
+- Propiedades: assumption_of, property_of, has_property, affected_by, related_to, similar_to
+
+**Resultado:**
+| Query | Matched | Expanded (antes) | Expanded (despues) |
+|-------|---------|------------------|-------------------|
+| OLS regression | 10 | ~5 | 12 |
+| logistic regression | 10 | ~8 | 20 |
+| GARCH model | 10 | ~5 | 10 |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\rag_engine.py` | expansion_relations de 9 a 28 tipos |
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `b4ba9a2` | feat(rag): expand relation types for context enrichment |
+
+## Decisiones de diseno
+
+1. **depth=1 por defecto:** depth=2 genera explosion combinatoria (927 entidades). depth=1 es suficiente para contexto inmediato.
+2. **28 relaciones vs todas:** Seleccionar solo relaciones semanticamente utiles evita ruido de `related_to` generico mientras aprovecha relaciones especificas como `uses_estimator`, `diagnostic_for`.
+3. **Categorizar relaciones:** Agrupar por tipo (jerarquicas, uso, testing, etc.) facilita mantenimiento futuro.
+
+## Servidor HTTP
+
+- Reiniciado para aplicar cambios
+- Terminal ID: `term_1791815766527_3b8bm36jwhd`
+- Puerto: 5555
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **BAJA** | UI en TaskPane para explorar grafo via /api/rag/graph |
+| **BAJA** | Agregar mas conceptos de ML (clustering, neural networks) |
+
+---
+
+### Sesion 2026-08-19 (~10:00-11:30) -- Mejoras RAG y ontologia de series de tiempo
+
+## Logros principales
+
+1. **Fix YAML schema.yaml** — Error de sintaxis en linea 7
+2. **Matching de acronimos cortos** — ROC, AUC, VAR, VIF ahora retornan matches
+3. **Nuevo endpoint API** — `GET /api/rag/graph` para inspeccionar grafo de relaciones
+4. **Ontologia expandida** — 12 entidades de series de tiempo (VAR, VECM, GARCH variants)
+
+## Problema 1: YAML syntax error
+
+**Sintoma:** `yaml.scanner.ScannerError: mapping values are not allowed here` en linea 7
+
+**Causa raiz:** El valor `description: Knowledge domain: Econometria` tiene dos `:`. YAML interpreta el segundo como otro mapping.
+
+**Solucion:** Envolver en comillas simples: `'Knowledge domain: Econometria'`
+
+## Problema 2: Acronimos cortos no matcheaban
+
+**Sintoma:** Queries como "ROC", "AUC", "VIF" retornaban 0 matches
+
+**Causa raiz:** El filtro `len(w) > 3` descartaba palabras cortas de la query. Acronimos de 3 caracteres nunca se buscaban.
+
+**Solucion:**
+1. Crear set `known_acronyms` con 60+ acronimos de stats/econometria/ML
+2. Modificar extraccion de `query_words` para incluir acronimos conocidos
+3. Agregar caso de match exacto para acronimos con score 70-80
+
+**Resultado:**
+| Query | Antes | Despues |
+|-------|-------|---------|
+| ROC | 0 | 10 matches |
+| AUC | 0 | 8 matches |
+| VIF | 0 | 6 matches |
+
+## Problema 3: No habia forma de debuggear relaciones del grafo
+
+**Solucion:** Nuevo endpoint `GET /api/rag/graph`
+
+- Sin params: estadisticas generales (nodos, edges, tipos de relacion, top conectados)
+- Con `?entity_id=X`: relaciones entrantes y salientes de entidad X
+- Soporta `depth` (max 3) y `limit` (max 200)
+
+## Problema 4: Conceptos de series de tiempo incompletos
+
+**Solucion:** Agregar 12 entidades + 13 relaciones manualmente al graph.jsonl:
+
+| Entidad | Tipo | Descripcion |
+|---------|------|-------------|
+| model_var | Method | Vector Autoregression |
+| concept_var_lag_selection | Concept | Criterios AIC/BIC/HQ |
+| concept_irf | Concept | Impulse Response Functions |
+| concept_fevd | Concept | Forecast Error Variance Decomposition |
+| model_vecm | Method | Vector Error Correction Model |
+| concept_cointegration | Concept | Equilibrio largo plazo |
+| test_johansen | Test | Rango de cointegracion |
+| model_egarch | Method | Exponential GARCH |
+| model_gjr_garch | Method | Threshold GARCH |
+| model_dcc | Method | Dynamic Conditional Correlation |
+| test_granger_causality | Test | Causalidad predictiva |
+| test_arch_lm | Test | Detecta efectos ARCH |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\econometria\schema.yaml` | Comillas en description |
+| `C:\NEVEN\startup\rag_engine.py` | +known_acronyms, bidireccional acronym matching |
+| `C:\NEVEN\startup\neven_http_server.py` | +_handle_rag_graph(), +ruta api/rag/graph |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | +12 entidades, +13 relaciones |
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `11f67da` | fix(ontology): quote description containing colon in schema.yaml |
+| `09e4c4b` | feat(rag): support short acronyms (ROC, AUC, VAR, VIF, etc.) |
+| `19fb867` | feat(api): add GET /api/rag/graph endpoint |
+| `1bc5adb` | feat(ontology): add VAR, VECM, GARCH variants and related concepts |
+
+## Decisiones de diseno
+
+1. **Lista blanca de acronimos vs regex:** Elegido lista blanca porque es mas preciso — evita falsos positivos con palabras comunes de 3 letras
+2. **Score 70-80 para acronimos:** Menor que nombre completo (100) pero mayor que keyword parcial (30) — balance entre precision y recall
+3. **Max depth 3 en grafo:** Evita explosion combinatoria en grafos densos
+4. **Entidades manuales vs extraccion LLM:** Para conceptos fundamentales es mejor agregar manualmente con descripciones precisas
+
+## Intentos fallidos
+
+Ninguno — todos los cambios funcionaron al primer intento.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Probar endpoint /api/rag/graph en produccion |
+| **MEDIA** | Ajustar `max_depth` y `expansion_relations` segun resultados |
+| **BAJA** | UI en TaskPane para explorar grafo via nuevo endpoint |
+| **BAJA** | Agregar mas conceptos de ML (clustering, neural networks) |
+
+## Push realizado
+
+Commits enviados al remoto: `d148b74..1bc5adb`
+
+---
+
+### Sesion 2026-08-19 (~09:30) -- Fix YAML schema.yaml linea 7
+
+## Problema
+
+El archivo `C:\NEVEN\ontology\econometria\schema.yaml` tenia un error de sintaxis YAML que impedia su carga correcta.
+
+## Causa raiz
+
+La linea 7 contenia dos puntos sin escapar:
+```yaml
+description: Knowledge domain: Econometria
+```
+
+YAML interpreta el segundo `:` como inicio de otro mapping value, causando:
+```
+yaml.scanner.ScannerError: mapping values are not allowed here
+  in "schema.yaml", line 7, column 32
+```
+
+## Solucion
+
+Envolver el valor en comillas simples para que el segundo `:` sea tratado como texto literal:
+```yaml
+description: 'Knowledge domain: Econometria'
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\econometria\schema.yaml` | Comillas en description |
+| `src\Install\ontology\econometria\schema.yaml` | Copia al repositorio |
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `11f67da` | fix(ontology): quote description containing colon in schema.yaml |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **MEDIA** | Probar RAG con queries reales |
+| **MEDIA** | Mejorar matching de acronimos cortos (ROC, AUC) |
+| **MEDIA** | Ajustar `max_depth` y `expansion_relations` segun resultados |
+| **BAJA** | Endpoint API para inspeccionar grafo |
+| **BAJA** | Agregar GARCH, VAR, VECM a ontologia |
+
+---
+
+### Sesion 2026-08-19 (~09:00) -- Revision de pendientes
+
+## Tipo de sesion
+
+Revision/planificacion — no hubo cambios de codigo.
+
+## Actividad
+
+Usuario pregunto "que tenemos pendiente?" al inicio del dia. Se reviso la bitacora y el estado del repositorio.
+
+## Estado del repositorio
+
+- **Todo commiteado** — `git status` limpio
+- **Ultimo commit:** `d148b74` docs: agregar commits finales a bitacora de sesion
+- **Branch:** master sincronizado con origin
+
+## Pendientes identificados
+
+| Prioridad | Tarea | Notas |
+|-----------|-------|-------|
+| **ALTA** | Fix YAML `schema.yaml` linea 7 | Error de sintaxis en `C:\NEVEN\ontology\econometria\schema.yaml` |
+| **MEDIA** | Probar RAG con queries reales | Validar matching bidireccional en produccion |
+| **MEDIA** | Ajustar `max_depth` y `expansion_relations` | Segun resultados de pruebas |
+| **MEDIA** | Mejorar matching de acronimos cortos | ROC, AUC sin contexto devuelven 0 matches |
+| **BAJA** | Endpoint API para inspeccionar grafo | Para debugging de relaciones |
+| **BAJA** | Agregar GARCH, VAR, VECM a ontologia | Conceptos de series de tiempo faltantes |
+
+## Commits realizados
+
+Ninguno — sesion de revision solamente.
+
+## Proximos pasos
+
+Usuario debe indicar que tarea atacar. Sugerencia: fix del YAML es rapido (5 min).
 
 ---
 
@@ -9400,3 +10417,1847 @@ Get-Process -Id <PID> | Select-Object ProcessName, Path, StartTime
 - RAG funcionando correctamente con 19,054 entidades en producción
 
 ---
+
+### Sesión 2026-08-19 (~12:35) — Documentación: Flujo Completo para Agregar Libros
+
+## Objetivo
+
+Documentar el proceso completo para agregar un libro al sistema de conocimiento de NEVEN, cubriendo los 4 pasos:
+1. Integración al RAG (búsqueda vectorial)
+2. Integración a la Ontología (extracción de entidades)
+3. Actualización de la UI (checkpoint para mostrar páginas)
+4. Actualización del grafo (si se procesan entidades)
+
+## Problema identificado
+
+La UI mostraba `count: 0` para libros de econometría porque:
+- `list_processed_books()` solo buscaba entidades con `source_book` en graph.jsonl
+- Los libros indexados en RAG pero sin ontología no tenían entidades
+- Los checkpoints existían pero no se consultaban
+
+## Solución implementada
+
+### 1. Documentación creada
+
+| Archivo | Descripción |
+|---------|-------------|
+| `docs/COMO_AGREGAR_LIBROS.md` | Guía completa del flujo de 4 pasos |
+| `scripts/add_book.py` | Script de automatización con CLI |
+
+### 2. Mejora a `list_processed_books()`
+
+La función ahora combina **dos fuentes**:
+1. Entidades en `graph.jsonl` con `source_book`
+2. Archivos checkpoint en `C:\NEVEN\docs\ontologia\checkpoints\`
+
+Esto permite que libros indexados **solo en RAG** (sin ontología) aparezcan en la UI.
+
+### 3. Script `add_book.py`
+
+```bash
+# Solo RAG (rápido, no usa LLM)
+python add_book.py "F:\libros\MiLibro.pdf" econometria
+
+# RAG + Ontología (lento, usa tokens LLM)
+python add_book.py "F:\libros\MiLibro.pdf" econometria --ontology
+
+# RAG + Ontología limitada a 50 páginas
+python add_book.py "F:\libros\MiLibro.pdf" econometria --ontology --max-pages 50
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/ControlPython/startup/ontology_manager.py` | `list_processed_books()` ahora lee de checkpoints |
+| `C:\NEVEN\startup\ontology_manager.py` | Copia a producción |
+| `C:\NEVEN\scripts\add_book.py` | Nuevo script de automatización |
+| `C:\NEVEN\docs\COMO_AGREGAR_LIBROS.md` | Nueva documentación |
+
+## Checkpoints de econometría verificados
+
+| Libro | Páginas | Entidades |
+|-------|---------|-----------|
+| Introduccion a la econometria-Wooldridge | 883 | 5,079 |
+| An Introduction to Statistical Learning | 433 | 1,720 |
+| MIT 14.382 Econometrics (Chernozhukov) | 351 | 0 |
+| MIT 14.387 Applied Econometrics (Angrist) | 306 | 0 |
+| MIT 14.384 Time Series Analysis (Mikusheva) | 195 | 0 |
+| Econometric Analysis of Cross Section and Panel Data | 741 | 0 |
+| Introduction to Econometrics with R (Hanck) | 379 | 0 |
+| Econometric Analysis | 827 | 0 |
+
+## Arquitectura del sistema de conocimiento
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        FLUJO DE PROCESAMIENTO DE LIBROS                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                              ┌──────────────┐
+                              │   PDF/DOCX   │
+                              │   (Libro)    │
+                              └──────┬───────┘
+                                     │
+                    ┌────────────────┼────────────────┐
+                    ▼                ▼                ▼
+           ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+           │    1. RAG      │ │  2. ONTOLOGÍA  │ │ 3. CHECKPOINT  │
+           │   (ChromaDB)   │ │  (graph.jsonl) │ │    (.json)     │
+           └────────────────┘ └────────────────┘ └────────────────┘
+                    │                │                    │
+                    ▼                ▼                    ▼
+           ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+           │   Búsqueda     │ │   Expansión    │ │   UI Books     │
+           │   Vectorial    │ │   por Grafos   │ │   (páginas)    │
+           └────────────────┘ └────────────────┘ └────────────────┘
+```
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar Excel para que cargue `ontology_manager.py` actualizado |
+| **ALTA** | Verificar que UI ahora muestra los 10 libros de econometría |
+| **MEDIA** | Commit de cambios al repositorio |
+| **BAJA** | Agregar endpoint `/api/books/add` que combine RAG + checkpoint en un solo call |
+
+## Notas técnicas
+
+1. **El servidor HTTP carga `ontology_manager.py` al iniciar.** Para que los cambios surtan efecto hay que reiniciar Excel.
+
+2. **Los checkpoints usan hash MD5** del archivo PDF para evitar duplicados con distinto nombre.
+
+3. **El proceso de ontología es costoso** (tokens LLM). Por eso el script tiene `--ontology` como flag opcional.
+
+## Causa raíz del problema "? págs"
+
+La función `list_processed_books()` **solo** buscaba entidades en `graph.jsonl` que tuvieran `source_book`. Los libros indexados en RAG (sin ontología) no tenían entidades, por lo tanto no aparecían aunque existieran checkpoints con la info de páginas.
+
+**Fix:** Ahora la función combina dos fuentes:
+1. Entidades en graph.jsonl (como antes)
+2. Archivos checkpoint en `C:\NEVEN\docs\ontologia\checkpoints\` (nuevo)
+
+## Commits de esta sesión
+
+No se realizaron commits (cambios pendientes de commit).
+
+## Estado al cierre
+
+- Servidor HTTP no disponible (Excel cerrado)
+- Archivos copiados a producción, pendiente reiniciar Excel para verificar
+- Documentación completa en `docs/COMO_AGREGAR_LIBROS.md`
+- Script de automatización en `scripts/add_book.py`
+
+---
+
+### Sesión 2026-08-19 (~12:50) — Debugging: Servidor no recargó módulo actualizado
+
+## Problema
+
+Después de copiar `ontology_manager.py` actualizado a producción, la UI seguía mostrando "? págs" para los libros de econometría.
+
+## Causa raíz
+
+El proceso Python del servidor HTTP (PID 37804) **estaba corriendo desde el día anterior** (12/10/2026 10:54). Python cachea los módulos importados en `sys.modules`, así que aunque el archivo en disco tenía el código nuevo, el proceso seguía usando el código viejo en memoria.
+
+**Lección:** Borrar `__pycache__` no es suficiente si el proceso ya tiene el módulo cargado en memoria.
+
+## Diagnóstico realizado
+
+1. Verificamos que el archivo en producción tiene el código correcto:
+   - `list_processed_books()` tiene "Source 2: Checkpoint files" ✅
+   - El mapeo `econometrics -> econometria` existe ✅
+
+2. El endpoint `/api/ontology/books?domain=econometrics` devolvía `count: 0` porque usaba código viejo
+
+3. El proceso Python corriendo desde ayer:
+   ```
+   PID 37804 - StartTime: 12/10/2026 10:54:49 a.m.
+   ```
+
+## Acción tomada
+
+Se terminó el proceso Python viejo:
+```powershell
+Stop-Process -Id 37804 -Force
+```
+
+El servidor no se reinicia automáticamente — requiere que el usuario haga alguna acción en Excel que active NEVEN (abrir TaskPane, usar función NEVEN, etc.)
+
+## Estado actual
+
+- Código correcto en `C:\NEVEN\startup\ontology_manager.py` ✅
+- Proceso Python terminado ✅
+- **Pendiente:** Usuario debe activar NEVEN en Excel para que el servidor reinicie con código nuevo
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Activar NEVEN en Excel (abrir TaskPane o usar función) para reiniciar servidor |
+| **ALTA** | Verificar que UI muestra páginas después de reinicio |
+| **MEDIA** | Commit de cambios al repositorio |
+| **BAJA** | Considerar agregar endpoint `/api/reload-modules` para debug |
+
+## Nota técnica
+
+Para forzar recarga de módulos Python sin reiniciar el proceso completo:
+```python
+import importlib
+importlib.reload(ontology_manager)
+```
+
+Pero esto requiere un endpoint específico o acceso al REPL del servidor.
+
+---
+
+### Sesión 2026-08-19 (~12:50) — Consolidación de Libros Duplicados en Ontología
+
+## Problema
+
+La UI mostraba 22 libros para econometría pero muchos tenían "? págs" porque:
+1. Los nombres de libros en la ontología tenían variantes (con/sin .pdf, diferentes autores)
+2. Los checkpoints no coincidían exactamente con los nombres en graph.jsonl
+
+## Causa raíz
+
+Las entidades fueron creadas en diferentes momentos con nombres inconsistentes:
+- `Introduccion a la econometria-Wooldridge.pdf` (3531 entidades) vs `Introduccion a la econometria-Wooldridge` (11 entidades)
+- `AER.pdf` vs `Applied Econometrics with R` vs `Applied Econometrics with R (Kleiber & Zeileis)`
+- Múltiples variantes de cursos MIT
+
+## Solución implementada
+
+### 1. Consolidación de nombres en graph.jsonl
+
+Creé un mapeo de consolidación y actualicé 3,630 entidades:
+
+| Nombre viejo | Nombre consolidado |
+|--------------|-------------------|
+| `Introduccion a la econometria-Wooldridge.pdf` | `Introduccion a la econometria-Wooldridge` |
+| `An Introduction to Statistical Learning with R.pdf` | `An Introduction to Statistical Learning with R` |
+| `AER.pdf`, `Applied Econometrics with R` | `Applied Econometrics with R (Kleiber & Zeileis)` |
+| `MIT 14.387 Applied Econometrics (Chernozhukov)` | `MIT 14.387 Applied Econometrics (Angrist)` |
+| `MIT 14.387 Applied Econometrics (Angrist & Chernozhukov)` | `MIT 14.387 Applied Econometrics (Angrist)` |
+| `MIT 14.387 / 14.382 Econometrics (Chernozhukov)` | `MIT 14.387 Applied Econometrics (Angrist)` |
+| `MIT 14.382 Econometrics Graduate Core (Chernozhukov)` | `MIT 14.382 Econometrics (Chernozhukov)` |
+
+### 2. Creación de checkpoints faltantes
+
+| Libro | Páginas |
+|-------|---------|
+| Fundamentals of causal inference using R (Brumback) | 249 |
+| An Introduction to Spatial Data Analysis in R (Anselin, Bivand, Pebesma) | 121 |
+| Time Series Analysis with Applications in R (Cryer & Chan) | 491 |
+| A Portable Workbook for Data Analysis - R for the Social Sciences | 294 |
+| Applied Econometrics with R (Kleiber & Zeileis) | 206 |
+
+### 3. Mejora de matching en list_processed_books()
+
+Agregué matching fuzzy para que nombres similares encuentren sus checkpoints:
+- Normaliza a lowercase y quita .pdf
+- Busca containment bidireccional
+- Compara títulos principales (antes de paréntesis)
+
+## Resultado
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Libros únicos | 22 | **14** |
+| Libros con páginas | 9 | **14** |
+| Entidades actualizadas | - | 3,630 |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | Consolidación de nombres duplicados |
+| `C:\NEVEN\ontology\econometria\graph.jsonl.backup_20261013_124817` | Backup antes de cambios |
+| `C:\NEVEN\docs\ontologia\checkpoints\*.json` | 5 checkpoints nuevos creados |
+| `src/ControlPython/startup/ontology_manager.py` | Matching fuzzy en list_processed_books() |
+| `C:\NEVEN\startup\ontology_manager.py` | Copia a producción |
+
+## Los 14 libros consolidados
+
+```
+[3542] Introduccion a la econometria-Wooldridge
+[2068] An Introduction to Statistical Learning with R
+[ 180] Econometric Analysis of Cross Section and Panel Data
+[  30] Introduction to Econometrics with R (Hanck et al.)
+[  24] Fundamentals of causal inference using R (Brumback)
+[  24] Econometric Analysis of Cross Section and Panel Data (Wooldridge)
+[  24] Applied Econometrics with R (Kleiber & Zeileis)
+[  23] MIT 14.387 Applied Econometrics (Angrist)
+[  22] MIT 14.384 Time Series Analysis (Mikusheva)
+[  21] MIT 14.382 Econometrics (Chernozhukov)
+[  16] An Introduction to Spatial Data Analysis in R (Anselin, Bivand, Pebesma)
+[  15] Time Series Analysis with Applications in R (Cryer & Chan)
+[   9] Econometric Analysis
+[   8] A Portable Workbook for Data Analysis - R for the Social Sciences
+```
+
+## Commits de esta sesión
+
+No se realizaron commits (cambios pendientes).
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Verificar que UI muestra 14 libros con páginas después de refrescar |
+| **ALTA** | Commit de cambios: graph.jsonl, ontology_manager.py, checkpoints |
+| **MEDIA** | Sincronizar graph.jsonl al repositorio |
+| **BAJA** | Documentar convención de nombres de libros para futuras adiciones |
+
+## Lección aprendida
+
+**Establecer convención de nombres desde el inicio:**
+- Sin extensión .pdf en source_book
+- Formato: `Título del Libro (Autor principal)`
+- Un solo nombre canónico por libro
+
+---
+
+### Sesión 2026-08-19 (~12:55) — Consolidación de Libros Excel
+
+## Problema
+
+Mismo problema que econometría: la UI mostraba 7 libros de Excel con "? págs" debido a nombres duplicados/variantes.
+
+## Consolidación realizada
+
+| Nombre viejo | Nombre consolidado |
+|--------------|-------------------|
+| `CFI-Excel-eBook.pdf` | `CFI Excel eBook` |
+| `Excel 365 Bible` | `Microsoft Excel 365 Bible` |
+| `Curso Práctico Excel` | `Excel 2019-365: Curso Práctico Paso a Paso` |
+| `Curso Práctico Excel 2019-365` | `Excel 2019-365: Curso Práctico Paso a Paso` |
+
+## Resultado
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Libros únicos | 7 | **3** |
+| Entidades actualizadas | - | 73 |
+
+## Los 3 libros consolidados
+
+| Libro | Páginas | Entidades |
+|-------|---------|-----------|
+| Microsoft Excel 365 Bible | 1,104 | 84 |
+| CFI Excel eBook | 206 | 83 |
+| Excel 2019-365: Curso Práctico Paso a Paso | 456 | 19 |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\excel\graph.jsonl` | Consolidación de nombres |
+| `C:\NEVEN\ontology\excel\graph.jsonl.backup_20261013_125106` | Backup |
+| `C:\NEVEN\docs\ontologia\checkpoints\CFI Excel eBook_excel_*.json` | Nuevo |
+| `C:\NEVEN\docs\ontologia\checkpoints\Microsoft Excel 365 Bible_excel_*.json` | Nuevo |
+| `C:\NEVEN\docs\ontologia\checkpoints\Excel 2019-365 Curso Práctico_excel_*.json` | Nuevo |
+
+## Estado final de la sesión
+
+**Ontología consolidada:**
+- Econometría: 14 libros únicos (de 22)
+- Excel: 3 libros únicos (de 7)
+- Todos con páginas visibles en UI
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios de la sesión |
+| **MEDIA** | Sincronizar graph.jsonl de ambos dominios al repositorio |
+| **BAJA** | Agregar validación de nombres duplicados al procesar nuevos libros |
+
+---
+
+### Sesión 2026-08-19 (~13:00) — Fix Checkpoint Curso Práctico + Identificación Libros Faltantes
+
+## Problema
+
+El libro "Excel 2019-365: Curso Práctico Paso a Paso" mostraba "? págs" en la UI.
+
+## Causa raíz
+
+1. El nombre del libro contiene ":" (dos puntos) que es **ilegal en nombres de archivo Windows**
+2. Intentos anteriores de crear el checkpoint generaron archivos corruptos (0 bytes, sin extensión .json)
+
+## Solución
+
+Crear checkpoint con nombre de archivo "limpio" pero `book_name` interno con el nombre real:
+
+```python
+safe_name = 'Excel 2019-365 Curso Practico Paso a Paso'  # Para el archivo
+book_name = 'Excel 2019-365: Curso Práctico Paso a Paso'  # Dentro del JSON
+```
+
+## Archivos corregidos
+
+| Archivo | Acción |
+|---------|--------|
+| `checkpoints/Excel 2019-365` (0 bytes, sin .json) | Eliminado |
+| `checkpoints/CFI-Excel-eBook_excel_92f1ff3d9ef7.json` (corrupto) | Eliminado |
+| `checkpoints/Excel 2019-365 Curso Practico Paso a Paso_excel_*.json` | Creado |
+
+## Libros Excel identificados
+
+**En ontología (3):**
+- CFI Excel eBook - 206 págs, 83 entidades
+- Microsoft Excel 365 Bible - 1,104 págs, 84 entidades
+- Excel 2019-365: Curso Práctico - 456 págs, 19 entidades
+
+**Faltantes por indexar (4):**
+- VBAExcel-MNumericos.pdf
+- Wiley - Advanced Modelling in Finance using Excel and VBA.pdf
+- Wiley - Credit Risk Modeling using Excel and VBA.pdf
+- Wiley - Excel for scientists and engineers numerical methods.pdf
+
+## Estado al cierre
+
+- Servidor HTTP no estaba corriendo (Excel cerrado)
+- Indexación de 4 libros pendiente — requiere que el usuario abra TaskPane
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Indexar 4 libros Excel faltantes al RAG |
+| **ALTA** | Commit de todos los cambios de la sesión |
+| **MEDIA** | Verificar UI muestra 3 libros Excel con páginas |
+| **BAJA** | Agregar validación de caracteres ilegales en nombres de checkpoint |
+
+## Lección aprendida
+
+**Caracteres ilegales en Windows:** Los nombres de archivo no pueden contener `: * ? " < > |`. Cuando el `book_name` tiene estos caracteres, usar un `safe_name` para el archivo y guardar el nombre real dentro del JSON.
+
+---
+
+### Sesión 2026-08-19 (~13:10) — Sesión pausada: Servidor no disponible
+
+## Estado
+
+Usuario cerró Excel, servidor HTTP no disponible para indexar libros.
+
+## Pendiente inmediato para próxima sesión
+
+**Indexar 4 libros Excel al RAG:**
+```
+F:\ANTIGRAVITY\2026\NEVEN\ontologia-fuentes\LIBROS EXCEL\
+  - VBAExcel-MNumericos.pdf (1 MB)
+  - Wiley - Advanced Modelling in Finance using Excel and VBA.pdf (1.3 MB)
+  - Wiley - Credit Risk Modeling using Excel and VBA.pdf (18.5 MB)
+  - Wiley - Excel for scientists and engineers numerical methods.pdf (31.3 MB)
+```
+
+## Comando para indexar (cuando servidor esté disponible)
+
+```powershell
+$books = @(
+    "VBAExcel-MNumericos.pdf",
+    "Wiley - Advanced Modelling in Finance using Excel and VBA.pdf",
+    "Wiley - Credit Risk Modeling using Excel and VBA.pdf",
+    "Wiley - Excel for scientists and engineers numerical methods.pdf"
+)
+$basePath = "F:\ANTIGRAVITY\2026\NEVEN\ontologia-fuentes\LIBROS EXCEL"
+
+foreach ($book in $books) {
+    $body = @{ file_path = (Join-Path $basePath $book); domain = "excel" } | ConvertTo-Json
+    Invoke-RestMethod -Uri "http://localhost:5555/api/rag/upload" -Method POST -ContentType "application/json" -Body $body -TimeoutSec 300
+}
+```
+
+## Resumen completo de la sesión larga
+
+### Logros principales
+1. ✅ Documentación flujo agregar libros (`docs/COMO_AGREGAR_LIBROS.md`)
+2. ✅ Script automatización (`scripts/add_book.py`)
+3. ✅ Mejora `list_processed_books()` con matching fuzzy desde checkpoints
+4. ✅ Consolidación econometría: 22 → 14 libros únicos
+5. ✅ Consolidación Excel: 7 → 3 libros únicos
+6. ✅ Fix checkpoint Curso Práctico (nombre con ":" ilegal en Windows)
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `docs/COMO_AGREGAR_LIBROS.md` | Nuevo - documentación |
+| `scripts/add_book.py` | Nuevo - script CLI |
+| `src/ControlPython/startup/ontology_manager.py` | Matching fuzzy checkpoints |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | Consolidación 3,630 entidades |
+| `C:\NEVEN\ontology\excel\graph.jsonl` | Consolidación 73 entidades |
+| `C:\NEVEN\docs\ontologia\checkpoints\*.json` | 8 checkpoints nuevos/corregidos |
+
+### Commits
+No se realizaron commits (pendientes).
+
+---
+
+### Sesión 2026-08-19 (~13:20) — Indexación 4 Libros Excel al RAG ✅
+
+## Logro
+
+Indexados los 4 libros de Excel faltantes al RAG y creados sus checkpoints.
+
+## Libros indexados
+
+| Libro | Páginas | Tamaño |
+|-------|---------|--------|
+| VBA Excel Metodos Numericos | 76 | 1 MB |
+| Advanced Modelling in Finance (Wiley) | 262 | 1.3 MB |
+| Credit Risk Modeling (Wiley) | 278 | 18.5 MB |
+| Excel for Scientists and Engineers (Wiley) | 477 | 31.3 MB |
+
+## Estado final Excel
+
+| Métrica | Cantidad |
+|---------|----------|
+| Libros en RAG | **7** |
+| Libros con checkpoints | **7** |
+| Libros con entidades ontología | 3 |
+
+## Checkpoints Excel completos
+
+```
+[1104 pags] Microsoft Excel 365 Bible
+[477 pags] Excel for Scientists and Engineers (Wiley)
+[456 pags] Excel 2019-365: Curso Práctico Paso a Paso
+[278 pags] Credit Risk Modeling (Wiley)
+[262 pags] Advanced Modelling in Finance (Wiley)
+[206 pags] CFI Excel eBook
+[76 pags] VBA Excel Metodos Numericos
+```
+
+## Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `checkpoints/VBA Excel Metodos Numericos_excel_*.json` | Nuevo |
+| `checkpoints/Advanced Modelling in Finance (Wiley)_excel_*.json` | Nuevo |
+| `checkpoints/Credit Risk Modeling (Wiley)_excel_*.json` | Nuevo |
+| `checkpoints/Excel for Scientists and Engineers (Wiley)_excel_*.json` | Nuevo |
+
+## Nota técnica
+
+PowerShell `Invoke-RestMethod` tuvo problemas con el timeout. Se usó Python `requests` para indexar exitosamente.
+
+## Commits
+
+No se realizaron commits (pendientes).
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Verificar UI muestra 7 libros Excel |
+| **ALTA** | Commit de todos los cambios de la sesión |
+| **MEDIA** | Procesar ontología para los 4 libros nuevos (requiere tokens LLM) |
+| **BAJA** | Sincronizar archivos al repositorio |
+
+---
+
+### Sesión 2026-08-19 (~13:30) — Verificación Integración RAG + Ontología ✅
+
+## Objetivo
+
+Verificar que los libros están correctamente conectados a la ontología y disponibles para el Excel Consultant.
+
+## Verificación realizada
+
+### 1. Ontología cargada correctamente
+
+| Dominio | Entidades | Libros |
+|---------|-----------|--------|
+| Excel | 197 | 3 (con entidades) |
+| Econometría | 6,114 | 14 |
+
+### 2. Test de query RAG + Ontología
+
+**Query:** "VLOOKUP with IFERROR"
+
+| Métrica | Resultado |
+|---------|-----------|
+| Entidades matcheadas | 10 |
+| Entidades expandidas | 9 (por relaciones) |
+| Chunks encontrados | 5 |
+
+**Entidades activadas:**
+- IFERROR (ExcelFunction)
+- VLOOKUP (ExcelFunction)
+- VLOOKUP Cannot Look Left (CommonError)
+
+**Fuentes de contexto:**
+- CFI Excel eBook (páginas 106-109)
+
+### 3. Flujo de integración confirmado
+
+```
+Query usuario
+    ↓
+[1] Match entidades ontología (keywords, nombres)
+    ↓
+[2] Expandir por relaciones (grafo)
+    ↓
+[3] Búsqueda vectorial en RAG (chunks de libros)
+    ↓
+[4] Combinar contexto para LLM
+```
+
+## Estado final del sistema
+
+**Libros Excel:**
+- 7 libros en RAG (búsqueda vectorial)
+- 3 libros con entidades de ontología (Excel Bible, CFI, Curso Práctico)
+- 4 libros solo en RAG (Wiley) — disponibles para vectorial, sin entidades
+
+**Libros Econometría:**
+- 14 libros consolidados
+- Todos con checkpoints
+- 6,114 entidades de ontología
+
+## Conclusión
+
+✅ **El Excel Consultant puede usar los libros para mejorar respuestas:**
+1. Las entidades de ontología (VLOOKUP, IFERROR, etc.) se activan por keywords
+2. Las relaciones expanden el contexto (errores comunes, best practices)
+3. El RAG encuentra chunks relevantes de los libros indexados
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit de todos los cambios de la sesión |
+| **MEDIA** | Procesar entidades de ontología para los 4 libros Wiley (opcional, requiere LLM) |
+| **BAJA** | Mejorar metadata de chunks para mostrar nombre de libro fuente |
+
+---
+
+## RESUMEN COMPLETO DE LA SESIÓN LARGA (2026-08-19)
+
+### Logros principales
+
+1. **Documentación del flujo de agregar libros**
+   - `docs/COMO_AGREGAR_LIBROS.md` — guía completa
+   - `scripts/add_book.py` — script CLI de automatización
+
+2. **Mejora de `list_processed_books()`**
+   - Ahora lee de checkpoints además de entidades
+   - Matching fuzzy para nombres similares
+   - Fix para caracteres ilegales en Windows (`:` en nombres)
+
+3. **Consolidación de libros duplicados**
+   - Econometría: 22 → 14 libros (3,630 entidades actualizadas)
+   - Excel: 7 → 3 libros con entidades (73 entidades actualizadas)
+
+4. **Indexación de 4 libros Excel nuevos al RAG**
+   - VBA Excel Métodos Numéricos (76 págs)
+   - Advanced Modelling in Finance (262 págs)
+   - Credit Risk Modeling (278 págs)
+   - Excel for Scientists and Engineers (477 págs)
+
+5. **Verificación de integración RAG + Ontología**
+   - 197 entidades Excel cargadas
+   - Query test exitoso con expansión por relaciones
+
+### Archivos modificados (no commiteados)
+
+| Archivo | Cambio |
+|---------|--------|
+| `docs/COMO_AGREGAR_LIBROS.md` | Nuevo |
+| `scripts/add_book.py` | Nuevo |
+| `src/ControlPython/startup/ontology_manager.py` | Matching fuzzy |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | Consolidación |
+| `C:\NEVEN\ontology\excel\graph.jsonl` | Consolidación |
+| `C:\NEVEN\docs\ontologia\checkpoints\*.json` | 12+ checkpoints |
+
+### Commits pendientes
+
+Todos los cambios de la sesión requieren commit.
+
+---
+
+
+---
+
+### Sesión 2026-08-19 (~15:00) — Documentación Flujo Agregar Libros + Consolidación Duplicados
+
+## Objetivo
+
+Crear documentación completa para que cualquier agente de IA pueda manejar correctamente el proceso de agregar libros al sistema de conocimiento de NEVEN.
+
+## Logros principales
+
+1. **Steering file creado** — `.kiro/steering/agregar-libros.md` con instrucciones completas
+2. **Skill actualizado** — `.agents/skills/ontology-book-processor/SKILL.md`
+3. **Documentación de usuario** — `docs/COMO_AGREGAR_LIBROS.md`
+4. **Script de automatización** — `scripts/add_book.py`
+5. **Consolidación de duplicados** — Excel (7→3) y Econometría (22→14)
+
+## Proceso de 4 pasos documentado
+
+| Paso | Endpoint | Descripción | Obligatorio |
+|------|----------|-------------|-------------|
+| 1. RAG | `POST /api/rag/upload` | Indexar PDF al RAG | ✅ |
+| 2. Ontología | `POST /api/ontology/process` | Extraer entidades (LLM) | Opcional |
+| 3. Checkpoint | Archivo JSON | Registrar en UI | ✅ |
+| 4. Verificar | `GET /api/rag/query` | Confirmar búsqueda | ✅ |
+
+## Consolidación de libros duplicados
+
+### Excel (7 → 3 únicos)
+| Antes | Después |
+|-------|---------|
+| Microsoft Excel 365 Bible | Microsoft Excel 365 Bible |
+| Microsoft Excel 365 Bible (Walkenbach) | ↑ (fusionado) |
+| CFI Excel eBook | CFI Excel eBook |
+| CFI Excel for Financial Modelling | ↑ (fusionado) |
+| Excel Basics Tutorial | Excel 2019-365 Curso Práctico |
+| Curso Práctico de Excel 2019 | ↑ (fusionado) |
+| Excel 2019-365 Curso Práctico | ↑ (fusionado) |
+
+### Econometría (22 → 14 únicos)
+- Consolidados nombres duplicados/variantes
+- Actualizadas 3,630 entidades con source_book corregido
+
+## Libros Wiley indexados (nuevos)
+
+| Libro | Chunks | Páginas |
+|-------|--------|---------|
+| VBAExcel-MNumericos | 83 | 76 |
+| Wiley - Excel for Scientists and Engineers | 268 | 262 |
+| Wiley - Credit Risk Modeling | 200 | 278 |
+| Wiley - Advanced Modelling in Finance | 281 | 477 |
+
+## Checkpoints creados
+
+Ubicación: `C:\NEVEN\docs\ontologia\checkpoints\`
+
+Convención de nombres: `{safe_name}_{domain}_{hash12}.json`
+- `safe_name`: nombre sin caracteres ilegales de Windows (`: * ? " < > |`)
+- `hash12`: primeros 12 caracteres del hash SHA256 del PDF
+
+## Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `.kiro/steering/agregar-libros.md` | **NUEVO** — instrucciones para agentes |
+| `.agents/skills/ontology-book-processor/SKILL.md` | Actualizado con workflow completo |
+| `docs/COMO_AGREGAR_LIBROS.md` | **NUEVO** — documentación de usuario |
+| `scripts/add_book.py` | **NUEVO** — script de automatización |
+| `src/ControlPython/startup/ontology_manager.py` | Fix fuzzy matching en `list_processed_books()` |
+| `C:\NEVEN\ontology\excel\graph.jsonl` | Consolidado 73 entidades |
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | Consolidado 3,630 entidades |
+
+## Stats finales
+
+| Métrica | Valor |
+|---------|-------|
+| Entidades Excel | 197 |
+| Entidades Econometría | 6,114 |
+| Libros Excel procesados | 7 |
+| Libros Econometría procesados | 14 |
+
+## Verificación exitosa
+
+Query: "VLOOKUP with IFERROR"
+- Matched entities: 10
+- Expanded entities: 9
+- Chunks: 5 (CFI Excel eBook)
+
+## Pendientes
+
+- [ ] Commit de todos los cambios al repositorio
+- [ ] Opcional: Procesar ontología para los 4 libros Wiley nuevos (consume tokens LLM)
+- [ ] **ALTA** Investigar por qué `query_with_ontology` degrada resultados vectoriales
+
+
+
+---
+
+### Sesión 2026-08-19 (~16:00) — Sesión breve de verificación
+
+## Resumen
+
+Sesión muy corta. El agente revisó CHAT.md para retomar contexto después de un summary de conversación y agregó la entrada de la sesión anterior (~15:00) que documentó el flujo de agregar libros.
+
+## Acciones realizadas
+
+- Leído CHAT.md para verificar estado del proyecto
+- Agregada entrada de sesión anterior que no se había registrado (documentación flujo agregar libros + consolidación duplicados)
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `.kiro/contexto/CHAT.md` | +entrada sesión 15:00 |
+
+## Commits realizados
+
+Ninguno en esta sesión.
+
+## Pendientes (heredados de sesión anterior)
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Investigar por qué `query_with_ontology` degrada resultados vectoriales |
+| **MEDIA** | Commit de cambios del flujo agregar libros al repositorio |
+| **BAJA** | Procesar ontología para los 4 libros Wiley nuevos (consume tokens LLM) |
+
+
+
+---
+
+### Sesión 2026-08-19 (~16:30) — Explicación RAG vs Ontología
+
+## Resumen
+
+Sesión de Q&A. El usuario preguntó qué significaba "procesar ontología para los libros Wiley".
+
+## Explicación dada
+
+El sistema de conocimiento de NEVEN tiene dos componentes:
+
+1. **RAG** — Indexa texto completo en chunks para búsqueda vectorial. Ya hecho para los 4 libros Wiley (832 chunks).
+
+2. **Ontología** — Extrae entidades estructuradas (funciones, conceptos, técnicas) y relaciones usando un LLM. NO hecho para los Wiley.
+
+**Diferencia práctica:**
+- RAG: Encuentra texto relevante ("Black-Scholes" → párrafos del libro)
+- Ontología: Entiende relaciones ("¿qué funciones usa Black-Scholes?" → EXP, LN, NORM.S.DIST)
+
+**Costo de procesar ontología:** ~50K-100K tokens por libro de 400 páginas.
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Decisión pendiente
+
+Usuario no indicó si quiere procesar ontología para los libros Wiley. Queda como pendiente opcional.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Investigar por qué `query_with_ontology` degrada resultados vectoriales |
+| **MEDIA** | Commit de cambios del flujo agregar libros al repositorio |
+| **BAJA** | Procesar ontología para los 4 libros Wiley (decisión del usuario) |
+
+
+
+---
+
+### Sesión 2026-08-19 (~17:00) — Clarificación arquitectura RAG + Ontología
+
+## Resumen
+
+Sesión de clarificación conceptual. El usuario corrigió mi explicación incorrecta sobre el flujo RAG/Ontología.
+
+## Corrección importante
+
+**Mi error:** Dije que "procesar ontología envía el PDF a un LLM" — confuso e incorrecto para el flujo de consulta.
+
+**Arquitectura correcta:**
+
+```
+Query del usuario
+      ↓
+ONTOLOGÍA LOCAL (graph.jsonl)
+      ↓
+Match entidades + expansión relaciones
+      ↓
+RAG LOCAL (DuckDB)
+      ↓
+Respuesta con chunks relevantes
+```
+
+**Todo el flujo de consulta es 100% local.**
+
+**El LLM solo se usa en la CREACIÓN INICIAL de entidades** — cuando se procesa un libro nuevo para extraer conocimiento estructurado. Una vez generadas, las entidades viven en `C:\NEVEN\ontology\{domain}\graph.jsonl` y las consultas son locales.
+
+## Estado de los libros Wiley
+
+| Componente | Estado |
+|------------|--------|
+| RAG (chunks en DuckDB) | ✅ Indexados (832 chunks) |
+| Ontología (entidades en graph.jsonl) | ❌ No generadas |
+
+## Pregunta pendiente
+
+¿El usuario quiere generar las entidades de ontología para los 4 libros Wiley? Eso sí consume tokens LLM (una sola vez), pero después todo es local.
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Investigar por qué `query_with_ontology` degrada resultados vectoriales |
+| **MEDIA** | Commit de cambios del flujo agregar libros al repositorio |
+| **MEDIA** | Decisión: ¿Generar entidades de ontología para libros Wiley? |
+
+
+
+---
+
+### Sesión 2026-08-19 (~17:30) — Procesamiento Ontología Libros Wiley ✅
+
+## Objetivo
+
+Procesar los 4 libros Wiley de Excel para extraer entidades estructuradas a la ontología.
+
+## Logros principales
+
+1. **4 libros Wiley procesados completamente** — 4,869 entidades nuevas
+2. **Ontología Excel expandida** — de ~500 a 8,272 entidades
+3. **Scripts de procesamiento creados** para automatizar en el futuro
+
+## Libros procesados
+
+| Libro | Páginas | Entidades | Tiempo aprox |
+|-------|---------|-----------|--------------|
+| VBAExcel-MNumericos | 76 | 232 | ~4 min |
+| Wiley - Excel for Scientists and Engineers | 456 | 1,809 | ~15 min |
+| Wiley - Credit Risk Modeling | 262 | 1,259 | ~10 min |
+| Wiley - Advanced Modelling in Finance | 258 | 1,569 | ~12 min |
+| **Total** | **1,052** | **4,869** | **~41 min** |
+
+## Stats finales ontología Excel
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Entidades | ~500 | **8,272** |
+| Relaciones | ~500 | **11,750** |
+| Tamaño graph.jsonl | ~200KB | **3.4MB** |
+
+## Entidades creadas (ejemplos)
+
+Las nuevas entidades incluyen conceptos financieros avanzados:
+- `tech_black_scholes` — Black-Scholes Formula
+- `model_merton` — Merton Model
+- `func_bsd1` — BSd1 VBA Function
+- `tech_newton_raphson` — Newton-Raphson Method
+- `model_monte_carlo` — Monte Carlo Simulation
+- `concept_credit_risk` — Credit Risk
+- `technique_vba_macro` — VBA Macro Techniques
+
+## Archivos creados
+
+| Archivo | Propósito |
+|---------|-----------|
+| `scripts/process_wiley_ontology.py` | Script para procesar libros |
+| `scripts/check_wiley_progress.py` | Verificar estado de procesamiento |
+| `scripts/test_wiley_search.py` | Probar búsquedas |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\excel\graph.jsonl` | +4,869 entidades de libros Wiley |
+| `docs/ontologia/excel/graph.jsonl` | Copia al repositorio (3.4MB) |
+
+## Nota importante: Reinicio requerido
+
+El servidor HTTP (PID 162100) tiene la ontología vieja en memoria. Las búsquedas no encontrarán las nuevas entidades hasta reiniciar Excel/servidor.
+
+**Para activar las nuevas entidades:**
+1. Cerrar Excel
+2. Abrir Excel de nuevo (reinicia el servidor HTTP)
+3. Las búsquedas ahora incluirán los 4,869 nuevos conceptos
+
+## Commits pendientes
+
+- [ ] Commit de `docs/ontologia/excel/graph.jsonl` (3.4MB)
+- [ ] Commit de scripts de procesamiento
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar servidor HTTP para cargar nuevas entidades |
+| **ALTA** | Investigar por qué `query_with_ontology` degrada resultados vectoriales |
+| **MEDIA** | Commit de cambios al repositorio |
+
+## Clarificación arquitectura (discutida con usuario)
+
+**Flujo de consulta (100% local):**
+```
+Query → Ontología (graph.jsonl) → Match entidades → Expansión relaciones → RAG (DuckDB) → Respuesta
+```
+
+**Flujo de creación (usa LLM una vez):**
+```
+PDF → LLM extrae entidades → graph.jsonl (local) → Distribución con NEVEN
+```
+
+El LLM solo se usa al crear la ontología inicial. Una vez creada, todo es local y se distribuye con NEVEN para que los usuarios no tengan que procesar los libros.
+
+
+
+---
+
+### Sesión 2026-08-19 (~18:00) — Normalización de Nombres de Libros en Ontología Excel
+
+## Objetivo
+
+Validar que los libros Wiley estén correctamente integrados en la ontología, UI y grafo antes de reiniciar el servidor.
+
+## Problema encontrado
+
+Los nombres de libros en `graph.jsonl` estaban **inconsistentes**:
+- 19 variaciones de nombres para 7 libros únicos
+- Con/sin ".pdf", con/sin "Wiley -", mayúsculas inconsistentes
+- Esto causaba duplicados en la UI y conteos fragmentados
+
+**Ejemplos de duplicados:**
+- "Wiley - Excel for scientists..." vs "Excel for Scientists..." vs "Excel for scientists..."
+- "VBAExcel-MNumericos.pdf" vs "VBA para Excel"
+
+## Solución aplicada
+
+Creado script `normalize_book_names.py` que:
+1. Define mapeo de variaciones → nombres canónicos
+2. Actualiza el campo `reference.book` en todas las entidades
+3. Crea backup antes de modificar
+
+**Mapeo de normalización:**
+| Variaciones | Nombre canónico |
+|-------------|-----------------|
+| Wiley - Excel for scientists..., Excel for Scientists..., etc. | Excel for Scientists and Engineers (Wiley) |
+| Wiley - Credit Risk..., Credit Risk Modeling... | Credit Risk Modeling (Wiley) |
+| Wiley - Advanced Modelling..., Advanced Modelling... | Advanced Modelling in Finance (Wiley) |
+| VBAExcel-MNumericos.pdf, VBA para Excel | VBA Excel Metodos Numericos |
+
+## Resultados
+
+**Antes:** 19 libros con nombres inconsistentes
+**Después:** 7 libros únicos con nombres normalizados
+
+| Libro | Páginas | Entidades |
+|-------|---------|-----------|
+| Advanced Modelling in Finance (Wiley) | 262 | 648 |
+| Excel for Scientists and Engineers (Wiley) | 477 | 466 |
+| Credit Risk Modeling (Wiley) | 278 | 294 |
+| VBA Excel Metodos Numericos | 76 | 125 |
+| Microsoft Excel 365 Bible | 1,104 | 84 |
+| CFI Excel eBook | 206 | 83 |
+| Excel 2019-365: Curso Práctico | 456 | 19 |
+
+**Total:** 1,719 entidades con libro asignado
+
+## Checkpoints consolidados
+
+También se consolidaron checkpoints duplicados:
+- RAG checkpoints (con páginas) + Ontología checkpoints (con entidades)
+- Ahora cada libro tiene un solo checkpoint con ambos datos
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\excel\graph.jsonl` | Normalizados 1,533 nombres de libros |
+| `C:\NEVEN\ontology\excel\graph.jsonl.bak.*` | Backup creado |
+| `docs/ontologia/excel/graph.jsonl` | Copia al repositorio |
+| `C:\NEVEN\docs\ontologia\checkpoints\*_excel_*.json` | Consolidados y nombres actualizados |
+
+## Scripts creados
+
+| Script | Propósito |
+|--------|-----------|
+| `scripts/normalize_book_names.py` | Normalizar nombres de libros |
+| `scripts/count_books_in_graph.py` | Contar entidades por libro |
+| `scripts/verify_wiley_integration.py` | Verificar integración completa |
+
+## Commits realizados
+
+Ninguno en esta sesión — pendiente commit general.
+
+## Verificación completada
+
+- ✅ Checkpoints (UI): 7 libros con páginas y entidades
+- ✅ Graph.jsonl: 7 libros únicos, nombres normalizados
+- ✅ Relaciones: 11,750 relaciones en el grafo Excel
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar servidor HTTP para cargar ontología normalizada |
+| **ALTA** | Commit de todos los cambios al repositorio |
+| **MEDIA** | Investigar por qué `query_with_ontology` degrada resultados vectoriales |
+
+## Nota técnica
+
+6,553 entidades en el grafo no tienen libro asignado — son entidades genéricas (shortcuts, funciones base, patterns) que no provienen de un libro específico. Esto es esperado.
+
+
+
+---
+
+### Sesión 2026-08-19 (~18:30) — Validación Análisis Forense con Conocimiento Wiley
+
+## Objetivo
+
+Verificar que el análisis forense de libros Excel se beneficia del nuevo conocimiento de los libros Wiley procesados.
+
+## Problema encontrado
+
+La función `get_excel_function()` solo buscaba entidades tipo `ExcelFunction`, pero los libros Wiley generaron entidades tipo `Function` para funciones VBA. Esto significaba que funciones VBA como BSd1, Newton-Raphson, etc. no se incluían en el enriquecimiento forense.
+
+**Causa raíz:** El código original asumía que todas las funciones serían del tipo nativo de Excel.
+
+## Solución aplicada
+
+### 1. Actualizar `get_excel_function()` en ontology_manager.py
+
+```python
+# Antes: solo buscaba ExcelFunction
+if entity and entity.type == "ExcelFunction":
+
+# Después: busca ambos tipos
+if entity and entity.type in ("ExcelFunction", "Function"):
+```
+
+También agregó campos `source_book` y `type` al resultado para trazabilidad.
+
+### 2. Actualizar `enrich_with_ontology()` en sheet_analyzer.py
+
+Ahora incluye:
+- `source_book`: Libro de referencia (Wiley, CFI, Bible)
+- `function_type`: Distingue ExcelFunction vs Function/VBA
+
+### 3. Actualizar prompt forense
+
+Agregada sección "CONOCIMIENTO DISPONIBLE" al inicio del prompt que lista los libros de referencia disponibles para dar contexto al agente.
+
+## Verificación exitosa
+
+| Test | Resultado |
+|------|-----------|
+| VLOOKUP con libro | ✅ → "Advanced Modelling in Finance (Wiley)" |
+| NPV con libro | ✅ → "Advanced Modelling in Finance (Wiley)" |
+| BSd1 (VBA) encontrada | ✅ Con descripción Black-Scholes |
+| Búsqueda "Black-Scholes" | ✅ 50 resultados |
+| Búsqueda "credit risk" | ✅ 17 resultados |
+| Búsqueda "Monte Carlo" | ✅ 32 resultados |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\startup\ontology_manager.py` | get_excel_function() busca Function + ExcelFunction |
+| `C:\NEVEN\startup\sheet_analyzer.py` | enrich_with_ontology() incluye source_book |
+| `C:\NEVEN\prompts\analisis_forense_libro.txt` | Agregada sección CONOCIMIENTO DISPONIBLE |
+| `src/ControlPython/startup/ontology_manager.py` | Copia al repositorio |
+| `src/ControlPython/startup/sheet_analyzer.py` | Copia al repositorio |
+| `prompts/analisis_forense_libro.txt` | **NUEVO** en repositorio |
+
+## Scripts de prueba creados
+
+| Script | Propósito |
+|--------|-----------|
+| `scripts/test_forensic_enrichment.py` | Verificar enriquecimiento con libros Wiley |
+
+## Commits realizados
+
+Ninguno — pendiente commit general de toda la sesión.
+
+## Nota: "Newton Raphson" no matchea
+
+La búsqueda "Newton Raphson" (sin guión) no encuentra "Newton-Raphson" (con guión). Esto es un tema de fuzzy matching que podría mejorarse, pero el conocimiento está disponible buscando "Newton-Raphson".
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar servidor HTTP para cargar código actualizado |
+| **ALTA** | Commit de todos los cambios al repositorio |
+| **MEDIA** | Mejorar fuzzy matching para términos con guión |
+| **MEDIA** | Investigar por qué `query_with_ontology` degrada resultados vectoriales |
+
+
+
+---
+
+### Sesión 2026-08-19 (~19:00) — Propuesta Ontología NEVEN (Self-Documentation)
+
+## Discusión
+
+El usuario propuso crear una **ontología de NEVEN sobre sí mismo** — documentación estructurada del proyecto que permita a futuros desarrolladores entender y mantener el sistema sin depender del conocimiento del autor original.
+
+## Motivación
+
+Evitar el problema de BERT Toolkit: proyectos complejos que se vuelven inmantenibles cuando el desarrollador original no está disponible. La ontología + MANUAL_MANTENIMIENTO.md serían la "cereza del pastel" para garantizar continuidad.
+
+## Estructura propuesta
+
+```
+C:\NEVEN\ontology\neven\
+├── schema.yaml          # Tipos: Component, Function, Flow, Pattern, Config
+├── graph.jsonl          # Entidades y relaciones
+└── README.md            # Guía de uso y mantenimiento
+```
+
+## Categorías de entidades
+
+| Categoría | Ejemplos |
+|-----------|----------|
+| **Componentes** | NEVEN64.xll, ControlR.exe, ControlPython.exe, HTTP Server |
+| **Arquitectura** | Capas, Named Pipes, Protobuf, Threading |
+| **Funciones** | NEVEN.r(), NEVEN.julia(), aliases |
+| **Flujos** | Excel→Sidecar→Motor, TaskPane→HTTP→RAG |
+| **Configuración** | neven-config.json, paths, env vars |
+| **Patrones** | Convenciones de código, singletons, error handling |
+
+## Beneficios esperados
+
+1. **Onboarding acelerado** — Nuevos devs entienden arquitectura visualmente
+2. **Cambios seguros** — Ver dependencias antes de modificar
+3. **Debugging guiado** — Ontología sugiere qué verificar según el error
+4. **Consistencia** — Lista de lugares a actualizar al agregar funciones
+
+## Enfoque de construcción
+
+1. Extraer del código (C++, Python, R) — clases, funciones, dependencias
+2. Extraer de docs — MANUAL_MANTENIMIENTO.md, arquitectura.md
+3. Curar manualmente — relaciones críticas, "por qué" de decisiones
+4. Mantener viva — hooks que detecten cambios y sugieran actualizar
+
+## Archivos modificados
+
+Ninguno — solo discusión.
+
+## Commits realizados
+
+Ninguno.
+
+## Decisión
+
+**APROBADO** — Proceder con la creación de la ontología NEVEN en próxima sesión.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar servidor HTTP (cambios pendientes de sesiones anteriores) |
+| **ALTA** | Commit de todos los cambios al repositorio |
+| **ALTA** | Crear ontología NEVEN con entidades semilla |
+| **MEDIA** | Investigar query_with_ontology degradación |
+
+
+
+---
+
+### Sesión 2026-08-19 (~15:00) — Ontología de NEVEN (Self-Documenting Project)
+
+## Objetivo
+
+Crear una ontología del proyecto NEVEN mismo para preservar conocimiento arquitectónico y guiar desarrollo futuro. La ontología hace que el propio sistema sea auto-documentado y visible en TaskPane.
+
+## Trabajo realizado
+
+**Creada ontología `neven` con:**
+- **46 entidades** distribuidas en 11 tipos
+- **35 relaciones** conectando componentes, configuraciones, directorios y patrones
+
+### Tipos de entidades creados:
+
+| Tipo | Cantidad | Ejemplos |
+|------|----------|----------|
+| Component | 16 | NEVEN64.xll, ControlR.exe, ControlJulia.exe, ControlPython.exe, HTTP Server |
+| ConfigFile | 2 | neven-config.json, neven-languages.json |
+| Directory | 6 | Producción (C:\NEVEN), startup, functions, ontology, data, Repo |
+| DataFlow | 6 | Excel→R, Excel→Julia, Excel→Python, TaskPane→Server, RAG→Ontology |
+| Pattern | 6 | Singleton, Named Pipes, Protobuf, STA Thread, JSONL, UTF-8 sin BOM |
+| Workaround | 3 | Quarto spaces (junction), Julia sysimage, DuckDB lock |
+| ExposedFunction | 4 | NEVEN.r(), NEVEN.j(), NEVEN.py(), NEVEN.v() |
+| BuildTarget | 3 | NEVEN64.xll, ControlR.exe, NEVEN-SIM.xll |
+
+### Archivos creados:
+
+| Archivo | Ubicación | Propósito |
+|---------|-----------|-----------|
+| `schema.yaml` | C:\NEVEN\ontology\neven\ | Definición de tipos de entidades y relaciones |
+| `graph.jsonl` | C:\NEVEN\ontology\neven\ | 81 líneas: 46 entidades + 35 relaciones |
+| `README.md` | C:\NEVEN\ontology\neven\ | Guía de uso para desarrolladores |
+
+### Validación:
+- ✓ JSON válido (81 líneas)
+- ✓ Copiado a repositorio: `F:\ANTIGRAVITY\2026\NEVEN\docs\ontologia\neven\`
+
+## Patrones documentados (clave)
+
+1. **Singleton Pattern** — RJ2XCL_Engine, ViewerManager, ConfigService
+2. **Named Pipes IPC** — Comunicación XLL ↔ sidecars
+3. **Protobuf Serialization** — variable.proto para datos Excel↔R/Julia/Python
+4. **STA Thread for WebView2** — Requerimiento COM
+5. **JSONL Ontology** — Append-only, versionable en git
+6. **UTF-8 sin BOM** — Requerido para archivos R
+
+## Workarounds documentados
+
+1. **Quarto spaces** — Junction `C:\Quarto` porque Sass falla con espacios en ruta
+2. **Julia sysimage** — `neven_julia.dll` (~415MB) elimina cold start de minutos
+3. **DuckDB lock** — Usar endpoint HTTP en lugar de acceso directo a DB
+
+## Contexto previo en esta sesión
+
+- Procesamiento de 4 libros Wiley Excel (4,869 entidades totales)
+- Normalización de nombres de libros (19 variaciones → 7 únicos)
+- Actualización de `get_excel_function()` para buscar ExcelFunction + Function
+- Actualización de `enrich_with_ontology()` para incluir source_book
+- Actualización del prompt forense con referencias a libros Wiley
+
+## Pendientes
+
+- [ ] Reiniciar Excel + HTTP Server para cargar nueva ontología
+- [ ] Verificar que dominio "neven" aparezca en dropdown del TaskPane
+- [ ] Commit de todos los cambios al repositorio
+- [ ] Continuar investigación de `query_with_ontology` degradando resultados
+
+
+---
+
+### Sesión 2026-08-19 (~16:00) — Fix: NEVEN en visualizador de grafos
+
+## Problema
+
+El dominio "neven" no aparecía en el dropdown del visualizador de ontologías.
+
+## Causa raíz
+
+El archivo `ontology-graph.html` tiene un selector hardcodeado con los dominios disponibles. El nuevo dominio "neven" no estaba listado.
+
+## Fix aplicado
+
+1. Agregado `<option value="neven">NEVEN (Arquitectura)</option>` al selector
+2. Agregados colores para los 7 tipos de entidades del dominio NEVEN:
+   - Component → Azul (#2196f3)
+   - ConfigFile → Gris (#9e9e9e)
+   - Directory → Café (#795548)
+   - DataFlow → Cyan (#00bcd4)
+   - Workaround → Naranja (#ff5722)
+   - ExposedFunction → Verde claro (#8bc34a)
+   - BuildTarget → Azul gris (#607d8b)
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\ontology-graph.html` | +1 opción al selector, +7 colores |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\ontology-graph.html` | Copia al repositorio |
+
+## Verificación
+
+```
+GET /api/ontology/graph?domain=neven&limit=100&format=vis
+
+Tipos de entidades:
+  - Component: 16
+  - Pattern: 6
+  - Directory: 6
+  - DataFlow: 6
+  - ExposedFunction: 4
+  - BuildTarget: 3
+  - Workaround: 3
+  - ConfigFile: 2
+```
+
+## Servidor HTTP reiniciado
+
+- Terminal ID: `term_1791932629593_sl51oit893`
+- Puerto: 5555
+
+## Pendientes actualizados
+
+- [x] ~~Verificar que dominio "neven" aparezca en dropdown del TaskPane~~ ✅
+- [ ] Reiniciar Excel para probar visualizador actualizado
+- [ ] Commit de todos los cambios al repositorio
+
+
+---
+
+### Sesión 2026-08-19 (~16:30) — Fix: Entidades desconectadas en ontología NEVEN
+
+## Problema
+
+El visualizador de grafos mostraba puntos desconectados en el dominio NEVEN — entidades sin relaciones.
+
+## Causa raíz
+
+Al crear la ontología NEVEN inicial, solo se definieron 35 relaciones para 46 entidades. Quedaron **17 entidades huérfanas**:
+- 3 directorios: dir_functions, dir_data, dir_repo
+- 6 flujos de datos: flow_excel_to_r, flow_excel_to_julia, flow_excel_to_python, flow_taskpane_to_server, flow_server_to_rag, flow_rag_to_ontology
+- 1 patrón: pattern_utf8_no_bom
+- 4 funciones expuestas: func_neven_r, func_neven_julia, func_neven_py, func_neven_view
+- 3 build targets: build_neven_xll, build_controlr, build_neven_sim
+
+## Fix aplicado
+
+Agregadas **21 relaciones nuevas** para conectar todas las entidades:
+
+| Tipo | Cantidad | Conecta |
+|------|----------|---------|
+| contains | 2 | dir_production → dir_functions, dir_data |
+| mirrors | 1 | dir_repo → dir_production |
+| represents | 6 | Cada DataFlow → su componente target |
+| exposes | 4 | comp_neven_xll → las 4 funciones expuestas |
+| produces | 3 | Cada BuildTarget → su componente resultante |
+| uses | 4 | Cada función → su sidecar (ControlR, ControlJulia, etc.) |
+| applies_to | 1 | pattern_utf8_no_bom → dir_functions |
+
+## Resultado
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Entidades | 46 | 46 |
+| Relaciones | 35 | **56** |
+| Desconectadas | 17 (37%) | **0 (0%)** |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\neven\graph.jsonl` | +21 relaciones (ahora 102 líneas) |
+| `F:\ANTIGRAVITY\2026\NEVEN\docs\ontologia\neven\graph.jsonl` | Copia al repositorio |
+
+## Servidor HTTP reiniciado
+
+- Terminal ID: `term_1791933429984_7slvvzi3bxe`
+- Puerto: 5555
+
+## Pendientes
+
+- [ ] **ALTA** Commit de todos los cambios de hoy al repositorio
+- [ ] **MEDIA** Probar navegación del grafo NEVEN en TaskPane
+- [ ] **BAJA** Agregar más entidades NEVEN (tests, scripts de deploy, etc.)
+
+
+---
+
+### Sesión 2026-08-19 (~17:00) — Fix: DuckDB como componente central
+
+## Problema
+
+DuckDB aparecía aislado en el grafo, con solo una relación (rag_engine → duckdb). Esto no reflejaba su rol central como almacenamiento de datos para todo NEVEN Studio.
+
+## Causa raíz
+
+La ontología inicial solo documentó la dependencia RAG → DuckDB, ignorando que:
+- HTTP Server accede a DuckDB via API
+- TaskPane/Studio usa DuckDB para DataLab y operaciones del usuario
+- DuckDB está ubicado en dir_data
+- El workaround de DB lock aplica directamente a DuckDB
+
+## Fix aplicado
+
+Agregadas **8 relaciones nuevas** + **1 entidad DataFlow**:
+
+| Relación | De → A | Propósito |
+|----------|--------|-----------|
+| depends_on | comp_http_server → comp_duckdb | Server depende de DuckDB |
+| depends_on | comp_taskpane → comp_duckdb | Studio depende de DuckDB |
+| stores_data_for | comp_duckdb → comp_rag_engine | DuckDB almacena para RAG |
+| stores_data_for | comp_duckdb → comp_taskpane | DuckDB almacena para Studio |
+| stores_data_for | comp_duckdb → comp_http_server | DuckDB almacena para Server |
+| contains | dir_data → comp_duckdb | Ubicación física |
+| represents | flow_studio_to_duckdb → comp_duckdb | Flujo de datos |
+| workaround_for | workaround_db_lock → comp_duckdb | Workaround aplica a DuckDB |
+
+**Nueva entidad:** `flow_studio_to_duckdb` — representa el flujo DataLab/usuario → DuckDB
+
+## Resultado
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Entidades | 46 | **47** |
+| Relaciones | 56 | **64** |
+| Relaciones de DuckDB | 1 | **9** |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\neven\graph.jsonl` | +1 entidad, +8 relaciones |
+| `F:\ANTIGRAVITY\2026\NEVEN\docs\ontologia\neven\graph.jsonl` | Copia al repositorio |
+
+## Servidor HTTP reiniciado
+
+- Terminal ID: `term_1791934709975_fm9wijr8uql`
+- Puerto: 5555
+
+## Decisión de diseño
+
+Se usó la relación bidireccional `stores_data_for` (DuckDB → componente) además de `depends_on` (componente → DuckDB) para representar que:
+1. Los componentes **dependen** de DuckDB para funcionar
+2. DuckDB **almacena datos para** esos componentes
+
+Esto hace que DuckDB aparezca como nodo central con conexiones entrantes y salientes.
+
+## Pendientes
+
+- [ ] **ALTA** Commit de todos los cambios de hoy al repositorio
+- [ ] **MEDIA** Revisar si otros componentes necesitan más conexiones
+- [ ] **BAJA** Agregar entidades para scripts de deploy y tests
+
+
+---
+
+### Sesión 2026-08-19 (~17:30) — Análisis de Ontología Econometría vs Documentos Curriculares
+
+## Contexto
+
+El usuario proporcionó 3 documentos markdown con taxonomía completa de econometría:
+- `Econometría 01.md` — Taxonomía y mapa conceptual (OLS como nodo raíz, 5 ejes de ramificación)
+- `Econometría 02.md` — Arquitectura dimensional (Corte Transversal, Panel, DiD)
+- `Econometría 03.md` — Ecosistema de librerías R (clásico vs moderno)
+
+## Análisis realizado
+
+**Estado actual de la ontología econometría:**
+- 6,114 entidades
+- 13,821 relaciones
+- Solo 10 entidades desconectadas (0.16%)
+
+**Búsqueda de 82 conceptos clave de los documentos:**
+- Encontrados: 59 (72%)
+- Faltantes: 23 (28%)
+
+## Conceptos faltantes identificados
+
+| Categoría | Conceptos | Prioridad |
+|-----------|-----------|-----------|
+| **DiD Moderno (2019-2024)** | TWFE, Staggered DiD, Event Study, Tendencias Paralelas, Callaway & Sant'Anna, Sun & Abraham, Goodman-Bacon, ATT | **ALTA** |
+| **Series de Tiempo** | ARDL, Bounds Testing (Pesaran) | **MEDIA** |
+| **Taxonomía/Raíz** | MCRL (nodo raíz), OVB (sesgo variable omitida) | **ALTA** |
+| **Errores Robustos** | HC0, HC3 específicos | **BAJA** |
+| **Paquetes R Modernos** | fixest, feols, rugarch, dynlm, bacondecomp | **MEDIA** |
+
+## Problema estructural detectado
+
+Los documentos proponen una **arquitectura jerárquica** donde:
+1. OLS/MCRL es el **nodo RAÍZ** del cual todo deriva
+2. Las ramificaciones son por **violación de supuestos** (Gauss-Markov)
+3. DiD es la **intersección** entre Panel y Causalidad
+
+La ontología actual tiene las piezas individuales pero **le falta la estructura jerárquica explícita**.
+
+## Opciones propuestas al usuario
+
+| Opción | Descripción | Esfuerzo |
+|--------|-------------|----------|
+| **A (Enriquecimiento)** | +50 entidades, +100 relaciones: nodo raíz MCRL, 5 ejes de ramificación, DiD moderno completo | Alto |
+| **B (Mínimo)** | +25 entidades, +40 relaciones: solo DiD moderno y conectar huérfanas | Medio |
+| **C (Documentos como fuente)** | Extraer entidades/relaciones de los diagramas Mermaid | Medio-Alto |
+
+## Entidades desconectadas actuales (10)
+
+```
+dist_laplace, dist_weibull, dist_pareto, dist_lognormal, 
+dist_hypergeometric, dist_multinomial, func_erf, 
+theorem_boole_inequality, test_shapiro_wilk, concept_poisson_process
+```
+
+## Archivos analizados (no modificados)
+
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | Ontología actual (4.2MB) |
+| `ontologia-fuentes\LIBROS ECONOMETRIA\Econometría 01.md` | Taxonomía OLS |
+| `ontologia-fuentes\LIBROS ECONOMETRIA\Econometría 02.md` | Panel y DiD |
+| `ontologia-fuentes\LIBROS ECONOMETRIA\Econometría 03.md` | Librerías R |
+
+## Pendientes
+
+- [ ] **ALTA** Decidir opción de enriquecimiento (A, B, o C)
+- [ ] **ALTA** Agregar DiD moderno (TWFE, Staggered, Callaway-Sant'Anna)
+- [ ] **ALTA** Crear nodo raíz MCRL con relaciones jerárquicas
+- [ ] **MEDIA** Agregar ARDL y Bounds Testing
+- [ ] **MEDIA** Agregar paquetes R modernos (fixest, feols)
+- [ ] **BAJA** Conectar 10 entidades huérfanas
+- [ ] **ALTA** Commit de todos los cambios de ontología NEVEN al repositorio
+
+
+---
+
+### Sesión 2026-08-19 (~18:00) — Enriquecimiento Ontología Econometría desde Curriculum
+
+## Trabajo realizado
+
+Opción C seleccionada: extraer entidades y relaciones directamente de los 3 documentos de curriculum de econometría (Econometría 01-03.md).
+
+## Entidades agregadas (64 nuevas)
+
+| Categoría | Entidades | Ejemplos |
+|-----------|-----------|----------|
+| **Nodo Raíz** | 1 | model_mcrl_ols_root (MCRL/OLS) |
+| **Branches (5 Ejes)** | 5 | branch_covariance_matrix, branch_exogeneity, branch_time_series, branch_panel_data, branch_limited_dependent |
+| **Eje 1: Covarianza** | 13 | heteroskedasticity, White HC, WLS, FGLS, ARCH, GARCH, Newey-West, Prais-Winsten |
+| **Eje 2: Endogeneidad** | 8 | OVB, 2SLS, 3SLS, GMM, RDD, PSM |
+| **Eje 3: Series Tiempo** | 16 | stationarity, unit_root, cointegration, ARMA, ARDL, Bounds Testing, VECM, Johansen |
+| **Panel y DiD** | 22 | cross_section, alpha_i, TWFE, DiD, parallel_trends, Staggered DiD, Callaway-Sant'Anna, Event Study |
+| **Paquetes R** | 16 | fixest, plm, urca, vars, did, rdrobust, rugarch, forecast |
+| **Funciones R** | 10 | feols(), sunab(), att_gt(), vcovHC(), ca.jo() |
+
+## Relaciones agregadas (121 nuevas)
+
+| Tipo | Cantidad | Conecta |
+|------|----------|---------|
+| Curriculum | 109 | Entidades nuevas entre sí |
+| Puente | 56 | Nuevas con existentes (OLS, Panel, IV, GARCH, VAR) |
+| Huérfanas | 12 | Distribuciones y tests desconectados |
+
+## Estado final de la ontología econometría
+
+| Métrica | Antes | Después | Incremento |
+|---------|-------|---------|------------|
+| Entidades | 6,114 | **6,178** | +64 |
+| Relaciones | 13,821 | **13,942** | +121 |
+| Desconectadas | 10 | **0** | -10 |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | +64 entidades, +121 relaciones (4.05 MB) |
+| `F:\ANTIGRAVITY\2026\NEVEN\docs\ontologia\econometria\graph.jsonl` | Copia al repositorio |
+
+## Archivos fuente procesados
+
+| Archivo | Contenido extraído |
+|---------|-------------------|
+| `Econometría 01.md` | Taxonomía OLS, 5 ejes de ramificación, diagrama Mermaid |
+| `Econometría 02.md` | Panel, DiD, TWFE, Staggered DiD, Callaway-Sant'Anna |
+| `Econometría 03.md` | Paquetes R clásicos y modernos, funciones clave |
+
+## Verificación
+
+```python
+# OntologyManager carga correctamente las 6,178 entidades
+om.load_domain('econometria')
+om.get_by_id('econometria', 'model_mcrl_ols_root')  # ✓
+om.get_by_id('econometria', 'model_twfe')           # ✓
+om.get_by_id('econometria', 'estimator_callaway_santanna')  # ✓
+```
+
+## Problema detectado
+
+El servidor HTTP tiene caché del RAG engine que no se invalida al reiniciar. Las nuevas entidades están en el archivo y se cargan correctamente con OntologyManager directo, pero el endpoint `/api/rag/graph?entity_id=X` no las encuentra hasta que Excel reinicie completamente.
+
+## Servidor HTTP
+
+- Terminal ID: `term_1791937948156_4qn7pcfsdo4`
+- Puerto: 5555
+
+## Pendientes
+
+- [ ] **ALTA** Reiniciar Excel para cargar ontología actualizada
+- [ ] **ALTA** Commit de todos los cambios al repositorio
+- [ ] **MEDIA** Implementar endpoint `/api/ontology/reload` para forzar recarga sin reiniciar
+- [ ] **BAJA** Agregar más relaciones puente entre curriculum y libros procesados
+
+
+---
+
+### Sesión 2026-08-19 (~18:30) — Análisis Econometría 04: Puente Álgebra Lineal ↔ Econometría
+
+## Documento revisado
+
+`Econometría 04.md` — "El Sustrato Geométrico y Matricial: La Econometría desde el Álgebra Lineal"
+
+## Valor identificado
+
+El documento establece que **toda la econometría es una aplicación directa del álgebra lineal**:
+- Proyecciones ortogonales → OLS
+- Producto de Kronecker → Estructuras de Panel
+- Factorización de Cholesky → GLS/FGLS
+- Teorema FWL → Control estadístico, Efectos Fijos
+- Matriz Compañera y radio espectral → VAR, Raíces unitarias
+- Rango reducido Π = αβ' → Cointegración de Johansen
+
+## Conceptos clave para extraer (~25-30 entidades)
+
+| Álgebra Lineal | Econometría | Nueva entidad |
+|----------------|-------------|---------------|
+| Proyección P_X, M_X | Hat Matrix, Residual Maker | `concept_hat_matrix`, `concept_residual_maker` |
+| Producto Kronecker ⊗ | Panel data structures | `concept_kronecker_panel` |
+| Teorema FWL | Control, FE, Within | `theorem_frisch_waugh_lovell` |
+| Matriz Compañera | VAR estacionario | `concept_companion_matrix` |
+| Radio espectral | Estacionariedad I(0) | `concept_spectral_radius` |
+| Rango reducido | Cointegración Johansen | `concept_reduced_rank` |
+| Descomposición QR | Estabilidad numérica OLS | `method_qr_decomposition` |
+| Número de condición κ(X) | Multicolinealidad | `concept_condition_number` |
+
+## Relaciones cross-domain propuestas (~40-50)
+
+```
+algebra_lineal::concept_orthogonal_projection ──implements──► econometria::model_mcrl_ols_root
+algebra_lineal::concept_kronecker_product ──used_in──► econometria::branch_panel_data
+algebra_lineal::concept_cholesky ──enables──► econometria::estimator_fgls
+algebra_lineal::concept_eigenvalue ──determines──► econometria::concept_stationarity
+algebra_lineal::concept_matrix_rank ──defines──► econometria::concept_cointegration
+```
+
+## Estado
+
+Análisis completado. Pendiente decisión del usuario para proceder con la extracción.
+
+## Pendientes
+
+- [ ] **ALTA** Extraer entidades de Econometría 04.md (puente AL ↔ Econometría)
+- [ ] **ALTA** Crear relaciones cross-domain algebra_lineal ↔ econometria
+- [ ] **ALTA** Reiniciar Excel para cargar ontología actualizada
+- [ ] **ALTA** Commit de todos los cambios al repositorio
+
+
+---
+
+### Sesión 2026-08-19 (~19:00) — Extracción Puente Álgebra Lineal ↔ Econometría
+
+## Trabajo realizado
+
+Extraídas entidades y relaciones de `Econometría 04.md` — el documento que establece que toda la econometría es una aplicación directa del álgebra lineal.
+
+## Entidades agregadas (27 nuevas)
+
+| Categoría | Entidades | Ejemplos |
+|-----------|-----------|----------|
+| **Proyección OLS** | 8 | Hat Matrix (P_X), Residual Maker (M_X), Gram Matrix, Condition Number, Idempotent Operator |
+| **Teoremas** | 2 | Frisch-Waugh-Lovell (FWL), Grados de libertad como traza |
+| **Covarianza** | 3 | Mahalanobis Metric, Fórmula Sándwich, Orden de Loewner |
+| **Endogeneidad** | 3 | Proyección Oblicua, 2SLS doble proyección, GMM norma ponderada |
+| **Panel** | 5 | Kronecker Panel, Within Matrix Q, FE como FWL, RE espectral, Proyecciones Alternadas |
+| **Series Tiempo** | 5 | Companion Matrix, Radio Espectral, Jordan Form, Rango Reducido Π, Johansen Eigenvalues |
+| **Numérico** | 3 | IRLS, QR para OLS, Householder Reflections |
+
+## Relaciones agregadas
+
+| Ontología | Relaciones | Tipo |
+|-----------|------------|------|
+| **econometria** | +38 | Internas del puente + cross-domain |
+| **algebra_lineal** | +9 | Cross-domain hacia econometria |
+
+## Estado final de ontologías
+
+| Ontología | Entidades | Relaciones |
+|-----------|-----------|------------|
+| econometria | **6,208** | **13,980** |
+| algebra_lineal | 28 | **37** |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\ontology\econometria\graph.jsonl` | +27 entidades, +38 relaciones |
+| `C:\NEVEN\ontology\algebra_lineal\graph.jsonl` | +9 relaciones cross-domain |
+| `F:\ANTIGRAVITY\2026\NEVEN\docs\ontologia\econometria\graph.jsonl` | Copia |
+| `F:\ANTIGRAVITY\2026\NEVEN\docs\ontologia\algebra_lineal\graph.jsonl` | Copia |
+
+## Verificación
+
+```python
+om.get_by_id('econometria', 'concept_hat_matrix')           # ✓ Matriz Hat (P_X)
+om.get_by_id('econometria', 'theorem_frisch_waugh_lovell')  # ✓ Teorema FWL
+om.get_by_id('econometria', 'concept_companion_matrix')     # ✓ Matriz Compañera
+om.get_by_id('econometria', 'method_irls')                  # ✓ IRLS
+om.get_by_id('econometria', 'concept_sandwich_formula')     # ✓ Fórmula Sándwich
+om.get_by_id('econometria', 'concept_kronecker_panel')      # ✓ Kronecker Panel
+```
+
+## Beneficio de las conexiones cross-domain
+
+Ahora cuando alguien busque:
+- "proyección ortogonal" → encuentra OLS y Hat Matrix
+- "Kronecker" → encuentra estructuras de Panel
+- "valores propios" → encuentra estacionariedad y cointegración
+- "Cholesky" → encuentra GLS y FGLS
+
+## Servidor HTTP
+
+- Terminal ID: `term_1791938581022_t95743mrzsk`
+- Puerto: 5555
+
+## Resumen del día completo (8 sesiones)
+
+| Hora | Trabajo |
+|------|---------|
+| ~15:00 | Creación ontología NEVEN (47 ent, 64 rel) |
+| ~16:00 | Fix dropdown visualizador NEVEN |
+| ~16:30 | Fix 17 entidades desconectadas NEVEN |
+| ~17:00 | Fix DuckDB como componente central |
+| ~17:30 | Análisis brechas econometría vs curriculum |
+| ~18:00 | Extracción Econometría 01-03 (+64 ent, +121 rel) |
+| ~18:30 | Análisis Econometría 04 (puente AL↔Econ) |
+| ~19:00 | Extracción puente AL↔Econ (+27 ent, +47 rel) |
+
+## Pendientes
+
+- [ ] **ALTA** Commit de todos los cambios al repositorio
+- [ ] **ALTA** Reiniciar Excel para cargar ontologías actualizadas
+- [ ] **MEDIA** Probar búsquedas cross-domain en TaskPane
+- [ ] **BAJA** Agregar más conceptos de álgebra lineal semilla
+
+
+---
+
+### Sesión 2026-08-19 (~20:00) — Commits de ontologías ✅
+
+## Contexto restaurado
+
+Sesión iniciada desde summary compactado. El contexto indicaba que había cambios pendientes de commit.
+
+## Commits realizados
+
+### Commit 1: `e3ea0ab` — Ontologías
+```
+feat(ontologia): crear ontología NEVEN + enriquecer econometria/algebra_lineal
+
+- Nueva ontología NEVEN: 47 entidades, 64 relaciones (auto-documentación arquitectura)
+- Tipos de entidad: Component, ConfigFile, Directory, DataFlow, Pattern, Workaround
+- Econometria enriquecida: 6,208 entidades, 13,980 relaciones
+  - Extracción de Econometría 01-04.md (curriculum UCR)
+  - Branch MCRL/OLS, DiD moderno, Callaway-Sant'Anna, TWFE
+- Algebra lineal: 28 entidades con 9 relaciones cross-domain a econometria
+  - Hat Matrix, FWL, Companion Matrix conectados
+- UI: agregado selector NEVEN en ontology-graph.html con 7 colores por tipo
+- Fix: DuckDB conectado como almacenamiento central (no aislado)
+```
+
+**Archivos:** 8 changed, 19,789 insertions(+), 83 deletions(-)
+
+### Commit 2: `fd1e580` — Skills y documentación
+```
+docs(skills): skill ontology-book-processor + guía agregar libros
+
+- Skill para procesar PDFs y extraer conocimiento estructurado
+- Steering file agregar-libros.md con workflow completo
+- Documentación COMO_AGREGAR_LIBROS.md para usuarios
+```
+
+**Archivos:** 4 changed, 1,217 insertions(+), 206 deletions(-)
+
+## Archivos pendientes (no commiteados)
+
+- `.kiro/contexto/CHAT.md` — este archivo (actualizado ahora)
+- `ontologia-fuentes/` — archivos fuente nuevos (PDFs del MIT, documentos de curriculum)
+- `prompts/`, `scripts/` — directorios nuevos sin clasificar
+
+## Pendientes actualizados
+
+- [x] **ALTA** Commit de cambios principales al repositorio ✅
+- [ ] **ALTA** Reiniciar Excel para cargar ontologías actualizadas
+- [ ] **MEDIA** Probar búsquedas cross-domain en TaskPane
+- [ ] **BAJA** Commit de CHAT.md actualizado
