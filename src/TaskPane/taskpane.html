@@ -5537,50 +5537,105 @@ function _aiAddMessage(role, content, ragSources) {
 function _cleanPdfArtifacts(text) {
   if (!text) return text;
   var cleaned = text
-    // Patrones matemáticos comunes de PDFs LaTeX corruptos
-    // E[y|x] aparece como Eðy j xÞ - convertir a notación legible
+    // ═══════════════════════════════════════════════════════════════════
+    // ARTEFACTOS DE GRÁFICOS Y TABLAS
+    // ═══════════════════════════════════════════════════════════════════
+    // Puntos repetidos (●●●●) - artefactos de gráficos/scatter plots
+    .replace(/[●○◦•·]{3,}/g, '[grafico]')
+    // Guiones repetidos (----) - separadores de tabla
+    .replace(/-{4,}/g, '---')
+    // Asteriscos repetidos
+    .replace(/\*{3,}/g, '***')
+    // Líneas de números sueltos (0.1 0.2 0.3...) - ejes de gráficos
+    .replace(/(\d+\.?\d*\s+){5,}/g, '[datos] ')
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // CÓDIGO R - detectar y preservar como código
+    // ═══════════════════════════════════════════════════════════════════
+    // Funciones R comunes con paréntesis
+    .replace(/(plot|lm|summary|arima|acf|pacf|ts|diff|log|exp|sqrt|mean|var|sd|cov|cor|aov|glm|nls|optim|predict|fitted|residuals|coef)\s*\([^)]{1,100}\)/g, '<code>$&</code>')
+    // Asignaciones R (x <- valor o x = valor seguido de función)
+    .replace(/(\w+)\s*<-\s*(\w+)\s*\(/g, '<code>$1 <- $2(</code>')
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // SÍMBOLOS MATEMÁTICOS UNICODE -> LaTeX
+    // ═══════════════════════════════════════════════════════════════════
+    // Letras griegas
+    .replace(/π/g, '$\\pi$')
+    .replace(/Φ/g, '$\\Phi$')
+    .replace(/φ/g, '$\\phi$')
+    .replace(/θ/g, '$\\theta$')
+    .replace(/Θ/g, '$\\Theta$')
+    .replace(/α/g, '$\\alpha$')
+    .replace(/β/g, '$\\beta$')
+    .replace(/γ/g, '$\\gamma$')
+    .replace(/δ/g, '$\\delta$')
+    .replace(/ε/g, '$\\varepsilon$')
+    .replace(/σ/g, '$\\sigma$')
+    .replace(/Σ/g, '$\\Sigma$')
+    .replace(/μ/g, '$\\mu$')
+    .replace(/ρ/g, '$\\rho$')
+    .replace(/λ/g, '$\\lambda$')
+    .replace(/ω/g, '$\\omega$')
+    .replace(/Ω/g, '$\\Omega$')
+    // Operadores matemáticos
+    .replace(/≤/g, '$\\leq$')
+    .replace(/≥/g, '$\\geq$')
+    .replace(/≠/g, '$\\neq$')
+    .replace(/≈/g, '$\\approx$')
+    .replace(/∞/g, '$\\infty$')
+    .replace(/∑/g, '$\\sum$')
+    .replace(/∏/g, '$\\prod$')
+    .replace(/√/g, '$\\sqrt{}$')
+    .replace(/±/g, '$\\pm$')
+    .replace(/×/g, '$\\times$')
+    .replace(/÷/g, '$\\div$')
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // PATRONES DE PDF LATEX CORRUPTOS
+    // ═══════════════════════════════════════════════════════════════════
+    // E[y|x] aparece como Eðy j xÞ
     .replace(/Eðy\s*j\s*x([\w,;]*?)Þ/g, 'E[y|x$1]')
     .replace(/Eð([a-z])\s*j\s*([a-z,;\s]+?)Þ/g, 'E[$1|$2]')
-    
-    // Símbolos griegos y matemáticos corruptos de fuentes Type1
+    // Símbolos corruptos de fuentes Type1
     .replace(/ð/g, '[')
     .replace(/Þ/g, ']')
     .replace(/¼/g, '=')
     .replace(/½/g, '1/2')
     .replace(/þ/g, ']')
-    .replace(/П/g, '||')  // norma ||x||
-    .replace(/П2/g, '||^2')
     .replace(/П/g, '||')
     
-    // Porcentaje corrupto (Su%ocient -> Sufficient)
-    .replace(/%o/g, 'ffi')  // ligadura ffi corrupta como %o
+    // ═══════════════════════════════════════════════════════════════════
+    // LIGADURAS Y TIPOGRAFÍA
+    // ═══════════════════════════════════════════════════════════════════
+    .replace(/%o/g, 'ffi')
     .replace(/%u/g, 'ffi')
     .replace(/%ce/g, 'ffi')
-    .replace(/%/g, 'ff')   // ligadura ff corrupta
-    
-    // Ligaduras tipográficas estándar
+    .replace(/%/g, 'ff')
     .replace(/ﬀ/g, 'ff')
     .replace(/ﬁ/g, 'fi')
     .replace(/ﬂ/g, 'fl')
     .replace(/ﬃ/g, 'ffi')
     .replace(/ﬄ/g, 'ffl')
-    
-    // Caracteres especiales adicionales
     .replace(/¤/g, 'ff')
-    .replace(/—/g, '-')   // em dash
-    .replace(/–/g, '-')   // en dash
-    .replace(/'/g, "'")   // smart quote
+    .replace(/—/g, '-')
+    .replace(/–/g, '-')
+    .replace(/'/g, "'")
     .replace(/'/g, "'")
     .replace(/"/g, '"')
     .replace(/"/g, '"')
     
+    // ═══════════════════════════════════════════════════════════════════
+    // LIMPIEZA FINAL
+    // ═══════════════════════════════════════════════════════════════════
     // Guiones de separación de palabras
     .replace(/- \n/g, '')
     .replace(/-\n/g, '')
-    .replace(/- (?=[a-z])/g, '')  // guión seguido de minúscula (palabra cortada)
-    
+    .replace(/- (?=[a-z])/g, '')
     // Espacios múltiples
     .replace(/\s{2,}/g, ' ')
+    // Líneas vacías múltiples
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
   
   return cleaned;
@@ -5636,23 +5691,40 @@ function _showRagSourcesPopup(sources) {
       'border-radius:8px;padding:12px;margin-bottom:12px;'
     ].join('');
 
-    // Metadata line
+    // Formatear nombre del libro (quitar extensión y guiones)
+    var bookName = (src.filename || 'Desconocido')
+      .replace(/\.pdf$/i, '')
+      .replace(/-/g, ' ')
+      .replace(/_/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    // Acortar si es muy largo
+    if (bookName.length > 60) {
+      bookName = bookName.substring(0, 57) + '...';
+    }
+
+    // Header con nombre del libro destacado
+    var header = document.createElement('div');
+    header.style.cssText = 'margin-bottom:8px;';
+    header.innerHTML = '<div style="font-weight:600;font-size:12px;color:var(--accent);margin-bottom:4px;">' + bookName + '</div>';
+
+    // Metadata line (página, dominio, score)
     var meta = document.createElement('div');
-    meta.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--text-secondary);';
-    var pageInfo = src.page ? (src.page === src.page_end ? 'p. ' + src.page : 'pp. ' + src.page + '-' + src.page_end) : null;
+    meta.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:10px;color:var(--text-secondary);';
+    var pageInfo = src.page ? (src.page === src.page_end ? 'p. ' + src.page : 'pp. ' + src.page + '-' + src.page_end) : 'página desconocida';
     meta.innerHTML = [
-      '<span><b>Archivo:</b> ' + (src.filename || 'N/A') + '</span>',
-      pageInfo ? '<span><b>Pagina:</b> ' + pageInfo + '</span>' : '',
-      '<span><b>Dominio:</b> ' + (src.domain || 'N/A') + '</span>',
-      '<span><b>Score:</b> ' + (src.score ? src.score.toFixed(3) : 'N/A') + '</span>'
-    ].filter(Boolean).join('');
+      '<span style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;">' + pageInfo + '</span>',
+      '<span>' + (src.domain || 'general') + '</span>',
+      '<span style="color:var(--success);">relevancia: ' + (src.score ? (src.score * 100).toFixed(0) + '%' : 'N/A') + '</span>'
+    ].join('');
 
     // Content text - usar innerHTML para permitir renderizado de KaTeX
     var text = document.createElement('div');
     text.style.cssText = [
-      'font-size:12px;line-height:1.5;color:var(--text-primary);',
-      'max-height:150px;overflow-y:auto;',
-      'background:var(--bg-tertiary);padding:8px;border-radius:4px;'
+      'font-size:11px;line-height:1.5;color:var(--text-primary);',
+      'max-height:120px;overflow-y:auto;',
+      'background:var(--bg-tertiary);padding:8px;border-radius:4px;',
+      'font-style:italic;'
     ].join('');
     var cleanedContent = _cleanPdfArtifacts(src.content) || '[Sin contenido]';
     // NO escapar los $ para que KaTeX los procese
@@ -5662,6 +5734,7 @@ function _showRagSourcesPopup(sources) {
       .replace(/>/g, '&gt;')
       .replace(/\n/g, '<br>');
 
+    card.appendChild(header);
     card.appendChild(meta);
     card.appendChild(text);
     content.appendChild(card);
