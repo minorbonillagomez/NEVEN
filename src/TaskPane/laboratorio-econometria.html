@@ -366,29 +366,48 @@
       var el = document.getElementById('lab-equation');
       if (!el) return;
       
-      // Si KaTeX no está disponible aún, esperar y reintentar (polling)
-      if (typeof katex === 'undefined' || !window.katex) {
-        var retryCount = 0;
-        var maxRetries = 30; // 3 segundos max
-        var pollInterval = setInterval(function() {
-          retryCount++;
-          if (typeof katex !== 'undefined' && window.katex) {
-            clearInterval(pollInterval);
-            try {
-              katex.render(equations[labMode], el, { displayMode: false, throwOnError: false });
-            } catch(e) { el.textContent = equations[labMode]; }
-          } else if (retryCount >= maxRetries) {
-            clearInterval(pollInterval);
-            el.textContent = equations[labMode]; // Fallback
-            console.warn('[NEVEN Lab] KaTeX no disponible despues de 3s');
-          }
-        }, 100);
-        return;
+      var eq = equations[labMode];
+      
+      // Intentar renderizar con KaTeX
+      if (typeof katex !== 'undefined') {
+        try {
+          // Usar renderToString en lugar de render para mayor compatibilidad
+          el.innerHTML = katex.renderToString(eq, { 
+            displayMode: true, 
+            throwOnError: false,
+            output: 'html'
+          });
+          return;
+        } catch(e) { 
+          console.warn('[NEVEN Lab] KaTeX renderToString error:', e.message);
+        }
       }
       
-      try {
-        katex.render(equations[labMode], el, { displayMode: false, throwOnError: false });
-      } catch(e) { el.textContent = equations[labMode]; }
+      // Si KaTeX no está disponible o falló, intentar polling
+      if (typeof katex === 'undefined') {
+        var retryCount = 0;
+        var pollInterval = setInterval(function() {
+          retryCount++;
+          if (typeof katex !== 'undefined') {
+            clearInterval(pollInterval);
+            try {
+              el.innerHTML = katex.renderToString(eq, { 
+                displayMode: true, 
+                throwOnError: false,
+                output: 'html'
+              });
+            } catch(e) { 
+              el.textContent = eq; 
+            }
+          } else if (retryCount >= 50) {
+            clearInterval(pollInterval);
+            el.textContent = eq;
+          }
+        }, 100);
+      } else {
+        // KaTeX existe pero falló, mostrar texto plano
+        el.textContent = eq;
+      }
     }
 
     function renderSuggestions() {

@@ -5540,19 +5540,35 @@ function _cleanPdfArtifacts(text) {
     // ═══════════════════════════════════════════════════════════════════
     // ARTEFACTOS DE GRÁFICOS Y TABLAS (prioridad alta)
     // ═══════════════════════════════════════════════════════════════════
-    // Puntos de cualquier tipo repetidos (bullet points, scatter plots)
-    // Usar código Unicode directo para bullet: \u2022, \u25CF, \u25CB, \u00B7
-    .replace(/[\u2022\u25CF\u25CB\u25E6\u2023\u2043\u204C\u204D\u00B7\u2219\u22C5●○◦•·∙◉◎⚫⚪]{2,}/g, '')
-    // Líneas que son solo puntos/símbolos repetidos
-    .replace(/^[●○◦•·\s\u2022\u25CF\u00B7]+$/gm, '')
+    // ENFOQUE AGRESIVO: eliminar cualquier carácter no-ASCII repetido 2+ veces
+    // que no sea letra griega útil (π, Φ, etc. ya se convierten a LaTeX arriba)
+    .replace(/(.)\1{2,}/g, function(match, char) {
+      // Si es letra, número o espacio normal, mantener (máximo 3)
+      if (/[a-zA-Z0-9\s.,;:!?'"()-]/.test(char)) return match.substring(0, 3);
+      // Si es cualquier otro carácter repetido, eliminar
+      return '';
+    })
+    // Puntos de cualquier tipo (bullet points, scatter plots) - más amplio
+    .replace(/[^\x00-\x7F]{2,}/g, function(match) {
+      // Preservar letras griegas y símbolos matemáticos útiles
+      if (/[αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ∑∏∫∂√∞≈≠≤≥±×÷]/.test(match)) {
+        return match;
+      }
+      return '';
+    })
+    // Líneas que son mayormente puntos/símbolos (más del 50% no-alfanumérico)
+    .replace(/^.*$/gm, function(line) {
+      var nonAlpha = (line.match(/[^a-zA-Z0-9\s]/g) || []).length;
+      var total = line.length;
+      if (total > 10 && nonAlpha / total > 0.5) return '';
+      return line;
+    })
     // Guiones repetidos (----) - separadores de tabla
     .replace(/-{4,}/g, ' ')
     // Barras y slashes repetidos
     .replace(/[\/\\|]{3,}/g, ' ')
     // Líneas de números sueltos con espacios (ejes de gráficos: 0.1 0.2 0.3...)
     .replace(/(?:\d+\.?\d*\s+){4,}\d+\.?\d*/g, '')
-    // Coordenadas de gráficos (t 1 --- 4 ---+0.3)
-    .replace(/\bt\s+\d+\s+[-─]+\s+\d+\s+[-─]+[+\d.]+/g, '')
     // Secuencias como "0 20 40 60 80" (escalas de ejes)
     .replace(/\b(?:\d{1,3}\s+){3,}\d{1,3}\b/g, '')
     
@@ -5560,7 +5576,7 @@ function _cleanPdfArtifacts(text) {
     // CÓDIGO R - eliminar en lugar de formatear (es ruido en este contexto)
     // ═══════════════════════════════════════════════════════════════════
     // Llamadas a funciones R con paréntesis (plot(...), expression(...))
-    .replace(/\b(plot|expression|lm|summary|arima|acf|pacf|ts|lines|points|abline|legend|axis|title|text|mtext|par|layout)\s*\([^)]*\)/g, '[codigo R]')
+    .replace(/\b(plot|expression|lm|summary|arima|acf|pacf|ts|lines|points|abline|legend|axis|title|text|mtext|par|layout)\s*\([^)]*\)/g, '')
     // Asignaciones R
     .replace(/\b\w+\s*<-\s*\w+/g, '')
     // Fragmentos de código sueltos
