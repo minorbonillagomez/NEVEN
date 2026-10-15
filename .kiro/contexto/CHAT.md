@@ -2,7 +2,436 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-08-19 ~12:40 (sesion: Documentación flujo agregar libros + fix list_processed_books)
+> **Ultima actualizacion:** 2026-08-19 ~17:00 (sesion: Consolidación LaTeX + Fix ventana expandida ✅)
+
+---
+
+### Sesión 2026-08-19 (~14:30-14:45) — Consolidar renderizado LaTeX en _markdownToHtml
+
+**Problema:** Múltiples lugares en NEVEN Studio tenían código duplicado de renderizado LaTeX/KaTeX, causando inconsistencias (ej: `$Y$`, `$a$` no renderizaban en algunos tabs pero sí en otros).
+
+**Diagnóstico:**
+1. `_markdownToHtml` en `datalab.js` es la función central — YA tenía fixes para `isShortVar` en el repositorio
+2. Producción tenía una versión vieja sin esos fixes
+3. `taskpane.html` tenía 3 bloques de código KaTeX duplicado:
+   - Post-processing después de `_markdownToHtml` en Chat IA (~25 líneas)
+   - `_aiOpenInNewWindow()` con su propio renderer básico (~15 líneas)  
+   - `_showRagSourcesPopup()` con su propio KaTeX renderer (~50 líneas)
+
+**Fixes aplicados:**
+1. **Sincronizado** `datalab.js` de repo → producción (incluye fix `isShortVar`)
+2. **Eliminado** post-processing KaTeX redundante en Chat IA (ahora confía en `_markdownToHtml`)
+3. **Simplificado** `_aiOpenInNewWindow()` para usar `_markdownToHtml` en vez de renderer propio
+4. **Simplificado** `_showRagSourcesPopup()` para usar `_markdownToHtml` (eliminadas ~50 líneas)
+5. **Actualizado** cache buster `datalab.js?v=20260819143000`
+
+**Archivos modificados:**
+- `C:\NEVEN\TaskPane\datalab.js` — sincronizado desde repo
+- `C:\NEVEN\TaskPane\taskpane.html` — eliminado código duplicado, actualizado version
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\taskpane.html` — sincronizado desde producción
+
+**Código eliminado (~90 líneas total):**
+- Bloque KaTeX post-processing en Chat IA
+- Renderer inline en `_aiOpenInNewWindow`
+- Función `renderKatexInElement` en `_showRagSourcesPopup`
+
+**Para probar:**
+1. Recargar TaskPane (F5 con DevTools abierto para ver versión de datalab.js)
+2. En Chat IA: escribir fórmula con `$Y$`, `$\hat{Y}$`, `$\beta_1$`
+3. Expandir chat a ventana externa — debe renderizar igual
+4. Ver fuentes RAG — fórmulas deben renderizar
+
+**Beneficio:** UN SOLO lugar para mantener renderizado LaTeX (`_markdownToHtml` en datalab.js).
+
+**Commits pendientes:**
+```bash
+git add src/TaskPane/datalab.js src/TaskPane/taskpane.html .kiro/contexto/CHAT.md
+git commit -m "refactor: consolidar renderizado LaTeX en _markdownToHtml único"
+```
+
+**Pendientes:**
+- [ ] **BAJA** — Verificar que `laboratorio-econometria.html` en producción tenga los botones de expandir del Profesor Economía
+- [ ] **BAJA** — Considerar extraer lógica LaTeX a función helper separada si se necesita renderizar LaTeX sin markdown
+
+---
+
+### Sesión 2026-08-19 (~15:00-17:00) — Consolidación LaTeX + Fix ventana expandida ✅
+
+**Problemas resueltos:**
+1. Código duplicado de renderizado LaTeX en múltiples lugares
+2. `\hat{Y}` con error rojo en ventana expandida del Profesor de Economía
+3. Texto como `$SSE$` se intentaba renderizar innecesariamente
+
+**Causa raíz del error en ventana expandida:**
+```
+ParseError: KaTeX parse error: Too many expansions: infinite loop
+```
+- `profChatMessages` guardaba el markdown RAW
+- Al expandir, `renderContent()` llamaba a `_markdownToHtml` **de nuevo**
+- El segundo procesamiento causaba loop infinito en KaTeX
+
+**Fixes aplicados:**
+
+1. **Consolidación de renderizado LaTeX:**
+   - Eliminado post-processing KaTeX redundante en Chat IA (~25 líneas)
+   - Simplificado `_aiOpenInNewWindow()` para usar `_markdownToHtml`
+   - Simplificado `_showRagSourcesPopup()` (~50 líneas eliminadas)
+
+2. **Normalización de backslashes:**
+   ```javascript
+   md = md.replace(/[\u2216\u29F5\uFF3C]/g, '\\');  // Unicode similares
+   md = md.replace(/\\\\([a-zA-Z\[\]\(\)])/g, '\\$1');  // Doble escape JSON
+   ```
+
+3. **Fix ventana expandida del Profesor:**
+   ```javascript
+   // Guardar HTML pre-renderizado
+   profChatMessages.push({ role: 'assistant', content: answer, renderedHtml: renderedHtml });
+   
+   // Usar pre-renderizado al expandir
+   content = msg.renderedHtml || renderContent(msg.content);
+   ```
+
+4. **Limpieza:** Eliminados todos los logs de debug agregados durante diagnóstico
+
+**Decisión de diseño importante:**
+- Texto plano entre `$...$` como `$SSE$`, `$SST$`, `$OLS$` se deja como texto
+- No agregar más reglas para detectar acrónimos — mantener código simple
+- KaTeX solo procesa si hay comandos LaTeX (`\cmd`) o símbolos matemáticos
+
+**Archivos modificados:**
+- `C:\NEVEN\TaskPane\datalab.js` — normalización, limpieza debug
+- `C:\NEVEN\TaskPane\taskpane.html` — CSS KaTeX, código duplicado eliminado
+- `C:\NEVEN\TaskPane\laboratorio-econometria.html` — guardar renderedHtml
+- Todos sincronizados a `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\`
+
+**Commits pendientes:**
+```bash
+git add src/TaskPane/datalab.js src/TaskPane/taskpane.html src/TaskPane/laboratorio-econometria.html .kiro/contexto/CHAT.md
+git commit -m "refactor: consolidar renderizado LaTeX, fix ventana expandida profesor"
+```
+
+**Pendientes:**
+- [ ] **BAJA** — Verificar que `_aiOpenInNewWindow` en taskpane.html no tenga el mismo problema de re-procesamiento
+- [ ] **BAJA** — Commit de todos los cambios
+
+---
+
+### Sesión 2026-10-14 (~16:05-16:15) — Fix Tab Motores (endpoint incorrecto)
+
+**Problema:** El Tab Motores mostraba todos los motores como "Error" y el botón "Guardando..." atascado.
+
+**Causa raíz:**
+1. El servidor HTTP fue reiniciado para el fix del RAG
+2. El frontend (`taskpane.js`) llamaba a `/api/engines/status` que NO existe
+3. El endpoint correcto es `/api/engines` (sin /status)
+
+**Fix aplicado:**
+- Corregido `loadEnginesStatus()` en `taskpane.js` para usar `/api/engines`
+- Simplificado el parsing de la respuesta (el endpoint devuelve `{r: true, python: true, julia: true}`)
+
+**Archivos modificados:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\taskpane.js`
+- `C:\NEVEN\TaskPane\taskpane.js` (producción)
+
+**Verificación:** `/api/engines` devuelve `{r: true, python: true, julia: true}` correctamente.
+
+**Para probar:** Recargar el Tab Motores (F5 o cambiar de tab y volver).
+
+**Pendientes relacionados:**
+- [ ] **MEDIA** — El endpoint `/api/engines/config` para guardar configuración no existe. El botón "Guardar Configuración" fallará.
+- [ ] **BAJA** — El endpoint `/api/engines` no devuelve versiones de los motores.
+
+**Commits pendientes de esta sesión completa:**
+```bash
+git add src/TaskPane/taskpane.js src/TaskPane/laboratorio-econometria.html src/tools/*.py .kiro/steering/pdf-to-rag-pipeline.md
+git commit -m "fix: múltiples fixes en NEVEN Studio (RAG, Lab Geométrico, Motores)"
+```
+
+---
+
+### Sesión 2026-10-14 (~15:45-16:00) — Fix Métricas Dinámicas en Laboratorio Geométrico
+
+**Problema:** En el Tab Econometría > Laboratorio Geométrico:
+1. **Slide 1 (Proyección OLS):** "Ortogonalidad" siempre mostraba `0.000` sin cambiar
+2. **Slide 2 (Panel/FWL):** "Verdadero efecto" era estático `+0.80`
+
+**Causa raíz:**
+- `Ortogonalidad` estaba hardcodeada: `el_orth.textContent = '0.000'`
+- `Verdadero efecto` estaba en HTML literal sin ID dinámico
+
+**Fix aplicado en `laboratorio-econometria.html`:**
+
+1. **Slide 1 - Ortogonalidad → X'ε:**
+   - Ahora calcula `|sin(θ) * cos(θ)|` como indicador de proyección
+   - Color dinámico: verde si <0.1, amarillo si <0.3, rojo si mayor
+   - Label cambiado a "X'ε" (más técnico)
+
+2. **Slide 2 - Agregado indicador de Sesgo:**
+   - Nuevo campo `m_bias` que muestra `β̂ - β_verdadero`
+   - El "Verdadero efecto" ahora tiene ID `m_true_beta` (aunque sigue fijo por diseño)
+   - Color del sesgo: verde si <0.1, amarillo si <0.5, rojo si mayor
+
+**Archivos modificados:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\laboratorio-econometria.html`
+- `C:\NEVEN\TaskPane\laboratorio-econometria.html` (producción)
+
+**Nota sobre "β verdadero":** Es correcto que sea constante (+0.80) porque es el parámetro de la simulación (trueSlope). Lo que cambia es el estimador β̂(θ). El nuevo campo "Sesgo" muestra la diferencia y ayuda a visualizar cómo el Within estimator converge al valor verdadero.
+
+**Para probar:** Recargar el Tab Econometría en Excel y deslizar los controles.
+
+**Commits:** Pendiente — ejecutar:
+```bash
+git add src/TaskPane/laboratorio-econometria.html
+git commit -m "fix(lab): métricas dinámicas en Laboratorio Geométrico"
+```
+
+**Pendientes de esta sesión:**
+- [ ] **ALTA** — Verificar visualmente que X'ε y Sesgo se actualizan al deslizar (el usuario debe probar)
+- [ ] **MEDIA** — Considerar si el cálculo de X'ε es el más pedagógico (actualmente `|sin*cos|`)
+- [ ] **BAJA** — Slides 3 y 4 (GLS/Cholesky, Raíz Unitaria) podrían tener métricas similares
+
+---
+
+### Sesión 2026-10-14 (~15:00-15:30) — Fix RAG Index con Artefactos HTML
+
+**Problema original:** El Tab Econometría mostraba contenido garbled en "Fuentes de conocimiento":
+- Tags `<br>` literales
+- `\langle` y `\rangle` como texto
+- Puntos y pipes rotos de tablas markdown
+
+**Causa raíz:** El conversor `unicode_to_latex.py` no limpiaba artefactos de `pymupdf4llm`:
+1. `pymupdf4llm` genera `<br>` para saltos de línea en markdown
+2. La función `protect_inner_products()` convertía `<x,y>` a `\langle x,y \rangle` literales
+3. El índice RAG se construyó con estos artefactos
+
+**Fix aplicado:**
+
+1. **`C:\NEVEN\tools\unicode_to_latex.py`** (MODIFICADO)
+   - Nueva función `clean_artifacts()` más agresiva:
+     - Elimina `<br>`, `<br/>`, `<br />`
+     - Convierte `\langle`/`\rangle` literales a `<`/`>`
+     - Limpia pipes dobles `||` de tablas rotas
+     - Limpia backticks múltiples
+     - Limpia guiones bajos repetidos
+   - `protect_inner_products()` ahora deja `<x,y>` como ASCII (no genera `\langle`)
+
+2. **Re-conversión de todos los markdowns:**
+   ```
+   python C:\NEVEN\tools\convert_all_md.py
+   # Resultado: 58,271 conversiones
+   ```
+
+3. **Re-indexación del RAG:**
+   - Creada nueva DB: `rag_index_new.duckdb`
+   - 11 documentos, 2,539 chunks
+   - 0 chunks con `<br>`, 0 con `\langle`
+   - Reemplazada DB original (backup en `rag_index_backup.duckdb`)
+
+**Verificación:**
+- `/api/rag/query` ahora devuelve contenido limpio con LaTeX correcto
+- Símbolos como `\beta`, `\Phi`, `\ldots` se muestran correctamente
+
+**Archivos modificados:**
+- `C:\NEVEN\tools\unicode_to_latex.py`
+- `C:\NEVEN\data\rag_index.duckdb` (reemplazada)
+- `F:\...\ontologia-fuentes\LIBROS ECONOMETRIA\markdown_latex\*.md` (todos)
+
+**Scripts temporales creados:**
+- `C:\NEVEN\tools\reindex_temp.py`
+- `C:\NEVEN\tools\reindex_remaining.py`
+
+**Archivos copiados al repositorio:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\tools\unicode_to_latex.py`
+- `F:\ANTIGRAVITY\2026\NEVEN\src\tools\convert_all_md.py`
+- `F:\ANTIGRAVITY\2026\NEVEN\src\tools\fix_wooldridge.py`
+- `F:\ANTIGRAVITY\2026\NEVEN\src\tools\index_markdown_books.py`
+
+**Steering actualizado:**
+- `F:\ANTIGRAVITY\2026\NEVEN\.kiro\steering\pdf-to-rag-pipeline.md` — Agregada sección de limpieza de artefactos
+
+**Decisiones de diseño:**
+1. **No escapar `<` y `>` en el conversor** — El contenido RAG es texto plano, no HTML; los símbolos matemáticos `<x,y>` quedan como ASCII y KaTeX los renderiza si están en modo math
+2. **Backup antes de reemplazar DB** — `rag_index_backup.duckdb` permite rollback si hay problemas
+3. **Scripts de reindexación en batches de 100** — Evita OOM en libros grandes como MIT Econometrics
+
+**Intentos/problemas durante la sesión:**
+1. **Timeout en indexación de MIT** — El libro tiene muchos chunks; se completó con script separado `reindex_remaining.py`
+2. **Error `string indices must be integers`** — `chunk_text()` devuelve lista de strings, no diccionarios; corregido en script
+3. **DB bloqueada por servidor HTTP** — Necesario detener el servidor (PID 72780) para reemplazar la DB
+
+**Commits:** Pendiente — ejecutar:
+```bash
+git add src/tools/*.py .kiro/steering/pdf-to-rag-pipeline.md .kiro/contexto/CHAT.md
+git commit -m "fix(rag): limpiar artefactos HTML en contenido RAG - refs #XXX"
+```
+
+**Pendientes:**
+- [ ] **ALTA** — Verificar visualmente en Tab Econometría que las fuentes se muestran correctamente (el usuario debe probar)
+- [ ] **MEDIA** — Limpiar scripts temporales (`reindex_temp.py`, `reindex_remaining.py`) después de confirmar que todo funciona
+- [ ] **BAJA** — Considerar agregar validación automática post-indexación para detectar artefactos
+
+---
+
+### Sesión 2026-08-19 (~17:30-18:00) — Actualización Pipeline con Ontología
+
+**Objetivo:** Completar el steering con las fases de ontología y visualización que faltaban.
+
+**Archivos modificados:**
+
+1. **`F:\ANTIGRAVITY\2026\NEVEN\.kiro\steering\pdf-to-rag-pipeline.md`**
+   - Pipeline expandido de 4 a 6 fases:
+     - FASE 5: Ontología (entidades + relaciones vía LLM)
+     - FASE 6: Checkpoint (metadatos para UI)
+   - Agregada documentación de:
+     - Estructura de `graph.jsonl`
+     - Schema de entidades (`schema.yaml`)
+     - Endpoint `/api/ontology/process`
+     - Endpoint `/api/ontology/graph` para visualización
+     - Consideraciones de costo (tokens LLM)
+   - Nuevo diagrama de flujo visual ASCII
+   - Resumen rápido actualizado con 7 pasos
+
+**Por qué estas adiciones:**
+- El pipeline original solo cubría hasta RAG (búsqueda vectorial)
+- Faltaba documentar cómo alimentar el grafo de conocimiento
+- La visualización en UI depende de checkpoints que no estaban documentados
+
+**Commits:** Ninguno
+
+---
+
+### Sesión 2026-08-19 (~17:00-17:30) — Diccionario de Símbolos LaTeX
+
+**Objetivo:** Crear referencia canónica de mapeos Unicode→LaTeX para estandarización.
+
+**Archivos creados:**
+
+1. **`F:\ANTIGRAVITY\2026\NEVEN\.kiro\steering\latex-symbol-dictionary.md`** (NUEVO)
+   - 100+ símbolos organizados por categoría (griegas, operadores, relaciones, flechas, lógica, brackets, sub/superíndices, fracciones, especiales)
+   - Códigos Unicode exactos (U+XXXX)
+   - Notas sobre caracteres excluidos (ð, Þ, þ, ¼, ¤)
+   - Instrucciones para agregar nuevos símbolos
+   - Referencia de compatibilidad con KaTeX
+
+2. **`F:\ANTIGRAVITY\2026\NEVEN\.kiro\steering\pdf-to-rag-pipeline.md`** (MODIFICADO)
+   - Agregada referencia al diccionario en la sección de FASE 3
+   - Actualizada sección de mantenimiento para incluir pasos de actualización del diccionario
+
+**Por qué un diccionario separado:**
+- Permite consultar símbolos sin leer el código Python
+- Facilita agregar nuevos símbolos de forma consistente
+- Sirve como documentación para usuarios finales
+- Incluye códigos Unicode exactos para debugging
+
+---
+
+### Sesión 2026-08-19 (~16:30-17:00) — Documentación del Pipeline en Steering
+
+**Objetivo:** Capitalizar el trabajo de conversión Unicode→LaTeX en documentación reutilizable.
+
+**Archivos creados/modificados:**
+
+1. **`F:\ANTIGRAVITY\2026\NEVEN\.kiro\steering\pdf-to-rag-pipeline.md`** (NUEVO)
+   - Documenta las 4 fases: Extracción → Pre-proceso → Conversión → Indexación
+   - Incluye troubleshooting, decisiones de diseño, ejemplos
+   - Referencia todas las herramientas en `C:\NEVEN\tools\`
+
+2. **`F:\ANTIGRAVITY\2026\NEVEN\.kiro\steering\agregar-libros.md`** (MODIFICADO)
+   - Agregado aviso para redirigir a `pdf-to-rag-pipeline.md` cuando hay ecuaciones
+   - El proceso simplificado queda para libros sin matemáticas (Excel, manuales)
+
+**Por qué steering en lugar de README:**
+- Los steering se inyectan automáticamente al contexto del agente
+- Cualquier sesión futura puede activar `#pdf-to-rag-pipeline` para seguir el proceso
+- Documentación viva que evoluciona con el proyecto
+
+**Commits:** Ninguno (archivos en workspace, no en producción)
+
+---
+
+### Sesión 2026-08-19 (~14:00-16:00) — Pipeline Unicode→LaTeX + Reindexación RAG
+
+**Problema original:** Las ecuaciones extraídas de PDFs con pymupdf4llm no renderizan en KaTeX porque usan símbolos Unicode crudos (α, β, ∑, etc.) en lugar de LaTeX (\alpha, \beta, \sum).
+
+**Solución implementada:**
+
+1. **`C:\NEVEN\tools\unicode_to_latex.py`** — Conversor principal (v2.0)
+   - 100+ símbolos matemáticos (griegas, operadores, relaciones, flechas, lógica)
+   - Detecta patrones de pymupdf4llm: `_β_<sup>ˆ</sup>` → `\hat{\beta}`
+   - Superíndices/subíndices Unicode y HTML
+   - Protección de productos internos `<x,y>` → `\langle x,y \rangle`
+   - Normas `||x||` → `\|x\|`
+   - Normalización de comillas tipográficas
+
+2. **`C:\NEVEN\tools\fix_wooldridge.py`** — Preprocesador específico para Wooldridge
+   - El PDF tiene encoding de fuente no estándar donde caracteres Latin Extended representan operadores:
+     - ð (eth) → `(` (7,105 ocurrencias)
+     - Þ (Thorn) → `)` (7,118)
+     - þ (thorn) → `+` (2,002)
+     - ¼ → `=` (4,317)
+     - ¤ → `ff` (2,073)
+   - **IMPORTANTE:** Ejecutar ANTES de unicode_to_latex.py para Wooldridge
+
+3. **`C:\NEVEN\tools\convert_all_md.py`** — Pipeline completo
+   - Detecta si el archivo es Wooldridge → aplica fix primero
+   - Luego aplica unicode_to_latex.py a todos los archivos
+
+4. **`C:\NEVEN\tools\index_markdown_books.py`** — Indexador de MD en RAG
+   - Indexa archivos de `markdown_latex/` en lugar de PDFs
+   - Procesa en batches de 100 chunks para evitar memory issues
+
+**Archivos convertidos:**
+
+| Archivo | Conversiones | Chunks |
+|---------|--------------|--------|
+| wooldridge_j-_2002_econometric_analysis... | 22,615 (Wooldridge fix) + 7,852 (LaTeX) | 640 |
+| Time-Series-Analysis-with-Applications... | 6,057 | 349 |
+| MIT_14.382_Econometrics.md | 5,921 | 209 |
+| MIT_14.384_Time_Series_Analysis.md | 5,505 | 125 |
+| An Introduction to Statistical Learning... | 3,608 | 361 |
+| ITER.md | 3,579 | 235 |
+| Fundamentals of causal inference... | 1,253 | 153 |
+| A-Portable-Workbook-for-Data-Analysis... | 1,016 | 124 |
+| 100 Statistical Tests In R... | 377 | 162 |
+| AER.md | 230 | 108 |
+| An Introduction to Spatial Data... | 103 | 55 |
+
+**Total:** 58,116 conversiones Unicode→LaTeX, 2,521 chunks indexados
+
+**Estado del índice RAG:**
+- Archivo: `C:\NEVEN\data\rag_index.duckdb` (15.51 MB)
+- 11 documentos, 2,521 chunks
+- Embeddings: bge-small-en (384 dimensiones)
+- Dominios: econometria (8), estadistica (3)
+
+**Verificación:**
+- Query "beta hat estimator variance" → devuelve chunks con `\hat{\beta}`, `\sigma` ✅
+- LaTeX está en el índice y es buscable semánticamente
+
+**Pendientes conocidos:**
+- ~300 carets (ˆ) sueltos no convertidos (en código R son `^`, no deben convertirse)
+- ~370 macrons (¯) sueltos
+- 9,429 U+FFFD (replacement char) — pérdida irrecuperable de la extracción PDF
+- MIT_14.387 falla con "float division by zero" — PDF problemático
+
+**Decisiones de diseño:**
+- **Wooldridge preprocesador separado** — elegido porque ¼ significa `=` en Wooldridge pero `\frac{1}{4}` en otros libros; un fix global rompería otros PDFs
+- **¼ excluido del conversor base** — mismo motivo, solo Wooldridge lo usa como `=`
+- **ð/Þ/þ no se convierten a \eth/\TH/\th** — en Wooldridge son paréntesis/+, no símbolos LaTeX
+- **Batches de 100 chunks** — evita memory overflow al generar embeddings de documentos grandes
+
+**Intentos fallidos:**
+- Primer intento de normalizar comillas usó literales Unicode en código Python — no funcionó porque el encoding del .py las interpretaba mal → solución: usar `\u2018` escapes
+- `fix_wooldridge.py` ejecutado in-place sobre el original → destruyó el archivo fuente → tuve que re-extraer del PDF
+
+**Commits:** Ninguno en esta sesión (cambios en producción, no en repo)
+
+**Próxima sesión — Pendientes:**
+- [ ] **ALTA** Verificar renderizado de ecuaciones en KaTeX del TaskPane
+- [ ] **ALTA** Copiar tools/*.py al repositorio (`NEVEN\src\tools\`)
+- [ ] **MEDIA** Sincronizar `rag_index.duckdb` con libros de Excel ya indexados
+- [ ] **BAJA** Investigar MIT_14.387 PDF problemático
 
 ---
 
@@ -12638,3 +13067,1874 @@ Solo discusion de arquitectura.
 - [ ] **MEDIA** Agregar indicador de fuentes (que libro respondio)
 - [ ] **MEDIA** Agregar Modulo 5: Cointegracion
 - [ ] **BAJA** Persistir historial del chat entre cambios de modulo
+
+
+---
+
+### Sesión 2026-08-19 (~17:00) — Fix KaTeX + Fuentes RAG en Laboratorio Econometría
+
+## Problemas identificados
+
+1. **Ecuaciones no renderizaban con KaTeX** — se mostraba código LaTeX crudo (`\hat{\beta}_{GLS} = ...`)
+2. **Chat respondía pero sin formato** — texto plano sin KaTeX ni markdown
+3. **Sin indicación de fuentes** — el usuario no sabía de qué libro venía la respuesta
+
+## Causa raíz
+
+### Problema 1: KaTeX no disponible
+El script del laboratorio se ejecuta via `new Function()` con `setTimeout(10ms)`, pero KaTeX podría no estar cargado en ese momento. El check `if (el && window.katex)` fallaba y caía al fallback `el.textContent = equations[labMode]`.
+
+### Problema 2-3: Flujo de chat subóptimo
+El chat llamaba manualmente a `/api/rag/query` y luego a `/api/ai/chat` pasando el contexto como string. Esto:
+- Usaba `limit: 3` en vez de `top_k: 3` (parámetro incorrecto)
+- No recibía `rag_sources` del servidor (porque el RAG manual no las devuelve)
+- No aplicaba KaTeX ni markdown a la respuesta
+
+## Solución implementada
+
+### 1. Polling para KaTeX (renderEquation)
+```javascript
+if (typeof katex === 'undefined') {
+  var pollInterval = setInterval(function() {
+    if (window.katex) { /* render */ }
+    else if (retryCount >= 30) { /* fallback */ }
+  }, 100); // hasta 3 segundos
+}
+```
+
+### 2. Flujo simplificado de chat
+- **Eliminada** llamada manual a `/api/rag/query`
+- **Solo** llama a `/api/ai/chat` — que hace RAG automáticamente y devuelve `rag_sources`
+- **Renderiza** con `_markdownToHtml()` + KaTeX inline (`$...$`) y display (`$$...$$`)
+- **Muestra botón** "Ver fuentes (N libros)" que abre popup con libro/páginas
+
+### 3. CSS para botón de fuentes
+```css
+.chat-sources-btn { /* estilo consistente con paleta NEVEN */ }
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\laboratorio-econometria.html` | Fix KaTeX polling + chat con fuentes |
+| `F:\...\src\TaskPane\laboratorio-econometria.html` | Copia repo |
+
+## Commit
+
+`2013c25` - fix(lab): KaTeX polling + respuestas con fuentes RAG
+
+## Detalle técnico
+
+El endpoint `/api/ai/chat` ya hace RAG internamente cuando detecta una pregunta del usuario. Devuelve:
+```json
+{
+  "status": "ok",
+  "reply": "...",
+  "rag_used": true,
+  "rag_sources": [
+    {"filename": "Wooldridge...", "page": 45, "page_end": 47, "domain": "econometria", "score": 0.82, "content": "..."}
+  ]
+}
+```
+
+El laboratorio ahora usa este flujo en vez de orquestar RAG manualmente.
+
+## Pendientes actualizados
+
+- [x] ~~Probar el chat (requiere LLM activo)~~ ✅ Funciona
+- [x] ~~Agregar indicador de fuentes~~ ✅ Implementado
+- [ ] **ALTA** Verificar renderizado KaTeX de ecuaciones en los 4 módulos
+- [ ] **MEDIA** Agregar Módulo 5: Cointegración
+- [ ] **BAJA** Persistir historial del chat entre cambios de módulo
+
+
+---
+
+### Sesión 2026-08-19 (~18:00) — Limpieza Agresiva de Artefactos PDF en Fuentes RAG
+
+## Problema
+
+El popup "Ver fuentes" mostraba contenido ilegible:
+- Puntos negros repetidos (`●●●●●●●●●`) de scatter plots
+- Código R roto (`<code>plot(t,y,type='o'...</code>` sin cerrar)
+- Coordenadas de gráficos (`t 1 --- 4 ---+0.3`)
+- Escalas de ejes (`0 20 40 60 80`)
+- Palabras corruptas de OCR (`senisoC` en lugar de `Cosine`)
+
+## Causa raíz
+
+La función `_cleanPdfArtifacts()` tenía:
+1. **Regex insuficiente para puntos** — usaba `[●○◦•·]{3,}` que no capturaba todos los caracteres Unicode de bullets
+2. **Código R formateado mal** — intentaba envolver en `<code>` pero el regex no capturaba el cierre de paréntesis, dejando tags rotos
+3. **Falta de patrones** para coordenadas de gráficos y escalas de ejes
+
+## Solución implementada
+
+Reescritura completa de `_cleanPdfArtifacts()`:
+
+```javascript
+// Puntos - regex Unicode robusto
+.replace(/[\u2022\u25CF\u25CB\u25E6...●○◦•·]{2,}/g, '')
+
+// Código R - eliminar en lugar de formatear (es ruido)
+.replace(/\b(plot|expression|lm|...)\s*\([^)]*\)/g, '[codigo R]')
+
+// Coordenadas de gráficos
+.replace(/\bt\s+\d+\s+[-─]+\s+\d+\s+[-─]+[+\d.]+/g, '')
+
+// Escalas de ejes
+.replace(/\b(?:\d{1,3}\s+){3,}\d{1,3}\b/g, '')
+
+// OCR corrupto
+.replace(/\bsenisoC\b/gi, 'Cosine')
+
+// Tags HTML rotos
+.replace(/<code>[^<]*$/g, '')
+.replace(/<\/?code>/g, '')
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.html` | `_cleanPdfArtifacts()` v2 |
+| `F:\...\src\TaskPane\taskpane.html` | Copia repo |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `cbe6d43` | fix(rag): mejorar popup de fuentes + limpiar artefactos PDF |
+| `f264108` | fix(rag): limpieza agresiva de artefactos PDF en fuentes |
+
+## Decisiones de diseño
+
+1. **Eliminar código R en lugar de formatearlo** — El código R extraído de PDFs siempre está incompleto/corrupto. Mejor mostrar `[codigo R]` o eliminarlo que tags `<code>` rotos.
+
+2. **Regex Unicode explícito** — Los caracteres de bullet varían según el PDF source. Usar códigos Unicode directos (`\u2022`) es más robusto que caracteres literales.
+
+## Intentos fallidos
+
+1. **Primer intento** — Regex `[●○◦•·]{3,}` no capturaba todos los puntos porque el PDF usaba `\u2022` (bullet Unicode estándar).
+
+2. **Formatear código R con `<code>`** — El regex `(plot|lm|...)\s*\([^)]{1,100}\)` no funcionaba bien porque:
+   - Los paréntesis estaban anidados (`expression(y[t])`)
+   - El contenido excedía 100 caracteres
+   - Dejaba tags sin cerrar
+
+## Pendientes
+
+- [ ] **ALTA** Verificar renderizado KaTeX de ecuaciones en los 4 módulos del laboratorio
+- [ ] **MEDIA** Agregar Módulo 5: Cointegración
+- [ ] **MEDIA** Mejorar extracción de páginas en RAG (muchas fuentes muestran "página desconocida")
+- [ ] **BAJA** Persistir historial del chat entre cambios de módulo
+
+
+---
+
+### Sesión 2026-08-19 (~19:30) — Reinicio Servidor HTTP + Debugging Cache
+
+## Problema persistente
+
+A pesar de los fixes en `_cleanPdfArtifacts()` y `renderEquation()`:
+1. Los puntos (`●●●●`) seguían apareciendo en el popup de fuentes
+2. Las ecuaciones KaTeX seguían mostrándose como texto crudo
+
+## Diagnóstico
+
+Los archivos en producción (`C:\NEVEN\TaskPane\`) SÍ tenían los fixes:
+- `taskpane.html` línea 5544: regex Unicode `\u2022\u25CF...`
+- `laboratorio-econometria.html` línea 371-374: polling con `retryCount` y `pollInterval`
+
+**Causa probable:** Cache del navegador/WebView2 sirviendo archivos viejos.
+
+## Acción tomada
+
+Reinicio del servidor HTTP de NEVEN:
+```powershell
+Stop-Process -Id 30868 -Force  # neven_http_server.py --standalone
+Start-Process python -ArgumentList "C:\NEVEN\startup\neven_http_server.py", "--standalone"
+```
+
+Nuevo proceso: **71968** (iniciado 19:25:19)
+
+## Pendiente inmediato
+
+- [ ] **ALTA** Usuario debe hacer **Ctrl+F5** en TaskPane para forzar hard refresh
+- [ ] **ALTA** Verificar si los fixes funcionan después del refresh
+
+## Commits de esta sesión (resumen)
+
+| Hash | Descripción |
+|------|-------------|
+| `2013c25` | fix(lab): KaTeX polling + respuestas con fuentes RAG |
+| `cbe6d43` | fix(rag): mejorar popup de fuentes + limpiar artefactos PDF |
+| `f264108` | fix(rag): limpieza agresiva de artefactos PDF en fuentes |
+
+## Nota técnica
+
+El TaskPane usa WebView2 (Edge Chromium embebido) que tiene su propio cache independiente del navegador del usuario. Reiniciar el servidor HTTP no garantiza limpieza de cache — puede requerir:
+1. Ctrl+F5 en el TaskPane
+2. Cerrar y reabrir Excel
+3. En casos extremos, limpiar cache de WebView2 en `%LOCALAPPDATA%\Microsoft\Edge\User Data\`
+
+
+---
+
+### Sesión 2026-08-19 (~20:00) — Fix Agresivo Artefactos PDF + KaTeX renderToString
+
+## Problema persistente
+
+Después de reiniciar servidor y Ctrl+F5, los problemas persistían:
+1. Puntos (`●●●●`) seguían apareciendo en fuentes RAG
+2. Ecuaciones KaTeX seguían como texto crudo
+
+## Análisis
+
+El regex específico para bullets Unicode no capturaba los caracteres del PDF. Los puntos son de un encoding específico que varía por documento.
+
+## Solución implementada
+
+### 1. Limpieza agresiva de artefactos (`_cleanPdfArtifacts`)
+
+```javascript
+// Eliminar caracteres no-ASCII repetidos 2+ veces
+.replace(/(.)\1{2,}/g, function(match, char) {
+  if (/[a-zA-Z0-9\s.,;:!?'"()-]/.test(char)) return match.substring(0,3);
+  return ''; // Eliminar símbolos repetidos
+})
+
+// Eliminar secuencias de caracteres no-ASCII (excepto griegas/matemáticas)
+.replace(/[^\x00-\x7F]{2,}/g, function(match) {
+  if (/[αβγδ...∑∏∫]/.test(match)) return match;
+  return '';
+})
+
+// Eliminar líneas con >50% símbolos
+.replace(/^.*$/gm, function(line) {
+  var nonAlpha = (line.match(/[^a-zA-Z0-9\s]/g) || []).length;
+  if (line.length > 10 && nonAlpha / line.length > 0.5) return '';
+  return line;
+})
+```
+
+### 2. KaTeX con renderToString (`renderEquation`)
+
+```javascript
+// Antes: katex.render(eq, el, {...}) — puede fallar silenciosamente
+// Ahora: el.innerHTML = katex.renderToString(eq, {...})
+el.innerHTML = katex.renderToString(eq, { 
+  displayMode: true,  // Ecuaciones centradas
+  throwOnError: false,
+  output: 'html'
+});
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.html` | `_cleanPdfArtifacts()` v3 - limpieza agresiva |
+| `C:\NEVEN\TaskPane\laboratorio-econometria.html` | `renderEquation()` con renderToString |
+| `F:\...\src\TaskPane\taskpane.html` | Copia repo |
+| `F:\...\src\TaskPane\laboratorio-econometria.html` | Copia repo |
+
+## Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `0f09f77` | fix: limpieza agresiva artefactos PDF + KaTeX renderToString |
+
+## Decisiones de diseño
+
+1. **Enfoque agresivo para artefactos** — En lugar de listar caracteres Unicode específicos, eliminar cualquier carácter no-ASCII repetido que no sea letra griega o símbolo matemático útil.
+
+2. **renderToString vs render** — `katex.render()` modifica el DOM directamente y puede fallar silenciosamente si el elemento no está en el estado esperado. `renderToString()` devuelve HTML string que podemos asignar con `innerHTML`, más predecible.
+
+3. **displayMode: true** — Las ecuaciones del laboratorio son fórmulas principales, no inline, así que deben estar centradas.
+
+## Pendientes
+
+- [ ] **ALTA** Verificar si los fixes funcionan después de Ctrl+F5
+- [ ] **ALTA** Si no funciona, revisar consola F12 para errores
+- [ ] **MEDIA** Agregar Módulo 5: Cointegración al laboratorio
+- [ ] **BAJA** Mejorar extracción de páginas en RAG
+
+
+---
+
+### Sesión 2026-08-19 (~20:30) — Diagnóstico: Problema en Extracción PDF, No en Visualización
+
+## Descubrimiento crítico
+
+Los caracteres basura (`|||||`, `---`, `(cid:88)∞`, etc.) **NO son artefactos de visualización** que se puedan limpiar con regex. Son **cómo el PDF fue extraído originalmente** al RAG.
+
+**Evidencia:**
+- `(cid:88)` = Character ID de fuente embebida sin mapeo Unicode
+- `| --- | --- |` = Tablas/gráficos extraídos como pipes y guiones
+- Ecuaciones LaTeX renderizadas = el extractor las ve como gráficos o caracteres individuales
+
+## Por qué los fixes de regex no funcionaron
+
+La limpieza de `_cleanPdfArtifacts()` nunca iba a funcionar porque:
+1. El problema está en la **fuente de datos** (chunks en ChromaDB)
+2. No en la **visualización** (taskpane.html)
+3. Los extractores estándar (PyMuPDF/pdfplumber) no pueden leer ecuaciones LaTeX renderizadas
+
+## Herramientas especializadas para PDFs científicos
+
+| Herramienta | Fortaleza | Limitación |
+|-------------|-----------|------------|
+| **Nougat (Meta AI)** | Excelente para papers LaTeX → Markdown | Lento, requiere GPU |
+| **Pix2Text (P2T)** | OCR + fórmulas, multilenguaje, ligero | Bueno para libros |
+| **Marker** | PDF→Markdown, tablas y ecuaciones | Balance velocidad/calidad |
+| **MathPix** | El mejor para ecuaciones | Comercial (costo/página) |
+
+## Commits de esta sesión (no efectivos)
+
+| Hash | Descripción | Resultado |
+|------|-------------|-----------|
+| `2013c25` | KaTeX polling + fuentes RAG | No resolvió |
+| `cbe6d43` | Popup mejorado + limpieza PDF | No resolvió |
+| `f264108` | Limpieza agresiva artefactos | No resolvió |
+| `0f09f77` | renderToString + limpieza v3 | No resolvió |
+
+**Nota:** Estos commits mejoran la UI pero no resuelven el problema raíz.
+
+## Lección aprendida
+
+Antes de implementar limpieza de texto, verificar si el problema está en:
+1. **Extracción** (pipeline de indexación) ← ESTE ERA EL CASO
+2. **Almacenamiento** (chunks en DB)
+3. **Visualización** (frontend)
+
+## Pendientes ALTA prioridad
+
+- [ ] **CRÍTICO** Investigar integración de Pix2Text o Nougat al pipeline RAG
+- [ ] **CRÍTICO** Identificar qué libros necesitan re-procesarse (los que tienen ecuaciones)
+- [ ] **ALTA** Decidir: ¿re-indexar solo libros problemáticos o todos?
+- [ ] **MEDIA** El problema de KaTeX en el laboratorio sigue pendiente (ecuaciones no renderizan)
+
+
+---
+
+### Sesión 2026-08-19 (~21:00) — Investigación Pix2Text vs Nougat para Extracción de Ecuaciones
+
+## Contexto
+
+Los fixes de regex en `_cleanPdfArtifacts()` no funcionaron porque el problema está en la **extracción original** de los PDFs, no en la visualización. Necesitamos herramientas especializadas para extraer ecuaciones LaTeX de documentos científicos.
+
+## Investigación realizada
+
+### Pix2Text (P2T)
+- **Instalación:** `pip install pix2text` (~500MB)
+- **GPU:** Opcional (CPU funciona, GPU 5-10x más rápido)
+- **Output:** Markdown con ecuaciones LaTeX (`$...$`)
+- **Velocidad:** ~2-5 seg/página CPU, ~0.5 seg/página GPU
+- **Fortaleza:** Libros completos, 80+ idiomas, tablas
+
+### Nougat (Meta AI)
+- **Instalación:** `pip install nougat-ocr` (~2GB)
+- **GPU:** Prácticamente requerida
+- **Output:** Markdown con ecuaciones LaTeX
+- **Velocidad:** ~1 seg/página GPU, ~30+ seg/página CPU
+- **Fortaleza:** Papers científicos, estructura semántica
+
+## Pipeline actual de indexación
+
+Archivo: `rag_engine.py` → función `extract_text_with_pages()`
+1. MarkItDown (principal)
+2. PyMuPDF (fallback)
+
+Ninguno puede extraer ecuaciones LaTeX correctamente.
+
+## Libros de econometría identificados (12 PDFs)
+
+| Libro | Tamaño | Problema probable |
+|-------|--------|-------------------|
+| MIT_14.382_Econometrics.pdf | 7.5 MB | SÍ - muchas ecuaciones |
+| MIT_14.384_Time_Series_Analysis.pdf | 5.6 MB | SÍ - muchas ecuaciones |
+| MIT_14.387_Applied_Econometrics.pdf | 8.7 MB | SÍ - muchas ecuaciones |
+| Time-Series-Analysis...pdf | 5.5 MB | SÍ - ecuaciones |
+| wooldridge...pdf | 3.6 MB | SÍ - ecuaciones |
+| Statistical Learning.pdf | 10.6 MB | Probable |
+| Otros | varios | Por verificar |
+
+## Opciones de integración discutidas
+
+1. **One-time:** Procesar PDFs → generar .md → indexar markdown
+2. **Pipeline:** Modificar `rag_engine.py` para usar P2T/Nougat automáticamente
+
+## Recomendación tentativa
+
+**Pix2Text** por ser más práctico en CPU y mejor para libros completos.
+
+## No hubo commits en esta parte de la sesión
+
+Solo investigación y discusión.
+
+## Pendientes para próxima sesión
+
+- [ ] **CRÍTICO** Usuario debe confirmar si tiene GPU disponible
+- [ ] **CRÍTICO** Decidir: ¿Pix2Text o Nougat?
+- [ ] **CRÍTICO** Decidir: ¿One-time o integración al pipeline?
+- [ ] **ALTA** Instalar herramienta elegida y probar con 1 PDF
+- [ ] **ALTA** Definir flujo de re-indexación de libros problemáticos
+
+## Preguntas pendientes para el usuario
+
+1. ¿Tienes GPU disponible?
+2. ¿Procesar todos los 12 libros o solo los problemáticos?
+3. ¿Guardar los .md junto a los PDFs o en carpeta separada?
+
+
+---
+
+### Sesión 2026-08-19 (~21:30) — Decisión: Pix2Text con GPU 4GB
+
+## Información del usuario
+
+- **GPU disponible:** 4GB VRAM
+- Suficiente para Pix2Text (modelos usan ~1.5GB)
+- Nougat sería justo pero posible
+
+## Decisión tomada
+
+**Pix2Text** es la herramienta elegida porque:
+1. Modelos más pequeños (~1.5GB VRAM)
+2. Diseñado para libros completos (no solo papers)
+3. Soporte PDF→Markdown directo
+4. Fallback a CPU si VRAM se queda corta
+
+## Plan de implementación propuesto
+
+### Fase 1: Prueba de concepto
+- Instalar: `pip install pix2text[gpu]`
+- Procesar 1 PDF problemático (MIT 14.384)
+- Verificar calidad del Markdown
+
+### Fase 2: Procesamiento batch
+- Procesar los 12 PDFs de econometría
+- Guardar .md en carpeta a definir
+- Re-indexar RAG con los .md
+
+### Fase 3: Integración pipeline (futuro)
+- Modificar `rag_engine.py` para usar P2T automáticamente
+
+## Preguntas pendientes para el usuario
+
+1. ¿Aprobar instalación de Pix2Text?
+2. ¿Guardar .md junto a PDFs o en subcarpeta `/markdown/`?
+3. ¿Procesar los 12 libros o empezar con los 5 más problemáticos?
+
+## PDFs más problemáticos identificados (5)
+
+1. MIT_14.382_Econometrics.pdf
+2. MIT_14.384_Time_Series_Analysis.pdf
+3. MIT_14.387_Applied_Econometrics.pdf
+4. Time-Series-Analysis-with-Applications-in-R-Second-Edition.pdf
+5. wooldridge_j-_2002_econometric_analysis_of_cross_section_and_panel_data.pdf
+
+## No hubo commits — sesión de planificación
+
+## Pendientes para próxima sesión
+
+- [ ] **CRÍTICO** Usuario debe aprobar instalación de Pix2Text
+- [ ] **CRÍTICO** Usuario debe decidir ubicación de archivos .md
+- [ ] **CRÍTICO** Usuario debe decidir: ¿5 libros o 12?
+- [ ] **ALTA** Instalar Pix2Text y probar con MIT 14.384
+- [ ] **ALTA** Procesar batch de libros aprobados
+- [ ] **ALTA** Re-indexar RAG con los nuevos .md
+
+
+---
+
+### Sesión 2026-08-19 (~22:00) — Intento de instalación Pix2Text
+
+## Decisiones del usuario
+
+1. ✅ Aprobar instalación de Pix2Text
+2. ✅ Guardar .md en subcarpeta `/markdown/`
+3. ✅ Procesar 1 PDF primero para medir tiempos (MIT 14.384)
+
+## Problema encontrado
+
+La instalación de `pix2text[gpu]` falló por:
+
+```
+ERROR: Could not install packages due to an OSError: [Errno 2] No such file or directory
+HINT: This error might have occurred since this system does not have Windows Long Path support enabled.
+```
+
+**Causa:** Windows tiene deshabilitado el soporte de Long Paths y los archivos de PyTorch/CUDA tienen rutas muy largas (>260 caracteres).
+
+**Estado actual:**
+```
+LongPathsEnabled = 0 (deshabilitado)
+```
+
+## Solución requerida
+
+Ejecutar como Administrador:
+```powershell
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1
+```
+
+Luego reiniciar terminal y reintentar instalación.
+
+## Alternativa
+
+Instalar sin GPU (`pip install pix2text`) — funciona en CPU, más lento pero sin problemas de rutas.
+
+## No hubo commits — sesión bloqueada por problema de instalación
+
+## Pendientes para próxima sesión
+
+- [ ] **CRÍTICO** Usuario debe decidir: ¿Habilitar Long Paths (Admin) o instalar sin GPU?
+- [ ] **ALTA** Completar instalación de Pix2Text
+- [ ] **ALTA** Procesar MIT 14.384 como prueba
+- [ ] **MEDIA** Medir tiempos de procesamiento
+- [ ] **MEDIA** Verificar calidad del Markdown generado
+
+
+---
+
+### Sesión 2026-08-19 (~22:15) — Esperando habilitación Long Paths
+
+## Estado
+
+Usuario eligió **Opción A**: Habilitar Long Paths para instalar Pix2Text con GPU.
+
+## Comando proporcionado al usuario
+
+```powershell
+# Ejecutar en PowerShell como Administrador:
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1
+```
+
+## Esperando confirmación del usuario
+
+Una vez ejecutado, reintentar:
+```powershell
+pip install "pix2text[gpu]"
+```
+
+## Pendientes inmediatos
+
+- [ ] **CRÍTICO** Usuario ejecuta comando como Admin
+- [ ] **CRÍTICO** Reintentar instalación Pix2Text
+- [ ] **ALTA** Procesar MIT 14.384 como prueba
+
+
+---
+
+### Sesión 2026-08-19 (~22:30) — Pix2Text falló por conflictos de dependencias → Cambio a Nougat
+
+## Problema con Pix2Text
+
+La instalación de Pix2Text falló repetidamente por conflictos de dependencias:
+
+```
+ImportError: cannot import name 'resolve_model_key' from 'rapidocr.utils.model_resolver'
+ImportError: cannot import name 'EngineType' from 'rapidocr'
+```
+
+**Causa raíz:** Incompatibilidad entre versiones:
+- `pix2text 1.1.7` requiere `cnstd>=1.2.4.2`
+- `cnstd 1.2.8` requiere `rapidocr` con API específica
+- `rapidocr 3.x` (instalado) tiene API diferente a la esperada
+
+## Intentos fallidos
+
+1. `pip install pix2text` → Error Long Paths (resuelto habilitando en registro)
+2. `pip install pix2text` → ImportError rapidocr.resolve_model_key
+3. `pip install cnstd==1.2.4` → Conflicto con cnocr/pix2text
+4. `pip install cnstd>=1.2.8` → ImportError rapidocr.EngineType
+5. `pip install rapidocr-onnxruntime` → Sigue fallando
+
+## Decisión del usuario
+
+Cambiar a **Nougat (Meta AI)** como alternativa.
+
+## Razones para Nougat
+
+- Menos dependencias complejas
+- Diseñado específicamente para papers científicos con ecuaciones
+- 4GB VRAM debería ser suficiente (modelo base usa ~3GB)
+
+## Pendientes inmediatos
+
+- [ ] **CRÍTICO** Instalar Nougat: `pip install nougat-ocr`
+- [ ] **ALTA** Probar con MIT 14.384 Time Series
+- [ ] **ALTA** Medir tiempos y calidad de extracción
+
+
+---
+
+### Sesión 2026-08-19 (~20:00) — Instalación Herramientas OCR para Ecuaciones PDF
+
+## Objetivo
+Instalar herramientas especializadas para extraer ecuaciones LaTeX de PDFs de econometría para mejorar el RAG.
+
+## Resumen
+Sesión larga de troubleshooting de dependencias Python. Se probaron múltiples herramientas (Pix2Text, Nougat, Marker) antes de encontrar una solución funcional con **pymupdf4llm**.
+
+## Herramientas probadas y resultados
+
+| Herramienta | Resultado | Causa del fallo |
+|-------------|-----------|-----------------|
+| **Pix2Text** | ❌ Falló | Conflictos rapidocr/cnstd — versiones incompatibles |
+| **Nougat** | ❌ Falló | `albumentations` API incompatible + `transformers` version mismatch |
+| **Marker v2.0** | ❌ Falló | Requiere Docker/vLLM, problema de file lock en Windows |
+| **pymupdf4llm** | ✅ Funciona | Extrae texto con símbolos Unicode, rápido y estable |
+
+## Intentos fallidos detallados
+
+### Nougat
+1. `pip install nougat-ocr` → OK
+2. Import falla: `albumentations` API changed (`compression_type` validation error)
+3. `pip install albumentations==1.3.1` → Conflicto con doclayout-yolo
+4. Creación de venv aislado → Corrupción de paquetes por archivos bloqueados
+5. Downgrade `transformers==4.38.2` → Archivos bloqueados por procesos Python huérfanos
+
+### Marker v2.0
+1. `pip install marker-pdf` → OK (después de múltiples intentos con cmd vs PowerShell)
+2. Import OK, pero ejecución falla: `vllm_server.lock could not be acquired`
+3. El lock persiste entre ejecuciones porque vLLM spawns Docker containers
+4. Limpiar locks + reiniciar → Sigue fallando, marker v2 depende fuertemente de vLLM/Docker
+
+## Solución final: pymupdf4llm
+
+```bash
+pip install pymupdf4llm
+```
+
+**Ventajas:**
+- Sin dependencias complejas (solo pymupdf + onnxruntime)
+- No requiere Docker ni GPU
+- Rápido (~30s para PDF de 5MB)
+- Extrae símbolos matemáticos como Unicode (β, σ², ρ, ε, Σ, θ, etc.)
+
+**Limitación:**
+- No convierte a LaTeX puro (`$\beta$`), usa Unicode directamente
+- KaTeX puede renderizar algunos símbolos pero no fórmulas complejas
+
+## Prueba exitosa
+
+```
+PDF: MIT_14.384_Time_Series_Analysis.pdf (5.6 MB)
+Salida: MIT_14.384_Time_Series_Analysis.md (362 KB)
+Líneas con símbolos matemáticos: 392
+Tiempo: ~45 segundos
+```
+
+Ejemplos de ecuaciones extraídas:
+- `E[ϵt|It] = 0`
+- `T(ρˆ − 1) ⇒ ∫W dW / ∫W²`
+- `N(0, σ²)`
+
+## Archivos creados
+
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\tools\test_single_pdf.py` | Script de prueba con AER.pdf |
+| `C:\NEVEN\tools\test_mit_pdf.py` | Script de prueba con MIT Time Series |
+| `C:\NEVEN\tools\batch_convert_pdfs.py` | Script batch para marker (no funciona) |
+| `C:\NEVEN\tools\install_marker.py` | Script de instalación marker |
+
+## Archivos generados
+
+| Archivo | Tamaño |
+|---------|--------|
+| `ontologia-fuentes/LIBROS ECONOMETRIA/markdown/AER.md` | 329 KB |
+| `ontologia-fuentes/LIBROS ECONOMETRIA/markdown/MIT_14.384_Time_Series_Analysis.md` | 362 KB |
+
+## Problemas de entorno detectados
+
+1. **PowerShell no muestra output de pip/python** — Usar `cmd /c "comando"` como workaround
+2. **Long Paths en Windows** — Ya habilitado en sesión anterior
+3. **Procesos Python huérfanos** — Bloquean archivos en site-packages, requiere `Stop-Process` manual
+4. **Docker Desktop** — Debe estar corriendo para marker v2, pero aún así falla por locks
+
+## Commits realizados
+
+Ninguno — sesión de instalación y pruebas, sin cambios a código de producción.
+
+## Pendientes para próxima sesión
+
+- [ ] **ALTA** Procesar los 12 PDFs de econometría con pymupdf4llm
+- [ ] **ALTA** Re-indexar RAG con los nuevos .md generados
+- [ ] **MEDIA** Evaluar si la extracción Unicode es suficiente para KaTeX o necesita post-procesamiento
+- [ ] **MEDIA** Crear script `C:\NEVEN\tools\batch_convert_pymupdf.py` para procesar todos los PDFs
+- [ ] **BAJA** Investigar si hay forma de convertir Unicode math → LaTeX para mejor rendering
+
+## Lecciones aprendidas
+
+1. **marker-pdf v2.0 no es viable en Windows** sin Docker funcionando perfectamente
+2. **pymupdf4llm es la mejor opción** para extracción rápida y estable
+3. **Las ecuaciones en Unicode son legibles** aunque no renderizen en KaTeX
+4. **Siempre usar `cmd /c`** para comandos Python que necesitan output visible
+
+
+---
+
+### Sesión 2026-08-19 (~21:00) — Análisis: Limitaciones de Extracción de Ecuaciones
+
+## Contexto
+Continuación de la sesión anterior. El usuario preguntó si es posible reconstruir ecuaciones LaTeX precisas a partir de los caracteres Unicode extraídos por pymupdf4llm.
+
+## Conclusión técnica
+
+**NO es posible** reconstruir ecuaciones LaTeX con precisión a partir de Unicode extraído.
+
+### Lo que se pierde en la extracción
+
+| Elemento LaTeX | Se pierde |
+|----------------|-----------|
+| Fracciones `\frac{a}{b}` | ✗ Solo queda `a/b` o texto lineal |
+| Subíndices `x_t` | ✗ Queda `xt` o `x_t` como texto |
+| Superíndices `x^2` | ✗ Queda `x²` (Unicode) o `x2` |
+| Símbolos `\hat{\beta}` | ✗ Queda `βˆ` o `β̂` |
+| Matrices | ✗ Se pierde estructura completamente |
+| Integrales con límites | ✗ `∫₀^∞` pierde formato |
+| Alineación multilínea | ✗ Se convierte a texto corrido |
+
+### Ejemplo concreto
+
+```
+Extraído:   T(ρˆ − 1) ⇒ ∫W dW / ∫W²
+Necesario:  $T(\hat{\rho} - 1) \Rightarrow \frac{\int W \, dW}{\int W^2}$
+```
+
+## Alternativas evaluadas
+
+| Opción | Viabilidad | Notas |
+|--------|------------|-------|
+| **Nougat/Marker + Docker** | Media | Requiere Docker funcionando, pero diseñados para esto |
+| **Mathpix API** | Alta | De pago (~$0.01/página), estándar de la industria |
+| **LaTeX-OCR** | Media | Open source, procesa imágenes individuales |
+| **Fuente .tex original** | Ideal | Si los PDFs vienen de LaTeX, el .tex tendría todo |
+| **Post-procesamiento regex** | Baja | Solo patrones simples: `σ²` → `$\sigma^2$` |
+
+## Decisión pendiente
+
+Para el RAG de NEVEN, la extracción Unicode **es suficiente para búsqueda semántica** — el embedding model entiende que `σ²` representa varianza.
+
+El problema es solo para **renderizar en KaTeX** en el Lab de Econometría del TaskPane.
+
+## Opciones para próxima sesión
+
+1. **Avanzar con pymupdf4llm** — Procesar todos los PDFs, RAG funciona para búsqueda aunque no renderice ecuaciones
+2. **Reintentar Marker/Nougat con Docker** — Si Docker está estable, podría funcionar
+3. **Híbrido** — Usar pymupdf4llm para texto + extraer imágenes de ecuaciones por separado
+
+## Archivos generados (sesión anterior, confirmados)
+
+| Archivo | Tamaño | Estado |
+|---------|--------|--------|
+| `markdown/AER.md` | 329 KB | ✓ Generado |
+| `markdown/MIT_14.384_Time_Series_Analysis.md` | 362 KB | ✓ Generado |
+
+## Pendientes actualizados
+
+- [ ] **ALTA** Decidir estrategia: pymupdf4llm (rápido, sin ecuaciones) vs reintentar Marker (lento, con ecuaciones)
+- [ ] **ALTA** Procesar los 10 PDFs restantes con la herramienta elegida
+- [ ] **ALTA** Re-indexar RAG con los nuevos .md
+- [ ] **MEDIA** Si se usa pymupdf4llm, crear post-procesador para patrones comunes Unicode→LaTeX
+- [ ] **BAJA** Investigar si MIT OpenCourseWare tiene los .tex originales disponibles
+
+
+---
+
+### Sesión 2026-08-19 (~14:00) — Post-procesador Unicode→LaTeX para PDFs ✅
+
+## Problema original
+
+Las ecuaciones extraídas de PDFs con pymupdf4llm aparecen como símbolos Unicode (β, σ, ∑, etc.) que no se renderizan correctamente en KaTeX. El usuario solicitó crear un post-procesador para convertir estos símbolos a formato LaTeX.
+
+## Solución implementada
+
+Creado `C:\NEVEN\tools\unicode_to_latex.py` — conversor completo Unicode→LaTeX con las siguientes características:
+
+### Patrones manejados:
+| Tipo | Patrón Original | Resultado LaTeX |
+|------|-----------------|-----------------|
+| Letras griegas | β, σ, α, θ, etc. | `\beta`, `\sigma`, `\alpha`, `\theta` |
+| Operadores | ∑, ∫, ∂, √, ∞ | `\sum`, `\int`, `\partial`, `\sqrt`, `\infty` |
+| Relaciones | ≤, ≥, ≈, ∈, → | `\leq`, `\geq`, `\approx`, `\in`, `\to` |
+| Superíndices HTML | `<sup>2</sup>` | `^{2}` |
+| Estimadores/hats | `_β_<sup>ˆ</sup>` | `\hat{\beta}` |
+| Fracciones | `_n_<sup><u>1</u></sup>` | `\frac{1}{n}` |
+| Transpuestas | `<sup>T</sup>` | `^{T}` |
+| Productos internos | `<x,y>` | `\langle x,y \rangle` |
+| Normas | `||x||` | `\|x\|` |
+
+### Estadísticas de conversión (11 archivos):
+
+| Estadística | Total |
+|-------------|-------|
+| Símbolos Unicode | 18,105 |
+| Superíndices | 10,663 |
+| Fracciones | 5,318 |
+| Productos internos | 940 |
+| Hats (estimadores) | 684 |
+| Normas | 209 |
+| Transpuestas | 64 |
+
+## Archivos generados
+
+**Entrada:** `ontologia-fuentes/LIBROS ECONOMETRIA/markdown/` (11 archivos .md)
+**Salida:** `ontologia-fuentes/LIBROS ECONOMETRIA/markdown_latex/` (11 archivos .md)
+
+## Uso del script
+
+```bash
+# Archivo individual
+python C:\NEVEN\tools\unicode_to_latex.py input.md output.md --stats
+
+# Batch (directorio completo)
+python C:\NEVEN\tools\unicode_to_latex.py --batch --stats input_dir/ output_dir/
+```
+
+## Decisiones técnicas
+
+1. **Orden de procesamiento crítico:** Productos internos `<x,y>` se procesan ANTES que otras conversiones para evitar confusión con tags HTML
+2. **Fracciones pymupdf:** El patrón `_n_<sup><u>1</u></sup>` representa `1/n` en la extracción de pymupdf
+3. **Hats:** El patrón `_β_<sup>ˆ</sup>` es el formato estándar de pymupdf para β̂
+4. **NO auto-wrap:** El script NO envuelve automáticamente en `$...$` porque eso requiere detección de contexto más compleja
+
+## Próximos pasos
+
+- [ ] **ALTA** Re-indexar RAG con archivos de `markdown_latex/` en lugar de `markdown/`
+- [ ] **MEDIA** Probar renderizado KaTeX en TaskPane con los nuevos archivos
+- [ ] **BAJA** Considerar agregar detección automática de expresiones matemáticas para wrap en `$`
+
+## Archivos modificados
+
+- **NUEVO:** `C:\NEVEN\tools\unicode_to_latex.py` — conversor Unicode→LaTeX
+- **NUEVO:** `ontologia-fuentes/LIBROS ECONOMETRIA/markdown_latex/*.md` — 11 archivos convertidos
+
+
+## Nota de cierre sesión 2026-08-19 (~14:30)
+
+### Resumen ejecutivo
+
+Se creó un flujo completo para convertir PDFs a markdown con ecuaciones LaTeX:
+
+```
+PDF → pymupdf4llm → .md (Unicode) → unicode_to_latex.py → .md (LaTeX) → RAG
+```
+
+### Estado final de archivos
+
+| Ubicación | Contenido | Count |
+|-----------|-----------|-------|
+| `markdown/` | MDs con Unicode (raw) | 11 |
+| `markdown_latex/` | MDs con LaTeX (procesados) | 11 |
+| `C:\NEVEN\tools\unicode_to_latex.py` | Script conversor | 1 |
+
+### Intentos fallidos previos (contexto restaurado)
+
+Durante la sesión anterior se intentaron varias herramientas para OCR de ecuaciones:
+- **Pix2Text** — conflictos de versiones rapidocr/cnstd
+- **Nougat** — transformers API incompatible
+- **Marker v2** — problemas de lock con vLLM en Windows
+
+Se optó por **pymupdf4llm** que extrae texto Unicode sin OCR, seguido del post-procesador LaTeX.
+
+### Commits pendientes
+
+Los archivos creados esta sesión NO fueron commiteados:
+- `C:\NEVEN\tools\unicode_to_latex.py`
+- `markdown_latex/*.md` (11 archivos)
+
+### Próximos pasos (prioridad)
+
+1. **ALTA** — Re-indexar RAG con `markdown_latex/` para KaTeX
+2. **MEDIA** — Reintentar `MIT_14.387_Applied_Econometrics.pdf` (error "float division by zero")
+3. **BAJA** — Commit de archivos nuevos al repositorio
+
+
+
+---
+
+### Sesión 2026-08-19 (~15:00) — Análisis Completo de Caracteres Unicode
+
+## Objetivo
+
+Crear tabla exhaustiva de todos los caracteres Unicode encontrados en los PDFs convertidos, clasificando cuáles se transforman correctamente, cuáles faltan, y cuáles son ruido/corrupción.
+
+## Herramienta creada
+
+**`C:\NEVEN\tools\character_analysis.py`** — Script que:
+1. Escanea todos los .md en `markdown/`
+2. Extrae caracteres no-ASCII únicos con frecuencia
+3. Clasifica contra los mapeos de `unicode_to_latex.py`
+4. Genera reporte por categoría
+
+## Resultados del análisis
+
+**Total:** 206 caracteres únicos, 71,189 ocurrencias
+
+| Categoría | Chars | Ocurrencias | % |
+|-----------|------:|------------:|--:|
+| ✅ Transformados | 101 | 26,307 | 37.0% |
+| ⚪ Texto/Puntuación | 39 | 12,237 | 17.2% |
+| 🔶 Pendientes útiles | 16 | 926 | 1.3% |
+| ❌ Corrupción | 3 | 23,677 | 33.3% |
+| ❓ Sin categorizar | 47 | 8,042 | 11.3% |
+
+## Hallazgos importantes
+
+### Corrupción masiva de encoding (33%)
+
+| Char | Unicode | Count | Problema |
+|:----:|---------|------:|----------|
+| � | U+FFFD | 9,429 | Replacement character (bytes inválidos) |
+| Þ | U+00DE | 7,143 | Icelandic Thorn — **NO debería estar** |
+| ð | U+00F0 | 7,105 | Icelandic eth — **NO debería estar** |
+
+**Causa probable:** Algún PDF tiene fuentes con encoding Latin-1/Windows-1252 que pymupdf interpreta incorrectamente. Los caracteres islandeses (Þ, ð) son bytes 0xDE y 0xF0 mal decodificados.
+
+### Caracteres matemáticos pendientes de agregar
+
+| Char | Unicode | Count | Transformación sugerida |
+|:----:|---------|------:|-------------------------|
+| ‰ | U+2030 | 689 | `\permil` |
+| ≲ | U+2272 | 40 | `\lesssim` |
+| ⩽ | U+2A7D | 40 | `\leqslant` |
+| ⩾ | U+2A7E | 11 | `\geqslant` |
+| ˇ | U+02C7 | 38 | `\check{}` |
+| ı | U+0131 | 21 | `\imath` |
+| Å | U+00C5 | 2 | `\AA` (Angstrom) |
+
+### Comillas tipográficas (normalizar a ASCII)
+
+| Char | Count | Normalizar a |
+|:----:|------:|--------------|
+| ' | 2,355 | `'` |
+| ' | 1,126 | `'` |
+| " | 782 | `"` |
+| " | 697 | `"` |
+
+## Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `C:\NEVEN\tools\character_analysis.py` | Script de análisis de caracteres |
+
+## Commits
+
+Ninguno en esta sesión (solo análisis).
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Agregar 16 caracteres matemáticos pendientes a `unicode_to_latex.py` |
+| **ALTA** | Re-indexar RAG con `markdown_latex/` |
+| **MEDIA** | Investigar origen de corrupción Þ/ð (¿qué PDF?) |
+| **MEDIA** | Normalizar comillas tipográficas a ASCII |
+| **BAJA** | Limpiar soft hyphens (U+00AD, 349 ocurrencias) |
+
+## Decisión pendiente
+
+El usuario preguntó si agregar las transformaciones pendientes al script. Quedó sin responder por fin de sesión.
+
+
+
+---
+
+### Sesión 2026-08-19 (~15:30) — Corrección Análisis de Caracteres Unicode
+
+## Corrección importante
+
+El análisis anterior clasificó incorrectamente `ð` y `Þ` como "caracteres islandeses de ruido". El usuario proporcionó el documento `symbols.pdf` (referencia LaTeX) que reveló la verdadera naturaleza de estos caracteres.
+
+## Hallazgo principal: Paréntesis mal codificados en Wooldridge
+
+**Los caracteres `ð` y `Þ` son PARÉNTESIS**, no símbolos islandeses:
+
+| Caracter | Unicode | Ocurrencias | Significado Real |
+|:--------:|---------|------------:|------------------|
+| ð | U+00F0 | 7,105 | Paréntesis izquierdo `(` |
+| Þ | U+00DE | 7,118 | Paréntesis derecho `)` |
+
+**Evidencia del PDF de Wooldridge:**
+```
+ANTES:  Eð y j w; cÞ, the expected value of y conditional on w and c
+DESPUÉS: E( y j w; c), the expected value of y conditional on w and c
+```
+
+**Causa raíz:** El PDF de Wooldridge usa una fuente matemática con encoding no estándar donde los códigos de paréntesis se mapean a caracteres Latin Extended.
+
+## Otro hallazgo: Ligature ff
+
+El caracter `¤` (U+00A4, 2,104 ocurrencias) es la **ligature `ff`**:
+- `e¤ect` → `effect`
+- `di¤erent` → `different`
+
+## Documento de referencia agregado
+
+**`symbols.pdf`** — Tabla completa de símbolos LaTeX descargada a:
+- `ontologia-fuentes/LIBROS ECONOMETRIA/symbols.pdf`
+- Convertido a: `C:\NEVEN\tools\symbols_reference.md`
+
+Este documento confirma qué caracteres Unicode corresponden a qué comandos LaTeX.
+
+## Símbolos matemáticos legítimos pendientes
+
+Del `symbols.pdf`, estos SÍ son símbolos matemáticos que faltan en el conversor:
+
+| Char | Unicode | Count | LaTeX |
+|:----:|---------|------:|-------|
+| ⩽ | U+2A7D | 40 | `\leqslant` |
+| ⩾ | U+2A7E | 11 | `\geqslant` |
+| ≲ | U+2272 | 40 | `\lesssim` |
+| ≳ | U+2273 | 3 | `\gtrsim` |
+| ˇ | U+02C7 | 38 | `\check{}` |
+| ı | U+0131 | 21 | `\imath` |
+| ∆ | U+2206 | 71 | `\Delta` (increment) |
+| ⨿ | U+2A3F | 52 | `\amalg` |
+
+## Archivos creados/modificados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `C:\NEVEN\tools\symbols_reference.md` | Conversión de symbols.pdf a markdown |
+| `C:\NEVEN\tools\character_analysis.py` | Script de análisis (ya existía) |
+
+## Commits
+
+Ninguno (solo análisis).
+
+## Acciones pendientes para actualizar el conversor
+
+```python
+# Agregar a unicode_to_latex.py:
+
+# 1. Corrección encoding Wooldridge
+'ð': '(',      # paréntesis izquierdo mal codificado
+'Þ': ')',      # paréntesis derecho mal codificado
+'¤': 'ff',     # ligature ff
+
+# 2. Símbolos matemáticos del symbols.pdf
+'⩽': r'\leqslant',
+'⩾': r'\geqslant',
+'≲': r'\lesssim',
+'≳': r'\gtrsim',
+'ˇ': r'\check',
+'ı': r'\imath',
+'∆': r'\Delta',  # U+2206 (diferente a U+0394)
+'⨿': r'\amalg',
+
+# 3. Normalizar comillas
+''': "'",
+''': "'",
+'"': '"',
+'"': '"',
+```
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Actualizar `unicode_to_latex.py` con correcciones de paréntesis y ligatures |
+| **ALTA** | Re-procesar Wooldridge con las correcciones |
+| **ALTA** | Re-indexar RAG con archivos corregidos |
+| **MEDIA** | Agregar símbolos matemáticos pendientes (⩽, ⩾, ≲, etc.) |
+| **BAJA** | Normalizar comillas tipográficas a ASCII |
+
+## Lección aprendida
+
+No asumir que caracteres con nombres "islandeses" (eth, thorn) son ruido. Verificar siempre el contexto de uso en el documento. En este caso, 14,000+ ocurrencias de "caracteres islandeses" eran en realidad paréntesis matemáticos fundamentales.
+
+
+
+---
+
+### Sesión 2026-08-19 (~16:00) — Análisis Completo de Huérfanos + Descubrimiento Encoding Wooldridge
+
+## Hallazgo principal
+
+El PDF de Wooldridge tiene un **encoding de fuente matemática completamente no estándar**. No son 2 caracteres problemáticos, son **5 caracteres** que representan símbolos fundamentales:
+
+| Caracter | Unicode | Ocurrencias | Significado Real |
+|:--------:|---------|------------:|------------------|
+| ð | U+00F0 | 7,105 | `(` paréntesis izquierdo |
+| Þ | U+00DE | 7,118 | `)` paréntesis derecho |
+| þ | U+00FE | 2,002 | `+` signo más |
+| ¼ | U+00BC | 4,317 | `=` signo igual |
+| ¤ | U+00A4 | 2,104 | `ff` ligature |
+
+**Total afectado:** 22,646 caracteres (solo en Wooldridge)
+
+## Ejemplo de texto corrupto vs corregido
+
+```
+ANTES:  y ¼ b0 þ b1x1 þ b2x2, where Eðu j x1; x2Þ ¼ 0
+DESPUÉS: y = b0 + b1x1 + b2x2, where E(u | x1; x2) = 0
+```
+
+## Conflicto identificado
+
+El caracter `¼` (U+00BC):
+- En **Wooldridge**: significa `=` (signo igual) — 4,317 ocurrencias
+- En **otros libros**: significa `\frac{1}{4}` — solo 8 ocurrencias
+
+**Solución propuesta:** Crear preprocesador específico para Wooldridge en lugar de modificar el conversor global.
+
+## Análisis de huérfanos restantes
+
+Después de identificar los 5 caracteres de Wooldridge, quedan **52 caracteres huérfanos** con **8,433 ocurrencias**:
+
+| Categoría | Chars | Ocurrencias | Acción |
+|-----------|------:|------------:|--------|
+| Comillas tipográficas | 4 | 4,960 | Normalizar a ASCII |
+| Símbolos matemáticos | 11 | ~300 | Agregar al conversor |
+| `‰` per mille | 1 | 689 | Agregar `\permil` |
+| Soft hyphen | 1 | 349 | Eliminar |
+| Ruido CJK | 16 | ~30 | Eliminar |
+| Caracteres europeos | 10 | ~25 | Dejar (nombres) |
+| Delimitadores matriz | 7 | ~20 | Difícil de reconstruir |
+
+## Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `C:\NEVEN\tools\find_orphans.py` | Script para encontrar caracteres sin transformación |
+| `C:\NEVEN\tools\symbols_reference.md` | Conversión de symbols.pdf (referencia LaTeX) |
+
+## Commits
+
+Ninguno (solo análisis).
+
+## Decisiones técnicas
+
+1. **Preprocesador separado para Wooldridge:** Porque `¼` tiene significado diferente en ese libro vs otros
+2. **No modificar conversor global para Wooldridge:** Evita conflictos con otros PDFs
+3. **Priorizar comillas:** 4,960 ocurrencias de comillas tipográficas afectan legibilidad
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Crear `fix_wooldridge.py` — preprocesador específico |
+| **ALTA** | Re-procesar Wooldridge con fixes aplicados |
+| **ALTA** | Agregar símbolos matemáticos pendientes (⩽, ⩾, ≲, ˇ, ı, etc.) |
+| **MEDIA** | Normalizar comillas tipográficas ''""→'" |
+| **MEDIA** | Agregar `‰` → `\permil` |
+| **BAJA** | Eliminar ruido CJK y soft hyphens |
+
+## Flujo de procesamiento actualizado
+
+```
+PDF de Wooldridge:
+  wooldridge.pdf → pymupdf4llm → .md → fix_wooldridge.py → unicode_to_latex.py → .md final
+
+Otros PDFs:
+  libro.pdf → pymupdf4llm → .md → unicode_to_latex.py → .md final
+```
+
+
+
+---
+
+### Sesión 2026-08-19 (~16:30) — Clarificación sobre símbolos eth/thorn y ¼
+
+## Discusión pendiente de resolver
+
+El usuario proporcionó información adicional indicando que:
+- `ð` (eth), `Þ` (Thorn mayúscula), `þ` (thorn minúscula) **son símbolos LaTeX válidos**
+- `¼` **es la fracción 1/4**, no el signo igual
+
+Sin embargo, el contexto en el PDF de Wooldridge muestra ecuaciones como:
+```
+yi ¼ b0 þ xib þ ui
+y ¼ b0 þ b1x1 þ b2x2 þ u
+```
+
+Esto sugiere que en **ese PDF específico**, estos caracteres sí representan `=` y `+` (no eth/thorn/fracción).
+
+## Hipótesis a verificar
+
+1. **El PDF de Wooldridge tiene encoding problemático** donde ¼, þ, ð, Þ fueron sustituidos por =, +, (, ) debido a fuente matemática no estándar.
+
+2. **En otros PDFs** estos caracteres sí son eth/thorn/fracción legítimos.
+
+## Estado actual
+
+La sesión terminó sin resolver la ambigüedad. Se necesita:
+1. Verificar el PDF original de Wooldridge para confirmar qué símbolos realmente usa
+2. Comparar con otros PDFs que usan estos caracteres
+3. Decidir estrategia: preprocesador específico para Wooldridge vs transformación global
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Resolver ambigüedad: ¿Wooldridge tiene encoding corrupto o usa eth/thorn intencionalmente? |
+| **ALTA** | Verificar PDF original de Wooldridge (no el MD convertido) |
+| **MEDIA** | Decidir estrategia de transformación para estos caracteres |
+| **MEDIA** | Agregar símbolos matemáticos pendientes confirmados (⩽, ⩾, ≲, etc.) |
+
+## Nota importante
+
+No hacer cambios al conversor hasta resolver esta ambigüedad. Una transformación incorrecta de ¼→= arruinaría fracciones legítimas en otros documentos.
+
+
+
+---
+
+### Sesión 2026-08-19 (~19:00-19:30) — Fix Endpoint /api/engines/config ✅
+
+**Problema:** El botón "Guardar Configuración" en Tab Motores estaba atascado en "Guardando..." porque el endpoint `/api/engines/config` no existía.
+
+**Contexto previo (sesión anterior):**
+- Se corrigió Tab Motores para usar `/api/engines` en lugar de `/api/engines/status`
+- El display de estado funciona, pero guardar configuración fallaba
+
+**Causa raíz:**
+- El frontend en `taskpane.js` hace POST a `/api/engines/config`
+- Este endpoint nunca fue implementado en `neven_http_server.py`
+- El botón quedaba en "Guardando..." indefinidamente al no recibir respuesta
+
+**Fix implementado:**
+
+1. **Nuevo método `_handle_engines_config()`** en `neven_http_server.py`:
+   - Acepta POST con JSON `{r: bool, python: bool, julia: bool}`
+   - Carga `neven-config.json` existente
+   - Actualiza `NEVEN.R.enabled`, `NEVEN.Python.enabled`, `NEVEN.Julia.enabled`
+   - Actualiza `preferences.auto_start_engines` array con los motores habilitados
+   - Guarda el archivo con indentación de 2 espacios
+   - Responde `{status: "ok", auto_start_engines: [...]}`
+
+2. **Registro de ruta** en `_setup_routes()`:
+   - `POST /api/engines/config` → `_handle_engines_config`
+
+**Archivos modificados:**
+- `C:\NEVEN\startup\neven_http_server.py` (producción)
+- `F:\ANTIGRAVITY\2026\NEVEN\TaskPane\neven_http_server.py` (repo)
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\neven_http_server.py` (repo copia)
+
+**Verificación exitosa:**
+```powershell
+# Test del endpoint
+$body = @{r=$true; python=$true; julia=$false} | ConvertTo-Json
+Invoke-RestMethod -Uri "http://127.0.0.1:5555/api/engines/config" -Method POST -Body $body -ContentType "application/json"
+# Respuesta: {status: "ok", auto_start_engines: ["r", "python"]}
+
+# Verificación en config
+$config = Get-Content "C:\NEVEN\neven-config.json" | ConvertFrom-Json
+# R enabled: True, Python enabled: True, Julia enabled: False
+```
+
+**Decisiones de diseño:**
+1. **Estructura de config plana** — Cada motor tiene su propio nodo `NEVEN.R`, `NEVEN.Python`, `NEVEN.Julia` con `.enabled` booleano
+2. **Array `auto_start_engines`** — Además del flag individual, se actualiza el array para compatibilidad con el startup de Excel
+3. **Preservar resto de config** — El endpoint solo modifica los campos de motores, preservando el resto de `neven-config.json`
+
+**Servidor reiniciado:**
+- PID anterior: 72340 (detenido)
+- PID nuevo: proceso en background (terminal term_1792030847159_33delhhdiie)
+
+**Commits pendientes:**
+```bash
+git add TaskPane/neven_http_server.py src/TaskPane/neven_http_server.py
+git commit -m "feat(api): implementar POST /api/engines/config para guardar configuración de motores"
+```
+
+**Estado final Tab Motores:**
+| Funcionalidad | Estado |
+|---------------|--------|
+| GET `/api/engines` (status) | ✅ Funciona |
+| POST `/api/engines/config` (guardar) | ✅ Funciona |
+| Persistencia en `neven-config.json` | ✅ Verificado |
+| UI Tab Motores | ✅ Lista para probar |
+
+**Pendientes:**
+- [ ] **ALTA** — Usuario debe probar botón "Guardar Configuración" en UI de Excel
+- [ ] **MEDIA** — Commit de todos los cambios de esta y sesiones anteriores
+- [ ] **BAJA** — Agregar versiones de motores a respuesta de `/api/engines`
+- [ ] **BAJA** — Restaurar Julia=true en config si se desea (actualmente false por prueba)
+
+
+---
+
+### Sesión 2026-08-19 (~19:30-19:45) — Discusión: Botón Expandir para Chats IA
+
+**Solicitud del usuario:** Replicar el botón de "ampliar a pantalla completa" que existe en la documentación NEVEN para agregarlo a los chats de Econometría y Excel Consultant.
+
+**Investigación realizada:**
+- Localizado el botón en documentación: `btn-docs-external` en `taskpane.html` (línea ~769)
+- El botón actual abre la documentación en navegador externo via `window.open()`
+- Implementación en `taskpane.js` línea 4787: `window.open(API_BASE + '/docs/neven-docs.html', '_blank')`
+
+**Estructura del tab IA identificada:**
+- Tab "ai" contiene el chat (línea 585 de taskpane.html)
+- Área de historial: `#ai-chat-history`
+- Header con badge del modelo: `#ai-status-card`
+- El card "Consultor Excel" (`#ai-excel-consultant-card`) aparece después de "Analizar Hoja"
+
+**Sin cambios realizados:** El usuario iba a mostrar una imagen/screenshot del botón específico que quiere replicar para confirmar que hablamos de la misma funcionalidad. La sesión terminó antes de recibir la imagen.
+
+**Pendientes:**
+- [x] **ALTA** — Recibir imagen del usuario mostrando el botón exacto que quiere replicar ✅
+- [x] **ALTA** — Implementar botón de expandir/fullscreen en el chat de IA (Tab Econometría) ✅
+- [x] **MEDIA** — Decidir si el botón abre el chat en nueva ventana o hace fullscreen dentro del taskpane ✅
+- [ ] **MEDIA** — Verificar si Excel Consultant tiene su propio chat o usa el mismo de IA
+
+---
+
+### Sesión 2026-08-19 (~19:50-20:15) — Botón Expandir Chat IA ✅
+
+**Solicitud:** Agregar el mismo botón de "abrir en ventana externa" (el ícono de external link) que tiene el visor de documentación al chat de IA para poder ver la conversación en pantalla completa.
+
+**Implementación realizada:**
+
+1. **Botón HTML** agregado al header del card "Asistente IA":
+   - ID: `btn-ai-expand`
+   - Ubicación: junto al badge del modelo
+   - Ícono: SVG de "external link" (mismo que documentación)
+   - Tooltip: "Abrir chat en ventana externa"
+
+2. **Función `_aiOpenInNewWindow()`** creada:
+   - Abre ventana del navegador 900x700 pixels
+   - Renderiza conversación completa con estilos oscuros estilo NEVEN
+   - Diferencia visual usuario (fondo verde #2a3a2a, borde #9acd32) vs asistente (fondo azul #1a1a2a, borde #6495ed)
+   - Muestra contexto cargado si existe (truncado a 500 chars con indicador de total)
+   - Incluye KaTeX vía CDN para renderizar ecuaciones matemáticas
+   - Convierte markdown básico: **negritas**, *cursivas*, `código inline`, bloques de código
+   - Header con metadata: modelo activo, cantidad de mensajes, timestamp
+   - Maneja bloqueo de popup con mensaje de error amigable
+
+3. **Event listener** registrado con optional chaining (`?.`) para evitar errores si el elemento no existe.
+
+**Archivos modificados:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\taskpane.html` (líneas ~595, ~4944, ~5951)
+- `C:\NEVEN\TaskPane\taskpane.html` (producción)
+
+**Ubicación del código:**
+- Botón HTML: línea 596
+- Event listener: línea 4944
+- Función _aiOpenInNewWindow: línea 5951
+
+**Decisiones de diseño:**
+1. **Ventana externa en lugar de fullscreen in-place** — Más flexible para el usuario, puede comparar con Excel, y permite cerrar sin perder el contexto del taskpane
+2. **KaTeX vía CDN** — Aunque agrega dependencia de red, permite renderizar ecuaciones igual que en el chat original
+3. **Estilos inline en el HTML generado** — Evita dependencia de archivos CSS externos, la ventana es autónoma
+4. **Truncado de contexto a 500 chars** — El contexto puede ser muy largo (miles de líneas de Excel); se muestra preview con indicador del total
+
+**Commits:** Ninguno (pendiente)
+
+**Para probar:**
+1. Abrir Tab IA en NEVEN Studio
+2. Iniciar una conversación (enviar al menos un mensaje)
+3. Click en el botón de external link junto al badge del modelo
+4. Verificar que la ventana muestre la conversación completa con formato
+
+**Pendientes:**
+- [ ] **ALTA** — Usuario debe probar el botón en Excel
+- [ ] **MEDIA** — Commit de cambios: `feat(ui): agregar botón expandir chat IA a ventana externa`
+- [ ] **BAJA** — Considerar agregar botón similar al Excel Consultant si tiene chat separado
+
+
+---
+
+### Sesión 2026-08-19 (~20:20-20:35) — Botón Expandir para Profesor de Economía ✅
+
+**Solicitud:** Agregar el mismo botón de expandir a ventana externa al chat del "Profesor de Economía" en el Tab Econometría.
+
+**Implementación realizada:**
+
+1. **Botón HTML** agregado al header del chat del profesor:
+   - ID: `btn-prof-expand`
+   - Ubicación: esquina derecha del header "Profesor de Econometria"
+   - Mismo ícono SVG de external link que el chat IA principal
+
+2. **Sistema de captura de mensajes** (necesario porque el chat del profesor no usaba `_aiState`):
+   - Variable `profChatMessages = []` para almacenar conversación
+   - Wrap de `window.labSendChat` para capturar preguntas del usuario antes de enviar
+   - `MutationObserver` en `#lab-chat-messages` para capturar respuestas del asistente cuando llegan (excluye mensajes de "Consultando libros...")
+
+3. **Función de exportar a ventana externa**:
+   - Event listener en `btn-prof-expand`
+   - Estilo dorado (#d7a538) acorde con el tema visual del profesor
+   - Labels "Estudiante" / "Profesor" en lugar de "Usuario" / "Asistente"
+   - Colores diferenciados: estudiante (verde #2a3a2a) vs profesor (dorado #2a2a1a)
+   - KaTeX vía CDN para renderizar ecuaciones matemáticas
+   - Conversión de markdown básico (negritas, cursivas, código)
+
+**Archivos modificados:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\laboratorio-econometria.html` (líneas ~305, 826-920)
+- `C:\NEVEN\TaskPane\laboratorio-econometria.html` (producción)
+
+**Diferencia con chat IA principal:**
+| Aspecto | Chat IA | Profesor Economía |
+|---------|---------|-------------------|
+| Estado mensajes | `_aiState.messages` (global) | `profChatMessages` (local al IIFE) |
+| Captura respuestas | Directo en `_aiSend` | MutationObserver |
+| Color tema | Azul (#6495ed) | Dorado (#d7a538) |
+| Labels | Usuario/Asistente | Estudiante/Profesor |
+
+**Decisiones de diseño:**
+1. **MutationObserver en lugar de modificar labSendChat directamente** — El chat del profesor hace RAG async y modifica el DOM después; un observer es más robusto que intentar interceptar la respuesta
+2. **Estado local `profChatMessages`** — Mantiene el scope dentro del IIFE del laboratorio, no contamina el global
+3. **Wrap de labSendChat** — Captura la pregunta antes de que se limpie el input
+
+**Commits:** Pendiente
+
+**Para probar:**
+1. Abrir Tab Econometría en NEVEN Studio
+2. Hacer preguntas al Profesor de Economía
+3. Click en el botón de external link en la esquina del header del chat
+4. Verificar que la ventana muestre toda la conversación con formato dorado
+
+**Pendientes:**
+- [ ] **ALTA** — Usuario debe probar el botón en Excel
+- [ ] **MEDIA** — Commit de todos los cambios de la sesión
+- [ ] **BAJA** — Considerar unificar lógica de exportación en función reutilizable
+
+
+---
+
+### Sesión 2026-08-19 (~20:40-21:00) — Fix Captura Respuestas Profesor Economía ✅
+
+**Problema:** El botón de expandir del Profesor de Economía solo mostraba la pregunta del usuario, no la respuesta del profesor.
+
+**Causa raíz:** El MutationObserver no funcionaba porque:
+1. El mensaje del asistente se crea primero con id `loading-XXX` y texto "Consultando libros..."
+2. Luego se modifica su `innerHTML` con la respuesta (no se agrega un nuevo nodo)
+3. MutationObserver con `childList: true` solo detecta nodos agregados/eliminados, no cambios de contenido
+
+**Fix aplicado:**
+- Eliminada la estrategia de MutationObserver
+- Reemplazada la definición original de `window.labSendChat` con una versión que captura directamente la respuesta cuando llega del servidor
+- La línea `profChatMessages.push({ role: 'assistant', content: answer })` se ejecuta justo cuando `data.reply` está disponible
+
+**Cambios en el código:**
+1. Eliminada la definición original de `labSendChat` (líneas 431-520 aprox)
+2. Dejada solo la nueva definición al final del IIFE con captura de mensajes integrada
+3. Eliminada la variable `_originalLabSendChat` que ya no se necesita
+4. Eliminado el MutationObserver completo
+
+**Archivos modificados:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\laboratorio-econometria.html`
+- `C:\NEVEN\TaskPane\laboratorio-econometria.html` (producción)
+
+**Verificación:** Solo hay 1 definición de `window.labSendChat` en el archivo (antes había 2).
+
+**Lección aprendida:**
+> MutationObserver con `childList` no detecta cambios de innerHTML en nodos existentes. Para capturar respuestas async, es mejor interceptar la respuesta directamente en el código que hace el fetch.
+
+**Commits:** Pendiente
+
+**Pendientes:**
+- [ ] **ALTA** — Usuario debe probar que ahora sí aparece la respuesta del profesor en la ventana expandida
+- [ ] **MEDIA** — Commit de todos los cambios de la sesión
+
+
+---
+
+### Sesión 2026-08-19 (~21:05-21:25) — Fix Renderizado KaTeX en Ventana Profesor ✅
+
+**Problema:** La ventana expandida del Profesor de Economía mostraba el contenido pero las fórmulas LaTeX (`$$...$$`) aparecían como texto plano en lugar de renderizarse.
+
+**Causa raíz:** 
+1. El approach inicial escapaba `&`, `<`, `>` antes de que KaTeX pudiera ver los `$`
+2. Luego se intentó usar `renderMathInElement` de KaTeX en `window.onload`, pero el contenido ya estaba procesado incorrectamente
+3. La solución correcta es usar `_markdownToHtml` de `datalab.js` que hace el procesamiento en el orden correcto
+
+**Fix aplicado:**
+- Reemplazado el renderizado manual por `_markdownToHtml` (disponible globalmente desde `datalab.js`)
+- Esta función:
+  1. Extrae fórmulas LaTeX **antes** de escapar HTML
+  2. Las reemplaza con placeholders (`\x00MATHD0\x00`)
+  3. Procesa markdown normal
+  4. Renderiza las fórmulas con `katex.renderToString()`
+  5. Restaura las fórmulas ya renderizadas como HTML
+
+**Código actualizado:**
+```javascript
+var renderContent = function(text) {
+  if (typeof _markdownToHtml === 'function') {
+    return _markdownToHtml(text);
+  }
+  // Fallback básico si no está disponible
+  return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')...
+};
+
+var content = isUser 
+  ? msg.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')  // Usuario: solo escapar
+  : renderContent(msg.content);  // Profesor: renderizar completo
+```
+
+**Simplificaciones:**
+- Eliminado script de KaTeX (`auto-render.min.js`) de la ventana externa — ya no es necesario porque `_markdownToHtml` renderiza KaTeX inline
+- Agregados estilos CSS para `h1-h4`, `pre`, `code`, `.katex-display`
+- Eliminado código duplicado que quedó de edición anterior
+
+**Archivos modificados:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\laboratorio-econometria.html`
+- `C:\NEVEN\TaskPane\laboratorio-econometria.html` (producción)
+
+**Intentos fallidos en esta sesión:**
+1. **Escapar HTML y luego usar `renderMathInElement`** — No funciona porque KaTeX necesita ver el texto original, no HTML escapado
+2. **No escapar `&` pero sí `<` y `>`** — Parcialmente mejor pero aún falla con fórmulas complejas
+3. **Script `window.onload` con `renderMathInElement`** — El contenido ya está procesado incorrectamente cuando se ejecuta
+
+**Lección aprendida:**
+> Para renderizar markdown con LaTeX, el orden es crítico: extraer fórmulas → escapar HTML → procesar markdown → renderizar fórmulas. La función `_markdownToHtml` de `datalab.js` ya hace esto correctamente — reutilizarla en lugar de reimplementar.
+
+**Commits:** Pendiente
+
+**Pendientes:**
+- [ ] **ALTA** — Usuario debe probar que las fórmulas ahora se renderizan correctamente
+- [ ] **MEDIA** — Aplicar el mismo fix al chat IA principal (`_aiOpenInNewWindow` en `taskpane.html`)
+- [ ] **MEDIA** — Commit de todos los cambios de la sesión
+
+
+---
+
+### Sesión 2026-08-19 (~21:30-21:45) — Fix Detección LaTeX Inline sin Delimitadores
+
+**Problema:** Algunas fórmulas LaTeX aparecían como texto rojo sin renderizar:
+- `\hat{y} = P_X y`
+- `y - \hat{y}`
+- `e = y - \hat{y}`
+
+**Causa raíz:** La función `_markdownToHtml` en `datalab.js` tiene lógica para detectar comandos LaTeX sin delimitadores `$...$`, pero el regex del "Caso B" (líneas mixtas con texto + LaTeX) era muy restrictivo:
+- Solo capturaba secuencias donde los comandos `\cmd` estaban contiguos
+- No capturaba patrones como `y - \hat{y}` donde una variable simple precede al comando
+- El patrón original esperaba que todo estuviera "pegado"
+
+**Fix aplicado en `_markdownToHtml()` (datalab.js línea ~2030):**
+
+Reemplazado el regex único del Caso B por dos patrones más específicos:
+
+```javascript
+// Patrón 1: expresiones tipo "var = \cmd{...}" o "\cmd{...} = var"
+// Captura: e = y - \hat{y}, \beta_1 = 0.5, etc.
+converted.replace(/([a-zA-Z_][a-zA-Z0-9_]*\s*[=\-+]\s*)?\\[a-zA-Z]+\{[^}]*\}(\s*[=\-+]\s*[a-zA-Z_][a-zA-Z0-9_]*)?/g, ...)
+
+// Patrón 2 (fallback): comandos LaTeX solos
+// Captura: \hat{y}, \beta, \sigma^2, etc.
+converted.replace(/(\\[a-zA-Z]+(?:\{[^}]*\})?(?:[_^]\{?[a-zA-Z0-9]+\}?)*)/g, ...)
+```
+
+**Archivos modificados:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\datalab.js` (líneas ~2030-2055)
+- `C:\NEVEN\TaskPane\datalab.js` (producción)
+
+**Impacto del cambio:**
+- Afecta **todos los chats** que usan `_markdownToHtml`: Chat IA principal, Profesor de Economía, DataLab
+- Mejor detección de fórmulas LaTeX inline sin delimitadores
+- Retrocompatible — los casos que ya funcionaban siguen funcionando
+
+**Commits:** Pendiente
+
+**Pendientes:**
+- [ ] **ALTA** — Usuario debe probar que las fórmulas ahora se renderizan correctamente
+- [ ] **MEDIA** — Commit de todos los cambios de la sesión (taskpane.html, laboratorio-econometria.html, datalab.js)
+- [ ] **BAJA** — Considerar si el LLM debería emitir siempre `$...$` en sus respuestas para evitar detección heurística
+
+
+---
+
+### Sesión 2026-08-19 (~21:50-22:10) — Parser con Estado para LaTeX Anidado
+
+**Problema persistente:** Las fórmulas con comandos anidados no se renderizaban:
+- `\hat{\mathbf{y}}` — llaves anidadas
+- `\frac{\langle \mathbf{y}, \hat{\mathbf{y}} \rangle}{...}` — múltiples niveles
+
+**Causa raíz:** El regex `\{[^}]*\}` no puede manejar llaves anidadas porque `[^}]*` se detiene en la primera `}`, dejando contenido sin procesar.
+
+**Fix aplicado — Parser con estado:**
+
+Reemplazado el approach de regex por funciones que mantienen estado:
+
+```javascript
+// 1. extractBraces(str, start) — lee {contenido} con balance
+var extractBraces = function(str, start) {
+  if (str[start] !== '{') return { text: '', end: start };
+  var depth = 1, i = start + 1, result = '{';
+  while (i < str.length && depth > 0) {
+    if (str[i] === '{') depth++;
+    else if (str[i] === '}') depth--;
+    result += str[i]; i++;
+  }
+  return { text: result, end: i };
+};
+
+// 2. extractTexExpr(str, start) — extrae expresión LaTeX completa
+// Maneja: \cmd, {args anidados}, _sub, ^sup, \cmd \cmd2
+```
+
+**Algoritmo del parser:**
+1. Buscar `\` seguido de letra (inicio de comando)
+2. Leer nombre del comando (`\hat`, `\frac`, etc.)
+3. Mientras siga `{`, leer argumento con `extractBraces` (respeta anidamiento)
+4. Si sigue `_` o `^`, leer subíndice/superíndice
+5. Si sigue espacio + otro `\cmd`, continuar (para `\cos \theta`)
+6. Reemplazar toda la expresión por placeholder
+
+**Archivos modificados:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\datalab.js` (líneas ~2030-2100)
+- `C:\NEVEN\TaskPane\datalab.js` (producción)
+
+**Decisiones de diseño:**
+1. **Parser manual vs regex** — Los regex de JS no soportan recursión ni contadores; un parser con estado es la única forma de manejar `{{{anidado}}}`
+2. **Funciones helper separadas** — `extractBraces` es reutilizable y fácil de testear
+3. **Espacio + comando consecutivo** — Se incluye para expresiones como `\cos \theta`, `\sin \alpha`
+
+**Commits:** Pendiente
+
+**Pendientes:**
+- [ ] **ALTA** — Usuario debe probar que `\hat{\mathbf{y}}` y fórmulas complejas ahora renderizan
+- [ ] **MEDIA** — Commit de todos los cambios de la sesión
+- [ ] **BAJA** — Agregar tests unitarios para `extractBraces` y `extractTexExpr`
+
+
+---
+
+### Sesión 2026-08-19 (~22:15-22:35) — Debug Cache y Doble Procesamiento KaTeX
+
+**Problema investigado:** Los cambios a `_markdownToHtml` no parecían aplicarse.
+
+**Diagnóstico realizado:**
+
+1. **Cache del navegador** — Actualizado query string de `datalab.js?v=20260925105835` a `datalab.js?v=20261015092027` para forzar recarga
+2. **Servidor HTTP** — Reiniciado (PID 95360 → 136500)
+3. **Verificación de archivo** — Confirmado que `datalab.js` en producción tiene `extractBraces`
+
+**Causa raíz encontrada:**
+El código del chat del profesor tenía **doble procesamiento de KaTeX**:
+1. Primero llamaba `_markdownToHtml(answer)` (correcto)
+2. Luego aplicaba regex simple de KaTeX `\$\$([^$]+)\$\$` sobre el resultado (¡sobrescribía el trabajo!)
+
+El regex simple `[^$]+` no maneja:
+- Fórmulas con `$` internos
+- Contenido ya renderizado por `_markdownToHtml`
+
+**Fix aplicado:**
+Movido el bloque de KaTeX regex al `else` (fallback), solo se ejecuta si `_markdownToHtml` no está disponible:
+
+```javascript
+if (typeof _markdownToHtml === 'function') {
+  loadingEl.innerHTML = _markdownToHtml(answer);
+} else {
+  // Fallback: solo si _markdownToHtml no está disponible
+  loadingEl.innerHTML = answer.replace(/\n/g, '<br>');
+  if (typeof katex !== 'undefined') {
+    // ... regex KaTeX básico solo aquí
+  }
+}
+```
+
+**Debug agregado:**
+```javascript
+console.log('[Prof] _markdownToHtml disponible:', typeof _markdownToHtml === 'function');
+```
+
+**Archivos modificados:**
+- `C:\NEVEN\TaskPane\taskpane.html` — actualizado query string de datalab.js
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\taskpane.html` — mismo cambio
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\laboratorio-econometria.html` — fix doble procesamiento + debug log
+- `C:\NEVEN\TaskPane\laboratorio-econometria.html` (producción)
+
+**Commits:** Pendiente
+
+**Para verificar:**
+1. Recargar Tab Econometría
+2. Abrir DevTools (F12) → Console
+3. Hacer pregunta al Profesor
+4. Ver si aparece `[Prof] _markdownToHtml disponible: true`
+
+**Pendientes:**
+- [ ] **ALTA** — Verificar que `_markdownToHtml` está disponible (ver console log)
+- [ ] **ALTA** — Probar renderizado de fórmulas complejas
+- [ ] **MEDIA** — Eliminar console.log de debug una vez confirmado que funciona
+- [ ] **MEDIA** — Commit de todos los cambios
+
+
+---
+
+### Sesión 2026-08-19 (~22:40-23:00) — Decisión: Unificar Renderizado Markdown/LaTeX
+
+**Discusión importante:** El usuario identificó correctamente que estamos creando soluciones ad-hoc para cada componente en lugar de usar una función centralizada.
+
+**Problema de arquitectura actual:**
+```
+Chat IA principal    → usa _markdownToHtml ✅
+Profesor Economía    → tenía su propio regex KaTeX 🔴
+Ventana expandida IA → renderizado inline propio 🔴
+Ventana expandida Prof → otro renderizado diferente 🔴
+```
+
+Cada fix en un lugar no se propaga a los demás. Esto viola el principio DRY documentado en `neven-project-context.md`.
+
+**Bug identificado pero NO aplicado:**
+En `_markdownToHtml`, el regex de inline math `$...$` ignoraba variables simples:
+```javascript
+if (!/[\\^_{}=]/.test(tex)) return full;  // Ignora $Y$, $a$, $b$
+```
+El fix estaba preparado pero la sesión terminó antes de aplicarlo.
+
+**Decisión acordada:**
+Refactorizar para que TODOS los renderizados usen `_markdownToHtml` de `datalab.js`:
+
+```
+┌─────────────────────────────────────────────────┐
+│  _markdownToHtml(text)  en datalab.js           │
+│  (fuente única de verdad para renderizado)      │
+└─────────────────────────────────────────────────┘
+                    ▲
+        ┌───────────┼───────────┬───────────┐
+   Chat IA    Profesor    DataLab    Ventanas
+   principal  Economía    Results    Expandidas
+```
+
+**Archivos modificados en esta sesión:**
+- `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\datalab.js` — fix inline math (NO copiado a prod)
+- Varios archivos con cambios parciales de sesiones anteriores
+
+**Commits:** Ninguno (cambios pendientes de consolidar)
+
+**Pendientes ALTA prioridad para próxima sesión:**
+
+1. **AUDITORÍA** — Listar todos los lugares que renderizan markdown/LaTeX:
+   - `taskpane.html` → `_aiOpenInNewWindow()` 
+   - `laboratorio-econometria.html` → chat del profesor + ventana expandida
+   - `datalab.js` → `buildSlotElement()`, `_markdownToHtml()`
+   - Cualquier otro lugar
+
+2. **REFACTORIZACIÓN** — Eliminar código duplicado:
+   - Quitar renderizado inline de ventanas expandidas
+   - Hacer que todas llamen a `_markdownToHtml` antes de insertar HTML
+   - Para ventanas externas: pre-renderizar con `_markdownToHtml`, luego solo incluir CSS de KaTeX
+
+3. **FIX INLINE MATH** — Aplicar el fix de `$Y$`, `$a$`, `$b$`:
+   ```javascript
+   var isShortVar = /^[a-zA-Z]('|_\d?)?$/.test(tex.trim());
+   if (!hasLatexCmd && !hasMathSymbol && !isShortVar) return full;
+   ```
+
+4. **COPIAR A PRODUCCIÓN** — Una vez consolidados los cambios
+
+5. **COMMIT** — Un solo commit con todos los cambios de renderizado:
+   ```bash
+   git commit -m "refactor: unificar renderizado markdown/LaTeX en _markdownToHtml"
+   ```
+
+**Archivos a revisar en la auditoría:**
+- `C:\NEVEN\TaskPane\taskpane.html`
+- `C:\NEVEN\TaskPane\taskpane.js`
+- `C:\NEVEN\TaskPane\datalab.js`
+- `C:\NEVEN\TaskPane\laboratorio-econometria.html`
+
+
+---
+
+### Sesión 2026-08-19 (~23:10) — Plan Acordado: Renderizado Unificado
+
+**Decisión final acordada con el usuario:**
+
+Crear UNA SOLA función de renderizado (`_markdownToHtml` en `datalab.js`) que:
+1. Contenga TODOS los casos evaluados en sesiones anteriores
+2. Sea usada por CUALQUIER tab (existente o futuro)
+3. Evite que al agregar nuevos tabs haya que sufrir proceso de corrección
+
+**Estado de casos a consolidar en `_markdownToHtml`:**
+
+| Caso | Estado | Acción |
+|------|--------|--------|
+| Markdown básico | ✅ | Mantener |
+| Listas | ✅ | Mantener |
+| Tablas GFM | ✅ | Mantener |
+| Bloques código | ✅ | Mantener |
+| `$$...$$` display | ✅ | Mantener |
+| `$...$` inline | ⚠️ | Fix: aceptar `$Y$`, `$a$` |
+| `\hat{y}` sin delim | ⚠️ | Fix: parser llaves balanceadas |
+| `\hat{\mathbf{y}}` anidado | 🔴 | Incorporar parser con estado |
+
+**API objetivo para todos los tabs:**
+```javascript
+var html = _markdownToHtml(texto);
+contenedor.innerHTML = html;
+// Fin. Sin código de renderizado por tab.
+```
+
+**Próximos pasos acordados:**
+1. Inventario de lugares con código de renderizado
+2. Consolidar fixes en `_markdownToHtml`
+3. Eliminar código duplicado de todos los tabs
+4. Probar con todos los casos conocidos
+5. Commit único
+
+**Archivos modificados:** Ninguno (solo planificación)
+
+**Commits:** Ninguno
+
+**Pendientes para próxima sesión:**
+- [ ] **ALTA** — Inventario: listar todos los lugares con renderizado markdown/LaTeX
+- [ ] **ALTA** — Consolidar todos los fixes en `_markdownToHtml`
+- [ ] **ALTA** — Eliminar código duplicado de tabs
+- [ ] **MEDIA** — Documentar la API en steering o comentarios
+- [ ] **MEDIA** — Commit consolidado
+
+
+---
+
+### Sesión 2026-08-19 (~23:15-23:30) — Inventario Completo de Renderizado
+
+**Logro:** Inventario exhaustivo de todos los lugares con código de renderizado markdown/LaTeX en NEVEN Studio.
+
+**Hallazgos del inventario:**
+
+| # | Archivo | Ubicación | Estado | Acción |
+|---|---------|-----------|--------|--------|
+| 1 | `datalab.js` | `_markdownToHtml()` L1964 | ✅ Central | MEJORAR |
+| 2 | `taskpane.html` | Chat IA L5479 | ✅ Usa central | LIMPIAR código extra |
+| 3 | `taskpane.html` | `_aiOpenInNewWindow` L5963 | 🔴 Duplicado | REEMPLAZAR |
+| 4 | `taskpane.html` | `_showRagSourcesPopup` L5810 | 🔴 Duplicado | REEMPLAZAR |
+| 5 | `laboratorio-econometria.html` | Chat Profesor L785 | ✅ Usa central | OK |
+| 6 | `laboratorio-econometria.html` | Ventana expandida L849 | ✅ Usa central | OK |
+| 7 | `laboratorio-econometria.html` | Canvas labels L380,462,483 | N/A | Mantener (hardcoded) |
+
+**Código duplicado identificado:**
+
+1. **`_aiOpenInNewWindow`** — Tiene su propio pipeline:
+   ```javascript
+   content.replace(/&/g, '&amp;').replace(/</g, '&lt;')...
+   .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+   ```
+   Debería usar `_markdownToHtml(content)` en su lugar.
+
+2. **Chat IA post-procesamiento** — Después de llamar `_markdownToHtml`, hay código KaTeX adicional (L5486-5503) que puede sobrescribir el renderizado correcto.
+
+3. **`_showRagSourcesPopup`** — Regex propio de KaTeX que no usa la función central.
+
+**Plan de acción acordado:**
+
+1. **PASO 1:** Mejorar `_markdownToHtml` en `datalab.js`:
+   - Fix inline math `$Y$`, `$a$`, `$b$`
+   - Fix llaves anidadas `\hat{\mathbf{y}}`
+   - Parser con estado para casos complejos
+
+2. **PASO 2:** Eliminar código duplicado:
+   - `taskpane.html` L5486-5503 (KaTeX post-`_markdownToHtml`)
+   - `_aiOpenInNewWindow` → usar `_markdownToHtml`
+   - `_showRagSourcesPopup` → usar `_markdownToHtml`
+
+3. **PASO 3:** Verificar que laboratorio ya está OK
+
+**Archivos modificados:** Ninguno (solo inventario)
+
+**Commits:** Ninguno
+
+**Pendientes para próxima sesión:**
+- [ ] **ALTA** — Ejecutar PASO 1: mejorar `_markdownToHtml`
+- [ ] **ALTA** — Ejecutar PASO 2: eliminar duplicados en taskpane.html
+- [ ] **ALTA** — Copiar cambios a producción y probar
+- [ ] **MEDIA** — Commit consolidado

@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -45,6 +45,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <style>
+    /* Forzar color correcto de KaTeX en todos los contextos */
+    .katex { color: var(--text-primary, #e0e0e0) !important; }
+    .katex-display { color: var(--text-primary, #e0e0e0) !important; }
+    .katex-error { color: #cc0000 !important; } /* Mantener rojo para errores reales */
+  </style>
   <!-- Mermaid para diagramas de flujo (lazy load) -->
   <script>
     // Mermaid se carga bajo demanda cuando hay un diagrama que renderizar
@@ -588,9 +594,14 @@
     <div class="card" id="ai-status-card">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">Asistente IA</div>
-        <div id="ai-model-badge" style="font-size:9px;padding:2px 7px;border-radius:10px;
-             background:var(--bg-primary);color:var(--text-secondary);border:1px solid var(--border)">
-          cargando...
+        <div style="display:flex;align-items:center;gap:6px">
+          <div id="ai-model-badge" style="font-size:9px;padding:2px 7px;border-radius:10px;
+               background:var(--bg-primary);color:var(--text-secondary);border:1px solid var(--border)">
+            cargando...
+          </div>
+          <button id="btn-ai-expand" class="btn btn-secondary" style="padding:4px 8px;font-size:10px" title="Abrir chat en ventana externa">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </button>
         </div>
       </div>
       <div id="ai-offline-msg" class="msg-error" style="display:none;margin-top:6px">
@@ -4936,6 +4947,7 @@ function initAITab() {
   document.getElementById('ai-analyze-workbook-btn').addEventListener('click', _aiAnalyzeWorkbook);
   document.getElementById('ai-clear-btn').addEventListener('click', _aiClear);
   document.getElementById('ai-export-chat-btn').addEventListener('click', _aiExportChat);
+  document.getElementById('btn-ai-expand')?.addEventListener('click', _aiOpenInNewWindow);
   document.getElementById('ai-clear-context').addEventListener('click', function() {
     _aiState.context = '';
     document.getElementById('ai-context-card').style.display = 'none';
@@ -5469,40 +5481,11 @@ function _aiAddMessage(role, content, ragSources) {
   ].join('');
 
   if (isAssist) {
-    // Renderizar Markdown del asistente usando el helper existente de datalab.js
+    // Renderizar Markdown del asistente usando el helper centralizado de datalab.js
+    // _markdownToHtml maneja: headers, bold/italic, bullets, code blocks, LaTeX $...$, $$...$$
     bubble.innerHTML = typeof _markdownToHtml === 'function'
       ? _markdownToHtml(content)
       : content.replace(/\n/g, '<br>');
-    
-    // Aplicar KaTeX a fórmulas que no fueron detectadas por _markdownToHtml
-    // (líneas con comandos LaTeX sin delimitadores $...$)
-    if (typeof katex !== 'undefined') {
-      var mathDivs = bubble.querySelectorAll('p, div');
-      mathDivs.forEach(function(el) {
-        if (el.querySelector('.katex')) return; // ya procesado
-        var text = el.innerHTML;
-        // Detectar líneas con múltiples comandos LaTeX sin delimitadores
-        if ((text.match(/\\[a-zA-Z]+/g) || []).length >= 2) {
-          // Envolver toda la línea si parece ser una fórmula
-          var hasEquals = text.indexOf('=') !== -1;
-          var hasSubscript = text.indexOf('_') !== -1 || text.indexOf('^') !== -1;
-          if (hasEquals || hasSubscript) {
-            try {
-              // Extraer solo el contenido LaTeX (quitar tags HTML)
-              var plainText = el.textContent || el.innerText;
-              if ((plainText.match(/\\[a-zA-Z]+/g) || []).length >= 2) {
-                el.innerHTML = katex.renderToString(plainText, {
-                  displayMode: true,
-                  throwOnError: false
-                });
-              }
-            } catch (e) {
-              console.warn('[KaTeX] Error rendering formula:', e.message);
-            }
-          }
-        }
-      });
-    }
     
     // Renderizar diagramas Mermaid pendientes (async)
     if (typeof renderPendingMermaidDiagrams === 'function') {
@@ -5759,12 +5742,10 @@ function _showRagSourcesPopup(sources) {
       'font-style:italic;'
     ].join('');
     var cleanedContent = _cleanPdfArtifacts(src.content) || '[Sin contenido]';
-    // NO escapar los $ para que KaTeX los procese
-    // Solo escapar < y > para evitar XSS, pero preservar todo lo demás
-    text.innerHTML = cleanedContent
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\n/g, '<br>');
+    // Usar _markdownToHtml para renderizado consistente (incluye LaTeX)
+    text.innerHTML = typeof _markdownToHtml === 'function' 
+      ? _markdownToHtml(cleanedContent)
+      : cleanedContent.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
 
     card.appendChild(header);
     card.appendChild(meta);
@@ -5788,57 +5769,7 @@ function _showRagSourcesPopup(sources) {
   popup.appendChild(footer);
   overlay.appendChild(popup);
   document.body.appendChild(overlay);
-
-  // Renderizar fórmulas matemáticas con KaTeX manualmente
-  // Solo procesar fórmulas cortas y bien formadas para evitar falsos positivos
-  function renderKatexInElement(el) {
-    if (typeof katex === 'undefined') {
-      console.warn('[RAG Popup] KaTeX no disponible');
-      return;
-    }
-    
-    var html = el.innerHTML;
-    
-    // Renderizar $$...$$ (display mode) - máximo 200 caracteres
-    html = html.replace(/\$\$([^$]{1,200})\$\$/g, function(match, tex) {
-      try {
-        return katex.renderToString(tex.trim(), { displayMode: true, throwOnError: false });
-      } catch (e) {
-        console.warn('[KaTeX] Error display:', tex.substring(0, 50), e.message);
-        return match;
-      }
-    });
-    
-    // Renderizar $...$ (inline mode) - más estricto:
-    // - Máximo 80 caracteres
-    // - Debe contener al menos una letra o backslash (para ser una fórmula real)
-    // - No debe contener saltos de línea
-    html = html.replace(/\$([^$\n]{1,80})\$/g, function(match, tex) {
-      // Verificar que parece una fórmula matemática real
-      if (!/[a-zA-Z\\]/.test(tex)) {
-        return match; // No es una fórmula, dejar como está
-      }
-      // Evitar falsos positivos con texto normal
-      if (/^[a-zA-Z\s,\.]+$/.test(tex)) {
-        return match; // Es solo texto, no fórmula
-      }
-      try {
-        return katex.renderToString(tex.trim(), { displayMode: false, throwOnError: false });
-      } catch (e) {
-        console.warn('[KaTeX] Error inline:', tex.substring(0, 30), e.message);
-        return match;
-      }
-    });
-    
-    el.innerHTML = html;
-  }
-
-  // Aplicar a cada card de contenido
-  var textDivs = content.querySelectorAll('div[style*="bg-tertiary"]');
-  textDivs.forEach(function(div) {
-    renderKatexInElement(div);
-  });
-  console.log('[RAG Popup] KaTeX procesado para', textDivs.length, 'elementos');
+  console.log('[RAG Popup] Renderizado con _markdownToHtml para', sources.length, 'fuentes');
 }
 
 function _aiClear() {
@@ -5938,9 +5869,89 @@ function _aiExportChat() {
   }
 }
 
+/**
+ * Abre el chat en una ventana externa para vista de pantalla completa.
+ * Renderiza el historial completo con estilos y soporte KaTeX.
+ */
+function _aiOpenInNewWindow() {
+  // Check if there's anything to show
+  if (!_aiState.messages || _aiState.messages.length === 0) {
+    showToast('No hay conversación para mostrar');
+    return;
+  }
+  
+  var now = new Date();
+  var timestamp = now.toLocaleString('es-CR');
+  var modelName = document.getElementById('ai-model-badge')?.textContent || 'IA';
+  
+  // Build HTML content using centralized _markdownToHtml
+  var messagesHtml = _aiState.messages.map(function(msg) {
+    var isUser = msg.role === 'user';
+    var roleLabel = isUser ? 'Usuario' : 'Asistente';
+    var bgColor = isUser ? '#2a3a2a' : '#1a1a2a';
+    var borderColor = isUser ? '#9acd32' : '#6495ed';
+    
+    // Use _markdownToHtml for consistent rendering (includes LaTeX, code blocks, etc.)
+    var content = typeof _markdownToHtml === 'function' 
+      ? _markdownToHtml(msg.content) 
+      : msg.content.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+    
+    return '<div style="margin-bottom:16px;padding:12px 16px;background:' + bgColor + ';border-left:3px solid ' + borderColor + ';border-radius:6px">' +
+           '<div style="font-size:11px;color:' + borderColor + ';margin-bottom:8px;font-weight:600">' + roleLabel + '</div>' +
+           '<div style="line-height:1.6">' + content + '</div>' +
+           '</div>';
+  }).join('');
+  
+  // Context section
+  var contextHtml = '';
+  if (_aiState.context && _aiState.context.trim()) {
+    var ctxPreview = _aiState.context.slice(0, 500);
+    if (_aiState.context.length > 500) ctxPreview += '... [' + _aiState.context.length + ' caracteres]';
+    contextHtml = '<div style="margin-bottom:20px;padding:12px;background:#2a2a1a;border:1px solid #9acd32;border-radius:6px">' +
+                  '<div style="font-size:11px;color:#9acd32;margin-bottom:6px;font-weight:600">Contexto cargado</div>' +
+                  '<div style="font-size:11px;color:#999;white-space:pre-wrap;max-height:150px;overflow-y:auto">' + 
+                  ctxPreview.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' +
+                  '</div>';
+  }
+  
+  var html = '<!DOCTYPE html>' +
+    '<html><head>' +
+    '<meta charset="UTF-8">' +
+    '<title>Chat NEVEN - ' + timestamp + '</title>' +
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">' +
+    '<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"><\/script>' +
+    '<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"><\/script>' +
+    '<style>' +
+    'body{margin:0;padding:20px 40px;background:#0d0d0d;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;font-size:14px}' +
+    '.header{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid #333;margin-bottom:20px}' +
+    '.title{font-size:20px;font-weight:600;color:#9acd32}' +
+    '.meta{font-size:11px;color:#888}' +
+    '.meta span{margin-left:16px}' +
+    'code{font-family:Consolas,Monaco,monospace}' +
+    '.katex{font-size:1em}' +
+    '</style>' +
+    '</head><body>' +
+    '<div class="header">' +
+    '<div class="title">Conversación NEVEN IA</div>' +
+    '<div class="meta"><span>Modelo: ' + modelName + '</span><span>Mensajes: ' + _aiState.messages.length + '</span><span>' + timestamp + '</span></div>' +
+    '</div>' +
+    contextHtml +
+    '<div class="messages">' + messagesHtml + '</div>' +
+    '<script>document.addEventListener("DOMContentLoaded",function(){if(typeof renderMathInElement==="function"){renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false},{left:"\\\\[",right:"\\\\]",display:true},{left:"\\\\(",right:"\\\\)",display:false}]});}});<\/script>' +
+    '</body></html>';
+  
+  var win = window.open('', '_blank', 'width=900,height=700');
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+  } else {
+    showToast('El navegador bloqueó la ventana emergente');
+  }
+}
+
 </script>
 <script src="sketch-charts.js?v=20260819"></script>
-<script src="datalab.js?v=20260925105835">
+<script src="datalab.js?v=20260819170000">
 //  -  -  Handler: crear funcion nueva en C:\NEVEN\functions\  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
 window._nevenCreateFunctions = window._nevenCreateFunctions || {};
 

@@ -1964,6 +1964,16 @@ function _renderPlotlyJSON(jsonStr, slotName) {
 function _markdownToHtml(md) {
   var accent = 'var(--accent)';
 
+  // ── Paso 0: normalizar caracteres y escapes ───────────────────────────────
+  // 0a. Normalizar caracteres Unicode que parecen backslash al backslash ASCII real
+  md = md.replace(/[\u2216\u29F5\uFF3C]/g, '\\');
+  
+  // 0b. Normalizar dobles backslashes de escape JSON
+  // El streaming de LLM a veces escapa backslashes como \\cmd en vez de \cmd
+  // Normalizar: \\alpha -> \alpha, \\hat{Y} -> \hat{Y}, etc.
+  // Solo normalizar si es seguido de letra (comando LaTeX) o [ ] ( ) (delimitadores math)
+  md = md.replace(/\\\\([a-zA-Z\[\]\(\)])/g, '\\$1');
+
   // ── Paso 1: extraer bloques LaTeX antes de escapar HTML ──────────────────
   var mathBlocks  = [];   // display math
   var mathInlines = [];   // inline math
@@ -1980,9 +1990,13 @@ function _markdownToHtml(md) {
     return '\x00MATHD' + idx + '\x00';
   });
 
-  // Inline math: $...$ (solo si parece fórmula) o \(...\)
+  // Inline math: $...$ o \(...\)
   md = md.replace(/\$([^$\n]{1,300}?)\$/g, function(full, tex) {
-    if (!/[\\^_{}=]/.test(tex)) return full;
+    // Procesar si tiene: comandos LaTeX, símbolos math, o es variable corta (1-3 chars)
+    var hasLatexCmd = /\\[a-zA-Z]/.test(tex);
+    var hasMathSymbol = /[\\^_{}=<>≤≥≠±×÷∑∏∫αβγδεθλμσφψω]/.test(tex);
+    var isShortVar = /^[a-zA-Z]('|_\d?)?$/.test(tex.trim()); // Y, a, b, X', n_1
+    if (!hasLatexCmd && !hasMathSymbol && !isShortVar) return full;
     var idx = mathInlines.length;
     mathInlines.push(tex.trim());
     return '\x00MATHI' + idx + '\x00';
@@ -2003,7 +2017,9 @@ function _markdownToHtml(md) {
     if (/^#{1,6}\s/.test(line.trim())) return line;
     if (line.indexOf('\x00MATH') !== -1) return line;
     // Contar comandos LaTeX \cmd en la línea
-    var texCmdCount = (line.match(/\\[a-zA-Z]+/g) || []).length;
+    var texCmds = line.match(/\\[a-zA-Z]+/g) || [];
+    var texCmdCount = texCmds.length;
+    
     if (texCmdCount === 0) return line;
     var hasEqual = line.indexOf('=') !== -1;
 
@@ -2026,17 +2042,87 @@ function _markdownToHtml(md) {
 
     // Caso B: línea mixta con texto + fragmento(s) LaTeX
     // Estrategia: buscar secuencias \cmd... que no estén ya entre delimitadores
-    // y envolverlas en $...$ para que KaTeX las renderice inline
+    // y envolverlas para que KaTeX las renderice inline
     if (texCmdCount >= 1) {
-      // Extraer fragmentos LaTeX: secuencias contiguas de \cmd, {}, ^, _, espacios y símbolos matemáticos
-      // Separados del texto normal por espacios o puntuación
-      var converted = line.replace(/((?:\\[a-zA-Z]+(?:\{[^}]*\})?(?:[_^][{a-zA-Z0-9}]+)?[\s]*)+(?:[=<>≈×%+\-\/][\s]*(?:\\[a-zA-Z]+(?:\{[^}]*\})?(?:[_^][{a-zA-Z0-9}]+)?[\s]*|[\d.]+[\s]*))*)/g, function(match) {
-        var m = match.trim();
-        if (!m || m.length < 2) return match;
-        var inlineIdx = mathInlines.length;
-        mathInlines.push(m);
-        return ' \x00MATHI' + inlineIdx + '\x00 ';
-      });
+      var converted = line;
+      
+      // Función para extraer contenido de llaves balanceadas
+      var extractBraces = function(str, start) {
+        if (str[start] !== '{') return { text: '', end: start };
+        var depth = 1, i = start + 1, result = '{';
+        while (i < str.length && depth > 0) {
+          if (str[i] === '{') depth++;
+          else if (str[i] === '}') depth--;
+          result += str[i];
+          i++;
+        }
+        return { text: result, end: i };
+      };
+      
+      // Función para extraer comando LaTeX completo (con args anidados)
+      var extractTexExpr = function(str, start) {
+        var i = start, result = '';
+        while (i < str.length) {
+          // Comando \cmd
+          if (str[i] === '\\' && /[a-zA-Z]/.test(str[i+1] || '')) {
+            var cmdMatch = str.slice(i).match(/^\\[a-zA-Z]+/);
+            if (cmdMatch) {
+              result += cmdMatch[0];
+              i += cmdMatch[0].length;
+              // Leer argumentos {} que sigan
+              while (str[i] === '{') {
+                var braces = extractBraces(str, i);
+                result += braces.text;
+                i = braces.end;
+              }
+              continue;
+            }
+          }
+          // Subíndice/superíndice
+          if ((str[i] === '_' || str[i] === '^') && result.length > 0) {
+            result += str[i];
+            i++;
+            if (str[i] === '{') {
+              var braces = extractBraces(str, i);
+              result += braces.text;
+              i = braces.end;
+            } else if (/[a-zA-Z0-9]/.test(str[i] || '')) {
+              result += str[i];
+              i++;
+            }
+            continue;
+          }
+          // Espacio antes de otro comando (parte de la misma expresión)
+          if (str[i] === ' ' && str[i+1] === '\\' && /[a-zA-Z]/.test(str[i+2] || '')) {
+            result += ' ';
+            i++;
+            continue;
+          }
+          break;
+        }
+        return { text: result, end: i };
+      };
+      
+      // Buscar y reemplazar expresiones LaTeX
+      var newLine = '', lastIdx = 0;
+      for (var i = 0; i < line.length; i++) {
+        if (line[i] === '\\' && /[a-zA-Z]/.test(line[i+1] || '')) {
+          var expr = extractTexExpr(line, i);
+          if (expr.text.length >= 2) {
+            newLine += line.slice(lastIdx, i);
+            var inlineIdx = mathInlines.length;
+            mathInlines.push(expr.text);
+            newLine += '\x00MATHI' + inlineIdx + '\x00';
+            lastIdx = expr.end;
+            i = expr.end - 1;
+          }
+        }
+      }
+      if (lastIdx > 0) {
+        newLine += line.slice(lastIdx);
+        converted = newLine;
+      }
+      
       if (converted !== line) return converted;
     }
 
@@ -2222,10 +2308,14 @@ function _renderKatex(tex, displayMode) {
         displayMode:  displayMode,
         throwOnError: false,
         output:       'html',
-        macros: { '\\R': '\\mathbb{R}', '\\E': '\\mathbb{E}',
-                  '\\hat': '\\hat', '\\beta': '\\beta' }
+        macros: { 
+          '\\R': '\\mathbb{R}', 
+          '\\E': '\\mathbb{E}'
+        }
       });
-    } catch(e) { /* caer al fallback */ }
+    } catch(e) { 
+      console.warn('[KaTeX] Error rendering:', tex.substring(0, 50), e.message);
+    }
   }
   // Fallback: mostrar LaTeX como código coloreado si KaTeX no está listo
   var delim = displayMode ? '$$' : '$';
