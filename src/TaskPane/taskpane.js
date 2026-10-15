@@ -4657,7 +4657,8 @@ async function loadEnginesStatus() {
   }
   
   try {
-    const resp = await fetch(API_BASE + '/api/engines/status');
+    // Endpoint correcto es /api/engines (no /api/engines/status)
+    const resp = await fetch(API_BASE + '/api/engines');
     if (!resp.ok) throw new Error('Error ' + resp.status);
     const data = await resp.json();
     
@@ -4669,18 +4670,14 @@ async function loadEnginesStatus() {
       
       if (!indicator) continue;
       
-      const engData = data[eng] || {};
+      // El endpoint devuelve {r: true/false, python: true/false, julia: true/false}
+      const connected = data[eng] === true;
       
-      if (engData.connected) {
+      if (connected) {
         indicator.style.background = '#4ade80';
         indicator.title = 'Conectado';
         status.textContent = 'Conectado';
-        version.textContent = engData.version || '—';
-      } else if (engData.enabled === false) {
-        indicator.style.background = '#888';
-        indicator.title = 'Deshabilitado';
-        status.textContent = 'Deshabilitado';
-        version.textContent = '—';
+        version.textContent = '—';  // Versión no disponible en este endpoint
       } else {
         indicator.style.background = '#f66';
         indicator.title = 'Desconectado';
@@ -4688,9 +4685,9 @@ async function loadEnginesStatus() {
         version.textContent = '—';
       }
       
-      // Actualizar toggles según config
-      if (toggle && engData.enabled !== undefined) {
-        toggle.checked = engData.enabled;
+      // Actualizar toggles según estado actual
+      if (toggle) {
+        toggle.checked = connected;
       }
     }
     

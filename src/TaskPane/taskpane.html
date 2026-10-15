@@ -5411,6 +5411,7 @@ function _aiCallLLM(extra) {
     context:  _aiState.context,
   };
   if (extra.prompt_id) { payload.prompt_id = extra.prompt_id; }
+  if (extra.agent_id) { payload.agent_id = extra.agent_id; }
 
   // DEBUG: Log del payload antes de enviar
   console.log('[NEVEN] _aiCallLLM payload:', {

@@ -164,6 +164,18 @@ except ImportError as e:
     _get_rag_engine = None
     _RAGEngine = None
 
+# Skill Loader — carga skills de C:\NEVEN\skills\ para system prompts
+try:
+    from skill_loader import (  # type: ignore
+        get_skill_system_prompt as _get_skill_system_prompt,
+        load_skills_for_agent as _load_skills_for_agent,
+    )
+    _SKILL_LOADER_AVAILABLE = True
+except ImportError:
+    _SKILL_LOADER_AVAILABLE = False
+    _get_skill_system_prompt = None
+    _load_skills_for_agent = None
+
 
 def _is_broken_pipe(exc: Exception, msg: str) -> bool:
     """Return True when *exc* indicates the Named Pipe connection was lost.
@@ -1044,6 +1056,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_function_create(body)
         elif path == 'api/packages/install':
             self._handle_pkg_install(body)
+        elif path == 'api/engines/config':
+            # Save engine startup configuration
+            self._handle_engines_config(body)
         elif path == 'api/show-taskpane':
             # Signal from Ribbon to show TaskPane (client polls this via GET)
             self._handle_show_taskpane()
@@ -2025,6 +2040,27 @@ class NEVENHandler(BaseHTTPRequestHandler):
             # ═══ Inyectar contexto RAG si existe ═══
             if rag_context:
                 sys_content = sys_content + rag_context
+
+            # ═══ Inyectar Skills si están disponibles ═══
+            # El frontend puede especificar agent_id para cargar skills específicos
+            agent_id = body.get("agent_id", "").strip()
+            if not agent_id:
+                # Inferir agent_id del contexto
+                if has_sheet_analysis:
+                    agent_id = "excel-consultant"
+                elif has_results_context:
+                    agent_id = "ai-assistant"  # Por defecto, asistente general
+                else:
+                    agent_id = "ai-assistant"
+            
+            if _SKILL_LOADER_AVAILABLE and _get_skill_system_prompt:
+                try:
+                    skill_prompt = _get_skill_system_prompt(agent_id, include_references=False)
+                    if skill_prompt:
+                        sys_content = sys_content + "\n\n## SKILLS ACTIVOS\n\n" + skill_prompt
+                        _log.info(f"[Skills] Inyectados skills para agent_id='{agent_id}'")
+                except Exception as e:
+                    _log.warning(f"[Skills] Error cargando skills: {e}")
 
             sys_msg = {"role": "system", "content": sys_content}
             messages = [sys_msg] + [m for m in messages if m.get("role") != "system"]
@@ -4186,6 +4222,74 @@ else:
             is ``True`` iff a matching pipe was found and is accessible.
         """
         self._send_json(_get_engine_status())
+
+    def _handle_engines_config(self, body: dict):
+        """POST /api/engines/config — save engine startup configuration.
+
+        Updates which engines should auto-start when NEVEN launches.
+        The changes are written to neven-config.json and take effect
+        on the next restart.
+
+        Body:
+            {
+                "r": bool,       # Enable/disable R engine
+                "julia": bool,   # Enable/disable Julia engine
+                "python": bool   # Enable/disable Python engine
+            }
+
+        Returns:
+            JSON {"status": "ok"} on success
+            JSON {"status": "error", "error": "..."} on failure
+        """
+        try:
+            # Load current config
+            config_path = r"C:\NEVEN\neven-config.json"
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            
+            # Update NEVEN.R/Julia/Python.enabled
+            if 'NEVEN' not in config:
+                config['NEVEN'] = {}
+            
+            if 'r' in body:
+                if 'R' not in config['NEVEN']:
+                    config['NEVEN']['R'] = {}
+                config['NEVEN']['R']['enabled'] = bool(body['r'])
+            
+            if 'julia' in body:
+                if 'Julia' not in config['NEVEN']:
+                    config['NEVEN']['Julia'] = {}
+                config['NEVEN']['Julia']['enabled'] = bool(body['julia'])
+            
+            if 'python' in body:
+                if 'Python' not in config['NEVEN']:
+                    config['NEVEN']['Python'] = {}
+                config['NEVEN']['Python']['enabled'] = bool(body['python'])
+            
+            # Also update preferences.auto_start_engines for start_studio.py
+            if 'preferences' not in config:
+                config['preferences'] = {}
+            
+            auto_start = []
+            if body.get('r', config.get('NEVEN', {}).get('R', {}).get('enabled', True)):
+                auto_start.append('r')
+            if body.get('python', config.get('NEVEN', {}).get('Python', {}).get('enabled', True)):
+                auto_start.append('python')
+            if body.get('julia', config.get('NEVEN', {}).get('Julia', {}).get('enabled', False)):
+                auto_start.append('julia')
+            
+            config['preferences']['auto_start_engines'] = auto_start
+            
+            # Save config
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=4, ensure_ascii=False)
+            
+            _log.info(f"[Engines Config] Saved: R={body.get('r')}, Julia={body.get('julia')}, Python={body.get('python')}")
+            self._send_json({"status": "ok", "auto_start_engines": auto_start})
+            
+        except Exception as e:
+            _log.error(f"[Engines Config] Error saving: {e}")
+            self._send_error_json(f"Error guardando configuración: {e}", 500)
 
     def _handle_functions(self):
         """GET /api/functions — list registered functions per language.

@@ -763,10 +763,11 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: [
-              { role: 'system', content: 'Eres un profesor de econometria experto. Responde de forma pedagogica, clara y concisa. Si la respuesta involucra formulas matematicas,usalas con notacion LaTeX (ej: $\\beta$, $\\hat{y}$). Siempre basa tu respuesta en el contexto RAG de libros indexados.' },
+              { role: 'system', content: 'Eres un profesor de econometria experto. Responde de forma pedagogica, clara y concisa. Si la respuesta involucra formulas matematicas, usalas con notacion LaTeX (ej: $\\beta$, $\\hat{y}$). Siempre basa tu respuesta en el contexto RAG de libros indexados.' },
               { role: 'user', content: q }
             ],
-            context: ''
+            context: '',
+            agent_id: 'profesor-economia'
           })
         });
         var data = await resp.json();
