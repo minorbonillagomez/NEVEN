@@ -1,0 +1,270 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: Excel Function Extraction
+# ═══════════════════════════════════════════════════════════════════════════════
+# Verifica que las funciones de Excel se extraigan correctamente con los
+# campos requeridos y la categorización apropiada.
+#
+# Fuente: CFI Excel eBook, Microsoft Documentation
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: function_extraction_excel
+  name: 'Excel Function Extraction'
+  domain: excel
+  version: '1.0'
+  description: |
+    Valida que las funciones de Excel se identifiquen correctamente,
+    se categoricen apropiadamente, y contengan la sintaxis y ejemplos.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS DE PRUEBA: Identificación de funciones
+# ───────────────────────────────────────────────────────────────────────────────
+
+cases:
+
+  # === Lookup and Reference ===
+  - id: func_vlookup
+    description: 'VLOOKUP debe identificarse como función Lookup'
+    input:
+      text: |
+        VLOOKUP searches for a value in the first column of a table
+        and returns a value in the same row from a column you specify.
+        Syntax: =VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])
+    expected:
+      type: ExcelFunction
+      name: VLOOKUP
+      category: 'Lookup and reference'
+      required_fields:
+        - name
+        - category
+        - description
+        - syntax
+
+  - id: func_index_match
+    description: 'INDEX y MATCH deben identificarse por separado'
+    input:
+      text: |
+        INDEX returns a value from a range based on row/column numbers.
+        =INDEX(array, row_num, [column_num])
+        
+        MATCH returns the relative position of an item in an array.
+        =MATCH(lookup_value, lookup_array, [match_type])
+    expected:
+      entities:
+        - name: INDEX
+          type: ExcelFunction
+          category: 'Lookup and reference'
+        - name: MATCH
+          type: ExcelFunction
+          category: 'Lookup and reference'
+
+  - id: func_xlookup
+    description: 'XLOOKUP (Excel 365) debe identificarse'
+    input:
+      text: 'XLOOKUP replaces VLOOKUP and HLOOKUP with more flexibility'
+    expected:
+      type: ExcelFunction
+      name: XLOOKUP
+      category: 'Lookup and reference'
+
+  # === Financial Functions ===
+  - id: func_npv
+    description: 'NPV debe identificarse como función Financial'
+    input:
+      text: |
+        NPV calculates the net present value of an investment based on
+        periodic cash flows and a discount rate.
+        =NPV(rate, value1, [value2], ...)
+    expected:
+      type: ExcelFunction
+      name: NPV
+      category: Financial
+      has_common_errors: true
+
+  - id: func_xnpv
+    description: 'XNPV debe identificarse con notas sobre fechas'
+    input:
+      text: |
+        XNPV returns the net present value for cash flows that are not
+        necessarily periodic. Use actual dates.
+        =XNPV(rate, values, dates)
+    expected:
+      type: ExcelFunction
+      name: XNPV
+      category: Financial
+
+  - id: func_irr_xirr
+    description: 'IRR y XIRR deben identificarse correctamente'
+    input:
+      text: |
+        IRR for periodic cash flows: =IRR(values, [guess])
+        XIRR for non-periodic cash flows: =XIRR(values, dates, [guess])
+    expected:
+      entities:
+        - name: IRR
+          category: Financial
+        - name: XIRR
+          category: Financial
+
+  - id: func_pmt
+    description: 'PMT debe incluir errores comunes'
+    input:
+      text: |
+        PMT calculates the payment for a loan based on constant payments.
+        Common error: Rate must match period (monthly rate for monthly payments).
+        =PMT(rate, nper, pv, [fv], [type])
+    expected:
+      type: ExcelFunction
+      name: PMT
+      category: Financial
+      has_common_errors: true
+
+  # === Logical Functions ===
+  - id: func_if
+    description: 'IF debe identificarse como Logical'
+    input:
+      text: |
+        IF returns one value if a condition is TRUE and another if FALSE.
+        =IF(logical_test, value_if_true, [value_if_false])
+    expected:
+      type: ExcelFunction
+      name: IF
+      category: Logical
+
+  - id: func_iferror
+    description: 'IFERROR debe incluir best practices'
+    input:
+      text: |
+        IFERROR returns a specified value if a formula evaluates to an error.
+        Best practice: Use to handle lookup errors gracefully.
+        =IFERROR(value, value_if_error)
+    expected:
+      type: ExcelFunction
+      name: IFERROR
+      category: Logical
+      has_best_practices: true
+
+  # === Statistical Functions ===
+  - id: func_average
+    description: 'AVERAGE debe identificarse como Statistical'
+    input:
+      text: 'AVERAGE returns the arithmetic mean of the arguments.'
+    expected:
+      type: ExcelFunction
+      name: AVERAGE
+      category: Statistical
+
+  - id: func_countif_sumif
+    description: 'COUNTIF y SUMIF deben identificarse'
+    input:
+      text: |
+        COUNTIF counts cells that meet a criterion.
+        SUMIF adds cells that meet a criterion.
+    expected:
+      entities:
+        - name: COUNTIF
+          category: Statistical
+        - name: SUMIF
+          category: 'Math and trigonometry'
+
+  # === Date Functions ===
+  - id: func_eomonth
+    description: 'EOMONTH debe identificarse como Date and Time'
+    input:
+      text: |
+        EOMONTH returns the last day of the month that is the indicated
+        number of months before or after start_date.
+        =EOMONTH(start_date, months)
+    expected:
+      type: ExcelFunction
+      name: EOMONTH
+      category: 'Date and Time'
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS DE PRUEBA: Patrones de fórmulas
+# ───────────────────────────────────────────────────────────────────────────────
+
+pattern_cases:
+
+  - id: pattern_index_match
+    description: 'INDEX MATCH debe identificarse como Pattern'
+    input:
+      text: |
+        Combines INDEX and MATCH as a flexible alternative to VLOOKUP.
+        Example: =INDEX(C2:C10, MATCH(G2, A2:A10, 0))
+    expected:
+      type: Pattern
+      name_contains: ['INDEX', 'MATCH']
+      functions_used:
+        - INDEX
+        - MATCH
+
+  - id: pattern_sumif_countif
+    description: 'SUMIF/COUNTIF pattern debe identificarse'
+    input:
+      text: |
+        Use SUMIF for conditional sums and COUNTIF for conditional counts.
+        =SUMIF(A:A, "Product A", B:B)
+    expected:
+      type: Pattern
+      functions_used:
+        - SUMIF
+        - COUNTIF
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CATEGORÍAS VÁLIDAS DE EXCEL
+# ───────────────────────────────────────────────────────────────────────────────
+
+valid_categories:
+  - 'Lookup and reference'
+  - Financial
+  - Logical
+  - Statistical
+  - 'Math and trigonometry'
+  - 'Date and Time'
+  - Text
+  - Information
+  - Database
+  - Engineering
+  - Cube
+  - Web
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CAMPOS REQUERIDOS POR TIPO
+# ───────────────────────────────────────────────────────────────────────────────
+
+field_requirements:
+
+  ExcelFunction:
+    required:
+      - name
+      - category
+      - description
+    optional:
+      - syntax
+      - common_errors
+      - best_practices
+      - reference
+
+  Pattern:
+    required:
+      - name
+      - description
+      - example
+    optional:
+      - functions_used
+      - use_cases
+      - reference
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS DE ÉXITO
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  function_identification_threshold: 0.95
+  category_accuracy_threshold: 0.90
+  field_completeness_threshold: 0.85
+  description: |
+    - 95% de las funciones deben identificarse correctamente
+    - 90% deben tener la categoría correcta
+    - 85% de los campos requeridos deben estar presentes

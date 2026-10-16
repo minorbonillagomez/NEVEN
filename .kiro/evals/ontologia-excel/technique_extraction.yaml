@@ -1,0 +1,304 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: Excel Techniques and Best Practices Extraction
+# ═══════════════════════════════════════════════════════════════════════════════
+# Verifica que las técnicas, patrones y mejores prácticas de Excel se
+# extraigan correctamente con los campos y relaciones apropiadas.
+#
+# Fuente: CFI Excel eBook, Microsoft Documentation
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: technique_extraction_excel
+  name: 'Excel Techniques and Best Practices Extraction'
+  domain: excel
+  version: '1.0'
+  description: |
+    Valida que las técnicas de Excel (Pivot Tables, Data Validation, etc.)
+    y las mejores prácticas se clasifiquen correctamente.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS DE PRUEBA: Técnicas
+# ───────────────────────────────────────────────────────────────────────────────
+
+cases:
+
+  # === Techniques ===
+  - id: technique_pivot_table
+    description: 'Pivot Tables debe ser tipo Technique'
+    input:
+      text: |
+        Pivot Tables allow you to summarize, analyze, and present data
+        in an interactive way. Steps: Insert > PivotTable > Select data range
+    expected:
+      type: Technique
+      name_contains: 'Pivot'
+      required_fields:
+        - name
+        - description
+
+  - id: technique_data_validation
+    description: 'Data Validation debe ser tipo Technique'
+    input:
+      text: |
+        Data Validation restricts the type of data that can be entered
+        in a cell. Use to create dropdown lists or enforce input rules.
+    expected:
+      type: Technique
+      name_contains: ['Data Validation', 'Validation']
+
+  - id: technique_conditional_formatting
+    description: 'Conditional Formatting debe ser tipo Technique'
+    input:
+      text: |
+        Conditional Formatting changes the appearance of cells based on
+        their values. Useful for highlighting outliers or creating heat maps.
+    expected:
+      type: Technique
+      name_contains: 'Conditional Formatting'
+
+  - id: technique_flash_fill
+    description: 'Flash Fill debe ser tipo Technique'
+    input:
+      text: |
+        Flash Fill automatically fills data when it detects a pattern.
+        Press Ctrl+E after providing an example.
+    expected:
+      type: Technique
+      name_contains: 'Flash Fill'
+
+  # === Best Practices ===
+  - id: bestpractice_keyboard_shortcuts
+    description: 'Uso de shortcuts debe ser BestPractice'
+    input:
+      text: |
+        Use keyboard shortcuts instead of mouse for efficiency.
+        In investment banking, analysts are expected to work without a mouse.
+    expected:
+      type: BestPractice
+      required_fields:
+        - name
+        - description
+        - rationale
+
+  - id: bestpractice_avoid_hardcoding
+    description: 'Evitar hardcoding debe ser BestPractice'
+    input:
+      text: |
+        Never hardcode values in formulas. Use cell references instead.
+        This makes models more flexible and easier to audit.
+    expected:
+      type: BestPractice
+      name_contains: ['hardcod', 'cell reference']
+
+  - id: bestpractice_error_handling
+    description: 'Error handling debe ser BestPractice'
+    input:
+      text: |
+        Always wrap lookups with IFERROR to handle missing values gracefully.
+        Return meaningful defaults like 0 or empty string.
+    expected:
+      type: BestPractice
+
+  - id: bestpractice_named_ranges
+    description: 'Named ranges debe ser BestPractice'
+    input:
+      text: |
+        Use named ranges for important data areas. Makes formulas more
+        readable and reduces errors when copying formulas.
+    expected:
+      type: BestPractice
+      name_contains: ['Named Range', 'named range']
+
+  # === Common Errors ===
+  - id: commonerror_circular_reference
+    description: 'Circular reference debe ser CommonError'
+    input:
+      text: |
+        A circular reference occurs when a formula refers to itself.
+        Excel shows a warning; use iteration settings with caution.
+    expected:
+      type: CommonError
+      name_contains: 'Circular'
+
+  - id: commonerror_volatile_functions
+    description: 'Volatile functions debe ser CommonError o BestPractice'
+    input:
+      text: |
+        OFFSET, INDIRECT, and NOW are volatile functions that recalculate
+        on every change. Can slow down large workbooks significantly.
+    expected:
+      type_in: [CommonError, BestPractice]
+      name_contains: ['Volatile', 'OFFSET', 'performance']
+
+  - id: commonerror_npv_timing
+    description: 'NPV timing error debe ser CommonError'
+    input:
+      text: |
+        NPV assumes cash flows at END of periods. Initial investment
+        should be added separately: =NPV(...) + Initial
+    expected:
+      type: CommonError
+      related_function: NPV
+
+  # === Shortcuts ===
+  - id: shortcut_f4
+    description: 'F4 toggle reference debe ser Shortcut'
+    input:
+      text: |
+        Press F4 while editing a cell reference to toggle between
+        absolute ($A$1), mixed (A$1, $A1), and relative (A1) references.
+    expected:
+      type: Shortcut
+      keys: F4
+      required_fields:
+        - name
+        - keys
+        - action
+
+  - id: shortcut_ctrl_shift_enter
+    description: 'Array formula shortcut debe ser Shortcut'
+    input:
+      text: |
+        Press Ctrl+Shift+Enter to enter an array formula (legacy).
+        Modern Excel 365 uses dynamic arrays without CSE.
+    expected:
+      type: Shortcut
+      keys_contains: ['Ctrl', 'Shift', 'Enter']
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS DE PRUEBA: Financial Modeling Entities
+# ───────────────────────────────────────────────────────────────────────────────
+
+financial_modeling_cases:
+
+  - id: model_dcf
+    description: 'DCF debe ser FinancialModel'
+    input:
+      text: |
+        Discounted Cash Flow (DCF) is a valuation method that estimates
+        the value of an investment based on expected future cash flows.
+    expected:
+      type: FinancialModel
+      name_contains: 'DCF'
+      required_fields:
+        - name
+        - description
+        - purpose
+
+  - id: model_lbo
+    description: 'LBO debe ser FinancialModel'
+    input:
+      text: |
+        Leveraged Buyout (LBO) model analyzes the acquisition of a company
+        using significant amounts of borrowed money.
+    expected:
+      type: FinancialModel
+      name_contains: 'LBO'
+
+  - id: component_depreciation_schedule
+    description: 'Depreciation Schedule debe ser ModelComponent'
+    input:
+      text: |
+        A depreciation schedule calculates the reduction in value of
+        fixed assets over time using straight-line or accelerated methods.
+    expected:
+      type: ModelComponent
+      name_contains: 'Depreciation'
+
+  - id: concept_wacc
+    description: 'WACC debe ser FinancialConcept'
+    input:
+      text: |
+        Weighted Average Cost of Capital (WACC) is the average rate a company
+        expects to pay to finance its assets. Formula: WACC = E/V*Re + D/V*Rd*(1-Tc)
+    expected:
+      type: FinancialConcept
+      name_contains: 'WACC'
+      has_formula: true
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CAMPOS REQUERIDOS POR TIPO
+# ───────────────────────────────────────────────────────────────────────────────
+
+field_requirements:
+
+  Technique:
+    required:
+      - name
+      - description
+    optional:
+      - steps
+      - use_cases
+      - reference
+      - excel_version
+
+  BestPractice:
+    required:
+      - name
+      - description
+    optional:
+      - rationale
+      - examples
+      - anti_pattern
+      - reference
+
+  CommonError:
+    required:
+      - name
+      - description
+    optional:
+      - cause
+      - solution
+      - prevention
+      - reference
+
+  Shortcut:
+    required:
+      - name
+      - keys
+      - action
+    optional:
+      - context
+      - reference
+
+  FinancialModel:
+    required:
+      - name
+      - description
+      - purpose
+    optional:
+      - components
+      - outputs
+      - reference
+
+  ModelComponent:
+    required:
+      - name
+      - description
+    optional:
+      - inputs
+      - outputs
+      - formulas
+      - reference
+
+  FinancialConcept:
+    required:
+      - name
+      - definition
+    optional:
+      - formula
+      - interpretation
+      - reference
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS DE ÉXITO
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  type_accuracy_threshold: 0.90
+  field_completeness_threshold: 0.85
+  relation_accuracy_threshold: 0.80
+  description: |
+    - 90% de las entidades deben tener el tipo correcto
+    - 85% de los campos requeridos deben estar presentes
+    - 80% de las relaciones (uses_function, part_of) deben ser correctas

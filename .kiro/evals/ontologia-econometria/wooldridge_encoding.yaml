@@ -1,0 +1,138 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: Wooldridge PDF Encoding Transformations
+# ═══════════════════════════════════════════════════════════════════════════════
+# Verifica que el pipeline de extracción maneje correctamente los caracteres
+# mal codificados del PDF de Wooldridge (cp1252 → UTF-8).
+#
+# Fuente: Introduccion a la econometria-Wooldridge.pdf
+# Problema: El PDF usa encoding Windows-1252 que produce caracteres incorrectos
+#           cuando se lee como UTF-8.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: wooldridge_encoding
+  name: 'Wooldridge PDF Encoding Transformations'
+  domain: econometria
+  version: '1.0'
+  description: |
+    Valida que las transformaciones de caracteres del PDF de Wooldridge
+    se apliquen correctamente durante la extracción de entidades.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS DE PRUEBA: Transformaciones de caracteres
+# ───────────────────────────────────────────────────────────────────────────────
+
+cases:
+
+  # === Paréntesis ===
+  - id: encoding_open_paren
+    description: 'ð (U+00F0) debe transformarse a paréntesis abierto'
+    input:
+      raw_text: 'La función de producción Cobb-Douglas es Qð K, Lñ'
+    expected:
+      transformed: 'La función de producción Cobb-Douglas es Q( K, L)'
+    transform_rule: 'ð → ('
+    
+  - id: encoding_close_paren
+    description: 'Þ (U+00DE) debe transformarse a paréntesis cerrado'
+    input:
+      raw_text: 'EðyÞ denota el valor esperado'
+    expected:
+      transformed: 'E(y) denota el valor esperado'
+    transform_rule: 'Þ → )'
+
+  # === Operadores matemáticos ===
+  - id: encoding_plus_sign
+    description: 'þ (U+00FE) debe transformarse a signo más'
+    input:
+      raw_text: 'y ¼ b0 þ b1x1 þ b2x2 þ u'
+    expected:
+      transformed: 'y = b0 + b1x1 + b2x2 + u'
+    transform_rule: 'þ → +'
+    
+  - id: encoding_equals_sign
+    description: '¼ (U+00BC) debe transformarse a signo igual'
+    input:
+      raw_text: 'R2 ¼ 0.85'
+    expected:
+      transformed: 'R2 = 0.85'
+    transform_rule: '¼ → ='
+
+  # === Ligaduras tipográficas ===
+  - id: encoding_ff_ligature
+    description: '¤ (U+00A4) debe transformarse a ligadura ff'
+    input:
+      raw_text: 'coe¤ciente de correlación'
+    expected:
+      transformed: 'coeficiente de correlación'
+    transform_rule: '¤ → ff'
+    
+  - id: encoding_fi_ligature
+    description: 'fi ligature handling'
+    input:
+      raw_text: 'signiÞcativo al 5%'
+    expected:
+      transformed: 'significativo al 5%'
+    transform_rule: 'Þ después de i → fi (contextual)'
+
+  # === Casos complejos (múltiples transformaciones) ===
+  - id: encoding_complex_equation
+    description: 'Ecuación con múltiples caracteres a transformar'
+    input:
+      raw_text: 'EðuÞ ¼ 0 y Varðuñx Þ ¼ s2'
+    expected:
+      transformed: 'E(u) = 0 y Var(u|x) = s2'
+    transform_rules:
+      - 'ð → ('
+      - 'Þ → )'
+      - '¼ → ='
+      - 'ñ → |'
+
+  - id: encoding_regression_formula
+    description: 'Fórmula de regresión típica de Wooldridge'
+    input:
+      raw_text: 'log ðwageÞ ¼ b0 þ b1educ þ b2exper þ b3exper2 þ u'
+    expected:
+      transformed: 'log (wage) = b0 + b1educ + b2exper + b3exper2 + u'
+    notes: 'Ecuación común del Capítulo 3'
+
+  # === Casos de texto narrativo ===
+  - id: encoding_narrative_text
+    description: 'Texto narrativo con caracteres problemáticos'
+    input:
+      raw_text: 'Los coe¤cientes estimados son e¤cientes bajo homocedasticidad'
+    expected:
+      transformed: 'Los coeficientes estimados son eficientes bajo homocedasticidad'
+    transform_rule: '¤ → ff'
+
+  - id: encoding_best_practice_text
+    description: 'Texto de BestPractice con encoding issues'
+    input:
+      raw_text: 'Es recomendable veri¤car los supuestos de Gauss-Markov'
+    expected:
+      transformed: 'Es recomendable verificar los supuestos de Gauss-Markov'
+
+# ───────────────────────────────────────────────────────────────────────────────
+# REGLAS DE TRANSFORMACIÓN (referencia)
+# ───────────────────────────────────────────────────────────────────────────────
+
+transform_map:
+  'ð': '('        # eth → open paren
+  'Þ': ')'        # Thorn → close paren  
+  'þ': '+'        # thorn → plus
+  '¼': '='        # one-quarter → equals
+  '¤': 'ff'       # currency → ff ligature
+  'ñ': '|'        # ntilde → pipe (en contexto matemático)
+  '½': '1/2'      # one-half (literal)
+  '¾': '3/4'      # three-quarters (literal)
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS DE ÉXITO
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  precision_threshold: 0.95
+  description: |
+    El 95% de las transformaciones deben ser correctas.
+    Falsos positivos: caracteres transformados incorrectamente
+    Falsos negativos: caracteres no transformados que debían serlo

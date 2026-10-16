@@ -1,0 +1,236 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: Econometrics Entity Extraction
+# ═══════════════════════════════════════════════════════════════════════════════
+# Verifica que las entidades econométricas se extraigan correctamente
+# con los campos requeridos y el tipo apropiado.
+#
+# Tipos válidos: Concept, Method, Assumption, BestPractice, Estimator, Test
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: entity_extraction_econometria
+  name: 'Econometrics Entity Extraction'
+  domain: econometria
+  version: '1.0'
+  description: |
+    Valida que las entidades econométricas se clasifiquen correctamente
+    y contengan los campos requeridos según el schema.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS DE PRUEBA: Clasificación de tipos
+# ───────────────────────────────────────────────────────────────────────────────
+
+cases:
+
+  # === Assumptions (Supuestos) ===
+  - id: type_assumption_gauss_markov
+    description: 'Los supuestos de Gauss-Markov deben ser tipo Assumption'
+    input:
+      text: |
+        Los supuestos de Gauss-Markov (RLM.1 a RLM.5) son necesarios para
+        que el teorema de Gauss-Markov sea válido. Incluyen linealidad,
+        muestreo aleatorio, no colinealidad perfecta, media condicional cero
+        y homocedasticidad.
+      source: 'Wooldridge Cap. 3'
+    expected:
+      type: Assumption
+      name_contains: 'Gauss-Markov'
+      required_fields:
+        - name
+        - definition
+        - reference
+
+  - id: type_assumption_homoscedasticity
+    description: 'Homocedasticidad debe ser tipo Assumption'
+    input:
+      text: 'Var(u|X) = σ² para todo X'
+    expected:
+      type: Assumption
+      name_contains: 'Homoscedast'
+
+  - id: type_assumption_exogeneity
+    description: 'Exogeneidad estricta debe ser tipo Assumption'
+    input:
+      text: 'E[u_it | X_i1, ..., X_iT, c_i] = 0'
+    expected:
+      type: Assumption
+      name_contains: 'Exogen'
+
+  # === Methods (Métodos/Técnicas) ===
+  - id: type_method_ols
+    description: 'MCO debe ser tipo Method'
+    input:
+      text: |
+        Mínimos Cuadrados Ordinarios (MCO) es el método de estimación
+        que minimiza la suma de los cuadrados de los residuos.
+    expected:
+      type: Method
+      name_contains: ['MCO', 'OLS', 'Mínimos Cuadrados']
+      required_fields:
+        - name
+        - description
+        - steps
+
+  - id: type_method_2sls
+    description: 'MC2E debe ser tipo Method'
+    input:
+      text: |
+        Mínimos Cuadrados en Dos Etapas (MC2E) es el método para
+        estimar modelos con variables endógenas usando instrumentos.
+    expected:
+      type: Method
+      name_contains: ['MC2E', '2SLS', 'Dos Etapas']
+
+  - id: type_method_diff_in_diff
+    description: 'Diferencias en Diferencias debe ser tipo Method'
+    input:
+      text: 'El método de diferencias en diferencias compara cambios antes y después del tratamiento'
+    expected:
+      type: Method
+      name_contains: ['Diferencias', 'DiD']
+
+  # === Concepts (Conceptos teóricos) ===
+  - id: type_concept_r_squared
+    description: 'R-cuadrada debe ser tipo Concept'
+    input:
+      text: |
+        El coeficiente de determinación R² mide la proporción de la
+        variación en y que es explicada por las variables independientes.
+    expected:
+      type: Concept
+      name_contains: ['R²', 'R-cuadrada', 'R2']
+
+  - id: type_concept_endogeneity
+    description: 'Endogeneidad debe ser tipo Concept'
+    input:
+      text: 'Una variable es endógena cuando está correlacionada con el término de error'
+    expected:
+      type: Concept
+      name_contains: 'Endogen'
+
+  # === BestPractice (Recomendaciones) ===
+  - id: type_bestpractice_sample_size
+    description: 'Recomendación de tamaño muestral debe ser BestPractice'
+    input:
+      text: |
+        Es recomendable usar muestras grandes para mayor precisión.
+        Una varianza grande del error puede ser contrarrestada con
+        un tamaño de muestra grande.
+    expected:
+      type: BestPractice
+      required_fields:
+        - name
+        - description
+        - rationale
+
+  - id: type_bestpractice_robust_se
+    description: 'Uso de errores robustos debe ser BestPractice'
+    input:
+      text: 'Se recomienda usar errores estándar robustos a heterocedasticidad'
+    expected:
+      type: BestPractice
+
+  # === Estimators (Estimadores) ===
+  - id: type_estimator_gmm
+    description: 'GMM debe ser tipo Estimator'
+    input:
+      text: |
+        El Método Generalizado de Momentos (GMM) es un estimador
+        que utiliza condiciones de momento poblacionales.
+    expected:
+      type: Estimator
+      name_contains: 'GMM'
+
+  # === Tests (Pruebas estadísticas) ===
+  - id: type_test_white
+    description: 'Prueba de White debe ser tipo Test'
+    input:
+      text: |
+        La prueba de White para heterocedasticidad es una prueba general
+        que no requiere especificar la forma de la heterocedasticidad.
+    expected:
+      type: Test
+      name_contains: 'White'
+
+  - id: type_test_breusch_pagan
+    description: 'Prueba de Breusch-Pagan debe ser tipo Test'
+    input:
+      text: 'La prueba BP examina si la varianza del error depende de las variables explicativas'
+    expected:
+      type: Test
+      name_contains: ['Breusch', 'BP']
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS DE PRUEBA: Campos requeridos por tipo
+# ───────────────────────────────────────────────────────────────────────────────
+
+field_requirements:
+
+  Assumption:
+    required:
+      - name
+      - definition
+    optional:
+      - reference
+      - mathematical_form
+      - violation_consequences
+
+  Method:
+    required:
+      - name
+      - description
+    optional:
+      - steps
+      - assumptions
+      - reference
+
+  Concept:
+    required:
+      - name
+      - description
+    optional:
+      - formula
+      - interpretation
+      - reference
+
+  BestPractice:
+    required:
+      - name
+      - description
+    optional:
+      - rationale
+      - examples
+      - anti_pattern
+      - reference
+
+  Estimator:
+    required:
+      - name
+      - description
+    optional:
+      - properties
+      - consistency
+      - efficiency
+      - reference
+
+  Test:
+    required:
+      - name
+      - description
+    optional:
+      - null_hypothesis
+      - alternative_hypothesis
+      - statistic
+      - distribution
+      - reference
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS DE ÉXITO
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  type_accuracy_threshold: 0.90
+  field_completeness_threshold: 0.85
+  description: |
+    - 90% de las entidades deben tener el tipo correcto
+    - 85% de los campos requeridos deben estar presentes
