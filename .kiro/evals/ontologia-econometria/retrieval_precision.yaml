@@ -1,0 +1,244 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: Retrieval Precision — Econometría
+# ═══════════════════════════════════════════════════════════════════════════════
+# Valida que las queries del usuario recuperen las entidades correctas del RAG.
+# Una query debe traer entidades relevantes y NO traer entidades irrelevantes.
+#
+# Métrica: Precision@k y Recall@k
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: retrieval_precision_econometria
+  name: 'Econometrics Retrieval Precision'
+  domain: econometria
+  version: '1.0'
+  description: |
+    Valida que el sistema RAG recupere las entidades correctas para
+    queries típicas de usuarios sobre econometría.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Queries sobre supuestos y teoremas
+# ───────────────────────────────────────────────────────────────────────────────
+
+cases:
+
+  # === Gauss-Markov ===
+  - id: query_gauss_markov_basic
+    description: 'Query básica sobre Gauss-Markov debe recuperar supuestos'
+    query: '¿Cuáles son los supuestos de Gauss-Markov?'
+    expected:
+      must_retrieve:
+        - assumption_gauss_markov
+        - assumption_homoscedasticity
+        - assumption_no_multicollinearity
+      should_retrieve:
+        - concept relacionado con MCO
+      must_not_retrieve:
+        - entidades de Excel
+        - entidades de series de tiempo (a menos que sea relevante)
+    context: 'Pregunta frecuente en cursos de econometría básica'
+
+  - id: query_gauss_markov_violations
+    description: 'Query sobre violaciones de supuestos'
+    query: '¿Qué pasa si hay heterocedasticidad en mi regresión?'
+    expected:
+      must_retrieve:
+        - assumption_homoscedasticity
+        - bestpractice relacionada con errores robustos
+      should_retrieve:
+        - test_white
+        - test_breusch_pagan
+
+  # === R-cuadrada ===
+  - id: query_r_squared_interpretation
+    description: 'Interpretación de R² debe traer concepto y best practices'
+    query: '¿Cómo interpreto un R² de 0.3? ¿Es bajo?'
+    expected:
+      must_retrieve:
+        - concept_r_squared o equivalente
+        - bestpractice_large_sample_precision
+      should_retrieve:
+        - conceptos sobre bondad de ajuste
+      must_not_retrieve:
+        - funciones de Excel
+        - métodos de series de tiempo
+
+  - id: query_r_squared_comparison
+    description: 'Comparación de R² entre modelos'
+    query: '¿Puedo comparar R² entre modelos con diferente variable dependiente?'
+    expected:
+      must_retrieve:
+        - bp_avoid_r_squared_for_dep_transform
+      should_retrieve:
+        - conceptos sobre transformación logarítmica
+
+  # === Variables instrumentales ===
+  - id: query_instrumental_variables
+    description: 'Query sobre variables instrumentales'
+    query: '¿Qué es un instrumento válido en econometría?'
+    expected:
+      must_retrieve:
+        - assumption_exclusion_restriction
+        - assumption_instrument_relevance
+      should_retrieve:
+        - method relacionado con MC2E/2SLS
+        - conceptos de endogeneidad
+
+  - id: query_2sls_procedure
+    description: 'Procedimiento de MC2E'
+    query: '¿Cómo se estima un modelo con variables instrumentales?'
+    expected:
+      must_retrieve:
+        - method relacionado con MC2E
+        - bp_avoid_manual_second_stage
+      should_retrieve:
+        - assumption_instrument_relevance
+
+  # === Diferencias en diferencias ===
+  - id: query_diff_in_diff
+    description: 'Query sobre DiD'
+    query: '¿Cuál es el supuesto clave de diferencias en diferencias?'
+    expected:
+      must_retrieve:
+        - assumption_parallel_trends
+      should_retrieve:
+        - method relacionado con DiD
+
+  # === Panel data ===
+  - id: query_panel_exogeneity
+    description: 'Exogeneidad en datos de panel'
+    query: '¿Qué significa exogeneidad estricta en panel?'
+    expected:
+      must_retrieve:
+        - assumption_strict_exogeneity
+      should_retrieve:
+        - conceptos de efectos fijos/aleatorios
+
+  # === Causalidad ===
+  - id: query_causal_inference
+    description: 'Query sobre inferencia causal'
+    query: '¿Qué es el supuesto SUTVA?'
+    expected:
+      must_retrieve:
+        - assumption_sutva
+      should_retrieve:
+        - assumption_ignorability
+        - conceptos de potential outcomes
+
+  # === Series de tiempo ===
+  - id: query_unit_root
+    description: 'Query sobre raíces unitarias'
+    query: '¿Cómo sé si mi serie tiene raíz unitaria?'
+    expected:
+      must_retrieve:
+        - assumption_unit_root_absence
+      should_retrieve:
+        - tests de Dickey-Fuller o similares
+        - conceptos de estacionariedad
+
+  - id: query_cointegration
+    description: 'Query sobre cointegración'
+    query: '¿Qué es el rango de cointegración?'
+    expected:
+      must_retrieve:
+        - assumption_cointegrating_rank
+      should_retrieve:
+        - conceptos de VECM
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Queries sobre métodos y estimadores
+# ───────────────────────────────────────────────────────────────────────────────
+
+  - id: query_gmm_basics
+    description: 'Query sobre GMM'
+    query: '¿Qué es el método generalizado de momentos?'
+    expected:
+      must_retrieve:
+        - estimator o method relacionado con GMM
+        - assumption_gmm_identification
+      should_retrieve:
+        - condiciones de momento
+
+  - id: query_quantile_regression
+    description: 'Query sobre regresión cuantílica'
+    query: '¿Cuándo usar regresión cuantílica en lugar de MCO?'
+    expected:
+      must_retrieve:
+        - assumption_quantile_monotonicity
+      should_retrieve:
+        - conceptos sobre distribución condicional
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Queries sobre best practices
+# ───────────────────────────────────────────────────────────────────────────────
+
+  - id: query_robust_standard_errors
+    description: 'Query sobre errores robustos'
+    query: '¿Cuándo debo usar errores estándar robustos?'
+    expected:
+      must_retrieve:
+        - bestpractice relacionada con errores robustos
+        - assumption_homoscedasticity
+      should_retrieve:
+        - tests de heterocedasticidad
+
+  - id: query_multicollinearity
+    description: 'Query sobre multicolinealidad'
+    query: '¿Cómo detecto y manejo la multicolinealidad?'
+    expected:
+      must_retrieve:
+        - assumption_no_multicollinearity
+        - bp_agrupacion_variables_correlacionadas
+      should_retrieve:
+        - VIF o factor de inflación de varianza
+
+  - id: query_outliers
+    description: 'Query sobre valores atípicos'
+    query: '¿Cómo manejo outliers en mi regresión?'
+    expected:
+      must_retrieve:
+        - bp_analizar_observaciones_aberrantes
+      should_retrieve:
+        - conceptos de diagnóstico de regresión
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS NEGATIVOS: Queries que NO deben traer nada de econometría
+# ───────────────────────────────────────────────────────────────────────────────
+
+negative_cases:
+
+  - id: query_excel_function
+    description: 'Query de Excel NO debe traer econometría'
+    query: '¿Cómo uso VLOOKUP en Excel?'
+    expected:
+      must_not_retrieve:
+        - cualquier entidad de econometría
+      note: 'Debe ir a ontología de Excel'
+
+  - id: query_kubernetes
+    description: 'Query fuera de dominio'
+    query: '¿Cómo configuro un cluster de Kubernetes?'
+    expected:
+      must_not_retrieve:
+        - cualquier entidad
+      note: 'Fuera del dominio de conocimiento'
+
+  - id: query_cooking
+    description: 'Query completamente irrelevante'
+    query: '¿Cuál es la mejor receta de paella?'
+    expected:
+      must_not_retrieve:
+        - cualquier entidad
+      note: 'Dominio completamente diferente'
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  precision_at_5: 0.80
+  recall_at_10: 0.90
+  description: |
+    - Precision@5: 80% de los top-5 resultados deben ser relevantes
+    - Recall@10: 90% de entidades must_retrieve deben aparecer en top-10
+    - Cero falsos positivos en casos negativos

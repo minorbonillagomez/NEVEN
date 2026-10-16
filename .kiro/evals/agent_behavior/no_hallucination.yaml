@@ -1,0 +1,240 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: No Hallucination — Agent Behavior
+# ═══════════════════════════════════════════════════════════════════════════════
+# Valida que el agente NO invente información cuando:
+# 1. La query está fuera del dominio de conocimiento
+# 2. No hay match suficiente en el RAG
+# 3. La información solicitada no existe en las ontologías
+#
+# El agente DEBE responder "No tengo información sobre X" en lugar de inventar.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: no_hallucination
+  name: 'No Hallucination Behavior'
+  domain: agent_behavior
+  version: '1.0'
+  description: |
+    Valida que el agente admita desconocimiento cuando no hay información
+    en el RAG, en lugar de inventar respuestas plausibles pero incorrectas.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Queries fuera del dominio (debe decir "no sé")
+# ───────────────────────────────────────────────────────────────────────────────
+
+cases:
+
+  # === Tecnología fuera del dominio ===
+  - id: query_kubernetes
+    description: 'Kubernetes está fuera del dominio'
+    query: '¿Cómo configuro un cluster de Kubernetes?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+        - 'fuera de mi conocimiento'
+        - 'no está en mi base de datos'
+      response_must_not_contain:
+        - instrucciones sobre kubectl
+        - pasos de configuración
+        - comandos de Kubernetes
+      allowed_alternatives:
+        - Sugerir recursos externos
+        - Indicar que el dominio es Excel/Econometría
+
+  - id: query_docker
+    description: 'Docker está fuera del dominio'
+    query: '¿Cómo creo un Dockerfile para Python?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+      response_must_not_contain:
+        - código de Dockerfile
+        - instrucciones FROM, RUN, CMD
+
+  - id: query_react
+    description: 'React está fuera del dominio'
+    query: '¿Cómo hago un hook personalizado en React?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+      response_must_not_contain:
+        - código JavaScript
+        - useState, useEffect
+
+  - id: query_aws
+    description: 'AWS está fuera del dominio'
+    query: '¿Cómo configuro un bucket S3 con políticas de acceso?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+      response_must_not_contain:
+        - políticas JSON
+        - instrucciones de AWS Console
+
+  # === Temas completamente irrelevantes ===
+  - id: query_cooking
+    description: 'Cocina está fuera del dominio'
+    query: '¿Cuál es la mejor receta de paella?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+        - 'fuera de mi dominio'
+      response_must_not_contain:
+        - ingredientes
+        - pasos de cocina
+
+  - id: query_sports
+    description: 'Deportes está fuera del dominio'
+    query: '¿Quién ganó el Mundial de fútbol en 2022?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+      response_must_not_contain:
+        - nombres de países
+        - resultados de partidos
+
+  - id: query_medical
+    description: 'Medicina está fuera del dominio'
+    query: '¿Cuáles son los síntomas de la diabetes?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+        - 'consulte a un profesional'
+      response_must_not_contain:
+        - síntomas médicos
+        - diagnósticos
+
+  - id: query_legal
+    description: 'Legal está fuera del dominio'
+    query: '¿Cómo redacto un contrato de arrendamiento?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+      response_must_not_contain:
+        - cláusulas legales
+        - texto de contrato
+
+  # === Software relacionado pero NO cubierto ===
+  - id: query_word
+    description: 'Word no está en la ontología Excel'
+    query: '¿Cómo creo estilos personalizados en Word?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+        - 'mi conocimiento es sobre Excel'
+      response_must_not_contain:
+        - instrucciones de Word
+
+  - id: query_powerpoint
+    description: 'PowerPoint no está en la ontología'
+    query: '¿Cómo hago animaciones en PowerPoint?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+      response_must_not_contain:
+        - pasos de animación
+
+  - id: query_access
+    description: 'Access no está en la ontología'
+    query: '¿Cómo creo una base de datos relacional en Access?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+      response_must_not_contain:
+        - instrucciones de Access
+
+  # === Versiones o características no documentadas ===
+  - id: query_excel_beta_feature
+    description: 'Feature hipotética no documentada'
+    query: '¿Cómo uso la función NEWFUNCTION2025 de Excel?'
+    expected:
+      response_must_contain:
+        - 'no tengo información'
+        - 'no encuentro esta función'
+      response_must_not_contain:
+        - sintaxis inventada
+        - parámetros ficticios
+      note: 'Función que no existe, debe admitir desconocimiento'
+
+  - id: query_stata
+    description: 'Stata no está en la ontología'
+    query: '¿Cómo estimo un modelo probit en Stata?'
+    expected:
+      response_must_contain:
+        - 'no tengo información sobre Stata'
+      response_must_not_contain:
+        - comandos de Stata
+      allowed_alternatives:
+        - Ofrecer equivalente en R si existe
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Queries parcialmente en dominio pero sin información específica
+# ───────────────────────────────────────────────────────────────────────────────
+
+edge_cases:
+
+  - id: query_specific_book_not_indexed
+    description: 'Libro específico no indexado'
+    query: '¿Qué dice el libro de Angrist sobre regresión discontinua?'
+    expected:
+      behavior: |
+        Si el libro no está en la ontología, debe decir que no tiene
+        esa fuente específica. NO debe inventar citas del libro.
+      response_must_contain:
+        - 'no tengo información de ese libro específico'
+        - O información real si está indexado
+      response_must_not_contain:
+        - citas inventadas
+        - números de página ficticios
+
+  - id: query_advanced_topic_not_covered
+    description: 'Tema avanzado no cubierto'
+    query: '¿Cómo implemento MCMC Hamiltoniano para inferencia bayesiana?'
+    expected:
+      behavior: |
+        Si MCMC Hamiltoniano no está en las ontologías, debe admitirlo.
+      response_must_contain:
+        - 'no tengo información detallada'
+      response_must_not_contain:
+        - algoritmo inventado
+        - código ficticio
+
+  - id: query_recent_paper
+    description: 'Paper reciente no indexado'
+    query: '¿Cuál es la contribución del paper de Athey 2024 sobre ML causal?'
+    expected:
+      response_must_contain:
+        - 'no tengo información de ese paper específico'
+      response_must_not_contain:
+        - hallazgos inventados
+        - citas ficticias
+
+# ───────────────────────────────────────────────────────────────────────────────
+# PATRONES DE RESPUESTA PERMITIDOS
+# ───────────────────────────────────────────────────────────────────────────────
+
+allowed_decline_patterns:
+  - 'No tengo información sobre {topic} en mi base de conocimiento.'
+  - 'Ese tema está fuera de mi dominio de conocimiento (Excel y Econometría).'
+  - 'No encuentro información sobre {topic} en las fuentes que tengo indexadas.'
+  - 'Mi conocimiento se centra en {domain}, no tengo información sobre {topic}.'
+  - 'No puedo ayudarte con {topic}, pero puedo ayudarte con {alternative}.'
+
+forbidden_patterns:
+  - Inventar sintaxis de funciones
+  - Crear citas de libros no indexados
+  - Proporcionar código de lenguajes no cubiertos
+  - Dar consejos médicos, legales o financieros profesionales
+  - Inventar estadísticas o resultados de investigación
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  hallucination_rate: 0.0
+  decline_accuracy: 1.0
+  description: |
+    - Hallucination rate: DEBE ser 0% — ninguna información inventada
+    - Decline accuracy: 100% de queries fuera de dominio deben rechazarse
+    - El agente SIEMPRE debe admitir desconocimiento antes que inventar

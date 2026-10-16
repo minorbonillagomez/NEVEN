@@ -1,0 +1,281 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: Retrieval Precision — Excel
+# ═══════════════════════════════════════════════════════════════════════════════
+# Valida que las queries del usuario recuperen las entidades correctas del RAG
+# para el dominio de Excel y modelaje financiero.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: retrieval_precision_excel
+  name: 'Excel Retrieval Precision'
+  domain: excel
+  version: '1.0'
+  description: |
+    Valida que el sistema RAG recupere las entidades correctas para
+    queries típicas de usuarios sobre Excel y modelaje financiero.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Queries sobre funciones de búsqueda
+# ───────────────────────────────────────────────────────────────────────────────
+
+cases:
+
+  # === Lookup functions ===
+  - id: query_vlookup_basic
+    description: 'Query básica sobre VLOOKUP'
+    query: '¿Cómo uso VLOOKUP para buscar datos?'
+    expected:
+      must_retrieve:
+        - func_vlookup
+      should_retrieve:
+        - pattern_index_match
+        - commonerror relacionado con VLOOKUP
+      must_not_retrieve:
+        - entidades de econometría
+
+  - id: query_vlookup_left
+    description: 'VLOOKUP no puede buscar a la izquierda'
+    query: '¿Por qué VLOOKUP no encuentra valores a la izquierda?'
+    expected:
+      must_retrieve:
+        - func_vlookup
+        - pattern_index_match
+      note: 'Debe sugerir INDEX MATCH como alternativa'
+
+  - id: query_index_match
+    description: 'Query sobre INDEX MATCH'
+    query: '¿Cuál es la diferencia entre VLOOKUP e INDEX MATCH?'
+    expected:
+      must_retrieve:
+        - func_vlookup
+        - func_index
+        - func_match
+        - pattern_index_match
+      should_retrieve:
+        - best practices de lookups
+
+  - id: query_xlookup
+    description: 'Query sobre XLOOKUP (Excel 365)'
+    query: '¿Qué es XLOOKUP y cuándo usarlo?'
+    expected:
+      must_retrieve:
+        - func_xlookup
+      should_retrieve:
+        - func_vlookup (para comparación)
+
+  # === Financial functions ===
+  - id: query_npv_calculation
+    description: 'Query sobre NPV'
+    query: '¿Cómo calculo el valor presente neto en Excel?'
+    expected:
+      must_retrieve:
+        - func_npv
+        - func_xnpv
+      should_retrieve:
+        - concept_dcf
+        - commonerror_npv_timing
+
+  - id: query_npv_error
+    description: 'Error común de NPV'
+    query: '¿Por qué mi NPV da un resultado incorrecto?'
+    expected:
+      must_retrieve:
+        - func_npv
+        - commonerror_npv_timing
+      note: 'NPV asume flujos al final del período'
+
+  - id: query_irr_xirr
+    description: 'Query sobre IRR vs XIRR'
+    query: '¿Cuál es la diferencia entre IRR y XIRR?'
+    expected:
+      must_retrieve:
+        - func_xirr
+      should_retrieve:
+        - pattern_xnpv_xirr
+
+  - id: query_pmt_loan
+    description: 'Query sobre PMT para préstamos'
+    query: '¿Cómo calculo la cuota mensual de un préstamo?'
+    expected:
+      must_retrieve:
+        - func_pmt
+      should_retrieve:
+        - func_ppmt
+        - pattern_pmt_ipmt
+
+  # === Logical functions ===
+  - id: query_if_multiple
+    description: 'Query sobre IF con múltiples condiciones'
+    query: '¿Cómo hago un IF con varias condiciones?'
+    expected:
+      must_retrieve:
+        - func_if
+        - func_and
+        - func_or
+      should_retrieve:
+        - func_ifs
+        - pattern_if_and_or
+
+  - id: query_iferror_usage
+    description: 'Query sobre manejo de errores'
+    query: '¿Cómo evito que aparezcan errores #N/A en mi fórmula?'
+    expected:
+      must_retrieve:
+        - func_iferror
+      should_retrieve:
+        - bestpractice_error_handling
+
+  # === Date functions ===
+  - id: query_eomonth
+    description: 'Query sobre fin de mes'
+    query: '¿Cómo obtengo el último día del mes en Excel?'
+    expected:
+      must_retrieve:
+        - func_eomonth
+      should_retrieve:
+        - func_date
+
+  - id: query_yearfrac
+    description: 'Query sobre fracción de año'
+    query: '¿Cómo calculo el número de años entre dos fechas?'
+    expected:
+      must_retrieve:
+        - func_yearfrac
+      should_retrieve:
+        - conceptos de day count conventions
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Queries sobre técnicas y mejores prácticas
+# ───────────────────────────────────────────────────────────────────────────────
+
+  - id: query_pivot_tables
+    description: 'Query sobre tablas dinámicas'
+    query: '¿Cómo creo una tabla dinámica?'
+    expected:
+      must_retrieve:
+        - technique_pivot_table
+      should_retrieve:
+        - técnicas de análisis de datos
+
+  - id: query_data_validation
+    description: 'Query sobre validación de datos'
+    query: '¿Cómo creo una lista desplegable en Excel?'
+    expected:
+      must_retrieve:
+        - technique_data_validation
+      should_retrieve:
+        - best practices de entrada de datos
+
+  - id: query_keyboard_shortcuts
+    description: 'Query sobre atajos de teclado'
+    query: '¿Cuáles son los atajos de teclado más útiles en Excel?'
+    expected:
+      must_retrieve:
+        - bp_use_shortcuts
+        - bp_avoid_mouse
+      should_retrieve:
+        - shortcuts específicos
+
+  - id: query_f4_reference
+    description: 'Query sobre referencias absolutas'
+    query: '¿Cómo hago una referencia absoluta en Excel?'
+    expected:
+      must_retrieve:
+        - shortcut_absolute_ref
+      should_retrieve:
+        - conceptos de referencias $
+
+  - id: query_circular_reference
+    description: 'Query sobre referencias circulares'
+    query: '¿Qué es una referencia circular y cómo la arreglo?'
+    expected:
+      must_retrieve:
+        - commonerror_circular_reference
+      should_retrieve:
+        - best practices de diseño de fórmulas
+
+  - id: query_volatile_functions
+    description: 'Query sobre funciones volátiles'
+    query: '¿Por qué mi Excel se vuelve lento con OFFSET?'
+    expected:
+      must_retrieve:
+        - commonerror_volatile_functions
+        - func_offset
+      should_retrieve:
+        - alternativas como INDEX
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Queries sobre modelaje financiero
+# ───────────────────────────────────────────────────────────────────────────────
+
+  - id: query_dcf_model
+    description: 'Query sobre modelo DCF'
+    query: '¿Cómo construyo un modelo DCF en Excel?'
+    expected:
+      must_retrieve:
+        - model_dcf
+        - concept_dcf
+      should_retrieve:
+        - func_xnpv
+        - concept_wacc
+
+  - id: query_wacc
+    description: 'Query sobre WACC'
+    query: '¿Cómo calculo el WACC?'
+    expected:
+      must_retrieve:
+        - concept_wacc
+      should_retrieve:
+        - model_dcf
+
+  - id: query_depreciation
+    description: 'Query sobre depreciación'
+    query: '¿Cómo creo un schedule de depreciación?'
+    expected:
+      must_retrieve:
+        - component_depreciation_schedule
+      should_retrieve:
+        - conceptos de modelaje financiero
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS NEGATIVOS
+# ───────────────────────────────────────────────────────────────────────────────
+
+negative_cases:
+
+  - id: query_econometrics
+    description: 'Query de econometría NO debe traer Excel'
+    query: '¿Cuáles son los supuestos de Gauss-Markov?'
+    expected:
+      must_not_retrieve:
+        - cualquier función de Excel
+        - cualquier técnica de Excel
+      note: 'Debe ir a ontología de econometría'
+
+  - id: query_python
+    description: 'Query de Python'
+    query: '¿Cómo hago un merge en pandas?'
+    expected:
+      must_not_retrieve:
+        - cualquier entidad de Excel
+      note: 'Fuera del dominio'
+
+  - id: query_word
+    description: 'Query de Word'
+    query: '¿Cómo creo una tabla de contenidos en Word?'
+    expected:
+      must_not_retrieve:
+        - cualquier entidad
+      note: 'Dominio diferente de Office'
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  precision_at_5: 0.85
+  recall_at_10: 0.90
+  description: |
+    - Precision@5: 85% de los top-5 resultados deben ser relevantes
+    - Recall@10: 90% de entidades must_retrieve deben aparecer en top-10
+    - Cero falsos positivos en casos negativos

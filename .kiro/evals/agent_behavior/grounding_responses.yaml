@@ -1,0 +1,207 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: Grounding Responses — Citation and Source Attribution
+# ═══════════════════════════════════════════════════════════════════════════════
+# Valida que TODA respuesta del agente que contenga información esté
+# correctamente atribuida a una fuente del RAG.
+#
+# Principio: "No citation, no claim" — Si no puedes citar, no afirmes.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: grounding_responses
+  name: 'Grounding and Citation Requirements'
+  domain: agent_behavior
+  version: '1.0'
+  description: |
+    Valida que las respuestas del agente incluyan citas a las fuentes
+    del RAG, permitiendo verificación y trazabilidad.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# FORMATO DE CITAS REQUERIDO
+# ───────────────────────────────────────────────────────────────────────────────
+
+citation_format:
+  inline_reference: '[ref: {entity_id}]'
+  book_reference: '[{author}, {chapter}, p. {page}]'
+  general_reference: '[Fuente: {source_name}]'
+  
+  examples:
+    - 'Los supuestos de Gauss-Markov incluyen... [ref: assumption_gauss_markov]'
+    - 'La función VLOOKUP busca valores... [ref: func_vlookup]'
+    - 'Según Wooldridge Cap. 3, la homocedasticidad significa... [Wooldridge, Cap. 3, p. 103]'
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Respuestas que DEBEN incluir citas
+# ───────────────────────────────────────────────────────────────────────────────
+
+cases:
+
+  # === Definiciones y conceptos ===
+  - id: response_concept_definition
+    description: 'Definición de concepto debe citar fuente'
+    query: '¿Qué es la heterocedasticidad?'
+    expected:
+      response_must_include:
+        type: definition
+        citation_required: true
+        citation_format: '[ref: {entity_id}]'
+      example_good_response: |
+        La heterocedasticidad ocurre cuando la varianza del error no es
+        constante a través de las observaciones [ref: assumption_homoscedasticity].
+        Según Wooldridge, esto viola el supuesto RLM.5 de Gauss-Markov
+        [Wooldridge, Cap. 3, p. 103].
+      example_bad_response: |
+        La heterocedasticidad ocurre cuando la varianza del error no es
+        constante. (Sin cita — no se puede verificar)
+
+  - id: response_function_syntax
+    description: 'Sintaxis de función debe citar documentación'
+    query: '¿Cuál es la sintaxis de VLOOKUP?'
+    expected:
+      response_must_include:
+        type: syntax
+        citation_required: true
+      example_good_response: |
+        La sintaxis de VLOOKUP es:
+        =VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])
+        [ref: func_vlookup]
+      example_bad_response: |
+        VLOOKUP se usa así: =VLOOKUP(valor, tabla, columna, exacto)
+        (Sintaxis imprecisa, sin cita)
+
+  - id: response_best_practice
+    description: 'Best practice debe citar fuente'
+    query: '¿Debo usar el mouse para modelar en Excel?'
+    expected:
+      response_must_include:
+        type: recommendation
+        citation_required: true
+      example_good_response: |
+        No, es mejor usar atajos de teclado. En investment banking,
+        los analistas trabajan sin mouse para mayor eficiencia
+        [ref: bp_use_shortcuts] [CFI Excel eBook, p. 13].
+      example_bad_response: |
+        No uses el mouse, es más lento.
+        (Afirmación sin respaldo)
+
+  - id: response_formula_pattern
+    description: 'Patrón de fórmula debe citar ejemplo'
+    query: '¿Cómo hago un lookup a la izquierda?'
+    expected:
+      response_must_include:
+        type: pattern
+        citation_required: true
+        example_required: true
+      example_good_response: |
+        Usa INDEX MATCH en lugar de VLOOKUP:
+        =INDEX(C2:C10, MATCH(G2, A2:A10, 0))
+        Este patrón permite buscar en cualquier dirección [ref: pattern_index_match].
+
+  # === Números y estadísticas ===
+  - id: response_statistical_claim
+    description: 'Afirmación estadística debe tener fuente'
+    query: '¿Qué R² se considera bueno?'
+    expected:
+      response_must_include:
+        type: statistical_interpretation
+        citation_required: true
+      example_good_response: |
+        Un R² "bueno" depende del contexto. Wooldridge indica que incluso
+        con R² pequeño, se pueden estimar efectos parciales con precisión
+        si la muestra es grande [ref: bestpractice_large_sample_precision].
+      example_bad_response: |
+        Un R² de 0.7 o más se considera bueno.
+        (Regla arbitraria sin fuente)
+
+  - id: response_threshold
+    description: 'Umbrales deben citar fuente'
+    query: '¿Cuándo un instrumento es débil?'
+    expected:
+      response_must_include:
+        type: threshold
+        citation_required: true
+      example_good_response: |
+        Un instrumento se considera débil si el estadístico F de primera
+        etapa es menor que 10 [ref: assumption_instrument_relevance].
+      example_bad_response: |
+        Si el F es menor que 10, el instrumento es débil.
+        (Regla conocida pero sin atribución)
+
+  # === Procedimientos y pasos ===
+  - id: response_procedure
+    description: 'Procedimiento debe citar metodología'
+    query: '¿Cómo hago una regresión en dos etapas?'
+    expected:
+      response_must_include:
+        type: procedure
+        citation_required: true
+        warning_if_applicable: true
+      example_good_response: |
+        MC2E se estima en dos etapas:
+        1. Regresión de x endógena sobre instrumentos
+        2. Regresión de y sobre valores ajustados
+        
+        ⚠️ No ejecutes la segunda etapa manualmente — los errores estándar
+        no serán válidos [ref: bp_avoid_manual_second_stage].
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS: Excepciones donde cita NO es requerida
+# ───────────────────────────────────────────────────────────────────────────────
+
+exceptions:
+
+  - id: general_knowledge
+    description: 'Conocimiento general no requiere cita'
+    examples:
+      - 'Excel es un software de hojas de cálculo de Microsoft.'
+      - 'La regresión lineal es un método estadístico.'
+      - 'Un DataFrame es una estructura de datos tabular.'
+    note: 'Hechos ampliamente conocidos no necesitan cita específica'
+
+  - id: clarification_questions
+    description: 'Preguntas de clarificación no requieren cita'
+    examples:
+      - '¿Podrías especificar qué versión de Excel usas?'
+      - '¿Estás trabajando con datos de panel o corte transversal?'
+
+  - id: acknowledgment_of_ignorance
+    description: 'Admitir desconocimiento no requiere cita'
+    examples:
+      - 'No tengo información sobre ese tema en mi base de conocimiento.'
+      - 'Ese libro no está en las fuentes que tengo indexadas.'
+
+# ───────────────────────────────────────────────────────────────────────────────
+# VALIDACIÓN DE CITAS
+# ───────────────────────────────────────────────────────────────────────────────
+
+citation_validation:
+
+  must_be_verifiable:
+    description: 'La cita debe corresponder a una entidad real en el RAG'
+    rule: |
+      Si la respuesta dice [ref: assumption_gauss_markov], esa entidad
+      DEBE existir en la ontología con ese ID exacto.
+    
+  must_be_relevant:
+    description: 'La cita debe ser relevante al contenido citado'
+    rule: |
+      No citar entidades solo para parecer fundamentado.
+      La información citada debe venir realmente de esa fuente.
+
+  must_be_accurate:
+    description: 'El contenido citado debe coincidir con la fuente'
+    rule: |
+      Si se cita "Wooldridge, Cap. 3, p. 103", la información debe
+      estar en esa ubicación exacta del libro indexado.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  citation_rate: 0.95
+  citation_accuracy: 1.0
+  description: |
+    - Citation rate: 95% de respuestas con claims deben tener cita
+    - Citation accuracy: 100% de citas deben ser verificables y correctas
+    - Excepciones solo para conocimiento general y clarificaciones

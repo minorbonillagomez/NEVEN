@@ -1,0 +1,173 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVAL: Citation Format Consistency
+# ═══════════════════════════════════════════════════════════════════════════════
+# Define el formato exacto de citas que el agente debe usar para mantener
+# consistencia y permitir validación automática.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eval:
+  id: citation_format
+  name: 'Citation Format Standards'
+  domain: agent_behavior
+  version: '1.0'
+  description: |
+    Define los formatos de cita aceptados y cómo validarlos.
+
+# ───────────────────────────────────────────────────────────────────────────────
+# FORMATOS DE CITA ACEPTADOS
+# ───────────────────────────────────────────────────────────────────────────────
+
+formats:
+
+  # === Referencia a entidad del RAG ===
+  entity_reference:
+    pattern: '[ref: {entity_id}]'
+    regex: '\[ref:\s*([a-z_0-9]+)\]'
+    examples:
+      - '[ref: assumption_gauss_markov]'
+      - '[ref: func_vlookup]'
+      - '[ref: bp_use_shortcuts]'
+      - '[ref: pattern_index_match]'
+    validation: 'entity_id debe existir en el graph.jsonl correspondiente'
+    use_when: 'Citando información de una entidad específica del RAG'
+
+  # === Referencia a libro con ubicación ===
+  book_reference:
+    pattern: '[{autor}, {capitulo}, p. {pagina}]'
+    regex: '\[([^,]+),\s*(Cap\.|Chapter|Capítulo)\s*(\d+),\s*p+\.\s*(\d+(?:-\d+)?)\]'
+    examples:
+      - '[Wooldridge, Cap. 3, p. 103]'
+      - '[CFI Excel eBook, Chapter 2, pp. 21-27]'
+      - '[Greene, Cap. 4, p. 156]'
+    validation: 'Libro debe estar en ontología, página debe existir'
+    use_when: 'Citando texto específico de un libro indexado'
+
+  # === Referencia a libro sin página ===
+  book_general:
+    pattern: '[{autor}, {capitulo}]'
+    regex: '\[([^,]+),\s*(Cap\.|Chapter|Capítulo)\s*(\d+)\]'
+    examples:
+      - '[Wooldridge, Cap. 6]'
+      - '[CFI Excel eBook, Chapter 1]'
+    validation: 'Libro y capítulo deben existir en ontología'
+    use_when: 'Referencia general a un capítulo sin página específica'
+
+  # === Referencia a fuente genérica ===
+  source_reference:
+    pattern: '[Fuente: {nombre_fuente}]'
+    regex: '\[Fuente:\s*([^\]]+)\]'
+    examples:
+      - '[Fuente: Microsoft Documentation]'
+      - '[Fuente: MIT 14.382 Econometrics]'
+    validation: 'Fuente debe estar en la lista de fuentes indexadas'
+    use_when: 'Citando documentación oficial o materiales de curso'
+
+  # === Múltiples referencias ===
+  multiple_references:
+    pattern: '[ref: {id1}] [ref: {id2}]'
+    examples:
+      - '[ref: func_index] [ref: func_match]'
+      - '[ref: assumption_gauss_markov] [Wooldridge, Cap. 3, p. 103]'
+    validation: 'Cada referencia individual debe ser válida'
+    use_when: 'Información viene de múltiples fuentes'
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CASOS DE VALIDACIÓN
+# ───────────────────────────────────────────────────────────────────────────────
+
+validation_cases:
+
+  # === Formato correcto ===
+  - id: valid_entity_ref
+    input: '[ref: assumption_gauss_markov]'
+    expected: valid
+    entity_must_exist: true
+
+  - id: valid_book_ref
+    input: '[Wooldridge, Cap. 3, p. 103]'
+    expected: valid
+
+  - id: valid_multiple
+    input: '[ref: func_vlookup] [CFI Excel eBook, Chapter 2, p. 29]'
+    expected: valid
+
+  # === Formato incorrecto ===
+  - id: invalid_no_brackets
+    input: 'ref: assumption_gauss_markov'
+    expected: invalid
+    reason: 'Falta corchetes'
+
+  - id: invalid_wrong_prefix
+    input: '[reference: assumption_gauss_markov]'
+    expected: invalid
+    reason: 'Prefijo incorrecto, debe ser "ref:"'
+
+  - id: invalid_spaces
+    input: '[ ref : assumption_gauss_markov ]'
+    expected: invalid
+    reason: 'Espacios incorrectos'
+
+  - id: invalid_entity_id
+    input: '[ref: Gauss-Markov]'
+    expected: invalid
+    reason: 'IDs usan snake_case, no Title-Case'
+
+  - id: invalid_nonexistent
+    input: '[ref: entidad_que_no_existe]'
+    expected: invalid
+    reason: 'Entidad no existe en el RAG'
+
+  - id: invalid_book_format
+    input: '[Wooldridge página 103]'
+    expected: invalid
+    reason: 'Formato de libro incorrecto'
+
+# ───────────────────────────────────────────────────────────────────────────────
+# REGLAS DE UBICACIÓN
+# ───────────────────────────────────────────────────────────────────────────────
+
+placement_rules:
+
+  inline:
+    description: 'Cita al final de la oración o claim específico'
+    example: |
+      La homocedasticidad significa varianza constante [ref: assumption_homoscedasticity].
+    preferred_for:
+      - Definiciones cortas
+      - Afirmaciones puntuales
+
+  paragraph_end:
+    description: 'Citas al final del párrafo'
+    example: |
+      El método de mínimos cuadrados ordinarios minimiza la suma de
+      cuadrados de los residuos. Bajo los supuestos de Gauss-Markov,
+      MCO es el mejor estimador lineal insesgado (BLUE).
+      [ref: method_ols] [Wooldridge, Cap. 3]
+    preferred_for:
+      - Explicaciones largas
+      - Múltiples conceptos relacionados
+
+  section_end:
+    description: 'Lista de referencias al final de una sección'
+    example: |
+      ## Resumen
+      ...contenido...
+      
+      **Referencias:**
+      - [ref: assumption_gauss_markov]
+      - [ref: assumption_homoscedasticity]
+      - [Wooldridge, Cap. 3]
+    preferred_for:
+      - Respuestas muy largas
+      - Documentos formales
+
+# ───────────────────────────────────────────────────────────────────────────────
+# MÉTRICAS
+# ───────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  format_compliance: 1.0
+  entity_existence: 1.0
+  description: |
+    - Format compliance: 100% de citas deben seguir formato válido
+    - Entity existence: 100% de [ref: X] deben apuntar a entidades reales

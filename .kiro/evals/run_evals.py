@@ -31,7 +31,7 @@ import yaml
 # ═══════════════════════════════════════════════════════════════════════════════
 
 EVALS_ROOT = Path(__file__).parent
-DOMAINS = ['ontologia-econometria', 'ontologia-excel']
+DOMAINS = ['ontologia-econometria', 'ontologia-excel', 'agent_behavior']
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -89,8 +89,13 @@ def load_eval_file(filepath: Path) -> dict:
     # Validación básica
     if 'eval' not in data:
         raise ValueError(f"Archivo {filepath.name} no tiene sección 'eval'")
-    if 'cases' not in data:
-        raise ValueError(f"Archivo {filepath.name} no tiene sección 'cases'")
+    
+    # Los casos pueden estar en 'cases' u otras secciones
+    # Algunos archivos usan 'validation_cases', 'negative_cases', etc.
+    has_cases = any(key.endswith('cases') or key == 'cases' or key == 'formats' 
+                    for key in data.keys())
+    if not has_cases:
+        raise ValueError(f"Archivo {filepath.name} no tiene sección de casos")
     
     return data
 
@@ -135,8 +140,9 @@ class EvalRunner:
             # Placeholder: aquí iría la lógica real de evaluación
             # Por ahora, marcamos como passed si tiene la estructura correcta
             
-            has_input = 'input' in case
-            has_expected = 'expected' in case
+            # Aceptar 'input', 'query', o 'pattern' como entrada válida
+            has_input = any(key in case for key in ['input', 'query', 'pattern', 'description'])
+            has_expected = 'expected' in case or 'response_must_contain' in case.get('expected', {})
             
             if not has_input or not has_expected:
                 return EvalResult(
