@@ -2046,12 +2046,14 @@ class NEVENHandler(BaseHTTPRequestHandler):
             agent_id = body.get("agent_id", "").strip()
             if not agent_id:
                 # Inferir agent_id del contexto
+                # Default: excel-consultant (estamos en Excel, el usuario quiere ayuda con Excel/NEVEN)
+                # El Profesor de Economía tiene su propio tab que envía agent_id explícito
                 if has_sheet_analysis:
                     agent_id = "excel-consultant"
                 elif has_results_context:
-                    agent_id = "ai-assistant"  # Por defecto, asistente general
+                    agent_id = "excel-consultant"
                 else:
-                    agent_id = "ai-assistant"
+                    agent_id = "excel-consultant"
             
             if _SKILL_LOADER_AVAILABLE and _get_skill_system_prompt:
                 try:
