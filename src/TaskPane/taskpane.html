@@ -353,6 +353,18 @@
       </div>
       <!-- Preview de la paleta seleccionada -->
       <div id="qc-palette-preview" style="display:flex;gap:2px;margin-top:4px;height:12px"></div>
+      <!-- Panel de descripcion del tipo de grafico -->
+      <div id="qc-description-panel" style="display:none;margin-top:8px;padding:10px 12px;
+           background:var(--bg-primary);border-left:3px solid var(--accent);border-radius:4px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:600;color:var(--accent)" id="qc-desc-title"></span>
+        </div>
+        <p id="qc-desc-text" style="margin:0;font-size:10px;color:var(--text-secondary);line-height:1.5"></p>
+        <a id="qc-desc-wiki" href="#" target="_blank" rel="noopener noreferrer"
+           style="display:none;margin-top:6px;font-size:9px;color:var(--accent);text-decoration:none">
+          🌐 Ver en Wikipedia
+        </a>
+      </div>
       <div id="qc-output" style="margin-top:8px"></div>
     </div>
 
@@ -2944,6 +2956,116 @@ document.getElementById('qc-palette').addEventListener('change', _updatePaletteP
 
 // Inicializar preview
 setTimeout(_updatePalettePreview, 100);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Diccionario de descripciones de tipos de gráfico (migrado de sidecars GR_*)
+// ═══════════════════════════════════════════════════════════════════════════════
+var _QC_CHART_DESCRIPTIONS = {
+  bar: {
+    title: 'Gráfico de Barras',
+    description: 'Gráfico de barras para comparar categorías. Ideal para mostrar valores discretos, rankings o comparaciones entre grupos.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_barras'
+  },
+  line: {
+    title: 'Gráfico de Líneas',
+    description: 'Visualiza tendencias y evolución de datos. Permite múltiples series para comparar comportamientos a lo largo del tiempo.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_l%C3%ADneas'
+  },
+  scatter: {
+    title: 'Diagrama de Dispersión',
+    description: 'Muestra la relación entre dos variables numéricas. Útil para identificar correlaciones, clusters y outliers.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Diagrama_de_dispersi%C3%B3n'
+  },
+  pie: {
+    title: 'Gráfico de Pastel',
+    description: 'Representa proporciones de un total. Ideal para mostrar composición porcentual (máximo 6-8 categorías recomendado).',
+    wikipedia: 'https://es.wikipedia.org/wiki/Gr%C3%A1fico_circular'
+  },
+  area: {
+    title: 'Gráfico de Área',
+    description: 'Similar al de líneas pero con área rellena. Útil para mostrar volumen acumulado o comparar magnitudes entre series.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_%C3%A1rea'
+  },
+  histogram: {
+    title: 'Histograma',
+    description: 'Distribución de frecuencias de una variable numérica. Muestra la forma de la distribución, moda y dispersión.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Histograma'
+  },
+  boxplot: {
+    title: 'Box Plot (Diagrama de Caja)',
+    description: 'Muestra la distribución estadística: mediana, cuartiles y outliers. Ideal para comparar distribuciones entre grupos.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Diagrama_de_caja'
+  },
+  heatmap: {
+    title: 'Mapa de Calor',
+    description: 'Matriz de correlaciones entre variables numéricas. Muestra la fuerza y dirección de las relaciones lineales.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Mapa_de_calor'
+  },
+  map: {
+    title: 'Mapa Interactivo',
+    description: 'Mapa geoespacial con marcadores. Requiere columnas de Latitud y Longitud en formato decimal.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Sistema_de_Informaci%C3%B3n_Geogr%C3%A1fica'
+  },
+  bubble: {
+    title: 'Gráfico de Burbujas',
+    description: 'Scatter plot con dimensión adicional: el tamaño de los puntos representa una tercera variable numérica.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_burbujas'
+  },
+  radar: {
+    title: 'Gráfico de Radar',
+    description: 'Muestra múltiples variables en ejes radiales. Útil para comparar perfiles o características multidimensionales.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Diagrama_de_Kiviat'
+  },
+  treemap: {
+    title: 'Treemap',
+    description: 'Visualiza jerarquías como rectángulos anidados. El tamaño representa proporción; el color puede indicar otra variable.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Mapa_de_%C3%A1rbol'
+  },
+  sankey: {
+    title: 'Diagrama de Sankey',
+    description: 'Visualiza flujos y transferencias entre nodos. El ancho de las conexiones representa la magnitud del flujo.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Diagrama_de_Sankey'
+  },
+  sunburst: {
+    title: 'Sunburst',
+    description: 'Representa jerarquías en anillos concéntricos. El centro es la raíz; los anillos externos son niveles más profundos.',
+    wikipedia: 'https://en.wikipedia.org/wiki/Pie_chart#Ring_chart'
+  },
+  funnel: {
+    title: 'Gráfico de Embudo',
+    description: 'Muestra etapas de un proceso secuencial. Ideal para visualizar conversiones, pipelines de ventas o filtrado.',
+    wikipedia: 'https://en.wikipedia.org/wiki/Funnel_chart'
+  }
+};
+
+// Actualizar panel de descripción cuando cambia el tipo de gráfico
+function _updateChartDescription() {
+  var chartType = document.getElementById('qc-type').value;
+  var panel = document.getElementById('qc-description-panel');
+  var title = document.getElementById('qc-desc-title');
+  var text = document.getElementById('qc-desc-text');
+  var wiki = document.getElementById('qc-desc-wiki');
+  
+  var info = _QC_CHART_DESCRIPTIONS[chartType];
+  
+  if (info && panel) {
+    title.textContent = info.title;
+    text.textContent = info.description;
+    if (info.wikipedia) {
+      wiki.href = info.wikipedia;
+      wiki.style.display = 'inline-block';
+    } else {
+      wiki.style.display = 'none';
+    }
+    panel.style.display = 'block';
+  } else if (panel) {
+    panel.style.display = 'none';
+  }
+}
+
+// Registrar handler y mostrar descripción inicial
+document.getElementById('qc-type').addEventListener('change', _updateChartDescription);
+setTimeout(_updateChartDescription, 150);
 
 // Handler del boton Generar Grafico Rapido
 document.getElementById('btn-quickchart').addEventListener('click', async function() {
