@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -220,23 +220,27 @@
   </div>
 
   <div class="tabs">
-    <div class="tab" data-tab="sql">SQL</div>
     <div class="tab active" data-tab="data-studio">Data Studio</div>
-    <div class="tab" data-tab="run-script">Run Script</div>
     <div class="tab" data-tab="data-lab">Data Lab</div>
+    <div class="tab" data-tab="ai">Data IA</div>
+    <div class="tab" data-tab="econometria">Econometria</div>
+    <div class="tab" data-tab="presentaciones">Presentaciones</div>
+    <div class="tab" data-tab="run-script">Run Script</div>
     <!-- TODO: Retomar Tab Excel cuando se resuelva el problema de pipes single-instance
          El pipe de R de Excel solo permite una conexión, bloqueando al servidor HTTP.
          Opciones: (1) start_studio.py con pipes dedicados, (2) fallback Office.js
          Ver CHAT.md sesión 2026-08-19 para detalles completos -->
     <!-- <div class="tab" data-tab="excel-analysis">Excel</div> -->
-    <div class="tab" data-tab="presentaciones">Presentaciones</div>
-    <div class="tab" data-tab="econometria">Econometria</div>
-    <div class="tab" data-tab="ai">IA</div>
-    <div class="tab" data-tab="ayuda">Ayuda</div>
     <div class="tab" data-tab="settings" title="Configuracion NEVEN"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+    <div class="tab" data-tab="ayuda">?</div>
   </div>
 
-  <!-- Tab: SQL -->
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       Tab SQL ELIMINADO - Funcionalidad migrada a Run Script (lang='sql')
+       Ver diccionario _EXAMPLES con sql_resumen, sql_agrupado, sql_externa, sql_join
+       Código preservado por si se necesita referencia histórica
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- DEPRECATED: SQL tab content - now integrated into Run Script
   <div class="tab-content" id="sql">
     <div class="card">
       <div class="card-title">Consulta SQL (tabla: dataset)</div>
@@ -256,6 +260,7 @@
     <div id="sql-error" class="msg-error" style="display:none"></div>
     <div id="sql-results"></div>
   </div>
+  -->
 
   <!-- Tab: Data Studio -->
   <div class="tab-content active" id="data-studio">
@@ -462,6 +467,12 @@
             <option value="jl_estadistica">Julia  -  Estadistica</option>
             <option value="jl_algebra">Julia  -  Algebra lineal</option>
             <option value="jl_grafico">Julia  -  Grafico basico</option>
+          </optgroup>
+          <optgroup label="SQL (DuckDB)">
+            <option value="sql_resumen">SQL  -  Resumen estadistico</option>
+            <option value="sql_agrupado">SQL  -  Analisis agrupado</option>
+            <option value="sql_externa">SQL  -  Cargar CSV externo</option>
+            <option value="sql_join">SQL  -  JOIN entre tablas</option>
           </optgroup>
         </select>
         <span id="script-status" style="font-size:10px;color:var(--text-secondary)"></span>
@@ -2749,6 +2760,12 @@ document.getElementById('btn-paste-excel').addEventListener('click', async funct
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SQL TAB LEGACY CODE - DEPRECATED
+// Funcionalidad migrada a Run Script (lang='sql')
+// Código comentado para evitar errores getElementById en elementos removidos
+// ═══════════════════════════════════════════════════════════════════════════
+/*
 // --- SQL ---
 document.getElementById('btn-sql-run').addEventListener('click', function(){
   var sql=document.getElementById('sql-input').value.trim();
@@ -2771,8 +2788,13 @@ document.getElementById('btn-sql-run').addEventListener('click', function(){
   }).catch(function(e){document.getElementById('sql-error').style.display='block';document.getElementById('sql-error').textContent=e;});
 });
 document.getElementById('sql-input').addEventListener('keydown',function(e){if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();document.getElementById('btn-sql-run').click();}});
+*/
 
-// --- Ejemplos SQL ---
+// Los ejemplos SQL ahora están en _EXAMPLES (sql_resumen, sql_agrupado, etc.)
+// Ver sección "EJEMPLOS SQL (DuckDB)" en el diccionario _EXAMPLES
+
+/*
+// --- Ejemplos SQL LEGACY ---
 var _SQL_EXAMPLES = {
   duck1: [
     '-- Ejemplo 1: Resumen estadistico del dataset activo',
@@ -2848,6 +2870,10 @@ document.getElementById('sql-examples').addEventListener('change', function() {
   this.value = '';  // reset selector
   document.getElementById('sql-input').focus();
 });
+*/
+// ═══════════════════════════════════════════════════════════════════════════
+// FIN SQL TAB LEGACY CODE
+// ═══════════════════════════════════════════════════════════════════════════
 
 // --- GROUP BY ---
 function populateGroupBy(cols,types){
@@ -4552,6 +4578,73 @@ fig = Dict(
 b64  = base64encode(JSON.json(fig))
 html = "<html><body><neven-plotly>\\$(b64)</neven-plotly></body></html>"
 html
+`},
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // EJEMPLOS SQL (DuckDB)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  sql_resumen: { lang: 'sql', name: 'ejemplo_resumen.sql', code:
+`--  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+-- NEVEN Studio  -  Ejemplo SQL: Resumen estadistico
+--  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+-- Primero carga un archivo en Data Studio, luego ejecuta esta consulta.
+-- El dataset se llama "dataset" automaticamente.
+
+SELECT
+  COUNT(*)                        AS total_filas,
+  COUNT(DISTINCT *)               AS filas_unicas
+FROM dataset
+`},
+
+  sql_agrupado: { lang: 'sql', name: 'ejemplo_agrupado.sql', code:
+`--  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+-- NEVEN Studio  -  Ejemplo SQL: Analisis agrupado
+--  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+-- Agrupa por una categoria y calcula metricas por grupo.
+-- Reemplaza "categoria" y "valor" con tus columnas reales.
+
+SELECT
+  categoria,
+  COUNT(*)                   AS n,
+  ROUND(AVG(valor), 2)       AS promedio,
+  ROUND(STDDEV(valor), 2)    AS desv_std,
+  MIN(valor)                 AS minimo,
+  MAX(valor)                 AS maximo
+FROM dataset
+GROUP BY categoria
+ORDER BY n DESC
+`},
+
+  sql_externa: { lang: 'sql', name: 'ejemplo_externa.sql', code:
+`--  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+-- NEVEN Studio  -  Ejemplo SQL: Cargar CSV externo
+--  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+-- DuckDB puede leer archivos directamente desde el filesystem.
+-- Reemplaza la ruta con tu archivo real.
+
+SELECT *
+FROM read_csv_auto('C:/ruta/a/tu/archivo.csv')
+LIMIT 100
+`},
+
+  sql_join: { lang: 'sql', name: 'ejemplo_join.sql', code:
+`--  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+-- NEVEN Studio  -  Ejemplo SQL: JOIN entre tablas
+--  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
+-- Carga dos datasets (ej: "ventas" y "productos") y haz un JOIN.
+-- Para cargar con nombre especifico, usa el endpoint /api/load_data.
+
+-- Ejemplo conceptual:
+SELECT
+  v.fecha,
+  p.nombre AS producto,
+  v.cantidad,
+  v.cantidad * p.precio AS total
+FROM ventas v
+LEFT JOIN productos p ON v.producto_id = p.id
+ORDER BY v.fecha DESC
+LIMIT 100
 `}
 };
 
@@ -4602,16 +4695,26 @@ async function runScriptRS() {
   var timeoutId  = setTimeout(function(){ controller.abort(); }, 120000);
 
   try {
-    var resp = await fetch(window.location.origin + '/api/' + lang, {
+    // SQL usa endpoint diferente: /api/query con {sql: code}
+    var endpoint, body;
+    if (lang === 'sql') {
+      endpoint = window.location.origin + '/api/query';
+      body = JSON.stringify({sql: code, page: 1, page_size: 10000});
+    } else {
+      endpoint = window.location.origin + '/api/' + lang;
+      body = JSON.stringify({code: code});
+    }
+
+    var resp = await fetch(endpoint, {
       method:  'POST',
       headers: {'Content-Type':'application/json'},
-      body:    JSON.stringify({code: code}),
+      body:    body,
       signal:  controller.signal
     });
     clearTimeout(timeoutId);
     
-    // Si el servidor retorna 503 (Service Unavailable), usar fallback Office.js
-    if (resp.status === 503) {
+    // Si el servidor retorna 503 (Service Unavailable), usar fallback Office.js (solo R/Python/Julia)
+    if (resp.status === 503 && lang !== 'sql') {
       console.log('[NEVEN] Server returned 503, trying Office.js fallback...');
       var fallbackResult = await runScriptViaOfficeJS(lang, code);
       renderScriptResultRS(fallbackResult);
@@ -4619,11 +4722,20 @@ async function runScriptRS() {
     }
     
     var res = await resp.json();
-    renderScriptResultRS(res);
+    
+    // SQL tiene formato de respuesta diferente: {columns, rows, total_rows}
+    if (lang === 'sql') {
+      renderSQLResultRS(res);
+    } else {
+      renderScriptResultRS(res);
+    }
   } catch(e) {
     clearTimeout(timeoutId);
     if (e.name === 'AbortError') {
       showScriptErrorRS('Tiempo de espera agotado (120s). El script puede seguir ejecutandose en el motor.');
+    } else if (lang === 'sql') {
+      // SQL no tiene fallback Office.js
+      showScriptErrorRS('Error SQL: ' + e.message);
     } else {
       // También intentar fallback en caso de error de red
       console.log('[NEVEN] Fetch error, trying Office.js fallback...', e.message);
@@ -4637,6 +4749,39 @@ async function runScriptRS() {
   } finally {
     btn.disabled = false; status.textContent = '';
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Renderiza resultados de consultas SQL (formato DuckDB)
+// ─────────────────────────────────────────────────────────────────────────────
+function renderSQLResultRS(res) {
+  var output = document.getElementById('script-output');
+  
+  if (res.status === 'error') {
+    showScriptErrorRS(res.message || 'Error en consulta SQL');
+    return;
+  }
+  
+  // Construir tabla HTML
+  var html = '<div class="sql-result-header">' + res.total_rows + ' filas</div>';
+  html += '<table class="data-table"><thead><tr>';
+  res.columns.forEach(function(c) { html += '<th>' + c + '</th>'; });
+  html += '</tr></thead><tbody>';
+  res.rows.forEach(function(row) {
+    html += '<tr>';
+    row.forEach(function(v) { html += '<td>' + (v !== null ? v : '<span style="color:#666">NULL</span>') + '</td>'; });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  
+  output.innerHTML = html;
+  
+  // Agregar botón "Enviar a Slide"
+  _addSendToSlideBtn(output, 'Consulta SQL', function() {
+    return { 
+      html: '<html><head><meta charset="UTF-8"><style>body{background:#1a1a1a;color:#e0e0e0;font-family:Segoe UI,sans-serif;font-size:11px;padding:16px;overflow:auto}table{border-collapse:collapse;width:100%}th{background:#373434;color:#d7a538;padding:5px 8px;border-bottom:1px solid #444;position:sticky;top:0}td{padding:4px 8px;border-bottom:1px solid #333;background:#373434}tr:hover td{background:rgba(215,165,56,.1)}</style></head><body>' + html + '</body></html>' 
+    };
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
