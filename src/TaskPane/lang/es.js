@@ -120,7 +120,14 @@ const LANG_ES = {
       histogram: "Histograma",
       boxplot: "Box Plot",
       heatmap: "Heatmap",
-      timeseries: "Serie de Tiempo"
+      timeseries: "Serie Temporal",
+      map: "Mapa (Lat/Lon)",
+      bubble: "Burbujas",
+      radar: "Radar",
+      treemap: "Treemap",
+      sankey: "Sankey",
+      sunburst: "Sunburst",
+      funnel: "Embudo"
     },
     // Opciones
     showTrend: "Mostrar tendencia",

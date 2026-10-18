@@ -192,6 +192,64 @@
     });
 
     // ═══════════════════════════════════════════════════════════════════════
+    // TRADUCCIONES DE SELECTS (optgroups y options)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    // Quick Chart - tipos de gráfico
+    const qcType = document.getElementById('qc-type');
+    if (qcType) {
+      const chartTypeTranslations = dict.dataStudio?.chartTypes || {};
+      const optgroupLabels = {
+        'Basicos': langCode === 'en' ? 'Basic' : 'Básicos',
+        'Estadisticos': langCode === 'en' ? 'Statistical' : 'Estadísticos',
+        'Series de Tiempo': langCode === 'en' ? 'Time Series' : 'Series de Tiempo',
+        'Geoespacial': langCode === 'en' ? 'Geospatial' : 'Geoespacial',
+        'Avanzados': langCode === 'en' ? 'Advanced' : 'Avanzados'
+      };
+      
+      qcType.querySelectorAll('optgroup').forEach(og => {
+        const currentLabel = og.label;
+        if (optgroupLabels[currentLabel]) {
+          og.label = optgroupLabels[currentLabel];
+        }
+      });
+      
+      qcType.querySelectorAll('option').forEach(opt => {
+        const val = opt.value;
+        if (chartTypeTranslations[val]) {
+          // Preservar emoji si existe
+          const emoji = opt.textContent.match(/^[^\w\s]/)?.[0] || '';
+          opt.textContent = emoji ? emoji + ' ' + chartTypeTranslations[val] : chartTypeTranslations[val];
+        }
+      });
+    }
+
+    // Selector de lenguaje en Run Script
+    const scriptLang = document.getElementById('script-lang');
+    if (scriptLang) {
+      // Los nombres de lenguajes (R, Python, Julia, SQL) son universales, no necesitan traducción
+    }
+
+    // Selector de ejemplos en Run Script
+    const scriptExamples = document.getElementById('script-examples');
+    if (scriptExamples) {
+      const examplesLabel = langCode === 'en' ? 'Examples...' : 'Ejemplos...';
+      const firstOption = scriptExamples.querySelector('option[value=""]');
+      if (firstOption) firstOption.textContent = examplesLabel;
+      
+      // Traducir labels de optgroups
+      const exampleGroups = dict.runScript?.exampleGroups || {};
+      scriptExamples.querySelectorAll('optgroup').forEach(og => {
+        const currentLabel = og.label;
+        if (currentLabel === 'R' || currentLabel === 'Python' || currentLabel === 'Julia') {
+          // Estos no cambian
+        } else if (currentLabel.includes('SQL')) {
+          og.label = exampleGroups.sql || currentLabel;
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // TRADUCCIONES DE CARD TITLES (por clase y contenido)
     // ═══════════════════════════════════════════════════════════════════════
     const cardTitleTranslations = {
@@ -200,7 +258,8 @@
       'Grafico Rapido': 'dataStudio.quickChart',
       'Data Lab': 'tabs.dataLab',
       'Output': 'labels.output',
-      'Configuración General': 'settings.title'
+      'Configuración General': 'settings.title',
+      'General Settings': 'settings.title'
     };
 
     document.querySelectorAll('.card-title').forEach(el => {
