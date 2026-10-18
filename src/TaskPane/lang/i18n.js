@@ -271,6 +271,26 @@
       }
     });
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // TRADUCCIONES DE PLACEHOLDERS (por ID de input)
+    // ═══════════════════════════════════════════════════════════════════════
+    const placeholderTranslations = {
+      'func-search': langCode === 'en' ? 'Search...' : 'Buscar...',
+      'ayuda-search': langCode === 'en' ? 'Search function by name or description...' : 'Buscar función por nombre o descripción...',
+      'ai-input': langCode === 'en' ? 'Type your question... (Enter sends, Shift+Enter new line)' : 'Escribe tu pregunta... (Enter envía, Shift+Enter nueva línea)',
+      'graph-entity-search': langCode === 'en' ? 'Search entity (e.g., OLS, GARCH, regression)' : 'Buscar entidad (ej: OLS, GARCH, regression)',
+      'dl-filter-input': langCode === 'en' ? 'e.g., age > 18 AND country = \'US\'' : 'Ej: edad > 18 AND pais = \'CR\'',
+      'rag-query-input': langCode === 'en' ? 'Type your question...' : 'Escribe tu pregunta...',
+      'rag-text-content': langCode === 'en' ? 'Paste or type content here...' : 'Pega o escribe el contenido aquí...',
+      'rag-text-name': langCode === 'en' ? 'Document name' : 'Nombre del documento',
+      'rag-file-path': langCode === 'en' ? 'Path to file...' : 'Ruta al archivo...'
+    };
+
+    Object.entries(placeholderTranslations).forEach(([id, placeholder]) => {
+      const el = document.getElementById(id);
+      if (el) el.placeholder = placeholder;
+    });
+
     // Guardar preferencia
     try {
       localStorage.setItem(STORAGE_KEY, langCode);
