@@ -306,6 +306,9 @@
             <option value="boxplot">Box Plot</option>
             <option value="heatmap">Heatmap</option>
           </optgroup>
+          <optgroup label="Series de Tiempo">
+            <option value="timeseries">📈 Serie Temporal</option>
+          </optgroup>
           <optgroup label="Geoespacial">
             <option value="map">&#128506; Mapa (Lat/Lon)</option>
           </optgroup>
@@ -346,6 +349,16 @@
           <option value="ocean">Ocean</option>
           <option value="earth">Earth</option>
         </select>
+        <!-- Opciones de Serie de Tiempo (visibles solo cuando se selecciona timeseries) -->
+        <div id="qc-timeseries-options" style="display:none;align-items:center;gap:6px">
+          <label style="font-size:10px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" id="qc-trend" style="accent-color:var(--accent)"> Tendencia
+          </label>
+          <select id="qc-trend-type" style="font-size:10px;padding:2px 4px;display:none">
+            <option value="linear">Lineal</option>
+            <option value="poly2">Polinómica (grado 2)</option>
+          </select>
+        </div>
         <button class="btn btn-primary" id="btn-quickchart" style="background:#4a7c4a">
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
           Generar
@@ -3001,6 +3014,11 @@ var _QC_CHART_DESCRIPTIONS = {
     description: 'Matriz de correlaciones entre variables numéricas. Muestra la fuerza y dirección de las relaciones lineales.',
     wikipedia: 'https://es.wikipedia.org/wiki/Mapa_de_calor'
   },
+  timeseries: {
+    title: 'Serie de Tiempo',
+    description: 'Visualiza la evolución de una métrica en el tiempo. Soporta línea de tendencia lineal o polinómica para identificar patrones.',
+    wikipedia: 'https://es.wikipedia.org/wiki/Serie_temporal'
+  },
   map: {
     title: 'Mapa Interactivo',
     description: 'Mapa geoespacial con marcadores. Requiere columnas de Latitud y Longitud en formato decimal.',
@@ -3046,6 +3064,12 @@ function _updateChartDescription() {
   var text = document.getElementById('qc-desc-text');
   var wiki = document.getElementById('qc-desc-wiki');
   
+  // Mostrar/ocultar opciones de serie de tiempo
+  var tsOptions = document.getElementById('qc-timeseries-options');
+  if (tsOptions) {
+    tsOptions.style.display = (chartType === 'timeseries') ? 'flex' : 'none';
+  }
+  
   var info = _QC_CHART_DESCRIPTIONS[chartType];
   
   if (info && panel) {
@@ -3062,6 +3086,14 @@ function _updateChartDescription() {
     panel.style.display = 'none';
   }
 }
+
+// Handler para mostrar/ocultar selector de tipo de tendencia
+document.getElementById('qc-trend').addEventListener('change', function() {
+  var trendType = document.getElementById('qc-trend-type');
+  if (trendType) {
+    trendType.style.display = this.checked ? 'inline-block' : 'none';
+  }
+});
 
 // Registrar handler y mostrar descripción inicial
 document.getElementById('qc-type').addEventListener('change', _updateChartDescription);
@@ -3178,6 +3210,55 @@ window._rerunQuickChart = async function() {
   }
 };
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Funciones de cálculo de tendencia para Serie de Tiempo
+// ═══════════════════════════════════════════════════════════════════════════════
+function _calcLinearTrend(xVals, yVals) {
+  var n = xVals.length;
+  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (var i = 0; i < n; i++) {
+    var x = xVals[i], y = yVals[i];
+    if (y == null || isNaN(y)) continue;
+    sumX += x; sumY += y; sumXY += x * y; sumX2 += x * x;
+  }
+  var slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+  var intercept = (sumY - slope * sumX) / n;
+  return xVals.map(function(x) { return slope * x + intercept; });
+}
+
+function _calcPolyTrend(xVals, yVals, degree) {
+  // Regresión polinómica simple (grado 2)
+  var n = xVals.length;
+  var validPairs = [];
+  for (var i = 0; i < n; i++) {
+    if (yVals[i] != null && !isNaN(yVals[i])) {
+      validPairs.push([xVals[i], yVals[i]]);
+    }
+  }
+  if (validPairs.length < 3) return _calcLinearTrend(xVals, yVals);
+  
+  // Resolver sistema de ecuaciones para ax² + bx + c
+  var sx = 0, sx2 = 0, sx3 = 0, sx4 = 0;
+  var sy = 0, sxy = 0, sx2y = 0;
+  var m = validPairs.length;
+  
+  for (var j = 0; j < m; j++) {
+    var x = validPairs[j][0], y = validPairs[j][1];
+    sx += x; sx2 += x*x; sx3 += x*x*x; sx4 += x*x*x*x;
+    sy += y; sxy += x*y; sx2y += x*x*y;
+  }
+  
+  // Matriz 3x3 para grado 2
+  var det = m*(sx2*sx4 - sx3*sx3) - sx*(sx*sx4 - sx2*sx3) + sx2*(sx*sx3 - sx2*sx2);
+  if (Math.abs(det) < 1e-10) return _calcLinearTrend(xVals, yVals);
+  
+  var a = (sy*(sx2*sx4 - sx3*sx3) - sx*(sxy*sx4 - sx2y*sx3) + sx2*(sxy*sx3 - sx2y*sx2)) / det;
+  var b = (m*(sxy*sx4 - sx2y*sx3) - sy*(sx*sx4 - sx2*sx3) + sx2*(sx*sx2y - sx2*sxy)) / det;
+  var c = (m*(sx2*sx2y - sx3*sxy) - sx*(sx*sx2y - sx2*sxy) + sy*(sx*sx3 - sx2*sx2)) / det;
+  
+  return xVals.map(function(x) { return c * x * x + b * x + a; });
+}
+
 function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, outputEl) {
   var traces = [];
   var layout = {
@@ -3224,6 +3305,47 @@ function _renderQuickChartPlotly(chartType, colX, colsY, xData, yDataArrays, out
           marker: { size: 4 } 
         });
       });
+      break;
+      
+    case 'timeseries':
+      // Serie de tiempo con opción de tendencia
+      colsY.forEach(function(colY, i) {
+        traces.push({ 
+          x: xData, 
+          y: yDataArrays[i], 
+          type: 'scatter', 
+          mode: 'lines+markers',
+          name: colY,
+          line: { color: colors[i % colors.length], width: 2 }, 
+          marker: { size: 4 } 
+        });
+      });
+      // Agregar línea de tendencia si está activada
+      var trendCheckbox = document.getElementById('qc-trend');
+      if (trendCheckbox && trendCheckbox.checked && yDataArrays.length > 0) {
+        var trendTypeSelect = document.getElementById('qc-trend-type');
+        var trendType = trendTypeSelect ? trendTypeSelect.value : 'linear';
+        var yVals = yDataArrays[0];
+        var xNums = xData.map(function(_, i) { return i; });
+        
+        // Calcular regresión
+        var trendY;
+        if (trendType === 'poly2') {
+          trendY = _calcPolyTrend(xNums, yVals, 2);
+        } else {
+          trendY = _calcLinearTrend(xNums, yVals);
+        }
+        
+        traces.push({
+          x: xData,
+          y: trendY,
+          type: 'scatter',
+          mode: 'lines',
+          name: 'Tendencia (' + (trendType === 'poly2' ? 'Polinómica' : 'Lineal') + ')',
+          line: { color: '#ff6b6b', width: 2, dash: 'dash' }
+        });
+      }
+      layout.xaxis.title = colX || 'Tiempo';
       break;
       
     case 'scatter':
