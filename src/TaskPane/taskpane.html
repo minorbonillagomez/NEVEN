@@ -210,6 +210,12 @@
       containerDiv.appendChild(btnBar);
     }
   </script>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       INTERNACIONALIZACIÓN (i18n) — Diccionarios de idioma
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <script src="lang/es.js"></script>
+  <script src="lang/en.js"></script>
+  <script src="lang/i18n.js"></script>
 </head>
 <body>
 
@@ -220,12 +226,12 @@
   </div>
 
   <div class="tabs">
-    <div class="tab active" data-tab="data-studio">Data Studio</div>
-    <div class="tab" data-tab="data-lab">Data Lab</div>
-    <div class="tab" data-tab="ai">Data IA</div>
-    <div class="tab" data-tab="econometria">Econometria</div>
-    <div class="tab" data-tab="presentaciones">Presentaciones</div>
-    <div class="tab" data-tab="run-script">Run Script</div>
+    <div class="tab active" data-tab="data-studio" data-i18n="tabs.dataStudio">Data Studio</div>
+    <div class="tab" data-tab="data-lab" data-i18n="tabs.dataLab">Data Lab</div>
+    <div class="tab" data-tab="ai" data-i18n="tabs.dataIA">Data IA</div>
+    <div class="tab" data-tab="econometria" data-i18n="tabs.econometria">Econometría</div>
+    <div class="tab" data-tab="presentaciones" data-i18n="tabs.presentaciones">Presentaciones</div>
+    <div class="tab" data-tab="run-script" data-i18n="tabs.runScript">Run Script</div>
     <!-- TODO: Retomar Tab Excel cuando se resuelva el problema de pipes single-instance
          El pipe de R de Excel solo permite una conexión, bloqueando al servidor HTTP.
          Opciones: (1) start_studio.py con pipes dedicados, (2) fallback Office.js
@@ -1003,7 +1009,8 @@
     
     <!-- Sub-tabs de settings -->
     <div class="settings-tabs" style="display:flex;gap:0;padding:0 8px;background:var(--bg-secondary);border-bottom:1px solid var(--border);flex-wrap:wrap">
-      <div class="settings-tab active" data-settings-tab="ai" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Motor IA</div>
+      <div class="settings-tab active" data-settings-tab="general" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.general">General</div>
+      <div class="settings-tab" data-settings-tab="ai" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Motor IA</div>
       <div class="settings-tab" data-settings-tab="db" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conexiones DB</div>
       <div class="settings-tab" data-settings-tab="prompts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Prompts</div>
       <div class="settings-tab" data-settings-tab="ontology" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conocimiento</div>
@@ -1013,8 +1020,32 @@
       <div class="settings-tab" data-settings-tab="charts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Gráficos</div>
     </div>
 
+    <!-- Panel: General (Idioma, Tema, etc.) -->
+    <div class="settings-panel active" id="settings-general" style="padding:8px;overflow-y:auto;max-height:calc(100vh - 140px)">
+      <div class="card">
+        <div class="card-title" data-i18n="settings.title">Configuración General</div>
+        
+        <!-- Selector de Idioma -->
+        <div style="margin-bottom:12px">
+          <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px" data-i18n="settings.language">Idioma / Language</label>
+          <select id="lang-selector" onchange="i18n.applyLanguage(this.value)" style="width:100%;max-width:200px;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:6px 10px;font-size:11px;cursor:pointer">
+            <option value="es">🇪🇸 Español</option>
+            <option value="en">🇬🇧 English</option>
+          </select>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:4px" data-i18n="settings.languageHint">El cambio se aplica inmediatamente</div>
+        </div>
+        
+        <!-- Versión -->
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;margin-bottom:4px" data-i18n="settings.version">Versión</div>
+          <div style="font-size:11px;color:var(--text-primary)">NEVEN Studio v3.0</div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:2px">© 2026 Minor Bonilla Gómez — Universidad de Costa Rica</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Panel: Motor IA -->
-    <div class="settings-panel active" id="settings-ai" style="padding:8px;overflow-y:auto;max-height:calc(100vh - 140px)">
+    <div class="settings-panel" id="settings-ai" style="padding:8px;overflow-y:auto;max-height:calc(100vh - 140px)">
       
       <!-- Lista de perfiles AI -->
       <div class="card" style="margin-bottom:8px">
