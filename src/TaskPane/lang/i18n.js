@@ -145,6 +145,73 @@
       }
     });
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // TRADUCCIONES ESPECÍFICAS POR ID (para elementos con SVG u otros hijos)
+    // ═══════════════════════════════════════════════════════════════════════
+    const specificTranslations = {
+      // Data Studio - botones principales
+      'btn-load': { key: 'buttons.openFile', textNode: true },
+      'btn-bridge-read': { key: 'buttons.readFromExcel', textNode: true },
+      'btn-paste-excel': { key: 'buttons.pasteFromExcel', textNode: true },
+      'btn-db-connect': { key: 'buttons.connectDB', textNode: true },
+      'btn-pivot': { key: 'buttons.openPivot', textNode: false },
+      
+      // Data Studio - textos
+      'data-info': { key: 'dataStudio.openFileHint', textNode: false },
+      
+      // Quick Chart
+      'btn-qc-generate': { key: 'dataStudio.generateChart', textNode: true },
+      
+      // Run Script - botones
+      'btn-run-script': { key: 'buttons.run', textNode: true },
+      'btn-new-script': { key: 'buttons.newScript', textNode: true },
+      
+      // Data Lab
+      'dl-run-btn': { key: 'dataLab.runAnalysis', textNode: false },
+      
+      // Econometría
+      'btn-econometria-run': { key: 'buttons.run', textNode: true }
+    };
+
+    Object.entries(specificTranslations).forEach(([id, config]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      
+      const text = getNestedValue(dict, config.key);
+      if (text === undefined) return;
+
+      if (config.textNode) {
+        // Buscar el nodo de texto después del SVG
+        const textNodes = Array.from(el.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
+        if (textNodes.length > 0) {
+          textNodes[textNodes.length - 1].textContent = ' ' + text;
+        }
+      } else {
+        el.textContent = text;
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TRADUCCIONES DE CARD TITLES (por clase y contenido)
+    // ═══════════════════════════════════════════════════════════════════════
+    const cardTitleTranslations = {
+      'Datos': 'dataStudio.title',
+      'Gráfico Rápido': 'dataStudio.quickChart',
+      'Grafico Rapido': 'dataStudio.quickChart',
+      'Data Lab': 'tabs.dataLab',
+      'Output': 'labels.output',
+      'Configuración General': 'settings.title'
+    };
+
+    document.querySelectorAll('.card-title').forEach(el => {
+      const currentText = el.textContent.trim();
+      const key = cardTitleTranslations[currentText];
+      if (key) {
+        const text = getNestedValue(dict, key);
+        if (text) el.textContent = text;
+      }
+    });
+
     // Guardar preferencia
     try {
       localStorage.setItem(STORAGE_KEY, langCode);
