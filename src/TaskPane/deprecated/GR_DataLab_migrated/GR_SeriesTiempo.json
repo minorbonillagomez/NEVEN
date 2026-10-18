@@ -1,9 +1,9 @@
 {
     "id":  "GR_SeriesTiempo",
     "family":  "GR",
-    "family_label":  "GrÃ¡ficos",
+    "family_label":  "Gráficos",
     "name":  "Serie de Tiempo",
-    "description":  "GrÃ¡fico de lÃ­neas para series temporales. Permite visualizar la evoluciÃ³n de una o mÃ¡s mÃ©tricas en el tiempo, con opciÃ³n de lÃ­nea de tendencia.",
+    "description":  "Gráfico de líneas para series temporales. Permite visualizar la evolución de una o más métricas en el tiempo, con opción de línea de tendencia.",
     "wikipedia_url":  "https://es.wikipedia.org/wiki/Serie_temporal",
     "languages":  [
                       "r"
@@ -12,7 +12,7 @@
     "file":  "GR_SeriesTiempo.Studio.R",
     "variable_roles":  {
                            "X":  {
-                                     "label":  "Eje de tiempo (fecha, perÃ­odo o Ã­ndice â€” opcional, usa 1,2,...N si no se asigna)",
+                                     "label":  "Eje de tiempo (fecha, período o índice — opcional, usa 1,2,...N si no se asigna)",
                                      "types":  [
                                                    "numeric",
                                                    "text"
@@ -21,7 +21,7 @@
                                      "required":  false
                                  },
                            "Y":  {
-                                     "label":  "Valores / MÃ©trica",
+                                     "label":  "Valores / Métrica",
                                      "types":  [
                                                    "numeric"
                                                ],
@@ -29,7 +29,7 @@
                                      "required":  true
                                  },
                            "Color":  {
-                                         "label":  "Series mÃºltiples (opcional)",
+                                         "label":  "Series múltiples (opcional)",
                                          "types":  [
                                                        "text"
                                                    ],
@@ -47,7 +47,7 @@
                        },
                        {
                            "name":  "MostrarTendencia",
-                           "label":  "Agregar lÃ­nea de tendencia",
+                           "label":  "Agregar línea de tendencia",
                            "type":  "boolean",
                            "default":  false,
                            "tier":  1
@@ -65,13 +65,13 @@
                                            },
                                            {
                                                "value":  2,
-                                               "label":  "PolinÃ³mica (grado 2)"
+                                               "label":  "Polinómica (grado 2)"
                                            }
                                        ]
                        },
                        {
                            "name":  "AnchoLinea",
-                           "label":  "Ancho de lÃ­nea",
+                           "label":  "Ancho de línea",
                            "type":  "integer",
                            "default":  2,
                            "tier":  2

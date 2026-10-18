@@ -1,9 +1,9 @@
 {
     "id":  "GR_Lineas",
     "family":  "GR",
-    "family_label":  "GrÃ¡ficos",
-    "name":  "GrÃ¡fico de LÃ­neas",
-    "description":  "GrÃ¡fico de lÃ­neas para visualizar tendencias y evoluciÃ³n. Permite mÃºltiples series usando una variable de color/grupo.",
+    "family_label":  "Gráficos",
+    "name":  "Gráfico de Líneas",
+    "description":  "Gráfico de líneas para visualizar tendencias y evolución. Permite múltiples series usando una variable de color/grupo.",
     "wikipedia_url":  "https://es.wikipedia.org/wiki/Gr%C3%A1fico_de_l%C3%ADneas",
     "languages":  [
                       "r"
@@ -12,7 +12,7 @@
     "file":  "GR_Lineas.Studio.R",
     "variable_roles":  {
                            "X":  {
-                                     "label":  "Eje X (tiempo o valor numÃ©rico, opcional â€” usa Ã­ndice si no se asigna)",
+                                     "label":  "Eje X (tiempo o valor numérico, opcional — usa índice si no se asigna)",
                                      "types":  [
                                                    "numeric",
                                                    "text"
@@ -47,7 +47,7 @@
                        },
                        {
                            "name":  "AnchoLinea",
-                           "label":  "Ancho de lÃ­nea",
+                           "label":  "Ancho de línea",
                            "type":  "integer",
                            "default":  2,
                            "tier":  2

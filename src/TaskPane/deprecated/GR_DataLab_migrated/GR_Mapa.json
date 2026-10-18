@@ -1,9 +1,9 @@
 {
     "id":  "GR_Mapa",
     "family":  "GR",
-    "family_label":  "GrÃ¡ficos",
+    "family_label":  "Gráficos",
     "name":  "Mapa Interactivo (Leaflet)",
-    "description":  "Mapa interactivo con Leaflet.js usando tiles CartoDB oscuros. Soporta marcadores con popup, mapa de calor e intensidad, y cÃ­rculos proporcionales a un valor.",
+    "description":  "Mapa interactivo con Leaflet.js usando tiles CartoDB oscuros. Soporta marcadores con popup, mapa de calor e intensidad, y círculos proporcionales a un valor.",
     "wikipedia_url":  "https://es.wikipedia.org/wiki/Leaflet_(software)",
     "languages":  [
                       "r"
@@ -37,7 +37,7 @@
                                             "required":  false
                                         },
                            "Valor":  {
-                                         "label":  "Valor numÃ©rico para heatmap o cÃ­rculos proporcionales (opcional)",
+                                         "label":  "Valor numérico para heatmap o círculos proporcionales (opcional)",
                                          "types":  [
                                                        "numeric"
                                                    ],
@@ -48,7 +48,7 @@
     "parameters":  [
                        {
                            "name":  "TipoMapa",
-                           "label":  "Tipo de visualizaciÃ³n",
+                           "label":  "Tipo de visualización",
                            "type":  "select",
                            "default":  1,
                            "tier":  1,
@@ -63,7 +63,7 @@
                                            },
                                            {
                                                "value":  3,
-                                               "label":  "CÃ­rculos proporcionales"
+                                               "label":  "Círculos proporcionales"
                                            }
                                        ]
                        }

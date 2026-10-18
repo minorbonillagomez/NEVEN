@@ -1,9 +1,9 @@
 {
     "id":  "GR_Correlaciones",
     "family":  "GR",
-    "family_label":  "GrÃ¡ficos",
+    "family_label":  "Gráficos",
     "name":  "Mapa de Correlaciones",
-    "description":  "Heatmap de la matriz de correlaciones entre variables numÃ©ricas. Muestra la fuerza y direcciÃ³n de las relaciones lineales (o de rango).",
+    "description":  "Heatmap de la matriz de correlaciones entre variables numéricas. Muestra la fuerza y dirección de las relaciones lineales (o de rango).",
     "wikipedia_url":  "https://es.wikipedia.org/wiki/Coeficiente_de_correlaci%C3%B3n_de_Pearson",
     "languages":  [
                       "r"
@@ -12,7 +12,7 @@
     "file":  "GR_Correlaciones.Studio.R",
     "variable_roles":  {
                            "X":  {
-                                     "label":  "Variables numÃ©ricas (mÃ­nimo 2 columnas)",
+                                     "label":  "Variables numéricas (mínimo 2 columnas)",
                                      "types":  [
                                                    "numeric"
                                                ],
@@ -23,7 +23,7 @@
     "parameters":  [
                        {
                            "name":  "Metodo",
-                           "label":  "MÃ©todo de correlaciÃ³n",
+                           "label":  "Método de correlación",
                            "type":  "select",
                            "default":  1,
                            "tier":  1,

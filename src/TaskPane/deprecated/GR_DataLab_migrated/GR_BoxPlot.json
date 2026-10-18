@@ -1,9 +1,9 @@
 {
     "id":  "GR_BoxPlot",
     "family":  "GR",
-    "family_label":  "GrÃ¡ficos",
+    "family_label":  "Gráficos",
     "name":  "Box Plot (Diagrama de Caja)",
-    "description":  "Diagrama de caja y bigotes. Muestra la distribuciÃ³n estadÃ­stica (mediana, cuartiles, outliers) por grupo o categorÃ­a.",
+    "description":  "Diagrama de caja y bigotes. Muestra la distribución estadística (mediana, cuartiles, outliers) por grupo o categoría.",
     "wikipedia_url":  "https://es.wikipedia.org/wiki/Diagrama_de_caja",
     "languages":  [
                       "r"
@@ -12,7 +12,7 @@
     "file":  "GR_BoxPlot.Studio.R",
     "variable_roles":  {
                            "X":  {
-                                     "label":  "Grupos / CategorÃ­as (eje X)",
+                                     "label":  "Grupos / Categorías (eje X)",
                                      "types":  [
                                                    "text"
                                                ],
@@ -20,7 +20,7 @@
                                      "required":  true
                                  },
                            "Y":  {
-                                     "label":  "Valores numÃ©ricos (eje Y)",
+                                     "label":  "Valores numéricos (eje Y)",
                                      "types":  [
                                                    "numeric"
                                                ],
@@ -28,7 +28,7 @@
                                      "required":  true
                                  },
                            "Color":  {
-                                         "label":  "AgrupaciÃ³n adicional (opcional)",
+                                         "label":  "Agrupación adicional (opcional)",
                                          "types":  [
                                                        "text"
                                                    ],
