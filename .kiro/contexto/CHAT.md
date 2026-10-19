@@ -37,12 +37,19 @@ Integrar los endpoints `/api/charts/*` en el servidor HTTP principal para que es
 ## Commit
 ```
 6d8dcf7 feat(api): integrar endpoints /api/charts/* para ontologia de graficos
+34a703c feat(ui): agregar galeria de graficos al TaskPane
 ```
 
-## Pendientes
-1. **UI para galería de gráficos** — Tab o modal en TaskPane
-2. **Probar indexado RAG** — Verificar que las ontologías se indexan
-3. **Traducir descripciones** — Actualmente solo nombres están en español
+## Archivos creados/modificados
+- `C:\NEVEN\TaskPane\chart-gallery.js` — Modal de galeria (841 lineas)
+- `C:\NEVEN\TaskPane\taskpane.html` — Boton "Galeria" en Quick Chart
+
+## PENDIENTES ACTUALES
+
+### ALTA
+- [x] ~~Integrar endpoints en neven_http_server.py~~ COMPLETADO 2026-08-19
+- [x] ~~Crear UI en TaskPane~~ COMPLETADO 2026-08-19
+- [ ] **Probar con agente** — Verificar que el RAG indexa las ontologias
 
 ---
 ### Sesión 2026-08-20 (~11:30-12:30) — Integración anyplot como Ontología de Gráficos
