@@ -71,26 +71,11 @@
   function createModal() {
     if (_galleryModal) return _galleryModal;
     
+    // Helper para traducir - usa i18n si está disponible
     const t = (key) => {
       if (typeof i18n !== 'undefined' && i18n.t) return i18n.t(key);
-      // Fallback
-      const fallbacks = {
-        'chartGallery.title': 'Galería de Gráficos',
-        'chartGallery.searchPlaceholder': 'Buscar gráficos...',
-        'chartGallery.allCategories': 'Todas las categorías',
-        'chartGallery.allLibraries': 'Todas las librerías',
-        'chartGallery.loading': 'Cargando...',
-        'chartGallery.noResults': 'No se encontraron gráficos',
-        'chartGallery.useWhen': 'Usar cuando',
-        'chartGallery.avoidWhen': 'Evitar cuando',
-        'chartGallery.dataRequirements': 'Requisitos de datos',
-        'chartGallery.implementations': 'Implementaciones',
-        'chartGallery.getCode': 'Obtener código',
-        'chartGallery.copyCode': 'Copiar código',
-        'chartGallery.insertInEditor': 'Insertar en editor',
-        'chartGallery.close': 'Cerrar'
-      };
-      return fallbacks[key] || key;
+      // Fallback si i18n no está cargado
+      return key.split('.').pop();
     };
     
     const overlay = document.createElement('div');
@@ -116,7 +101,7 @@
         
         <div class="chart-gallery-content">
           <div class="chart-gallery-grid">
-            <div class="chart-gallery-loading">${t('chartGallery.loading')}</div>
+            <div class="chart-gallery-loading">${t('messages.loading')}</div>
           </div>
           <div class="chart-gallery-detail" style="display:none">
             <!-- Detail view -->
@@ -481,7 +466,8 @@
   
   async function loadCharts() {
     const grid = _galleryModal.querySelector('.chart-gallery-grid');
-    grid.innerHTML = '<div class="chart-gallery-loading">Cargando gráficos...</div>';
+    const t = (key) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : key.split('.').pop();
+    grid.innerHTML = `<div class="chart-gallery-loading">${t('messages.loadingCharts')}</div>`;
     
     try {
       const resp = await fetch(`${API_BASE}/api/charts?lang=${_currentLang}`);
@@ -494,13 +480,13 @@
       // Actualizar stats
       const statsEl = _galleryModal.querySelector('.chart-gallery-stats');
       if (statsEl) {
-        statsEl.textContent = `${_allCharts.length} gráficos disponibles`;
+        statsEl.textContent = `${_allCharts.length} ${t('chartGallery.chartsAvailable')}`;
       }
       
       renderGrid();
     } catch (e) {
       console.error('[ChartGallery] Error loading charts:', e);
-      grid.innerHTML = '<div class="chart-gallery-empty">Error al cargar gráficos</div>';
+      grid.innerHTML = `<div class="chart-gallery-empty">${t('chartGallery.errorLoading')}</div>`;
     }
   }
   
@@ -556,12 +542,13 @@
   function renderGrid() {
     const grid = _galleryModal.querySelector('.chart-gallery-grid');
     const detail = _galleryModal.querySelector('.chart-gallery-detail');
+    const t = (key) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : key.split('.').pop();
     
     grid.style.display = 'grid';
     detail.style.display = 'none';
     
     if (_filteredCharts.length === 0) {
-      grid.innerHTML = '<div class="chart-gallery-empty">No se encontraron gráficos</div>';
+      grid.innerHTML = `<div class="chart-gallery-empty">${t('chartGallery.noResults')}</div>`;
       return;
     }
     
@@ -571,7 +558,7 @@
         <div class="chart-gallery-card" data-id="${chart.id}">
           <div class="chart-gallery-card-icon">${icon}</div>
           <div class="chart-gallery-card-name" title="${chart.name}">${chart.name}</div>
-          <div class="chart-gallery-card-libs">15 librerías</div>
+          <div class="chart-gallery-card-libs">${t('chartGallery.librariesCount')}</div>
         </div>
       `;
     }).join('');
@@ -635,10 +622,11 @@
   async function showChartDetail(chartId) {
     const grid = _galleryModal.querySelector('.chart-gallery-grid');
     const detail = _galleryModal.querySelector('.chart-gallery-detail');
+    const t = (key) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : key.split('.').pop();
     
     grid.style.display = 'none';
     detail.style.display = 'block';
-    detail.innerHTML = '<div class="chart-gallery-loading">Cargando detalles...</div>';
+    detail.innerHTML = `<div class="chart-gallery-loading">${t('messages.loadingDetails')}</div>`;
     
     try {
       const resp = await fetch(`${API_BASE}/api/charts/${chartId}`);
@@ -655,14 +643,14 @@
       
       detail.innerHTML = `
         <div class="chart-gallery-detail-header">
-          <button class="chart-gallery-back">← Volver</button>
+          <button class="chart-gallery-back">&larr; ${t('chartGallery.back')}</button>
           <span class="chart-gallery-detail-icon">${getChartIcon(chartId)}</span>
           <span class="chart-gallery-detail-title">${name}</span>
         </div>
         
         ${useWhen.length > 0 ? `
         <div class="chart-gallery-section">
-          <div class="chart-gallery-section-title">Usar cuando</div>
+          <div class="chart-gallery-section-title">${t('chartGallery.useWhen')}</div>
           <div class="chart-gallery-section-content">
             <ul>${useWhen.map(u => `<li>${u}</li>`).join('')}</ul>
           </div>
@@ -671,7 +659,7 @@
         
         ${avoidWhen.length > 0 ? `
         <div class="chart-gallery-section">
-          <div class="chart-gallery-section-title">Evitar cuando</div>
+          <div class="chart-gallery-section-title">${t('chartGallery.avoidWhen')}</div>
           <div class="chart-gallery-section-content">
             <ul>${avoidWhen.map(a => `<li>${a}</li>`).join('')}</ul>
           </div>
@@ -680,16 +668,16 @@
         
         ${Object.keys(dataReqs).length > 0 ? `
         <div class="chart-gallery-section">
-          <div class="chart-gallery-section-title">Requisitos de datos</div>
+          <div class="chart-gallery-section-title">${t('chartGallery.dataRequirements')}</div>
           <div class="chart-gallery-section-content">
-            ${dataReqs.min_columns ? `<div>Columnas mínimas: ${dataReqs.min_columns}</div>` : ''}
-            ${dataReqs.column_types?.length ? `<div>Tipos: ${dataReqs.column_types.join(', ')}</div>` : ''}
+            ${dataReqs.min_columns ? `<div>${_currentLang === 'en' ? 'Min columns' : 'Columnas mínimas'}: ${dataReqs.min_columns}</div>` : ''}
+            ${dataReqs.column_types?.length ? `<div>${_currentLang === 'en' ? 'Types' : 'Tipos'}: ${dataReqs.column_types.join(', ')}</div>` : ''}
           </div>
         </div>
         ` : ''}
         
         <div class="chart-gallery-section">
-          <div class="chart-gallery-section-title">Implementaciones disponibles</div>
+          <div class="chart-gallery-section-title">${t('chartGallery.implementations')}</div>
           <div class="chart-gallery-impl-grid">
             ${Object.entries(impls).map(([lang, libs]) => 
               Object.keys(libs).map(lib => `
@@ -705,8 +693,8 @@
           <div class="chart-gallery-code-header">
             <span class="chart-gallery-code-lang"></span>
             <div class="chart-gallery-code-actions">
-              <button class="btn-copy">Copiar</button>
-              <button class="btn-insert">Insertar en editor</button>
+              <button class="btn-copy">${t('chartGallery.copy')}</button>
+              <button class="btn-insert">${t('chartGallery.insertInEditor')}</button>
             </div>
           </div>
           <pre><code></code></pre>
@@ -727,8 +715,8 @@
     } catch (e) {
       console.error('[ChartGallery] Error loading detail:', e);
       detail.innerHTML = `
-        <button class="chart-gallery-back">← Volver</button>
-        <div class="chart-gallery-empty">Error al cargar detalles</div>
+        <button class="chart-gallery-back">&larr; ${t('chartGallery.back')}</button>
+        <div class="chart-gallery-empty">${t('chartGallery.errorLoading')}</div>
       `;
       detail.querySelector('.chart-gallery-back').onclick = () => {
         grid.style.display = 'grid';
@@ -743,9 +731,10 @@
     const codeSection = _galleryModal.querySelector('.chart-gallery-code');
     const codeEl = codeSection.querySelector('code');
     const langEl = codeSection.querySelector('.chart-gallery-code-lang');
+    const t = (key) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : key.split('.').pop();
     
     codeSection.style.display = 'block';
-    codeEl.textContent = 'Cargando código...';
+    codeEl.textContent = t('messages.loadingCode');
     langEl.textContent = `${language} / ${library}`;
     
     try {
@@ -762,8 +751,8 @@
       copyBtn.onclick = async () => {
         try {
           await navigator.clipboard.writeText(data.code);
-          copyBtn.textContent = 'Copiado';
-          setTimeout(() => { copyBtn.textContent = 'Copiar'; }, 2000);
+          copyBtn.textContent = t('chartGallery.copied');
+          setTimeout(() => { copyBtn.textContent = t('chartGallery.copy'); }, 2000);
         } catch (e) {
           console.error('Copy failed:', e);
         }
@@ -786,14 +775,14 @@
             switchTab('run-script');
           }
           if (typeof showToast === 'function') {
-            showToast('Código insertado en el editor');
+            showToast(t('chartGallery.inserted'));
           }
         }
       };
       
     } catch (e) {
       console.error('[ChartGallery] Error loading code:', e);
-      codeEl.textContent = '# Error al cargar código';
+      codeEl.textContent = '# Error loading code';
     }
   }
   
