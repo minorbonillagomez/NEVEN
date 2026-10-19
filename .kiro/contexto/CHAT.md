@@ -2,7 +2,23 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-08-19 ~10:30 (sesion: UI Galeria de Graficos)
+> **Ultima actualizacion:** 2026-08-19 ~11:00 (sesion: Revision de pendientes)
+
+---
+### Sesion 2026-08-19 (~10:45-11:00) — Revision de pendientes
+
+Sesion breve de revision. No hubo cambios de codigo.
+
+**Pendientes confirmados (ademas de i18n):**
+
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Probar galeria en navegador con servidor HTTP activo |
+| ALTA | Verificar que el RAG indexa las ontologias de graficos |
+| MEDIA | Agregar thumbnails/previews de cada tipo de grafico |
+| MEDIA | Integrar galeria con Quick Chart (seleccionar → configurar) |
+| BAJA | Mejorar algoritmo de recomendacion por datos |
+| BAJA | Agregar filtros adicionales (interactivo, 3D, etc.) |
 
 ---
 ### Sesion 2026-08-19 (~09:30-10:30) — UI Galeria de Graficos
