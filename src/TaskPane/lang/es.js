@@ -70,7 +70,16 @@ const LANG_ES = {
     noData: "Sin datos",
     selectFile: "Seleccionar archivo",
     dragDropHere: "Arrastra archivos aquí",
-    or: "o"
+    or: "o",
+    connected: "Conectado",
+    disconnected: "Desconectado",
+    listeningChanges: "Escuchando cambios",
+    pivotTable: "Pivot Table",
+    xAxis: "- Eje X -",
+    yAxis: "- Eje Y -",
+    trend: "Tendencia",
+    linear: "Lineal",
+    polynomial: "Polinomial"
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -141,14 +150,72 @@ const LANG_ES = {
   // ─────────────────────────────────────────────────────────────────────────
   dataLab: {
     title: "Data Lab",
+    selectFunction: "Seleccionar función",
+    selectFamily: "-- Seleccione una familia --",
+    aboutMethod: "Sobre este método",
+    goToWikipedia: "🌐 Ir a Wikipedia",
     selectProcedure: "Seleccionar procedimiento",
+    familyPlaceholder: "- Familia -",
     parameters: "Parámetros",
     runAnalysis: "Ejecutar análisis",
+    verifyPackages: "Verificar paquetes",
     results: "Resultados",
     groupBy: "Agrupar por",
     groupColumn: "Columna de grupo",
     valueColumn: "Columna de valor",
-    aggregation: "Agregación"
+    aggregation: "Agregación",
+    
+    // Familias de funciones
+    families: {
+      graficos: "Gráficos",
+      estadistica: "Estadística",
+      econometria: "Econometría",
+      ml: "Machine Learning"
+    },
+    
+    // Funciones individuales (nombre y descripción)
+    functions: {
+      GR_Barras: {
+        name: "Gráfico de Barras",
+        description: "Gráfico de barras con soporte para modo agrupado, apilado, horizontal y vertical. Permite mostrar etiquetas de valores y ordenar las categorías."
+      },
+      GR_BoxPlot: {
+        name: "Box Plot (Diagrama de Caja)",
+        description: "Diagrama de caja y bigotes. Muestra la distribución estadística (mediana, cuartiles, outliers) por grupo o categoría."
+      },
+      GR_Correlaciones: {
+        name: "Mapa de Correlaciones",
+        description: "Heatmap de la matriz de correlaciones entre variables numéricas. Muestra la fuerza y dirección de las relaciones lineales (o de rango)."
+      },
+      GR_Histograma: {
+        name: "Histograma",
+        description: "Distribución de frecuencias de una variable numérica. Muestra la forma de la distribución, moda y dispersión."
+      },
+      GR_Lineas: {
+        name: "Gráfico de Líneas",
+        description: "Gráfico de líneas para visualizar tendencias y evolución. Permite múltiples series usando una variable de color/grupo."
+      },
+      GR_Scatter: {
+        name: "Scatter Plot",
+        description: "Gráfico de dispersión interactivo. Muestra la relación entre dos variables numéricas. Soporte para color por categoría, tamaño de punto y etiquetas de hover."
+      },
+      GR_SerieTiempo: {
+        name: "Serie de Tiempo",
+        description: "Gráfico de líneas para series temporales. Permite visualizar la evolución de una o más métricas en el tiempo, con opción de línea de tendencia."
+      },
+      GR_Mapa: {
+        name: "Mapa Interactivo (Leaflet)",
+        description: "Mapa interactivo con Leaflet.js usando tiles CartoDB oscuros. Soporta marcadores con popup, mapa de calor e intensidad, y círculos proporcionales a un valor."
+      },
+      GR_Bubble: {
+        name: "Ejemplo Avanzado (Gráfico de Burbujas)",
+        description: "Plantilla completa para gráficos en Data Lab. Muestra el patrón avanzado: 4 roles (2 opcionales), hovertemplate personalizado, escala de tamaño, parámetros tier 1 y tier 2. Cópialo para crear gráficos con más complejidad."
+      },
+      GR_Basico: {
+        name: "Ejemplo Básico (Scatter Mínimo)",
+        description: "Plantilla mínima para crear gráficos en Data Lab. Muestra el patrón básico: 2 roles X e Y, parámetros simples, y retorno con r_object_to_slots. Cópialo como punto de partida para tu propio tipo de gráfico."
+      }
+    }
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -232,7 +299,20 @@ const LANG_ES = {
     about: "Acerca de",
     checkUpdates: "Buscar actualizaciones",
     serverPort: "Puerto del servidor",
-    dataPath: "Ruta de datos"
+    dataPath: "Ruta de datos",
+    
+    // Sub-tabs
+    subtabs: {
+      general: "General",
+      aiEngine: "Motor IA",
+      dbConnections: "Conexiones DB",
+      prompts: "Prompts",
+      knowledge: "Conocimiento",
+      rag: "RAG",
+      notebooks: "Notebooks",
+      engines: "Motores",
+      charts: "Gráficos"
+    }
   },
 
   // ─────────────────────────────────────────────────────────────────────────

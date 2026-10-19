@@ -43,6 +43,23 @@ function initDataLab() {
   }
 
   loadCatalog();
+  
+  // Listener para cambio de idioma: re-renderizar funciones con traducción
+  document.addEventListener('languageChanged', function onLangChanged(e) {
+    // Re-renderizar dropdown de familias
+    if (_dlState.catalog) {
+      renderFamilyDropdown(_dlState.catalog);
+    }
+    // Re-renderizar lista de funciones si hay una familia seleccionada
+    var select = document.getElementById('dl-family-select');
+    if (select && select.value) {
+      onFamilyChange();
+    }
+    // Re-renderizar card de descripción si hay función seleccionada
+    if (_dlState.selectedCard) {
+      renderDescriptionCard(_dlState.selectedCard);
+    }
+  });
 }
 
 // =============================================================================
@@ -97,7 +114,13 @@ function renderFamilyDropdown(catalog) {
   var select = document.getElementById('dl-family-select');
   if (!select) return;
 
-  select.innerHTML = '<option value="">-- Seleccione una familia --</option>';
+  // Texto del placeholder traducido
+  var placeholderText = window.i18n && window.i18n.t 
+    ? window.i18n.t('dataLab.selectFamily') 
+    : '-- Seleccione una familia --';
+  if (placeholderText === 'dataLab.selectFamily') placeholderText = '-- Seleccione una familia --';
+  
+  select.innerHTML = '<option value="">' + placeholderText + '</option>';
 
   // Deduplicate families across all languages
   var seen = {};
@@ -155,16 +178,22 @@ function onFamilyChange() {
 
   for (var i = 0; i < cards.length; i++) {
     (function(card) {
+      // Obtener traducción del nombre y descripción
+      var translated = window.i18n && window.i18n.translateCard 
+        ? window.i18n.translateCard(card) 
+        : { name: card.name, description: card.description || '' };
+      
       var btn = document.createElement('button');
       btn.className = 'btn btn-secondary dl-fn-btn';
+      btn.setAttribute('data-card-id', card.id);  // Para identificación sin depender del texto
       btn.style.textAlign   = 'left';
       btn.style.padding     = '8px 12px';
       btn.style.minWidth    = '140px';
       btn.style.transition  = 'all 0.15s';
       btn.style.borderLeft  = '3px solid transparent';
       btn.innerHTML =
-        '<div style="font-weight:700;font-size:11px;color:var(--text-primary)">' + _escapeHtml(card.name) + '</div>' +
-        '<div style="font-size:9px;color:var(--text-secondary);margin-top:2px">' + _escapeHtml(card.description || '') + '</div>';
+        '<div style="font-weight:700;font-size:11px;color:var(--text-primary)">' + _escapeHtml(translated.name) + '</div>' +
+        '<div style="font-size:9px;color:var(--text-secondary);margin-top:2px">' + _escapeHtml(translated.description) + '</div>';
       btn.addEventListener('click', function onFnBtnClick() {
         selectFunction(card);
       });
@@ -196,10 +225,10 @@ function selectFunction(card) {
     buttons[i].style.borderLeft = '3px solid transparent';
     buttons[i].style.background = '';
   }
-  // Find the button for this card by name and highlight
+  // Find the button for this card by data-card-id and highlight
   for (var j = 0; j < buttons.length; j++) {
-    var nameDiv = buttons[j].querySelector('div');
-    if (nameDiv && nameDiv.textContent === card.name) {
+    var btnCardId = buttons[j].getAttribute('data-card-id');
+    if (btnCardId === card.id) {
       buttons[j].classList.add('active');
       buttons[j].style.borderLeft  = '3px solid var(--accent)';
       buttons[j].style.background  = 'var(--accent-dim)';
@@ -910,7 +939,12 @@ function renderDescriptionCard(card) {
   var existing = document.getElementById('dl-desc-card');
   if (existing) existing.remove();
 
-  if (!card.description) return;
+  // Obtener traducción del nombre y descripción
+  var translated = window.i18n && window.i18n.translateCard 
+    ? window.i18n.translateCard(card) 
+    : { name: card.name, description: card.description || '' };
+  
+  if (!translated.description) return;
 
   var desc = document.createElement('div');
   desc.id              = 'dl-desc-card';
@@ -920,7 +954,12 @@ function renderDescriptionCard(card) {
 
   var title = document.createElement('div');
   title.className   = 'card-title';
-  title.textContent = 'Sobre este método';
+  // Título traducido
+  var titleText = window.i18n && window.i18n.t 
+    ? window.i18n.t('dataLab.aboutMethod') 
+    : 'Sobre este método';
+  if (titleText === 'dataLab.aboutMethod') titleText = 'Sobre este método';  // fallback si no existe
+  title.textContent = titleText;
   desc.appendChild(title);
 
   var text = document.createElement('p');
@@ -928,7 +967,7 @@ function renderDescriptionCard(card) {
   text.style.fontSize = '11px';
   text.style.lineHeight = '1.5';
   text.style.marginBottom = card.wikipedia_url ? '8px' : '0';
-  text.textContent = card.description;
+  text.textContent = translated.description;
   desc.appendChild(text);
 
   if (card.wikipedia_url) {
@@ -942,7 +981,12 @@ function renderDescriptionCard(card) {
     wikiBtn.style.alignItems  = 'center';
     wikiBtn.style.gap         = '5px';
     wikiBtn.style.textDecoration = 'none';
-    wikiBtn.innerHTML = '🌐 Ir a Wikipedia';
+    // Texto del botón traducido
+    var wikiBtnText = window.i18n && window.i18n.t 
+      ? window.i18n.t('dataLab.goToWikipedia') 
+      : '🌐 Ir a Wikipedia';
+    if (wikiBtnText === 'dataLab.goToWikipedia') wikiBtnText = '🌐 Ir a Wikipedia';
+    wikiBtn.innerHTML = wikiBtnText;
     desc.appendChild(wikiBtn);
   }
 

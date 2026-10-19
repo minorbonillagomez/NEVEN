@@ -339,6 +339,74 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // TRADUCCIÓN DE FUNCIONES DATA LAB
+  // ─────────────────────────────────────────────────────────────────────────
+  
+  /**
+   * Traduce una FunctionCard de Data Lab
+   * @param {Object} card - Card con id, name, description del catálogo
+   * @returns {Object} - {name, description} traducidos al idioma actual
+   */
+  function translateCard(card) {
+    if (!card || !card.id) return { name: card?.name || '', description: card?.description || '' };
+    
+    const dict = getCurrentDictionary();
+    const funcTranslations = dict.dataLab?.functions?.[card.id];
+    
+    if (funcTranslations) {
+      return {
+        name: funcTranslations.name || card.name,
+        description: funcTranslations.description || card.description || ''
+      };
+    }
+    
+    // Fallback al contenido original del catálogo
+    return {
+      name: card.name || card.id,
+      description: card.description || ''
+    };
+  }
+
+  /**
+   * Re-aplica traducciones a elementos dinámicos de Data Lab
+   * Llamar después de renderizar la lista de funciones
+   */
+  function translateDataLabUI() {
+    const dict = getCurrentDictionary();
+    const lang = currentLang;
+    
+    // Traducir dropdown de familias
+    const familySelect = document.getElementById('dl-family-select');
+    if (familySelect) {
+      const firstOption = familySelect.querySelector('option[value=""]');
+      if (firstOption) {
+        firstOption.textContent = dict.dataLab?.selectFamily || 
+          (lang === 'en' ? '-- Select a family --' : '-- Seleccione una familia --');
+      }
+    }
+    
+    // Traducir card de descripción (título y botón Wikipedia)
+    const descCardTitle = document.querySelector('#dl-desc-card .card-title');
+    if (descCardTitle) {
+      descCardTitle.textContent = dict.dataLab?.aboutMethod || 
+        (lang === 'en' ? 'About this method' : 'Sobre este método');
+    }
+    
+    const wikiBtn = document.querySelector('#dl-desc-card a.btn');
+    if (wikiBtn) {
+      wikiBtn.innerHTML = dict.dataLab?.goToWikipedia || 
+        (lang === 'en' ? '🌐 Go to Wikipedia' : '🌐 Ir a Wikipedia');
+    }
+    
+    // Traducir botón "Ejecutar análisis"
+    const runBtn = document.getElementById('dl-run-btn');
+    if (runBtn) {
+      runBtn.textContent = dict.dataLab?.runAnalysis || 
+        (lang === 'en' ? 'Run Analysis' : 'Ejecutar análisis');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // API PÚBLICA
   // ─────────────────────────────────────────────────────────────────────────
   window.i18n = {
@@ -348,6 +416,8 @@
     getCurrentLang: getCurrentLang,
     getCurrentDictionary: getCurrentDictionary,
     registerDictionary: registerDictionary,
+    translateCard: translateCard,
+    translateDataLabUI: translateDataLabUI,
     SUPPORTED_LANGS: SUPPORTED_LANGS,
     DEFAULT_LANG: DEFAULT_LANG
   };

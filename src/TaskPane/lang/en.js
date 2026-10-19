@@ -70,7 +70,16 @@ const LANG_EN = {
     noData: "No data",
     selectFile: "Select file",
     dragDropHere: "Drag files here",
-    or: "or"
+    or: "or",
+    connected: "Connected",
+    disconnected: "Disconnected",
+    listeningChanges: "Listening for changes",
+    pivotTable: "Pivot Table",
+    xAxis: "- X Axis -",
+    yAxis: "- Y Axis -",
+    trend: "Trend",
+    linear: "Linear",
+    polynomial: "Polynomial"
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -141,14 +150,72 @@ const LANG_EN = {
   // ─────────────────────────────────────────────────────────────────────────
   dataLab: {
     title: "Data Lab",
+    selectFunction: "Select function",
+    selectFamily: "-- Select a family --",
+    aboutMethod: "About this method",
+    goToWikipedia: "🌐 Go to Wikipedia",
     selectProcedure: "Select procedure",
+    familyPlaceholder: "- Family -",
     parameters: "Parameters",
     runAnalysis: "Run analysis",
+    verifyPackages: "Verify packages",
     results: "Results",
     groupBy: "Group by",
     groupColumn: "Group column",
     valueColumn: "Value column",
-    aggregation: "Aggregation"
+    aggregation: "Aggregation",
+    
+    // Function families
+    families: {
+      graficos: "Charts",
+      estadistica: "Statistics",
+      econometria: "Econometrics",
+      ml: "Machine Learning"
+    },
+    
+    // Individual functions (name and description)
+    functions: {
+      GR_Barras: {
+        name: "Bar Chart",
+        description: "Bar chart with support for grouped, stacked, horizontal and vertical modes. Shows value labels and allows category sorting."
+      },
+      GR_BoxPlot: {
+        name: "Box Plot",
+        description: "Box and whisker plot. Shows statistical distribution (median, quartiles, outliers) by group or category."
+      },
+      GR_Correlaciones: {
+        name: "Correlation Map",
+        description: "Heatmap of correlation matrix between numeric variables. Shows strength and direction of linear (or rank) relationships."
+      },
+      GR_Histograma: {
+        name: "Histogram",
+        description: "Frequency distribution of a numeric variable. Shows distribution shape, mode and dispersion."
+      },
+      GR_Lineas: {
+        name: "Line Chart",
+        description: "Line chart to visualize trends and evolution. Supports multiple series using a color/group variable."
+      },
+      GR_Scatter: {
+        name: "Scatter Plot",
+        description: "Interactive scatter plot. Shows relationship between two numeric variables. Supports color by category, point size and hover labels."
+      },
+      GR_SerieTiempo: {
+        name: "Time Series",
+        description: "Line chart for time series data. Visualize evolution of one or more metrics over time, with optional trend line."
+      },
+      GR_Mapa: {
+        name: "Interactive Map (Leaflet)",
+        description: "Interactive map with Leaflet.js using dark CartoDB tiles. Supports markers with popup, heatmap intensity, and circles proportional to a value."
+      },
+      GR_Bubble: {
+        name: "Advanced Example (Bubble Chart)",
+        description: "Complete template for Data Lab charts. Shows advanced pattern: 4 roles (2 optional), custom hovertemplate, size scale, tier 1 and tier 2 parameters. Copy it to create more complex charts."
+      },
+      GR_Basico: {
+        name: "Basic Example (Minimal Scatter)",
+        description: "Minimal template for Data Lab charts. Shows basic pattern: 2 roles X and Y, simple parameters, return with r_object_to_slots. Copy as starting point for your own chart type."
+      }
+    }
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -232,7 +299,20 @@ const LANG_EN = {
     about: "About",
     checkUpdates: "Check for updates",
     serverPort: "Server port",
-    dataPath: "Data path"
+    dataPath: "Data path",
+    
+    // Sub-tabs
+    subtabs: {
+      general: "General",
+      aiEngine: "AI Engine",
+      dbConnections: "DB Connections",
+      prompts: "Prompts",
+      knowledge: "Knowledge",
+      rag: "RAG",
+      notebooks: "Notebooks",
+      engines: "Engines",
+      charts: "Charts"
+    }
   },
 
   // ─────────────────────────────────────────────────────────────────────────
