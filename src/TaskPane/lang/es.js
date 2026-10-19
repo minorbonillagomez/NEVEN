@@ -42,6 +42,7 @@ const LANG_ES = {
     download: "Descargar",
     copy: "Copiar",
     refresh: "Actualizar",
+    retry: "Reintentar",
     start: "Iniciar",
     stop: "Detener",
     restart: "Reiniciar",
@@ -171,7 +172,14 @@ const LANG_ES = {
       graficos: "Gráficos",
       estadistica: "Estadística",
       econometria: "Econometría",
-      ml: "Machine Learning"
+      ml: "Machine Learning",
+      datasets: "Datasets",
+      analisis_datos: "Análisis de Datos",
+      regresion: "Regresión",
+      series_tiempo: "Series de Tiempo",
+      mis_funciones: "Mis Funciones",
+      text_mining: "Text Mining",
+      julia: "Julia"
     },
     
     // Funciones individuales (nombre y descripción)

@@ -42,6 +42,7 @@ const LANG_EN = {
     download: "Download",
     copy: "Copy",
     refresh: "Refresh",
+    retry: "Retry",
     start: "Start",
     stop: "Stop",
     restart: "Restart",
@@ -171,7 +172,14 @@ const LANG_EN = {
       graficos: "Charts",
       estadistica: "Statistics",
       econometria: "Econometrics",
-      ml: "Machine Learning"
+      ml: "Machine Learning",
+      datasets: "Datasets",
+      analisis_datos: "Data Analysis",
+      regresion: "Regression",
+      series_tiempo: "Time Series",
+      mis_funciones: "My Functions",
+      text_mining: "Text Mining",
+      julia: "Julia"
     },
     
     // Individual functions (name and description)
@@ -215,6 +223,134 @@ const LANG_EN = {
       GR_Basico: {
         name: "Basic Example (Minimal Scatter)",
         description: "Minimal template for Data Lab charts. Shows basic pattern: 2 roles X and Y, simple parameters, return with r_object_to_slots. Copy as starting point for your own chart type."
+      },
+      
+      // === ANALYSIS FUNCTIONS ===
+      AD_ACP: {
+        name: "Principal Components",
+        description: "Reduces dataset dimensionality by projecting variables onto orthogonal principal components that maximize explained variance. Ideal for exploring structure, removing multicollinearity and visualizing multivariate data."
+      },
+      AD_ClusteringJerarquico: {
+        name: "Hierarchical Clustering",
+        description: "Groups observations using agglomerative hierarchical algorithm. Unlike K-Means, doesn't require specifying K beforehand and produces a dendrogram revealing clustering structure at multiple levels."
+      },
+      AD_KMedias: {
+        name: "K-Means",
+        description: "Groups observations into K clusters using K-Means algorithm. Allows data scaling and centroid update algorithm selection."
+      },
+      
+      // === DATASETS ===
+      DS_Wooldridge: {
+        name: "Wooldridge Data",
+        description: "Loads one of 115 datasets from Jeffrey M. Wooldridge's 'Introductory Econometrics' book directly into the analysis environment. Once loaded, the dataset is available for Regression, Data Analysis and Time Series."
+      },
+      DS_Wooldridge_Benchmark: {
+        name: "Wooldridge Benchmark Suite",
+        description: "STEP 1: Select the example and run WITHOUT assigning columns — dataset loads automatically. STEP 2: Assign Y and X with dataset columns and run again to see your estimation alongside the textbook's."
+      },
+      
+      // === JULIA FUNCTIONS ===
+      J_AD_Descriptiva: {
+        name: "Descriptive Statistics (Julia)",
+        description: "Calculates complete descriptive statistics (mean, median, std dev, quartiles, skewness, kurtosis) and correlation matrix for numeric columns. Implemented natively in Julia without external dependencies."
+      },
+      J_RG_Lineal: {
+        name: "Linear Regression (Julia)",
+        description: "OLS Linear Regression implemented with Julia's native linear algebra (no external dependencies). Returns coefficients, standard errors, t-stats, p-values, R², AIC, BIC and residuals table."
+      },
+      
+      // === NEVEN CHART ===
+      NEVEN_Chart: {
+        name: "NEVEN.Chart — Embedded Charts",
+        description: "Creates charts embedded directly in Excel as Shapes, using data from a range. Supports R (ggplot2), Python (matplotlib) and Julia (Plots.jl). Chart is inserted as image in active sheet and updates automatically when cell recalculates."
+      },
+      
+      // === REGRESSION FUNCTIONS ===
+      RG_2SLS: {
+        name: "2SLS — Instrumental Variables (IV)",
+        description: "Corrects endogeneity bias using external instruments Z. Includes automatic diagnostics: first-stage F (weak instruments if F<10), Wu-Hausman (confirms endogeneity) and Sargan (validates instruments). Wooldridge Ch. 15."
+      },
+      RG_ArbolDecision: {
+        name: "Decision Tree",
+        description: "Builds a decision tree for classification or regression using CART algorithm. Shows variable importance, performance metrics and tree rules."
+      },
+      RG_DatosPanel: {
+        name: "Panel Data",
+        description: "Estimates panel data models: OLS, Pooling, Within (fixed effects), Between, Random (random effects) and Pooled Fixed(t). Includes Hausman, Breusch-Pagan and autocorrelation tests."
+      },
+      RG_Davidson_MacKinnon: {
+        name: "Davidson-MacKinnon J-Test",
+        description: "Selection between two NON-nested linear models (alternative models with different specifications). Indicates which model better captures Y variation. Wooldridge Ch. 9."
+      },
+      RG_FGLS: {
+        name: "FGLS — Feasible Generalized Least Squares",
+        description: "Efficient heteroskedasticity correction when its structure depends on regressors. Unlike Newey-West (which only corrects SE), FGLS produces more efficient coefficients. Implemented as WLS weighted by estimated variance. Wooldridge Ch. 8."
+      },
+      RG_HECKIT: {
+        name: "Heckman (Heckit) — Selection Bias Correction",
+        description: "Corrects bias when sample is not random (e.g., we only observe wages for those who work). 2-stage model: Selection Probit → OLS with Inverse Mills Ratio (λ). If λ is significant, there's selection bias. Wooldridge Ch. 17."
+      },
+      RG_Lineal: {
+        name: "Linear Regression",
+        description: "Estimates the linear relationship between a numeric dependent variable and one or more independent variables. Returns coefficients, fit metrics (R2, AIC, BIC) and residuals plot."
+      },
+      RG_Logistica: {
+        name: "Logistic Regression",
+        description: "Models the probability of a binary event (0/1) using Logit or Probit models. Returns coefficients, Odds Ratios, fit metrics (McFadden R2, accuracy) and probability curve."
+      },
+      RG_Newey_West: {
+        name: "Newey-West Robust Standard Errors (HAC)",
+        description: "Corrects OLS standard errors for unknown heteroskedasticity and autocorrelation. Coefficients don't change, only SE, t-stats and p-values. Essential for time series and panel data. Wooldridge Ch. 12/15."
+      },
+      RG_Poisson: {
+        name: "Poisson Regression",
+        description: "Models count variables using Poisson distribution with log link. Includes overdispersion test and returns IRR (Incidence Rate Ratios) in addition to standard coefficients."
+      },
+      RG_RESET: {
+        name: "Ramsey RESET Test",
+        description: "Detects functional form errors in an OLS model. A small p-value indicates the model is misspecified (omitted variables, non-linearities). Wooldridge Ch. 9."
+      },
+      RG_SeriesTiempo: {
+        name: "Time Series Analysis",
+        description: "Analyzes a univariate time series or with exogenous variables (Y_t ~ X_t): descriptive statistics, Augmented Dickey-Fuller (ADF) unit root test, autocorrelation function (ACF/PACF) and interactive plot. If X variables assigned, additionally estimates dynamic regression with Stargazer table."
+      },
+      RG_SVM: {
+        name: "Support Vector Machines",
+        description: "Applies SVM for binary classification or regression. Supports Linear, Polynomial, RBF and Sigmoid kernels. Requires e1071 package."
+      },
+      RG_Tobit: {
+        name: "Tobit Regression",
+        description: "Models dependent variables with censoring or truncation (e.g., expenses >= 0, hours worked). Estimates latent coefficients and actual marginal effects using maximum likelihood. Requires VGAM package."
+      },
+      
+      // === TIME SERIES ===
+      ST_ECM: {
+        name: "ECM / VECM — Error Correction Model",
+        description: "Detects cointegration and estimates speed of adjustment to long-run equilibrium. Complete flow: ADF for unit roots → Johansen for cointegration → VECM if cointegrated, VAR in differences if not. Wooldridge Ch. 18."
+      },
+      ST_VAR: {
+        name: "VAR — Vector Autoregression",
+        description: "Models the joint dynamics of 2+ time series. Automatically selects optimal order p (AIC/BIC/HQ/FPE), estimates the system and generates forecasts with 95% confidence intervals. Wooldridge Ch. 18."
+      },
+      
+      // === TEXT MINING ===
+      TM_TextAnalysis: {
+        name: "Text Analysis (PDF/TXT/DOCX)",
+        description: "Analyzes a document from PDF, TXT or DOCX file. Enter the full file path and get: lexical statistics, sentiment, automatic extractive summary and word frequency with interactive chart. No prior dataset required."
+      },
+      
+      // === USER CREATED EXAMPLES ===
+      UC_EjemploAvanzado: {
+        name: "Advanced Example (Y~X Correlations)",
+        description: "Advanced example function: calculates correlations between a Y variable and multiple X variables, with interactive bar chart. Shows complete pattern with Y~X roles, select-type parameters and plotly chart."
+      },
+      UC_EjemploBasico: {
+        name: "Basic Example (Statistics)",
+        description: "Example function: calculates descriptive statistics for any set of numeric columns. Serves as starting point for creating your own Data Lab functions."
+      },
+      UC_EjemploFactoMineR: {
+        name: "PCA with FactoMineR (Library Example)",
+        description: "Example demonstrating how to integrate an external library (FactoMineR) in Data Lab. Performs complete PCA: explained variance, variable coordinates, contributions, cos2 (representation quality) and interactive biplot with individuals and variables overlaid."
       }
     }
   },

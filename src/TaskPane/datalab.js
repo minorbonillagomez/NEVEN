@@ -110,6 +110,27 @@ async function loadCatalog() {
 // =============================================================================
 // Task 8.5 — renderFamilyDropdown
 // =============================================================================
+
+// Mapeo de family_key del catálogo a claves de traducción
+var _familyKeyToI18n = {
+  'Datasets': 'datasets',
+  'Análisis de Datos': 'analisis_datos',
+  'Analisis de Datos': 'analisis_datos',
+  'Regresion': 'regresion',
+  'Regresión': 'regresion',
+  'Series de Tiempo': 'series_tiempo',
+  'Mis Funciones': 'mis_funciones',
+  'Text Mining': 'text_mining',
+  'Gráficos': 'graficos',
+  'Graficos': 'graficos',
+  'Julia': 'julia',
+  'Estadística': 'estadistica',
+  'Estadistica': 'estadistica',
+  'Econometría': 'econometria',
+  'Econometria': 'econometria',
+  'Machine Learning': 'ml'
+};
+
 function renderFamilyDropdown(catalog) {
   var select = document.getElementById('dl-family-select');
   if (!select) return;
@@ -133,9 +154,22 @@ function renderFamilyDropdown(catalog) {
       var familyCards = familyEntries[fi][1];
       if (!seen[familyKey] && familyCards && familyCards.length > 0) {
         seen[familyKey] = true;
-        var label = familyCards[0].family_label || familyKey;
+        
+        // Buscar traducción de familia
+        var originalLabel = familyCards[0].family_label || familyKey;
+        var i18nKey = _familyKeyToI18n[originalLabel] || _familyKeyToI18n[familyKey];
+        var label = originalLabel;
+        
+        if (i18nKey && window.i18n && window.i18n.t) {
+          var translated = window.i18n.t('dataLab.families.' + i18nKey);
+          if (translated && translated !== 'dataLab.families.' + i18nKey) {
+            label = translated;
+          }
+        }
+        
         var opt = document.createElement('option');
         opt.value       = familyKey;
+        opt.setAttribute('data-family-key', i18nKey || familyKey);  // Para re-traducir después
         opt.textContent = label;
         select.appendChild(opt);
       }

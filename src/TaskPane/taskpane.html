@@ -524,18 +524,18 @@
 
     <!-- Selector de funcion -->
     <div id="dl-selector-card" class="card">
-      <div class="card-title">Seleccionar funcion</div>
+      <div class="card-title" data-i18n="dataLab.selectFunction">Seleccionar función</div>
       <div class="controls" style="gap:6px">
         <select id="dl-family-select" disabled style="min-width:160px">
           <option value=""> -  Familia  - </option>
         </select>
         <span id="dl-catalog-spinner" style="display:none"> - </span>
-        <button class="btn btn-secondary" id="dl-pkg-check-btn" title="Verificar paquetes instalados"
-                style="margin-left:auto;font-size:10px">Verificar paquetes</button>
+        <button class="btn btn-secondary" id="dl-pkg-check-btn" data-i18n-title="dataLab.verifyPackages" title="Verificar paquetes instalados"
+                style="margin-left:auto;font-size:10px" data-i18n="dataLab.verifyPackages">Verificar paquetes</button>
       </div>
       <div id="dl-catalog-error" style="display:none;margin-top:6px">
         <span id="dl-catalog-error-msg" class="msg-error"></span>
-        <button class="btn btn-secondary" id="dl-retry-catalog" style="margin-left:6px">Reintentar</button>
+        <button class="btn btn-secondary" id="dl-retry-catalog" style="margin-left:6px" data-i18n="buttons.retry">Reintentar</button>
       </div>
       <div id="dl-function-list" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
       <!-- Selector de idioma (visible solo si hay multiples idiomas) -->
@@ -5088,11 +5088,15 @@ function filterFunctionsRS() {
     fetch(API + '/api/packages/status?refresh=true')
       .then(function(r){ return r.json(); })
       .then(function(data) {
-        if (btn) { btn.textContent = 'Verificar paquetes'; btn.disabled = false; }
+        var verifyText = window.i18n && window.i18n.t ? window.i18n.t('dataLab.verifyPackages') : 'Verificar paquetes';
+        if (verifyText === 'dataLab.verifyPackages') verifyText = 'Verificar paquetes';
+        if (btn) { btn.textContent = verifyText; btn.disabled = false; }
         _pkgRenderReport(data.paquetes || []);
       })
       .catch(function(e) {
-        if (btn) { btn.textContent = 'Verificar paquetes'; btn.disabled = false; }
+        var verifyText = window.i18n && window.i18n.t ? window.i18n.t('dataLab.verifyPackages') : 'Verificar paquetes';
+        if (verifyText === 'dataLab.verifyPackages') verifyText = 'Verificar paquetes';
+        if (btn) { btn.textContent = verifyText; btn.disabled = false; }
         showToast('No se pudo contactar al Package Manager');
       });
   }
