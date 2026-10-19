@@ -195,6 +195,94 @@ except ImportError:
     _handle_charts_request = None
 
 
+def _build_chart_context_for_agent(query: str, lang: str = "es", max_charts: int = 10) -> str:
+    """
+    Construye un contexto de gráficos para el agente IA cuando detecta 
+    que el usuario quiere crear una visualización.
+    
+    Args:
+        query: Pregunta del usuario para buscar gráficos relevantes
+        lang: Idioma (es/en)
+        max_charts: Máximo de gráficos a incluir
+        
+    Returns:
+        Sección de contexto con gráficos recomendados, o "" si no aplica
+    """
+    if not _CHART_ONTOLOGY_AVAILABLE or not _handle_charts_request:
+        return ""
+    
+    # Keywords que indican que el usuario quiere un gráfico
+    chart_keywords = [
+        "gráfico", "grafico", "chart", "plot", "visualiz", 
+        "dibujar", "mostrar datos", "representar", "diagrama",
+        "histograma", "scatter", "barras", "líneas", "lineas",
+        "pie", "pastel", "heatmap", "correlacion", "correlación",
+        "box plot", "violin", "distribución", "distribucion"
+    ]
+    
+    query_lower = query.lower()
+    wants_chart = any(kw in query_lower for kw in chart_keywords)
+    
+    if not wants_chart:
+        return ""
+    
+    try:
+        # Buscar gráficos relevantes
+        response, status = _handle_charts_request(
+            f"api/charts/search", 
+            f"q={query[:100]}&lang={lang}&limit={max_charts}"
+        )
+        
+        if status != 200 or not response.get("results"):
+            # Fallback: obtener lista general de categorías
+            response, status = _handle_charts_request("api/charts/stats", "")
+            if status == 200:
+                stats = response
+                return (
+                    f"\n\n## CATÁLOGO DE GRÁFICOS DISPONIBLE\n"
+                    f"NEVEN tiene {stats.get('total_charts', 0)} tipos de gráficos disponibles.\n"
+                    f"El usuario puede usar la Galería de Gráficos (botón 'Galería' en Quick Chart) "
+                    f"para explorar y obtener código de implementación.\n"
+                    f"Para crear gráficos usa: =NEVEN.Chart(data, \"tipo\", opciones)\n"
+                )
+            return ""
+        
+        # Construir contexto con gráficos relevantes
+        charts = response.get("results", [])[:max_charts]
+        
+        chart_lines = []
+        for c in charts:
+            name = c.get("name", {}).get(lang, c.get("name", {}).get("en", c.get("id")))
+            chart_id = c.get("id")
+            use_when = c.get("use_when", {}).get(lang, [])[:2]  # Primeros 2 use_when
+            use_when_str = "; ".join(use_when) if use_when else ""
+            
+            implementations = c.get("implementations", {})
+            libs = list(implementations.keys())[:3]  # Primeras 3 librerías
+            libs_str = ", ".join(libs) if libs else "plotly, matplotlib"
+            
+            chart_lines.append(
+                f"- **{name}** (`{chart_id}`): {use_when_str}. Librerías: {libs_str}"
+            )
+        
+        if chart_lines:
+            return (
+                f"\n\n## GRÁFICOS RECOMENDADOS PARA ESTA CONSULTA\n"
+                f"Basado en la pregunta del usuario, estos gráficos podrían ser útiles:\n\n"
+                + "\n".join(chart_lines) +
+                f"\n\n**Para implementar:** El usuario puede abrir la Galería de Gráficos "
+                f"(botón 'Galería' en la sección Quick Chart) para ver código completo en "
+                f"Python, R, Julia o JavaScript.\n"
+                f"**Fórmula Excel:** =NEVEN.Chart(rango, \"tipo_grafico\", opciones)\n"
+            )
+        
+        return ""
+        
+    except Exception as e:
+        _log.warning(f"[ChartContext] Error building chart context: {e}")
+        return ""
+
+
 def _is_broken_pipe(exc: Exception, msg: str) -> bool:
     """Return True when *exc* indicates the Named Pipe connection was lost.
 
@@ -2063,6 +2151,18 @@ class NEVENHandler(BaseHTTPRequestHandler):
             # ═══ Inyectar contexto RAG si existe ═══
             if rag_context:
                 sys_content = sys_content + rag_context
+
+            # ═══ Inyectar contexto de GRÁFICOS si el usuario pregunta sobre visualización ═══
+            try:
+                user_messages = [m for m in messages if m.get("role") == "user"]
+                if user_messages:
+                    last_user_msg = user_messages[-1].get("content", "")
+                    chart_context = _build_chart_context_for_agent(last_user_msg, lang="es", max_charts=8)
+                    if chart_context:
+                        sys_content = sys_content + chart_context
+                        _log.info("[ChartContext] Contexto de gráficos inyectado en el prompt")
+            except Exception as e:
+                _log.warning(f"[ChartContext] Error: {e}")
 
             # ═══ Inyectar Skills si están disponibles ═══
             # El frontend puede especificar agent_id para cargar skills específicos
