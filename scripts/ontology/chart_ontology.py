@@ -24,9 +24,10 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from functools import lru_cache
 
-# Rutas por defecto
-DEFAULT_ONTOLOGY_PATH = Path(__file__).parent.parent.parent / "docs" / "ontologia" / "graficos"
-DEFAULT_ANYPLOT_PATH = Path(__file__).parent.parent.parent / "external" / "anyplot"
+# Rutas por defecto - usar C:\NEVEN como base en producción
+_NEVEN_ROOT = Path(os.environ.get("NEVEN_HOME", r"C:\NEVEN"))
+DEFAULT_ONTOLOGY_PATH = _NEVEN_ROOT / "docs" / "ontologia" / "graficos"
+DEFAULT_ANYPLOT_PATH = _NEVEN_ROOT / "external" / "anyplot"
 
 
 @dataclass
