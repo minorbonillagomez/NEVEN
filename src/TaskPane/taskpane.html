@@ -374,6 +374,10 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
           Generar
         </button>
+        <button class="btn btn-secondary" id="btn-chart-gallery" onclick="ChartGallery.show()" title="Explorar 325+ tipos de graficos">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Galeria
+        </button>
       </div>
       <!-- Preview de la paleta seleccionada -->
       <div id="qc-palette-preview" style="display:flex;gap:2px;margin-top:4px;height:12px"></div>
@@ -6445,6 +6449,9 @@ window._renderCreateFunctionBlock = function(jsonStr) {
 
 <!-- Chart generation functions from taskpane.js -->
 <script src="taskpane.js?v=20260925113746"></script>
+
+<!-- Chart Gallery — Ontología de gráficos anyplot -->
+<script src="chart-gallery.js?v=20260819"></script>
 
 <!-- Diccionario de Funciones - archivo separado para evitar cache -->
 <script src="ayuda.js?v=20260819202000"></script>
