@@ -232,11 +232,21 @@ const LANG_ES = {
   // ─────────────────────────────────────────────────────────────────────────
   dataIA: {
     title: "Asistente IA",
-    promptPlaceholder: "Describe qué análisis deseas realizar...",
+    assistant: "ASISTENTE IA",
+    guidePrompts: "PROMPTS GUÍA",
+    promptPlaceholder: "Escribe tu pregunta... (Enter envía, Shift+Enter nueva línea)",
     analyzing: "Analizando con IA...",
+    thinking: "pensando...",
     suggestions: "Sugerencias",
     applyCode: "Aplicar código",
-    explainMore: "Explicar más"
+    explainMore: "Explicar más",
+    send: "Enviar",
+    addDataset: "+ Dataset",
+    analyzeSheet: "Analizar Hoja",
+    analyzeWorkbook: "Analizar Libro",
+    clear: "Limpiar",
+    exportChat: "Exportar Chat",
+    excelConsultant: "Consultor Excel"
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -244,13 +254,62 @@ const LANG_ES = {
   // ─────────────────────────────────────────────────────────────────────────
   econometria: {
     title: "Econometría",
+    labTitle: "Laboratorio Geométrico: Álgebra Lineal y Econometría",
+    labSubtitle: "Interactúa con los deslizadores y pregunta al Profesor IA.",
+    tab1: "1. Proyección OLS",
+    tab2: "2. Panel / FWL",
+    tab3: "3. GLS / Cholesky",
+    tab4: "4. Raíz Unitaria",
     model: "Modelo",
     dependent: "Variable dependiente",
     independent: "Variables independientes",
     estimate: "Estimar",
     diagnostics: "Diagnósticos",
     residuals: "Residuos",
-    coefficients: "Coeficientes"
+    coefficients: "Coeficientes",
+    professor: "Profesor de Econometría",
+    professorHint: "usa RAG con 10 libros indexados",
+    askPlaceholder: "Pregunta sobre lo que ves...",
+    askButton: "Preguntar",
+    // OLS Projection
+    subspaceAngle: "Ángulo del Subespacio C(X)",
+    degrees: "grados",
+    regressorPlane: "Inclinación del plano de regresores. Ángulos pequeños = multicolinealidad.",
+    vectorYDirection: "Dirección del Vector y",
+    dependentVar: "Variable dependiente. Más cerca de C(X) = mayor R².",
+    geometryOLS: "Geometría OLS",
+    geometryOLSDesc: "El vector y se proyecta sobre C(X). La proyección es y-hat (verde), el residuo es epsilon (rojo, siempre perpendicular).",
+    experiment: "Experimento",
+    experimentOLS: "Acerca y a C(X) y observa como sube el R².",
+    // Panel / FWL
+    withinOperator: "Operador Within",
+    pooledOLS: "0 = Pooled OLS, 1 = Efectos Fijos (centra cada grupo).",
+    trueBeta: "verdadero",
+    bias: "Sesgo",
+    simpsonParadox: "Paradoja de Simpson",
+    simpsonDesc: "Tres individuos con diferentes interceptos. Pooled OLS ve pendiente negativa porque confunde efectos individuales con el efecto de X.",
+    solution: "Solución",
+    solutionFWL: "Sube theta a 1. El operador Within centra cada grupo, revelando la verdadera pendiente +0.80.",
+    // GLS / Cholesky
+    heteroskedasticity: "Heterocedasticidad",
+    varianceRatio: "Ratio de varianzas. 1x = homocedástico.",
+    autocorrelation: "Autocorrelación",
+    serialCorr: "Correlación serial. Inclina el elipsoide.",
+    choleskyTransform: "Transformación Cholesky",
+    applyC: "Aplica C tal que Omega^-1 = CC.",
+    glsTransforms: "GLS transforma el espacio",
+    glsDesc: "Las elipses son curvas de isodensidad de epsilon. Con heterocedasticidad/autocorrelación, OLS pierde eficiencia.",
+    solutionGLS: "Desliza Cholesky al 100%. El elipsoide se vuelve esfera: OLS = GLS.",
+    // Unit Root
+    dominantEigenvalue: "Autovalor Dominante",
+    lambdaPosition: "Posición de lambda en el plano complejo.",
+    integration: "Integración",
+    spectrum: "Espectro",
+    unitCircle: "Círculo unitario",
+    unitCircleDesc: "Si |lambda| < 1, la serie es estacionaria I(0). Si |lambda| = 1, es raíz unitaria I(1) con memoria infinita.",
+    danger: "Peligro",
+    dangerDesc: "Con I(1), OLS produce regresión espuria (R² alto sin causalidad).",
+    experimentUR: "Lleva lambda a 1.0 y observa como la trayectoria deja de revertir a la media."
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -258,11 +317,23 @@ const LANG_ES = {
   // ─────────────────────────────────────────────────────────────────────────
   presentaciones: {
     title: "Presentaciones",
-    newSlide: "Nueva diapositiva",
+    newSlide: "+ Slide",
+    preview: "Preview",
+    export: "Exportar",
     slideTitle: "Título de diapositiva",
     addContent: "Agregar contenido",
     exportPPT: "Exportar a PowerPoint",
-    exportPDF: "Exportar a PDF"
+    exportPDF: "Exportar a PDF",
+    slides: "SLIDES",
+    content: "CONTENIDO",
+    position: "POSICIÓN",
+    style: "ESTILO",
+    text: "TEXTO",
+    slideContent: "Contenido del slide",
+    slideType: "TIPO DE SLIDE",
+    textType: "Texto",
+    sendToSlide: "Enviar a Slide",
+    sent: "Enviado"
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -270,9 +341,15 @@ const LANG_ES = {
   // ─────────────────────────────────────────────────────────────────────────
   runScript: {
     title: "Run Script",
-    language: "Lenguaje",
+    language: "Lenguaje:",
+    untitled: "sin título",
     newScript: "Nuevo script",
     runCode: "Ejecutar",
+    open: "Abrir",
+    saveAs: "Guardar como",
+    new: "Nuevo",
+    examples: "Ejemplos...",
+    availableFunctions: "FUNCIONES DISPONIBLES",
     outputTitle: "Output",
     consoleTitle: "Consola",
     timeoutMessage: "Tiempo de espera agotado (120s). El script puede seguir ejecutándose en el motor.",

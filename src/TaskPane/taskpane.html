@@ -415,7 +415,7 @@
     <div class="card">
       <!-- Fila 1: lenguaje + dots -->
       <div class="controls" style="margin-bottom:4px">
-        <label for="script-lang" style="font-size:9px;color:var(--text-secondary)">Lenguaje:</label>
+        <label for="script-lang" style="font-size:9px;color:var(--text-secondary)" data-i18n="runScript.language">Lenguaje:</label>
         <select id="script-lang">
           <option value="r" selected>R</option>
           <option value="python">Python</option>
@@ -434,7 +434,7 @@
               background:#888;flex-shrink:0"></span>
         <span id="script-filename-text" style="font-size:10px;color:var(--text-secondary);
               font-family:Consolas,monospace;flex:1;overflow:hidden;text-overflow:ellipsis;
-              white-space:nowrap">sin titulo</span>
+              white-space:nowrap" data-i18n="runScript.untitled">sin título</span>
       </div>
 
       <!-- Editor -->
@@ -446,13 +446,13 @@
         <input type="file" id="script-file-picker"
                accept=".r,.R,.py,.jl" style="display:none">
         <button class="btn btn-secondary" id="btn-script-open"
-                title="Cargar script desde disco"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Abrir</button>
+                title="Load script from disk" data-i18n="runScript.open"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Abrir</button>
         <button class="btn btn-secondary" id="btn-script-save"
-                title="Guardar (Ctrl+S)" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>
+                title="Save (Ctrl+S)" style="display:none" data-i18n="buttons.save"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>
         <button class="btn btn-secondary" id="btn-script-save-as"
-                title="Guardar como..."><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Guardar como</button>
+                title="Save as..." data-i18n="runScript.saveAs"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Guardar como</button>
         <button class="btn btn-secondary" id="btn-script-new"
-                title="Nuevo script (limpia el editor)"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Nuevo</button>
+                title="New script" data-i18n="runScript.new"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Nuevo</button>
         <button class="btn btn-secondary" id="btn-open-rpivot">RPivot</button>
         <select id="script-examples" title="Cargar ejemplo"
                 style="background:var(--bg-secondary);color:var(--text-secondary);
@@ -487,7 +487,7 @@
 
     <!-- Available Functions panel -->
     <details class="card" id="functions-panel">
-      <summary class="card-title" style="cursor:pointer">Available Functions</summary>
+      <summary class="card-title" style="cursor:pointer" data-i18n="runScript.availableFunctions">▶ AVAILABLE FUNCTIONS</summary>
       <input type="text" id="func-search" placeholder="Search..." style="width:100%;margin:4px 0">
       <div id="func-list"></div>
     </details>
@@ -635,7 +635,7 @@
     <!-- Estado del modelo -->
     <div class="card" id="ai-status-card">
       <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="card-title" style="margin-bottom:0">Asistente IA</div>
+        <div class="card-title" style="margin-bottom:0" data-i18n="dataIA.assistant">ASISTENTE IA</div>
         <div style="display:flex;align-items:center;gap:6px">
           <div id="ai-model-badge" style="font-size:9px;padding:2px 7px;border-radius:10px;
                background:var(--bg-primary);color:var(--text-secondary);border:1px solid var(--border)">
@@ -664,7 +664,7 @@
 
     <!-- Prompts rapidos -->
     <div class="card" id="ai-prompts-card" style="display:none">
-      <div class="card-title" style="margin-bottom:4px">Prompts guia</div>
+      <div class="card-title" style="margin-bottom:4px" data-i18n="dataIA.guidePrompts">PROMPTS GUÍA</div>
       <div id="ai-prompt-chips" style="display:flex;flex-wrap:wrap;gap:4px"></div>
     </div>
 
@@ -694,22 +694,22 @@
         onblur="this.style.borderColor='var(--border)'"
       ></textarea>
       <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">
-        <button class="btn btn-primary" id="ai-send-btn">Enviar</button>
+        <button class="btn btn-primary" id="ai-send-btn" data-i18n="dataIA.send">Enviar</button>
         <button class="btn btn-secondary" id="ai-use-dataset-btn"
-                title="Incluir resumen del dataset activo como contexto">
+                title="Incluir resumen del dataset activo como contexto" data-i18n="dataIA.addDataset">
           + Dataset
         </button>
         <button class="btn btn-secondary" id="ai-analyze-sheet-btn"
-                title="Analizar formulas de la hoja activa (modo Consultor Excel)">
+                title="Analizar formulas de la hoja activa (modo Consultor Excel)" data-i18n="dataIA.analyzeSheet">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M14 15l2 2 4-4"/></svg> Analizar Hoja
         </button>
         <button class="btn btn-secondary" id="ai-analyze-workbook-btn"
-                title="Analizar todo el libro de trabajo (relaciones entre hojas, patrones arquitecturales)">
+                title="Analizar todo el libro de trabajo (relaciones entre hojas, patrones arquitecturales)" data-i18n="dataIA.analyzeWorkbook">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg> Analizar Libro
         </button>
-        <button class="btn btn-secondary" id="ai-clear-btn">Limpiar</button>
+        <button class="btn btn-secondary" id="ai-clear-btn" data-i18n="dataIA.clear">Limpiar</button>
         <button class="btn btn-secondary" id="ai-export-chat-btn"
-                title="Exportar toda la conversación como Markdown">
+                title="Exportar toda la conversación como Markdown" data-i18n="dataIA.exportChat">
           Exportar Chat
         </button>
         <span id="ai-spinner" style="display:none;font-size:11px;color:var(--text-secondary)"> -  pensando...</span>

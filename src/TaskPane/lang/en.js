@@ -360,11 +360,21 @@ const LANG_EN = {
   // ─────────────────────────────────────────────────────────────────────────
   dataIA: {
     title: "AI Assistant",
-    promptPlaceholder: "Describe what analysis you want to perform...",
+    assistant: "AI ASSISTANT",
+    guidePrompts: "GUIDE PROMPTS",
+    promptPlaceholder: "Type your question... (Enter sends, Shift+Enter new line)",
     analyzing: "Analyzing with AI...",
+    thinking: "thinking...",
     suggestions: "Suggestions",
     applyCode: "Apply code",
-    explainMore: "Explain more"
+    explainMore: "Explain more",
+    send: "Send",
+    addDataset: "+ Dataset",
+    analyzeSheet: "Analyze Sheet",
+    analyzeWorkbook: "Analyze Workbook",
+    clear: "Clear",
+    exportChat: "Export Chat",
+    excelConsultant: "Excel Consultant"
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -372,13 +382,62 @@ const LANG_EN = {
   // ─────────────────────────────────────────────────────────────────────────
   econometria: {
     title: "Econometrics",
+    labTitle: "Geometric Lab: Linear Algebra and Econometrics",
+    labSubtitle: "Interact with the sliders and ask the AI Professor.",
+    tab1: "1. OLS Projection",
+    tab2: "2. Panel / FWL",
+    tab3: "3. GLS / Cholesky",
+    tab4: "4. Unit Root",
     model: "Model",
     dependent: "Dependent variable",
     independent: "Independent variables",
     estimate: "Estimate",
     diagnostics: "Diagnostics",
     residuals: "Residuals",
-    coefficients: "Coefficients"
+    coefficients: "Coefficients",
+    professor: "Econometrics Professor",
+    professorHint: "uses RAG with 10 indexed books",
+    askPlaceholder: "Ask about what you see...",
+    askButton: "Ask",
+    // OLS Projection
+    subspaceAngle: "Subspace Angle C(X)",
+    degrees: "degrees",
+    regressorPlane: "Regressor plane inclination. Small angles = multicollinearity.",
+    vectorYDirection: "Vector y Direction",
+    dependentVar: "Dependent variable. Closer to C(X) = higher R².",
+    geometryOLS: "OLS Geometry",
+    geometryOLSDesc: "The vector y is projected onto C(X). The projection is y-hat (green), the residual is epsilon (red, always perpendicular).",
+    experiment: "Experiment",
+    experimentOLS: "Move y closer to C(X) and watch R² increase.",
+    // Panel / FWL
+    withinOperator: "Within Operator",
+    pooledOLS: "0 = Pooled OLS, 1 = Fixed Effects (centers each group).",
+    trueBeta: "true",
+    bias: "Bias",
+    simpsonParadox: "Simpson's Paradox",
+    simpsonDesc: "Three individuals with different intercepts. Pooled OLS sees negative slope because it confuses individual effects with the effect of X.",
+    solution: "Solution",
+    solutionFWL: "Raise theta to 1. The Within operator centers each group, revealing the true slope +0.80.",
+    // GLS / Cholesky
+    heteroskedasticity: "Heteroskedasticity",
+    varianceRatio: "Variance ratio. 1x = homoskedastic.",
+    autocorrelation: "Autocorrelation",
+    serialCorr: "Serial correlation. Tilts the ellipsoid.",
+    choleskyTransform: "Cholesky Transformation",
+    applyC: "Apply C such that Omega^-1 = CC.",
+    glsTransforms: "GLS transforms the space",
+    glsDesc: "The ellipses are isodensity curves of epsilon. With heteroskedasticity/autocorrelation, OLS loses efficiency.",
+    solutionGLS: "Slide Cholesky to 100%. The ellipsoid becomes a sphere: OLS = GLS.",
+    // Unit Root
+    dominantEigenvalue: "Dominant Eigenvalue",
+    lambdaPosition: "Position of lambda in the complex plane.",
+    integration: "Integration",
+    spectrum: "Spectrum",
+    unitCircle: "Unit circle",
+    unitCircleDesc: "If |lambda| < 1, the series is stationary I(0). If |lambda| = 1, it's unit root I(1) with infinite memory.",
+    danger: "Danger",
+    dangerDesc: "With I(1), OLS produces spurious regression (high R² without causality).",
+    experimentUR: "Move lambda to 1.0 and observe how the trajectory stops reverting to the mean."
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -386,11 +445,23 @@ const LANG_EN = {
   // ─────────────────────────────────────────────────────────────────────────
   presentaciones: {
     title: "Presentations",
-    newSlide: "New slide",
+    newSlide: "+ Slide",
+    preview: "Preview",
+    export: "Export",
     slideTitle: "Slide title",
     addContent: "Add content",
     exportPPT: "Export to PowerPoint",
-    exportPDF: "Export to PDF"
+    exportPDF: "Export to PDF",
+    slides: "SLIDES",
+    content: "CONTENT",
+    position: "POSITION",
+    style: "STYLE",
+    text: "TEXT",
+    slideContent: "Slide content",
+    slideType: "SLIDE TYPE",
+    textType: "Text",
+    sendToSlide: "Send to Slide",
+    sent: "Sent"
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -398,9 +469,15 @@ const LANG_EN = {
   // ─────────────────────────────────────────────────────────────────────────
   runScript: {
     title: "Run Script",
-    language: "Language",
+    language: "Language:",
+    untitled: "untitled",
     newScript: "New script",
     runCode: "Run",
+    open: "Open",
+    saveAs: "Save as",
+    new: "New",
+    examples: "Examples...",
+    availableFunctions: "AVAILABLE FUNCTIONS",
     outputTitle: "Output",
     consoleTitle: "Console",
     timeoutMessage: "Request timed out (120s). The script may still be running in the engine.",
