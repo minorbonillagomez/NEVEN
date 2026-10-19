@@ -252,10 +252,10 @@
       <div class="card-title">Consulta SQL (tabla: dataset)</div>
       <textarea class="sql-editor" id="sql-input" placeholder="SELECT * FROM dataset LIMIT 100" style="resize:vertical;min-height:80px;max-height:400px"></textarea>
       <div class="controls" style="margin-top:6px">
-        <button class="btn btn-primary" id="btn-sql-run">Ejecutar</button>
+        <button class="btn btn-primary" id="btn-sql-run" data-i18n="buttons.run">Ejecutar</button>
         <select id="sql-examples" style="background:var(--bg-secondary);color:var(--text-secondary);
                 border:1px solid #555;border-radius:4px;font-size:10px;padding:4px 6px;cursor:pointer">
-          <option value="">Cargar ejemplo...</option>
+          <option value="" data-i18n="labels.loadExample">Cargar ejemplo...</option>
           <option value="duck1">DuckDB  -  Resumen estadistico</option>
           <option value="duck2">DuckDB  -  Analisis agrupado</option>
           <option value="ext">DB externa  -  PostgreSQL (guia)</option>
@@ -271,7 +271,7 @@
   <!-- Tab: Data Studio -->
   <div class="tab-content active" id="data-studio">
     <div class="card">
-      <div class="card-title">Datos</div>
+      <div class="card-title" data-i18n="dataStudio.title">Datos</div>
       <div class="controls">
         <button class="btn btn-primary" id="btn-load" style="background:#d7a538"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Abrir archivo</button>
         <button class="btn btn-primary" id="btn-bridge-read" style="background:#d7a538"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg> Leer de Excel</button>
@@ -298,11 +298,11 @@
       <div id="pivot-output"></div>
     </div>
     <div style="margin-top:6px">
-      <button class="btn btn-secondary" id="btn-pivot" style="display:none">Abrir Pivot</button>
+      <button class="btn btn-secondary" id="btn-pivot" style="display:none" data-i18n="buttons.openPivot">Abrir Pivot</button>
     </div>
     <!-- Grafico Rapido (sin IA) -->
     <div class="card" id="quickchart-card" style="display:none">
-      <div class="card-title">Grafico Rapido</div>
+      <div class="card-title" data-i18n="dataStudio.quickChart">Grafico Rapido</div>
       <div class="controls" style="flex-wrap:wrap;gap:6px;align-items:flex-start">
         <select id="qc-type" style="min-width:120px">
           <optgroup label="Basicos">
@@ -607,7 +607,7 @@
 
     <!-- Boton Ejecutar -->
     <div id="dl-run-row" style="display:none;margin-top:8px">
-      <button class="btn btn-primary" id="dl-run-btn" disabled>Ejecutar analisis</button>
+      <button class="btn btn-primary" id="dl-run-btn" disabled data-i18n="dataLab.runAnalysis">Ejecutar analisis</button>
       <span id="dl-run-spinner" style="display:none;margin-left:8px"> - </span>
     </div>
 
@@ -1066,7 +1066,7 @@
       <div class="card" id="ai-profile-form" style="display:none">
         <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
           <span id="ai-form-title">Nuevo Perfil</span>
-          <button class="btn btn-secondary" id="btn-ai-cancel" style="padding:2px 6px;font-size:9px">Cancelar</button>
+          <button class="btn btn-secondary" id="btn-ai-cancel" style="padding:2px 6px;font-size:9px" data-i18n="buttons.cancel">Cancelar</button>
         </div>
         
         <div style="display:flex;flex-direction:column;gap:8px">
@@ -1131,7 +1131,7 @@
           
           <!-- Botones -->
           <div style="display:flex;gap:6px;margin-top:4px">
-            <button class="btn btn-primary" id="btn-ai-save" style="flex:1">Guardar</button>
+            <button class="btn btn-primary" id="btn-ai-save" style="flex:1" data-i18n="buttons.save">Guardar</button>
             <button class="btn btn-secondary" id="btn-ai-test" style="flex:1">Probar Conexion</button>
           </div>
           
@@ -1159,7 +1159,7 @@
       <div class="card" id="db-connection-form" style="display:none">
         <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
           <span id="db-form-title">Nueva Conexion</span>
-          <button class="btn btn-secondary" id="btn-db-cancel-settings" style="padding:2px 6px;font-size:9px">Cancelar</button>
+          <button class="btn btn-secondary" id="btn-db-cancel-settings" style="padding:2px 6px;font-size:9px" data-i18n="buttons.cancel">Cancelar</button>
         </div>
         
         <div style="display:flex;flex-direction:column;gap:8px">
@@ -1221,7 +1221,7 @@
           
           <!-- Botones -->
           <div style="display:flex;gap:6px;margin-top:4px">
-            <button class="btn btn-primary" id="btn-db-save-settings" style="flex:1">Guardar</button>
+            <button class="btn btn-primary" id="btn-db-save-settings" style="flex:1" data-i18n="buttons.save">Guardar</button>
             <button class="btn btn-secondary" id="btn-db-test-settings" style="flex:1">Probar Conexion</button>
           </div>
           
@@ -1249,7 +1249,7 @@
       <div class="card" id="prompt-editor" style="display:none">
         <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
           <span id="prompt-editor-title">Editar Prompt</span>
-          <button class="btn btn-secondary" id="btn-prompt-cancel" style="padding:2px 6px;font-size:9px">Cancelar</button>
+          <button class="btn btn-secondary" id="btn-prompt-cancel" style="padding:2px 6px;font-size:9px" data-i18n="buttons.cancel">Cancelar</button>
         </div>
         
         <div style="display:flex;flex-direction:column;gap:8px">
@@ -1274,7 +1274,7 @@
           
           <!-- Botones -->
           <div style="display:flex;gap:6px">
-            <button class="btn btn-primary" id="btn-prompt-save" style="flex:1">Guardar</button>
+            <button class="btn btn-primary" id="btn-prompt-save" style="flex:1" data-i18n="buttons.save">Guardar</button>
             <button class="btn btn-secondary" id="btn-prompt-activate" style="flex:1">Activar</button>
           </div>
         </div>
@@ -1532,7 +1532,7 @@
                    style="flex:1;height:4px;cursor:pointer">
             <span id="rag-min-score-value" style="font-size:10px;color:var(--text-secondary);min-width:28px">0.50</span>
           </div>
-          <button class="btn btn-primary" id="rag-search-btn">Buscar</button>
+          <button class="btn btn-primary" id="rag-search-btn" data-i18n="labels.search">Buscar</button>
         </div>
       </div>
 
@@ -1866,7 +1866,7 @@
       <!-- Footer -->
       <div style="padding:10px 14px;border-top:1px solid var(--border);
            background:var(--bg-card);display:flex;justify-content:flex-end;gap:8px">
-        <button id="btn-db-cancel" class="btn btn-secondary" style="font-size:10px">Cancelar</button>
+        <button id="btn-db-cancel" class="btn btn-secondary" style="font-size:10px" data-i18n="buttons.cancel">Cancelar</button>
         <button id="btn-db-run" class="btn btn-primary" style="font-size:10px">Conectar y cargar</button>
       </div>
     </div>
