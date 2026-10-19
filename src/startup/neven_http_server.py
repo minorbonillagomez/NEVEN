@@ -25,6 +25,12 @@
 #   GET  /api/ontology/domain/{id}/stats → Get domain statistics
 #   GET  /api/ontology/search?q=term&domain=excel → Search knowledge graph
 #   GET  /api/ontology/graph?domain=X&format=vis|3d → Graph data for visualizer
+#   GET  /api/charts                → List all chart types (anyplot ontology)
+#   GET  /api/charts/search?q=...&lang=es → Search charts by text
+#   GET  /api/charts/recommend?types=...  → Recommend charts by data types
+#   GET  /api/charts/stats          → Chart catalog statistics
+#   GET  /api/charts/{id}           → Get chart details
+#   GET  /api/charts/{id}/code      → Get implementation code
 #   GET  /api/ayuda/funciones → Diccionario dinámico de funciones NevenX
 
 import os
@@ -163,6 +169,30 @@ except ImportError as e:
     _RAG_AVAILABLE = False
     _get_rag_engine = None
     _RAGEngine = None
+
+# Skill Loader — carga skills de C:\NEVEN\skills\ para system prompts
+try:
+    from skill_loader import (  # type: ignore
+        get_skill_system_prompt as _get_skill_system_prompt,
+        load_skills_for_agent as _load_skills_for_agent,
+    )
+    _SKILL_LOADER_AVAILABLE = True
+except ImportError:
+    _SKILL_LOADER_AVAILABLE = False
+    _get_skill_system_prompt = None
+    _load_skills_for_agent = None
+
+
+# Chart Ontology — catálogo de gráficos para el agente agnóstico
+try:
+    _SCRIPTS_ONTOLOGY = r"C:\NEVEN\scripts\ontology"
+    if _SCRIPTS_ONTOLOGY not in sys.path and os.path.isdir(_SCRIPTS_ONTOLOGY):
+        sys.path.insert(0, _SCRIPTS_ONTOLOGY)
+    from chart_handlers import handle_charts_request as _handle_charts_request  # type: ignore
+    _CHART_ONTOLOGY_AVAILABLE = True
+except ImportError:
+    _CHART_ONTOLOGY_AVAILABLE = False
+    _handle_charts_request = None
 
 
 def _is_broken_pipe(exc: Exception, msg: str) -> bool:
@@ -850,6 +880,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if path.startswith('api/ontology/graph'):
             # GET /api/ontology/graph?domain=econometria&format=vis
             self._handle_ontology_graph()
+            return
+
+        # ── Chart Ontology endpoints — Catálogo de gráficos anyplot ───────────
+        if path.startswith('api/charts'):
+            self._handle_charts_api()
             return
 
         # ── Ayuda / Diccionario de Funciones NevenX ───────────────────────────
@@ -2029,6 +2064,29 @@ class NEVENHandler(BaseHTTPRequestHandler):
             if rag_context:
                 sys_content = sys_content + rag_context
 
+            # ═══ Inyectar Skills si están disponibles ═══
+            # El frontend puede especificar agent_id para cargar skills específicos
+            agent_id = body.get("agent_id", "").strip()
+            if not agent_id:
+                # Inferir agent_id del contexto
+                # Default: excel-consultant (estamos en Excel, el usuario quiere ayuda con Excel/NEVEN)
+                # El Profesor de Economía tiene su propio tab que envía agent_id explícito
+                if has_sheet_analysis:
+                    agent_id = "excel-consultant"
+                elif has_results_context:
+                    agent_id = "excel-consultant"
+                else:
+                    agent_id = "excel-consultant"
+            
+            if _SKILL_LOADER_AVAILABLE and _get_skill_system_prompt:
+                try:
+                    skill_prompt = _get_skill_system_prompt(agent_id, include_references=False)
+                    if skill_prompt:
+                        sys_content = sys_content + "\n\n## SKILLS ACTIVOS\n\n" + skill_prompt
+                        _log.info(f"[Skills] Inyectados skills para agent_id='{agent_id}'")
+                except Exception as e:
+                    _log.warning(f"[Skills] Error cargando skills: {e}")
+
             sys_msg = {"role": "system", "content": sys_content}
             messages = [sys_msg] + [m for m in messages if m.get("role") != "system"]
         else:
@@ -2808,6 +2866,43 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_json({"status": "ok", "rows_loaded": n_rows, "columns": columns, "types": types})
         except Exception as e:
             self._send_error_json(f"Load file error: {e}")
+
+    # ── Chart Ontology handlers ───────────────────────────────────────────────
+    
+    def _handle_charts_api(self):
+        """Route all /api/charts/* requests to chart_handlers module.
+        
+        Endpoints:
+            GET /api/charts                → Lista todos los tipos de gráficos
+            GET /api/charts/search?q=...   → Busca gráficos por texto
+            GET /api/charts/recommend      → Recomienda gráficos por tipo de datos
+            GET /api/charts/stats          → Estadísticas del catálogo
+            GET /api/charts/{id}           → Obtiene datos de un gráfico
+            GET /api/charts/{id}/code      → Obtiene código de implementación
+        """
+        if not _CHART_ONTOLOGY_AVAILABLE:
+            self._send_json({
+                "status": "ok",
+                "charts": [],
+                "total": 0,
+                "warning": "chart_handlers not available"
+            })
+            return
+        
+        from urllib.parse import urlparse, parse_qs
+        parsed = urlparse(self.path)
+        path = parsed.path.lstrip('/')
+        query_string = parsed.query
+        
+        try:
+            response, status = _handle_charts_request(path, query_string)
+            
+            if status == 200:
+                self._send_json(response)
+            else:
+                self._send_error_json(response.get("message", "Unknown error"), status)
+        except Exception as e:
+            self._send_error_json(f"Chart API error: {e}", 500)
 
     # ── Ontology handlers ─────────────────────────────────────────────────────
     
