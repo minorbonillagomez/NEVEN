@@ -25,12 +25,24 @@ Integración con servidor:
 
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional, Callable
 from urllib.parse import parse_qs
 
 # Importar ontología
 from chart_ontology import ChartOntology
+
+
+def _serialize_for_json(obj: Any) -> Any:
+    """Convierte objetos no serializables a formatos JSON compatibles."""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, dict):
+        return {k: _serialize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_serialize_for_json(item) for item in obj]
+    return obj
 
 
 class ChartHandlers:
@@ -160,9 +172,12 @@ class ChartHandlers:
         if not chart:
             return {"status": "error", "message": f"Chart not found: {chart_id}"}
         
+        # Serializar para JSON (convierte datetime a string)
+        chart_serialized = _serialize_for_json(chart)
+        
         return {
             "status": "ok",
-            "chart": chart
+            "chart": chart_serialized
         }
     
     def handle_code(self, chart_id: str, query_params: Dict[str, list]) -> Dict[str, Any]:
