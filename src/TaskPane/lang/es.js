@@ -79,7 +79,8 @@ const LANG_ES = {
     yAxis: "- Eje Y -",
     trend: "Tendencia",
     linear: "Lineal",
-    polynomial: "Polinomial"
+    polynomial: "Polinomial",
+    poly2: "Polinómica (grado 2)"
   },
 
   // ─────────────────────────────────────────────────────────────────────────

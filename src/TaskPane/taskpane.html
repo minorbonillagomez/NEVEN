@@ -332,7 +332,7 @@
             <option value="funnel">Embudo</option>
           </optgroup>
         </select>
-        <select id="qc-x" title="Eje X"></select>
+        <select id="qc-x" title="Eje X" data-i18n-title="labels.xAxis"></select>
         <!-- Multiselect personalizado para Eje Y -->
         <div id="qc-y-multiselect" class="multiselect-container" style="position:relative;min-width:140px">
           <div id="qc-y-btn" class="multiselect-btn" onclick="_toggleMultiselect()" 
@@ -363,11 +363,11 @@
         <!-- Opciones de Serie de Tiempo (visibles solo cuando se selecciona timeseries) -->
         <div id="qc-timeseries-options" style="display:none;align-items:center;gap:6px">
           <label style="font-size:10px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer">
-            <input type="checkbox" id="qc-trend" style="accent-color:var(--accent)"> Tendencia
+            <input type="checkbox" id="qc-trend" style="accent-color:var(--accent)"> <span data-i18n="labels.trend">Tendencia</span>
           </label>
           <select id="qc-trend-type" style="font-size:10px;padding:2px 4px;display:none">
-            <option value="linear">Lineal</option>
-            <option value="poly2">Polinómica (grado 2)</option>
+            <option value="linear" data-i18n="labels.linear">Lineal</option>
+            <option value="poly2" data-i18n="labels.poly2">Polinómica (grado 2)</option>
           </select>
         </div>
         <button class="btn btn-primary" id="btn-quickchart" style="background:#4a7c4a">
@@ -1009,15 +1009,15 @@
     
     <!-- Sub-tabs de settings -->
     <div class="settings-tabs" style="display:flex;gap:0;padding:0 8px;background:var(--bg-secondary);border-bottom:1px solid var(--border);flex-wrap:wrap">
-      <div class="settings-tab active" data-settings-tab="general" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.general">General</div>
-      <div class="settings-tab" data-settings-tab="ai" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Motor IA</div>
-      <div class="settings-tab" data-settings-tab="db" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conexiones DB</div>
-      <div class="settings-tab" data-settings-tab="prompts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Prompts</div>
-      <div class="settings-tab" data-settings-tab="ontology" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Conocimiento</div>
-      <div class="settings-tab" data-settings-tab="rag" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">RAG</div>
-      <div class="settings-tab" data-settings-tab="notebooks" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Notebooks</div>
-      <div class="settings-tab" data-settings-tab="engines" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Motores</div>
-      <div class="settings-tab" data-settings-tab="charts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent">Gráficos</div>
+      <div class="settings-tab active" data-settings-tab="general" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.general">General</div>
+      <div class="settings-tab" data-settings-tab="ai" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.aiEngine">Motor IA</div>
+      <div class="settings-tab" data-settings-tab="db" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.dbConnections">Conexiones DB</div>
+      <div class="settings-tab" data-settings-tab="prompts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.prompts">Prompts</div>
+      <div class="settings-tab" data-settings-tab="ontology" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.knowledge">Conocimiento</div>
+      <div class="settings-tab" data-settings-tab="rag" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.rag">RAG</div>
+      <div class="settings-tab" data-settings-tab="notebooks" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.notebooks">Notebooks</div>
+      <div class="settings-tab" data-settings-tab="engines" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.engines">Motores</div>
+      <div class="settings-tab" data-settings-tab="charts" style="padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent" data-i18n="settings.subtabs.charts">Gráficos</div>
     </div>
 
     <!-- Panel: General (Idioma, Tema, etc.) -->
@@ -2927,7 +2927,7 @@ function _populateQuickChart(cols, types) {
   _qcColTypes = types;
   _qcSelectedY = [];
   
-  qcX.innerHTML = '<option value=""> -  Eje X  - </option>';
+  qcX.innerHTML = '<option value="" data-i18n="labels.xAxis"> -  Eje X  - </option>';
   dropdown.innerHTML = '';
   
   var numericCols = [];
