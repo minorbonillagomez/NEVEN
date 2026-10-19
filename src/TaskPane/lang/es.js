@@ -74,6 +74,7 @@ const LANG_ES = {
     or: "o",
     connected: "Conectado",
     disconnected: "Desconectado",
+    excelConnected: "Excel conectado",
     listeningChanges: "Escuchando cambios",
     pivotTable: "Pivot Table",
     xAxis: "- Eje X -",
