@@ -1,0 +1,113 @@
+entity_type: ChartType
+id: line-markers
+name:
+  en: Line Plot with Markers
+  es: Gráfico de Líneas
+description:
+  en: A line plot with visible markers at each data point, combining line and scatter
+    plot features. This is particularly useful for sparse data where individual observations
+    are significant.
+  es: A line plot with visible markers at each data point, combining line and scatter
+    plot features. This is particularly useful for sparse data where individual observations
+    are significant.
+aliases:
+  en:
+  - line-markers
+  - line markers
+  - line chart
+  es:
+  - line-markers
+  - line markers
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Sparse datasets where each point matters
+  - Highlighting specific data points on trend lines
+  - Experimental data with discrete measurements
+  - Quality control charts with individual readings
+  es:
+  - Sparse datasets where each point matters
+  - Highlighting specific data points on trend lines
+  - Experimental data with discrete measurements
+  - Quality control charts with individual readings
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - scatter
+  domain:
+  - general
+  - scientific
+  features:
+  - basic
+  - markers
+  data_type:
+  - numeric
+  - continuous
+keywords:
+  en:
+  - line chart
+  - markers
+  - line
+  - scatter
+  - general
+  - scientific
+  - basic
+  - numeric
+  - continuous
+  es:
+  - gráfico de líneas
+  - markers
+  - line
+  - scatter
+  - general
+  - scientific
+  - basic
+  - numérico
+  - continuo
+implementations:
+  javascript:
+    chartjs: plots/line-markers/implementations/javascript/chartjs.js
+    d3: plots/line-markers/implementations/javascript/d3.js
+    echarts: plots/line-markers/implementations/javascript/echarts.js
+    highcharts: plots/line-markers/implementations/javascript/highcharts.js
+    muix: plots/line-markers/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-markers/implementations/julia/makie.jl
+  python:
+    altair: plots/line-markers/implementations/python/altair.py
+    bokeh: plots/line-markers/implementations/python/bokeh.py
+    letsplot: plots/line-markers/implementations/python/letsplot.py
+    matplotlib: plots/line-markers/implementations/python/matplotlib.py
+    plotly: plots/line-markers/implementations/python/plotly.py
+    plotnine: plots/line-markers/implementations/python/plotnine.py
+    pygal: plots/line-markers/implementations/python/pygal.py
+    seaborn: plots/line-markers/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-markers/implementations/r/ggplot2.R
+notes:
+- Markers should be clearly visible against the line
+- Use different marker shapes for multiple series
+- Marker size should be proportional to line thickness
+source: anyplot
+anyplot_updated: '2026-05-12T14:35:00Z'

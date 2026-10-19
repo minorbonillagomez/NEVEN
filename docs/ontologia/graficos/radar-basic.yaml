@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: radar-basic
+name:
+  en: Basic Radar Chart
+  es: Gráfico de Radar Básico
+description:
+  en: A radar chart (also known as spider or web chart) displays multivariate data
+    on axes starting from a common center point, with values connected to form a polygon.
+    Each axis represents a different variable, making it ideal for comparing multiple
+    quantitative variables at once or visualizing strengths and weaknesses across
+    categories.
+  es: A radar chart (also known as spider or web chart) displays multivariate data
+    on axes starting from a common center point, with values connected to form a polygon.
+    Each axis represents a different variable, making it ideal for comparing multiple
+    quantitative variables at once or visualizing strengths and weaknesses across
+    categories.
+aliases:
+  en:
+  - radar-basic
+  - radar basic
+  - basic radar chart
+  es:
+  - radar-basic
+  - radar basic
+  - gráfico de radar básico
+use_when:
+  en:
+  - A radar chart (also known as spider or web chart) displays multivariate data on
+    axes starting from a common center point, with values connected to form a polygon.
+    Each axis represents a different vari
+  es:
+  - A radar chart (also known as spider or web chart) displays multivariate data on
+    axes starting from a common center point, with values connected to form a polygon.
+    Each axis represents a different vari
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Employee performance reviews showing scores across multiple competencies (communication,
+    technical skills, teamwork, etc.)
+  - Product feature comparisons across attributes like price, quality, durability,
+    and ease of use
+  - Sports player statistics comparing metrics such as speed, strength, accuracy,
+    and stamina
+  - Company benchmarking across key performance indicators
+  es:
+  - Employee performance reviews showing scores across multiple competencies (communication,
+    technical skills, teamwork, etc.)
+  - Product feature comparisons across attributes like price, quality, durability,
+    and ease of use
+  - Sports player statistics comparing metrics such as speed, strength, accuracy,
+    and stamina
+  - Company benchmarking across key performance indicators
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - radar
+  data_type:
+  - numeric
+  - categorical
+  - multivariate
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - comparison
+keywords:
+  en:
+  - radar chart
+  - basic
+  - radar
+  - numeric
+  - categorical
+  - multivariate
+  - general
+  - business
+  - comparison
+  es:
+  - gráfico de radar
+  - básico
+  - radar
+  - numérico
+  - categórico
+  - multivariado
+  - general
+  - negocios
+  - basic
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/radar-basic/implementations/javascript/chartjs.js
+    d3: plots/radar-basic/implementations/javascript/d3.js
+    echarts: plots/radar-basic/implementations/javascript/echarts.js
+    highcharts: plots/radar-basic/implementations/javascript/highcharts.js
+    muix: plots/radar-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/radar-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/radar-basic/implementations/python/altair.py
+    bokeh: plots/radar-basic/implementations/python/bokeh.py
+    letsplot: plots/radar-basic/implementations/python/letsplot.py
+    matplotlib: plots/radar-basic/implementations/python/matplotlib.py
+    plotly: plots/radar-basic/implementations/python/plotly.py
+    plotnine: plots/radar-basic/implementations/python/plotnine.py
+    pygal: plots/radar-basic/implementations/python/pygal.py
+    seaborn: plots/radar-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/radar-basic/implementations/r/ggplot2.R
+notes:
+- Use filled polygons with transparency (alpha ~0.25) for overlap visibility when
+  comparing multiple series
+- Include gridlines at regular intervals (e.g., 20, 40, 60, 80, 100)
+- Label each axis clearly at the outer edge
+source: anyplot
+anyplot_updated: 2026-07-24 15:47:09+00:00

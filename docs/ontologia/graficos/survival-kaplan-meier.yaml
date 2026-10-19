@@ -1,0 +1,136 @@
+entity_type: ChartType
+id: survival-kaplan-meier
+name:
+  en: Kaplan-Meier Survival Plot
+  es: Survival Kaplan Meier
+description:
+  en: A Kaplan-Meier survival plot visualizes the probability of survival (or event-free
+    time) over a time period using a step function. It is the standard method for
+    estimating survival functions from time-to-event data, handling censored observations
+    where the event has not yet occurred. The plot shows how survival probability
+    decreases over time, with optional confidence intervals and comparison between
+    groups.
+  es: A Kaplan-Meier survival plot visualizes the probability of survival (or event-free
+    time) over a time period using a step function. It is the standard method for
+    estimating survival functions from time-to-event data, handling censored observations
+    where the event has not yet occurred. The plot shows how survival probability
+    decreases over time, with optional confidence intervals and comparison between
+    groups.
+aliases:
+  en:
+  - survival-kaplan-meier
+  - survival kaplan meier
+  - survival kaplan meier
+  es:
+  - survival-kaplan-meier
+  - survival kaplan meier
+  - survival kaplan meier
+use_when:
+  en:
+  - A Kaplan-Meier survival plot visualizes the probability of survival (or event-free
+    time) over a time period using a step function. It is the standard method for
+    estimating survival functions from time
+  es:
+  - A Kaplan-Meier survival plot visualizes the probability of survival (or event-free
+    time) over a time period using a step function. It is the standard method for
+    estimating survival functions from time
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Medical research tracking patient survival rates after diagnosis or treatment
+  - Reliability engineering analyzing time-to-failure for equipment or components
+  - Customer analytics measuring time-to-churn or subscription retention
+  - Clinical trials comparing survival outcomes between treatment and control groups
+  es:
+  - Medical research tracking patient survival rates after diagnosis or treatment
+  - Reliability engineering analyzing time-to-failure for equipment or components
+  - Customer analytics measuring time-to-churn or subscription retention
+  - Clinical trials comparing survival outcomes between treatment and control groups
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - step
+  - line
+  data_type:
+  - numeric
+  - timeseries
+  - categorical
+  domain:
+  - healthcare
+  - statistics
+  - research
+  - engineering
+  features:
+  - basic
+  - confidence-interval
+  - censored-data
+  - comparison
+keywords:
+  en:
+  - survival
+  - kaplan
+  - meier
+  - step
+  - line
+  - numeric
+  - timeseries
+  - categorical
+  - healthcare
+  - statistics
+  - research
+  - engineering
+  - basic
+  - confidence-interval
+  - censored-data
+  - comparison
+  es:
+  - survival
+  - kaplan
+  - meier
+  - step
+  - line
+  - numérico
+  - timeseries
+  - categórico
+  - healthcare
+  - estadística
+  - research
+  - ingeniería
+  - basic
+  - confidence-interval
+  - censored-data
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/survival-kaplan-meier/implementations/javascript/chartjs.js
+    d3: plots/survival-kaplan-meier/implementations/javascript/d3.js
+    echarts: plots/survival-kaplan-meier/implementations/javascript/echarts.js
+    highcharts: plots/survival-kaplan-meier/implementations/javascript/highcharts.js
+    muix: plots/survival-kaplan-meier/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/survival-kaplan-meier/implementations/julia/makie.jl
+  python:
+    altair: plots/survival-kaplan-meier/implementations/python/altair.py
+    bokeh: plots/survival-kaplan-meier/implementations/python/bokeh.py
+    letsplot: plots/survival-kaplan-meier/implementations/python/letsplot.py
+    matplotlib: plots/survival-kaplan-meier/implementations/python/matplotlib.py
+    plotly: plots/survival-kaplan-meier/implementations/python/plotly.py
+    plotnine: plots/survival-kaplan-meier/implementations/python/plotnine.py
+    pygal: plots/survival-kaplan-meier/implementations/python/pygal.py
+    seaborn: plots/survival-kaplan-meier/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/survival-kaplan-meier/implementations/r/ggplot2.R
+notes:
+- Use step function (not smooth curves) to accurately represent discrete event times
+- Include 95% confidence intervals as shaded bands around the survival curve
+- Mark censored observations with tick marks on the curve
+source: anyplot
+anyplot_updated: 2026-05-11 07:25:06+00:00

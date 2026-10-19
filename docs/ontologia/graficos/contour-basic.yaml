@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: contour-basic
+name:
+  en: Basic Contour Plot
+  es: Gráfico de Contorno Básico
+description:
+  en: A contour plot displays isolines (level curves) of a 2D scalar field, connecting
+    points of equal value across a surface. It transforms 3D data into an intuitive
+    2D representation, making it easy to identify regions of high and low values,
+    gradients, and patterns. Contour plots are essential for visualizing continuous
+    surfaces where the relationship between X, Y coordinates and a Z value needs to
+    be understood.
+  es: A contour plot displays isolines (level curves) of a 2D scalar field, connecting
+    points of equal value across a surface. It transforms 3D data into an intuitive
+    2D representation, making it easy to identify regions of high and low values,
+    gradients, and patterns. Contour plots are essential for visualizing continuous
+    surfaces where the relationship between X, Y coordinates and a Z value needs to
+    be understood.
+aliases:
+  en:
+  - contour-basic
+  - contour basic
+  - basic contour plot
+  es:
+  - contour-basic
+  - contour basic
+  - gráfico de contorno básico
+use_when:
+  en:
+  - A contour plot displays isolines (level curves) of a 2D scalar field, connecting
+    points of equal value across a surface. It transforms 3D data into an intuitive
+    2D representation, making it easy to id
+  es:
+  - A contour plot displays isolines (level curves) of a 2D scalar field, connecting
+    points of equal value across a surface. It transforms 3D data into an intuitive
+    2D representation, making it easy to id
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing topographic elevation maps to show terrain features like hills, valleys,
+    and ridges
+  - Displaying temperature or pressure distributions across a geographic region in
+    meteorology
+  - Analyzing probability density functions or statistical distributions in 2D space
+  - Mapping chemical concentration gradients in scientific experiments
+  es:
+  - Visualizing topographic elevation maps to show terrain features like hills, valleys,
+    and ridges
+  - Displaying temperature or pressure distributions across a geographic region in
+    meteorology
+  - Analyzing probability density functions or statistical distributions in 2D space
+  - Mapping chemical concentration gradients in scientific experiments
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - contour
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - statistics
+  features:
+  - basic
+  - 2d
+keywords:
+  en:
+  - contour plot
+  - basic
+  - contour
+  - numeric
+  - continuous
+  - science
+  - statistics
+  - 2d
+  es:
+  - gráfico de contorno
+  - básico
+  - contour
+  - numérico
+  - continuo
+  - ciencia
+  - estadística
+  - basic
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/contour-basic/implementations/javascript/chartjs.js
+    d3: plots/contour-basic/implementations/javascript/d3.js
+    echarts: plots/contour-basic/implementations/javascript/echarts.js
+    highcharts: plots/contour-basic/implementations/javascript/highcharts.js
+    muix: plots/contour-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/contour-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/contour-basic/implementations/python/altair.py
+    bokeh: plots/contour-basic/implementations/python/bokeh.py
+    letsplot: plots/contour-basic/implementations/python/letsplot.py
+    matplotlib: plots/contour-basic/implementations/python/matplotlib.py
+    plotly: plots/contour-basic/implementations/python/plotly.py
+    plotnine: plots/contour-basic/implementations/python/plotnine.py
+    pygal: plots/contour-basic/implementations/python/pygal.py
+    seaborn: plots/contour-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/contour-basic/implementations/r/ggplot2.R
+notes:
+- Use a diverging or sequential colormap appropriate for the data (e.g., viridis,
+  coolwarm)
+- Include a colorbar to show the value scale
+- Consider using both contour lines and filled regions for clarity
+source: anyplot
+anyplot_updated: 2026-06-25 03:19:01+00:00

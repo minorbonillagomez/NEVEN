@@ -1,0 +1,144 @@
+entity_type: ChartType
+id: scatter-ashby-material
+name:
+  en: Ashby Material Selection Chart
+  es: Diagrama de Dispersión
+description:
+  en: A log-log scatter plot comparing two material properties (e.g., Young's modulus
+    vs. density) with material families displayed as labeled bubble regions. Developed
+    by Michael Ashby for systematic material selection in engineering design, this
+    chart enables rapid visual comparison of material classes across multiple property
+    dimensions. It is a standard tool in materials science and mechanical engineering
+    education.
+  es: A log-log scatter plot comparing two material properties (e.g., Young's modulus
+    vs. density) with material families displayed as labeled bubble regions. Developed
+    by Michael Ashby for systematic material selection in engineering design, this
+    chart enables rapid visual comparison of material classes across multiple property
+    dimensions. It is a standard tool in materials science and mechanical engineering
+    education.
+aliases:
+  en:
+  - scatter-ashby-material
+  - scatter ashby material
+  - scatter plot
+  es:
+  - scatter-ashby-material
+  - scatter ashby material
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Selecting lightweight yet stiff materials for aerospace structural components
+    by comparing Young's modulus against density
+  - Comparing thermal conductivity versus cost across material families for heat exchanger
+    design
+  - Teaching materials science students to reason about trade-offs between competing
+    material properties
+  es:
+  - Selecting lightweight yet stiff materials for aerospace structural components
+    by comparing Young's modulus against density
+  - Comparing thermal conductivity versus cost across material families for heat exchanger
+    design
+  - Teaching materials science students to reason about trade-offs between competing
+    material properties
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - bubble
+  data_type:
+  - numeric
+  - continuous
+  - categorical
+  domain:
+  - engineering
+  - science
+  - education
+  features:
+  - log-scale
+  - color-mapped
+  - annotated
+  - comparison
+keywords:
+  en:
+  - scatter plot
+  - ashby
+  - material
+  - scatter
+  - bubble
+  - numeric
+  - continuous
+  - categorical
+  - engineering
+  - science
+  - education
+  - log-scale
+  - color-mapped
+  - annotated
+  - comparison
+  es:
+  - diagrama de dispersión
+  - ashby
+  - material
+  - scatter
+  - bubble
+  - numérico
+  - continuo
+  - categórico
+  - ingeniería
+  - ciencia
+  - education
+  - log-scale
+  - color-mapped
+  - annotated
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/scatter-ashby-material/implementations/javascript/chartjs.js
+    d3: plots/scatter-ashby-material/implementations/javascript/d3.js
+    echarts: plots/scatter-ashby-material/implementations/javascript/echarts.js
+    highcharts: plots/scatter-ashby-material/implementations/javascript/highcharts.js
+    muix: plots/scatter-ashby-material/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-ashby-material/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-ashby-material/implementations/python/altair.py
+    bokeh: plots/scatter-ashby-material/implementations/python/bokeh.py
+    letsplot: plots/scatter-ashby-material/implementations/python/letsplot.py
+    matplotlib: plots/scatter-ashby-material/implementations/python/matplotlib.py
+    plotly: plots/scatter-ashby-material/implementations/python/plotly.py
+    plotnine: plots/scatter-ashby-material/implementations/python/plotnine.py
+    pygal: plots/scatter-ashby-material/implementations/python/pygal.py
+    seaborn: plots/scatter-ashby-material/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-ashby-material/implementations/r/ggplot2.R
+notes:
+- Both axes must use logarithmic scales to span the wide range of material properties
+- Material families should be shown as colored bubble regions or convex-hull envelopes,
+  not just individual points
+- Each family region should have a clear text label
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,136 @@
+entity_type: ChartType
+id: windrose-basic
+name:
+  en: Wind Rose Chart
+  es: Windrose Basic Básico
+description:
+  en: A wind rose displays wind speed and direction data as a polar stacked histogram
+    showing the frequency distribution of wind across compass directions. Each spoke
+    represents a direction sector (typically 8-16 bins), with stacked colored segments
+    indicating different wind speed ranges. This specialized meteorological visualization
+    reveals dominant wind patterns, prevailing directions, and speed distributions
+    simultaneously, making it essential for site assessment and environmental analysis.
+  es: A wind rose displays wind speed and direction data as a polar stacked histogram
+    showing the frequency distribution of wind across compass directions. Each spoke
+    represents a direction sector (typically 8-16 bins), with stacked colored segments
+    indicating different wind speed ranges. This specialized meteorological visualization
+    reveals dominant wind patterns, prevailing directions, and speed distributions
+    simultaneously, making it essential for site assessment and environmental analysis.
+aliases:
+  en:
+  - windrose-basic
+  - windrose basic
+  - basic windrose basic
+  es:
+  - windrose-basic
+  - windrose basic
+  - windrose basic básico
+use_when:
+  en:
+  - A wind rose displays wind speed and direction data as a polar stacked histogram
+    showing the frequency distribution of wind across compass directions. Each spoke
+    represents a direction sector (typicall
+  es:
+  - A wind rose displays wind speed and direction data as a polar stacked histogram
+    showing the frequency distribution of wind across compass directions. Each spoke
+    represents a direction sector (typicall
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Assessing wind farm site suitability by analyzing prevailing wind patterns and
+    speed distributions
+  - Planning airport runway orientations based on historical wind direction frequencies
+  - Conducting air quality studies to understand pollutant dispersion patterns
+  - Designing building ventilation and urban planning based on local wind climatology
+  es:
+  - Assessing wind farm site suitability by analyzing prevailing wind patterns and
+    speed distributions
+  - Planning airport runway orientations based on historical wind direction frequencies
+  - Conducting air quality studies to understand pollutant dispersion patterns
+  - Designing building ventilation and urban planning based on local wind climatology
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - polar
+  - histogram
+  data_type:
+  - numeric
+  - continuous
+  - directional
+  domain:
+  - meteorology
+  - environment
+  - science
+  - energy
+  features:
+  - basic
+  - stacked
+  - distribution
+  - frequency
+keywords:
+  en:
+  - windrose
+  - basic
+  - polar
+  - histogram
+  - numeric
+  - continuous
+  - directional
+  - meteorology
+  - environment
+  - science
+  - energy
+  - stacked
+  - distribution
+  - frequency
+  es:
+  - windrose
+  - básico
+  - polar
+  - histogram
+  - numérico
+  - continuo
+  - directional
+  - meteorology
+  - environment
+  - ciencia
+  - energy
+  - basic
+  - stacked
+  - distribución
+  - frequency
+implementations:
+  javascript:
+    chartjs: plots/windrose-basic/implementations/javascript/chartjs.js
+    d3: plots/windrose-basic/implementations/javascript/d3.js
+    echarts: plots/windrose-basic/implementations/javascript/echarts.js
+    highcharts: plots/windrose-basic/implementations/javascript/highcharts.js
+    muix: plots/windrose-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/windrose-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/windrose-basic/implementations/python/altair.py
+    bokeh: plots/windrose-basic/implementations/python/bokeh.py
+    letsplot: plots/windrose-basic/implementations/python/letsplot.py
+    matplotlib: plots/windrose-basic/implementations/python/matplotlib.py
+    plotly: plots/windrose-basic/implementations/python/plotly.py
+    plotnine: plots/windrose-basic/implementations/python/plotnine.py
+    pygal: plots/windrose-basic/implementations/python/pygal.py
+    seaborn: plots/windrose-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/windrose-basic/implementations/r/ggplot2.R
+notes:
+- Direction bins typically use 8 (N, NE, E, SE, S, SW, W, NW) or 16 sectors
+- Speed bins should use meaningful ranges for the data (e.g., 0-5, 5-10, 10-15, 15+
+  m/s)
+- North should be at the top (0 degrees) following meteorological convention
+source: anyplot
+anyplot_updated: 2026-08-05 00:00:00+00:00

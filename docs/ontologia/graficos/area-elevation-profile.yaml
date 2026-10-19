@@ -1,0 +1,140 @@
+entity_type: ChartType
+id: area-elevation-profile
+name:
+  en: Terrain Elevation Profile Along Transect
+  es: Gráfico de Área
+description:
+  en: A cross-sectional line plot showing ground elevation along a path or transect
+    line, with the area below the profile filled to create a terrain silhouette. Distance
+    along the transect is plotted on the x-axis and elevation on the y-axis. This
+    visualization is widely used in hiking and cycling route planning, civil engineering
+    corridor design, and geomorphology to convey terrain shape and difficulty at a
+    glance.
+  es: A cross-sectional line plot showing ground elevation along a path or transect
+    line, with the area below the profile filled to create a terrain silhouette. Distance
+    along the transect is plotted on the x-axis and elevation on the y-axis. This
+    visualization is widely used in hiking and cycling route planning, civil engineering
+    corridor design, and geomorphology to convey terrain shape and difficulty at a
+    glance.
+aliases:
+  en:
+  - area-elevation-profile
+  - area elevation profile
+  - area chart
+  es:
+  - area-elevation-profile
+  - area elevation profile
+  - gráfico de área
+use_when:
+  en:
+  - A cross-sectional line plot showing ground elevation along a path or transect
+    line, with the area below the profile filled to create a terrain silhouette. Distance
+    along the transect is plotted on the
+  es:
+  - A cross-sectional line plot showing ground elevation along a path or transect
+    line, with the area below the profile filled to create a terrain silhouette. Distance
+    along the transect is plotted on the
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Hiking and trail planning: visualizing cumulative ascent, descent, and route
+    difficulty along a trail'
+  - 'Civil engineering: evaluating elevation changes along a proposed road or railway
+    corridor'
+  - 'Cycling stage profiles: showing climb categories and sprint points along a race
+    stage (Tour de France style)'
+  - 'GIS and geomorphology: extracting and analyzing terrain cross-sections from digital
+    elevation models (DEMs)'
+  es:
+  - 'Hiking and trail planning: visualizing cumulative ascent, descent, and route
+    difficulty along a trail'
+  - 'Civil engineering: evaluating elevation changes along a proposed road or railway
+    corridor'
+  - 'Cycling stage profiles: showing climb categories and sprint points along a race
+    stage (Tour de France style)'
+  - 'GIS and geomorphology: extracting and analyzing terrain cross-sections from digital
+    elevation models (DEMs)'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  - line
+  data_type:
+  - numeric
+  - continuous
+  - spatial
+  domain:
+  - science
+  - engineering
+  - environment
+  features:
+  - annotated
+  - color-mapped
+  - comparison
+keywords:
+  en:
+  - area chart
+  - elevation
+  - profile
+  - area
+  - line
+  - numeric
+  - continuous
+  - spatial
+  - science
+  - engineering
+  - environment
+  - annotated
+  - color-mapped
+  - comparison
+  es:
+  - gráfico de área
+  - elevation
+  - profile
+  - area
+  - line
+  - numérico
+  - continuo
+  - spatial
+  - ciencia
+  - ingeniería
+  - environment
+  - annotated
+  - color-mapped
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/area-elevation-profile/implementations/javascript/chartjs.js
+    d3: plots/area-elevation-profile/implementations/javascript/d3.js
+    echarts: plots/area-elevation-profile/implementations/javascript/echarts.js
+    highcharts: plots/area-elevation-profile/implementations/javascript/highcharts.js
+    muix: plots/area-elevation-profile/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/area-elevation-profile/implementations/julia/makie.jl
+  python:
+    altair: plots/area-elevation-profile/implementations/python/altair.py
+    bokeh: plots/area-elevation-profile/implementations/python/bokeh.py
+    letsplot: plots/area-elevation-profile/implementations/python/letsplot.py
+    matplotlib: plots/area-elevation-profile/implementations/python/matplotlib.py
+    plotly: plots/area-elevation-profile/implementations/python/plotly.py
+    plotnine: plots/area-elevation-profile/implementations/python/plotnine.py
+    pygal: plots/area-elevation-profile/implementations/python/pygal.py
+    seaborn: plots/area-elevation-profile/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/area-elevation-profile/implementations/r/ggplot2.R
+notes:
+- The area below the profile line should be filled with a solid or gradient fill to
+  create the terrain silhouette effect
+- Label start and end points with location names and elevations
+- Annotate key landmarks (summits, passes, river crossings) with vertical marker lines
+  and text labels
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

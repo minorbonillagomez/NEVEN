@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: flamegraph-basic
+name:
+  en: Flame Graph for Performance Profiling
+  es: Flamegraph Basic Básico
+description:
+  en: A flame graph visualizes hierarchical call stack data from performance profiling,
+    where each horizontal bar represents a function in the call stack and its width
+    is proportional to the time (or samples) spent in that function. Stacks are layered
+    bottom-to-top showing caller-to-callee relationships. Invented by Brendan Gregg,
+    flame graphs are the standard visualization for identifying CPU bottlenecks and
+    hot code paths across all major programming languages and profiling tools.
+  es: A flame graph visualizes hierarchical call stack data from performance profiling,
+    where each horizontal bar represents a function in the call stack and its width
+    is proportional to the time (or samples) spent in that function. Stacks are layered
+    bottom-to-top showing caller-to-callee relationships. Invented by Brendan Gregg,
+    flame graphs are the standard visualization for identifying CPU bottlenecks and
+    hot code paths across all major programming languages and profiling tools.
+aliases:
+  en:
+  - flamegraph-basic
+  - flamegraph basic
+  - basic flamegraph basic
+  es:
+  - flamegraph-basic
+  - flamegraph basic
+  - flamegraph basic básico
+use_when:
+  en:
+  - A flame graph visualizes hierarchical call stack data from performance profiling,
+    where each horizontal bar represents a function in the call stack and its width
+    is proportional to the time (or sample
+  es:
+  - A flame graph visualizes hierarchical call stack data from performance profiling,
+    where each horizontal bar represents a function in the call stack and its width
+    is proportional to the time (or sample
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing CPU profiling data to identify performance bottlenecks in application
+    code
+  - Visualizing memory allocation call stacks to find sources of excessive allocation
+  - Locating the hot code paths an optimization should target in a single profiling
+    snapshot
+  es:
+  - Analyzing CPU profiling data to identify performance bottlenecks in application
+    code
+  - Visualizing memory allocation call stacks to find sources of excessive allocation
+  - Locating the hot code paths an optimization should target in a single profiling
+    snapshot
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  - heatmap
+  data_type:
+  - hierarchical
+  - categorical
+  - numeric
+  domain:
+  - technology
+  - engineering
+  features:
+  - stacked
+  - proportional
+  - color-mapped
+keywords:
+  en:
+  - flamegraph
+  - basic
+  - bar
+  - heatmap
+  - hierarchical
+  - categorical
+  - numeric
+  - technology
+  - engineering
+  - stacked
+  - proportional
+  - color-mapped
+  es:
+  - flamegraph
+  - básico
+  - bar
+  - heatmap
+  - jerárquico
+  - categórico
+  - numérico
+  - technology
+  - ingeniería
+  - stacked
+  - proportional
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/flamegraph-basic/implementations/javascript/chartjs.js
+    d3: plots/flamegraph-basic/implementations/javascript/d3.js
+    echarts: plots/flamegraph-basic/implementations/javascript/echarts.js
+    highcharts: plots/flamegraph-basic/implementations/javascript/highcharts.js
+    muix: plots/flamegraph-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/flamegraph-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/flamegraph-basic/implementations/python/altair.py
+    bokeh: plots/flamegraph-basic/implementations/python/bokeh.py
+    letsplot: plots/flamegraph-basic/implementations/python/letsplot.py
+    matplotlib: plots/flamegraph-basic/implementations/python/matplotlib.py
+    plotly: plots/flamegraph-basic/implementations/python/plotly.py
+    plotnine: plots/flamegraph-basic/implementations/python/plotnine.py
+    pygal: plots/flamegraph-basic/implementations/python/pygal.py
+    seaborn: plots/flamegraph-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/flamegraph-basic/implementations/r/ggplot2.R
+notes:
+- Each row of stacked bars represents a depth level in the call stack, with the root
+  at the bottom
+- Bar width encodes the proportion of total samples, not execution order (x-axis ordering
+  is alphabetical or arbitrary, not temporal)
+- Use a warm color palette (yellows, oranges, reds) following the conventional flame
+  graph aesthetic
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: line-loss-training
+name:
+  en: Training Loss Curve
+  es: Gráfico de Líneas
+description:
+  en: A line plot showing training and validation loss curves over epochs during neural
+    network training. This visualization is essential for monitoring model training,
+    detecting overfitting (when validation loss diverges from training loss), and
+    determining optimal early stopping points. The dual-curve display reveals the
+    gap between training and generalization performance.
+  es: A line plot showing training and validation loss curves over epochs during neural
+    network training. This visualization is essential for monitoring model training,
+    detecting overfitting (when validation loss diverges from training loss), and
+    determining optimal early stopping points. The dual-curve display reveals the
+    gap between training and generalization performance.
+aliases:
+  en:
+  - line-loss-training
+  - line loss training
+  - line chart
+  es:
+  - line-loss-training
+  - line loss training
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Monitoring deep learning model training to detect overfitting or underfitting
+  - Determining the optimal epoch for early stopping based on validation loss plateau
+    or increase
+  - Comparing training dynamics across different model architectures or hyperparameter
+    configurations
+  es:
+  - Monitoring deep learning model training to detect overfitting or underfitting
+  - Determining the optimal epoch for early stopping based on validation loss plateau
+    or increase
+  - Comparing training dynamics across different model architectures or hyperparameter
+    configurations
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - machine-learning
+  - data-science
+  features:
+  - multi
+  - comparison
+  - training-monitoring
+keywords:
+  en:
+  - line chart
+  - loss
+  - training
+  - line
+  - numeric
+  - timeseries
+  - machine learning
+  - data-science
+  - multi
+  - comparison
+  - training-monitoring
+  es:
+  - gráfico de líneas
+  - loss
+  - training
+  - line
+  - numérico
+  - timeseries
+  - aprendizaje automático
+  - data-science
+  - multi
+  - comparación
+  - training-monitoring
+implementations:
+  javascript:
+    chartjs: plots/line-loss-training/implementations/javascript/chartjs.js
+    d3: plots/line-loss-training/implementations/javascript/d3.js
+    echarts: plots/line-loss-training/implementations/javascript/echarts.js
+    highcharts: plots/line-loss-training/implementations/javascript/highcharts.js
+    muix: plots/line-loss-training/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-loss-training/implementations/julia/makie.jl
+  python:
+    altair: plots/line-loss-training/implementations/python/altair.py
+    bokeh: plots/line-loss-training/implementations/python/bokeh.py
+    letsplot: plots/line-loss-training/implementations/python/letsplot.py
+    matplotlib: plots/line-loss-training/implementations/python/matplotlib.py
+    plotly: plots/line-loss-training/implementations/python/plotly.py
+    plotnine: plots/line-loss-training/implementations/python/plotnine.py
+    pygal: plots/line-loss-training/implementations/python/pygal.py
+    seaborn: plots/line-loss-training/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-loss-training/implementations/r/ggplot2.R
+notes:
+- Use distinct colors for training (e.g., blue) and validation (e.g., orange) curves
+- Include a legend clearly labeling each curve
+- X-axis should start at epoch 1 (or 0) and extend to final epoch
+source: anyplot
+anyplot_updated: 2026-05-14 05:24:17+00:00

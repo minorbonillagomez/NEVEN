@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: line-timeseries
+name:
+  en: Time Series Line Plot
+  es: Gráfico de Líneas
+description:
+  en: A time series line plot displays data points connected by lines over a datetime
+    x-axis, with smart date formatting that automatically adjusts tick labels based
+    on the time scale (days, months, years). This plot type is essential for temporal
+    data analysis where proper date formatting and readability are critical. Unlike
+    basic line plots, time series plots handle datetime parsing, timezone awareness,
+    and intelligent tick label formatting.
+  es: A time series line plot displays data points connected by lines over a datetime
+    x-axis, with smart date formatting that automatically adjusts tick labels based
+    on the time scale (days, months, years). This plot type is essential for temporal
+    data analysis where proper date formatting and readability are critical. Unlike
+    basic line plots, time series plots handle datetime parsing, timezone awareness,
+    and intelligent tick label formatting.
+aliases:
+  en:
+  - line-timeseries
+  - line timeseries
+  - line chart
+  es:
+  - line-timeseries
+  - line timeseries
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Tracking stock prices or financial instrument performance over trading periods
+  - Monitoring sensor readings (temperature, humidity, pressure) over time
+  - Analyzing website traffic, user engagement, or API usage patterns over days/months
+  es:
+  - Tracking stock prices or financial instrument performance over trading periods
+  - Monitoring sensor readings (temperature, humidity, pressure) over time
+  - Analyzing website traffic, user engagement, or API usage patterns over days/months
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - datetime
+  - numeric
+  domain:
+  - general
+  - finance
+  - science
+  features:
+  - basic
+  - datetime-axis
+  - smart-formatting
+keywords:
+  en:
+  - line chart
+  - time series
+  - line
+  - timeseries
+  - datetime
+  - numeric
+  - general
+  - finance
+  - science
+  - basic
+  - datetime-axis
+  - smart-formatting
+  es:
+  - gráfico de líneas
+  - serie temporal
+  - line
+  - timeseries
+  - datetime
+  - numérico
+  - general
+  - finanzas
+  - ciencia
+  - basic
+  - datetime-axis
+  - smart-formatting
+implementations:
+  javascript:
+    chartjs: plots/line-timeseries/implementations/javascript/chartjs.js
+    d3: plots/line-timeseries/implementations/javascript/d3.js
+    echarts: plots/line-timeseries/implementations/javascript/echarts.js
+    highcharts: plots/line-timeseries/implementations/javascript/highcharts.js
+    muix: plots/line-timeseries/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-timeseries/implementations/julia/makie.jl
+  python:
+    altair: plots/line-timeseries/implementations/python/altair.py
+    bokeh: plots/line-timeseries/implementations/python/bokeh.py
+    letsplot: plots/line-timeseries/implementations/python/letsplot.py
+    matplotlib: plots/line-timeseries/implementations/python/matplotlib.py
+    plotly: plots/line-timeseries/implementations/python/plotly.py
+    plotnine: plots/line-timeseries/implementations/python/plotnine.py
+    pygal: plots/line-timeseries/implementations/python/pygal.py
+    seaborn: plots/line-timeseries/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-timeseries/implementations/r/ggplot2.R
+notes:
+- Use intelligent date formatting that adapts to the time range (e.g., "%H:%M" for
+  hours, "%b %d" for days, "%Y" for years)
+- Rotate or stagger tick labels if needed to prevent overlap
+- Include grid lines on both axes for improved readability
+source: anyplot
+anyplot_updated: 2026-05-09 03:14:24+00:00

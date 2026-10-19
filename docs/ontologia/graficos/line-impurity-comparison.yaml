@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: line-impurity-comparison
+name:
+  en: Gini Impurity vs Entropy Comparison
+  es: Gráfico de Líneas
+description:
+  en: A theoretical comparison plot showing Gini impurity and entropy (information
+    gain) as splitting criteria for decision trees across the probability range [0,
+    1]. Both curves are displayed on the same axes to illustrate their similar behavior
+    and slight differences. This educational visualization helps understand the mathematical
+    foundation of tree-based algorithms and why both criteria lead to similar tree
+    structures in practice.
+  es: A theoretical comparison plot showing Gini impurity and entropy (information
+    gain) as splitting criteria for decision trees across the probability range [0,
+    1]. Both curves are displayed on the same axes to illustrate their similar behavior
+    and slight differences. This educational visualization helps understand the mathematical
+    foundation of tree-based algorithms and why both criteria lead to similar tree
+    structures in practice.
+aliases:
+  en:
+  - line-impurity-comparison
+  - line impurity comparison
+  - line chart
+  es:
+  - line-impurity-comparison
+  - line impurity comparison
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Machine learning education: explaining decision tree splitting criteria'
+  - 'Algorithm comparison: understanding why Gini and entropy perform similarly'
+  - 'Feature importance interpretation: theoretical foundation for tree-based models'
+  - 'Textbook illustration: fundamental ML concept visualization'
+  es:
+  - 'Machine learning education: explaining decision tree splitting criteria'
+  - 'Algorithm comparison: understanding why Gini and entropy perform similarly'
+  - 'Feature importance interpretation: theoretical foundation for tree-based models'
+  - 'Textbook illustration: fundamental ML concept visualization'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - machine-learning
+  - education
+  features:
+  - comparison
+  - annotated
+  - 2d
+keywords:
+  en:
+  - line chart
+  - impurity
+  - comparison
+  - line
+  - numeric
+  - continuous
+  - machine learning
+  - education
+  - annotated
+  - 2d
+  es:
+  - gráfico de líneas
+  - impurity
+  - comparison
+  - line
+  - numérico
+  - continuo
+  - aprendizaje automático
+  - education
+  - comparación
+  - annotated
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/line-impurity-comparison/implementations/javascript/chartjs.js
+    d3: plots/line-impurity-comparison/implementations/javascript/d3.js
+    echarts: plots/line-impurity-comparison/implementations/javascript/echarts.js
+    highcharts: plots/line-impurity-comparison/implementations/javascript/highcharts.js
+    muix: plots/line-impurity-comparison/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-impurity-comparison/implementations/julia/makie.jl
+  python:
+    altair: plots/line-impurity-comparison/implementations/python/altair.py
+    bokeh: plots/line-impurity-comparison/implementations/python/bokeh.py
+    letsplot: plots/line-impurity-comparison/implementations/python/letsplot.py
+    matplotlib: plots/line-impurity-comparison/implementations/python/matplotlib.py
+    plotly: plots/line-impurity-comparison/implementations/python/plotly.py
+    plotnine: plots/line-impurity-comparison/implementations/python/plotnine.py
+    pygal: plots/line-impurity-comparison/implementations/python/pygal.py
+    seaborn: plots/line-impurity-comparison/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-impurity-comparison/implementations/r/ggplot2.R
+notes:
+- 'X-axis: probability p in range [0, 1]'
+- 'Y-axis: impurity value on a shared axis from 0 to 1'
+- Both curves should be clearly distinguishable with different colors/line styles
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

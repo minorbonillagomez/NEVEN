@@ -1,0 +1,113 @@
+entity_type: ChartType
+id: surface-basic
+name:
+  en: Basic 3D Surface Plot
+  es: Superficie 3D Básico
+description:
+  en: A 3D surface plot visualizes a function of two variables as a continuous surface
+    in three-dimensional space. The height (z-axis) represents the function value
+    at each (x, y) point, with color encoding the same information to enhance depth
+    perception. This visualization is ideal for understanding mathematical functions,
+    terrain data, and response surfaces where the relationship between two inputs
+    and one output needs to be explored.
+  es: A 3D surface plot visualizes a function of two variables as a continuous surface
+    in three-dimensional space. The height (z-axis) represents the function value
+    at each (x, y) point, with color encoding the same information to enhance depth
+    perception. This visualization is ideal for understanding mathematical functions,
+    terrain data, and response surfaces where the relationship between two inputs
+    and one output needs to be explored.
+aliases:
+  en:
+  - surface-basic
+  - surface basic
+  - basic 3d surface
+  es:
+  - surface-basic
+  - surface basic
+  - superficie 3d básico
+use_when:
+  en:
+  - A 3D surface plot visualizes a function of two variables as a continuous surface
+    in three-dimensional space. The height (z-axis) represents the function value
+    at each (x, y) point, with color encoding
+  es:
+  - A 3D surface plot visualizes a function of two variables as a continuous surface
+    in three-dimensional space. The height (z-axis) represents the function value
+    at each (x, y) point, with color encoding
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing mathematical functions like z = sin(x) * cos(y) or Gaussian surfaces
+  - Displaying terrain elevation data and topographic maps
+  - Analyzing response surfaces in optimization and experimental design
+  - Showing temperature, pressure, or other physical fields across a 2D domain
+  es:
+  - Visualizing mathematical functions like z = sin(x) * cos(y) or Gaussian surfaces
+  - Displaying terrain elevation data and topographic maps
+  - Analyzing response surfaces in optimization and experimental design
+  - Showing temperature, pressure, or other physical fields across a 2D domain
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - surface
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - engineering
+  features:
+  - basic
+  - 3d
+keywords:
+  en:
+  - 3d surface
+  - basic
+  - surface
+  - numeric
+  - continuous
+  - science
+  - engineering
+  - 3d
+  es:
+  - superficie 3d
+  - básico
+  - surface
+  - numérico
+  - continuo
+  - ciencia
+  - ingeniería
+  - basic
+  - 3d
+implementations:
+  javascript:
+    d3: plots/surface-basic/implementations/javascript/d3.js
+    echarts: plots/surface-basic/implementations/javascript/echarts.js
+    highcharts: plots/surface-basic/implementations/javascript/highcharts.js
+    muix: plots/surface-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/surface-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/surface-basic/implementations/python/altair.py
+    bokeh: plots/surface-basic/implementations/python/bokeh.py
+    letsplot: plots/surface-basic/implementations/python/letsplot.py
+    matplotlib: plots/surface-basic/implementations/python/matplotlib.py
+    plotly: plots/surface-basic/implementations/python/plotly.py
+    pygal: plots/surface-basic/implementations/python/pygal.py
+    seaborn: plots/surface-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/surface-basic/implementations/r/ggplot2.R
+notes:
+- Use a smooth colormap (e.g., viridis, coolwarm) to show height variation
+- Include axis labels for x, y, and z dimensions
+- Consider adding a colorbar to show the value scale
+source: anyplot
+anyplot_updated: 2025-12-15 20:45:48+00:00

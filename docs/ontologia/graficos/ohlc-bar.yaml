@@ -1,0 +1,117 @@
+entity_type: ChartType
+id: ohlc-bar
+name:
+  en: OHLC Bar Chart
+  es: Ohlc Bar
+description:
+  en: An OHLC (Open-High-Low-Close) bar chart displays financial price data using
+    vertical bars with horizontal tick marks. Each bar shows the price range from
+    high to low as a thin vertical line, with a left tick indicating the opening price
+    and a right tick indicating the closing price. Unlike candlestick charts that
+    use colored bodies, OHLC bars provide a cleaner, less cluttered view favored by
+    technical analysts who prefer to focus on price levels rather than visual patterns.
+  es: An OHLC (Open-High-Low-Close) bar chart displays financial price data using
+    vertical bars with horizontal tick marks. Each bar shows the price range from
+    high to low as a thin vertical line, with a left tick indicating the opening price
+    and a right tick indicating the closing price. Unlike candlestick charts that
+    use colored bodies, OHLC bars provide a cleaner, less cluttered view favored by
+    technical analysts who prefer to focus on price levels rather than visual patterns.
+aliases:
+  en:
+  - ohlc-bar
+  - ohlc bar
+  - ohlc bar
+  es:
+  - ohlc-bar
+  - ohlc bar
+  - ohlc bar
+use_when:
+  en:
+  - An OHLC (Open-High-Low-Close) bar chart displays financial price data using vertical
+    bars with horizontal tick marks. Each bar shows the price range from high to low
+    as a thin vertical line, with a le
+  es:
+  - An OHLC (Open-High-Low-Close) bar chart displays financial price data using vertical
+    bars with horizontal tick marks. Each bar shows the price range from high to low
+    as a thin vertical line, with a le
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing daily stock price movements with focus on precise price levels
+  - Comparing price action across multiple securities on the same chart without color
+    distraction
+  - Technical analysis where traders prefer bar charts over candlesticks for pattern
+    recognition
+  es:
+  - Analyzing daily stock price movements with focus on precise price levels
+  - Comparing price action across multiple securities on the same chart without color
+    distraction
+  - Technical analysis where traders prefer bar charts over candlesticks for pattern
+    recognition
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - ohlc
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  features:
+  - basic
+  - temporal
+keywords:
+  en:
+  - ohlc
+  - bar chart
+  - bar
+  - timeseries
+  - numeric
+  - finance
+  - basic
+  - temporal
+  es:
+  - ohlc
+  - gráfico de barras
+  - bar
+  - timeseries
+  - numérico
+  - finanzas
+  - basic
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/ohlc-bar/implementations/javascript/chartjs.js
+    d3: plots/ohlc-bar/implementations/javascript/d3.js
+    echarts: plots/ohlc-bar/implementations/javascript/echarts.js
+    highcharts: plots/ohlc-bar/implementations/javascript/highcharts.js
+    muix: plots/ohlc-bar/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ohlc-bar/implementations/julia/makie.jl
+  python:
+    altair: plots/ohlc-bar/implementations/python/altair.py
+    bokeh: plots/ohlc-bar/implementations/python/bokeh.py
+    letsplot: plots/ohlc-bar/implementations/python/letsplot.py
+    matplotlib: plots/ohlc-bar/implementations/python/matplotlib.py
+    plotly: plots/ohlc-bar/implementations/python/plotly.py
+    plotnine: plots/ohlc-bar/implementations/python/plotnine.py
+    pygal: plots/ohlc-bar/implementations/python/pygal.py
+    seaborn: plots/ohlc-bar/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ohlc-bar/implementations/r/ggplot2.R
+notes:
+- Use thin vertical lines for the high-low range
+- Horizontal ticks should extend to the left for open and right for close
+- Consider using different colors for up bars (close > open) vs down bars (close <
+  open) for easier reading
+source: anyplot
+anyplot_updated: 2026-05-17 10:28:55+00:00

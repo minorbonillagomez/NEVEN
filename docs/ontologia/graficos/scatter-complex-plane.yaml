@@ -1,0 +1,139 @@
+entity_type: ChartType
+id: scatter-complex-plane
+name:
+  en: Complex Plane Visualization (Argand Diagram)
+  es: Diagrama de Dispersión
+description:
+  en: An Argand diagram plots complex numbers as points in the complex plane, with
+    the real part on the x-axis and the imaginary part on the y-axis. Vectors from
+    the origin to each point illustrate magnitude and phase angle, while a unit circle
+    provides a geometric reference. This visualization is foundational for complex
+    analysis, signal processing, and understanding operations like addition, multiplication,
+    and roots of unity geometrically.
+  es: An Argand diagram plots complex numbers as points in the complex plane, with
+    the real part on the x-axis and the imaginary part on the y-axis. Vectors from
+    the origin to each point illustrate magnitude and phase angle, while a unit circle
+    provides a geometric reference. This visualization is foundational for complex
+    analysis, signal processing, and understanding operations like addition, multiplication,
+    and roots of unity geometrically.
+aliases:
+  en:
+  - scatter-complex-plane
+  - scatter complex plane
+  - scatter plot
+  es:
+  - scatter-complex-plane
+  - scatter complex plane
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Visualizing roots of polynomials in the complex plane to understand factorization
+    and zero distribution
+  - Showing nth roots of unity arranged symmetrically on the unit circle for number
+    theory and FFT education
+  - Illustrating complex transformations such as rotation and scaling by multiplying
+    with a complex factor
+  - Teaching Euler's formula and the relationship between rectangular (a+bi) and polar
+    (r, theta) representations
+  es:
+  - Visualizing roots of polynomials in the complex plane to understand factorization
+    and zero distribution
+  - Showing nth roots of unity arranged symmetrically on the unit circle for number
+    theory and FFT education
+  - Illustrating complex transformations such as rotation and scaling by multiplying
+    with a complex factor
+  - Teaching Euler's formula and the relationship between rectangular (a+bi) and polar
+    (r, theta) representations
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - polar
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - education
+  features:
+  - annotated
+  - 2d
+  - color-mapped
+keywords:
+  en:
+  - scatter plot
+  - complex
+  - plane
+  - scatter
+  - polar
+  - numeric
+  - continuous
+  - science
+  - education
+  - annotated
+  - 2d
+  - color-mapped
+  es:
+  - diagrama de dispersión
+  - complex
+  - plane
+  - scatter
+  - polar
+  - numérico
+  - continuo
+  - ciencia
+  - education
+  - annotated
+  - 2d
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/scatter-complex-plane/implementations/javascript/chartjs.js
+    d3: plots/scatter-complex-plane/implementations/javascript/d3.js
+    echarts: plots/scatter-complex-plane/implementations/javascript/echarts.js
+    highcharts: plots/scatter-complex-plane/implementations/javascript/highcharts.js
+    muix: plots/scatter-complex-plane/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-complex-plane/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-complex-plane/implementations/python/altair.py
+    bokeh: plots/scatter-complex-plane/implementations/python/bokeh.py
+    letsplot: plots/scatter-complex-plane/implementations/python/letsplot.py
+    matplotlib: plots/scatter-complex-plane/implementations/python/matplotlib.py
+    plotly: plots/scatter-complex-plane/implementations/python/plotly.py
+    plotnine: plots/scatter-complex-plane/implementations/python/plotnine.py
+    pygal: plots/scatter-complex-plane/implementations/python/pygal.py
+    seaborn: plots/scatter-complex-plane/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-complex-plane/implementations/r/ggplot2.R
+notes:
+- Draw real (horizontal) and imaginary (vertical) axes through the origin with labeled
+  tick marks
+- Show the unit circle as a dashed reference circle centered at the origin
+- Draw vectors (arrows) from the origin to each complex number point
+source: anyplot
+anyplot_updated: null

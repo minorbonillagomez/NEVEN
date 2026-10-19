@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: scatter-categorical
+name:
+  en: Categorical Scatter Plot
+  es: Diagrama de Dispersión
+description:
+  en: A scatter plot where points are colored according to a categorical variable.
+    Each category has a distinct color, allowing visual comparison of patterns across
+    groups. A legend maps colors to category names.
+  es: A scatter plot where points are colored according to a categorical variable.
+    Each category has a distinct color, allowing visual comparison of patterns across
+    groups. A legend maps colors to category names.
+aliases:
+  en:
+  - scatter-categorical
+  - scatter categorical
+  - scatter plot
+  es:
+  - scatter-categorical
+  - scatter categorical
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Visualizing relationships between variables across different groups
+  - Comparing correlation patterns by category
+  - Identifying clusters in multivariate data
+  - Exploratory analysis with group membership
+  es:
+  - Visualizing relationships between variables across different groups
+  - Comparing correlation patterns by category
+  - Identifying clusters in multivariate data
+  - Exploratory analysis with group membership
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - categorical
+  domain:
+  - statistics
+  - general
+  features:
+  - grouped
+  - color-coded
+  - legend
+  data_type:
+  - numeric
+  - categorical
+keywords:
+  en:
+  - scatter plot
+  - categorical
+  - scatter
+  - statistics
+  - general
+  - grouped
+  - color-coded
+  - legend
+  - numeric
+  es:
+  - diagrama de dispersión
+  - categorical
+  - scatter
+  - categórico
+  - estadística
+  - general
+  - grouped
+  - color-coded
+  - legend
+  - numérico
+implementations:
+  javascript:
+    chartjs: plots/scatter-categorical/implementations/javascript/chartjs.js
+    d3: plots/scatter-categorical/implementations/javascript/d3.js
+    echarts: plots/scatter-categorical/implementations/javascript/echarts.js
+    highcharts: plots/scatter-categorical/implementations/javascript/highcharts.js
+    muix: plots/scatter-categorical/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-categorical/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-categorical/implementations/python/altair.py
+    bokeh: plots/scatter-categorical/implementations/python/bokeh.py
+    letsplot: plots/scatter-categorical/implementations/python/letsplot.py
+    matplotlib: plots/scatter-categorical/implementations/python/matplotlib.py
+    plotly: plots/scatter-categorical/implementations/python/plotly.py
+    plotnine: plots/scatter-categorical/implementations/python/plotnine.py
+    pygal: plots/scatter-categorical/implementations/python/pygal.py
+    seaborn: plots/scatter-categorical/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-categorical/implementations/r/ggplot2.R
+notes:
+- Use distinct, colorblind-safe colors for categories
+- Include legend for category identification
+- Marker shapes can also vary by group for additional distinction
+source: anyplot
+anyplot_updated: '2025-12-30T10:30:00Z'

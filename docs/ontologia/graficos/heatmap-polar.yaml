@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: heatmap-polar
+name:
+  en: Polar Heatmap for Cyclic Two-Dimensional Data
+  es: Mapa de Calor
+description:
+  en: A heatmap wrapped around a circle where the angular axis represents a cyclic
+    variable (e.g., hour of day, month) and the radial axis represents a second categorical
+    or ordinal variable (e.g., day of week, year). Cell color encodes the measured
+    value. This visualization reveals patterns in data with inherent cyclical structure
+    that rectangular heatmaps distort, since the first and last angular bins are visually
+    adjacent rather than separated at opposite ends of a row.
+  es: A heatmap wrapped around a circle where the angular axis represents a cyclic
+    variable (e.g., hour of day, month) and the radial axis represents a second categorical
+    or ordinal variable (e.g., day of week, year). Cell color encodes the measured
+    value. This visualization reveals patterns in data with inherent cyclical structure
+    that rectangular heatmaps distort, since the first and last angular bins are visually
+    adjacent rather than separated at opposite ends of a row.
+aliases:
+  en:
+  - heatmap-polar
+  - heatmap polar
+  - heatmap
+  es:
+  - heatmap-polar
+  - heatmap polar
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Showing website traffic intensity by hour of day (angular) and day of week (radial)
+  - Visualizing crime frequency by time of day and location zone
+  - Displaying energy consumption patterns by month (angular) and year (radial)
+  - Analyzing sensor data with daily or weekly cycles across multiple stations or
+    categories
+  es:
+  - Showing website traffic intensity by hour of day (angular) and day of week (radial)
+  - Visualizing crime frequency by time of day and location zone
+  - Displaying energy consumption patterns by month (angular) and year (radial)
+  - Analyzing sensor data with daily or weekly cycles across multiple stations or
+    categories
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  - polar
+  data_type:
+  - categorical
+  - ordinal
+  - numeric
+  domain:
+  - general
+  - business
+  - energy
+  features:
+  - color-mapped
+  - temporal
+  - 2d
+keywords:
+  en:
+  - heatmap
+  - polar chart
+  - polar
+  - categorical
+  - ordinal
+  - numeric
+  - general
+  - business
+  - energy
+  - color-mapped
+  - temporal
+  - 2d
+  es:
+  - mapa de calor
+  - gráfico polar
+  - heatmap
+  - polar
+  - categórico
+  - ordinal
+  - numérico
+  - general
+  - negocios
+  - energy
+  - color-mapped
+  - temporal
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/heatmap-polar/implementations/javascript/chartjs.js
+    d3: plots/heatmap-polar/implementations/javascript/d3.js
+    echarts: plots/heatmap-polar/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-polar/implementations/javascript/highcharts.js
+    muix: plots/heatmap-polar/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-polar/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-polar/implementations/python/altair.py
+    bokeh: plots/heatmap-polar/implementations/python/bokeh.py
+    letsplot: plots/heatmap-polar/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-polar/implementations/python/matplotlib.py
+    plotly: plots/heatmap-polar/implementations/python/plotly.py
+    plotnine: plots/heatmap-polar/implementations/python/plotnine.py
+    pygal: plots/heatmap-polar/implementations/python/pygal.py
+    seaborn: plots/heatmap-polar/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-polar/implementations/r/ggplot2.R
+notes:
+- Angular axis wraps continuously — 0° and 360° are adjacent, preserving cyclic continuity
+- Radial axis extends outward from center; innermost ring is the first radial category
+- Use a sequential colormap for single-sign data or a diverging colormap when data
+  has a meaningful midpoint
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: pp-basic
+name:
+  en: Probability-Probability (P-P) Plot
+  es: Gráfico P-P Básico
+description:
+  en: A diagnostic plot comparing the cumulative distribution function (CDF) of observed
+    data against a theoretical distribution by plotting empirical CDF values against
+    theoretical CDF values. Unlike Q-Q plots which compare quantiles, P-P plots compare
+    cumulative probabilities on both axes (0 to 1), making them more sensitive to
+    deviations in the center of the distribution. Points falling along the 45-degree
+    diagonal indicate a good fit.
+  es: A diagnostic plot comparing the cumulative distribution function (CDF) of observed
+    data against a theoretical distribution by plotting empirical CDF values against
+    theoretical CDF values. Unlike Q-Q plots which compare quantiles, P-P plots compare
+    cumulative probabilities on both axes (0 to 1), making them more sensitive to
+    deviations in the center of the distribution. Points falling along the 45-degree
+    diagonal indicate a good fit.
+aliases:
+  en:
+  - pp-basic
+  - pp basic
+  - basic p-p plot
+  es:
+  - pp-basic
+  - pp basic
+  - gráfico p-p básico
+use_when:
+  en:
+  - A diagnostic plot comparing the cumulative distribution function (CDF) of observed
+    data against a theoretical distribution by plotting empirical CDF values against
+    theoretical CDF values. Unlike Q-Q p
+  es:
+  - A diagnostic plot comparing the cumulative distribution function (CDF) of observed
+    data against a theoretical distribution by plotting empirical CDF values against
+    theoretical CDF values. Unlike Q-Q p
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Assessing whether sample data follows a hypothesized distribution (e.g., normality
+    testing for regression residuals)
+  - 'Reliability engineering: selecting the best-fit distribution for failure time
+    data'
+  - 'Quality control: verifying process measurements conform to expected distributional
+    assumptions'
+  es:
+  - Assessing whether sample data follows a hypothesized distribution (e.g., normality
+    testing for regression residuals)
+  - 'Reliability engineering: selecting the best-fit distribution for failure time
+    data'
+  - 'Quality control: verifying process measurements conform to expected distributional
+    assumptions'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - pp
+  - calibration
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+  - 2d
+keywords:
+  en:
+  - p-p plot
+  - basic
+  - pp
+  - calibration
+  - numeric
+  - continuous
+  - statistics
+  - general
+  - distribution
+  - 2d
+  es:
+  - gráfico p-p
+  - básico
+  - pp
+  - calibration
+  - numérico
+  - continuo
+  - estadística
+  - general
+  - basic
+  - distribución
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/pp-basic/implementations/javascript/chartjs.js
+    d3: plots/pp-basic/implementations/javascript/d3.js
+    echarts: plots/pp-basic/implementations/javascript/echarts.js
+    highcharts: plots/pp-basic/implementations/javascript/highcharts.js
+    muix: plots/pp-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/pp-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/pp-basic/implementations/python/altair.py
+    bokeh: plots/pp-basic/implementations/python/bokeh.py
+    letsplot: plots/pp-basic/implementations/python/letsplot.py
+    matplotlib: plots/pp-basic/implementations/python/matplotlib.py
+    plotly: plots/pp-basic/implementations/python/plotly.py
+    plotnine: plots/pp-basic/implementations/python/plotnine.py
+    pygal: plots/pp-basic/implementations/python/pygal.py
+    seaborn: plots/pp-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/pp-basic/implementations/r/ggplot2.R
+notes:
+- Both axes range from 0 to 1 (cumulative probabilities)
+- Include a 45-degree reference line representing perfect distributional fit
+- Use a square aspect ratio to preserve the visual meaning of the diagonal
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

@@ -1,0 +1,147 @@
+entity_type: ChartType
+id: heatmap-periodic-table
+name:
+  en: Periodic Table Property Heatmap
+  es: Mapa de Calor
+description:
+  en: A periodic table of the elements rendered in its canonical layout — 18 groups
+    across by 7 periods down, with the lanthanide and actinide series detached as
+    two separate rows below — where each element tile is colored by a continuous property
+    such as electronegativity, atomic radius, melting point, or first ionization energy.
+    A colorbar maps tile color to property value, and every tile carries the element
+    symbol and atomic number, optionally with the numeric property value. This visualization
+    fuses an immediately recognizable fixed grid with heatmap encoding, turning a
+    familiar reference chart into a tool for spotting periodic trends at a glance.
+  es: A periodic table of the elements rendered in its canonical layout — 18 groups
+    across by 7 periods down, with the lanthanide and actinide series detached as
+    two separate rows below — where each element tile is colored by a continuous property
+    such as electronegativity, atomic radius, melting point, or first ionization energy.
+    A colorbar maps tile color to property value, and every tile carries the element
+    symbol and atomic number, optionally with the numeric property value. This visualization
+    fuses an immediately recognizable fixed grid with heatmap encoding, turning a
+    familiar reference chart into a tool for spotting periodic trends at a glance.
+aliases:
+  en:
+  - heatmap-periodic-table
+  - heatmap periodic table
+  - heatmap
+  es:
+  - heatmap-periodic-table
+  - heatmap periodic table
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Teaching periodic trends in chemistry — electronegativity rising toward the top-right,
+    atomic radius growing down a group — by letting students read the gradient directly
+    off the table
+  - Comparing physical properties (melting point, density, first ionization energy)
+    across the elements to highlight families and anomalies
+  - Materials-science screening, shading elements by abundance, cost, or a target
+    property to identify candidate substitutions
+  - Science communication and reference posters where a single property is encoded
+    onto the standard layout everyone already knows
+  es:
+  - Teaching periodic trends in chemistry — electronegativity rising toward the top-right,
+    atomic radius growing down a group — by letting students read the gradient directly
+    off the table
+  - Comparing physical properties (melting point, density, first ionization energy)
+    across the elements to highlight families and anomalies
+  - Materials-science screening, shading elements by abundance, cost, or a target
+    property to identify candidate substitutions
+  - Science communication and reference posters where a single property is encoded
+    onto the standard layout everyone already knows
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  - matrix
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - chemistry
+  - education
+  - science
+  features:
+  - color-mapped
+  - annotated
+  - static
+keywords:
+  en:
+  - heatmap
+  - periodic
+  - table
+  - matrix
+  - categorical
+  - numeric
+  - chemistry
+  - education
+  - science
+  - color-mapped
+  - annotated
+  - static
+  es:
+  - mapa de calor
+  - periodic
+  - table
+  - heatmap
+  - matrix
+  - categórico
+  - numérico
+  - chemistry
+  - education
+  - ciencia
+  - color-mapped
+  - annotated
+  - static
+implementations:
+  javascript:
+    chartjs: plots/heatmap-periodic-table/implementations/javascript/chartjs.js
+    d3: plots/heatmap-periodic-table/implementations/javascript/d3.js
+    echarts: plots/heatmap-periodic-table/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-periodic-table/implementations/javascript/highcharts.js
+    muix: plots/heatmap-periodic-table/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-periodic-table/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-periodic-table/implementations/python/altair.py
+    bokeh: plots/heatmap-periodic-table/implementations/python/bokeh.py
+    letsplot: plots/heatmap-periodic-table/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-periodic-table/implementations/python/matplotlib.py
+    plotly: plots/heatmap-periodic-table/implementations/python/plotly.py
+    plotnine: plots/heatmap-periodic-table/implementations/python/plotnine.py
+    pygal: plots/heatmap-periodic-table/implementations/python/pygal.py
+    seaborn: plots/heatmap-periodic-table/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-periodic-table/implementations/r/ggplot2.R
+notes:
+- 'Use the canonical layout: 18 groups × 7 periods, with the lanthanides (period 6)
+  and actinides (period 7) pulled out into two rows offset below the main grid, leaving
+  a gap at group 3 in those periods'
+- Tiles are equal-sized squares with a small gap; the f-block rows are visually separated
+  from the main body
+- Apply a sequential colormap for unipolar properties (e.g., viridis, plasma); a diverging
+  map only if the property has a meaningful midpoint
+source: anyplot
+anyplot_updated: null

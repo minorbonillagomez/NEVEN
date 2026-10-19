@@ -427,6 +427,89 @@ const LANG_ES = {
     permissionDenied: "Permiso denegado",
     engineNotAvailable: "Motor no disponible",
     sqlError: "Error SQL"
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // GALERÍA DE GRÁFICOS (integración anyplot)
+  // ─────────────────────────────────────────────────────────────────────────
+  chartGallery: {
+    title: "Galería de Gráficos",
+    subtitle: "325 tipos de gráficos con código en Python, R, Julia y JavaScript",
+    searchPlaceholder: "Buscar gráficos...",
+    recommendButton: "Recomendar para mis datos",
+    viewCode: "Ver Código",
+    copyCode: "Copiar Código",
+    insertInScript: "Insertar en Run Script",
+    
+    // Lenguajes
+    languages: {
+      python: "Python",
+      r: "R",
+      julia: "Julia",
+      javascript: "JavaScript"
+    },
+    
+    // Categorías
+    categories: {
+      basic: "Básicos",
+      distribution: "Distribución",
+      correlation: "Correlación",
+      comparison: "Comparación",
+      temporal: "Series Temporales",
+      hierarchical: "Jerárquicos",
+      geographic: "Geográficos",
+      statistical: "Estadísticos",
+      specialized: "Especializados"
+    },
+    
+    // Tipos de gráficos comunes (30 más usados)
+    chartTypes: {
+      scatter: "Diagrama de Dispersión",
+      bar: "Gráfico de Barras",
+      line: "Gráfico de Líneas",
+      area: "Gráfico de Área",
+      pie: "Gráfico Circular",
+      donut: "Gráfico de Dona",
+      histogram: "Histograma",
+      heatmap: "Mapa de Calor",
+      box: "Diagrama de Caja",
+      violin: "Diagrama de Violín",
+      density: "Gráfico de Densidad",
+      bubble: "Gráfico de Burbujas",
+      treemap: "Mapa de Árbol",
+      sunburst: "Explosión Solar",
+      sankey: "Diagrama de Sankey",
+      chord: "Diagrama de Cuerdas",
+      network: "Grafo de Red",
+      radar: "Gráfico de Radar",
+      polar: "Gráfico Polar",
+      candlestick: "Gráfico de Velas",
+      gantt: "Diagrama de Gantt",
+      waterfall: "Gráfico de Cascada",
+      funnel: "Gráfico de Embudo",
+      gauge: "Gráfico de Medidor",
+      wordcloud: "Nube de Palabras",
+      choropleth: "Mapa Coroplético",
+      contour: "Gráfico de Contorno",
+      surface: "Superficie 3D",
+      qq: "Gráfico Q-Q",
+      roc: "Curva ROC",
+      confusion: "Matriz de Confusión",
+      forest: "Gráfico de Bosque"
+    },
+    
+    // Etiquetas de uso
+    useWhen: "Usar cuando:",
+    avoidWhen: "Evitar cuando:",
+    dataRequirements: "Requisitos de datos:",
+    implementations: "Implementaciones disponibles:",
+    
+    // Mensajes
+    loading: "Cargando galería de gráficos...",
+    noResults: "No se encontraron gráficos",
+    errorLoading: "Error al cargar galería de gráficos",
+    copied: "Código copiado al portapapeles",
+    inserted: "Código insertado en Run Script"
   }
 
 };

@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: hive-basic
+name:
+  en: Basic Hive Plot
+  es: Hive Basic Básico
+description:
+  en: A hive plot arranges network nodes on radial axes based on node properties (such
+    as degree, category, or other attributes), enabling reproducible and directly
+    comparable network visualizations. Unlike force-directed layouts which can produce
+    different arrangements for identical networks, hive plots always render the same
+    network identically, solving the "hairball" problem of traditional network graphs
+    and making structural comparisons reliable.
+  es: A hive plot arranges network nodes on radial axes based on node properties (such
+    as degree, category, or other attributes), enabling reproducible and directly
+    comparable network visualizations. Unlike force-directed layouts which can produce
+    different arrangements for identical networks, hive plots always render the same
+    network identically, solving the "hairball" problem of traditional network graphs
+    and making structural comparisons reliable.
+aliases:
+  en:
+  - hive-basic
+  - hive basic
+  - basic hive basic
+  es:
+  - hive-basic
+  - hive basic
+  - hive basic básico
+use_when:
+  en:
+  - A hive plot arranges network nodes on radial axes based on node properties (such
+    as degree, category, or other attributes), enabling reproducible and directly
+    comparable network visualizations. Unlike
+  es:
+  - A hive plot arranges network nodes on radial axes based on node properties (such
+    as degree, category, or other attributes), enabling reproducible and directly
+    comparable network visualizations. Unlike
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing software dependency networks across versions to identify structural
+    changes
+  - Analyzing social network patterns where reproducibility is required for publication
+    or reporting
+  - Visualizing biological interaction networks (protein-protein, gene regulatory)
+    for systematic analysis
+  es:
+  - Comparing software dependency networks across versions to identify structural
+    changes
+  - Analyzing social network patterns where reproducibility is required for publication
+    or reporting
+  - Visualizing biological interaction networks (protein-protein, gene regulatory)
+    for systematic analysis
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - hive
+  - network
+  - radial
+  data_type:
+  - network
+  - relational
+  - categorical
+  domain:
+  - general
+  - technology
+  - science
+  features:
+  - basic
+  - reproducible
+  - comparison
+keywords:
+  en:
+  - hive
+  - basic
+  - network
+  - radial
+  - relational
+  - categorical
+  - general
+  - technology
+  - science
+  - reproducible
+  - comparison
+  es:
+  - hive
+  - básico
+  - red
+  - radial
+  - relational
+  - categórico
+  - general
+  - technology
+  - ciencia
+  - basic
+  - reproducible
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/hive-basic/implementations/javascript/chartjs.js
+    d3: plots/hive-basic/implementations/javascript/d3.js
+    echarts: plots/hive-basic/implementations/javascript/echarts.js
+    highcharts: plots/hive-basic/implementations/javascript/highcharts.js
+    muix: plots/hive-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/hive-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/hive-basic/implementations/python/altair.py
+    bokeh: plots/hive-basic/implementations/python/bokeh.py
+    letsplot: plots/hive-basic/implementations/python/letsplot.py
+    matplotlib: plots/hive-basic/implementations/python/matplotlib.py
+    plotly: plots/hive-basic/implementations/python/plotly.py
+    plotnine: plots/hive-basic/implementations/python/plotnine.py
+    pygal: plots/hive-basic/implementations/python/pygal.py
+    seaborn: plots/hive-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/hive-basic/implementations/r/ggplot2.R
+notes:
+- Use 2-3 radial axes for clarity; more axes reduce readability
+- Node position along each axis should encode a meaningful property (e.g., degree,
+  centrality, or alphabetical order)
+- Edge bundling or transparency helps with dense connections between axes
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

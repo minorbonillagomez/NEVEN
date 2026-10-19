@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: box-horizontal
+name:
+  en: Horizontal Box Plot
+  es: Diagrama de Caja Horizontal
+description:
+  en: A horizontal box plot displays the distribution of numerical data through quartiles
+    with the boxes oriented horizontally. This orientation is particularly useful
+    when category labels are long or when comparing many groups, as it allows for
+    easier reading of labels on the y-axis.
+  es: A horizontal box plot displays the distribution of numerical data through quartiles
+    with the boxes oriented horizontally. This orientation is particularly useful
+    when category labels are long or when comparing many groups, as it allows for
+    easier reading of labels on the y-axis.
+aliases:
+  en:
+  - box-horizontal
+  - box horizontal
+  - horizontal box plot
+  es:
+  - box-horizontal
+  - box horizontal
+  - diagrama de caja horizontal
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing distributions across many categories with long names
+  - Displaying salary ranges by job title or department
+  - Analyzing test score distributions by course or subject
+  - Visualizing response time distributions by service type
+  es:
+  - Comparing distributions across many categories with long names
+  - Displaying salary ranges by job title or department
+  - Analyzing test score distributions by course or subject
+  - Visualizing response time distributions by service type
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - box
+  domain:
+  - statistics
+  - general
+  features:
+  - horizontal
+  - quartiles
+  - outliers
+  - distribution
+  data_type:
+  - numeric
+  - categorical
+keywords:
+  en:
+  - box plot
+  - horizontal
+  - box
+  - statistics
+  - general
+  - quartiles
+  - outliers
+  - distribution
+  - numeric
+  - categorical
+  es:
+  - diagrama de caja
+  - horizontal
+  - box
+  - estadística
+  - general
+  - quartiles
+  - outliers
+  - distribución
+  - numérico
+  - categórico
+implementations:
+  javascript:
+    chartjs: plots/box-horizontal/implementations/javascript/chartjs.js
+    d3: plots/box-horizontal/implementations/javascript/d3.js
+    echarts: plots/box-horizontal/implementations/javascript/echarts.js
+    highcharts: plots/box-horizontal/implementations/javascript/highcharts.js
+    muix: plots/box-horizontal/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/box-horizontal/implementations/julia/makie.jl
+  python:
+    altair: plots/box-horizontal/implementations/python/altair.py
+    bokeh: plots/box-horizontal/implementations/python/bokeh.py
+    letsplot: plots/box-horizontal/implementations/python/letsplot.py
+    matplotlib: plots/box-horizontal/implementations/python/matplotlib.py
+    plotly: plots/box-horizontal/implementations/python/plotly.py
+    plotnine: plots/box-horizontal/implementations/python/plotnine.py
+    pygal: plots/box-horizontal/implementations/python/pygal.py
+    seaborn: plots/box-horizontal/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/box-horizontal/implementations/r/ggplot2.R
+notes:
+- 'Same statistical elements as vertical box plot: median line, quartile box, whiskers,
+  outliers'
+- Particularly effective when category names are long
+- Consider sorting categories by median value for easier comparison
+source: anyplot
+anyplot_updated: '2026-05-12T00:51:33Z'

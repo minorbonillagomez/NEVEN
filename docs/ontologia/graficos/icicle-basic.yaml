@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: icicle-basic
+name:
+  en: Basic Icicle Chart
+  es: Icicle Basic Básico
+description:
+  en: An icicle chart displaying hierarchical data as adjacent rectangles in a layered
+    structure, where each rectangle's size represents its value in the hierarchy.
+    Unlike treemaps that nest rectangles, icicle charts stack them in rows (horizontal)
+    or columns (vertical), making parent-child relationships explicitly visible through
+    spatial adjacency. This layout excels at showing both the hierarchy levels and
+    the proportional values simultaneously.
+  es: An icicle chart displaying hierarchical data as adjacent rectangles in a layered
+    structure, where each rectangle's size represents its value in the hierarchy.
+    Unlike treemaps that nest rectangles, icicle charts stack them in rows (horizontal)
+    or columns (vertical), making parent-child relationships explicitly visible through
+    spatial adjacency. This layout excels at showing both the hierarchy levels and
+    the proportional values simultaneously.
+aliases:
+  en:
+  - icicle-basic
+  - icicle basic
+  - basic icicle basic
+  es:
+  - icicle-basic
+  - icicle basic
+  - icicle basic básico
+use_when:
+  en:
+  - An icicle chart displaying hierarchical data as adjacent rectangles in a layered
+    structure, where each rectangle's size represents its value in the hierarchy.
+    Unlike treemaps that nest rectangles, ici
+  es:
+  - An icicle chart displaying hierarchical data as adjacent rectangles in a layered
+    structure, where each rectangle's size represents its value in the hierarchy.
+    Unlike treemaps that nest rectangles, ici
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - File system visualization showing directory structure and file sizes
+  - Organizational hierarchy displaying departments and team headcounts
+  - Budget breakdown by department, project, and expense category
+  - Website navigation structure with page hierarchy and traffic volume
+  es:
+  - File system visualization showing directory structure and file sizes
+  - Organizational hierarchy displaying departments and team headcounts
+  - Budget breakdown by department, project, and expense category
+  - Website navigation structure with page hierarchy and traffic volume
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - icicle
+  data_type:
+  - hierarchical
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  - technology
+  features:
+  - basic
+  - proportional
+keywords:
+  en:
+  - icicle
+  - basic
+  - hierarchical
+  - categorical
+  - numeric
+  - general
+  - business
+  - technology
+  - proportional
+  es:
+  - icicle
+  - básico
+  - jerárquico
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - technology
+  - basic
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/icicle-basic/implementations/javascript/chartjs.js
+    d3: plots/icicle-basic/implementations/javascript/d3.js
+    echarts: plots/icicle-basic/implementations/javascript/echarts.js
+    highcharts: plots/icicle-basic/implementations/javascript/highcharts.js
+    muix: plots/icicle-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/icicle-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/icicle-basic/implementations/python/altair.py
+    bokeh: plots/icicle-basic/implementations/python/bokeh.py
+    letsplot: plots/icicle-basic/implementations/python/letsplot.py
+    matplotlib: plots/icicle-basic/implementations/python/matplotlib.py
+    plotly: plots/icicle-basic/implementations/python/plotly.py
+    plotnine: plots/icicle-basic/implementations/python/plotnine.py
+    pygal: plots/icicle-basic/implementations/python/pygal.py
+    seaborn: plots/icicle-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/icicle-basic/implementations/r/ggplot2.R
+notes:
+- Use horizontal orientation (top-to-bottom) for deep hierarchies
+- Color by hierarchy level or category for visual grouping
+- Label rectangles that have sufficient space; hide labels for small nodes
+source: anyplot
+anyplot_updated: 2026-05-13 00:00:00+00:00

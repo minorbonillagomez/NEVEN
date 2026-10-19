@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: contour-filled
+name:
+  en: Filled Contour Plot
+  es: Gráfico de Contorno
+description:
+  en: A filled contour plot displays colored regions between level curves of a 2D
+    scalar field, creating a smooth gradient visualization of continuous data. Unlike
+    basic contour plots that show only isolines, filled contours use color bands to
+    represent value ranges, making it easier to perceive gradual changes and identify
+    regions of similar magnitude. This visualization is particularly effective for
+    showing how a quantity varies continuously across a 2D surface.
+  es: A filled contour plot displays colored regions between level curves of a 2D
+    scalar field, creating a smooth gradient visualization of continuous data. Unlike
+    basic contour plots that show only isolines, filled contours use color bands to
+    represent value ranges, making it easier to perceive gradual changes and identify
+    regions of similar magnitude. This visualization is particularly effective for
+    showing how a quantity varies continuously across a 2D surface.
+aliases:
+  en:
+  - contour-filled
+  - contour filled
+  - contour plot
+  es:
+  - contour-filled
+  - contour filled
+  - gráfico de contorno
+use_when:
+  en:
+  - A filled contour plot displays colored regions between level curves of a 2D scalar
+    field, creating a smooth gradient visualization of continuous data. Unlike basic
+    contour plots that show only isoline
+  es:
+  - A filled contour plot displays colored regions between level curves of a 2D scalar
+    field, creating a smooth gradient visualization of continuous data. Unlike basic
+    contour plots that show only isoline
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Creating topographic maps with elevation bands showing terrain height ranges
+  - Visualizing weather data such as temperature gradients, atmospheric pressure fields,
+    or precipitation intensity
+  - Displaying probability density estimates and statistical distributions in 2D space
+  - Rendering mathematical functions to understand their behavior across a domain
+  es:
+  - Creating topographic maps with elevation bands showing terrain height ranges
+  - Visualizing weather data such as temperature gradients, atmospheric pressure fields,
+    or precipitation intensity
+  - Displaying probability density estimates and statistical distributions in 2D space
+  - Rendering mathematical functions to understand their behavior across a domain
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - contour
+  - heatmap
+  data_type:
+  - numeric
+  - continuous
+  - spatial
+  domain:
+  - general
+  - science
+  - engineering
+  features:
+  - filled
+  - gradient
+  - 2d
+keywords:
+  en:
+  - contour plot
+  - filled
+  - contour
+  - heatmap
+  - numeric
+  - continuous
+  - spatial
+  - general
+  - science
+  - engineering
+  - gradient
+  - 2d
+  es:
+  - gráfico de contorno
+  - filled
+  - contour
+  - heatmap
+  - numérico
+  - continuo
+  - spatial
+  - general
+  - ciencia
+  - ingeniería
+  - gradient
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/contour-filled/implementations/javascript/chartjs.js
+    d3: plots/contour-filled/implementations/javascript/d3.js
+    echarts: plots/contour-filled/implementations/javascript/echarts.js
+    highcharts: plots/contour-filled/implementations/javascript/highcharts.js
+    muix: plots/contour-filled/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/contour-filled/implementations/julia/makie.jl
+  python:
+    altair: plots/contour-filled/implementations/python/altair.py
+    bokeh: plots/contour-filled/implementations/python/bokeh.py
+    letsplot: plots/contour-filled/implementations/python/letsplot.py
+    matplotlib: plots/contour-filled/implementations/python/matplotlib.py
+    plotly: plots/contour-filled/implementations/python/plotly.py
+    plotnine: plots/contour-filled/implementations/python/plotnine.py
+    pygal: plots/contour-filled/implementations/python/pygal.py
+    seaborn: plots/contour-filled/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/contour-filled/implementations/r/ggplot2.R
+notes:
+- Use a sequential or diverging colormap appropriate for the data range
+- Include a colorbar to indicate the value mapping
+- Consider overlaying contour lines for precise level identification
+source: anyplot
+anyplot_updated: null

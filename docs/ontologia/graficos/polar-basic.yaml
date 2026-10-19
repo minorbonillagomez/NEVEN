@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: polar-basic
+name:
+  en: Basic Polar Chart
+  es: Gráfico Polar Básico
+description:
+  en: A polar chart displays data points on a circular coordinate system where position
+    is determined by angle (theta) and distance from center (radius). This visualization
+    is ideal for cyclical patterns, directional data, or any dataset where angular
+    relationships are meaningful. It reveals periodic trends and directional distributions
+    that would be obscured in Cartesian coordinates.
+  es: A polar chart displays data points on a circular coordinate system where position
+    is determined by angle (theta) and distance from center (radius). This visualization
+    is ideal for cyclical patterns, directional data, or any dataset where angular
+    relationships are meaningful. It reveals periodic trends and directional distributions
+    that would be obscured in Cartesian coordinates.
+aliases:
+  en:
+  - polar-basic
+  - polar basic
+  - basic polar chart
+  es:
+  - polar-basic
+  - polar basic
+  - gráfico polar básico
+use_when:
+  en:
+  - A polar chart displays data points on a circular coordinate system where position
+    is determined by angle (theta) and distance from center (radius). This visualization
+    is ideal for cyclical patterns, d
+  es:
+  - A polar chart displays data points on a circular coordinate system where position
+    is determined by angle (theta) and distance from center (radius). This visualization
+    is ideal for cyclical patterns, d
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying wind speed and direction measurements from weather stations
+  - Visualizing time-of-day patterns (e.g., website traffic by hour, energy consumption
+    cycles)
+  - Showing compass-based data such as animal migration directions or survey response
+    distributions
+  - Analyzing seasonal patterns where the circular nature emphasizes yearly cycles
+  es:
+  - Displaying wind speed and direction measurements from weather stations
+  - Visualizing time-of-day patterns (e.g., website traffic by hour, energy consumption
+    cycles)
+  - Showing compass-based data such as animal migration directions or survey response
+    distributions
+  - Analyzing seasonal patterns where the circular nature emphasizes yearly cycles
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - polar
+  data_type:
+  - numeric
+  - angular
+  domain:
+  - general
+  - science
+  features:
+  - basic
+  - circular
+  - radial
+keywords:
+  en:
+  - polar chart
+  - basic
+  - polar
+  - numeric
+  - angular
+  - general
+  - science
+  - circular
+  - radial
+  es:
+  - gráfico polar
+  - básico
+  - polar
+  - numérico
+  - angular
+  - general
+  - ciencia
+  - basic
+  - circular
+  - radial
+implementations:
+  javascript:
+    chartjs: plots/polar-basic/implementations/javascript/chartjs.js
+    d3: plots/polar-basic/implementations/javascript/d3.js
+    echarts: plots/polar-basic/implementations/javascript/echarts.js
+    highcharts: plots/polar-basic/implementations/javascript/highcharts.js
+    muix: plots/polar-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/polar-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/polar-basic/implementations/python/altair.py
+    bokeh: plots/polar-basic/implementations/python/bokeh.py
+    letsplot: plots/polar-basic/implementations/python/letsplot.py
+    matplotlib: plots/polar-basic/implementations/python/matplotlib.py
+    plotly: plots/polar-basic/implementations/python/plotly.py
+    plotnine: plots/polar-basic/implementations/python/plotnine.py
+    pygal: plots/polar-basic/implementations/python/pygal.py
+    seaborn: plots/polar-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/polar-basic/implementations/r/ggplot2.R
+notes:
+- Radial gridlines should be clearly visible but not overwhelming
+- Angular labels should be at standard intervals (0°, 90°, 180°, 270° or compass directions)
+- Consider starting angle at top (90°) for time-based data or at right (0°) for standard
+  mathematical convention
+source: anyplot
+anyplot_updated: 2026-07-24 23:18:45+00:00

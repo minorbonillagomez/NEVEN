@@ -555,6 +555,89 @@ const LANG_EN = {
     permissionDenied: "Permission denied",
     engineNotAvailable: "Engine not available",
     sqlError: "SQL error"
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CHART GALLERY (anyplot integration)
+  // ─────────────────────────────────────────────────────────────────────────
+  chartGallery: {
+    title: "Chart Gallery",
+    subtitle: "325 chart types with code in Python, R, Julia, and JavaScript",
+    searchPlaceholder: "Search charts...",
+    recommendButton: "Recommend for my data",
+    viewCode: "View Code",
+    copyCode: "Copy Code",
+    insertInScript: "Insert in Run Script",
+    
+    // Languages
+    languages: {
+      python: "Python",
+      r: "R",
+      julia: "Julia",
+      javascript: "JavaScript"
+    },
+    
+    // Categories
+    categories: {
+      basic: "Basic",
+      distribution: "Distribution",
+      correlation: "Correlation",
+      comparison: "Comparison",
+      temporal: "Time Series",
+      hierarchical: "Hierarchical",
+      geographic: "Geographic",
+      statistical: "Statistical",
+      specialized: "Specialized"
+    },
+    
+    // Common chart types (30 most used)
+    chartTypes: {
+      scatter: "Scatter Plot",
+      bar: "Bar Chart",
+      line: "Line Chart",
+      area: "Area Chart",
+      pie: "Pie Chart",
+      donut: "Donut Chart",
+      histogram: "Histogram",
+      heatmap: "Heatmap",
+      box: "Box Plot",
+      violin: "Violin Plot",
+      density: "Density Plot",
+      bubble: "Bubble Chart",
+      treemap: "Treemap",
+      sunburst: "Sunburst",
+      sankey: "Sankey Diagram",
+      chord: "Chord Diagram",
+      network: "Network Graph",
+      radar: "Radar Chart",
+      polar: "Polar Chart",
+      candlestick: "Candlestick Chart",
+      gantt: "Gantt Chart",
+      waterfall: "Waterfall Chart",
+      funnel: "Funnel Chart",
+      gauge: "Gauge Chart",
+      wordcloud: "Word Cloud",
+      choropleth: "Choropleth Map",
+      contour: "Contour Plot",
+      surface: "3D Surface",
+      qq: "Q-Q Plot",
+      roc: "ROC Curve",
+      confusion: "Confusion Matrix",
+      forest: "Forest Plot"
+    },
+    
+    // Use when labels
+    useWhen: "Use when:",
+    avoidWhen: "Avoid when:",
+    dataRequirements: "Data requirements:",
+    implementations: "Available implementations:",
+    
+    // Messages
+    loading: "Loading chart gallery...",
+    noResults: "No charts found",
+    errorLoading: "Error loading chart gallery",
+    copied: "Code copied to clipboard",
+    inserted: "Code inserted in Run Script"
   }
 
 };

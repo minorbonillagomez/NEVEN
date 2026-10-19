@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: voronoi-basic
+name:
+  en: Voronoi Diagram for Spatial Partitioning
+  es: Voronoi Basic Básico
+description:
+  en: A Voronoi diagram partitions a plane into regions based on the distance to a
+    set of seed points, where each region contains all points closer to its seed than
+    to any other. This visualization is essential for understanding spatial relationships,
+    proximity analysis, and territorial boundaries. It reveals natural clustering
+    patterns and helps identify areas of influence around data points.
+  es: A Voronoi diagram partitions a plane into regions based on the distance to a
+    set of seed points, where each region contains all points closer to its seed than
+    to any other. This visualization is essential for understanding spatial relationships,
+    proximity analysis, and territorial boundaries. It reveals natural clustering
+    patterns and helps identify areas of influence around data points.
+aliases:
+  en:
+  - voronoi-basic
+  - voronoi basic
+  - basic voronoi basic
+  es:
+  - voronoi-basic
+  - voronoi basic
+  - voronoi basic básico
+use_when:
+  en:
+  - A Voronoi diagram partitions a plane into regions based on the distance to a set
+    of seed points, where each region contains all points closer to its seed than
+    to any other. This visualization is essen
+  es:
+  - A Voronoi diagram partitions a plane into regions based on the distance to a set
+    of seed points, where each region contains all points closer to its seed than
+    to any other. This visualization is essen
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing service area coverage for retail stores or emergency facilities based
+    on customer proximity
+  - Visualizing territorial boundaries in ecological studies to show animal home ranges
+    or plant distribution zones
+  - Mapping nearest-neighbor relationships in urban planning for optimizing resource
+    placement like cell towers or hospitals
+  es:
+  - Analyzing service area coverage for retail stores or emergency facilities based
+    on customer proximity
+  - Visualizing territorial boundaries in ecological studies to show animal home ranges
+    or plant distribution zones
+  - Mapping nearest-neighbor relationships in urban planning for optimizing resource
+    placement like cell towers or hospitals
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - voronoi
+  - tessellation
+  data_type:
+  - numeric
+  - spatial
+  domain:
+  - general
+  - science
+  - machine-learning
+  features:
+  - basic
+  - 2d
+  - partitioning
+keywords:
+  en:
+  - voronoi
+  - basic
+  - tessellation
+  - numeric
+  - spatial
+  - general
+  - science
+  - machine learning
+  - 2d
+  - partitioning
+  es:
+  - voronoi
+  - básico
+  - tessellation
+  - numérico
+  - spatial
+  - general
+  - ciencia
+  - aprendizaje automático
+  - basic
+  - 2d
+  - partitioning
+implementations:
+  javascript:
+    chartjs: plots/voronoi-basic/implementations/javascript/chartjs.js
+    d3: plots/voronoi-basic/implementations/javascript/d3.js
+    echarts: plots/voronoi-basic/implementations/javascript/echarts.js
+    highcharts: plots/voronoi-basic/implementations/javascript/highcharts.js
+    muix: plots/voronoi-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/voronoi-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/voronoi-basic/implementations/python/altair.py
+    bokeh: plots/voronoi-basic/implementations/python/bokeh.py
+    letsplot: plots/voronoi-basic/implementations/python/letsplot.py
+    matplotlib: plots/voronoi-basic/implementations/python/matplotlib.py
+    plotly: plots/voronoi-basic/implementations/python/plotly.py
+    plotnine: plots/voronoi-basic/implementations/python/plotnine.py
+    pygal: plots/voronoi-basic/implementations/python/pygal.py
+    seaborn: plots/voronoi-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/voronoi-basic/implementations/r/ggplot2.R
+notes:
+- Cells should be clipped to a visible bounding box to prevent infinite regions
+- Each Voronoi cell should be visually distinguishable through colors or edge styling
+- Seed points should be clearly marked within their respective cells
+source: anyplot
+anyplot_updated: null

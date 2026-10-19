@@ -1,0 +1,118 @@
+entity_type: ChartType
+id: maze-circular
+name:
+  en: Circular Maze Puzzle
+  es: Maze Circular
+description:
+  en: A circular maze puzzle visualization featuring concentric rings connected by
+    radial passages. Unlike rectangular mazes, this design creates a unique solving
+    experience where the player navigates inward through ring-shaped corridors. The
+    maze has an entry point on the outer edge and a goal at the center, with algorithmically
+    generated walls ensuring exactly one solvable path.
+  es: A circular maze puzzle visualization featuring concentric rings connected by
+    radial passages. Unlike rectangular mazes, this design creates a unique solving
+    experience where the player navigates inward through ring-shaped corridors. The
+    maze has an entry point on the outer edge and a goal at the center, with algorithmically
+    generated walls ensuring exactly one solvable path.
+aliases:
+  en:
+  - maze-circular
+  - maze circular
+  - maze circular
+  es:
+  - maze-circular
+  - maze circular
+  - maze circular
+use_when:
+  en:
+  - A circular maze puzzle visualization featuring concentric rings connected by radial
+    passages. Unlike rectangular mazes, this design creates a unique solving experience
+    where the player navigates inwar
+  es:
+  - A circular maze puzzle visualization featuring concentric rings connected by radial
+    passages. Unlike rectangular mazes, this design creates a unique solving experience
+    where the player navigates inwar
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Printable puzzle sheets with a distinctive circular aesthetic
+  - Decorative maze art for posters, coasters, or wall prints
+  - Game level design for maze-based video games or apps
+  - Educational activities teaching spatial reasoning and problem-solving
+  es:
+  - Printable puzzle sheets with a distinctive circular aesthetic
+  - Decorative maze art for posters, coasters, or wall prints
+  - Game level design for maze-based video games or apps
+  - Educational activities teaching spatial reasoning and problem-solving
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - maze
+  - polar
+  data_type:
+  - discrete
+  - categorical
+  domain:
+  - general
+  - education
+  features:
+  - basic
+  - radial
+  - algorithmic
+keywords:
+  en:
+  - maze
+  - circular
+  - polar
+  - discrete
+  - categorical
+  - general
+  - education
+  - basic
+  - radial
+  - algorithmic
+  es:
+  - maze
+  - circular
+  - polar
+  - discreto
+  - categórico
+  - general
+  - education
+  - basic
+  - radial
+  - algorithmic
+implementations:
+  javascript:
+    chartjs: plots/maze-circular/implementations/javascript/chartjs.js
+    d3: plots/maze-circular/implementations/javascript/d3.js
+    echarts: plots/maze-circular/implementations/javascript/echarts.js
+    highcharts: plots/maze-circular/implementations/javascript/highcharts.js
+    muix: plots/maze-circular/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/maze-circular/implementations/julia/makie.jl
+  python:
+    altair: plots/maze-circular/implementations/python/altair.py
+    bokeh: plots/maze-circular/implementations/python/bokeh.py
+    letsplot: plots/maze-circular/implementations/python/letsplot.py
+    matplotlib: plots/maze-circular/implementations/python/matplotlib.py
+    plotly: plots/maze-circular/implementations/python/plotly.py
+    plotnine: plots/maze-circular/implementations/python/plotnine.py
+    pygal: plots/maze-circular/implementations/python/pygal.py
+    seaborn: plots/maze-circular/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/maze-circular/implementations/r/ggplot2.R
+notes:
+- Concentric circular walls form ring-shaped corridors
+- Radial walls divide each ring into sectors
+- Radial passages connect adjacent rings at strategic points
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

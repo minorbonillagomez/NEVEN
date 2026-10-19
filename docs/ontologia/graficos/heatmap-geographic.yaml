@@ -1,0 +1,137 @@
+entity_type: ChartType
+id: heatmap-geographic
+name:
+  en: Geographic Heatmap for Spatial Density
+  es: Mapa de Calor
+description:
+  en: A geographic heatmap visualizes spatial density or intensity values across a
+    map using continuous color gradients. Unlike choropleth maps that color discrete
+    regions, this plot shows smooth density variations computed from point data or
+    gridded values. The color intensity at each location represents the concentration
+    or magnitude of the underlying data, making it ideal for identifying hotspots,
+    clusters, and spatial patterns in geographic data.
+  es: A geographic heatmap visualizes spatial density or intensity values across a
+    map using continuous color gradients. Unlike choropleth maps that color discrete
+    regions, this plot shows smooth density variations computed from point data or
+    gridded values. The color intensity at each location represents the concentration
+    or magnitude of the underlying data, making it ideal for identifying hotspots,
+    clusters, and spatial patterns in geographic data.
+aliases:
+  en:
+  - heatmap-geographic
+  - heatmap geographic
+  - heatmap
+  es:
+  - heatmap-geographic
+  - heatmap geographic
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing crime incident density across a city to identify high-risk areas
+  - Mapping population or activity density in urban planning studies
+  - Displaying temperature, pollution, or environmental measurements interpolated
+    across a geographic region
+  - Showing customer or event density for retail site selection and marketing analysis
+  es:
+  - Visualizing crime incident density across a city to identify high-risk areas
+  - Mapping population or activity density in urban planning studies
+  - Displaying temperature, pollution, or environmental measurements interpolated
+    across a geographic region
+  - Showing customer or event density for retail site selection and marketing analysis
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  - map
+  data_type:
+  - geospatial
+  - numeric
+  - continuous
+  domain:
+  - general
+  - business
+  - science
+  features:
+  - basic
+  - density
+  - color-mapped
+  - spatial
+keywords:
+  en:
+  - heatmap
+  - geographic
+  - map
+  - geospatial
+  - numeric
+  - continuous
+  - general
+  - business
+  - science
+  - basic
+  - density
+  - color-mapped
+  - spatial
+  es:
+  - mapa de calor
+  - geographic
+  - heatmap
+  - map
+  - geoespacial
+  - numérico
+  - continuo
+  - general
+  - negocios
+  - ciencia
+  - basic
+  - density
+  - color-mapped
+  - spatial
+implementations:
+  javascript:
+    chartjs: plots/heatmap-geographic/implementations/javascript/chartjs.js
+    d3: plots/heatmap-geographic/implementations/javascript/d3.js
+    echarts: plots/heatmap-geographic/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-geographic/implementations/javascript/highcharts.js
+    muix: plots/heatmap-geographic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-geographic/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-geographic/implementations/python/altair.py
+    bokeh: plots/heatmap-geographic/implementations/python/bokeh.py
+    letsplot: plots/heatmap-geographic/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-geographic/implementations/python/matplotlib.py
+    plotly: plots/heatmap-geographic/implementations/python/plotly.py
+    plotnine: plots/heatmap-geographic/implementations/python/plotnine.py
+    pygal: plots/heatmap-geographic/implementations/python/pygal.py
+    seaborn: plots/heatmap-geographic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-geographic/implementations/r/ggplot2.R
+notes:
+- Use kernel density estimation (KDE) or similar interpolation to create the continuous
+  heatmap layer
+- Apply a sequential colormap (e.g., YlOrRd, inferno) with transparency to allow the
+  basemap to show through
+- Include a colorbar legend showing the density or intensity scale
+source: anyplot
+anyplot_updated: null

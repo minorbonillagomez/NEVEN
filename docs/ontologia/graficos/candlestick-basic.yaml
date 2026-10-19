@@ -1,0 +1,118 @@
+entity_type: ChartType
+id: candlestick-basic
+name:
+  en: Basic Candlestick Chart
+  es: Gráfico de Velas Básico
+description:
+  en: A candlestick chart displays open, high, low, and close (OHLC) price data for
+    financial instruments over time. Each candlestick shows the price range within
+    a specific period, with the body indicating the open-close range and the wicks
+    (shadows) showing the high-low range. Color coding distinguishes bullish (price
+    increase) from bearish (price decrease) periods, making it easy to identify trends
+    and price patterns at a glance.
+  es: A candlestick chart displays open, high, low, and close (OHLC) price data for
+    financial instruments over time. Each candlestick shows the price range within
+    a specific period, with the body indicating the open-close range and the wicks
+    (shadows) showing the high-low range. Color coding distinguishes bullish (price
+    increase) from bearish (price decrease) periods, making it easy to identify trends
+    and price patterns at a glance.
+aliases:
+  en:
+  - candlestick-basic
+  - candlestick basic
+  - basic candlestick chart
+  es:
+  - candlestick-basic
+  - candlestick basic
+  - gráfico de velas básico
+use_when:
+  en:
+  - A candlestick chart displays open, high, low, and close (OHLC) price data for
+    financial instruments over time. Each candlestick shows the price range within
+    a specific period, with the body indicating
+  es:
+  - A candlestick chart displays open, high, low, and close (OHLC) price data for
+    financial instruments over time. Each candlestick shows the price range within
+    a specific period, with the body indicating
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Tracking daily stock price movements to identify trends and potential entry/exit
+    points
+  - Analyzing cryptocurrency volatility and price action over hourly or daily intervals
+  - Visualizing forex currency pair movements for technical analysis
+  es:
+  - Tracking daily stock price movements to identify trends and potential entry/exit
+    points
+  - Analyzing cryptocurrency volatility and price action over hourly or daily intervals
+  - Visualizing forex currency pair movements for technical analysis
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - candlestick
+  data_type:
+  - numeric
+  - timeseries
+  - datetime
+  - ohlc
+  domain:
+  - finance
+  features:
+  - basic
+  - temporal
+keywords:
+  en:
+  - candlestick chart
+  - basic
+  - candlestick
+  - numeric
+  - timeseries
+  - datetime
+  - ohlc
+  - finance
+  - temporal
+  es:
+  - gráfico de velas
+  - básico
+  - candlestick
+  - numérico
+  - timeseries
+  - datetime
+  - ohlc
+  - finanzas
+  - basic
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/candlestick-basic/implementations/javascript/chartjs.js
+    d3: plots/candlestick-basic/implementations/javascript/d3.js
+    echarts: plots/candlestick-basic/implementations/javascript/echarts.js
+    highcharts: plots/candlestick-basic/implementations/javascript/highcharts.js
+    muix: plots/candlestick-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/candlestick-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/candlestick-basic/implementations/python/altair.py
+    bokeh: plots/candlestick-basic/implementations/python/bokeh.py
+    letsplot: plots/candlestick-basic/implementations/python/letsplot.py
+    matplotlib: plots/candlestick-basic/implementations/python/matplotlib.py
+    plotly: plots/candlestick-basic/implementations/python/plotly.py
+    plotnine: plots/candlestick-basic/implementations/python/plotnine.py
+    pygal: plots/candlestick-basic/implementations/python/pygal.py
+    seaborn: plots/candlestick-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/candlestick-basic/implementations/r/ggplot2.R
+notes:
+- Use green/red or blue/red color schemes for up/down days (green/red is most common)
+- Ensure wicks are clearly visible but thinner than the candle body
+- Time axis should have appropriate date formatting based on the data frequency
+source: anyplot
+anyplot_updated: 2026-05-30 05:17:11+00:00

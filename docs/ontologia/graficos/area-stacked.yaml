@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: area-stacked
+name:
+  en: Stacked Area Chart
+  es: Gráfico de Área Apilado
+description:
+  en: A stacked area chart displays multiple data series as areas stacked on top of
+    each other, with each series starting where the previous one ends. This visualization
+    emphasizes both individual contributions and cumulative totals over a continuous
+    axis (typically time). It is ideal for showing how parts contribute to a whole
+    while tracking changes over time, making patterns of composition and overall trends
+    immediately visible.
+  es: A stacked area chart displays multiple data series as areas stacked on top of
+    each other, with each series starting where the previous one ends. This visualization
+    emphasizes both individual contributions and cumulative totals over a continuous
+    axis (typically time). It is ideal for showing how parts contribute to a whole
+    while tracking changes over time, making patterns of composition and overall trends
+    immediately visible.
+aliases:
+  en:
+  - area-stacked
+  - area stacked
+  - stacked area chart
+  es:
+  - area-stacked
+  - area stacked
+  - gráfico de área apilado
+use_when:
+  en:
+  - A stacked area chart displays multiple data series as areas stacked on top of
+    each other, with each series starting where the previous one ends. This visualization
+    emphasizes both individual contribut
+  es:
+  - A stacked area chart displays multiple data series as areas stacked on top of
+    each other, with each series starting where the previous one ends. This visualization
+    emphasizes both individual contribut
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Revenue breakdown by product line over time
+  - Website traffic sources (direct, organic, referral, social) over months
+  - Resource allocation across departments or projects
+  - Energy consumption by sector over years
+  es:
+  - Revenue breakdown by product line over time
+  - Website traffic sources (direct, organic, referral, social) over months
+  - Resource allocation across departments or projects
+  - Energy consumption by sector over years
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  data_type:
+  - numeric
+  - timeseries
+  - categorical
+  domain:
+  - general
+  - business
+  - finance
+  features:
+  - stacked
+  - multi
+  - cumulative
+  - comparison
+keywords:
+  en:
+  - area chart
+  - stacked
+  - area
+  - numeric
+  - timeseries
+  - categorical
+  - general
+  - business
+  - finance
+  - multi
+  - cumulative
+  - comparison
+  es:
+  - gráfico de área
+  - apilado
+  - area
+  - numérico
+  - timeseries
+  - categórico
+  - general
+  - negocios
+  - finanzas
+  - stacked
+  - multi
+  - cumulative
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/area-stacked/implementations/javascript/chartjs.js
+    d3: plots/area-stacked/implementations/javascript/d3.js
+    echarts: plots/area-stacked/implementations/javascript/echarts.js
+    highcharts: plots/area-stacked/implementations/javascript/highcharts.js
+    muix: plots/area-stacked/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/area-stacked/implementations/julia/makie.jl
+  python:
+    altair: plots/area-stacked/implementations/python/altair.py
+    bokeh: plots/area-stacked/implementations/python/bokeh.py
+    letsplot: plots/area-stacked/implementations/python/letsplot.py
+    matplotlib: plots/area-stacked/implementations/python/matplotlib.py
+    plotly: plots/area-stacked/implementations/python/plotly.py
+    plotnine: plots/area-stacked/implementations/python/plotnine.py
+    pygal: plots/area-stacked/implementations/python/pygal.py
+    seaborn: plots/area-stacked/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/area-stacked/implementations/r/ggplot2.R
+notes:
+- Use distinct but harmonious colors for each series
+- Order series by size (largest at bottom) for easier reading
+- Include legend to identify each series
+source: anyplot
+anyplot_updated: 2026-05-07 15:02:53+00:00

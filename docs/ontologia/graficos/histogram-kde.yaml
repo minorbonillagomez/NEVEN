@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: histogram-kde
+name:
+  en: Histogram with KDE Overlay
+  es: Histograma
+description:
+  en: A histogram with kernel density estimate (KDE) overlay combines discrete binning
+    with continuous density estimation to visualize the distribution of continuous
+    data. The histogram bars show frequency counts in each bin while the smooth KDE
+    curve reveals the underlying probability density, making it easier to perceive
+    the true shape of the distribution without binning artifacts.
+  es: A histogram with kernel density estimate (KDE) overlay combines discrete binning
+    with continuous density estimation to visualize the distribution of continuous
+    data. The histogram bars show frequency counts in each bin while the smooth KDE
+    curve reveals the underlying probability density, making it easier to perceive
+    the true shape of the distribution without binning artifacts.
+aliases:
+  en:
+  - histogram-kde
+  - histogram kde
+  - histogram
+  es:
+  - histogram-kde
+  - histogram kde
+  - histograma
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing financial return distributions to identify skewness and tail behavior
+  - Exploring measurement data in quality control to compare observed frequencies
+    with theoretical distributions
+  - Understanding customer behavior patterns in marketing analytics with both discrete
+    counts and smooth trends
+  es:
+  - Analyzing financial return distributions to identify skewness and tail behavior
+  - Exploring measurement data in quality control to compare observed frequencies
+    with theoretical distributions
+  - Understanding customer behavior patterns in marketing analytics with both discrete
+    counts and smooth trends
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  - density
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - general
+  - statistics
+  features:
+  - distribution
+  - overlay
+  - composite
+keywords:
+  en:
+  - histogram
+  - kde
+  - density
+  - numeric
+  - continuous
+  - general
+  - statistics
+  - distribution
+  - overlay
+  - composite
+  es:
+  - histograma
+  - kde
+  - histogram
+  - density
+  - numérico
+  - continuo
+  - general
+  - estadística
+  - distribución
+  - overlay
+  - composite
+implementations:
+  javascript:
+    chartjs: plots/histogram-kde/implementations/javascript/chartjs.js
+    d3: plots/histogram-kde/implementations/javascript/d3.js
+    echarts: plots/histogram-kde/implementations/javascript/echarts.js
+    highcharts: plots/histogram-kde/implementations/javascript/highcharts.js
+    muix: plots/histogram-kde/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-kde/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-kde/implementations/python/altair.py
+    bokeh: plots/histogram-kde/implementations/python/bokeh.py
+    letsplot: plots/histogram-kde/implementations/python/letsplot.py
+    matplotlib: plots/histogram-kde/implementations/python/matplotlib.py
+    plotly: plots/histogram-kde/implementations/python/plotly.py
+    plotnine: plots/histogram-kde/implementations/python/plotnine.py
+    pygal: plots/histogram-kde/implementations/python/pygal.py
+    seaborn: plots/histogram-kde/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-kde/implementations/r/ggplot2.R
+notes:
+- Use semi-transparent histogram bars (alpha ~0.5) so the KDE curve remains visible
+- Scale y-axis as density (not counts) so histogram and KDE are on comparable scales
+- Choose appropriate bin count and KDE bandwidth to balance detail and smoothness
+source: anyplot
+anyplot_updated: null

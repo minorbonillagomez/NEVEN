@@ -1,0 +1,135 @@
+entity_type: ChartType
+id: spirometry-flow-volume
+name:
+  en: Spirometry Flow-Volume Loop
+  es: Spirometry Flow Volume
+description:
+  en: A pulmonary function test visualization that plots airflow rate (L/s) against
+    lung volume (L) during forced expiration and inspiration, forming a characteristic
+    loop shape. The expiratory limb rises sharply to Peak Expiratory Flow (PEF) then
+    declines, while the inspiratory limb forms a more symmetric curve below the x-axis.
+    This plot is essential for diagnosing obstructive and restrictive lung diseases
+    by comparing measured loops against predicted normal values.
+  es: A pulmonary function test visualization that plots airflow rate (L/s) against
+    lung volume (L) during forced expiration and inspiration, forming a characteristic
+    loop shape. The expiratory limb rises sharply to Peak Expiratory Flow (PEF) then
+    declines, while the inspiratory limb forms a more symmetric curve below the x-axis.
+    This plot is essential for diagnosing obstructive and restrictive lung diseases
+    by comparing measured loops against predicted normal values.
+aliases:
+  en:
+  - spirometry-flow-volume
+  - spirometry flow volume
+  - spirometry flow volume
+  es:
+  - spirometry-flow-volume
+  - spirometry flow volume
+  - spirometry flow volume
+use_when:
+  en:
+  - A pulmonary function test visualization that plots airflow rate (L/s) against
+    lung volume (L) during forced expiration and inspiration, forming a characteristic
+    loop shape. The expiratory limb rises s
+  es:
+  - A pulmonary function test visualization that plots airflow rate (L/s) against
+    lung volume (L) during forced expiration and inspiration, forming a characteristic
+    loop shape. The expiratory limb rises s
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Pulmonology clinics diagnosing obstructive (e.g., asthma, COPD) vs restrictive
+    (e.g., pulmonary fibrosis) lung disease by analyzing loop shape distortions
+  - Respiratory therapy departments monitoring treatment effectiveness by overlaying
+    pre- and post-bronchodilator flow-volume loops
+  - Occupational health screening programs assessing lung function in workers exposed
+    to respiratory hazards
+  - Medical education teaching respiratory physiology and spirometry interpretation
+    to students
+  es:
+  - Pulmonology clinics diagnosing obstructive (e.g., asthma, COPD) vs restrictive
+    (e.g., pulmonary fibrosis) lung disease by analyzing loop shape distortions
+  - Respiratory therapy departments monitoring treatment effectiveness by overlaying
+    pre- and post-bronchodilator flow-volume loops
+  - Occupational health screening programs assessing lung function in workers exposed
+    to respiratory hazards
+  - Medical education teaching respiratory physiology and spirometry interpretation
+    to students
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - polar
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - healthcare
+  - science
+  features:
+  - annotated
+  - comparison
+  - 2d
+keywords:
+  en:
+  - spirometry
+  - flow
+  - volume
+  - line
+  - polar
+  - numeric
+  - continuous
+  - healthcare
+  - science
+  - annotated
+  - comparison
+  - 2d
+  es:
+  - spirometry
+  - flow
+  - volume
+  - line
+  - polar
+  - numérico
+  - continuo
+  - healthcare
+  - ciencia
+  - annotated
+  - comparación
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/spirometry-flow-volume/implementations/javascript/chartjs.js
+    d3: plots/spirometry-flow-volume/implementations/javascript/d3.js
+    echarts: plots/spirometry-flow-volume/implementations/javascript/echarts.js
+    highcharts: plots/spirometry-flow-volume/implementations/javascript/highcharts.js
+    muix: plots/spirometry-flow-volume/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/spirometry-flow-volume/implementations/julia/makie.jl
+  python:
+    altair: plots/spirometry-flow-volume/implementations/python/altair.py
+    bokeh: plots/spirometry-flow-volume/implementations/python/bokeh.py
+    letsplot: plots/spirometry-flow-volume/implementations/python/letsplot.py
+    matplotlib: plots/spirometry-flow-volume/implementations/python/matplotlib.py
+    plotly: plots/spirometry-flow-volume/implementations/python/plotly.py
+    plotnine: plots/spirometry-flow-volume/implementations/python/plotnine.py
+    pygal: plots/spirometry-flow-volume/implementations/python/pygal.py
+    seaborn: plots/spirometry-flow-volume/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/spirometry-flow-volume/implementations/r/ggplot2.R
+notes:
+- The expiratory limb (upper portion) should show a sharp rise to PEF followed by
+  a decline that is roughly linear in a normal loop and scooped (bowed toward the
+  volume axis) in obstruction
+- The inspiratory limb (lower portion) should appear as a more symmetric, U-shaped
+  curve below the zero flow line
+- Mark Peak Expiratory Flow (PEF) with a labeled point or annotation
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: strip-basic
+name:
+  en: Basic Strip Plot
+  es: Diagrama de Tiras Básico
+description:
+  en: A strip plot displays individual data points for each category along a single
+    axis, with random horizontal jitter applied to reduce overplotting. Unlike box
+    plots or violin plots that show summary statistics, strip plots reveal every observation,
+    making them ideal for small to medium datasets where individual values matter.
+    The random jitter spreads points horizontally within each category to show density
+    through point accumulation.
+  es: A strip plot displays individual data points for each category along a single
+    axis, with random horizontal jitter applied to reduce overplotting. Unlike box
+    plots or violin plots that show summary statistics, strip plots reveal every observation,
+    making them ideal for small to medium datasets where individual values matter.
+    The random jitter spreads points horizontally within each category to show density
+    through point accumulation.
+aliases:
+  en:
+  - strip-basic
+  - strip basic
+  - basic strip plot
+  es:
+  - strip-basic
+  - strip basic
+  - diagrama de tiras básico
+use_when:
+  en:
+  - A strip plot displays individual data points for each category along a single
+    axis, with random horizontal jitter applied to reduce overplotting. Unlike box
+    plots or violin plots that show summary sta
+  es:
+  - A strip plot displays individual data points for each category along a single
+    axis, with random horizontal jitter applied to reduce overplotting. Unlike box
+    plots or violin plots that show summary sta
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing distributions of test scores across different classrooms or teaching
+    methods
+  - Visualizing patient response times to treatments across different drug groups
+  - Exploring salary distributions by department in organizational analysis
+  - Quality control inspection of measurements across production batches
+  es:
+  - Comparing distributions of test scores across different classrooms or teaching
+    methods
+  - Visualizing patient response times to treatments across different drug groups
+  - Exploring salary distributions by department in organizational analysis
+  - Quality control inspection of measurements across production batches
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - strip
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+  - jitter
+keywords:
+  en:
+  - strip plot
+  - basic
+  - strip
+  - numeric
+  - categorical
+  - statistics
+  - general
+  - distribution
+  - jitter
+  es:
+  - diagrama de tiras
+  - básico
+  - strip
+  - numérico
+  - categórico
+  - estadística
+  - general
+  - basic
+  - distribución
+  - jitter
+implementations:
+  javascript:
+    chartjs: plots/strip-basic/implementations/javascript/chartjs.js
+    d3: plots/strip-basic/implementations/javascript/d3.js
+    echarts: plots/strip-basic/implementations/javascript/echarts.js
+    highcharts: plots/strip-basic/implementations/javascript/highcharts.js
+    muix: plots/strip-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/strip-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/strip-basic/implementations/python/altair.py
+    bokeh: plots/strip-basic/implementations/python/bokeh.py
+    letsplot: plots/strip-basic/implementations/python/letsplot.py
+    matplotlib: plots/strip-basic/implementations/python/matplotlib.py
+    plotly: plots/strip-basic/implementations/python/plotly.py
+    plotnine: plots/strip-basic/implementations/python/plotnine.py
+    pygal: plots/strip-basic/implementations/python/pygal.py
+    seaborn: plots/strip-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/strip-basic/implementations/r/ggplot2.R
+notes:
+- Use moderate jitter width (0.1-0.3) to spread points without overlapping adjacent
+  categories
+- Apply transparency (alpha 0.5-0.7) when points overlap frequently
+- Consider adding horizontal lines for group means or medians as reference
+source: anyplot
+anyplot_updated: 2026-08-05 05:26:01+00:00

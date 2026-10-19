@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: volcano-basic
+name:
+  en: Volcano Plot for Statistical Significance
+  es: Volcano Basic Básico
+description:
+  en: A volcano plot displays statistical significance (-log10 p-value) on the y-axis
+    versus effect size (log2 fold change) on the x-axis. Points are typically color-coded
+    to highlight features that are both statistically significant and have large effect
+    sizes. This visualization is essential for quickly identifying the most important
+    changes in differential expression, proteomics, and genomics studies.
+  es: A volcano plot displays statistical significance (-log10 p-value) on the y-axis
+    versus effect size (log2 fold change) on the x-axis. Points are typically color-coded
+    to highlight features that are both statistically significant and have large effect
+    sizes. This visualization is essential for quickly identifying the most important
+    changes in differential expression, proteomics, and genomics studies.
+aliases:
+  en:
+  - volcano-basic
+  - volcano basic
+  - basic volcano basic
+  es:
+  - volcano-basic
+  - volcano basic
+  - volcano basic básico
+use_when:
+  en:
+  - A volcano plot displays statistical significance (-log10 p-value) on the y-axis
+    versus effect size (log2 fold change) on the x-axis. Points are typically color-coded
+    to highlight features that are bot
+  es:
+  - A volcano plot displays statistical significance (-log10 p-value) on the y-axis
+    versus effect size (log2 fold change) on the x-axis. Points are typically color-coded
+    to highlight features that are bot
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying differentially expressed genes between treatment and control conditions
+    in RNA-seq experiments
+  - Detecting significantly altered proteins in mass spectrometry-based proteomics
+    studies
+  - Visualizing metabolite changes in metabolomics comparisons between disease and
+    healthy states
+  es:
+  - Identifying differentially expressed genes between treatment and control conditions
+    in RNA-seq experiments
+  - Detecting significantly altered proteins in mass spectrometry-based proteomics
+    studies
+  - Visualizing metabolite changes in metabolomics comparisons between disease and
+    healthy states
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - research
+  - healthcare
+  features:
+  - basic
+  - statistical
+  - significance
+  - threshold
+keywords:
+  en:
+  - volcano
+  - basic
+  - scatter
+  - numeric
+  - continuous
+  - science
+  - research
+  - healthcare
+  - statistical
+  - significance
+  - threshold
+  es:
+  - volcano
+  - básico
+  - scatter
+  - numérico
+  - continuo
+  - ciencia
+  - research
+  - healthcare
+  - basic
+  - statistical
+  - significance
+  - threshold
+implementations:
+  javascript:
+    chartjs: plots/volcano-basic/implementations/javascript/chartjs.js
+    d3: plots/volcano-basic/implementations/javascript/d3.js
+    echarts: plots/volcano-basic/implementations/javascript/echarts.js
+    highcharts: plots/volcano-basic/implementations/javascript/highcharts.js
+    muix: plots/volcano-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/volcano-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/volcano-basic/implementations/python/altair.py
+    bokeh: plots/volcano-basic/implementations/python/bokeh.py
+    letsplot: plots/volcano-basic/implementations/python/letsplot.py
+    matplotlib: plots/volcano-basic/implementations/python/matplotlib.py
+    plotly: plots/volcano-basic/implementations/python/plotly.py
+    plotnine: plots/volcano-basic/implementations/python/plotnine.py
+    pygal: plots/volcano-basic/implementations/python/pygal.py
+    seaborn: plots/volcano-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/volcano-basic/implementations/r/ggplot2.R
+notes:
+- Include horizontal threshold line at -log10(0.05) ≈ 1.3 for significance cutoff
+- Include vertical threshold lines at log2 fold change of ±1 (2-fold change) for effect
+  size cutoffs
+- 'Color points by significance status: non-significant (gray), significant up-regulated
+  (red), significant down-regulated (blue)'
+source: anyplot
+anyplot_updated: 2026-05-14 10:53:54+00:00

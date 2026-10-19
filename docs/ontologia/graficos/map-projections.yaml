@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: map-projections
+name:
+  en: World Map with Different Projections
+  es: Mapa
+description:
+  en: A world map demonstrating different cartographic projections and their distortion
+    characteristics. This visualization showcases how the same geographic data appears
+    under various map projections (Mercator, Robinson, Mollweide, Orthographic, etc.),
+    revealing how each projection preserves or distorts area, shape, distance, or
+    direction. The plot includes graticule (latitude/longitude grid lines) and optionally
+    Tissot indicatrices to illustrate projection distortion patterns.
+  es: A world map demonstrating different cartographic projections and their distortion
+    characteristics. This visualization showcases how the same geographic data appears
+    under various map projections (Mercator, Robinson, Mollweide, Orthographic, etc.),
+    revealing how each projection preserves or distorts area, shape, distance, or
+    direction. The plot includes graticule (latitude/longitude grid lines) and optionally
+    Tissot indicatrices to illustrate projection distortion patterns.
+aliases:
+  en:
+  - map-projections
+  - map projections
+  - map
+  es:
+  - map-projections
+  - map projections
+  - mapa
+use_when:
+  en:
+  - A world map demonstrating different cartographic projections and their distortion
+    characteristics. This visualization showcases how the same geographic data appears
+    under various map projections (Merc
+  es:
+  - A world map demonstrating different cartographic projections and their distortion
+    characteristics. This visualization showcases how the same geographic data appears
+    under various map projections (Merc
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Educational cartography demonstrating how map projections transform the spherical
+    Earth to a flat surface
+  - Comparing projection suitability for different geographic analyses or presentations
+  - Visualizing global data with area-accurate projections to avoid misleading size
+    comparisons
+  - Teaching geographic information systems (GIS) concepts about coordinate reference
+    systems
+  es:
+  - Educational cartography demonstrating how map projections transform the spherical
+    Earth to a flat surface
+  - Comparing projection suitability for different geographic analyses or presentations
+  - Visualizing global data with area-accurate projections to avoid misleading size
+    comparisons
+  - Teaching geographic information systems (GIS) concepts about coordinate reference
+    systems
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - map
+  - choropleth
+  data_type:
+  - geospatial
+  - categorical
+  domain:
+  - education
+  - general
+  - science
+  features:
+  - comparison
+  - multi
+  - annotated
+keywords:
+  en:
+  - map
+  - projections
+  - choropleth
+  - geospatial
+  - categorical
+  - education
+  - general
+  - science
+  - comparison
+  - multi
+  - annotated
+  es:
+  - mapa
+  - projections
+  - map
+  - choropleth
+  - geoespacial
+  - categórico
+  - education
+  - general
+  - ciencia
+  - comparación
+  - multi
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/map-projections/implementations/javascript/chartjs.js
+    d3: plots/map-projections/implementations/javascript/d3.js
+    echarts: plots/map-projections/implementations/javascript/echarts.js
+    highcharts: plots/map-projections/implementations/javascript/highcharts.js
+    muix: plots/map-projections/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/map-projections/implementations/julia/makie.jl
+  python:
+    altair: plots/map-projections/implementations/python/altair.py
+    bokeh: plots/map-projections/implementations/python/bokeh.py
+    letsplot: plots/map-projections/implementations/python/letsplot.py
+    matplotlib: plots/map-projections/implementations/python/matplotlib.py
+    plotly: plots/map-projections/implementations/python/plotly.py
+    plotnine: plots/map-projections/implementations/python/plotnine.py
+    pygal: plots/map-projections/implementations/python/pygal.py
+    seaborn: plots/map-projections/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/map-projections/implementations/r/ggplot2.R
+notes:
+- 'Support multiple projections: Mercator, Robinson, Mollweide, Orthographic, Equal
+  Earth, Lambert Cylindrical, or other common projections'
+- Display graticule (latitude/longitude grid lines) at regular intervals (e.g., every
+  30 degrees)
+- Show clean coastlines and country borders with appropriate styling
+source: anyplot
+anyplot_updated: null

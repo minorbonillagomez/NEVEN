@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: curve-oc
+name:
+  en: Operating Characteristic (OC) Curve
+  es: Curve Oc
+description:
+  en: An Operating Characteristic (OC) curve shows the probability of accepting a
+    lot as a function of the true fraction defective in that lot. It is the primary
+    tool for evaluating and comparing acceptance sampling plans, revealing how well
+    an inspection plan discriminates between good and bad lots. The S-shaped curve
+    highlights producer's risk (rejecting good lots) and consumer's risk (accepting
+    bad lots), making it essential for designing effective quality inspection strategies.
+  es: An Operating Characteristic (OC) curve shows the probability of accepting a
+    lot as a function of the true fraction defective in that lot. It is the primary
+    tool for evaluating and comparing acceptance sampling plans, revealing how well
+    an inspection plan discriminates between good and bad lots. The S-shaped curve
+    highlights producer's risk (rejecting good lots) and consumer's risk (accepting
+    bad lots), making it essential for designing effective quality inspection strategies.
+aliases:
+  en:
+  - curve-oc
+  - curve oc
+  - curve oc
+  es:
+  - curve-oc
+  - curve oc
+  - curve oc
+use_when:
+  en:
+  - An Operating Characteristic (OC) curve shows the probability of accepting a lot
+    as a function of the true fraction defective in that lot. It is the primary tool
+    for evaluating and comparing acceptance
+  es:
+  - An Operating Characteristic (OC) curve shows the probability of accepting a lot
+    as a function of the true fraction defective in that lot. It is the primary tool
+    for evaluating and comparing acceptance
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Quality inspection: designing and comparing single-sample acceptance sampling
+    plans with different sample sizes and acceptance numbers'
+  - 'Incoming goods inspection: evaluating whether a supplier''s defect rate meets
+    contractual AQL (Acceptable Quality Level) requirements'
+  - 'Regulatory compliance: assessing inspection plans against standards such as MIL-STD-1916
+    or ISO 2859 for defense and commercial procurement'
+  - 'Process improvement: visualizing how increasing sample size tightens the discrimination
+    between acceptable and unacceptable lot quality'
+  es:
+  - 'Quality inspection: designing and comparing single-sample acceptance sampling
+    plans with different sample sizes and acceptance numbers'
+  - 'Incoming goods inspection: evaluating whether a supplier''s defect rate meets
+    contractual AQL (Acceptable Quality Level) requirements'
+  - 'Regulatory compliance: assessing inspection plans against standards such as MIL-STD-1916
+    or ISO 2859 for defense and commercial procurement'
+  - 'Process improvement: visualizing how increasing sample size tightens the discrimination
+    between acceptable and unacceptable lot quality'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - general
+  features:
+  - annotated
+  - comparison
+  - statistical
+keywords:
+  en:
+  - curve
+  - oc
+  - line
+  - numeric
+  - continuous
+  - engineering
+  - general
+  - annotated
+  - comparison
+  - statistical
+  es:
+  - curve
+  - oc
+  - line
+  - numérico
+  - continuo
+  - ingeniería
+  - general
+  - annotated
+  - comparación
+  - statistical
+implementations:
+  javascript:
+    chartjs: plots/curve-oc/implementations/javascript/chartjs.js
+    d3: plots/curve-oc/implementations/javascript/d3.js
+    echarts: plots/curve-oc/implementations/javascript/echarts.js
+    highcharts: plots/curve-oc/implementations/javascript/highcharts.js
+    muix: plots/curve-oc/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/curve-oc/implementations/julia/makie.jl
+  python:
+    altair: plots/curve-oc/implementations/python/altair.py
+    bokeh: plots/curve-oc/implementations/python/bokeh.py
+    letsplot: plots/curve-oc/implementations/python/letsplot.py
+    matplotlib: plots/curve-oc/implementations/python/matplotlib.py
+    plotly: plots/curve-oc/implementations/python/plotly.py
+    plotnine: plots/curve-oc/implementations/python/plotnine.py
+    pygal: plots/curve-oc/implementations/python/pygal.py
+    seaborn: plots/curve-oc/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/curve-oc/implementations/r/ggplot2.R
+notes:
+- 'Compute acceptance probabilities using the binomial cumulative distribution function:
+  P(accept) = sum of C(n,k) * p^k * (1-p)^(n-k) for k = 0 to c'
+- Annotate AQL (Acceptable Quality Level) and LTPD (Lot Tolerance Percent Defective)
+  on the x-axis with vertical reference lines or markers
+- Mark producer's risk (alpha) at AQL and consumer's risk (beta) at LTPD with labeled
+  points or shaded regions
+source: anyplot
+anyplot_updated: '2026-06-20T10:49:38Z'

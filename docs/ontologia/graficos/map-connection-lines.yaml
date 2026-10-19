@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: map-connection-lines
+name:
+  en: Connection Lines Map (Origin-Destination)
+  es: Mapa
+description:
+  en: A geographic map visualization showing connection lines (arcs or great circles)
+    between pairs of locations. This plot excels at revealing spatial patterns in
+    flows, routes, and relationships between places. The curved lines naturally represent
+    shortest paths on Earth's surface while avoiding visual overlap with straight
+    lines. Line properties like thickness or color can encode additional variables
+    such as traffic volume or connection type.
+  es: A geographic map visualization showing connection lines (arcs or great circles)
+    between pairs of locations. This plot excels at revealing spatial patterns in
+    flows, routes, and relationships between places. The curved lines naturally represent
+    shortest paths on Earth's surface while avoiding visual overlap with straight
+    lines. Line properties like thickness or color can encode additional variables
+    such as traffic volume or connection type.
+aliases:
+  en:
+  - map-connection-lines
+  - map connection lines
+  - map
+  es:
+  - map-connection-lines
+  - map connection lines
+  - mapa
+use_when:
+  en:
+  - A geographic map visualization showing connection lines (arcs or great circles)
+    between pairs of locations. This plot excels at revealing spatial patterns in
+    flows, routes, and relationships between p
+  es:
+  - A geographic map visualization showing connection lines (arcs or great circles)
+    between pairs of locations. This plot excels at revealing spatial patterns in
+    flows, routes, and relationships between p
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing airline flight routes between airports showing connection frequency
+    or passenger volume
+  - Mapping migration flows between countries or regions with line weight indicating
+    population movement
+  - Displaying trade routes and shipping connections between ports with intensity
+    showing trade volume
+  - Showing network infrastructure connections between data centers or communication
+    nodes
+  es:
+  - Visualizing airline flight routes between airports showing connection frequency
+    or passenger volume
+  - Mapping migration flows between countries or regions with line weight indicating
+    population movement
+  - Displaying trade routes and shipping connections between ports with intensity
+    showing trade volume
+  - Showing network infrastructure connections between data centers or communication
+    nodes
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - map
+  data_type:
+  - geospatial
+  - numeric
+  domain:
+  - general
+  - business
+  - logistics
+  features:
+  - basic
+  - flow
+  - connection
+keywords:
+  en:
+  - map
+  - connection
+  - lines
+  - geospatial
+  - numeric
+  - general
+  - business
+  - logistics
+  - basic
+  - flow
+  es:
+  - mapa
+  - connection
+  - lines
+  - map
+  - geoespacial
+  - numérico
+  - general
+  - negocios
+  - logistics
+  - basic
+  - flujo
+implementations:
+  javascript:
+    chartjs: plots/map-connection-lines/implementations/javascript/chartjs.js
+    d3: plots/map-connection-lines/implementations/javascript/d3.js
+    echarts: plots/map-connection-lines/implementations/javascript/echarts.js
+    highcharts: plots/map-connection-lines/implementations/javascript/highcharts.js
+    muix: plots/map-connection-lines/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/map-connection-lines/implementations/julia/makie.jl
+  python:
+    altair: plots/map-connection-lines/implementations/python/altair.py
+    bokeh: plots/map-connection-lines/implementations/python/bokeh.py
+    letsplot: plots/map-connection-lines/implementations/python/letsplot.py
+    matplotlib: plots/map-connection-lines/implementations/python/matplotlib.py
+    plotly: plots/map-connection-lines/implementations/python/plotly.py
+    plotnine: plots/map-connection-lines/implementations/python/plotnine.py
+    pygal: plots/map-connection-lines/implementations/python/pygal.py
+    seaborn: plots/map-connection-lines/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/map-connection-lines/implementations/r/ggplot2.R
+notes:
+- Use curved lines (great circle arcs) for long-distance connections to represent
+  geodesic paths
+- Line thickness or color intensity should represent the value/weight when provided
+- Include location markers (points) at origin and destination endpoints
+source: anyplot
+anyplot_updated: 2026-05-28 00:30:28+00:00

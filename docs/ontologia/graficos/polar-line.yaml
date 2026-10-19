@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: polar-line
+name:
+  en: Polar Line Plot
+  es: Gráfico Polar
+description:
+  en: A line plot rendered in polar coordinates, where data points are connected with
+    lines around a circular axis. The angle (theta) typically represents a cyclical
+    variable while the radius shows magnitude.
+  es: A line plot rendered in polar coordinates, where data points are connected with
+    lines around a circular axis. The angle (theta) typically represents a cyclical
+    variable while the radius shows magnitude.
+aliases:
+  en:
+  - polar-line
+  - polar line
+  - polar chart
+  es:
+  - polar-line
+  - polar line
+  - gráfico polar
+use_when:
+  en:
+  - A line plot rendered in polar coordinates, where data points are connected with
+    lines around a circular axis. The angle (theta) typically represents a cyclical
+    variable while the radius shows magnitud
+  es:
+  - A line plot rendered in polar coordinates, where data points are connected with
+    lines around a circular axis. The angle (theta) typically represents a cyclical
+    variable while the radius shows magnitud
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Cyclical data visualization (hours, months, seasons)
+  - Directional data with continuous measurements
+  - Periodic pattern analysis
+  - Angular velocity or rotation data
+  es:
+  - Cyclical data visualization (hours, months, seasons)
+  - Directional data with continuous measurements
+  - Periodic pattern analysis
+  - Angular velocity or rotation data
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - polar
+  - line
+  data_type:
+  - numeric
+  - continuous
+  - angular
+  domain:
+  - general
+  - science
+  - engineering
+  features:
+  - circular
+  - radial
+  - cyclical
+keywords:
+  en:
+  - polar chart
+  - line chart
+  - polar
+  - line
+  - numeric
+  - continuous
+  - angular
+  - general
+  - science
+  - engineering
+  - circular
+  - radial
+  - cyclical
+  es:
+  - gráfico polar
+  - gráfico de líneas
+  - polar
+  - line
+  - numérico
+  - continuo
+  - angular
+  - general
+  - ciencia
+  - ingeniería
+  - circular
+  - radial
+  - cyclical
+implementations:
+  javascript:
+    chartjs: plots/polar-line/implementations/javascript/chartjs.js
+    d3: plots/polar-line/implementations/javascript/d3.js
+    echarts: plots/polar-line/implementations/javascript/echarts.js
+    highcharts: plots/polar-line/implementations/javascript/highcharts.js
+    muix: plots/polar-line/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/polar-line/implementations/julia/makie.jl
+  python:
+    altair: plots/polar-line/implementations/python/altair.py
+    bokeh: plots/polar-line/implementations/python/bokeh.py
+    letsplot: plots/polar-line/implementations/python/letsplot.py
+    matplotlib: plots/polar-line/implementations/python/matplotlib.py
+    plotly: plots/polar-line/implementations/python/plotly.py
+    plotnine: plots/polar-line/implementations/python/plotnine.py
+    pygal: plots/polar-line/implementations/python/pygal.py
+    seaborn: plots/polar-line/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/polar-line/implementations/r/ggplot2.R
+notes:
+- Line connects points in theta order
+- Can show multiple series with different colors
+- Often used for time-of-day or seasonal patterns
+source: anyplot
+anyplot_updated: '2026-05-12T22:33:02Z'

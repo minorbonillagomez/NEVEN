@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: density-basic
+name:
+  en: Basic Density Plot
+  es: Gráfico de Densidad Básico
+description:
+  en: A density plot (also known as Kernel Density Estimation or KDE plot) visualizes
+    the distribution of a continuous variable by smoothing the data into a continuous
+    probability density curve. Unlike histograms which use discrete bins, density
+    plots provide a smooth representation of the underlying distribution, making it
+    easier to identify patterns such as skewness, modality, and overall shape.
+  es: A density plot (also known as Kernel Density Estimation or KDE plot) visualizes
+    the distribution of a continuous variable by smoothing the data into a continuous
+    probability density curve. Unlike histograms which use discrete bins, density
+    plots provide a smooth representation of the underlying distribution, making it
+    easier to identify patterns such as skewness, modality, and overall shape.
+aliases:
+  en:
+  - density-basic
+  - density basic
+  - basic density plot
+  es:
+  - density-basic
+  - density basic
+  - gráfico de densidad básico
+use_when:
+  en:
+  - A density plot (also known as Kernel Density Estimation or KDE plot) visualizes
+    the distribution of a continuous variable by smoothing the data into a continuous
+    probability density curve. Unlike hist
+  es:
+  - A density plot (also known as Kernel Density Estimation or KDE plot) visualizes
+    the distribution of a continuous variable by smoothing the data into a continuous
+    probability density curve. Unlike hist
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing the shape of a single variable's distribution for exploratory data
+    analysis
+  - Identifying distribution characteristics like skewness, bimodality, or outliers
+  - Statistical analysis and exploratory data analysis in research
+  - Quality control monitoring to detect process shifts or anomalies
+  es:
+  - Visualizing the shape of a single variable's distribution for exploratory data
+    analysis
+  - Identifying distribution characteristics like skewness, bimodality, or outliers
+  - Statistical analysis and exploratory data analysis in research
+  - Quality control monitoring to detect process shifts or anomalies
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - density
+  data_type:
+  - numeric
+  - continuous
+  - univariate
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+  - smoothing
+keywords:
+  en:
+  - density plot
+  - basic
+  - density
+  - numeric
+  - continuous
+  - univariate
+  - statistics
+  - general
+  - distribution
+  - smoothing
+  es:
+  - gráfico de densidad
+  - básico
+  - density
+  - numérico
+  - continuo
+  - univariate
+  - estadística
+  - general
+  - basic
+  - distribución
+  - smoothing
+implementations:
+  javascript:
+    chartjs: plots/density-basic/implementations/javascript/chartjs.js
+    d3: plots/density-basic/implementations/javascript/d3.js
+    echarts: plots/density-basic/implementations/javascript/echarts.js
+    highcharts: plots/density-basic/implementations/javascript/highcharts.js
+    muix: plots/density-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/density-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/density-basic/implementations/python/altair.py
+    bokeh: plots/density-basic/implementations/python/bokeh.py
+    letsplot: plots/density-basic/implementations/python/letsplot.py
+    matplotlib: plots/density-basic/implementations/python/matplotlib.py
+    plotly: plots/density-basic/implementations/python/plotly.py
+    plotnine: plots/density-basic/implementations/python/plotnine.py
+    pygal: plots/density-basic/implementations/python/pygal.py
+    seaborn: plots/density-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/density-basic/implementations/r/ggplot2.R
+notes:
+- Use a smooth curve representing probability density (area under curve equals 1)
+- Consider adding fill under the curve with transparency for visual appeal
+- 'Optional: include a rug plot showing individual observations along the x-axis'
+source: anyplot
+anyplot_updated: 2026-05-30 03:04:49+00:00

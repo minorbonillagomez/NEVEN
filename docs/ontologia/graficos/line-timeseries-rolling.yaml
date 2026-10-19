@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: line-timeseries-rolling
+name:
+  en: Time Series with Rolling Average Overlay
+  es: Gráfico de Líneas
+description:
+  en: A time series plot that displays raw data points alongside a smoothed rolling
+    average (moving average) line. The raw data shows actual observations while the
+    rolling average reveals underlying trends by reducing noise and short-term fluctuations.
+    This dual-layer visualization is essential for trend identification, making patterns
+    visible that might be obscured by day-to-day volatility.
+  es: A time series plot that displays raw data points alongside a smoothed rolling
+    average (moving average) line. The raw data shows actual observations while the
+    rolling average reveals underlying trends by reducing noise and short-term fluctuations.
+    This dual-layer visualization is essential for trend identification, making patterns
+    visible that might be obscured by day-to-day volatility.
+aliases:
+  en:
+  - line-timeseries-rolling
+  - line timeseries rolling
+  - line chart
+  es:
+  - line-timeseries-rolling
+  - line timeseries rolling
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing stock price movements with a moving average to identify buy/sell signals
+    and trend reversals
+  - Monitoring website traffic or user engagement metrics with smoothed trends for
+    seasonal pattern detection
+  - Tracking sensor data (temperature, humidity) with noise reduction to reveal true
+    environmental trends
+  es:
+  - Analyzing stock price movements with a moving average to identify buy/sell signals
+    and trend reversals
+  - Monitoring website traffic or user engagement metrics with smoothed trends for
+    seasonal pattern detection
+  - Tracking sensor data (temperature, humidity) with noise reduction to reveal true
+    environmental trends
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - numeric
+  - continuous
+  domain:
+  - general
+  - finance
+  - statistics
+  features:
+  - smoothing
+  - rolling-average
+  - trend
+  - overlay
+keywords:
+  en:
+  - line chart
+  - time series
+  - rolling
+  - line
+  - timeseries
+  - numeric
+  - continuous
+  - general
+  - finance
+  - statistics
+  - smoothing
+  - rolling-average
+  - trend
+  - overlay
+  es:
+  - gráfico de líneas
+  - serie temporal
+  - rolling
+  - line
+  - timeseries
+  - numérico
+  - continuo
+  - general
+  - finanzas
+  - estadística
+  - smoothing
+  - rolling-average
+  - trend
+  - overlay
+implementations:
+  javascript:
+    chartjs: plots/line-timeseries-rolling/implementations/javascript/chartjs.js
+    d3: plots/line-timeseries-rolling/implementations/javascript/d3.js
+    echarts: plots/line-timeseries-rolling/implementations/javascript/echarts.js
+    highcharts: plots/line-timeseries-rolling/implementations/javascript/highcharts.js
+    muix: plots/line-timeseries-rolling/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-timeseries-rolling/implementations/julia/makie.jl
+  python:
+    altair: plots/line-timeseries-rolling/implementations/python/altair.py
+    bokeh: plots/line-timeseries-rolling/implementations/python/bokeh.py
+    letsplot: plots/line-timeseries-rolling/implementations/python/letsplot.py
+    matplotlib: plots/line-timeseries-rolling/implementations/python/matplotlib.py
+    plotly: plots/line-timeseries-rolling/implementations/python/plotly.py
+    plotnine: plots/line-timeseries-rolling/implementations/python/plotnine.py
+    pygal: plots/line-timeseries-rolling/implementations/python/pygal.py
+    seaborn: plots/line-timeseries-rolling/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-timeseries-rolling/implementations/r/ggplot2.R
+notes:
+- Use a lighter, semi-transparent style for raw data (thin line or markers with alpha)
+- Display the rolling average as a prominent, smooth line in a contrasting color
+- Include a legend clearly distinguishing "Raw Data" from "Rolling Average (N-day)"
+source: anyplot
+anyplot_updated: 2026-05-13 12:54:14+00:00

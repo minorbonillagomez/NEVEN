@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: bullet-basic
+name:
+  en: Basic Bullet Chart
+  es: Gráfico de Bala Básico
+description:
+  en: A bullet chart displays a single measure against qualitative ranges and a target
+    marker, designed by Stephen Few as a space-efficient alternative to gauge charts.
+    The linear format shows actual performance as a bar, a target as a vertical marker,
+    and background bands representing qualitative ranges (poor/satisfactory/good).
+    Its compact design allows multiple bullet charts to fit on a single dashboard
+    for easy comparison across metrics.
+  es: A bullet chart displays a single measure against qualitative ranges and a target
+    marker, designed by Stephen Few as a space-efficient alternative to gauge charts.
+    The linear format shows actual performance as a bar, a target as a vertical marker,
+    and background bands representing qualitative ranges (poor/satisfactory/good).
+    Its compact design allows multiple bullet charts to fit on a single dashboard
+    for easy comparison across metrics.
+aliases:
+  en:
+  - bullet-basic
+  - bullet basic
+  - basic bullet chart
+  es:
+  - bullet-basic
+  - bullet basic
+  - gráfico de bala básico
+use_when:
+  en:
+  - A bullet chart displays a single measure against qualitative ranges and a target
+    marker, designed by Stephen Few as a space-efficient alternative to gauge charts.
+    The linear format shows actual perfor
+  es:
+  - A bullet chart displays a single measure against qualitative ranges and a target
+    marker, designed by Stephen Few as a space-efficient alternative to gauge charts.
+    The linear format shows actual perfor
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying sales performance against quarterly quotas in executive dashboards
+  - Showing project completion percentage against milestone targets in PMO reports
+  - Comparing actual vs budgeted expenses across departments in financial reviews
+  - Visualizing quality metrics (defect rates, SLA compliance) against acceptable
+    thresholds
+  es:
+  - Displaying sales performance against quarterly quotas in executive dashboards
+  - Showing project completion percentage against milestone targets in PMO reports
+  - Comparing actual vs budgeted expenses across departments in financial reviews
+  - Visualizing quality metrics (defect rates, SLA compliance) against acceptable
+    thresholds
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  - gauge
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - business
+  - general
+  features:
+  - basic
+  - comparison
+  - target
+keywords:
+  en:
+  - bullet chart
+  - basic
+  - bar
+  - gauge
+  - numeric
+  - categorical
+  - business
+  - general
+  - comparison
+  - target
+  es:
+  - gráfico de bala
+  - básico
+  - bar
+  - gauge
+  - numérico
+  - categórico
+  - negocios
+  - general
+  - basic
+  - comparación
+  - target
+implementations:
+  javascript:
+    chartjs: plots/bullet-basic/implementations/javascript/chartjs.js
+    d3: plots/bullet-basic/implementations/javascript/d3.js
+    echarts: plots/bullet-basic/implementations/javascript/echarts.js
+    highcharts: plots/bullet-basic/implementations/javascript/highcharts.js
+    muix: plots/bullet-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bullet-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/bullet-basic/implementations/python/altair.py
+    bokeh: plots/bullet-basic/implementations/python/bokeh.py
+    letsplot: plots/bullet-basic/implementations/python/letsplot.py
+    matplotlib: plots/bullet-basic/implementations/python/matplotlib.py
+    plotly: plots/bullet-basic/implementations/python/plotly.py
+    plotnine: plots/bullet-basic/implementations/python/plotnine.py
+    pygal: plots/bullet-basic/implementations/python/pygal.py
+    seaborn: plots/bullet-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bullet-basic/implementations/r/ggplot2.R
+notes:
+- Use grayscale shading for background bands to keep focus on the primary measure
+  bar
+- The target marker should be a thin contrasting line (often black) perpendicular
+  to the bar
+- Horizontal orientation is most common; vertical can be used when space requires
+  it
+source: anyplot
+anyplot_updated: 2026-05-29 15:05:52+00:00

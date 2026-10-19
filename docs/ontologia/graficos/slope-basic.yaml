@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: slope-basic
+name:
+  en: Basic Slope Chart (Slopegraph)
+  es: Slope Basic Básico
+description:
+  en: A slope chart (slopegraph) visualizes changes between two time points by connecting
+    values with lines across vertical axes. It emphasizes the direction and magnitude
+    of change rather than absolute values, making it ideal for spotting increases,
+    decreases, and rank changes at a glance. This chart type excels at before/after
+    comparisons and highlighting which items improved or declined.
+  es: A slope chart (slopegraph) visualizes changes between two time points by connecting
+    values with lines across vertical axes. It emphasizes the direction and magnitude
+    of change rather than absolute values, making it ideal for spotting increases,
+    decreases, and rank changes at a glance. This chart type excels at before/after
+    comparisons and highlighting which items improved or declined.
+aliases:
+  en:
+  - slope-basic
+  - slope basic
+  - basic slope basic
+  es:
+  - slope-basic
+  - slope basic
+  - slope basic básico
+use_when:
+  en:
+  - A slope chart (slopegraph) visualizes changes between two time points by connecting
+    values with lines across vertical axes. It emphasizes the direction and magnitude
+    of change rather than absolute val
+  es:
+  - A slope chart (slopegraph) visualizes changes between two time points by connecting
+    values with lines across vertical axes. It emphasizes the direction and magnitude
+    of change rather than absolute val
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing company performance metrics between two fiscal years
+  - Showing student test score changes from pre-test to post-test
+  - Visualizing country rankings before and after a policy change
+  - Tracking product satisfaction ratings between survey periods
+  es:
+  - Comparing company performance metrics between two fiscal years
+  - Showing student test score changes from pre-test to post-test
+  - Visualizing country rankings before and after a policy change
+  - Tracking product satisfaction ratings between survey periods
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - comparison
+  - change
+keywords:
+  en:
+  - slope
+  - basic
+  - line
+  - numeric
+  - categorical
+  - general
+  - business
+  - comparison
+  - change
+  es:
+  - slope
+  - básico
+  - line
+  - numérico
+  - categórico
+  - general
+  - negocios
+  - basic
+  - comparación
+  - change
+implementations:
+  javascript:
+    chartjs: plots/slope-basic/implementations/javascript/chartjs.js
+    d3: plots/slope-basic/implementations/javascript/d3.js
+    echarts: plots/slope-basic/implementations/javascript/echarts.js
+    highcharts: plots/slope-basic/implementations/javascript/highcharts.js
+    muix: plots/slope-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/slope-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/slope-basic/implementations/python/altair.py
+    bokeh: plots/slope-basic/implementations/python/bokeh.py
+    letsplot: plots/slope-basic/implementations/python/letsplot.py
+    matplotlib: plots/slope-basic/implementations/python/matplotlib.py
+    plotly: plots/slope-basic/implementations/python/plotly.py
+    plotnine: plots/slope-basic/implementations/python/plotnine.py
+    pygal: plots/slope-basic/implementations/python/pygal.py
+    seaborn: plots/slope-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/slope-basic/implementations/r/ggplot2.R
+notes:
+- Labels should appear at both endpoints for entity identification
+- Consider color coding lines by direction (increase vs decrease)
+- Vertical axes should be labeled with time point names
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

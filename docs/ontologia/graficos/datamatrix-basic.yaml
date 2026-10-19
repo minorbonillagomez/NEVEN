@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: datamatrix-basic
+name:
+  en: Basic Data Matrix 2D Barcode
+  es: Datamatrix Basic Básico
+description:
+  en: A Data Matrix 2D barcode visualization that encodes data into a compact square
+    or rectangular matrix of black and white cells. Data Matrix codes follow the ISO/IEC
+    16022 standard, featuring an L-shaped finder pattern (solid borders on two adjacent
+    sides) and alternating timing patterns on the opposite sides. This barcode format
+    is ideal for marking small items and supports high data density with built-in
+    error correction (ECC 200).
+  es: A Data Matrix 2D barcode visualization that encodes data into a compact square
+    or rectangular matrix of black and white cells. Data Matrix codes follow the ISO/IEC
+    16022 standard, featuring an L-shaped finder pattern (solid borders on two adjacent
+    sides) and alternating timing patterns on the opposite sides. This barcode format
+    is ideal for marking small items and supports high data density with built-in
+    error correction (ECC 200).
+aliases:
+  en:
+  - datamatrix-basic
+  - datamatrix basic
+  - basic datamatrix basic
+  es:
+  - datamatrix-basic
+  - datamatrix basic
+  - datamatrix basic básico
+use_when:
+  en:
+  - A Data Matrix 2D barcode visualization that encodes data into a compact square
+    or rectangular matrix of black and white cells. Data Matrix codes follow the ISO/IEC
+    16022 standard, featuring an L-shape
+  es:
+  - A Data Matrix 2D barcode visualization that encodes data into a compact square
+    or rectangular matrix of black and white cells. Data Matrix codes follow the ISO/IEC
+    16022 standard, featuring an L-shape
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Small item marking for electronics, medical devices, and aerospace components
+  - Document management and archival tracking systems
+  - Industrial parts identification and manufacturing traceability
+  - Postal services for mail sorting and tracking
+  - Pharmaceutical serialization for drug authentication and supply chain security
+  es:
+  - Small item marking for electronics, medical devices, and aerospace components
+  - Document management and archival tracking systems
+  - Industrial parts identification and manufacturing traceability
+  - Postal services for mail sorting and tracking
+  - Pharmaceutical serialization for drug authentication and supply chain security
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - barcode
+  data_type:
+  - text
+  domain:
+  - general
+  - technology
+  - healthcare
+  features:
+  - basic
+  - 2d
+  - encoding
+keywords:
+  en:
+  - datamatrix
+  - basic
+  - barcode
+  - text
+  - general
+  - technology
+  - healthcare
+  - 2d
+  - encoding
+  es:
+  - datamatrix
+  - básico
+  - barcode
+  - texto
+  - general
+  - technology
+  - healthcare
+  - basic
+  - 2d
+  - encoding
+implementations:
+  javascript:
+    chartjs: plots/datamatrix-basic/implementations/javascript/chartjs.js
+    d3: plots/datamatrix-basic/implementations/javascript/d3.js
+    echarts: plots/datamatrix-basic/implementations/javascript/echarts.js
+    highcharts: plots/datamatrix-basic/implementations/javascript/highcharts.js
+    muix: plots/datamatrix-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/datamatrix-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/datamatrix-basic/implementations/python/altair.py
+    bokeh: plots/datamatrix-basic/implementations/python/bokeh.py
+    letsplot: plots/datamatrix-basic/implementations/python/letsplot.py
+    matplotlib: plots/datamatrix-basic/implementations/python/matplotlib.py
+    plotly: plots/datamatrix-basic/implementations/python/plotly.py
+    plotnine: plots/datamatrix-basic/implementations/python/plotnine.py
+    pygal: plots/datamatrix-basic/implementations/python/pygal.py
+    seaborn: plots/datamatrix-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/datamatrix-basic/implementations/r/ggplot2.R
+notes:
+- Include a quiet zone (white border) of at least 1 module width around the code for
+  reliable scanning
+- Use high contrast black on white for maximum readability
+- L-shaped finder pattern (solid black on left and bottom edges) is mandatory for
+  orientation
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

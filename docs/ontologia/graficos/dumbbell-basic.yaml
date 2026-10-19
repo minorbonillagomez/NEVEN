@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: dumbbell-basic
+name:
+  en: Basic Dumbbell Chart
+  es: Gráfico de Mancuerna Básico
+description:
+  en: A dumbbell chart (also called a connected dot plot or Cleveland dot plot) compares
+    two values for each category by displaying two dots connected by a line. It effectively
+    visualizes differences, changes, or ranges between two data points such as before/after
+    comparisons, gaps, or min/max values. The connected dots make it easy to see both
+    the magnitude and direction of change.
+  es: A dumbbell chart (also called a connected dot plot or Cleveland dot plot) compares
+    two values for each category by displaying two dots connected by a line. It effectively
+    visualizes differences, changes, or ranges between two data points such as before/after
+    comparisons, gaps, or min/max values. The connected dots make it easy to see both
+    the magnitude and direction of change.
+aliases:
+  en:
+  - dumbbell-basic
+  - dumbbell basic
+  - basic dumbbell chart
+  es:
+  - dumbbell-basic
+  - dumbbell basic
+  - gráfico de mancuerna básico
+use_when:
+  en:
+  - A dumbbell chart (also called a connected dot plot or Cleveland dot plot) compares
+    two values for each category by displaying two dots connected by a line. It effectively
+    visualizes differences, chang
+  es:
+  - A dumbbell chart (also called a connected dot plot or Cleveland dot plot) compares
+    two values for each category by displaying two dots connected by a line. It effectively
+    visualizes differences, chang
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Before/after performance comparisons (e.g., test scores before and after training)
+  - Gap analysis between groups (e.g., salary differences by department or gender)
+  - Comparing metrics between two time periods (e.g., Q1 vs Q4 sales by region)
+  - Displaying ranges such as minimum and maximum values per category
+  es:
+  - Before/after performance comparisons (e.g., test scores before and after training)
+  - Gap analysis between groups (e.g., salary differences by department or gender)
+  - Comparing metrics between two time periods (e.g., Q1 vs Q4 sales by region)
+  - Displaying ranges such as minimum and maximum values per category
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - dumbbell
+  - dot
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - comparison
+keywords:
+  en:
+  - dumbbell chart
+  - basic
+  - dumbbell
+  - dot
+  - numeric
+  - categorical
+  - general
+  - business
+  - comparison
+  es:
+  - gráfico de mancuerna
+  - básico
+  - dumbbell
+  - dot
+  - numérico
+  - categórico
+  - general
+  - negocios
+  - basic
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/dumbbell-basic/implementations/javascript/chartjs.js
+    d3: plots/dumbbell-basic/implementations/javascript/d3.js
+    echarts: plots/dumbbell-basic/implementations/javascript/echarts.js
+    highcharts: plots/dumbbell-basic/implementations/javascript/highcharts.js
+    muix: plots/dumbbell-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/dumbbell-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/dumbbell-basic/implementations/python/altair.py
+    bokeh: plots/dumbbell-basic/implementations/python/bokeh.py
+    letsplot: plots/dumbbell-basic/implementations/python/letsplot.py
+    matplotlib: plots/dumbbell-basic/implementations/python/matplotlib.py
+    plotly: plots/dumbbell-basic/implementations/python/plotly.py
+    plotnine: plots/dumbbell-basic/implementations/python/plotnine.py
+    pygal: plots/dumbbell-basic/implementations/python/pygal.py
+    seaborn: plots/dumbbell-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/dumbbell-basic/implementations/r/ggplot2.R
+notes:
+- Horizontal orientation preferred with categories on y-axis and values on x-axis
+- Use distinct colors for start and end dots to differentiate the two values
+- Sort by difference or one of the values to reveal patterns
+source: anyplot
+anyplot_updated: 2025-12-15 16:37:32+00:00

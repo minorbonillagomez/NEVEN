@@ -1,0 +1,149 @@
+entity_type: ChartType
+id: climograph-walter-lieth
+name:
+  en: Walter-Lieth Climate Diagram
+  es: Climograph Walter Lieth
+description:
+  en: 'A Walter-Lieth climate diagram (climograph) is the canonical visualization
+    of a location''s annual climate, plotting monthly mean temperature and monthly
+    precipitation over the twelve months on a single panel. It uses the classic 1:2
+    axis-scaling convention where 10 °C on the temperature axis aligns with 20 mm
+    on the precipitation axis, so the relationship between the two curves directly
+    reveals water availability: where precipitation exceeds the temperature curve
+    the period is humid (filled blue/hatched), and where the temperature curve rises
+    above precipitation the period is arid (filled red/dotted). A header carries station
+    metadata and annual means, while frost indicators along the baseline mark cold
+    months.'
+  es: 'A Walter-Lieth climate diagram (climograph) is the canonical visualization
+    of a location''s annual climate, plotting monthly mean temperature and monthly
+    precipitation over the twelve months on a single panel. It uses the classic 1:2
+    axis-scaling convention where 10 °C on the temperature axis aligns with 20 mm
+    on the precipitation axis, so the relationship between the two curves directly
+    reveals water availability: where precipitation exceeds the temperature curve
+    the period is humid (filled blue/hatched), and where the temperature curve rises
+    above precipitation the period is arid (filled red/dotted). A header carries station
+    metadata and annual means, while frost indicators along the baseline mark cold
+    months.'
+aliases:
+  en:
+  - climograph-walter-lieth
+  - climograph walter lieth
+  - climograph walter lieth
+  es:
+  - climograph-walter-lieth
+  - climograph walter lieth
+  - climograph walter lieth
+use_when:
+  en:
+  - A Walter-Lieth climate diagram (climograph) is the canonical visualization of
+    a location's annual climate, plotting monthly mean temperature and monthly precipitation
+    over the twelve months on a singl
+  es:
+  - A Walter-Lieth climate diagram (climograph) is the canonical visualization of
+    a location's annual climate, plotting monthly mean temperature and monthly precipitation
+    over the twelve months on a singl
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Teaching biogeography, ecology, and climatology students to read seasonal humid
+    and arid periods at a glance
+  - Comparing the climate signature of different stations or biomes (Mediterranean,
+    tropical, continental) using a standardized layout
+  - Characterizing a site's growing season and drought stress for agronomy, forestry,
+    or vegetation studies
+  - Summarizing long-term climate normals (e.g., 1991–2020) for a weather station
+    in a single reference figure
+  es:
+  - Teaching biogeography, ecology, and climatology students to read seasonal humid
+    and arid periods at a glance
+  - Comparing the climate signature of different stations or biomes (Mediterranean,
+    tropical, continental) using a standardized layout
+  - Characterizing a site's growing season and drought stress for agronomy, forestry,
+    or vegetation studies
+  - Summarizing long-term climate normals (e.g., 1991–2020) for a weather station
+    in a single reference figure
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - area
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - meteorology
+  - environment
+  features:
+  - composite
+  - multi
+  - annotated
+  - printable
+keywords:
+  en:
+  - climograph
+  - walter
+  - lieth
+  - line
+  - area
+  - timeseries
+  - numeric
+  - meteorology
+  - environment
+  - composite
+  - multi
+  - annotated
+  - printable
+  es:
+  - climograph
+  - walter
+  - lieth
+  - line
+  - area
+  - timeseries
+  - numérico
+  - meteorology
+  - environment
+  - composite
+  - multi
+  - annotated
+  - printable
+implementations:
+  javascript:
+    chartjs: plots/climograph-walter-lieth/implementations/javascript/chartjs.js
+    d3: plots/climograph-walter-lieth/implementations/javascript/d3.js
+    echarts: plots/climograph-walter-lieth/implementations/javascript/echarts.js
+    highcharts: plots/climograph-walter-lieth/implementations/javascript/highcharts.js
+    muix: plots/climograph-walter-lieth/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/climograph-walter-lieth/implementations/julia/makie.jl
+  python:
+    altair: plots/climograph-walter-lieth/implementations/python/altair.py
+    bokeh: plots/climograph-walter-lieth/implementations/python/bokeh.py
+    letsplot: plots/climograph-walter-lieth/implementations/python/letsplot.py
+    matplotlib: plots/climograph-walter-lieth/implementations/python/matplotlib.py
+    plotly: plots/climograph-walter-lieth/implementations/python/plotly.py
+    plotnine: plots/climograph-walter-lieth/implementations/python/plotnine.py
+    pygal: plots/climograph-walter-lieth/implementations/python/pygal.py
+    seaborn: plots/climograph-walter-lieth/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/climograph-walter-lieth/implementations/r/ggplot2.R
+notes:
+- 'Apply the fixed Walter-Lieth scaling convention: the precipitation axis is 2× the
+  temperature axis (10 °C ↔ 20 mm) so the two curves are directly comparable; above
+  100 mm precipitation the scale is conventionally compressed (10:1) and that upper
+  band is filled solid blue to indicate a perhumid (very wet) period'
+- Temperature is drawn as a line on the left axis (often red); precipitation as a
+  line (or bars) on the right axis (often blue)
+- 'Fill the area between the curves: blue/hatched where precipitation > temperature
+  curve (humid period), red/dotted where temperature > precipitation (arid period)
+  — this is the diagram''s defining visual feature'
+source: anyplot
+anyplot_updated: 2026-06-10 23:00:09+00:00

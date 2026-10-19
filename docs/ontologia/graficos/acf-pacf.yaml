@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: acf-pacf
+name:
+  en: Autocorrelation and Partial Autocorrelation (ACF/PACF) Plot
+  es: Acf Pacf
+description:
+  en: Displays the autocorrelation function (ACF) and partial autocorrelation function
+    (PACF) of a time series as vertical stem/bar plots arranged in two vertically
+    stacked subplots. Each lag is represented by a vertical line from zero to the
+    correlation value, with horizontal dashed lines indicating 95% confidence bounds.
+    These plots are essential for identifying the order of AR and MA components in
+    ARIMA modeling and for diagnosing residual independence.
+  es: Displays the autocorrelation function (ACF) and partial autocorrelation function
+    (PACF) of a time series as vertical stem/bar plots arranged in two vertically
+    stacked subplots. Each lag is represented by a vertical line from zero to the
+    correlation value, with horizontal dashed lines indicating 95% confidence bounds.
+    These plots are essential for identifying the order of AR and MA components in
+    ARIMA modeling and for diagnosing residual independence.
+aliases:
+  en:
+  - acf-pacf
+  - acf pacf
+  - acf pacf
+  es:
+  - acf-pacf
+  - acf pacf
+  - acf pacf
+use_when:
+  en:
+  - Displays the autocorrelation function (ACF) and partial autocorrelation function
+    (PACF) of a time series as vertical stem/bar plots arranged in two vertically
+    stacked subplots. Each lag is represented
+  es:
+  - Displays the autocorrelation function (ACF) and partial autocorrelation function
+    (PACF) of a time series as vertical stem/bar plots arranged in two vertically
+    stacked subplots. Each lag is represented
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying appropriate ARIMA(p,d,q) model orders from the decay patterns in ACF
+    and PACF before fitting a time series model
+  - Diagnosing model residuals to verify that no significant autocorrelation remains
+    after fitting a forecasting model
+  - Detecting seasonal patterns in economic or climate data by observing periodic
+    spikes at seasonal lags
+  es:
+  - Identifying appropriate ARIMA(p,d,q) model orders from the decay patterns in ACF
+    and PACF before fitting a time series model
+  - Diagnosing model residuals to verify that no significant autocorrelation remains
+    after fitting a forecasting model
+  - Detecting seasonal patterns in economic or climate data by observing periodic
+    spikes at seasonal lags
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  - stem
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - statistics
+  - finance
+  features:
+  - correlation
+  - multi
+  - annotated
+keywords:
+  en:
+  - acf
+  - pacf
+  - bar
+  - stem
+  - timeseries
+  - numeric
+  - statistics
+  - finance
+  - correlation
+  - multi
+  - annotated
+  es:
+  - acf
+  - pacf
+  - bar
+  - stem
+  - timeseries
+  - numérico
+  - estadística
+  - finanzas
+  - correlación
+  - multi
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/acf-pacf/implementations/javascript/chartjs.js
+    d3: plots/acf-pacf/implementations/javascript/d3.js
+    echarts: plots/acf-pacf/implementations/javascript/echarts.js
+    highcharts: plots/acf-pacf/implementations/javascript/highcharts.js
+    muix: plots/acf-pacf/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/acf-pacf/implementations/julia/makie.jl
+  python:
+    altair: plots/acf-pacf/implementations/python/altair.py
+    bokeh: plots/acf-pacf/implementations/python/bokeh.py
+    letsplot: plots/acf-pacf/implementations/python/letsplot.py
+    matplotlib: plots/acf-pacf/implementations/python/matplotlib.py
+    plotly: plots/acf-pacf/implementations/python/plotly.py
+    plotnine: plots/acf-pacf/implementations/python/plotnine.py
+    pygal: plots/acf-pacf/implementations/python/pygal.py
+    seaborn: plots/acf-pacf/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/acf-pacf/implementations/r/ggplot2.R
+notes:
+- Display ACF in the top subplot and PACF in the bottom subplot, sharing the x-axis
+  (lag number)
+- Use vertical stem lines (not filled bars) from the zero baseline to each correlation
+  value
+- Show 95% confidence interval as horizontal dashed lines at approximately +/-1.96/sqrt(N)
+source: anyplot
+anyplot_updated: null

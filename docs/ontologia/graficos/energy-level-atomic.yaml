@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: energy-level-atomic
+name:
+  en: Atomic Energy Level Diagram
+  es: Energy Level Atomic
+description:
+  en: An energy level diagram displays quantized energy states as horizontal lines
+    positioned at their respective energy values, with vertical arrows representing
+    transitions between levels. This visualization reveals the discrete nature of
+    atomic and molecular energy structures, making it essential for understanding
+    spectral series, electron configurations, and quantum state transitions. It provides
+    an intuitive way to connect abstract quantum numbers to observable spectral phenomena.
+  es: An energy level diagram displays quantized energy states as horizontal lines
+    positioned at their respective energy values, with vertical arrows representing
+    transitions between levels. This visualization reveals the discrete nature of
+    atomic and molecular energy structures, making it essential for understanding
+    spectral series, electron configurations, and quantum state transitions. It provides
+    an intuitive way to connect abstract quantum numbers to observable spectral phenomena.
+aliases:
+  en:
+  - energy-level-atomic
+  - energy level atomic
+  - energy level atomic
+  es:
+  - energy-level-atomic
+  - energy level atomic
+  - energy level atomic
+use_when:
+  en:
+  - An energy level diagram displays quantized energy states as horizontal lines positioned
+    at their respective energy values, with vertical arrows representing transitions
+    between levels. This visualizat
+  es:
+  - An energy level diagram displays quantized energy states as horizontal lines positioned
+    at their respective energy values, with vertical arrows representing transitions
+    between levels. This visualizat
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing hydrogen atom energy levels and spectral series (Lyman, Balmer, Paschen)
+    to understand atomic emission and absorption spectra
+  - Showing molecular orbital energy diagrams in chemistry to illustrate bonding,
+    antibonding, and nonbonding interactions
+  - Illustrating laser transitions and stimulated emission processes for photonics
+    and quantum optics education
+  - Teaching quantum mechanics concepts such as energy quantization, selection rules,
+    and degeneracy in atomic physics courses
+  es:
+  - Visualizing hydrogen atom energy levels and spectral series (Lyman, Balmer, Paschen)
+    to understand atomic emission and absorption spectra
+  - Showing molecular orbital energy diagrams in chemistry to illustrate bonding,
+    antibonding, and nonbonding interactions
+  - Illustrating laser transitions and stimulated emission processes for photonics
+    and quantum optics education
+  - Teaching quantum mechanics concepts such as energy quantization, selection rules,
+    and degeneracy in atomic physics courses
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - science
+  - education
+  features:
+  - annotated
+  - color-mapped
+  - stepwise
+keywords:
+  en:
+  - energy
+  - level
+  - atomic
+  - line
+  - numeric
+  - categorical
+  - science
+  - education
+  - annotated
+  - color-mapped
+  - stepwise
+  es:
+  - energy
+  - level
+  - atomic
+  - line
+  - numérico
+  - categórico
+  - ciencia
+  - education
+  - annotated
+  - color-mapped
+  - stepwise
+implementations:
+  javascript:
+    chartjs: plots/energy-level-atomic/implementations/javascript/chartjs.js
+    d3: plots/energy-level-atomic/implementations/javascript/d3.js
+    echarts: plots/energy-level-atomic/implementations/javascript/echarts.js
+    highcharts: plots/energy-level-atomic/implementations/javascript/highcharts.js
+    muix: plots/energy-level-atomic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/energy-level-atomic/implementations/julia/makie.jl
+  python:
+    altair: plots/energy-level-atomic/implementations/python/altair.py
+    bokeh: plots/energy-level-atomic/implementations/python/bokeh.py
+    letsplot: plots/energy-level-atomic/implementations/python/letsplot.py
+    matplotlib: plots/energy-level-atomic/implementations/python/matplotlib.py
+    plotly: plots/energy-level-atomic/implementations/python/plotly.py
+    plotnine: plots/energy-level-atomic/implementations/python/plotnine.py
+    pygal: plots/energy-level-atomic/implementations/python/pygal.py
+    seaborn: plots/energy-level-atomic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/energy-level-atomic/implementations/r/ggplot2.R
+notes:
+- Horizontal lines should span partial width of the plot area, not full width, and
+  be labeled with quantum numbers or orbital designations
+- Downward arrows represent emission transitions; upward arrows represent absorption
+  transitions
+- Color arrows by wavelength or frequency of the transition to convey spectral information
+  visually
+source: anyplot
+anyplot_updated: '2026-05-30T06:59:33Z'

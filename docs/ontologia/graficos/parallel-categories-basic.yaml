@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: parallel-categories-basic
+name:
+  en: Basic Parallel Categories Plot
+  es: Coordenadas Paralelas
+description:
+  en: A parallel categories plot visualizes categorical data across multiple dimensions,
+    with vertical axes representing each categorical variable and ribbons connecting
+    categories to show observation flow. Unlike parallel coordinates (which use lines
+    for numeric data), parallel categories use width-proportional ribbons to show
+    counts or frequencies, making it ideal for understanding how categorical values
+    co-occur and flow across multiple classification dimensions.
+  es: A parallel categories plot visualizes categorical data across multiple dimensions,
+    with vertical axes representing each categorical variable and ribbons connecting
+    categories to show observation flow. Unlike parallel coordinates (which use lines
+    for numeric data), parallel categories use width-proportional ribbons to show
+    counts or frequencies, making it ideal for understanding how categorical values
+    co-occur and flow across multiple classification dimensions.
+aliases:
+  en:
+  - parallel-categories-basic
+  - parallel categories basic
+  - parallel coordinates
+  es:
+  - parallel-categories-basic
+  - parallel categories basic
+  - coordenadas paralelas
+use_when:
+  en:
+  - A parallel categories plot visualizes categorical data across multiple dimensions,
+    with vertical axes representing each categorical variable and ribbons connecting
+    categories to show observation flow.
+  es:
+  - A parallel categories plot visualizes categorical data across multiple dimensions,
+    with vertical axes representing each categorical variable and ribbons connecting
+    categories to show observation flow.
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing customer journey paths from acquisition channel through product category
+    to purchase outcome
+  - Visualizing survey response patterns across multiple demographic or preference
+    questions
+  - Exploring classification results showing predicted vs actual categories with feature
+    breakdowns
+  - Understanding multi-stage process flows like support ticket routing through departments
+  es:
+  - Analyzing customer journey paths from acquisition channel through product category
+    to purchase outcome
+  - Visualizing survey response patterns across multiple demographic or preference
+    questions
+  - Exploring classification results showing predicted vs actual categories with feature
+    breakdowns
+  - Understanding multi-stage process flows like support ticket routing through departments
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - parallel-categories
+  data_type:
+  - categorical
+  - frequency
+  - multivariate
+  domain:
+  - general
+  - business
+  - statistics
+  features:
+  - basic
+  - proportional
+  - flow
+keywords:
+  en:
+  - parallel coordinates
+  - categories
+  - basic
+  - parallel-categories
+  - categorical
+  - frequency
+  - multivariate
+  - general
+  - business
+  - statistics
+  - proportional
+  - flow
+  es:
+  - coordenadas paralelas
+  - categories
+  - básico
+  - parallel-categories
+  - categórico
+  - frequency
+  - multivariado
+  - general
+  - negocios
+  - estadística
+  - basic
+  - proportional
+  - flujo
+implementations:
+  javascript:
+    chartjs: plots/parallel-categories-basic/implementations/javascript/chartjs.js
+    d3: plots/parallel-categories-basic/implementations/javascript/d3.js
+    echarts: plots/parallel-categories-basic/implementations/javascript/echarts.js
+    highcharts: plots/parallel-categories-basic/implementations/javascript/highcharts.js
+    muix: plots/parallel-categories-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/parallel-categories-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/parallel-categories-basic/implementations/python/altair.py
+    bokeh: plots/parallel-categories-basic/implementations/python/bokeh.py
+    letsplot: plots/parallel-categories-basic/implementations/python/letsplot.py
+    matplotlib: plots/parallel-categories-basic/implementations/python/matplotlib.py
+    plotly: plots/parallel-categories-basic/implementations/python/plotly.py
+    plotnine: plots/parallel-categories-basic/implementations/python/plotnine.py
+    pygal: plots/parallel-categories-basic/implementations/python/pygal.py
+    seaborn: plots/parallel-categories-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/parallel-categories-basic/implementations/r/ggplot2.R
+notes:
+- Ribbon width should be proportional to observation count or frequency
+- Color by first dimension (source) or last dimension (outcome) for clarity
+- Interactive highlighting helps trace paths through multiple categories
+source: anyplot
+anyplot_updated: 2026-05-13 16:54:10+00:00

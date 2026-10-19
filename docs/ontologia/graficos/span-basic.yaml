@@ -1,0 +1,114 @@
+entity_type: ChartType
+id: span-basic
+name:
+  en: Basic Span Plot (Highlighted Region)
+  es: Span Basic Básico
+description:
+  en: A span plot highlights a specific region of interest on a chart using a shaded
+    rectangular area that spans the full height or width of the plot. Vertical spans
+    mark ranges along the x-axis (e.g., time periods), while horizontal spans mark
+    ranges along the y-axis (e.g., value thresholds). The semi-transparent fill allows
+    underlying data to remain visible while drawing attention to the highlighted region.
+  es: A span plot highlights a specific region of interest on a chart using a shaded
+    rectangular area that spans the full height or width of the plot. Vertical spans
+    mark ranges along the x-axis (e.g., time periods), while horizontal spans mark
+    ranges along the y-axis (e.g., value thresholds). The semi-transparent fill allows
+    underlying data to remain visible while drawing attention to the highlighted region.
+aliases:
+  en:
+  - span-basic
+  - span basic
+  - basic span basic
+  es:
+  - span-basic
+  - span basic
+  - span basic básico
+use_when:
+  en:
+  - A span plot highlights a specific region of interest on a chart using a shaded
+    rectangular area that spans the full height or width of the plot. Vertical spans
+    mark ranges along the x-axis (e.g., time
+  es:
+  - A span plot highlights a specific region of interest on a chart using a shaded
+    rectangular area that spans the full height or width of the plot. Vertical spans
+    mark ranges along the x-axis (e.g., time
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Marking recession periods or economic events on financial time series charts
+  - Highlighting acceptable/unacceptable value ranges or threshold zones on line plots
+  - Indicating maintenance windows, downtime periods, or significant events in operational
+    dashboards
+  es:
+  - Marking recession periods or economic events on financial time series charts
+  - Highlighting acceptable/unacceptable value ranges or threshold zones on line plots
+  - Indicating maintenance windows, downtime periods, or significant events in operational
+    dashboards
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - span
+  data_type:
+  - numeric
+  - datetime
+  domain:
+  - general
+  - finance
+  features:
+  - basic
+  - highlight
+  - overlay
+keywords:
+  en:
+  - span
+  - basic
+  - numeric
+  - datetime
+  - general
+  - finance
+  - highlight
+  - overlay
+  es:
+  - span
+  - básico
+  - numérico
+  - datetime
+  - general
+  - finanzas
+  - basic
+  - highlight
+  - overlay
+implementations:
+  javascript:
+    chartjs: plots/span-basic/implementations/javascript/chartjs.js
+    d3: plots/span-basic/implementations/javascript/d3.js
+    echarts: plots/span-basic/implementations/javascript/echarts.js
+    highcharts: plots/span-basic/implementations/javascript/highcharts.js
+    muix: plots/span-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/span-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/span-basic/implementations/python/altair.py
+    bokeh: plots/span-basic/implementations/python/bokeh.py
+    letsplot: plots/span-basic/implementations/python/letsplot.py
+    matplotlib: plots/span-basic/implementations/python/matplotlib.py
+    plotly: plots/span-basic/implementations/python/plotly.py
+    plotnine: plots/span-basic/implementations/python/plotnine.py
+    pygal: plots/span-basic/implementations/python/pygal.py
+    seaborn: plots/span-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/span-basic/implementations/r/ggplot2.R
+notes:
+- Use semi-transparent fill (alpha 0.2-0.3) to keep underlying data visible
+- Vertical spans are most common for time-based data (highlighting periods)
+- Horizontal spans work well for threshold visualization (highlighting value ranges)
+source: anyplot
+anyplot_updated: 2026-10-02 15:00:51+00:00

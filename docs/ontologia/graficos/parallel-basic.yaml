@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: parallel-basic
+name:
+  en: Basic Parallel Coordinates Plot
+  es: Coordenadas Paralelas Básico
+description:
+  en: A parallel coordinates plot visualizes multivariate data by representing each
+    variable as a vertical axis and each observation as a line connecting values across
+    all axes. This technique is powerful for identifying patterns, clusters, and outliers
+    in high-dimensional datasets where traditional 2D plots fall short. It enables
+    simultaneous comparison of multiple variables for each data point.
+  es: A parallel coordinates plot visualizes multivariate data by representing each
+    variable as a vertical axis and each observation as a line connecting values across
+    all axes. This technique is powerful for identifying patterns, clusters, and outliers
+    in high-dimensional datasets where traditional 2D plots fall short. It enables
+    simultaneous comparison of multiple variables for each data point.
+aliases:
+  en:
+  - parallel-basic
+  - parallel basic
+  - basic parallel coordinates
+  es:
+  - parallel-basic
+  - parallel basic
+  - coordenadas paralelas básico
+use_when:
+  en:
+  - A parallel coordinates plot visualizes multivariate data by representing each
+    variable as a vertical axis and each observation as a line connecting values across
+    all axes. This technique is powerful f
+  es:
+  - A parallel coordinates plot visualizes multivariate data by representing each
+    variable as a vertical axis and each observation as a line connecting values across
+    all axes. This technique is powerful f
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing product features across multiple dimensions (price, rating, sales, inventory)
+    to identify market segments
+  - Analyzing patient health metrics (blood pressure, heart rate, cholesterol, BMI)
+    to detect health patterns or anomalies
+  - Evaluating machine learning model hyperparameters and their corresponding performance
+    metrics to find optimal configurations
+  es:
+  - Comparing product features across multiple dimensions (price, rating, sales, inventory)
+    to identify market segments
+  - Analyzing patient health metrics (blood pressure, heart rate, cholesterol, BMI)
+    to detect health patterns or anomalies
+  - Evaluating machine learning model hyperparameters and their corresponding performance
+    metrics to find optimal configurations
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - parallel
+  data_type:
+  - numeric
+  - continuous
+  - multivariate
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - high-dimensional
+  - comparison
+keywords:
+  en:
+  - parallel coordinates
+  - basic
+  - parallel
+  - numeric
+  - continuous
+  - multivariate
+  - statistics
+  - general
+  - high-dimensional
+  - comparison
+  es:
+  - coordenadas paralelas
+  - básico
+  - parallel
+  - numérico
+  - continuo
+  - multivariado
+  - estadística
+  - general
+  - basic
+  - high-dimensional
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/parallel-basic/implementations/javascript/chartjs.js
+    d3: plots/parallel-basic/implementations/javascript/d3.js
+    echarts: plots/parallel-basic/implementations/javascript/echarts.js
+    highcharts: plots/parallel-basic/implementations/javascript/highcharts.js
+    muix: plots/parallel-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/parallel-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/parallel-basic/implementations/python/altair.py
+    bokeh: plots/parallel-basic/implementations/python/bokeh.py
+    letsplot: plots/parallel-basic/implementations/python/letsplot.py
+    matplotlib: plots/parallel-basic/implementations/python/matplotlib.py
+    plotly: plots/parallel-basic/implementations/python/plotly.py
+    plotnine: plots/parallel-basic/implementations/python/plotnine.py
+    pygal: plots/parallel-basic/implementations/python/pygal.py
+    seaborn: plots/parallel-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/parallel-basic/implementations/r/ggplot2.R
+notes:
+- Normalize or standardize variables to the same scale for fair comparison across
+  axes
+- Consider axis ordering to reveal correlations between adjacent variables
+- Use transparency (alpha) to handle overlapping lines when many observations exist
+source: anyplot
+anyplot_updated: 2026-07-24 10:30:48+00:00

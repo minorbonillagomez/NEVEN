@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: spectrogram-mel
+name:
+  en: Mel-Spectrogram for Audio Analysis
+  es: Spectrogram Mel
+description:
+  en: A mel-spectrogram displaying the power spectrum of an audio signal with the
+    frequency axis warped to the mel scale, which approximates human auditory perception.
+    Unlike a standard spectrogram with a linear frequency axis, the mel-spectrogram
+    compresses higher frequencies and expands lower frequencies, making perceptually
+    similar sounds visually closer together. This is the foundational input representation
+    for modern audio machine learning pipelines including speech recognition, speaker
+    identification, and music information retrieval.
+  es: A mel-spectrogram displaying the power spectrum of an audio signal with the
+    frequency axis warped to the mel scale, which approximates human auditory perception.
+    Unlike a standard spectrogram with a linear frequency axis, the mel-spectrogram
+    compresses higher frequencies and expands lower frequencies, making perceptually
+    similar sounds visually closer together. This is the foundational input representation
+    for modern audio machine learning pipelines including speech recognition, speaker
+    identification, and music information retrieval.
+aliases:
+  en:
+  - spectrogram-mel
+  - spectrogram mel
+  - spectrogram mel
+  es:
+  - spectrogram-mel
+  - spectrogram mel
+  - spectrogram mel
+use_when:
+  en:
+  - A mel-spectrogram displaying the power spectrum of an audio signal with the frequency
+    axis warped to the mel scale, which approximates human auditory perception. Unlike
+    a standard spectrogram with a l
+  es:
+  - A mel-spectrogram displaying the power spectrum of an audio signal with the frequency
+    axis warped to the mel scale, which approximates human auditory perception. Unlike
+    a standard spectrogram with a l
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Preprocessing audio features for neural network input in speech recognition (ASR)
+    systems
+  - Visualizing and comparing timbral characteristics of musical instruments or vocal
+    qualities
+  - Analyzing environmental sound classification datasets for acoustic scene detection
+  - Debugging and inspecting audio augmentation pipelines in ML training workflows
+  es:
+  - Preprocessing audio features for neural network input in speech recognition (ASR)
+    systems
+  - Visualizing and comparing timbral characteristics of musical instruments or vocal
+    qualities
+  - Analyzing environmental sound classification datasets for acoustic scene detection
+  - Debugging and inspecting audio augmentation pipelines in ML training workflows
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - machine-learning
+  - science
+  - technology
+  features:
+  - color-mapped
+  - temporal
+keywords:
+  en:
+  - spectrogram
+  - mel
+  - heatmap
+  - numeric
+  - timeseries
+  - machine learning
+  - science
+  - technology
+  - color-mapped
+  - temporal
+  es:
+  - spectrogram
+  - mel
+  - heatmap
+  - numérico
+  - timeseries
+  - aprendizaje automático
+  - ciencia
+  - technology
+  - color-mapped
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/spectrogram-mel/implementations/javascript/chartjs.js
+    d3: plots/spectrogram-mel/implementations/javascript/d3.js
+    echarts: plots/spectrogram-mel/implementations/javascript/echarts.js
+    highcharts: plots/spectrogram-mel/implementations/javascript/highcharts.js
+    muix: plots/spectrogram-mel/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/spectrogram-mel/implementations/julia/makie.jl
+  python:
+    altair: plots/spectrogram-mel/implementations/python/altair.py
+    bokeh: plots/spectrogram-mel/implementations/python/bokeh.py
+    letsplot: plots/spectrogram-mel/implementations/python/letsplot.py
+    matplotlib: plots/spectrogram-mel/implementations/python/matplotlib.py
+    plotly: plots/spectrogram-mel/implementations/python/plotly.py
+    plotnine: plots/spectrogram-mel/implementations/python/plotnine.py
+    pygal: plots/spectrogram-mel/implementations/python/pygal.py
+    seaborn: plots/spectrogram-mel/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/spectrogram-mel/implementations/r/ggplot2.R
+notes:
+- Convert power spectrogram to decibel scale (log scale) for better visual dynamic
+  range
+- Use a sequential colormap (e.g., magma, inferno, or viridis) for clear intensity
+  representation
+- X-axis should show time in seconds, y-axis should show mel-scaled frequency with
+  Hz labels at key mel band edges
+source: anyplot
+anyplot_updated: '2026-06-03T17:43:14Z'

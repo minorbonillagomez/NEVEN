@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: bar-3d-categorical
+name:
+  en: 3D Bar Chart for Categorical Comparison
+  es: Gráfico de Barras 3D
+description:
+  en: A three-dimensional bar chart where bars rise from a 2D categorical grid, with
+    height encoding the measured value. Two categorical axes define the grid position
+    on the base plane while the vertical axis shows magnitude. This visualization
+    extends the bar chart family into 3D space, making it effective for comparing
+    values across two categorical dimensions simultaneously.
+  es: A three-dimensional bar chart where bars rise from a 2D categorical grid, with
+    height encoding the measured value. Two categorical axes define the grid position
+    on the base plane while the vertical axis shows magnitude. This visualization
+    extends the bar chart family into 3D space, making it effective for comparing
+    values across two categorical dimensions simultaneously.
+aliases:
+  en:
+  - bar-3d-categorical
+  - bar 3d categorical
+  - 3d bar chart
+  es:
+  - bar-3d-categorical
+  - bar 3d categorical
+  - gráfico de barras 3d
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Comparing sales figures across product categories and geographic regions simultaneously
+  - Displaying survey responses across two demographic dimensions (e.g., age group
+    vs education level)
+  - Showing experimental results with two categorical factors in factorial designs
+  - Visualizing frequency tables or cross-tabulations with two grouping variables
+  es:
+  - Comparing sales figures across product categories and geographic regions simultaneously
+  - Displaying survey responses across two demographic dimensions (e.g., age group
+    vs education level)
+  - Showing experimental results with two categorical factors in factorial designs
+  - Visualizing frequency tables or cross-tabulations with two grouping variables
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - 3d
+  - comparison
+  - color-mapped
+keywords:
+  en:
+  - bar chart
+  - 3d
+  - categorical
+  - bar
+  - numeric
+  - general
+  - business
+  - comparison
+  - color-mapped
+  es:
+  - gráfico de barras
+  - 3d
+  - categorical
+  - bar
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - comparación
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/bar-3d-categorical/implementations/javascript/chartjs.js
+    d3: plots/bar-3d-categorical/implementations/javascript/d3.js
+    echarts: plots/bar-3d-categorical/implementations/javascript/echarts.js
+    muix: plots/bar-3d-categorical/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-3d-categorical/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-3d-categorical/implementations/python/altair.py
+    bokeh: plots/bar-3d-categorical/implementations/python/bokeh.py
+    letsplot: plots/bar-3d-categorical/implementations/python/letsplot.py
+    matplotlib: plots/bar-3d-categorical/implementations/python/matplotlib.py
+    plotly: plots/bar-3d-categorical/implementations/python/plotly.py
+    plotnine: plots/bar-3d-categorical/implementations/python/plotnine.py
+    pygal: plots/bar-3d-categorical/implementations/python/pygal.py
+    seaborn: plots/bar-3d-categorical/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-3d-categorical/implementations/r/ggplot2.R
+notes:
+- Bars should have slight spacing between them for visual clarity and depth perception
+- Color can encode the value magnitude or a third categorical variable
+- Viewing angle should be adjustable; a default elevation of ~30 degrees and azimuth
+  of ~45 degrees provides good readability
+source: anyplot
+anyplot_updated: null

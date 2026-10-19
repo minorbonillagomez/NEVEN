@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: violin-box
+name:
+  en: Violin Plot with Embedded Box Plot
+  es: Diagrama de Violín
+description:
+  en: A violin plot with an embedded box plot inside, combining the distribution shape
+    visualization (KDE) with traditional quartile statistics. Shows both the probability
+    density and summary statistics in one plot.
+  es: A violin plot with an embedded box plot inside, combining the distribution shape
+    visualization (KDE) with traditional quartile statistics. Shows both the probability
+    density and summary statistics in one plot.
+aliases:
+  en:
+  - violin-box
+  - violin box
+  - violin plot
+  es:
+  - violin-box
+  - violin box
+  - diagrama de violín
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Complete distribution visualization
+  - Combining density estimate with summary statistics
+  - Detailed group comparisons
+  - Statistical presentations requiring both views
+  es:
+  - Complete distribution visualization
+  - Combining density estimate with summary statistics
+  - Detailed group comparisons
+  - Statistical presentations requiring both views
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - violin
+  - box
+  domain:
+  - statistics
+  - general
+  features:
+  - combined
+  - density
+  - distribution
+  - quartiles
+  data_type:
+  - numeric
+  - categorical
+keywords:
+  en:
+  - violin plot
+  - box plot
+  - violin
+  - box
+  - statistics
+  - general
+  - combined
+  - density
+  - distribution
+  - quartiles
+  - numeric
+  - categorical
+  es:
+  - diagrama de violín
+  - diagrama de caja
+  - violin
+  - box
+  - estadística
+  - general
+  - combined
+  - density
+  - distribución
+  - quartiles
+  - numérico
+  - categórico
+implementations:
+  javascript:
+    chartjs: plots/violin-box/implementations/javascript/chartjs.js
+    d3: plots/violin-box/implementations/javascript/d3.js
+    echarts: plots/violin-box/implementations/javascript/echarts.js
+    highcharts: plots/violin-box/implementations/javascript/highcharts.js
+    muix: plots/violin-box/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/violin-box/implementations/julia/makie.jl
+  python:
+    altair: plots/violin-box/implementations/python/altair.py
+    bokeh: plots/violin-box/implementations/python/bokeh.py
+    letsplot: plots/violin-box/implementations/python/letsplot.py
+    matplotlib: plots/violin-box/implementations/python/matplotlib.py
+    plotly: plots/violin-box/implementations/python/plotly.py
+    plotnine: plots/violin-box/implementations/python/plotnine.py
+    pygal: plots/violin-box/implementations/python/pygal.py
+    seaborn: plots/violin-box/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/violin-box/implementations/r/ggplot2.R
+notes:
+- Box plot centered inside violin
+- Shows median, quartiles (box), and whiskers
+- KDE (violin) shape visible around the box
+source: anyplot
+anyplot_updated: '2026-05-12T17:30:00Z'

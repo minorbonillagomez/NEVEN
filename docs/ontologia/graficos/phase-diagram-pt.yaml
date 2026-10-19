@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: phase-diagram-pt
+name:
+  en: Thermodynamic Phase Diagram (Pressure-Temperature)
+  es: Phase Diagram Pt
+description:
+  en: A pressure-temperature (P-T) phase diagram showing the boundaries between solid,
+    liquid, and gas phases of a substance. The diagram includes the triple point where
+    all three phases coexist and the critical point beyond which the liquid-gas distinction
+    vanishes. This is one of the most fundamental diagrams in chemistry and physics,
+    essential for understanding phase transitions and states of matter.
+  es: A pressure-temperature (P-T) phase diagram showing the boundaries between solid,
+    liquid, and gas phases of a substance. The diagram includes the triple point where
+    all three phases coexist and the critical point beyond which the liquid-gas distinction
+    vanishes. This is one of the most fundamental diagrams in chemistry and physics,
+    essential for understanding phase transitions and states of matter.
+aliases:
+  en:
+  - phase-diagram-pt
+  - phase diagram pt
+  - phase diagram pt
+  es:
+  - phase-diagram-pt
+  - phase diagram pt
+  - phase diagram pt
+use_when:
+  en:
+  - A pressure-temperature (P-T) phase diagram showing the boundaries between solid,
+    liquid, and gas phases of a substance. The diagram includes the triple point where
+    all three phases coexist and the cri
+  es:
+  - A pressure-temperature (P-T) phase diagram showing the boundaries between solid,
+    liquid, and gas phases of a substance. The diagram includes the triple point where
+    all three phases coexist and the cri
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Teaching phase transitions and states of matter in chemistry and physics courses
+  - Engineering process design requiring knowledge of substance phase behavior at
+    given conditions
+  - Materials science research studying melting, boiling, and sublimation conditions
+  es:
+  - Teaching phase transitions and states of matter in chemistry and physics courses
+  - Engineering process design requiring knowledge of substance phase behavior at
+    given conditions
+  - Materials science research studying melting, boiling, and sublimation conditions
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - area
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - education
+  features:
+  - annotated
+  - phase-boundaries
+  - logarithmic
+keywords:
+  en:
+  - phase
+  - diagram
+  - pt
+  - line
+  - area
+  - numeric
+  - continuous
+  - science
+  - education
+  - annotated
+  - phase-boundaries
+  - logarithmic
+  es:
+  - phase
+  - diagram
+  - pt
+  - line
+  - area
+  - numérico
+  - continuo
+  - ciencia
+  - education
+  - annotated
+  - phase-boundaries
+  - logarithmic
+implementations:
+  javascript:
+    chartjs: plots/phase-diagram-pt/implementations/javascript/chartjs.js
+    d3: plots/phase-diagram-pt/implementations/javascript/d3.js
+    echarts: plots/phase-diagram-pt/implementations/javascript/echarts.js
+    highcharts: plots/phase-diagram-pt/implementations/javascript/highcharts.js
+    muix: plots/phase-diagram-pt/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/phase-diagram-pt/implementations/julia/makie.jl
+  python:
+    altair: plots/phase-diagram-pt/implementations/python/altair.py
+    bokeh: plots/phase-diagram-pt/implementations/python/bokeh.py
+    letsplot: plots/phase-diagram-pt/implementations/python/letsplot.py
+    matplotlib: plots/phase-diagram-pt/implementations/python/matplotlib.py
+    plotly: plots/phase-diagram-pt/implementations/python/plotly.py
+    plotnine: plots/phase-diagram-pt/implementations/python/plotnine.py
+    pygal: plots/phase-diagram-pt/implementations/python/pygal.py
+    seaborn: plots/phase-diagram-pt/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/phase-diagram-pt/implementations/r/ggplot2.R
+notes:
+- Phase regions (solid, liquid, gas) should be clearly labeled in their respective
+  areas
+- The triple point and critical point should be marked with distinct markers and annotated
+- The liquid-gas boundary terminates at the critical point; beyond it lies the supercritical
+  fluid region
+source: anyplot
+anyplot_updated: null

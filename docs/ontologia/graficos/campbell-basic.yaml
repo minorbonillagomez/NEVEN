@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: campbell-basic
+name:
+  en: Campbell Diagram
+  es: Campbell Basic Básico
+description:
+  en: A Campbell Diagram (also called an interference diagram) plots natural frequencies
+    against rotational speed to identify critical speeds and resonance conditions
+    in rotating machinery. It overlays engine order excitation lines (diagonal lines
+    from the origin) on top of natural frequency curves, with intersections marking
+    critical speeds where resonance may occur. This visualization is essential for
+    ensuring safe operating ranges in turbomachinery, automotive powertrains, and
+    other rotating equipment.
+  es: A Campbell Diagram (also called an interference diagram) plots natural frequencies
+    against rotational speed to identify critical speeds and resonance conditions
+    in rotating machinery. It overlays engine order excitation lines (diagonal lines
+    from the origin) on top of natural frequency curves, with intersections marking
+    critical speeds where resonance may occur. This visualization is essential for
+    ensuring safe operating ranges in turbomachinery, automotive powertrains, and
+    other rotating equipment.
+aliases:
+  en:
+  - campbell-basic
+  - campbell basic
+  - basic campbell basic
+  es:
+  - campbell-basic
+  - campbell basic
+  - campbell basic básico
+use_when:
+  en:
+  - A Campbell Diagram (also called an interference diagram) plots natural frequencies
+    against rotational speed to identify critical speeds and resonance conditions
+    in rotating machinery. It overlays engi
+  es:
+  - A Campbell Diagram (also called an interference diagram) plots natural frequencies
+    against rotational speed to identify critical speeds and resonance conditions
+    in rotating machinery. It overlays engi
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Rotordynamic analysis of turbomachinery (turbines, compressors, pumps) to identify
+    critical speeds that must be avoided during operation
+  - Automotive powertrain NVH (Noise, Vibration, Harshness) engineering to map engine
+    order excitations against structural modes
+  - Vibration analysis of rotating equipment during design validation to ensure natural
+    frequencies are sufficiently separated from operating speed excitations
+  es:
+  - Rotordynamic analysis of turbomachinery (turbines, compressors, pumps) to identify
+    critical speeds that must be avoided during operation
+  - Automotive powertrain NVH (Noise, Vibration, Harshness) engineering to map engine
+    order excitations against structural modes
+  - Vibration analysis of rotating equipment during design validation to ensure natural
+    frequencies are sufficiently separated from operating speed excitations
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  features:
+  - annotated
+  - multi
+  - comparison
+keywords:
+  en:
+  - campbell
+  - basic
+  - line
+  - scatter
+  - numeric
+  - continuous
+  - engineering
+  - annotated
+  - multi
+  - comparison
+  es:
+  - campbell
+  - básico
+  - line
+  - scatter
+  - numérico
+  - continuo
+  - ingeniería
+  - annotated
+  - multi
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/campbell-basic/implementations/javascript/chartjs.js
+    d3: plots/campbell-basic/implementations/javascript/d3.js
+    echarts: plots/campbell-basic/implementations/javascript/echarts.js
+    highcharts: plots/campbell-basic/implementations/javascript/highcharts.js
+    muix: plots/campbell-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/campbell-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/campbell-basic/implementations/python/altair.py
+    bokeh: plots/campbell-basic/implementations/python/bokeh.py
+    letsplot: plots/campbell-basic/implementations/python/letsplot.py
+    matplotlib: plots/campbell-basic/implementations/python/matplotlib.py
+    plotly: plots/campbell-basic/implementations/python/plotly.py
+    plotnine: plots/campbell-basic/implementations/python/plotnine.py
+    pygal: plots/campbell-basic/implementations/python/pygal.py
+    seaborn: plots/campbell-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/campbell-basic/implementations/r/ggplot2.R
+notes:
+- Engine order lines are straight diagonal lines from the origin with slope = order_number
+  / 60 (converting RPM to Hz)
+- 'Natural frequency curves should show realistic behavior: slight variation with
+  speed due to gyroscopic effects (some modes increase, some decrease with speed)'
+- Critical speed intersections should be marked with distinct markers (e.g., red circles
+  or diamonds)
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: tree-phylogenetic
+name:
+  en: Phylogenetic Tree Diagram
+  es: Tree Phylogenetic
+description:
+  en: A phylogenetic tree (evolutionary tree) visualization showing hierarchical relationships
+    between species or sequences, with branch lengths proportional to evolutionary
+    distance. This diagram reveals how organisms or genes evolved from common ancestors,
+    with longer branches indicating greater divergence. Phylogenetic trees are essential
+    for understanding evolutionary history, taxonomy, and molecular biology relationships.
+  es: A phylogenetic tree (evolutionary tree) visualization showing hierarchical relationships
+    between species or sequences, with branch lengths proportional to evolutionary
+    distance. This diagram reveals how organisms or genes evolved from common ancestors,
+    with longer branches indicating greater divergence. Phylogenetic trees are essential
+    for understanding evolutionary history, taxonomy, and molecular biology relationships.
+aliases:
+  en:
+  - tree-phylogenetic
+  - tree phylogenetic
+  - tree phylogenetic
+  es:
+  - tree-phylogenetic
+  - tree phylogenetic
+  - tree phylogenetic
+use_when:
+  en:
+  - A phylogenetic tree (evolutionary tree) visualization showing hierarchical relationships
+    between species or sequences, with branch lengths proportional to evolutionary
+    distance. This diagram reveals h
+  es:
+  - A phylogenetic tree (evolutionary tree) visualization showing hierarchical relationships
+    between species or sequences, with branch lengths proportional to evolutionary
+    distance. This diagram reveals h
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing evolutionary relationships between species based on genetic sequence
+    analysis
+  - Displaying taxonomic classification hierarchies in biology and ecology studies
+  - Showing protein or gene family evolution and divergence patterns
+  - Comparing pathogen strains to understand disease transmission and mutation patterns
+  es:
+  - Visualizing evolutionary relationships between species based on genetic sequence
+    analysis
+  - Displaying taxonomic classification hierarchies in biology and ecology studies
+  - Showing protein or gene family evolution and divergence patterns
+  - Comparing pathogen strains to understand disease transmission and mutation patterns
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - dendrogram
+  data_type:
+  - hierarchical
+  - categorical
+  domain:
+  - science
+  - biology
+  - bioinformatics
+  features:
+  - basic
+  - proportional
+keywords:
+  en:
+  - tree
+  - phylogenetic
+  - dendrogram
+  - hierarchical
+  - categorical
+  - science
+  - biology
+  - bioinformatics
+  - basic
+  - proportional
+  es:
+  - tree
+  - phylogenetic
+  - dendrogram
+  - jerárquico
+  - categórico
+  - ciencia
+  - biología
+  - bioinformatics
+  - basic
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/tree-phylogenetic/implementations/javascript/chartjs.js
+    d3: plots/tree-phylogenetic/implementations/javascript/d3.js
+    echarts: plots/tree-phylogenetic/implementations/javascript/echarts.js
+    highcharts: plots/tree-phylogenetic/implementations/javascript/highcharts.js
+    muix: plots/tree-phylogenetic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/tree-phylogenetic/implementations/julia/makie.jl
+  python:
+    altair: plots/tree-phylogenetic/implementations/python/altair.py
+    bokeh: plots/tree-phylogenetic/implementations/python/bokeh.py
+    letsplot: plots/tree-phylogenetic/implementations/python/letsplot.py
+    matplotlib: plots/tree-phylogenetic/implementations/python/matplotlib.py
+    plotly: plots/tree-phylogenetic/implementations/python/plotly.py
+    plotnine: plots/tree-phylogenetic/implementations/python/plotnine.py
+    pygal: plots/tree-phylogenetic/implementations/python/pygal.py
+    seaborn: plots/tree-phylogenetic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/tree-phylogenetic/implementations/r/ggplot2.R
+notes:
+- Branch lengths should be drawn proportionally to show evolutionary distance accurately
+- Consider both rectangular and circular (radial) tree layouts
+- Add a scale bar or a labeled branch-length axis to indicate branch length units
+  (e.g., substitutions per site)
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

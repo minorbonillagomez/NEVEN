@@ -1,0 +1,113 @@
+entity_type: ChartType
+id: quiver-basic
+name:
+  en: Basic Quiver Plot
+  es: Quiver Basic Básico
+description:
+  en: A quiver plot displays vector fields using arrows positioned at grid points.
+    Each arrow represents a vector at that location, with direction indicating the
+    vector's angle and length proportional to its magnitude. This visualization reveals
+    flow patterns, gradients, and field structure in two-dimensional data.
+  es: A quiver plot displays vector fields using arrows positioned at grid points.
+    Each arrow represents a vector at that location, with direction indicating the
+    vector's angle and length proportional to its magnitude. This visualization reveals
+    flow patterns, gradients, and field structure in two-dimensional data.
+aliases:
+  en:
+  - quiver-basic
+  - quiver basic
+  - basic quiver basic
+  es:
+  - quiver-basic
+  - quiver basic
+  - quiver basic básico
+use_when:
+  en:
+  - A quiver plot displays vector fields using arrows positioned at grid points. Each
+    arrow represents a vector at that location, with direction indicating the vector's
+    angle and length proportional to it
+  es:
+  - A quiver plot displays vector fields using arrows positioned at grid points. Each
+    arrow represents a vector at that location, with direction indicating the vector's
+    angle and length proportional to it
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing wind patterns or ocean currents in meteorology and oceanography
+  - Displaying electromagnetic field lines in physics simulations
+  - Showing gradient descent directions in optimization landscapes
+  - Illustrating fluid flow patterns in computational fluid dynamics
+  es:
+  - Visualizing wind patterns or ocean currents in meteorology and oceanography
+  - Displaying electromagnetic field lines in physics simulations
+  - Showing gradient descent directions in optimization landscapes
+  - Illustrating fluid flow patterns in computational fluid dynamics
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - quiver
+  - vector
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - engineering
+  features:
+  - basic
+  - 2d
+keywords:
+  en:
+  - quiver
+  - basic
+  - vector
+  - numeric
+  - continuous
+  - science
+  - engineering
+  - 2d
+  es:
+  - quiver
+  - básico
+  - vector
+  - numérico
+  - continuo
+  - ciencia
+  - ingeniería
+  - basic
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/quiver-basic/implementations/javascript/chartjs.js
+    d3: plots/quiver-basic/implementations/javascript/d3.js
+    echarts: plots/quiver-basic/implementations/javascript/echarts.js
+    highcharts: plots/quiver-basic/implementations/javascript/highcharts.js
+    muix: plots/quiver-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/quiver-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/quiver-basic/implementations/python/altair.py
+    bokeh: plots/quiver-basic/implementations/python/bokeh.py
+    letsplot: plots/quiver-basic/implementations/python/letsplot.py
+    matplotlib: plots/quiver-basic/implementations/python/matplotlib.py
+    plotly: plots/quiver-basic/implementations/python/plotly.py
+    plotnine: plots/quiver-basic/implementations/python/plotnine.py
+    pygal: plots/quiver-basic/implementations/python/pygal.py
+    seaborn: plots/quiver-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/quiver-basic/implementations/r/ggplot2.R
+notes:
+- Arrow spacing should be uniform and sufficient to prevent overlap
+- Arrow length should be scaled appropriately so vectors are distinguishable
+- Consider using a simple mathematical function (like rotation or gradient) to generate
+  sample data
+source: anyplot
+anyplot_updated: 2025-12-15 20:45:58+00:00

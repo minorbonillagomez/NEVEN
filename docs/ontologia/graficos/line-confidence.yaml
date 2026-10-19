@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: line-confidence
+name:
+  en: Line Plot with Confidence Interval
+  es: Gráfico de Líneas
+description:
+  en: A line plot with a confidence interval displays a central trend line (typically
+    mean or median) surrounded by a shaded band representing uncertainty or variability.
+    The combination of a clear central line and semi-transparent confidence region
+    effectively communicates both the estimated value and its associated uncertainty,
+    making it essential for visualizing statistical estimates, model predictions,
+    and forecast ranges.
+  es: A line plot with a confidence interval displays a central trend line (typically
+    mean or median) surrounded by a shaded band representing uncertainty or variability.
+    The combination of a clear central line and semi-transparent confidence region
+    effectively communicates both the estimated value and its associated uncertainty,
+    making it essential for visualizing statistical estimates, model predictions,
+    and forecast ranges.
+aliases:
+  en:
+  - line-confidence
+  - line confidence
+  - line chart
+  es:
+  - line-confidence
+  - line confidence
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying model predictions with uncertainty bounds in machine learning
+  - Showing statistical estimates with confidence intervals in research
+  - Visualizing time series forecasts with prediction intervals
+  - Presenting regression results with standard error bands
+  es:
+  - Displaying model predictions with uncertainty bounds in machine learning
+  - Showing statistical estimates with confidence intervals in research
+  - Visualizing time series forecasts with prediction intervals
+  - Presenting regression results with standard error bands
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - band
+  data_type:
+  - numeric
+  - continuous
+  - timeseries
+  domain:
+  - general
+  - statistics
+  - science
+  features:
+  - uncertainty
+  - confidence-interval
+  - shaded
+keywords:
+  en:
+  - line chart
+  - confidence
+  - line
+  - band
+  - numeric
+  - continuous
+  - timeseries
+  - general
+  - statistics
+  - science
+  - uncertainty
+  - confidence-interval
+  - shaded
+  es:
+  - gráfico de líneas
+  - confidence
+  - line
+  - band
+  - numérico
+  - continuo
+  - timeseries
+  - general
+  - estadística
+  - ciencia
+  - uncertainty
+  - confidence-interval
+  - shaded
+implementations:
+  javascript:
+    chartjs: plots/line-confidence/implementations/javascript/chartjs.js
+    d3: plots/line-confidence/implementations/javascript/d3.js
+    echarts: plots/line-confidence/implementations/javascript/echarts.js
+    highcharts: plots/line-confidence/implementations/javascript/highcharts.js
+    muix: plots/line-confidence/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-confidence/implementations/julia/makie.jl
+  python:
+    altair: plots/line-confidence/implementations/python/altair.py
+    bokeh: plots/line-confidence/implementations/python/bokeh.py
+    letsplot: plots/line-confidence/implementations/python/letsplot.py
+    matplotlib: plots/line-confidence/implementations/python/matplotlib.py
+    plotly: plots/line-confidence/implementations/python/plotly.py
+    plotnine: plots/line-confidence/implementations/python/plotnine.py
+    pygal: plots/line-confidence/implementations/python/pygal.py
+    seaborn: plots/line-confidence/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-confidence/implementations/r/ggplot2.R
+notes:
+- Use a solid, prominent line for the central trend
+- Shaded band should be semi-transparent (alpha 0.2-0.4) to show overlap and maintain
+  readability
+- Include a legend that clearly identifies both the central line and confidence band
+source: anyplot
+anyplot_updated: null

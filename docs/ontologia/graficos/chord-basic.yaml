@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: chord-basic
+name:
+  en: Basic Chord Diagram
+  es: Diagrama de Cuerdas Básico
+description:
+  en: A chord diagram displays relationships or flows between entities arranged around
+    a circle's perimeter. Arcs (chords) connect related entities, with chord width
+    proportional to the flow magnitude. This visualization excels at revealing the
+    overall structure of connections and identifying the strongest relationships within
+    a system.
+  es: A chord diagram displays relationships or flows between entities arranged around
+    a circle's perimeter. Arcs (chords) connect related entities, with chord width
+    proportional to the flow magnitude. This visualization excels at revealing the
+    overall structure of connections and identifying the strongest relationships within
+    a system.
+aliases:
+  en:
+  - chord-basic
+  - chord basic
+  - basic chord diagram
+  es:
+  - chord-basic
+  - chord basic
+  - diagrama de cuerdas básico
+use_when:
+  en:
+  - A chord diagram displays relationships or flows between entities arranged around
+    a circle's perimeter. Arcs (chords) connect related entities, with chord width
+    proportional to the flow magnitude. This
+  es:
+  - A chord diagram displays relationships or flows between entities arranged around
+    a circle's perimeter. Arcs (chords) connect related entities, with chord width
+    proportional to the flow magnitude. This
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing migration flows between countries or regions
+  - Showing trade relationships and import/export volumes between nations
+  - Displaying gene interactions or protein-protein interactions in bioinformatics
+  - Analyzing communication patterns between departments in an organization
+  es:
+  - Visualizing migration flows between countries or regions
+  - Showing trade relationships and import/export volumes between nations
+  - Displaying gene interactions or protein-protein interactions in bioinformatics
+  - Analyzing communication patterns between departments in an organization
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - chord
+  - flow
+  data_type:
+  - categorical
+  - numeric
+  - network
+  - relational
+  domain:
+  - general
+  features:
+  - basic
+  - circular
+  - proportional
+keywords:
+  en:
+  - chord diagram
+  - basic
+  - chord
+  - flow
+  - categorical
+  - numeric
+  - network
+  - relational
+  - general
+  - circular
+  - proportional
+  es:
+  - diagrama de cuerdas
+  - básico
+  - chord
+  - flujo
+  - categórico
+  - numérico
+  - red
+  - relational
+  - general
+  - basic
+  - circular
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/chord-basic/implementations/javascript/chartjs.js
+    d3: plots/chord-basic/implementations/javascript/d3.js
+    echarts: plots/chord-basic/implementations/javascript/echarts.js
+    highcharts: plots/chord-basic/implementations/javascript/highcharts.js
+    muix: plots/chord-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/chord-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/chord-basic/implementations/python/altair.py
+    bokeh: plots/chord-basic/implementations/python/bokeh.py
+    letsplot: plots/chord-basic/implementations/python/letsplot.py
+    matplotlib: plots/chord-basic/implementations/python/matplotlib.py
+    plotly: plots/chord-basic/implementations/python/plotly.py
+    plotnine: plots/chord-basic/implementations/python/plotnine.py
+    pygal: plots/chord-basic/implementations/python/pygal.py
+    seaborn: plots/chord-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/chord-basic/implementations/r/ggplot2.R
+notes:
+- Each entity should have a distinct color for easy identification
+- Chord width should be proportional to flow value
+- Consider adding hover tooltips showing exact flow values for interactive libraries
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: scatter-regression-polynomial
+name:
+  en: Scatter Plot with Polynomial Regression
+  es: Diagrama de Dispersión Regresión
+description:
+  en: A scatter plot displaying the relationship between two numeric variables with
+    a fitted polynomial regression curve (degree 2-4). This visualization extends
+    beyond linear regression to capture non-linear relationships in data, making it
+    ideal for modeling curved trends, parabolic patterns, and complex data relationships
+    where a straight line would not adequately represent the underlying pattern.
+  es: A scatter plot displaying the relationship between two numeric variables with
+    a fitted polynomial regression curve (degree 2-4). This visualization extends
+    beyond linear regression to capture non-linear relationships in data, making it
+    ideal for modeling curved trends, parabolic patterns, and complex data relationships
+    where a straight line would not adequately represent the underlying pattern.
+aliases:
+  en:
+  - scatter-regression-polynomial
+  - scatter regression polynomial
+  - regression scatter plot
+  es:
+  - scatter-regression-polynomial
+  - scatter regression polynomial
+  - diagrama de dispersión regresión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Analyzing diminishing returns in economics where initial gains decrease over time
+  - Studying growth curves in biology where populations follow sigmoid or exponential
+    patterns
+  - Modeling physical phenomena like projectile motion or thermal expansion with quadratic
+    relationships
+  es:
+  - Analyzing diminishing returns in economics where initial gains decrease over time
+  - Studying growth curves in biology where populations follow sigmoid or exponential
+    patterns
+  - Modeling physical phenomena like projectile motion or thermal expansion with quadratic
+    relationships
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - general
+  - statistics
+  - science
+  features:
+  - regression
+  - polynomial
+  - curve-fitting
+  - correlation
+keywords:
+  en:
+  - scatter plot
+  - regression
+  - polynomial
+  - scatter
+  - numeric
+  - continuous
+  - general
+  - statistics
+  - science
+  - curve-fitting
+  - correlation
+  es:
+  - diagrama de dispersión
+  - regresión
+  - polynomial
+  - scatter
+  - numérico
+  - continuo
+  - general
+  - estadística
+  - ciencia
+  - regression
+  - curve-fitting
+  - correlación
+implementations:
+  javascript:
+    chartjs: plots/scatter-regression-polynomial/implementations/javascript/chartjs.js
+    d3: plots/scatter-regression-polynomial/implementations/javascript/d3.js
+    echarts: plots/scatter-regression-polynomial/implementations/javascript/echarts.js
+    highcharts: plots/scatter-regression-polynomial/implementations/javascript/highcharts.js
+    muix: plots/scatter-regression-polynomial/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-regression-polynomial/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-regression-polynomial/implementations/python/altair.py
+    bokeh: plots/scatter-regression-polynomial/implementations/python/bokeh.py
+    letsplot: plots/scatter-regression-polynomial/implementations/python/letsplot.py
+    matplotlib: plots/scatter-regression-polynomial/implementations/python/matplotlib.py
+    plotly: plots/scatter-regression-polynomial/implementations/python/plotly.py
+    plotnine: plots/scatter-regression-polynomial/implementations/python/plotnine.py
+    pygal: plots/scatter-regression-polynomial/implementations/python/pygal.py
+    seaborn: plots/scatter-regression-polynomial/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-regression-polynomial/implementations/r/ggplot2.R
+notes:
+- Display R² value prominently on the plot to indicate goodness of fit
+- Polynomial curve should be visually distinct from scatter points (solid line, contrasting
+  color)
+- Use polynomial degree 2 (quadratic) as default; higher degrees (3-4) for more complex
+  curves
+source: anyplot
+anyplot_updated: 2026-08-11 12:35:06+00:00

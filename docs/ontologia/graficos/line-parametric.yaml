@@ -1,0 +1,129 @@
+entity_type: ChartType
+id: line-parametric
+name:
+  en: Parametric Curve Plot
+  es: Gráfico de Líneas
+description:
+  en: A parametric curve plot visualizes x(t) and y(t) as functions of a parameter
+    t, tracing smooth curves in 2D space. Unlike standard function plots where y =
+    f(x), parametric curves can loop, self-intersect, and form closed shapes such
+    as Lissajous figures, spirals, and cardioids. This makes them essential for representing
+    trajectories, oscillations, and classical mathematical curves that cannot be expressed
+    as single-valued functions.
+  es: A parametric curve plot visualizes x(t) and y(t) as functions of a parameter
+    t, tracing smooth curves in 2D space. Unlike standard function plots where y =
+    f(x), parametric curves can loop, self-intersect, and form closed shapes such
+    as Lissajous figures, spirals, and cardioids. This makes them essential for representing
+    trajectories, oscillations, and classical mathematical curves that cannot be expressed
+    as single-valued functions.
+aliases:
+  en:
+  - line-parametric
+  - line parametric
+  - line chart
+  es:
+  - line-parametric
+  - line parametric
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing Lissajous figures in physics and signal analysis to study frequency
+    ratios and phase relationships
+  - Plotting spiral curves (Archimedean, logarithmic) for antenna design and natural
+    growth patterns
+  - Drawing classical mathematical curves such as cardioids, cycloids, and epicycloids
+    for education and research
+  - Tracing orbital paths and projectile trajectories in physics and engineering simulations
+  es:
+  - Visualizing Lissajous figures in physics and signal analysis to study frequency
+    ratios and phase relationships
+  - Plotting spiral curves (Archimedean, logarithmic) for antenna design and natural
+    growth patterns
+  - Drawing classical mathematical curves such as cardioids, cycloids, and epicycloids
+    for education and research
+  - Tracing orbital paths and projectile trajectories in physics and engineering simulations
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - engineering
+  - general
+  features:
+  - color-mapped
+  - 2d
+keywords:
+  en:
+  - line chart
+  - parametric
+  - line
+  - numeric
+  - continuous
+  - science
+  - engineering
+  - general
+  - color-mapped
+  - 2d
+  es:
+  - gráfico de líneas
+  - parametric
+  - line
+  - numérico
+  - continuo
+  - ciencia
+  - ingeniería
+  - general
+  - color-mapped
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/line-parametric/implementations/javascript/chartjs.js
+    d3: plots/line-parametric/implementations/javascript/d3.js
+    echarts: plots/line-parametric/implementations/javascript/echarts.js
+    highcharts: plots/line-parametric/implementations/javascript/highcharts.js
+    muix: plots/line-parametric/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-parametric/implementations/julia/makie.jl
+  python:
+    altair: plots/line-parametric/implementations/python/altair.py
+    bokeh: plots/line-parametric/implementations/python/bokeh.py
+    letsplot: plots/line-parametric/implementations/python/letsplot.py
+    matplotlib: plots/line-parametric/implementations/python/matplotlib.py
+    plotly: plots/line-parametric/implementations/python/plotly.py
+    plotnine: plots/line-parametric/implementations/python/plotnine.py
+    pygal: plots/line-parametric/implementations/python/pygal.py
+    seaborn: plots/line-parametric/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-parametric/implementations/r/ggplot2.R
+notes:
+- Use equal aspect ratio to prevent geometric distortion of the curves
+- Show direction of increasing t using a color gradient along the curve (e.g., from
+  cool to warm colors)
+- 'Include at least two example curves: a Lissajous figure (x = sin(3t), y = sin(2t))
+  and a spiral (x = t*cos(t), y = t*sin(t))'
+source: anyplot
+anyplot_updated: '2026-06-20T22:27:26Z'

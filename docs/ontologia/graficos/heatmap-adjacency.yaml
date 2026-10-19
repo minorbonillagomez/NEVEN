@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: heatmap-adjacency
+name:
+  en: Network Adjacency Matrix Heatmap
+  es: Mapa de Calor
+description:
+  en: A matrix-based representation of a network or graph where rows and columns represent
+    nodes and cell color indicates the presence or weight of edges between them. This
+    visualization complements node-link diagrams by excelling at revealing clusters,
+    structural patterns, and density in large or dense networks where node-link layouts
+    become cluttered. Reordering nodes by cluster, degree, or community membership
+    exposes block-diagonal structure and makes group boundaries immediately visible.
+  es: A matrix-based representation of a network or graph where rows and columns represent
+    nodes and cell color indicates the presence or weight of edges between them. This
+    visualization complements node-link diagrams by excelling at revealing clusters,
+    structural patterns, and density in large or dense networks where node-link layouts
+    become cluttered. Reordering nodes by cluster, degree, or community membership
+    exposes block-diagonal structure and makes group boundaries immediately visible.
+aliases:
+  en:
+  - heatmap-adjacency
+  - heatmap adjacency
+  - heatmap
+  es:
+  - heatmap-adjacency
+  - heatmap adjacency
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing social network connections to detect community structure and cliques
+  - Displaying brain connectivity matrices in neuroscience to identify functionally
+    linked regions
+  - Analyzing bilateral trade relationships between countries to reveal trading blocs
+  - Showing co-occurrence patterns in text analysis to find related terms or topics
+  es:
+  - Visualizing social network connections to detect community structure and cliques
+  - Displaying brain connectivity matrices in neuroscience to identify functionally
+    linked regions
+  - Analyzing bilateral trade relationships between countries to reveal trading blocs
+  - Showing co-occurrence patterns in text analysis to find related terms or topics
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  - network
+  data_type:
+  - network
+  - categorical
+  - numeric
+  domain:
+  - general
+  - science
+  features:
+  - color-mapped
+  - correlation
+  - comparison
+keywords:
+  en:
+  - heatmap
+  - adjacency
+  - network
+  - categorical
+  - numeric
+  - general
+  - science
+  - color-mapped
+  - correlation
+  - comparison
+  es:
+  - mapa de calor
+  - adjacency
+  - heatmap
+  - red
+  - categórico
+  - numérico
+  - general
+  - ciencia
+  - color-mapped
+  - correlación
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/heatmap-adjacency/implementations/javascript/chartjs.js
+    d3: plots/heatmap-adjacency/implementations/javascript/d3.js
+    echarts: plots/heatmap-adjacency/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-adjacency/implementations/javascript/highcharts.js
+    muix: plots/heatmap-adjacency/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-adjacency/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-adjacency/implementations/python/altair.py
+    bokeh: plots/heatmap-adjacency/implementations/python/bokeh.py
+    letsplot: plots/heatmap-adjacency/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-adjacency/implementations/python/matplotlib.py
+    plotly: plots/heatmap-adjacency/implementations/python/plotly.py
+    plotnine: plots/heatmap-adjacency/implementations/python/plotnine.py
+    pygal: plots/heatmap-adjacency/implementations/python/pygal.py
+    seaborn: plots/heatmap-adjacency/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-adjacency/implementations/r/ggplot2.R
+notes:
+- Nodes should be reorderable by cluster, degree, or community assignment to expose
+  block-diagonal structure
+- For undirected graphs the matrix is symmetric; implementations should fill both
+  triangles
+- Color intensity maps to edge weight; absent edges should use a distinct background
+  (e.g., white or near-white)
+source: anyplot
+anyplot_updated: '2026-10-02T15:00:51Z'

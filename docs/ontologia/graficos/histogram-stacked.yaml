@@ -1,0 +1,112 @@
+entity_type: ChartType
+id: histogram-stacked
+name:
+  en: Stacked Histogram
+  es: Histograma Apilado
+description:
+  en: A histogram showing multiple groups stacked on top of each other within each
+    bin. The total bar height represents the combined frequency, while colored segments
+    show individual group contributions.
+  es: A histogram showing multiple groups stacked on top of each other within each
+    bin. The total bar height represents the combined frequency, while colored segments
+    show individual group contributions.
+aliases:
+  en:
+  - histogram-stacked
+  - histogram stacked
+  - stacked histogram
+  es:
+  - histogram-stacked
+  - histogram stacked
+  - histograma apilado
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing distributions of multiple groups
+  - Showing composition within histogram bins
+  - Total frequency with group breakdown
+  - Demographic or categorical comparisons
+  es:
+  - Comparing distributions of multiple groups
+  - Showing composition within histogram bins
+  - Total frequency with group breakdown
+  - Demographic or categorical comparisons
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - demographics
+  features:
+  - stacked
+  - grouped
+  - comparison
+keywords:
+  en:
+  - histogram
+  - stacked
+  - numeric
+  - categorical
+  - statistics
+  - demographics
+  - grouped
+  - comparison
+  es:
+  - histograma
+  - apilado
+  - histogram
+  - numérico
+  - categórico
+  - estadística
+  - demographics
+  - stacked
+  - grouped
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/histogram-stacked/implementations/javascript/chartjs.js
+    d3: plots/histogram-stacked/implementations/javascript/d3.js
+    echarts: plots/histogram-stacked/implementations/javascript/echarts.js
+    highcharts: plots/histogram-stacked/implementations/javascript/highcharts.js
+    muix: plots/histogram-stacked/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-stacked/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-stacked/implementations/python/altair.py
+    bokeh: plots/histogram-stacked/implementations/python/bokeh.py
+    letsplot: plots/histogram-stacked/implementations/python/letsplot.py
+    matplotlib: plots/histogram-stacked/implementations/python/matplotlib.py
+    plotly: plots/histogram-stacked/implementations/python/plotly.py
+    plotnine: plots/histogram-stacked/implementations/python/plotnine.py
+    pygal: plots/histogram-stacked/implementations/python/pygal.py
+    seaborn: plots/histogram-stacked/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-stacked/implementations/r/ggplot2.R
+notes:
+- Same bin boundaries applied to all groups
+- Distinct colors for each group
+- Legend shows group labels
+source: anyplot
+anyplot_updated: '2026-05-12T05:20:28Z'

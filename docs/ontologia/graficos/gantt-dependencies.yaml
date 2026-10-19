@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: gantt-dependencies
+name:
+  en: Gantt Chart with Dependencies
+  es: Diagrama de Gantt
+description:
+  en: A Gantt chart that visualizes project schedules with task dependencies and groupings.
+    Beyond displaying task timelines, this chart shows relationships between tasks
+    using connector arrows, indicating which tasks must complete before others can
+    begin. Tasks can be organized into groups (phases or work packages) with aggregate
+    timeline bars showing the span of each group. This visualization is essential
+    for understanding critical paths and scheduling constraints in complex projects.
+  es: A Gantt chart that visualizes project schedules with task dependencies and groupings.
+    Beyond displaying task timelines, this chart shows relationships between tasks
+    using connector arrows, indicating which tasks must complete before others can
+    begin. Tasks can be organized into groups (phases or work packages) with aggregate
+    timeline bars showing the span of each group. This visualization is essential
+    for understanding critical paths and scheduling constraints in complex projects.
+aliases:
+  en:
+  - gantt-dependencies
+  - gantt dependencies
+  - gantt chart
+  es:
+  - gantt-dependencies
+  - gantt dependencies
+  - diagrama de gantt
+use_when:
+  en:
+  - 'A Gantt chart that visualizes project schedules with task dependencies and groupings.
+    Beyond displaying task timelines, this chart shows relationships between tasks
+    using connector arrows, indicating '
+  es:
+  - 'A Gantt chart that visualizes project schedules with task dependencies and groupings.
+    Beyond displaying task timelines, this chart shows relationships between tasks
+    using connector arrows, indicating '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Project management to visualize task sequences and identify critical path dependencies
+  - Software development sprint planning showing feature dependencies and blockers
+  - Construction project scheduling where certain phases must complete before others
+    begin
+  - Manufacturing workflow planning to coordinate sequential and parallel operations
+  es:
+  - Project management to visualize task sequences and identify critical path dependencies
+  - Software development sprint planning showing feature dependencies and blockers
+  - Construction project scheduling where certain phases must complete before others
+    begin
+  - Manufacturing workflow planning to coordinate sequential and parallel operations
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - gantt
+  - bar
+  data_type:
+  - datetime
+  - categorical
+  - relational
+  - hierarchical
+  domain:
+  - business
+  - project-management
+  features:
+  - grouped
+  - annotated
+  - temporal
+  - dependencies
+keywords:
+  en:
+  - gantt chart
+  - dependencies
+  - gantt
+  - bar
+  - datetime
+  - categorical
+  - relational
+  - hierarchical
+  - business
+  - project-management
+  - grouped
+  - annotated
+  - temporal
+  es:
+  - diagrama de gantt
+  - dependencies
+  - gantt
+  - bar
+  - datetime
+  - categórico
+  - relational
+  - jerárquico
+  - negocios
+  - project-management
+  - grouped
+  - annotated
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/gantt-dependencies/implementations/javascript/chartjs.js
+    d3: plots/gantt-dependencies/implementations/javascript/d3.js
+    echarts: plots/gantt-dependencies/implementations/javascript/echarts.js
+    highcharts: plots/gantt-dependencies/implementations/javascript/highcharts.js
+    muix: plots/gantt-dependencies/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/gantt-dependencies/implementations/julia/makie.jl
+  python:
+    altair: plots/gantt-dependencies/implementations/python/altair.py
+    bokeh: plots/gantt-dependencies/implementations/python/bokeh.py
+    letsplot: plots/gantt-dependencies/implementations/python/letsplot.py
+    matplotlib: plots/gantt-dependencies/implementations/python/matplotlib.py
+    plotly: plots/gantt-dependencies/implementations/python/plotly.py
+    plotnine: plots/gantt-dependencies/implementations/python/plotnine.py
+    pygal: plots/gantt-dependencies/implementations/python/pygal.py
+    seaborn: plots/gantt-dependencies/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/gantt-dependencies/implementations/r/ggplot2.R
+notes:
+- For finish-to-start links, draw dependency arrows from the right edge (end date)
+  of each predecessor bar to the left edge (start date) of the successor bar
+- Use different visual styles for dependency types (finish-to-start is most common)
+- Group headers should show aggregate timeline spanning from earliest to latest task
+  in the group
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

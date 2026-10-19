@@ -1,0 +1,115 @@
+entity_type: ChartType
+id: count-basic
+name:
+  en: Basic Count Plot
+  es: Count Basic Básico
+description:
+  en: A count plot displays the frequency of observations in each category of a categorical
+    variable using vertical bars. Unlike a basic bar chart that requires pre-computed
+    values, a count plot automatically counts occurrences from raw data. This makes
+    it ideal for quick exploratory analysis of categorical distributions without manual
+    aggregation.
+  es: A count plot displays the frequency of observations in each category of a categorical
+    variable using vertical bars. Unlike a basic bar chart that requires pre-computed
+    values, a count plot automatically counts occurrences from raw data. This makes
+    it ideal for quick exploratory analysis of categorical distributions without manual
+    aggregation.
+aliases:
+  en:
+  - count-basic
+  - count basic
+  - basic count basic
+  es:
+  - count-basic
+  - count basic
+  - count basic básico
+use_when:
+  en:
+  - A count plot displays the frequency of observations in each category of a categorical
+    variable using vertical bars. Unlike a basic bar chart that requires pre-computed
+    values, a count plot automatical
+  es:
+  - A count plot displays the frequency of observations in each category of a categorical
+    variable using vertical bars. Unlike a basic bar chart that requires pre-computed
+    values, a count plot automatical
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing survey response distributions across multiple choice answers
+  - Visualizing the frequency of product categories in sales data
+  - Exploring class distributions in machine learning datasets before training
+  es:
+  - Analyzing survey response distributions across multiple choice answers
+  - Visualizing the frequency of product categories in sales data
+  - Exploring class distributions in machine learning datasets before training
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - frequency
+  domain:
+  - general
+  - statistics
+  features:
+  - basic
+  - distribution
+  - aggregation
+keywords:
+  en:
+  - count
+  - basic
+  - bar
+  - categorical
+  - frequency
+  - general
+  - statistics
+  - distribution
+  - aggregation
+  es:
+  - count
+  - básico
+  - bar
+  - categórico
+  - frequency
+  - general
+  - estadística
+  - basic
+  - distribución
+  - aggregation
+implementations:
+  javascript:
+    chartjs: plots/count-basic/implementations/javascript/chartjs.js
+    d3: plots/count-basic/implementations/javascript/d3.js
+    echarts: plots/count-basic/implementations/javascript/echarts.js
+    highcharts: plots/count-basic/implementations/javascript/highcharts.js
+    muix: plots/count-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/count-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/count-basic/implementations/python/altair.py
+    bokeh: plots/count-basic/implementations/python/bokeh.py
+    letsplot: plots/count-basic/implementations/python/letsplot.py
+    matplotlib: plots/count-basic/implementations/python/matplotlib.py
+    plotly: plots/count-basic/implementations/python/plotly.py
+    plotnine: plots/count-basic/implementations/python/plotnine.py
+    pygal: plots/count-basic/implementations/python/pygal.py
+    seaborn: plots/count-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/count-basic/implementations/r/ggplot2.R
+notes:
+- Bars should be sorted by frequency (descending) or kept in original/alphabetical
+  order based on context
+- Consider adding count labels on or above bars for precise reading
+- Optional percentage annotations can show relative proportions
+source: anyplot
+anyplot_updated: 2026-05-07 19:36:42+00:00

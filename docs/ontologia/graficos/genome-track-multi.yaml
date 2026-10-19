@@ -1,0 +1,137 @@
+entity_type: ChartType
+id: genome-track-multi
+name:
+  en: Genome Track Viewer
+  es: Genome Track Multi
+description:
+  en: A multi-track genome browser view that displays different types of genomic data
+    aligned along a shared chromosomal coordinate axis. Multiple parallel horizontal
+    tracks (gene annotations, read coverage, variants, regulatory elements) are stacked
+    vertically, each showing a different data type at the same genomic locus. This
+    visualization is essential for integrative genomics, enabling researchers to explore
+    relationships between gene structure, expression, variation, and regulation in
+    a single coordinated view.
+  es: A multi-track genome browser view that displays different types of genomic data
+    aligned along a shared chromosomal coordinate axis. Multiple parallel horizontal
+    tracks (gene annotations, read coverage, variants, regulatory elements) are stacked
+    vertically, each showing a different data type at the same genomic locus. This
+    visualization is essential for integrative genomics, enabling researchers to explore
+    relationships between gene structure, expression, variation, and regulation in
+    a single coordinated view.
+aliases:
+  en:
+  - genome-track-multi
+  - genome track multi
+  - genome track multi
+  es:
+  - genome-track-multi
+  - genome track multi
+  - genome track multi
+use_when:
+  en:
+  - A multi-track genome browser view that displays different types of genomic data
+    aligned along a shared chromosomal coordinate axis. Multiple parallel horizontal
+    tracks (gene annotations, read coverage
+  es:
+  - A multi-track genome browser view that displays different types of genomic data
+    aligned along a shared chromosomal coordinate axis. Multiple parallel horizontal
+    tracks (gene annotations, read coverage
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Exploring gene structure and regulatory regions at specific genomic loci
+  - Visualizing sequencing read coverage alongside gene annotations to assess expression
+    levels
+  - Displaying variant calls (SNPs, indels) in their genomic context relative to exons
+    and regulatory elements
+  - Integrating multi-omics data (epigenomics, transcriptomics, variants) at a single
+    locus for biological interpretation
+  es:
+  - Exploring gene structure and regulatory regions at specific genomic loci
+  - Visualizing sequencing read coverage alongside gene annotations to assess expression
+    levels
+  - Displaying variant calls (SNPs, indels) in their genomic context relative to exons
+    and regulatory elements
+  - Integrating multi-omics data (epigenomics, transcriptomics, variants) at a single
+    locus for biological interpretation
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  - discrete
+  domain:
+  - science
+  - healthcare
+  features:
+  - multi
+  - annotated
+  - faceted
+keywords:
+  en:
+  - genome
+  - track
+  - multiple
+  - area
+  - bar
+  - categorical
+  - numeric
+  - discrete
+  - science
+  - healthcare
+  - multi
+  - annotated
+  - faceted
+  es:
+  - genome
+  - track
+  - múltiple
+  - area
+  - bar
+  - categórico
+  - numérico
+  - discreto
+  - ciencia
+  - healthcare
+  - multi
+  - annotated
+  - faceted
+implementations:
+  javascript:
+    chartjs: plots/genome-track-multi/implementations/javascript/chartjs.js
+    d3: plots/genome-track-multi/implementations/javascript/d3.js
+    echarts: plots/genome-track-multi/implementations/javascript/echarts.js
+    highcharts: plots/genome-track-multi/implementations/javascript/highcharts.js
+    muix: plots/genome-track-multi/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/genome-track-multi/implementations/julia/makie.jl
+  python:
+    altair: plots/genome-track-multi/implementations/python/altair.py
+    bokeh: plots/genome-track-multi/implementations/python/bokeh.py
+    letsplot: plots/genome-track-multi/implementations/python/letsplot.py
+    matplotlib: plots/genome-track-multi/implementations/python/matplotlib.py
+    plotly: plots/genome-track-multi/implementations/python/plotly.py
+    plotnine: plots/genome-track-multi/implementations/python/plotnine.py
+    pygal: plots/genome-track-multi/implementations/python/pygal.py
+    seaborn: plots/genome-track-multi/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/genome-track-multi/implementations/r/ggplot2.R
+notes:
+- Stack 3-5 tracks vertically with a shared x-axis representing genomic position (base
+  pair coordinates)
+- 'Gene track: use rectangles for exons, thin lines for introns, and arrows or chevrons
+  to indicate strand direction'
+- 'Coverage track: render as a filled area plot showing read depth across the region'
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

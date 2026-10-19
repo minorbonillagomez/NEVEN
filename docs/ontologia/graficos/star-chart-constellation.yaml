@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: star-chart-constellation
+name:
+  en: Star Chart with Constellations
+  es: Star Chart Constellation
+description:
+  en: A celestial map that plots stars on a sky projection (stereographic or azimuthal
+    equidistant) with constellation stick-figure lines connecting notable stars. Star
+    apparent magnitudes are represented by point size (brighter stars appear larger),
+    and a coordinate grid overlays the chart for orientation. In the dark theme, a
+    dark background mimics a night sky, making this an intuitive tool for identifying
+    constellations and planning observations.
+  es: A celestial map that plots stars on a sky projection (stereographic or azimuthal
+    equidistant) with constellation stick-figure lines connecting notable stars. Star
+    apparent magnitudes are represented by point size (brighter stars appear larger),
+    and a coordinate grid overlays the chart for orientation. In the dark theme, a
+    dark background mimics a night sky, making this an intuitive tool for identifying
+    constellations and planning observations.
+aliases:
+  en:
+  - star-chart-constellation
+  - star chart constellation
+  - star chart constellation
+  es:
+  - star-chart-constellation
+  - star chart constellation
+  - star chart constellation
+use_when:
+  en:
+  - A celestial map that plots stars on a sky projection (stereographic or azimuthal
+    equidistant) with constellation stick-figure lines connecting notable stars. Star
+    apparent magnitudes are represented b
+  es:
+  - A celestial map that plots stars on a sky projection (stereographic or azimuthal
+    equidistant) with constellation stick-figure lines connecting notable stars. Star
+    apparent magnitudes are represented b
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Amateur astronomy: planning observing sessions by visualizing which constellations
+    are visible at a given time and location'
+  - 'Education: teaching students celestial navigation, star identification, and the
+    geometry of the celestial sphere'
+  - 'Planetarium software: rendering an interactive or static sky view for public
+    outreach and exhibits'
+  es:
+  - 'Amateur astronomy: planning observing sessions by visualizing which constellations
+    are visible at a given time and location'
+  - 'Education: teaching students celestial navigation, star identification, and the
+    geometry of the celestial sphere'
+  - 'Planetarium software: rendering an interactive or static sky view for public
+    outreach and exhibits'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  - network
+  data_type:
+  - numeric
+  - spatial
+  domain:
+  - science
+  - education
+  features:
+  - annotated
+  - color-mapped
+  - proportional
+keywords:
+  en:
+  - star
+  - chart
+  - constellation
+  - scatter
+  - network
+  - numeric
+  - spatial
+  - science
+  - education
+  - annotated
+  - color-mapped
+  - proportional
+  es:
+  - star
+  - chart
+  - constellation
+  - scatter
+  - red
+  - numérico
+  - spatial
+  - ciencia
+  - education
+  - annotated
+  - color-mapped
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/star-chart-constellation/implementations/javascript/chartjs.js
+    d3: plots/star-chart-constellation/implementations/javascript/d3.js
+    echarts: plots/star-chart-constellation/implementations/javascript/echarts.js
+    highcharts: plots/star-chart-constellation/implementations/javascript/highcharts.js
+    muix: plots/star-chart-constellation/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/star-chart-constellation/implementations/julia/makie.jl
+  python:
+    altair: plots/star-chart-constellation/implementations/python/altair.py
+    bokeh: plots/star-chart-constellation/implementations/python/bokeh.py
+    letsplot: plots/star-chart-constellation/implementations/python/letsplot.py
+    matplotlib: plots/star-chart-constellation/implementations/python/matplotlib.py
+    plotly: plots/star-chart-constellation/implementations/python/plotly.py
+    plotnine: plots/star-chart-constellation/implementations/python/plotnine.py
+    pygal: plots/star-chart-constellation/implementations/python/pygal.py
+    seaborn: plots/star-chart-constellation/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/star-chart-constellation/implementations/r/ggplot2.R
+notes:
+- Use a stereographic or azimuthal equidistant projection so the circular sky boundary
+  looks natural
+- 'Invert magnitude for point sizing: brighter stars (lower magnitude) should map
+  to larger points'
+- Draw constellation lines as thin, semi-transparent lines connecting star pairs
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

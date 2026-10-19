@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: scatter-regression-linear
+name:
+  en: Scatter Plot with Linear Regression
+  es: Diagrama de Dispersión Regresión
+description:
+  en: A scatter plot that displays the relationship between two numeric variables
+    with a fitted linear regression line and confidence interval band. This visualization
+    extends the basic scatter plot by adding statistical modeling elements, making
+    it ideal for understanding linear relationships, assessing model fit, and communicating
+    the strength of correlations with visual uncertainty quantification.
+  es: A scatter plot that displays the relationship between two numeric variables
+    with a fitted linear regression line and confidence interval band. This visualization
+    extends the basic scatter plot by adding statistical modeling elements, making
+    it ideal for understanding linear relationships, assessing model fit, and communicating
+    the strength of correlations with visual uncertainty quantification.
+aliases:
+  en:
+  - scatter-regression-linear
+  - scatter regression linear
+  - regression scatter plot
+  es:
+  - scatter-regression-linear
+  - scatter regression linear
+  - diagrama de dispersión regresión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Analyzing the relationship between advertising spend and sales revenue with prediction
+    confidence
+  - Studying the correlation between study hours and exam scores in educational research
+  - Investigating the linear relationship between temperature and energy consumption
+    in utility planning
+  es:
+  - Analyzing the relationship between advertising spend and sales revenue with prediction
+    confidence
+  - Studying the correlation between study hours and exam scores in educational research
+  - Investigating the linear relationship between temperature and energy consumption
+    in utility planning
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - regression
+  - confidence-interval
+  - correlation
+  - trend
+keywords:
+  en:
+  - scatter plot
+  - regression
+  - linear
+  - scatter
+  - numeric
+  - continuous
+  - general
+  - statistics
+  - research
+  - confidence-interval
+  - correlation
+  - trend
+  es:
+  - diagrama de dispersión
+  - regresión
+  - linear
+  - scatter
+  - numérico
+  - continuo
+  - general
+  - estadística
+  - research
+  - regression
+  - confidence-interval
+  - correlación
+  - trend
+implementations:
+  javascript:
+    chartjs: plots/scatter-regression-linear/implementations/javascript/chartjs.js
+    d3: plots/scatter-regression-linear/implementations/javascript/d3.js
+    echarts: plots/scatter-regression-linear/implementations/javascript/echarts.js
+    highcharts: plots/scatter-regression-linear/implementations/javascript/highcharts.js
+    muix: plots/scatter-regression-linear/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-regression-linear/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-regression-linear/implementations/python/altair.py
+    bokeh: plots/scatter-regression-linear/implementations/python/bokeh.py
+    letsplot: plots/scatter-regression-linear/implementations/python/letsplot.py
+    matplotlib: plots/scatter-regression-linear/implementations/python/matplotlib.py
+    plotly: plots/scatter-regression-linear/implementations/python/plotly.py
+    plotnine: plots/scatter-regression-linear/implementations/python/plotnine.py
+    pygal: plots/scatter-regression-linear/implementations/python/pygal.py
+    seaborn: plots/scatter-regression-linear/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-regression-linear/implementations/r/ggplot2.R
+notes:
+- Display R² or correlation coefficient (r) prominently on the plot
+- Regression line should be visually distinct from scatter points (solid line, contrasting
+  color)
+- Confidence band should use semi-transparent shading (95% CI recommended)
+source: anyplot
+anyplot_updated: 2026-08-05 12:59:02+00:00

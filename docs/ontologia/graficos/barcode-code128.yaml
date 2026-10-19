@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: barcode-code128
+name:
+  en: Code 128 Barcode
+  es: Barcode Code128
+description:
+  en: A Code 128 barcode visualization that encodes alphanumeric data into a high-density
+    linear barcode pattern. Code 128 is a widely-used 1D barcode format that supports
+    the full 128 ASCII character set, with three code subsets (A, B, C) that can be
+    switched dynamically for optimal encoding efficiency. This visualization generates
+    scannable barcodes commonly found on shipping labels, industrial parts, and healthcare
+    specimens.
+  es: A Code 128 barcode visualization that encodes alphanumeric data into a high-density
+    linear barcode pattern. Code 128 is a widely-used 1D barcode format that supports
+    the full 128 ASCII character set, with three code subsets (A, B, C) that can be
+    switched dynamically for optimal encoding efficiency. This visualization generates
+    scannable barcodes commonly found on shipping labels, industrial parts, and healthcare
+    specimens.
+aliases:
+  en:
+  - barcode-code128
+  - barcode code128
+  - barcode code128
+  es:
+  - barcode-code128
+  - barcode code128
+  - barcode code128
+use_when:
+  en:
+  - 'A Code 128 barcode visualization that encodes alphanumeric data into a high-density
+    linear barcode pattern. Code 128 is a widely-used 1D barcode format that supports
+    the full 128 ASCII character set, '
+  es:
+  - 'A Code 128 barcode visualization that encodes alphanumeric data into a high-density
+    linear barcode pattern. Code 128 is a widely-used 1D barcode format that supports
+    the full 128 ASCII character set, '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Generating shipping labels and package tracking codes for logistics operations
+  - Creating asset identification tags for inventory and equipment management
+  - Producing specimen and sample labels for healthcare and laboratory workflows
+  - Labeling industrial parts and components for manufacturing traceability
+  - Generating membership cards and badge barcodes for access control systems
+  es:
+  - Generating shipping labels and package tracking codes for logistics operations
+  - Creating asset identification tags for inventory and equipment management
+  - Producing specimen and sample labels for healthcare and laboratory workflows
+  - Labeling industrial parts and components for manufacturing traceability
+  - Generating membership cards and badge barcodes for access control systems
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - barcode
+  data_type:
+  - text
+  - categorical
+  domain:
+  - logistics
+  - business
+  - healthcare
+  features:
+  - basic
+  - encoded
+keywords:
+  en:
+  - barcode
+  - code128
+  - text
+  - categorical
+  - logistics
+  - business
+  - healthcare
+  - basic
+  - encoded
+  es:
+  - barcode
+  - code128
+  - texto
+  - categórico
+  - logistics
+  - negocios
+  - healthcare
+  - basic
+  - encoded
+implementations:
+  javascript:
+    chartjs: plots/barcode-code128/implementations/javascript/chartjs.js
+    d3: plots/barcode-code128/implementations/javascript/d3.js
+    echarts: plots/barcode-code128/implementations/javascript/echarts.js
+    highcharts: plots/barcode-code128/implementations/javascript/highcharts.js
+    muix: plots/barcode-code128/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/barcode-code128/implementations/julia/makie.jl
+  python:
+    altair: plots/barcode-code128/implementations/python/altair.py
+    bokeh: plots/barcode-code128/implementations/python/bokeh.py
+    letsplot: plots/barcode-code128/implementations/python/letsplot.py
+    matplotlib: plots/barcode-code128/implementations/python/matplotlib.py
+    plotly: plots/barcode-code128/implementations/python/plotly.py
+    plotnine: plots/barcode-code128/implementations/python/plotnine.py
+    pygal: plots/barcode-code128/implementations/python/pygal.py
+    seaborn: plots/barcode-code128/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/barcode-code128/implementations/r/ggplot2.R
+notes:
+- Include quiet zones (white space) on left and right sides for reliable scanning
+- Start pattern indicates the code subset (A, B, or C)
+- Check digit is mandatory and calculated using modulo 103 algorithm
+source: anyplot
+anyplot_updated: null

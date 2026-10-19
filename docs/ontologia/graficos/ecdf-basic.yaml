@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: ecdf-basic
+name:
+  en: Basic ECDF Plot
+  es: Ecdf Basic Básico
+description:
+  en: An ECDF (Empirical Cumulative Distribution Function) plot displays a step function
+    that shows the proportion of observations less than or equal to each value. Unlike
+    histograms, ECDF plots require no binning or smoothing, providing a non-parametric
+    estimate of the cumulative distribution. The y-axis ranges from 0 to 1, allowing
+    direct reading of percentiles and quantiles from the visualization.
+  es: An ECDF (Empirical Cumulative Distribution Function) plot displays a step function
+    that shows the proportion of observations less than or equal to each value. Unlike
+    histograms, ECDF plots require no binning or smoothing, providing a non-parametric
+    estimate of the cumulative distribution. The y-axis ranges from 0 to 1, allowing
+    direct reading of percentiles and quantiles from the visualization.
+aliases:
+  en:
+  - ecdf-basic
+  - ecdf basic
+  - basic ecdf basic
+  es:
+  - ecdf-basic
+  - ecdf basic
+  - ecdf basic básico
+use_when:
+  en:
+  - 'An ECDF (Empirical Cumulative Distribution Function) plot displays a step function
+    that shows the proportion of observations less than or equal to each value. Unlike
+    histograms, ECDF plots require no '
+  es:
+  - 'An ECDF (Empirical Cumulative Distribution Function) plot displays a step function
+    that shows the proportion of observations less than or equal to each value. Unlike
+    histograms, ECDF plots require no '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Reading where a sample's spread, location and shape lie, as a base for comparing
+    groups
+  - Identifying distribution characteristics such as median, quartiles, and percentiles
+    at a glance
+  - Statistical analysis and hypothesis testing where the full distribution shape
+    matters
+  - Visualizing sample distributions without making parametric assumptions about the
+    underlying data
+  es:
+  - Reading where a sample's spread, location and shape lie, as a base for comparing
+    groups
+  - Identifying distribution characteristics such as median, quartiles, and percentiles
+    at a glance
+  - Statistical analysis and hypothesis testing where the full distribution shape
+    matters
+  - Visualizing sample distributions without making parametric assumptions about the
+    underlying data
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - ecdf
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  features:
+  - basic
+  - distribution
+  - cumulative
+keywords:
+  en:
+  - ecdf
+  - basic
+  - numeric
+  - continuous
+  - statistics
+  - distribution
+  - cumulative
+  es:
+  - ecdf
+  - básico
+  - numérico
+  - continuo
+  - estadística
+  - basic
+  - distribución
+  - cumulative
+implementations:
+  javascript:
+    chartjs: plots/ecdf-basic/implementations/javascript/chartjs.js
+    d3: plots/ecdf-basic/implementations/javascript/d3.js
+    echarts: plots/ecdf-basic/implementations/javascript/echarts.js
+    highcharts: plots/ecdf-basic/implementations/javascript/highcharts.js
+    muix: plots/ecdf-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ecdf-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/ecdf-basic/implementations/python/altair.py
+    bokeh: plots/ecdf-basic/implementations/python/bokeh.py
+    letsplot: plots/ecdf-basic/implementations/python/letsplot.py
+    matplotlib: plots/ecdf-basic/implementations/python/matplotlib.py
+    plotly: plots/ecdf-basic/implementations/python/plotly.py
+    plotnine: plots/ecdf-basic/implementations/python/plotnine.py
+    pygal: plots/ecdf-basic/implementations/python/pygal.py
+    seaborn: plots/ecdf-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ecdf-basic/implementations/r/ggplot2.R
+notes:
+- The step function should increase by 1/n at each data point
+- Y-axis must range from 0 to 1 representing cumulative proportion
+- Consider using a distinct line style for clarity
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

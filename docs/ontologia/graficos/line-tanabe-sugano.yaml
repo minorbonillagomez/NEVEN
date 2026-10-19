@@ -1,0 +1,157 @@
+entity_type: ChartType
+id: line-tanabe-sugano
+name:
+  en: Tanabe-Sugano Diagram for Crystal Field Theory
+  es: Gráfico de Líneas
+description:
+  en: 'A Tanabe-Sugano diagram plots the energies of the electronic term states of
+    a transition-metal ion in an octahedral ligand field as continuous functions of
+    the field strength. The x-axis is the reduced ligand-field strength Δ_o/B (octahedral
+    splitting divided by the Racah parameter B) and the y-axis is the reduced term
+    energy E/B measured from the ground term, which therefore runs along the x-axis
+    itself as a horizontal line at E/B = 0. Each term — labeled with its full symbol
+    including spin multiplicity and Mulliken label — is one curve, and for d⁴–d⁷ a
+    vertical line marks the high-spin/low-spin crossover where the ground term changes
+    and every curve kinks. Chemists read the chart in reverse: matching ratios of
+    observed UV-Vis band energies against the curves yields both Δ_o and B for a real
+    complex.'
+  es: 'A Tanabe-Sugano diagram plots the energies of the electronic term states of
+    a transition-metal ion in an octahedral ligand field as continuous functions of
+    the field strength. The x-axis is the reduced ligand-field strength Δ_o/B (octahedral
+    splitting divided by the Racah parameter B) and the y-axis is the reduced term
+    energy E/B measured from the ground term, which therefore runs along the x-axis
+    itself as a horizontal line at E/B = 0. Each term — labeled with its full symbol
+    including spin multiplicity and Mulliken label — is one curve, and for d⁴–d⁷ a
+    vertical line marks the high-spin/low-spin crossover where the ground term changes
+    and every curve kinks. Chemists read the chart in reverse: matching ratios of
+    observed UV-Vis band energies against the curves yields both Δ_o and B for a real
+    complex.'
+aliases:
+  en:
+  - line-tanabe-sugano
+  - line tanabe sugano
+  - line chart
+  es:
+  - line-tanabe-sugano
+  - line tanabe sugano
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Assigning d-d absorption bands in the UV-Vis spectrum of a coordination complex
+    to specific term-to-term transitions
+  - Estimating the octahedral splitting Δ_o and the Racah parameter B of a complex
+    from two or three measured band positions
+  - Teaching crystal field and ligand field theory, where the diagram connects term
+    symbols to observable spectra
+  - Predicting whether a given dⁿ ion with a given ligand set is high-spin or low-spin
+    from the position of its Δ_o/B relative to the crossover
+  es:
+  - Assigning d-d absorption bands in the UV-Vis spectrum of a coordination complex
+    to specific term-to-term transitions
+  - Estimating the octahedral splitting Δ_o and the Racah parameter B of a complex
+    from two or three measured band positions
+  - Teaching crystal field and ligand field theory, where the diagram connects term
+    symbols to observable spectra
+  - Predicting whether a given dⁿ ion with a given ligand set is high-spin or low-spin
+    from the position of its Δ_o/B relative to the crossover
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  - categorical
+  domain:
+  - chemistry
+  - physics
+  - education
+  features:
+  - multi
+  - annotated
+  - threshold
+  - comparison
+keywords:
+  en:
+  - line chart
+  - tanabe
+  - sugano
+  - line
+  - numeric
+  - continuous
+  - categorical
+  - chemistry
+  - physics
+  - education
+  - multi
+  - annotated
+  - threshold
+  - comparison
+  es:
+  - gráfico de líneas
+  - tanabe
+  - sugano
+  - line
+  - numérico
+  - continuo
+  - categórico
+  - chemistry
+  - physics
+  - education
+  - multi
+  - annotated
+  - threshold
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/line-tanabe-sugano/implementations/javascript/chartjs.js
+    d3: plots/line-tanabe-sugano/implementations/javascript/d3.js
+    echarts: plots/line-tanabe-sugano/implementations/javascript/echarts.js
+    highcharts: plots/line-tanabe-sugano/implementations/javascript/highcharts.js
+    muix: plots/line-tanabe-sugano/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-tanabe-sugano/implementations/julia/makie.jl
+  python:
+    altair: plots/line-tanabe-sugano/implementations/python/altair.py
+    bokeh: plots/line-tanabe-sugano/implementations/python/bokeh.py
+    letsplot: plots/line-tanabe-sugano/implementations/python/letsplot.py
+    matplotlib: plots/line-tanabe-sugano/implementations/python/matplotlib.py
+    plotly: plots/line-tanabe-sugano/implementations/python/plotly.py
+    plotnine: plots/line-tanabe-sugano/implementations/python/plotnine.py
+    pygal: plots/line-tanabe-sugano/implementations/python/pygal.py
+    seaborn: plots/line-tanabe-sugano/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-tanabe-sugano/implementations/r/ggplot2.R
+notes:
+- One dⁿ configuration per chart; prefer a d⁴–d⁷ configuration (d⁶ and d⁷ are classic
+  textbook examples), because only these have the high-spin/low-spin crossover, whose
+  vertical line and kink make the diagram recognizable, while d², d³ and d⁸ remain
+  valid choices without a crossover; state the configuration and the C/B ratio used
+  in the title or a subtitle, since curve shapes depend on it
+- Curve energies follow from diagonalizing the Tanabe-Sugano matrices for the chosen
+  dⁿ at a fixed C/B ratio, then subtracting the ground-term energy at each Δ_o/B —
+  do not approximate the curves with hand-fitted splines
+- The ground term is flat at E/B = 0 by construction; draw it as a visible curve along
+  the axis, not as an omitted baseline
+source: anyplot
+anyplot_updated: '2026-10-02T18:29:06Z'

@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: crossword-basic
+name:
+  en: Crossword Puzzle Grid
+  es: Crossword Basic Básico
+description:
+  en: A crossword puzzle grid visualization with white entry cells for letters, black
+    blocking cells, and numbered starting positions for across and down words. The
+    symmetric black cell pattern follows traditional newspaper-style crossword conventions,
+    creating a clean and recognizable puzzle layout suitable for printing or digital
+    display.
+  es: A crossword puzzle grid visualization with white entry cells for letters, black
+    blocking cells, and numbered starting positions for across and down words. The
+    symmetric black cell pattern follows traditional newspaper-style crossword conventions,
+    creating a clean and recognizable puzzle layout suitable for printing or digital
+    display.
+aliases:
+  en:
+  - crossword-basic
+  - crossword basic
+  - basic crossword basic
+  es:
+  - crossword-basic
+  - crossword basic
+  - crossword basic básico
+use_when:
+  en:
+  - A crossword puzzle grid visualization with white entry cells for letters, black
+    blocking cells, and numbered starting positions for across and down words. The
+    symmetric black cell pattern follows trad
+  es:
+  - A crossword puzzle grid visualization with white entry cells for letters, black
+    blocking cells, and numbered starting positions for across and down words. The
+    symmetric black cell pattern follows trad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Printable crossword puzzles for newspapers and puzzle books
+  - Educational vocabulary exercises and language learning tools
+  - Custom puzzle generation for events or themed activities
+  - Interactive puzzle games and mobile applications
+  es:
+  - Printable crossword puzzles for newspapers and puzzle books
+  - Educational vocabulary exercises and language learning tools
+  - Custom puzzle generation for events or themed activities
+  - Interactive puzzle games and mobile applications
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - grid
+  data_type:
+  - categorical
+  - matrix
+  domain:
+  - general
+  - education
+  - puzzle
+  features:
+  - basic
+  - printable
+  - annotated
+keywords:
+  en:
+  - crossword
+  - basic
+  - grid
+  - categorical
+  - matrix
+  - general
+  - education
+  - puzzle
+  - printable
+  - annotated
+  es:
+  - crossword
+  - básico
+  - grid
+  - categórico
+  - matrix
+  - general
+  - education
+  - puzzle
+  - basic
+  - printable
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/crossword-basic/implementations/javascript/chartjs.js
+    d3: plots/crossword-basic/implementations/javascript/d3.js
+    echarts: plots/crossword-basic/implementations/javascript/echarts.js
+    highcharts: plots/crossword-basic/implementations/javascript/highcharts.js
+    muix: plots/crossword-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/crossword-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/crossword-basic/implementations/python/altair.py
+    bokeh: plots/crossword-basic/implementations/python/bokeh.py
+    letsplot: plots/crossword-basic/implementations/python/letsplot.py
+    matplotlib: plots/crossword-basic/implementations/python/matplotlib.py
+    plotly: plots/crossword-basic/implementations/python/plotly.py
+    plotnine: plots/crossword-basic/implementations/python/plotnine.py
+    pygal: plots/crossword-basic/implementations/python/pygal.py
+    seaborn: plots/crossword-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/crossword-basic/implementations/r/ggplot2.R
+notes:
+- White cells for letter entry, black cells for blocking
+- Numbers placed in top-left corner of cells that start words (across or down)
+- Traditional 180-degree rotational symmetry for black cell placement
+source: anyplot
+anyplot_updated: 2026-05-20 01:50:59+00:00

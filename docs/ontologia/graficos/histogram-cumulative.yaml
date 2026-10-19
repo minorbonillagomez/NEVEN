@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: histogram-cumulative
+name:
+  en: Cumulative Histogram
+  es: Histograma
+description:
+  en: A cumulative histogram (also known as an ogive or cumulative frequency histogram)
+    displays the running total of observations up to each bin boundary. The y-axis
+    shows cumulative count or proportion, creating a monotonically increasing step
+    function that reaches the total sample size (or 1.0 for normalized).
+  es: A cumulative histogram (also known as an ogive or cumulative frequency histogram)
+    displays the running total of observations up to each bin boundary. The y-axis
+    shows cumulative count or proportion, creating a monotonically increasing step
+    function that reaches the total sample size (or 1.0 for normalized).
+aliases:
+  en:
+  - histogram-cumulative
+  - histogram cumulative
+  - histogram
+  es:
+  - histogram-cumulative
+  - histogram cumulative
+  - histograma
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing percentiles and quantile positions
+  - Understanding data distribution thresholds (e.g., "what percentage is below X?")
+  - Quality control and process analysis
+  - Comparing empirical vs theoretical CDFs
+  - Financial risk analysis (Value at Risk)
+  es:
+  - Visualizing percentiles and quantile positions
+  - Understanding data distribution thresholds (e.g., "what percentage is below X?")
+  - Quality control and process analysis
+  - Comparing empirical vs theoretical CDFs
+  - Financial risk analysis (Value at Risk)
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  - distribution
+  - cumulative
+  domain:
+  - statistics
+  - probability
+  features:
+  - cumulative
+  - frequency
+  - cdf
+  data_type:
+  - numeric
+  - continuous
+keywords:
+  en:
+  - histogram
+  - cumulative
+  - distribution
+  - statistics
+  - probability
+  - frequency
+  - cdf
+  - numeric
+  - continuous
+  es:
+  - histograma
+  - cumulative
+  - histogram
+  - distribución
+  - estadística
+  - probability
+  - frequency
+  - cdf
+  - numérico
+  - continuo
+implementations:
+  javascript:
+    chartjs: plots/histogram-cumulative/implementations/javascript/chartjs.js
+    d3: plots/histogram-cumulative/implementations/javascript/d3.js
+    echarts: plots/histogram-cumulative/implementations/javascript/echarts.js
+    highcharts: plots/histogram-cumulative/implementations/javascript/highcharts.js
+    muix: plots/histogram-cumulative/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-cumulative/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-cumulative/implementations/python/altair.py
+    bokeh: plots/histogram-cumulative/implementations/python/bokeh.py
+    letsplot: plots/histogram-cumulative/implementations/python/letsplot.py
+    matplotlib: plots/histogram-cumulative/implementations/python/matplotlib.py
+    plotly: plots/histogram-cumulative/implementations/python/plotly.py
+    plotnine: plots/histogram-cumulative/implementations/python/plotnine.py
+    pygal: plots/histogram-cumulative/implementations/python/pygal.py
+    seaborn: plots/histogram-cumulative/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-cumulative/implementations/r/ggplot2.R
+notes:
+- Y-axis shows cumulative count or proportion (0 to n, or 0 to 1)
+- The curve is always monotonically non-decreasing
+- Often displayed as steps (not smooth curves) to show discrete bins
+source: anyplot
+anyplot_updated: '2026-10-02T15:00:51Z'

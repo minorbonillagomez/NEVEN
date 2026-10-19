@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: scatter-text
+name:
+  en: Scatter Plot with Text Labels Instead of Points
+  es: Diagrama de Dispersión
+description:
+  en: A scatter plot where data points are represented by text labels instead of markers.
+    Each label is positioned at its corresponding coordinates, making the text itself
+    the visual element. This visualization is particularly useful for displaying named
+    entities in 2D space, such as word embeddings, dimensionality reduction outputs,
+    or any scenario where identifying individual items by name is more important than
+    seeing their relative density.
+  es: A scatter plot where data points are represented by text labels instead of markers.
+    Each label is positioned at its corresponding coordinates, making the text itself
+    the visual element. This visualization is particularly useful for displaying named
+    entities in 2D space, such as word embeddings, dimensionality reduction outputs,
+    or any scenario where identifying individual items by name is more important than
+    seeing their relative density.
+aliases:
+  en:
+  - scatter-text
+  - scatter text
+  - scatter plot
+  es:
+  - scatter-text
+  - scatter text
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Visualizing word embeddings or document embeddings after t-SNE or UMAP dimensionality
+    reduction
+  - Displaying product or brand positioning in a competitive landscape analysis
+  - Showing author or journal relationships in bibliometric studies
+  - Mapping company positions based on two business metrics where company names matter
+  es:
+  - Visualizing word embeddings or document embeddings after t-SNE or UMAP dimensionality
+    reduction
+  - Displaying product or brand positioning in a competitive landscape analysis
+  - Showing author or journal relationships in bibliometric studies
+  - Mapping company positions based on two business metrics where company names matter
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - text
+  data_type:
+  - numeric
+  - text
+  domain:
+  - general
+  - machine-learning
+  features:
+  - annotated
+  - 2d
+keywords:
+  en:
+  - scatter plot
+  - text
+  - scatter
+  - numeric
+  - general
+  - machine learning
+  - annotated
+  - 2d
+  es:
+  - diagrama de dispersión
+  - text
+  - scatter
+  - texto
+  - numérico
+  - general
+  - aprendizaje automático
+  - annotated
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/scatter-text/implementations/javascript/chartjs.js
+    d3: plots/scatter-text/implementations/javascript/d3.js
+    echarts: plots/scatter-text/implementations/javascript/echarts.js
+    highcharts: plots/scatter-text/implementations/javascript/highcharts.js
+    muix: plots/scatter-text/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-text/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-text/implementations/python/altair.py
+    bokeh: plots/scatter-text/implementations/python/bokeh.py
+    letsplot: plots/scatter-text/implementations/python/letsplot.py
+    matplotlib: plots/scatter-text/implementations/python/matplotlib.py
+    plotly: plots/scatter-text/implementations/python/plotly.py
+    plotnine: plots/scatter-text/implementations/python/plotnine.py
+    pygal: plots/scatter-text/implementations/python/pygal.py
+    seaborn: plots/scatter-text/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-text/implementations/r/ggplot2.R
+notes:
+- Text labels should be legible with appropriate font size
+- Consider using alpha transparency when labels overlap
+- Font size may need adjustment based on the number of labels
+source: anyplot
+anyplot_updated: null

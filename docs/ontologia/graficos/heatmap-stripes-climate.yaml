@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: heatmap-stripes-climate
+name:
+  en: Climate Warming Stripes
+  es: Mapa de Calor
+description:
+  en: Climate warming stripes (also known as "warming stripes") display temperature
+    anomaly data as a sequence of vertical colored bars, one per year, using a blue-to-red
+    diverging colormap. Created by climate scientist Ed Hawkins, this minimalist visualization
+    strips away axes, labels, and gridlines to communicate long-term warming trends
+    through pure color encoding. The progression from cool blues to warm reds makes
+    temperature change immediately visible at a glance.
+  es: Climate warming stripes (also known as "warming stripes") display temperature
+    anomaly data as a sequence of vertical colored bars, one per year, using a blue-to-red
+    diverging colormap. Created by climate scientist Ed Hawkins, this minimalist visualization
+    strips away axes, labels, and gridlines to communicate long-term warming trends
+    through pure color encoding. The progression from cool blues to warm reds makes
+    temperature change immediately visible at a glance.
+aliases:
+  en:
+  - heatmap-stripes-climate
+  - heatmap stripes climate
+  - heatmap
+  es:
+  - heatmap-stripes-climate
+  - heatmap stripes climate
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Communicating climate change trends to general audiences and non-scientists
+  - Showing long-term temperature anomalies for any geographic location or global
+    averages
+  - Environmental reporting, science communication, and media graphics
+  - Educational materials illustrating global warming over the instrumental record
+  es:
+  - Communicating climate change trends to general audiences and non-scientists
+  - Showing long-term temperature anomalies for any geographic location or global
+    averages
+  - Environmental reporting, science communication, and media graphics
+  - Educational materials illustrating global warming over the instrumental record
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  - bar
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - environment
+  - science
+  - education
+  features:
+  - color-mapped
+  - temporal
+  - static
+keywords:
+  en:
+  - heatmap
+  - stripes
+  - climate
+  - bar
+  - timeseries
+  - numeric
+  - environment
+  - science
+  - education
+  - color-mapped
+  - temporal
+  - static
+  es:
+  - mapa de calor
+  - stripes
+  - climate
+  - heatmap
+  - bar
+  - timeseries
+  - numérico
+  - environment
+  - ciencia
+  - education
+  - color-mapped
+  - temporal
+  - static
+implementations:
+  javascript:
+    chartjs: plots/heatmap-stripes-climate/implementations/javascript/chartjs.js
+    d3: plots/heatmap-stripes-climate/implementations/javascript/d3.js
+    echarts: plots/heatmap-stripes-climate/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-stripes-climate/implementations/javascript/highcharts.js
+    muix: plots/heatmap-stripes-climate/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-stripes-climate/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-stripes-climate/implementations/python/altair.py
+    bokeh: plots/heatmap-stripes-climate/implementations/python/bokeh.py
+    letsplot: plots/heatmap-stripes-climate/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-stripes-climate/implementations/python/matplotlib.py
+    plotly: plots/heatmap-stripes-climate/implementations/python/plotly.py
+    plotnine: plots/heatmap-stripes-climate/implementations/python/plotnine.py
+    pygal: plots/heatmap-stripes-climate/implementations/python/pygal.py
+    seaborn: plots/heatmap-stripes-climate/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-stripes-climate/implementations/r/ggplot2.R
+notes:
+- No axes, no labels, no tick marks, no gridlines — this is a pure data visualization
+- 'Use a blue-to-red diverging colormap centered at 0 (e.g., blues like #08306b for
+  cold anomalies, reds like #67000d for warm anomalies)'
+- Each bar should fill equal width with no gaps between bars
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: bland-altman-basic
+name:
+  en: Bland-Altman Agreement Plot
+  es: Bland Altman Basic
+description:
+  en: A Bland-Altman plot (also known as a difference plot or Tukey mean-difference
+    plot) visualizes the agreement between two measurement methods by plotting the
+    difference against the average of paired observations. It displays the mean difference
+    (bias) as a horizontal line and limits of agreement (mean ± 1.96 SD) to assess
+    whether the methods are interchangeable within acceptable tolerances.
+  es: A Bland-Altman plot (also known as a difference plot or Tukey mean-difference
+    plot) visualizes the agreement between two measurement methods by plotting the
+    difference against the average of paired observations. It displays the mean difference
+    (bias) as a horizontal line and limits of agreement (mean ± 1.96 SD) to assess
+    whether the methods are interchangeable within acceptable tolerances.
+aliases:
+  en:
+  - bland-altman-basic
+  - bland altman basic
+  - bland altman basic
+  es:
+  - bland-altman-basic
+  - bland altman basic
+  - bland altman basic
+use_when:
+  en:
+  - A Bland-Altman plot (also known as a difference plot or Tukey mean-difference
+    plot) visualizes the agreement between two measurement methods by plotting the
+    difference against the average of paired ob
+  es:
+  - A Bland-Altman plot (also known as a difference plot or Tukey mean-difference
+    plot) visualizes the agreement between two measurement methods by plotting the
+    difference against the average of paired ob
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing a new blood glucose meter against a laboratory reference standard in
+    medical device validation
+  - Assessing inter-rater reliability between two observers measuring the same physiological
+    parameter
+  - Evaluating whether two analytical chemistry methods produce equivalent results
+    for quality control
+  es:
+  - Comparing a new blood glucose meter against a laboratory reference standard in
+    medical device validation
+  - Assessing inter-rater reliability between two observers measuring the same physiological
+    parameter
+  - Evaluating whether two analytical chemistry methods produce equivalent results
+    for quality control
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bland-altman
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  - paired
+  domain:
+  - healthcare
+  - statistics
+  - research
+  features:
+  - basic
+  - comparison
+  - limits-of-agreement
+  - method-comparison
+keywords:
+  en:
+  - bland
+  - altman
+  - basic
+  - bland-altman
+  - scatter
+  - numeric
+  - continuous
+  - paired
+  - healthcare
+  - statistics
+  - research
+  - comparison
+  - limits-of-agreement
+  - method-comparison
+  es:
+  - bland
+  - altman
+  - básico
+  - bland-altman
+  - scatter
+  - numérico
+  - continuo
+  - paired
+  - healthcare
+  - estadística
+  - research
+  - basic
+  - comparación
+  - limits-of-agreement
+  - method-comparison
+implementations:
+  javascript:
+    chartjs: plots/bland-altman-basic/implementations/javascript/chartjs.js
+    d3: plots/bland-altman-basic/implementations/javascript/d3.js
+    echarts: plots/bland-altman-basic/implementations/javascript/echarts.js
+    highcharts: plots/bland-altman-basic/implementations/javascript/highcharts.js
+    muix: plots/bland-altman-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bland-altman-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/bland-altman-basic/implementations/python/altair.py
+    bokeh: plots/bland-altman-basic/implementations/python/bokeh.py
+    letsplot: plots/bland-altman-basic/implementations/python/letsplot.py
+    matplotlib: plots/bland-altman-basic/implementations/python/matplotlib.py
+    plotly: plots/bland-altman-basic/implementations/python/plotly.py
+    plotnine: plots/bland-altman-basic/implementations/python/plotnine.py
+    pygal: plots/bland-altman-basic/implementations/python/pygal.py
+    seaborn: plots/bland-altman-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bland-altman-basic/implementations/r/ggplot2.R
+notes:
+- 'The x-axis shows the mean of each pair: (method1 + method2) / 2'
+- 'The y-axis shows the difference: method1 - method2'
+- Include a horizontal line at the mean difference (bias)
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

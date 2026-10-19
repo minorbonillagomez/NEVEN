@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: indicator-ema
+name:
+  en: Exponential Moving Average (EMA) Indicator Chart
+  es: Indicator Ema
+description:
+  en: An Exponential Moving Average (EMA) overlay chart displays price data with one
+    or more EMA lines that give greater weight to recent prices, making them more
+    responsive to new information than simple moving averages. The EMA calculation
+    applies an exponential weighting factor that decreases with each older data point,
+    allowing traders to identify trends faster. This technical indicator is fundamental
+    in trading for spotting trend direction, dynamic support/resistance levels, and
+    crossover signals.
+  es: An Exponential Moving Average (EMA) overlay chart displays price data with one
+    or more EMA lines that give greater weight to recent prices, making them more
+    responsive to new information than simple moving averages. The EMA calculation
+    applies an exponential weighting factor that decreases with each older data point,
+    allowing traders to identify trends faster. This technical indicator is fundamental
+    in trading for spotting trend direction, dynamic support/resistance levels, and
+    crossover signals.
+aliases:
+  en:
+  - indicator-ema
+  - indicator ema
+  - indicator ema
+  es:
+  - indicator-ema
+  - indicator ema
+  - indicator ema
+use_when:
+  en:
+  - An Exponential Moving Average (EMA) overlay chart displays price data with one
+    or more EMA lines that give greater weight to recent prices, making them more
+    responsive to new information than simple m
+  es:
+  - An Exponential Moving Average (EMA) overlay chart displays price data with one
+    or more EMA lines that give greater weight to recent prices, making them more
+    responsive to new information than simple m
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying trend direction in stock prices using 50-day and 200-day EMA crossovers
+    (golden cross/death cross signals)
+  - Detecting short-term momentum shifts in cryptocurrency trading using fast EMAs
+    (12, 26 periods)
+  - Generating entry/exit signals when price crosses above or below EMA lines in forex
+    trading
+  es:
+  - Identifying trend direction in stock prices using 50-day and 200-day EMA crossovers
+    (golden cross/death cross signals)
+  - Detecting short-term momentum shifts in cryptocurrency trading using fast EMAs
+    (12, 26 periods)
+  - Generating entry/exit signals when price crosses above or below EMA lines in forex
+    trading
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  - trading
+  features:
+  - technical-analysis
+  - overlay
+  - trend
+keywords:
+  en:
+  - indicator
+  - ema
+  - line
+  - timeseries
+  - numeric
+  - finance
+  - trading
+  - technical-analysis
+  - overlay
+  - trend
+  es:
+  - indicator
+  - ema
+  - line
+  - timeseries
+  - numérico
+  - finanzas
+  - trading
+  - technical-analysis
+  - overlay
+  - trend
+implementations:
+  javascript:
+    chartjs: plots/indicator-ema/implementations/javascript/chartjs.js
+    d3: plots/indicator-ema/implementations/javascript/d3.js
+    echarts: plots/indicator-ema/implementations/javascript/echarts.js
+    highcharts: plots/indicator-ema/implementations/javascript/highcharts.js
+    muix: plots/indicator-ema/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/indicator-ema/implementations/julia/makie.jl
+  python:
+    altair: plots/indicator-ema/implementations/python/altair.py
+    bokeh: plots/indicator-ema/implementations/python/bokeh.py
+    letsplot: plots/indicator-ema/implementations/python/letsplot.py
+    matplotlib: plots/indicator-ema/implementations/python/matplotlib.py
+    plotly: plots/indicator-ema/implementations/python/plotly.py
+    plotnine: plots/indicator-ema/implementations/python/plotnine.py
+    pygal: plots/indicator-ema/implementations/python/pygal.py
+    seaborn: plots/indicator-ema/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/indicator-ema/implementations/r/ggplot2.R
+notes:
+- Display the price line prominently (line or candlestick) with EMA lines overlaid
+- Use distinct colors for each EMA period (e.g., short EMA in blue, long EMA in orange)
+- EMA lines should be slightly thinner than the price line to avoid visual clutter
+source: anyplot
+anyplot_updated: 2026-05-19 12:47:32+00:00

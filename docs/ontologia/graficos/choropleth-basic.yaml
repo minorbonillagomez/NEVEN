@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: choropleth-basic
+name:
+  en: Choropleth Map with Regional Coloring
+  es: Mapa Coroplético Básico
+description:
+  en: A choropleth map visualizes data by shading geographic regions (countries, states,
+    or counties) according to a measured variable. This technique is ideal for showing
+    regional patterns and spatial distributions, making it easy to identify areas
+    with high or low values at a glance. The color intensity represents the data magnitude,
+    creating an intuitive way to understand geographic variation.
+  es: A choropleth map visualizes data by shading geographic regions (countries, states,
+    or counties) according to a measured variable. This technique is ideal for showing
+    regional patterns and spatial distributions, making it easy to identify areas
+    with high or low values at a glance. The color intensity represents the data magnitude,
+    creating an intuitive way to understand geographic variation.
+aliases:
+  en:
+  - choropleth-basic
+  - choropleth basic
+  - basic choropleth map
+  es:
+  - choropleth-basic
+  - choropleth basic
+  - mapa coroplético básico
+use_when:
+  en:
+  - A choropleth map visualizes data by shading geographic regions (countries, states,
+    or counties) according to a measured variable. This technique is ideal for showing
+    regional patterns and spatial dist
+  es:
+  - A choropleth map visualizes data by shading geographic regions (countries, states,
+    or counties) according to a measured variable. This technique is ideal for showing
+    regional patterns and spatial dist
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying population density or demographic statistics across countries or states
+  - Visualizing election results or voting patterns by region
+  - Showing economic indicators like GDP per capita or unemployment rates by geographic
+    area
+  - Mapping disease prevalence or health outcomes across administrative regions
+  es:
+  - Displaying population density or demographic statistics across countries or states
+  - Visualizing election results or voting patterns by region
+  - Showing economic indicators like GDP per capita or unemployment rates by geographic
+    area
+  - Mapping disease prevalence or health outcomes across administrative regions
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - choropleth
+  - map
+  data_type:
+  - geospatial
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  - business
+  features:
+  - basic
+  - color-mapped
+  - regional
+keywords:
+  en:
+  - choropleth map
+  - basic
+  - choropleth
+  - map
+  - geospatial
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - business
+  - color-mapped
+  - regional
+  es:
+  - mapa coroplético
+  - básico
+  - choropleth
+  - map
+  - geoespacial
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - negocios
+  - basic
+  - color-mapped
+  - regional
+implementations:
+  javascript:
+    chartjs: plots/choropleth-basic/implementations/javascript/chartjs.js
+    d3: plots/choropleth-basic/implementations/javascript/d3.js
+    echarts: plots/choropleth-basic/implementations/javascript/echarts.js
+    highcharts: plots/choropleth-basic/implementations/javascript/highcharts.js
+  julia:
+    makie: plots/choropleth-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/choropleth-basic/implementations/python/altair.py
+    bokeh: plots/choropleth-basic/implementations/python/bokeh.py
+    letsplot: plots/choropleth-basic/implementations/python/letsplot.py
+    matplotlib: plots/choropleth-basic/implementations/python/matplotlib.py
+    plotly: plots/choropleth-basic/implementations/python/plotly.py
+    plotnine: plots/choropleth-basic/implementations/python/plotnine.py
+    pygal: plots/choropleth-basic/implementations/python/pygal.py
+    seaborn: plots/choropleth-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/choropleth-basic/implementations/r/ggplot2.R
+notes:
+- Include a color legend showing the value range and corresponding colors
+- Use an appropriate map projection (e.g., Robinson for world maps, Albers Equal Area
+  for US)
+- Consider using a sequential color palette for continuous data or diverging palette
+  for data with a meaningful center point
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

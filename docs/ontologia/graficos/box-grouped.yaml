@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: box-grouped
+name:
+  en: Grouped Box Plot
+  es: Diagrama de Caja Agrupado
+description:
+  en: A grouped box plot displays multiple box plots side-by-side within each category,
+    enabling comparison of distributions across subgroups. Each group contains boxes
+    representing different subcategories or conditions, making it ideal for multi-factor
+    comparisons and A/B testing scenarios with multiple metrics.
+  es: A grouped box plot displays multiple box plots side-by-side within each category,
+    enabling comparison of distributions across subgroups. Each group contains boxes
+    representing different subcategories or conditions, making it ideal for multi-factor
+    comparisons and A/B testing scenarios with multiple metrics.
+aliases:
+  en:
+  - box-grouped
+  - box grouped
+  - grouped box plot
+  es:
+  - box-grouped
+  - box grouped
+  - diagrama de caja agrupado
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing treatment effects across different patient demographics in clinical
+    trials
+  - A/B testing with multiple metrics (conversion rate, time on site) across user
+    segments
+  - Analyzing performance distributions by department and experience level
+  - Comparing experimental results across multiple factors in research studies
+  es:
+  - Comparing treatment effects across different patient demographics in clinical
+    trials
+  - A/B testing with multiple metrics (conversion rate, time on site) across user
+    segments
+  - Analyzing performance distributions by department and experience level
+  - Comparing experimental results across multiple factors in research studies
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - box
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - grouped
+  - comparison
+  - multi
+  - distribution
+keywords:
+  en:
+  - box plot
+  - grouped
+  - box
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - research
+  - comparison
+  - multi
+  - distribution
+  es:
+  - diagrama de caja
+  - agrupado
+  - box
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - research
+  - grouped
+  - comparación
+  - multi
+  - distribución
+implementations:
+  javascript:
+    chartjs: plots/box-grouped/implementations/javascript/chartjs.js
+    d3: plots/box-grouped/implementations/javascript/d3.js
+    echarts: plots/box-grouped/implementations/javascript/echarts.js
+    highcharts: plots/box-grouped/implementations/javascript/highcharts.js
+    muix: plots/box-grouped/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/box-grouped/implementations/julia/makie.jl
+  python:
+    altair: plots/box-grouped/implementations/python/altair.py
+    bokeh: plots/box-grouped/implementations/python/bokeh.py
+    letsplot: plots/box-grouped/implementations/python/letsplot.py
+    matplotlib: plots/box-grouped/implementations/python/matplotlib.py
+    plotly: plots/box-grouped/implementations/python/plotly.py
+    plotnine: plots/box-grouped/implementations/python/plotnine.py
+    pygal: plots/box-grouped/implementations/python/pygal.py
+    seaborn: plots/box-grouped/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/box-grouped/implementations/r/ggplot2.R
+notes:
+- Display boxes side-by-side within each category with distinct colors
+- Include a clear legend identifying each subcategory
+- Maintain consistent box widths across all groups
+source: anyplot
+anyplot_updated: 2026-05-08 03:12:59+00:00

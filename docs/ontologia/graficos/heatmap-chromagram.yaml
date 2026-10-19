@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: heatmap-chromagram
+name:
+  en: Music Chromagram (Pitch Class Distribution over Time)
+  es: Mapa de Calor
+description:
+  en: A heatmap-style visualization showing the energy distribution across the 12
+    pitch classes (C, C#, D, D#, E, F, F#, G, G#, A, A#, B) over time. Each column
+    represents a time frame and each row a pitch class, with color intensity indicating
+    the energy or magnitude at that pitch-time point. Widely used in music information
+    retrieval to analyze harmonic content, detect chords, estimate musical key, and
+    study tonal progressions in audio signals.
+  es: A heatmap-style visualization showing the energy distribution across the 12
+    pitch classes (C, C#, D, D#, E, F, F#, G, G#, A, A#, B) over time. Each column
+    represents a time frame and each row a pitch class, with color intensity indicating
+    the energy or magnitude at that pitch-time point. Widely used in music information
+    retrieval to analyze harmonic content, detect chords, estimate musical key, and
+    study tonal progressions in audio signals.
+aliases:
+  en:
+  - heatmap-chromagram
+  - heatmap chromagram
+  - heatmap
+  es:
+  - heatmap-chromagram
+  - heatmap chromagram
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Music information retrieval researchers analyzing chord progressions and detecting
+    key changes in audio recordings
+  - Musicologists studying the harmonic structure and tonal patterns of classical
+    or contemporary compositions
+  - Audio engineers comparing tonal fingerprints of different recordings for music
+    similarity analysis
+  - Music educators visualizing harmonic progressions to teach students about chord
+    theory and voice leading
+  es:
+  - Music information retrieval researchers analyzing chord progressions and detecting
+    key changes in audio recordings
+  - Musicologists studying the harmonic structure and tonal patterns of classical
+    or contemporary compositions
+  - Audio engineers comparing tonal fingerprints of different recordings for music
+    similarity analysis
+  - Music educators visualizing harmonic progressions to teach students about chord
+    theory and voice leading
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - categorical
+  - numeric
+  - timeseries
+  domain:
+  - science
+  - education
+  - music
+  features:
+  - color-mapped
+  - temporal
+keywords:
+  en:
+  - heatmap
+  - chromagram
+  - categorical
+  - numeric
+  - timeseries
+  - science
+  - education
+  - music
+  - color-mapped
+  - temporal
+  es:
+  - mapa de calor
+  - chromagram
+  - heatmap
+  - categórico
+  - numérico
+  - timeseries
+  - ciencia
+  - education
+  - music
+  - color-mapped
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/heatmap-chromagram/implementations/javascript/chartjs.js
+    d3: plots/heatmap-chromagram/implementations/javascript/d3.js
+    echarts: plots/heatmap-chromagram/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-chromagram/implementations/javascript/highcharts.js
+    muix: plots/heatmap-chromagram/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-chromagram/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-chromagram/implementations/python/altair.py
+    bokeh: plots/heatmap-chromagram/implementations/python/bokeh.py
+    letsplot: plots/heatmap-chromagram/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-chromagram/implementations/python/matplotlib.py
+    plotly: plots/heatmap-chromagram/implementations/python/plotly.py
+    plotnine: plots/heatmap-chromagram/implementations/python/plotnine.py
+    pygal: plots/heatmap-chromagram/implementations/python/pygal.py
+    seaborn: plots/heatmap-chromagram/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-chromagram/implementations/r/ggplot2.R
+notes:
+- Y-axis must show all 12 pitch classes labeled clearly from C to B
+- Use a sequential colormap (e.g., magma, inferno, or hot) to represent energy intensity
+- Include a colorbar indicating the energy/magnitude scale
+source: anyplot
+anyplot_updated: '2026-06-24T12:58:12Z'

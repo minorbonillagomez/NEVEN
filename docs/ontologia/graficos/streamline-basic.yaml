@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: streamline-basic
+name:
+  en: Basic Streamline Plot
+  es: Streamline Basic Básico
+description:
+  en: A streamline plot visualizes vector fields using smooth curves that are tangent
+    to the field at every point. Unlike quiver plots that show discrete arrows, streamlines
+    trace continuous paths through the field, revealing flow patterns, circulation,
+    and field topology. This visualization is ideal for understanding fluid dynamics,
+    electromagnetic fields, or gradient fields where the continuous nature of the
+    flow is important.
+  es: A streamline plot visualizes vector fields using smooth curves that are tangent
+    to the field at every point. Unlike quiver plots that show discrete arrows, streamlines
+    trace continuous paths through the field, revealing flow patterns, circulation,
+    and field topology. This visualization is ideal for understanding fluid dynamics,
+    electromagnetic fields, or gradient fields where the continuous nature of the
+    flow is important.
+aliases:
+  en:
+  - streamline-basic
+  - streamline basic
+  - basic streamline basic
+  es:
+  - streamline-basic
+  - streamline basic
+  - streamline basic básico
+use_when:
+  en:
+  - A streamline plot visualizes vector fields using smooth curves that are tangent
+    to the field at every point. Unlike quiver plots that show discrete arrows, streamlines
+    trace continuous paths through t
+  es:
+  - A streamline plot visualizes vector fields using smooth curves that are tangent
+    to the field at every point. Unlike quiver plots that show discrete arrows, streamlines
+    trace continuous paths through t
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing fluid flow patterns in computational fluid dynamics simulations
+  - Displaying magnetic or electric field lines in physics and electromagnetic studies
+  - Showing wind flow patterns in meteorological analysis
+  - Illustrating gradient descent trajectories in optimization and machine learning
+  es:
+  - Visualizing fluid flow patterns in computational fluid dynamics simulations
+  - Displaying magnetic or electric field lines in physics and electromagnetic studies
+  - Showing wind flow patterns in meteorological analysis
+  - Illustrating gradient descent trajectories in optimization and machine learning
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - streamline
+  data_type:
+  - numeric
+  - continuous
+  - spatial
+  - vector-field
+  domain:
+  - general
+  - science
+  - engineering
+  features:
+  - basic
+  - flow
+  - 2d
+keywords:
+  en:
+  - streamline
+  - basic
+  - numeric
+  - continuous
+  - spatial
+  - vector-field
+  - general
+  - science
+  - engineering
+  - flow
+  - 2d
+  es:
+  - streamline
+  - básico
+  - numérico
+  - continuo
+  - spatial
+  - vector-field
+  - general
+  - ciencia
+  - ingeniería
+  - basic
+  - flujo
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/streamline-basic/implementations/javascript/chartjs.js
+    d3: plots/streamline-basic/implementations/javascript/d3.js
+    echarts: plots/streamline-basic/implementations/javascript/echarts.js
+    highcharts: plots/streamline-basic/implementations/javascript/highcharts.js
+    muix: plots/streamline-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/streamline-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/streamline-basic/implementations/python/altair.py
+    bokeh: plots/streamline-basic/implementations/python/bokeh.py
+    letsplot: plots/streamline-basic/implementations/python/letsplot.py
+    matplotlib: plots/streamline-basic/implementations/python/matplotlib.py
+    plotly: plots/streamline-basic/implementations/python/plotly.py
+    plotnine: plots/streamline-basic/implementations/python/plotnine.py
+    pygal: plots/streamline-basic/implementations/python/pygal.py
+    seaborn: plots/streamline-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/streamline-basic/implementations/r/ggplot2.R
+notes:
+- Streamline density should be balanced - too few obscures the pattern, too many creates
+  visual clutter
+- Color can encode velocity magnitude or another scalar field along the streamlines
+- Line width can optionally vary with field strength for emphasis
+source: anyplot
+anyplot_updated: 2026-05-14 07:11:01+00:00

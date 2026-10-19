@@ -1,0 +1,141 @@
+entity_type: ChartType
+id: scatter-embedding
+name:
+  en: t-SNE and UMAP Embedding Visualization
+  es: Diagrama de Dispersión
+description:
+  en: A scatter plot displaying high-dimensional data projected into 2D space using
+    non-linear dimensionality reduction techniques such as t-SNE or UMAP. Points are
+    colored by cluster or class label, revealing groupings and latent structure in
+    the data. This is a standard visualization in machine learning for exploring embeddings,
+    single-cell RNA-seq data, and NLP document clustering, helping practitioners verify
+    that learned representations capture meaningful distinctions.
+  es: A scatter plot displaying high-dimensional data projected into 2D space using
+    non-linear dimensionality reduction techniques such as t-SNE or UMAP. Points are
+    colored by cluster or class label, revealing groupings and latent structure in
+    the data. This is a standard visualization in machine learning for exploring embeddings,
+    single-cell RNA-seq data, and NLP document clustering, helping practitioners verify
+    that learned representations capture meaningful distinctions.
+aliases:
+  en:
+  - scatter-embedding
+  - scatter embedding
+  - scatter plot
+  es:
+  - scatter-embedding
+  - scatter embedding
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Visualizing cell-type clusters in single-cell RNA-seq data after dimensionality
+    reduction in bioinformatics workflows
+  - Exploring word or document embeddings from NLP models to verify semantic groupings
+    and detect outliers
+  - Inspecting latent space structure of autoencoders or variational autoencoders
+    (VAEs) to assess representation quality
+  - Quality-checking clustering results from K-means or DBSCAN by overlaying cluster
+    assignments on the 2D projection
+  es:
+  - Visualizing cell-type clusters in single-cell RNA-seq data after dimensionality
+    reduction in bioinformatics workflows
+  - Exploring word or document embeddings from NLP models to verify semantic groupings
+    and detect outliers
+  - Inspecting latent space structure of autoencoders or variational autoencoders
+    (VAEs) to assess representation quality
+  - Quality-checking clustering results from K-means or DBSCAN by overlaying cluster
+    assignments on the 2D projection
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - machine-learning
+  - science
+  - bioinformatics
+  features:
+  - color-mapped
+  - annotated
+  - 2d
+  - clustering
+keywords:
+  en:
+  - scatter plot
+  - embedding
+  - scatter
+  - numeric
+  - categorical
+  - machine learning
+  - science
+  - bioinformatics
+  - color-mapped
+  - annotated
+  - 2d
+  - clustering
+  es:
+  - diagrama de dispersión
+  - embedding
+  - scatter
+  - numérico
+  - categórico
+  - aprendizaje automático
+  - ciencia
+  - bioinformatics
+  - color-mapped
+  - annotated
+  - 2d
+  - clustering
+implementations:
+  javascript:
+    chartjs: plots/scatter-embedding/implementations/javascript/chartjs.js
+    d3: plots/scatter-embedding/implementations/javascript/d3.js
+    echarts: plots/scatter-embedding/implementations/javascript/echarts.js
+    highcharts: plots/scatter-embedding/implementations/javascript/highcharts.js
+    muix: plots/scatter-embedding/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-embedding/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-embedding/implementations/python/altair.py
+    bokeh: plots/scatter-embedding/implementations/python/bokeh.py
+    letsplot: plots/scatter-embedding/implementations/python/letsplot.py
+    matplotlib: plots/scatter-embedding/implementations/python/matplotlib.py
+    plotly: plots/scatter-embedding/implementations/python/plotly.py
+    plotnine: plots/scatter-embedding/implementations/python/plotnine.py
+    pygal: plots/scatter-embedding/implementations/python/pygal.py
+    seaborn: plots/scatter-embedding/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-embedding/implementations/r/ggplot2.R
+notes:
+- Color each cluster/class with a distinct, colorblind-accessible color and include
+  a legend mapping colors to labels
+- Optionally annotate cluster centroids with the cluster label text
+- Use moderate point size with slight transparency (alpha) to handle overlapping points
+  in dense regions
+source: anyplot
+anyplot_updated: '2026-08-11T00:00:00Z'

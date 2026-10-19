@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: histogram-2d
+name:
+  en: 2D Histogram Heatmap
+  es: Histograma 2D
+description:
+  en: A two-dimensional histogram that displays the joint distribution of two continuous
+    variables as a heatmap with rectangular bins. Each bin's color intensity represents
+    the frequency or count of data points falling within that region, making it ideal
+    for revealing density patterns, clusters, and correlations in bivariate data.
+    Unlike scatter plots that can become cluttered with large datasets, 2D histograms
+    effectively summarize point density.
+  es: A two-dimensional histogram that displays the joint distribution of two continuous
+    variables as a heatmap with rectangular bins. Each bin's color intensity represents
+    the frequency or count of data points falling within that region, making it ideal
+    for revealing density patterns, clusters, and correlations in bivariate data.
+    Unlike scatter plots that can become cluttered with large datasets, 2D histograms
+    effectively summarize point density.
+aliases:
+  en:
+  - histogram-2d
+  - histogram 2d
+  - 2d histogram
+  es:
+  - histogram-2d
+  - histogram 2d
+  - histograma 2d
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing joint distributions of financial returns across different asset classes
+  - Visualizing particle collision data density in physics experiments
+  - Exploring the relationship between customer age and purchase frequency in market
+    research
+  - Identifying spatial density patterns in geographic coordinate data
+  es:
+  - Analyzing joint distributions of financial returns across different asset classes
+  - Visualizing particle collision data density in physics experiments
+  - Exploring the relationship between customer age and purchase frequency in market
+    research
+  - Identifying spatial density patterns in geographic coordinate data
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  - heatmap
+  - density
+  data_type:
+  - numeric
+  - continuous
+  - bivariate
+  domain:
+  - general
+  - statistics
+  - science
+  features:
+  - 2d
+  - binned
+  - color-mapped
+  - distribution
+keywords:
+  en:
+  - histogram
+  - 2d
+  - heatmap
+  - density
+  - numeric
+  - continuous
+  - bivariate
+  - general
+  - statistics
+  - science
+  - binned
+  - color-mapped
+  - distribution
+  es:
+  - histograma
+  - 2d
+  - histogram
+  - heatmap
+  - density
+  - numérico
+  - continuo
+  - bivariado
+  - general
+  - estadística
+  - ciencia
+  - binned
+  - color-mapped
+  - distribución
+implementations:
+  javascript:
+    chartjs: plots/histogram-2d/implementations/javascript/chartjs.js
+    d3: plots/histogram-2d/implementations/javascript/d3.js
+    echarts: plots/histogram-2d/implementations/javascript/echarts.js
+    highcharts: plots/histogram-2d/implementations/javascript/highcharts.js
+    muix: plots/histogram-2d/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-2d/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-2d/implementations/python/altair.py
+    bokeh: plots/histogram-2d/implementations/python/bokeh.py
+    letsplot: plots/histogram-2d/implementations/python/letsplot.py
+    matplotlib: plots/histogram-2d/implementations/python/matplotlib.py
+    plotly: plots/histogram-2d/implementations/python/plotly.py
+    plotnine: plots/histogram-2d/implementations/python/plotnine.py
+    pygal: plots/histogram-2d/implementations/python/pygal.py
+    seaborn: plots/histogram-2d/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-2d/implementations/r/ggplot2.R
+notes:
+- Include a colorbar to show the density/count scale
+- Use a perceptually uniform colormap (e.g., viridis) for accurate density interpretation
+- Bins parameter controls resolution (more bins = finer detail but noisier)
+source: anyplot
+anyplot_updated: null

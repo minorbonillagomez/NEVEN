@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: frontier-efficient
+name:
+  en: Efficient Frontier for Portfolio Optimization
+  es: Frontier Efficient
+description:
+  en: The efficient frontier is a fundamental visualization in Modern Portfolio Theory
+    (MPT) that displays a curve of optimal portfolios offering the highest expected
+    return for each level of risk (standard deviation). Portfolios on the frontier
+    are "efficient" because no other portfolio exists with higher return for the same
+    risk, or lower risk for the same return. This plot is essential for asset allocation
+    decisions and understanding the risk-return tradeoff in investment portfolios.
+  es: The efficient frontier is a fundamental visualization in Modern Portfolio Theory
+    (MPT) that displays a curve of optimal portfolios offering the highest expected
+    return for each level of risk (standard deviation). Portfolios on the frontier
+    are "efficient" because no other portfolio exists with higher return for the same
+    risk, or lower risk for the same return. This plot is essential for asset allocation
+    decisions and understanding the risk-return tradeoff in investment portfolios.
+aliases:
+  en:
+  - frontier-efficient
+  - frontier efficient
+  - frontier efficient
+  es:
+  - frontier-efficient
+  - frontier efficient
+  - frontier efficient
+use_when:
+  en:
+  - The efficient frontier is a fundamental visualization in Modern Portfolio Theory
+    (MPT) that displays a curve of optimal portfolios offering the highest expected
+    return for each level of risk (standard
+  es:
+  - The efficient frontier is a fundamental visualization in Modern Portfolio Theory
+    (MPT) that displays a curve of optimal portfolios offering the highest expected
+    return for each level of risk (standard
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Portfolio managers selecting optimal asset allocations based on client risk tolerance
+  - Financial advisors demonstrating the benefits of diversification to investors
+  - Quantitative analysts comparing actual portfolio positions against theoretical
+    optimums
+  - Academic research in finance and economics illustrating mean-variance optimization
+    concepts
+  es:
+  - Portfolio managers selecting optimal asset allocations based on client risk tolerance
+  - Financial advisors demonstrating the benefits of diversification to investors
+  - Quantitative analysts comparing actual portfolio positions against theoretical
+    optimums
+  - Academic research in finance and economics illustrating mean-variance optimization
+    concepts
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - finance
+  - statistics
+  features:
+  - basic
+  - 2d
+  - correlation
+  - color-mapped
+keywords:
+  en:
+  - frontier
+  - efficient
+  - scatter
+  - line
+  - numeric
+  - continuous
+  - finance
+  - statistics
+  - basic
+  - 2d
+  - correlation
+  - color-mapped
+  es:
+  - frontier
+  - efficient
+  - scatter
+  - line
+  - numérico
+  - continuo
+  - finanzas
+  - estadística
+  - basic
+  - 2d
+  - correlación
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/frontier-efficient/implementations/javascript/chartjs.js
+    d3: plots/frontier-efficient/implementations/javascript/d3.js
+    echarts: plots/frontier-efficient/implementations/javascript/echarts.js
+    highcharts: plots/frontier-efficient/implementations/javascript/highcharts.js
+    muix: plots/frontier-efficient/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/frontier-efficient/implementations/julia/makie.jl
+  python:
+    altair: plots/frontier-efficient/implementations/python/altair.py
+    bokeh: plots/frontier-efficient/implementations/python/bokeh.py
+    letsplot: plots/frontier-efficient/implementations/python/letsplot.py
+    matplotlib: plots/frontier-efficient/implementations/python/matplotlib.py
+    plotly: plots/frontier-efficient/implementations/python/plotly.py
+    plotnine: plots/frontier-efficient/implementations/python/plotnine.py
+    pygal: plots/frontier-efficient/implementations/python/pygal.py
+    seaborn: plots/frontier-efficient/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/frontier-efficient/implementations/r/ggplot2.R
+notes:
+- X-axis should show risk (standard deviation), Y-axis should show expected return
+- The efficient frontier curve should be clearly distinguished (thicker line, distinct
+  color)
+- Include random portfolio scatter points to show suboptimal portfolios below the
+  frontier
+source: anyplot
+anyplot_updated: null

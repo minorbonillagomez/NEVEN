@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: bar-horizontal
+name:
+  en: Horizontal Bar Chart
+  es: Gráfico de Barras Horizontal
+description:
+  en: A horizontal bar chart displaying categorical data with rectangular bars extending
+    horizontally from the y-axis. The length of each bar is proportional to the value
+    it represents. This orientation is particularly effective when category names
+    are long or numerous, as horizontal labels are easier to read than rotated vertical
+    labels. Horizontal bar charts excel at rankings, comparisons, and survey results
+    visualization.
+  es: A horizontal bar chart displaying categorical data with rectangular bars extending
+    horizontally from the y-axis. The length of each bar is proportional to the value
+    it represents. This orientation is particularly effective when category names
+    are long or numerous, as horizontal labels are easier to read than rotated vertical
+    labels. Horizontal bar charts excel at rankings, comparisons, and survey results
+    visualization.
+aliases:
+  en:
+  - bar-horizontal
+  - bar horizontal
+  - horizontal bar chart
+  es:
+  - bar-horizontal
+  - bar horizontal
+  - gráfico de barras horizontal
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Displaying survey results with descriptive response options
+  - Showing ranked lists such as top products, countries by population, or employee
+    performance
+  - Creating population pyramid base charts for demographic analysis
+  es:
+  - Displaying survey results with descriptive response options
+  - Showing ranked lists such as top products, countries by population, or employee
+    performance
+  - Creating population pyramid base charts for demographic analysis
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - horizontal
+  - comparison
+  - ranking
+keywords:
+  en:
+  - bar chart
+  - horizontal
+  - bar
+  - categorical
+  - numeric
+  - general
+  - business
+  - basic
+  - comparison
+  - ranking
+  es:
+  - gráfico de barras
+  - horizontal
+  - bar
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - comparación
+  - clasificación
+implementations:
+  javascript:
+    chartjs: plots/bar-horizontal/implementations/javascript/chartjs.js
+    d3: plots/bar-horizontal/implementations/javascript/d3.js
+    echarts: plots/bar-horizontal/implementations/javascript/echarts.js
+    highcharts: plots/bar-horizontal/implementations/javascript/highcharts.js
+    muix: plots/bar-horizontal/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-horizontal/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-horizontal/implementations/python/altair.py
+    bokeh: plots/bar-horizontal/implementations/python/bokeh.py
+    letsplot: plots/bar-horizontal/implementations/python/letsplot.py
+    matplotlib: plots/bar-horizontal/implementations/python/matplotlib.py
+    plotly: plots/bar-horizontal/implementations/python/plotly.py
+    plotnine: plots/bar-horizontal/implementations/python/plotnine.py
+    pygal: plots/bar-horizontal/implementations/python/pygal.py
+    seaborn: plots/bar-horizontal/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-horizontal/implementations/r/ggplot2.R
+notes:
+- Bar heights should be consistent across all categories
+- Consider sorting bars by value for easier comparison (largest to smallest or vice
+  versa)
+- Use a single color for all bars, or highlight specific bars to draw attention
+source: anyplot
+anyplot_updated: 2026-05-07 07:10:05+00:00

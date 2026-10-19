@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: feynman-basic
+name:
+  en: Feynman Diagram for Particle Interactions
+  es: Feynman Basic Básico
+description:
+  en: 'A Feynman diagram visualizes interactions between subatomic particles in quantum
+    field theory. Different line styles represent different particle types: straight
+    lines for fermions (electrons, quarks), wavy lines for photons, curly/looped lines
+    for gluons, and dashed lines for scalar bosons (e.g., Higgs). Lines meet at vertices
+    representing interaction points. Invented by Richard Feynman, these diagrams are
+    both a computational tool and a cultural icon of modern physics.'
+  es: 'A Feynman diagram visualizes interactions between subatomic particles in quantum
+    field theory. Different line styles represent different particle types: straight
+    lines for fermions (electrons, quarks), wavy lines for photons, curly/looped lines
+    for gluons, and dashed lines for scalar bosons (e.g., Higgs). Lines meet at vertices
+    representing interaction points. Invented by Richard Feynman, these diagrams are
+    both a computational tool and a cultural icon of modern physics.'
+aliases:
+  en:
+  - feynman-basic
+  - feynman basic
+  - basic feynman basic
+  es:
+  - feynman-basic
+  - feynman basic
+  - feynman basic básico
+use_when:
+  en:
+  - 'A Feynman diagram visualizes interactions between subatomic particles in quantum
+    field theory. Different line styles represent different particle types: straight
+    lines for fermions (electrons, quarks)'
+  es:
+  - 'A Feynman diagram visualizes interactions between subatomic particles in quantum
+    field theory. Different line styles represent different particle types: straight
+    lines for fermions (electrons, quarks)'
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Illustrating electron-positron annihilation producing a photon in a particle physics
+    lecture
+  - Visualizing quantum electrodynamics (QED) processes such as Compton scattering
+    or pair production
+  - Documenting Feynman rules and vertex factors in a quantum field theory textbook
+    or reference
+  es:
+  - Illustrating electron-positron annihilation producing a photon in a particle physics
+    lecture
+  - Visualizing quantum electrodynamics (QED) processes such as Compton scattering
+    or pair production
+  - Documenting Feynman rules and vertex factors in a quantum field theory textbook
+    or reference
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - network
+  data_type:
+  - categorical
+  - relational
+  domain:
+  - science
+  - education
+  features:
+  - annotated
+  - static
+keywords:
+  en:
+  - feynman
+  - basic
+  - network
+  - categorical
+  - relational
+  - science
+  - education
+  - annotated
+  - static
+  es:
+  - feynman
+  - básico
+  - red
+  - categórico
+  - relational
+  - ciencia
+  - education
+  - annotated
+  - static
+implementations:
+  javascript:
+    chartjs: plots/feynman-basic/implementations/javascript/chartjs.js
+    d3: plots/feynman-basic/implementations/javascript/d3.js
+    echarts: plots/feynman-basic/implementations/javascript/echarts.js
+    highcharts: plots/feynman-basic/implementations/javascript/highcharts.js
+    muix: plots/feynman-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/feynman-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/feynman-basic/implementations/python/altair.py
+    bokeh: plots/feynman-basic/implementations/python/bokeh.py
+    letsplot: plots/feynman-basic/implementations/python/letsplot.py
+    matplotlib: plots/feynman-basic/implementations/python/matplotlib.py
+    plotly: plots/feynman-basic/implementations/python/plotly.py
+    plotnine: plots/feynman-basic/implementations/python/plotnine.py
+    pygal: plots/feynman-basic/implementations/python/pygal.py
+    seaborn: plots/feynman-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/feynman-basic/implementations/r/ggplot2.R
+notes:
+- 'Use distinct line styles: solid/straight for fermions (with arrow for particle
+  direction), wavy for photons, curly/looped for gluons, dashed for scalar bosons'
+- 'Arrows on fermion lines indicate particle vs antiparticle flow (convention: particle
+  flows forward in time, antiparticle backward)'
+- Time axis typically runs left to right; label it if helpful
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

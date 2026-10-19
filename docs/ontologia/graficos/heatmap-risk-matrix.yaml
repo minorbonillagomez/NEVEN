@@ -1,0 +1,135 @@
+entity_type: ChartType
+id: heatmap-risk-matrix
+name:
+  en: Risk Assessment Matrix (Probability vs Impact)
+  es: Mapa de Calor
+description:
+  en: A 5x5 grid heatmap plotting risk likelihood against consequence severity, used
+    to visualize and prioritize risks in project and enterprise risk management. Cells
+    are color-coded from green (low risk) through yellow and orange to red (critical
+    risk), with individual risk items plotted as labeled markers. The risk score for
+    each cell is the product of likelihood and impact, and zones are labeled to indicate
+    risk severity levels (Low, Medium, High, Critical).
+  es: A 5x5 grid heatmap plotting risk likelihood against consequence severity, used
+    to visualize and prioritize risks in project and enterprise risk management. Cells
+    are color-coded from green (low risk) through yellow and orange to red (critical
+    risk), with individual risk items plotted as labeled markers. The risk score for
+    each cell is the product of likelihood and impact, and zones are labeled to indicate
+    risk severity levels (Low, Medium, High, Critical).
+aliases:
+  en:
+  - heatmap-risk-matrix
+  - heatmap risk matrix
+  - heatmap
+  es:
+  - heatmap-risk-matrix
+  - heatmap risk matrix
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Project management risk registers visualizing identified risks by probability
+    and impact
+  - Enterprise risk management for strategic risk assessment and prioritization (ISO
+    31000)
+  - IT security threat assessment matrices mapping threat likelihood against business
+    impact
+  - Safety engineering hazard analysis in construction, pharma, or military compliance
+  es:
+  - Project management risk registers visualizing identified risks by probability
+    and impact
+  - Enterprise risk management for strategic risk assessment and prioritization (ISO
+    31000)
+  - IT security threat assessment matrices mapping threat likelihood against business
+    impact
+  - Safety engineering hazard analysis in construction, pharma, or military compliance
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - categorical
+  - ordinal
+  - numeric
+  domain:
+  - business
+  - engineering
+  features:
+  - annotated
+  - color-mapped
+  - comparison
+keywords:
+  en:
+  - heatmap
+  - risk
+  - matrix
+  - categorical
+  - ordinal
+  - numeric
+  - business
+  - engineering
+  - annotated
+  - color-mapped
+  - comparison
+  es:
+  - mapa de calor
+  - risk
+  - matrix
+  - heatmap
+  - categórico
+  - ordinal
+  - numérico
+  - negocios
+  - ingeniería
+  - annotated
+  - color-mapped
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/heatmap-risk-matrix/implementations/javascript/chartjs.js
+    d3: plots/heatmap-risk-matrix/implementations/javascript/d3.js
+    echarts: plots/heatmap-risk-matrix/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-risk-matrix/implementations/javascript/highcharts.js
+    muix: plots/heatmap-risk-matrix/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-risk-matrix/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-risk-matrix/implementations/python/altair.py
+    bokeh: plots/heatmap-risk-matrix/implementations/python/bokeh.py
+    letsplot: plots/heatmap-risk-matrix/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-risk-matrix/implementations/python/matplotlib.py
+    plotly: plots/heatmap-risk-matrix/implementations/python/plotly.py
+    plotnine: plots/heatmap-risk-matrix/implementations/python/plotnine.py
+    pygal: plots/heatmap-risk-matrix/implementations/python/pygal.py
+    seaborn: plots/heatmap-risk-matrix/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-risk-matrix/implementations/r/ggplot2.R
+notes:
+- Use a green-yellow-orange-red color gradient for the background grid cells based
+  on the risk score (likelihood x impact)
+- 'Axis labels should use descriptive terms: Likelihood axis (Rare, Unlikely, Possible,
+  Likely, Almost Certain), Impact axis (Negligible, Minor, Moderate, Major, Catastrophic)'
+- Risk items should be plotted as labeled markers with slight jitter to avoid overlapping
+  when multiple risks share the same cell
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,139 @@
+entity_type: ChartType
+id: line-load-duration
+name:
+  en: Load Duration Curve for Energy Systems
+  es: Gráfico de Líneas
+description:
+  en: A load duration curve displays electrical power demand (MW) sorted from highest
+    to lowest across all hours of a year (8,760 hours), forming a monotonically decreasing
+    curve. It is a fundamental tool in power system planning, revealing the proportion
+    of time that load exceeds a given level. The curve naturally segments into peak,
+    intermediate, and base load regions, helping utilities determine the optimal generation
+    capacity mix. The area under the curve represents total annual energy consumption.
+  es: A load duration curve displays electrical power demand (MW) sorted from highest
+    to lowest across all hours of a year (8,760 hours), forming a monotonically decreasing
+    curve. It is a fundamental tool in power system planning, revealing the proportion
+    of time that load exceeds a given level. The curve naturally segments into peak,
+    intermediate, and base load regions, helping utilities determine the optimal generation
+    capacity mix. The area under the curve represents total annual energy consumption.
+aliases:
+  en:
+  - line-load-duration
+  - line load duration
+  - line chart
+  es:
+  - line-load-duration
+  - line load duration
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Power system planning: determining the optimal mix of base load, intermediate,
+    and peaking generation capacity based on load profile shape'
+  - 'Utility rate design: calculating load factors and capacity utilization to inform
+    pricing structures'
+  - 'Renewable energy assessment: evaluating capacity credit and understanding how
+    variable generation sources align with demand patterns'
+  - 'Energy policy analysis: comparing load duration curves before and after demand-side
+    management programs to quantify their impact'
+  es:
+  - 'Power system planning: determining the optimal mix of base load, intermediate,
+    and peaking generation capacity based on load profile shape'
+  - 'Utility rate design: calculating load factors and capacity utilization to inform
+    pricing structures'
+  - 'Renewable energy assessment: evaluating capacity credit and understanding how
+    variable generation sources align with demand patterns'
+  - 'Energy policy analysis: comparing load duration curves before and after demand-side
+    management programs to quantify their impact'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - area
+  data_type:
+  - numeric
+  - continuous
+  - timeseries
+  domain:
+  - energy
+  - engineering
+  features:
+  - annotated
+  - color-mapped
+  - cumulative
+keywords:
+  en:
+  - line chart
+  - load
+  - duration
+  - line
+  - area
+  - numeric
+  - continuous
+  - timeseries
+  - energy
+  - engineering
+  - annotated
+  - color-mapped
+  - cumulative
+  es:
+  - gráfico de líneas
+  - load
+  - duration
+  - line
+  - area
+  - numérico
+  - continuo
+  - timeseries
+  - energy
+  - ingeniería
+  - annotated
+  - color-mapped
+  - cumulative
+implementations:
+  javascript:
+    chartjs: plots/line-load-duration/implementations/javascript/chartjs.js
+    d3: plots/line-load-duration/implementations/javascript/d3.js
+    echarts: plots/line-load-duration/implementations/javascript/echarts.js
+    highcharts: plots/line-load-duration/implementations/javascript/highcharts.js
+    muix: plots/line-load-duration/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-load-duration/implementations/julia/makie.jl
+  python:
+    altair: plots/line-load-duration/implementations/python/altair.py
+    bokeh: plots/line-load-duration/implementations/python/bokeh.py
+    letsplot: plots/line-load-duration/implementations/python/letsplot.py
+    matplotlib: plots/line-load-duration/implementations/python/matplotlib.py
+    plotly: plots/line-load-duration/implementations/python/plotly.py
+    plotnine: plots/line-load-duration/implementations/python/plotnine.py
+    pygal: plots/line-load-duration/implementations/python/pygal.py
+    seaborn: plots/line-load-duration/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-load-duration/implementations/r/ggplot2.R
+notes:
+- The curve must be monotonically decreasing (load values sorted from highest to lowest)
+- Shade or fill distinct regions under the curve to distinguish base load (rightmost,
+  always-on), intermediate load (middle), and peak load (leftmost, brief spikes)
+- Add horizontal dashed lines with labels indicating generation capacity tiers (e.g.,
+  base load capacity, intermediate capacity, peak capacity)
+source: anyplot
+anyplot_updated: null

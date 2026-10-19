@@ -1,0 +1,136 @@
+entity_type: ChartType
+id: hexbin-basic
+name:
+  en: Basic Hexbin Plot
+  es: Diagrama Hexagonal Básico
+description:
+  en: A hexagonal binning plot that visualizes the density of 2D point data by aggregating
+    points into hexagonal bins. The color intensity of each hexagon represents the
+    count of points within it, making it ideal for revealing density patterns in large
+    datasets where traditional scatter plots would show overlapping points. Hexagonal
+    bins provide better visual representation than square pixels due to their isotropy
+    (equal distance to neighboring cells in all directions).
+  es: A hexagonal binning plot that visualizes the density of 2D point data by aggregating
+    points into hexagonal bins. The color intensity of each hexagon represents the
+    count of points within it, making it ideal for revealing density patterns in large
+    datasets where traditional scatter plots would show overlapping points. Hexagonal
+    bins provide better visual representation than square pixels due to their isotropy
+    (equal distance to neighboring cells in all directions).
+aliases:
+  en:
+  - hexbin-basic
+  - hexbin basic
+  - basic hexbin plot
+  es:
+  - hexbin-basic
+  - hexbin basic
+  - diagrama hexagonal básico
+use_when:
+  en:
+  - A hexagonal binning plot that visualizes the density of 2D point data by aggregating
+    points into hexagonal bins. The color intensity of each hexagon represents the
+    count of points within it, making it
+  es:
+  - A hexagonal binning plot that visualizes the density of 2D point data by aggregating
+    points into hexagonal bins. The color intensity of each hexagon represents the
+    count of points within it, making it
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing millions of GPS coordinates to identify traffic hotspots or popular
+    locations in urban analytics
+  - Analyzing financial tick data to find price-volume density clusters in trading
+    patterns
+  - Exploring sensor readings from IoT devices to detect concentration patterns in
+    environmental monitoring
+  - Identifying user interaction hotspots in click-stream or eye-tracking data analysis
+  es:
+  - Visualizing millions of GPS coordinates to identify traffic hotspots or popular
+    locations in urban analytics
+  - Analyzing financial tick data to find price-volume density clusters in trading
+    patterns
+  - Exploring sensor readings from IoT devices to detect concentration patterns in
+    environmental monitoring
+  - Identifying user interaction hotspots in click-stream or eye-tracking data analysis
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - hexbin
+  - density
+  data_type:
+  - numeric
+  - continuous
+  - bivariate
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - 2d
+  - aggregation
+  - color-mapped
+  - distribution
+keywords:
+  en:
+  - hexbin plot
+  - basic
+  - hexbin
+  - density
+  - numeric
+  - continuous
+  - bivariate
+  - statistics
+  - general
+  - 2d
+  - aggregation
+  - color-mapped
+  - distribution
+  es:
+  - diagrama hexagonal
+  - básico
+  - hexbin
+  - density
+  - numérico
+  - continuo
+  - bivariado
+  - estadística
+  - general
+  - basic
+  - 2d
+  - aggregation
+  - color-mapped
+  - distribución
+implementations:
+  javascript:
+    chartjs: plots/hexbin-basic/implementations/javascript/chartjs.js
+    d3: plots/hexbin-basic/implementations/javascript/d3.js
+    echarts: plots/hexbin-basic/implementations/javascript/echarts.js
+    highcharts: plots/hexbin-basic/implementations/javascript/highcharts.js
+    muix: plots/hexbin-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/hexbin-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/hexbin-basic/implementations/python/altair.py
+    bokeh: plots/hexbin-basic/implementations/python/bokeh.py
+    letsplot: plots/hexbin-basic/implementations/python/letsplot.py
+    matplotlib: plots/hexbin-basic/implementations/python/matplotlib.py
+    plotly: plots/hexbin-basic/implementations/python/plotly.py
+    plotnine: plots/hexbin-basic/implementations/python/plotnine.py
+    pygal: plots/hexbin-basic/implementations/python/pygal.py
+    seaborn: plots/hexbin-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/hexbin-basic/implementations/r/ggplot2.R
+notes:
+- Include a color bar to show the density scale
+- Use a perceptually uniform colormap (e.g., viridis) for accurate density interpretation
+- Gridsize parameter controls bin resolution (higher = smaller hexagons, more detail)
+source: anyplot
+anyplot_updated: 2026-02-21 12:00:00+00:00

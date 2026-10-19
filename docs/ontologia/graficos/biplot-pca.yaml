@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: biplot-pca
+name:
+  en: PCA Biplot with Scores and Loading Vectors
+  es: Biplot Pca
+description:
+  en: A PCA biplot simultaneously displays both observation scores (as points) and
+    variable loadings (as arrows) in the principal component space. This dual representation
+    is essential for interpreting PCA results, revealing how observations relate to
+    each other and which original variables drive the separation along each principal
+    component. The length and direction of loading arrows indicate variable importance
+    and correlation with the components.
+  es: A PCA biplot simultaneously displays both observation scores (as points) and
+    variable loadings (as arrows) in the principal component space. This dual representation
+    is essential for interpreting PCA results, revealing how observations relate to
+    each other and which original variables drive the separation along each principal
+    component. The length and direction of loading arrows indicate variable importance
+    and correlation with the components.
+aliases:
+  en:
+  - biplot-pca
+  - biplot pca
+  - biplot pca
+  es:
+  - biplot-pca
+  - biplot pca
+  - biplot pca
+use_when:
+  en:
+  - 'A PCA biplot simultaneously displays both observation scores (as points) and
+    variable loadings (as arrows) in the principal component space. This dual representation
+    is essential for interpreting PCA '
+  es:
+  - 'A PCA biplot simultaneously displays both observation scores (as points) and
+    variable loadings (as arrows) in the principal component space. This dual representation
+    is essential for interpreting PCA '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Exploratory data analysis to understand which variables contribute most to data
+    variance and how samples cluster in reduced dimensionality
+  - Quality control in manufacturing to visualize relationships between process variables
+    and identify outliers in multivariate measurements
+  - Gene expression analysis to reveal sample groupings and identify which genes drive
+    biological variation across conditions
+  es:
+  - Exploratory data analysis to understand which variables contribute most to data
+    variance and how samples cluster in reduced dimensionality
+  - Quality control in manufacturing to visualize relationships between process variables
+    and identify outliers in multivariate measurements
+  - Gene expression analysis to reveal sample groupings and identify which genes drive
+    biological variation across conditions
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - biplot
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  - multivariate
+  domain:
+  - statistics
+  - machine-learning
+  - research
+  features:
+  - dimensionality-reduction
+  - 2d
+  - annotated
+  - correlation
+keywords:
+  en:
+  - biplot
+  - pca
+  - scatter
+  - numeric
+  - continuous
+  - multivariate
+  - statistics
+  - machine learning
+  - research
+  - dimensionality-reduction
+  - 2d
+  - annotated
+  - correlation
+  es:
+  - biplot
+  - pca
+  - scatter
+  - numérico
+  - continuo
+  - multivariado
+  - estadística
+  - aprendizaje automático
+  - research
+  - dimensionality-reduction
+  - 2d
+  - annotated
+  - correlación
+implementations:
+  javascript:
+    chartjs: plots/biplot-pca/implementations/javascript/chartjs.js
+    d3: plots/biplot-pca/implementations/javascript/d3.js
+    echarts: plots/biplot-pca/implementations/javascript/echarts.js
+    highcharts: plots/biplot-pca/implementations/javascript/highcharts.js
+    muix: plots/biplot-pca/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/biplot-pca/implementations/julia/makie.jl
+  python:
+    altair: plots/biplot-pca/implementations/python/altair.py
+    bokeh: plots/biplot-pca/implementations/python/bokeh.py
+    letsplot: plots/biplot-pca/implementations/python/letsplot.py
+    matplotlib: plots/biplot-pca/implementations/python/matplotlib.py
+    plotly: plots/biplot-pca/implementations/python/plotly.py
+    plotnine: plots/biplot-pca/implementations/python/plotnine.py
+    pygal: plots/biplot-pca/implementations/python/pygal.py
+    seaborn: plots/biplot-pca/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/biplot-pca/implementations/r/ggplot2.R
+notes:
+- Display PC1 vs PC2 (the two components explaining most variance) as the default
+  view
+- Show observation scores as points, optionally colored by group labels
+- Draw variable loadings as arrows originating from the origin
+source: anyplot
+anyplot_updated: null

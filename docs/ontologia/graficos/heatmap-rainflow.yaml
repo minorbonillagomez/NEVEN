@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: heatmap-rainflow
+name:
+  en: Rainflow Counting Matrix for Fatigue Analysis
+  es: Mapa de Calor
+description:
+  en: A rainflow counting matrix visualizes the results of rainflow cycle counting
+    from a load or stress time history. The matrix displays cycle counts as a 2D heatmap
+    where one axis represents cycle amplitude (half-range), the other represents cycle
+    mean value, and color intensity represents the frequency of each cycle combination.
+    This is a fundamental tool in fatigue analysis and durability engineering, used
+    to characterize variable-amplitude loading for fatigue life prediction.
+  es: A rainflow counting matrix visualizes the results of rainflow cycle counting
+    from a load or stress time history. The matrix displays cycle counts as a 2D heatmap
+    where one axis represents cycle amplitude (half-range), the other represents cycle
+    mean value, and color intensity represents the frequency of each cycle combination.
+    This is a fundamental tool in fatigue analysis and durability engineering, used
+    to characterize variable-amplitude loading for fatigue life prediction.
+aliases:
+  en:
+  - heatmap-rainflow
+  - heatmap rainflow
+  - heatmap
+  es:
+  - heatmap-rainflow
+  - heatmap rainflow
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Fatigue life prediction and damage assessment of mechanical components under variable-amplitude
+    loading
+  - Analyzing load spectra from real-world measurements on vehicles, aircraft structures,
+    or wind turbines
+  - Comparing measured vs. design load spectra in structural and mechanical engineering
+    quality assurance
+  - Identifying dominant cycle combinations that contribute most to cumulative fatigue
+    damage
+  es:
+  - Fatigue life prediction and damage assessment of mechanical components under variable-amplitude
+    loading
+  - Analyzing load spectra from real-world measurements on vehicles, aircraft structures,
+    or wind turbines
+  - Comparing measured vs. design load spectra in structural and mechanical engineering
+    quality assurance
+  - Identifying dominant cycle combinations that contribute most to cumulative fatigue
+    damage
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - numeric
+  - matrix
+  domain:
+  - engineering
+  - science
+  features:
+  - color-mapped
+  - 2d
+keywords:
+  en:
+  - heatmap
+  - rainflow
+  - numeric
+  - matrix
+  - engineering
+  - science
+  - color-mapped
+  - 2d
+  es:
+  - mapa de calor
+  - rainflow
+  - heatmap
+  - numérico
+  - matrix
+  - ingeniería
+  - ciencia
+  - color-mapped
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/heatmap-rainflow/implementations/javascript/chartjs.js
+    d3: plots/heatmap-rainflow/implementations/javascript/d3.js
+    echarts: plots/heatmap-rainflow/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-rainflow/implementations/javascript/highcharts.js
+    muix: plots/heatmap-rainflow/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-rainflow/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-rainflow/implementations/python/altair.py
+    bokeh: plots/heatmap-rainflow/implementations/python/bokeh.py
+    letsplot: plots/heatmap-rainflow/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-rainflow/implementations/python/matplotlib.py
+    plotly: plots/heatmap-rainflow/implementations/python/plotly.py
+    plotnine: plots/heatmap-rainflow/implementations/python/plotnine.py
+    pygal: plots/heatmap-rainflow/implementations/python/pygal.py
+    seaborn: plots/heatmap-rainflow/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-rainflow/implementations/r/ggplot2.R
+notes:
+- Display as a 2D heatmap with amplitude on the y-axis and mean on the x-axis
+- Use a sequential colormap (e.g., viridis or hot) with a logarithmic or linear color
+  scale to clearly distinguish high-frequency from low-frequency cycle bins
+- Include a colorbar indicating cycle count values
+source: anyplot
+anyplot_updated: null

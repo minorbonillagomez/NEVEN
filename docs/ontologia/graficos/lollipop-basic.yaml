@@ -1,0 +1,114 @@
+entity_type: ChartType
+id: lollipop-basic
+name:
+  en: Basic Lollipop Chart
+  es: Gráfico de Piruleta Básico
+description:
+  en: A lollipop chart displays categorical data with thin lines (stems) extending
+    from a baseline to circular markers (dots) at each data point. It presents the
+    same information as a bar chart but with a cleaner, more minimalist aesthetic
+    that reduces visual clutter while maintaining clear value comparisons.
+  es: A lollipop chart displays categorical data with thin lines (stems) extending
+    from a baseline to circular markers (dots) at each data point. It presents the
+    same information as a bar chart but with a cleaner, more minimalist aesthetic
+    that reduces visual clutter while maintaining clear value comparisons.
+aliases:
+  en:
+  - lollipop-basic
+  - lollipop basic
+  - basic lollipop chart
+  es:
+  - lollipop-basic
+  - lollipop basic
+  - gráfico de piruleta básico
+use_when:
+  en:
+  - A lollipop chart displays categorical data with thin lines (stems) extending from
+    a baseline to circular markers (dots) at each data point. It presents the same
+    information as a bar chart but with a c
+  es:
+  - A lollipop chart displays categorical data with thin lines (stems) extending from
+    a baseline to circular markers (dots) at each data point. It presents the same
+    information as a bar chart but with a c
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Ranking top performers across categories (e.g., sales by region, employee scores)
+  - Survey results with many response categories where bars would look cluttered
+  - Year-over-year or period comparisons with discrete categories
+  - Displaying sorted metrics where the relative position and exact value both matter
+  es:
+  - Ranking top performers across categories (e.g., sales by region, employee scores)
+  - Survey results with many response categories where bars would look cluttered
+  - Year-over-year or period comparisons with discrete categories
+  - Displaying sorted metrics where the relative position and exact value both matter
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - lollipop
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - comparison
+  - ranking
+keywords:
+  en:
+  - lollipop chart
+  - basic
+  - lollipop
+  - categorical
+  - numeric
+  - general
+  - business
+  - comparison
+  - ranking
+  es:
+  - gráfico de piruleta
+  - básico
+  - lollipop
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - comparación
+  - clasificación
+implementations:
+  javascript:
+    chartjs: plots/lollipop-basic/implementations/javascript/chartjs.js
+    d3: plots/lollipop-basic/implementations/javascript/d3.js
+    echarts: plots/lollipop-basic/implementations/javascript/echarts.js
+    highcharts: plots/lollipop-basic/implementations/javascript/highcharts.js
+    muix: plots/lollipop-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/lollipop-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/lollipop-basic/implementations/python/altair.py
+    bokeh: plots/lollipop-basic/implementations/python/bokeh.py
+    letsplot: plots/lollipop-basic/implementations/python/letsplot.py
+    matplotlib: plots/lollipop-basic/implementations/python/matplotlib.py
+    plotly: plots/lollipop-basic/implementations/python/plotly.py
+    plotnine: plots/lollipop-basic/implementations/python/plotnine.py
+    pygal: plots/lollipop-basic/implementations/python/pygal.py
+    seaborn: plots/lollipop-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/lollipop-basic/implementations/r/ggplot2.R
+notes:
+- Stems should be thin lines connecting baseline to marker
+- Markers should be circular dots clearly visible at data values
+- Vertical orientation preferred (categories on x-axis, values on y-axis)
+source: anyplot
+anyplot_updated: 2025-12-15 15:58:40+00:00

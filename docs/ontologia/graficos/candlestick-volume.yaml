@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: candlestick-volume
+name:
+  en: Stock Candlestick Chart with Volume
+  es: Gráfico de Velas
+description:
+  en: A professional candlestick chart combining OHLC (open, high, low, close) price
+    data with volume bars in a synchronized lower pane. The dual-pane layout presents
+    price action in the main chart with corresponding trading volume below, sharing
+    a common time axis. This format is the standard for technical analysis platforms,
+    enabling traders to correlate price movements with trading activity and identify
+    volume-confirmed trends or reversals.
+  es: A professional candlestick chart combining OHLC (open, high, low, close) price
+    data with volume bars in a synchronized lower pane. The dual-pane layout presents
+    price action in the main chart with corresponding trading volume below, sharing
+    a common time axis. This format is the standard for technical analysis platforms,
+    enabling traders to correlate price movements with trading activity and identify
+    volume-confirmed trends or reversals.
+aliases:
+  en:
+  - candlestick-volume
+  - candlestick volume
+  - candlestick chart
+  es:
+  - candlestick-volume
+  - candlestick volume
+  - gráfico de velas
+use_when:
+  en:
+  - A professional candlestick chart combining OHLC (open, high, low, close) price
+    data with volume bars in a synchronized lower pane. The dual-pane layout presents
+    price action in the main chart with cor
+  es:
+  - A professional candlestick chart combining OHLC (open, high, low, close) price
+    data with volume bars in a synchronized lower pane. The dual-pane layout presents
+    price action in the main chart with cor
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing stock price movements alongside trading volume to confirm breakout patterns
+  - Identifying divergences between price trends and volume for potential reversal
+    signals
+  - Evaluating cryptocurrency or forex pairs with volume context for entry/exit decisions
+  es:
+  - Analyzing stock price movements alongside trading volume to confirm breakout patterns
+  - Identifying divergences between price trends and volume for potential reversal
+    signals
+  - Evaluating cryptocurrency or forex pairs with volume context for entry/exit decisions
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - candlestick
+  - bar
+  - subplot
+  data_type:
+  - timeseries
+  - numeric
+  - ohlc
+  domain:
+  - finance
+  - trading
+  features:
+  - multi-pane
+  - volume
+  - synchronized
+  - interactive
+keywords:
+  en:
+  - candlestick chart
+  - volume
+  - candlestick
+  - bar
+  - subplot
+  - timeseries
+  - numeric
+  - ohlc
+  - finance
+  - trading
+  - multi-pane
+  - synchronized
+  - interactive
+  es:
+  - gráfico de velas
+  - volume
+  - candlestick
+  - bar
+  - subplot
+  - timeseries
+  - numérico
+  - ohlc
+  - finanzas
+  - trading
+  - multi-pane
+  - synchronized
+  - interactive
+implementations:
+  javascript:
+    chartjs: plots/candlestick-volume/implementations/javascript/chartjs.js
+    d3: plots/candlestick-volume/implementations/javascript/d3.js
+    echarts: plots/candlestick-volume/implementations/javascript/echarts.js
+    highcharts: plots/candlestick-volume/implementations/javascript/highcharts.js
+    muix: plots/candlestick-volume/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/candlestick-volume/implementations/julia/makie.jl
+  python:
+    altair: plots/candlestick-volume/implementations/python/altair.py
+    bokeh: plots/candlestick-volume/implementations/python/bokeh.py
+    letsplot: plots/candlestick-volume/implementations/python/letsplot.py
+    matplotlib: plots/candlestick-volume/implementations/python/matplotlib.py
+    plotly: plots/candlestick-volume/implementations/python/plotly.py
+    plotnine: plots/candlestick-volume/implementations/python/plotnine.py
+    pygal: plots/candlestick-volume/implementations/python/pygal.py
+    seaborn: plots/candlestick-volume/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/candlestick-volume/implementations/r/ggplot2.R
+notes:
+- Use a shared x-axis between the candlestick and volume panes with proper date formatting
+- Volume bars should use the same up/down color scheme as candlesticks for visual
+  consistency
+- The price pane should occupy roughly 70-75% of the vertical space, volume pane 25-30%
+source: anyplot
+anyplot_updated: 2026-10-02 15:00:51+00:00

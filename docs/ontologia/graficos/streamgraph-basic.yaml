@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: streamgraph-basic
+name:
+  en: Basic Stream Graph
+  es: Streamgraph Basic Básico
+description:
+  en: A streamgraph (also known as a stacked area chart with a centered baseline)
+    displaying the composition of multiple categories over time with smooth, flowing
+    curves. Unlike traditional stacked area charts, streamgraphs use a baseline centered
+    around the x-axis, creating an organic, river-like appearance that emphasizes
+    the overall shape and relative proportions of each category while minimizing the
+    visual distortion of individual layers.
+  es: A streamgraph (also known as a stacked area chart with a centered baseline)
+    displaying the composition of multiple categories over time with smooth, flowing
+    curves. Unlike traditional stacked area charts, streamgraphs use a baseline centered
+    around the x-axis, creating an organic, river-like appearance that emphasizes
+    the overall shape and relative proportions of each category while minimizing the
+    visual distortion of individual layers.
+aliases:
+  en:
+  - streamgraph-basic
+  - streamgraph basic
+  - basic streamgraph basic
+  es:
+  - streamgraph-basic
+  - streamgraph basic
+  - streamgraph basic básico
+use_when:
+  en:
+  - A streamgraph (also known as a stacked area chart with a centered baseline) displaying
+    the composition of multiple categories over time with smooth, flowing curves.
+    Unlike traditional stacked area cha
+  es:
+  - A streamgraph (also known as a stacked area chart with a centered baseline) displaying
+    the composition of multiple categories over time with smooth, flowing curves.
+    Unlike traditional stacked area cha
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Music listening trends showing genre popularity over months
+  - Topic popularity evolution in social media or news
+  - Market share changes among competitors over time
+  - Resource allocation across teams or projects over quarters
+  es:
+  - Music listening trends showing genre popularity over months
+  - Topic popularity evolution in social media or news
+  - Market share changes among competitors over time
+  - Resource allocation across teams or projects over quarters
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - streamgraph
+  - area
+  data_type:
+  - timeseries
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - stacked
+  - flow
+keywords:
+  en:
+  - streamgraph
+  - basic
+  - area
+  - timeseries
+  - categorical
+  - numeric
+  - general
+  - business
+  - stacked
+  - flow
+  es:
+  - streamgraph
+  - básico
+  - area
+  - timeseries
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - stacked
+  - flujo
+implementations:
+  javascript:
+    chartjs: plots/streamgraph-basic/implementations/javascript/chartjs.js
+    d3: plots/streamgraph-basic/implementations/javascript/d3.js
+    echarts: plots/streamgraph-basic/implementations/javascript/echarts.js
+    highcharts: plots/streamgraph-basic/implementations/javascript/highcharts.js
+    muix: plots/streamgraph-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/streamgraph-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/streamgraph-basic/implementations/python/altair.py
+    bokeh: plots/streamgraph-basic/implementations/python/bokeh.py
+    letsplot: plots/streamgraph-basic/implementations/python/letsplot.py
+    matplotlib: plots/streamgraph-basic/implementations/python/matplotlib.py
+    plotly: plots/streamgraph-basic/implementations/python/plotly.py
+    plotnine: plots/streamgraph-basic/implementations/python/plotnine.py
+    pygal: plots/streamgraph-basic/implementations/python/pygal.py
+    seaborn: plots/streamgraph-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/streamgraph-basic/implementations/r/ggplot2.R
+notes:
+- Use smooth interpolation (spline/basis) for flowing curves
+- Center the stack around a horizontal middle axis, with a symmetric (silhouette)
+  or wiggle-minimizing baseline
+- Use distinct, harmonious colors for each category
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00
