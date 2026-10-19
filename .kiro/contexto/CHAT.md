@@ -2,10 +2,73 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-08-19 ~09:15 (sesion: Integracion API charts en servidor HTTP)
+> **Ultima actualizacion:** 2026-08-19 ~10:30 (sesion: UI Galeria de Graficos)
 
 ---
-### Sesión 2026-08-19 (~09:00-09:15) — Integración API /api/charts en neven_http_server
+### Sesion 2026-08-19 (~09:30-10:30) — UI Galeria de Graficos
+
+## Objetivo
+Crear la interfaz de usuario para la galeria de graficos en el TaskPane.
+
+## Logros
+
+### 1. Modal de Galeria (chart-gallery.js)
+- Modal con grid de 325+ tipos de graficos
+- Busqueda semantica via `/api/charts/search`
+- Filtros por categoria (basicos, estadisticos, correlacion, etc.)
+- Filtros por libreria (matplotlib, plotly, ggplot2, etc.)
+- Vista detalle con use_when, avoid_when, requisitos de datos
+- Visualizacion de codigo de implementacion para 15 librerias
+- Botones "Copiar" e "Insertar en editor"
+
+### 2. Iconos SVG (sin emojis)
+- 18 iconos SVG para diferentes tipos de graficos
+- Paleta NEVEN: dorado `#d7a538` sobre fondo oscuro
+- Sin emojis por indicacion del usuario
+
+### 3. Integracion en TaskPane
+- Script incluido en taskpane.html
+- Boton "Galeria" agregado junto a "Generar" en seccion Quick Chart
+- API publica: `ChartGallery.show()` / `ChartGallery.hide()`
+
+## Archivos creados/modificados
+| Archivo | Accion |
+|---------|--------|
+| `C:\NEVEN\TaskPane\chart-gallery.js` | CREADO (841 lineas) |
+| `C:\NEVEN\TaskPane\taskpane.html` | Script + boton agregados |
+| `src/TaskPane/chart-gallery.js` | Copia al repositorio |
+| `src/TaskPane/taskpane.html` | Copia al repositorio |
+
+## Commits
+```
+34a703c feat(ui): agregar galeria de graficos al TaskPane
+a5fe92a docs: actualizar bitacora con UI de galeria
+```
+
+## Decisiones de diseno
+
+1. **Modal en lugar de tab** — Ya hay 8 tabs, agregar otro saturaria la barra. Un modal es accesible desde Quick Chart y no consume espacio permanente.
+
+2. **Iconos SVG en lugar de emojis** — El usuario solicito no usar emojis. Los SVG respetan la paleta NEVEN y son consistentes con el resto de la UI.
+
+3. **Codigo separado en chart-gallery.js** — Mantener modularidad, el archivo taskpane.html ya es muy grande (~7700 lineas).
+
+## PENDIENTES
+
+### ALTA
+- [ ] Probar galeria en navegador con servidor HTTP activo
+- [ ] Verificar que el RAG indexa las ontologias de graficos
+
+### MEDIA
+- [ ] Traducir descripciones de graficos (actualmente en ingles)
+- [ ] Agregar thumbnails/previews de cada tipo de grafico
+
+### BAJA
+- [ ] Mejorar algoritmo de recomendacion por datos
+- [ ] Agregar filtros adicionales (interactivo, 3D, etc.)
+
+---
+### Sesion 2026-08-19 (~09:00-09:15) — Integracion API /api/charts en neven_http_server
 
 ## Objetivo
 Integrar los endpoints `/api/charts/*` en el servidor HTTP principal para que estén disponibles en producción.
