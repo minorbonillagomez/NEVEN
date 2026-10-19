@@ -2,7 +2,463 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-08-20 ~11:00 (sesion: SQL en Run Script + i18n discussion)
+> **Ultima actualizacion:** 2026-08-19 ~09:15 (sesion: Integracion API charts en servidor HTTP)
+
+---
+### Sesión 2026-08-19 (~09:00-09:15) — Integración API /api/charts en neven_http_server
+
+## Objetivo
+Integrar los endpoints `/api/charts/*` en el servidor HTTP principal para que estén disponibles en producción.
+
+## Logros
+
+### 1. Integración en neven_http_server.py
+- Agregado import de `chart_handlers` desde `C:\NEVEN\scripts\ontology`
+- Agregado routing en `do_GET` para rutas `api/charts/*`
+- Implementado handler `_handle_charts_api()` que delega a `handle_charts_request()`
+- Documentados 6 nuevos endpoints en el header del archivo
+
+### 2. Endpoints disponibles
+| Endpoint | Descripción |
+|----------|-------------|
+| `GET /api/charts` | Lista todos los tipos de gráficos (325) |
+| `GET /api/charts/search?q=...&lang=es` | Busca gráficos por texto |
+| `GET /api/charts/recommend?types=numeric,numeric` | Recomienda por tipo de datos |
+| `GET /api/charts/stats` | Estadísticas del catálogo |
+| `GET /api/charts/{id}` | Obtiene datos de un gráfico |
+| `GET /api/charts/{id}/code?language=python&library=matplotlib` | Código fuente |
+
+### 3. Pruebas
+- Todos los endpoints probados y funcionando
+- 325 gráficos cargados
+- 1,606 keywords indexados
+- 15 librerías soportadas
+
+## Commit
+```
+6d8dcf7 feat(api): integrar endpoints /api/charts/* para ontologia de graficos
+```
+
+## Pendientes
+1. **UI para galería de gráficos** — Tab o modal en TaskPane
+2. **Probar indexado RAG** — Verificar que las ontologías se indexan
+3. **Traducir descripciones** — Actualmente solo nombres están en español
+
+---
+### Sesión 2026-08-20 (~11:30-12:30) — Integración anyplot como Ontología de Gráficos
+
+## Objetivo
+Integrar el repositorio anyplot como una ontología de gráficos bilingüe (ES/EN) para el agente agnóstico de NEVEN, permitiendo búsqueda semántica y recomendación de gráficos sin depender de MCPs externos.
+
+## Logros Principales
+
+### 1. Clonado y procesamiento de anyplot
+- Clonado repositorio: `external/anyplot/` (325 tipos de gráficos)
+- Eliminado `.git` interno para evitar repo embebido
+- 15 librerías soportadas: matplotlib, plotly, seaborn, altair, bokeh, plotnine, pygal, letsplot (Python), ggplot2 (R), Makie.jl (Julia), Chart.js, D3.js, ECharts, Highcharts, MUI X Charts (JS)
+
+### 2. Script de conversión
+- `scripts/ontology/convert_anyplot.py` — Convierte specification.yaml/md a ontología NEVEN
+- Genera campos bilingües automáticamente
+- Infiere `use_when`, `avoid_when`, `data_requirements` por tipo de gráfico
+- Indexa 1,606 keywords para búsqueda RAG
+
+### 3. Módulo de consulta
+- `scripts/ontology/chart_ontology.py` — API de consulta
+- `ChartOntology.search(query, lang)` — Búsqueda por texto
+- `ChartOntology.recommend_by_data(types, cols, rows)` — Recomendación por datos
+- `ChartOntology.get_implementation(id, lang, lib)` — Obtener código fuente
+
+### 4. HTTP Handlers
+- `scripts/ontology/chart_handlers.py` — Handlers para servidor HTTP
+- Endpoints: `/api/charts`, `/api/charts/search`, `/api/charts/recommend`, `/api/charts/{id}`, `/api/charts/{id}/code`
+
+### 5. Traducciones i18n
+- Agregada sección `chartGallery` a `en.js` y `es.js`
+- 32 tipos de gráficos comunes traducidos
+- 9 categorías de gráficos
+- Labels de uso, requisitos, mensajes
+
+## Archivos creados/modificados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `external/anyplot/` | Repositorio clonado (sin .git) |
+| `docs/ontologia/graficos/*.yaml` | 326 ontologías de gráficos |
+| `docs/ontologia/graficos/_catalog.yaml` | Catálogo con índice completo |
+| `scripts/ontology/convert_anyplot.py` | Script de conversión |
+| `scripts/ontology/chart_ontology.py` | Módulo de consulta |
+| `scripts/ontology/chart_handlers.py` | HTTP handlers |
+| `scripts/ontology/__init__.py` | Módulo Python |
+| `src/TaskPane/lang/en.js` | +sección chartGallery |
+| `src/TaskPane/lang/es.js` | +sección chartGallery |
+
+## Copias a producción
+```
+C:\NEVEN\docs\ontologia\graficos\ — 326 archivos YAML
+C:\NEVEN\scripts\ontology\ — 4 archivos Python
+C:\NEVEN\TaskPane\lang\en.js — Actualizado
+C:\NEVEN\TaskPane\lang\es.js — Actualizado
+```
+
+## Commit
+- `12bc81f` — feat(ontology): integrar anyplot como ontologia de graficos bilingue (ES/EN)
+
+## Estadísticas finales
+```json
+{
+  "total_charts": 325,
+  "total_keywords": 1606,
+  "by_language": {"javascript": 325, "julia": 325, "python": 325, "r": 325},
+  "by_library": {"matplotlib": 325, "plotly": 325, "ggplot2": 325, "makie": 325, ...}
+}
+```
+
+## PENDIENTES
+
+### ALTA
+- [x] ~~Integrar endpoints en neven_http_server.py~~ ✅ COMPLETADO 2026-08-19
+- [ ] **Crear UI en TaskPane** — Tab o modal para galería de gráficos
+- [ ] **Probar con agente** — Verificar que el RAG indexa las ontologías
+
+### MEDIA
+- [ ] Traducir descripciones de gráficos (actualmente en inglés)
+- [ ] Agregar thumbnails/previews de cada tipo de gráfico
+- [ ] Integrar con Quick Chart del TaskPane
+
+### BAJA  
+- [ ] Mejorar algoritmo de recomendación por datos
+- [ ] Agregar soporte para filtrado por características (interactivo, 3D, etc.)
+
+---
+### Sesión 2026-08-20 (~10:30-11:00) — Evaluación de anyplot para Capacidad Gráfica Offline
+
+## Objetivo
+Evaluar si el repositorio anyplot (https://github.com/MarkusNeusinger/anyplot) puede enriquecer la capacidad gráfica de NEVEN funcionando OFFLINE.
+
+## Resumen Ejecutivo
+
+| Aspecto | Evaluación |
+|---------|------------|
+| **¿Funciona offline?** | ⚠️ **PARCIALMENTE** — Las implementaciones de código sí, la búsqueda/descubrimiento NO |
+| **¿Es útil para NEVEN?** | ✅ **SÍ** — Como biblioteca de snippets de código de referencia |
+| **Esfuerzo de integración** | MEDIO — Requiere extracción y adaptación de ~200+ implementaciones |
+
+## Análisis Detallado
+
+### 1. Arquitectura de anyplot
+
+anyplot tiene dos capas claramente separadas:
+
+**Capa de Descubrimiento (REQUIERE INTERNET)**
+- Backend FastAPI + PostgreSQL en `https://api.anyplot.ai`
+- MCP Server (`api/mcp/server.py`) depende de DATABASE_URL
+- Búsqueda por tipo de gráfico, librería, lenguaje
+- Sin la base de datos, no hay forma de buscar/filtrar los plots
+
+**Capa de Implementaciones (FUNCIONA OFFLINE)**
+- ~200+ tipos de gráficos en `plots/` (scatter, bar, line, heatmap, violin, etc.)
+- Cada tipo tiene implementaciones en múltiples lenguajes/librerías
+- Código 100% autónomo, no llama a ningún servicio externo
+
+### 2. Estructura de cada plot
+
+```
+plots/<tipo>/
+├── specification.md          # Descripción en lenguaje natural
+├── specification.yaml        # Metadatos estructurados
+├── metadata/                 # Thumbnails, tags
+└── implementations/
+    ├── python/
+    │   ├── matplotlib.py     # ← Código ejecutable standalone
+    │   ├── plotly.py
+    │   ├── seaborn.py
+    │   ├── altair.py
+    │   ├── bokeh.py
+    │   └── ...
+    ├── r/
+    │   └── ggplot2.R         # ← Código ejecutable standalone
+    ├── julia/
+    │   └── makie.jl          # ← Código ejecutable standalone
+    └── javascript/
+        ├── echarts.js
+        ├── d3.js
+        ├── chartjs.js
+        └── highcharts.js
+```
+
+### 3. Características del Código de Implementación
+
+**Cada archivo es COMPLETAMENTE AUTÓNOMO:**
+- ✅ Genera sus propios datos de ejemplo (no depende de datasets externos)
+- ✅ Define tema/colores consistentes via variables de entorno (`ANYPLOT_THEME`)
+- ✅ Guarda el resultado como PNG
+- ✅ No hace llamadas de red
+- ✅ Incluye comentarios de calidad y versiones
+
+**Ejemplo (matplotlib.py para scatter-basic):**
+```python
+# Genera datos sintéticos
+np.random.seed(42)
+study_hours = np.random.uniform(1, 12, 180)
+exam_scores = np.clip(38 + study_hours * 4.5 + np.random.normal(0, 12, 180), 35, 100)
+
+# Renderiza gráfico completo con trend line, confidence band
+fig, ax = plt.subplots(figsize=(8, 4.5), dpi=400)
+ax.scatter(study_hours, exam_scores, ...)
+plt.savefig(f"plot-{THEME}.png", dpi=400)
+```
+
+### 4. Catálogo de Librerías Soportadas
+
+| Lenguaje | Librerías |
+|----------|-----------|
+| **Python** | matplotlib, plotly, seaborn, altair, bokeh, plotnine, pygal, letsplot |
+| **R** | ggplot2 |
+| **Julia** | Makie.jl |
+| **JavaScript** | Chart.js, D3.js, ECharts, Highcharts, MUI X Charts |
+
+### 5. Estrategia de Integración Recomendada para NEVEN
+
+**Opción A: Extracción Estática (RECOMENDADA)**
+1. Clonar repositorio anyplot
+2. Extraer solo la carpeta `plots/` (~50MB)
+3. Crear índice JSON local con metadatos
+4. Servir snippets desde `C:\NEVEN\anyplot\plots\`
+5. Usuario busca por nombre → NEVEN muestra código → Usuario adapta datos
+
+**Opción B: Generador de Código IA**
+1. Usar las especificaciones como contexto para LLM
+2. LLM genera código adaptado a los datos del usuario
+3. Más flexible pero requiere conexión a API de IA
+
+**Opción C: Template Engine**
+1. Convertir implementaciones en templates Jinja2/Mustache
+2. Usuario selecciona columnas de Excel → NEVEN genera código con sus datos
+3. Mayor esfuerzo inicial, mejor UX
+
+## Conclusiones
+
+### ✅ Lo que SÍ podemos usar offline:
+- ~200 tipos de gráficos × ~5-8 implementaciones = ~1,000+ snippets de código
+- Código de alta calidad, bien comentado, con versiones actualizadas (2026)
+- Cobertura completa de Python (matplotlib, plotly, seaborn), R (ggplot2), Julia (Makie), JS
+
+### ❌ Lo que NO funciona offline:
+- Búsqueda semántica ("show me a chart for distribution comparison")
+- Filtrado por características ("interactive", "3D", "time series")
+- Generación IA de código personalizado
+
+### Recomendación Final
+
+**CLONAR y usar como biblioteca de referencia local.**
+
+La integración más práctica es:
+1. Extraer `plots/` a `C:\NEVEN\anyplot\`
+2. Crear un JSON index simple con nombre, descripción, lenguajes disponibles
+3. Agregar selector en NEVEN Studio: "📊 Galería de Gráficos"
+4. Mostrar código como template editable en Run Script
+
+**Esfuerzo estimado:** 4-6 horas para MVP funcional
+
+## Archivos de referencia consultados
+- `api/main.py` — Backend FastAPI (confirma dependencia de PostgreSQL)
+- `api/mcp/server.py` — MCP server (requiere DATABASE_URL)
+- `plots/scatter-basic/implementations/python/matplotlib.py` — Ejemplo Python
+- `plots/scatter-basic/implementations/r/ggplot2.R` — Ejemplo R
+- `plots/scatter-basic/implementations/julia/makie.jl` — Ejemplo Julia
+- `plots/scatter-basic/implementations/javascript/echarts.js` — Ejemplo JS
+
+---
+### Sesión 2026-08-20 (~11:00-11:30) — Diseño: Ontología de Gráficos para Agente Agnóstico
+
+## Objetivo
+Evolucionar la idea de "clonar anyplot como snippets" hacia una integración más profunda: convertir anyplot en una **ontología de gráficos** que el agente agnóstico pueda usar para inferir y recomendar visualizaciones.
+
+## Contexto de la Discusión
+Usuario propuso: en lugar de tener anyplot aislado, integrarlo al agente agnóstico para que pueda resolver consultas de gráficos **sin depender de MCP externo**, usando RAG local.
+
+## Decisión de Diseño: Ontología de Gráficos
+
+### Estructura propuesta para cada tipo de gráfico
+
+```yaml
+# docs/ontologia/graficos/scatter-basic.yaml
+entity_type: ChartType
+id: scatter-basic
+name: Scatter Plot (Diagrama de Dispersión)
+aliases: [scatterplot, xy plot, diagrama de puntos]
+
+use_when:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones
+  - Identificar outliers
+
+avoid_when:
+  - Variables categóricas (usar bar chart)
+  - Series temporales (usar line chart)
+
+data_requirements:
+  min_columns: 2
+  column_types: [numeric, numeric]
+
+implementations:
+  python:
+    matplotlib: plots/scatter-basic/implementations/python/matplotlib.py
+    plotly: plots/scatter-basic/implementations/python/plotly.py
+  r:
+    ggplot2: plots/scatter-basic/implementations/r/ggplot2.R
+
+keywords: [correlación, relación, dispersión, bivariado, regresión]
+```
+
+### Flujo del agente con ontología
+
+```
+Usuario: "Tengo horas de estudio y notas, quiero ver si hay relación"
+    │
+    ▼
+Agente analiza columnas → [numeric, numeric]
+    │
+    ▼
+Consulta RAG: "relación variables continuas"
+    │
+    ▼
+Ontología retorna: scatter-basic (score 0.92)
+    │
+    ▼
+Agente genera código adaptado a datos del usuario
+```
+
+### Beneficios vs. snippets sueltos
+
+| Snippets sueltos | Ontología + RAG |
+|------------------|-----------------|
+| Usuario debe saber qué gráfico quiere | Agente **infiere** el tipo correcto |
+| Búsqueda por nombre exacto | Búsqueda semántica |
+| Solo código | Explicación de cuándo usar cada tipo |
+| Sin contexto de datos | Sugerencias basadas en columnas de Excel |
+
+### Ubicación en estructura existente
+
+```
+docs/ontologia/
+├── neven-core/     # Ya existe
+├── excel/          # Ya existe
+├── econometria/    # Ya existe
+└── graficos/       # NUEVO - anyplot convertido
+    ├── scatter-basic.yaml
+    ├── bar-grouped.yaml
+    ├── heatmap-correlation.yaml
+    └── ... (~200 tipos)
+```
+
+## Plan de Implementación (propuesto, no ejecutado)
+
+| Fase | Descripción | Tiempo |
+|------|-------------|--------|
+| **1** | Clonar anyplot, script de conversión spec.yaml → ontología NEVEN | 4-6 hrs |
+| **2** | Integrar `graficos/` al pipeline RAG, modificar prompt del agente | 2-3 hrs |
+| **3** | Template engine para adaptar código a datos del usuario | 3-4 hrs |
+| **Total** | | 10-15 hrs |
+
+## Archivos modificados
+- `CHAT.md` — Solo documentación de la discusión
+
+## Commits
+- Ninguno (sesión de diseño/planificación)
+
+## PENDIENTES
+
+### ALTA
+- [ ] **Decidir si proceder** con integración ontología vs. snippets simples
+- [ ] **Crear PoC** con 5-10 gráficos representativos antes de convertir los ~200
+
+### MEDIA
+- [ ] Escribir script de conversión `specification.yaml` → ontología NEVEN
+- [ ] Diseñar prompt del agente para inferencia de gráficos
+- [ ] Definir estructura de `data_requirements` para matching automático
+
+### BAJA
+- [ ] Evaluar si agregar thumbnails/previews de cada tipo de gráfico
+- [ ] Considerar integración con Quick Chart del TaskPane
+
+---
+### Sesión 2026-08-19 (~19:00-20:30) — i18n Completo para Data Lab y Settings
+
+## Objetivo
+Completar sistema de internacionalización para que al cambiar idioma ES↔EN, TODOS los elementos del TaskPane cambien dinámicamente.
+
+## Causa raíz del problema
+El catálogo de funciones de Data Lab viene del servidor con `name`, `description` y `family_label` en español (hardcodeados en los sidecars JSON). El sistema i18n original solo traducía elementos estáticos del HTML con `data-i18n`, no el contenido dinámico generado por JavaScript.
+
+## Solución implementada
+
+### 1. Función `translateCard(card)` en i18n.js
+- Busca traducción en `dataLab.functions[card.id].name/description`
+- Si no existe, usa el texto original del catálogo (fallback)
+- API pública: `i18n.translateCard(card)` → `{name, description}`
+
+### 2. Mapeo de familias `_familyKeyToI18n` en datalab.js
+```javascript
+var _familyKeyToI18n = {
+  'Datasets': 'datasets',
+  'Análisis de Datos': 'analisis_datos',
+  'Regresión': 'regresion',
+  // ... etc
+};
+```
+- Mapea el `family_label` del catálogo a claves del diccionario
+- `renderFamilyDropdown()` ahora traduce los options
+
+### 3. Listener `languageChanged` en datalab.js
+- Cuando cambia el idioma, re-renderiza:
+  - Dropdown de familias
+  - Lista de funciones (si hay familia seleccionada)
+  - Card de descripción (si hay función seleccionada)
+
+### 4. Diccionarios expandidos
+- **29 funciones** con name+description en `en.js` (AD_, DS_, J_, RG_, ST_, TM_, UC_, NEVEN_Chart)
+- **11 familias** en ambos diccionarios
+- Claves nuevas: `selectFamily`, `aboutMethod`, `goToWikipedia`, `retry`, `poly2`
+
+## Commits (5 total esta sesión)
+| Hash | Descripción |
+|------|-------------|
+| `41f6474` | feat(i18n): traducir funciones Data Lab y elementos UI dinamicos |
+| `00a4a42` | feat(i18n): agregar data-i18n a Settings sub-tabs y Quick Chart |
+| `dab81ec` | feat(i18n): traducir familias Data Lab, titulos y botones |
+
+## Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `src/TaskPane/lang/en.js` | +29 funciones, +11 familias, +claves UI |
+| `src/TaskPane/lang/es.js` | +11 familias, +retry, +poly2 |
+| `src/TaskPane/lang/i18n.js` | +translateCard(), +translateDataLabUI() |
+| `src/TaskPane/datalab.js` | +_familyKeyToI18n, +listener languageChanged, +data-card-id |
+| `src/TaskPane/taskpane.html` | +data-i18n a Settings tabs, Quick Chart, Data Lab |
+
+## Copias a producción
+Todos los archivos copiados a `C:\NEVEN\TaskPane\` con `[System.IO.File]::Copy()`
+
+## Decisiones de diseño
+1. **Usar `data-card-id` en botones de función** — En lugar de comparar texto para highlight, usamos el ID. Esto evita que el highlight se rompa cuando el texto cambia de idioma.
+2. **Fallback al catálogo** — Si no hay traducción en el diccionario, se muestra el texto original. Esto permite que funciones nuevas aparezcan aunque no tengan traducción.
+3. **Re-renderizar vs. manipular DOM** — Optamos por re-renderizar el dropdown completo al cambiar idioma, más simple que manipular cada option.
+
+## PENDIENTE (próxima sesión)
+
+### ALTA
+- [ ] **Probar cambio de idioma en vivo** — Verificar que Data Lab traduzca correctamente
+- [ ] **Verificar caracteres mal codificados** — Los sidecars tienen UTF-8 que puede mostrarse mal
+
+### MEDIA
+- [ ] Traducir mensajes de error de Data Lab ("Error al cargar el catálogo", etc.)
+- [ ] Traducir labels de parámetros (vienen del sidecar, no del diccionario)
+- [ ] Traducir textos de Econometría tab
+
+### BAJA
+- [ ] Agregar más idiomas (PT, FR) si se requiere
 
 ---
 ### Sesión 2026-08-20 (~10:00) — SQL en Run Script + Reorganización de Tabs
@@ -83,6 +539,90 @@ Usuario preguntó sobre soporte multi-idioma (ES/EN) en el TaskPane. **Decisión
 5. Persistencia en `localStorage`
 
 **Esfuerzo estimado:** 8-10 horas de trabajo mecánico (buscar/reemplazar strings).
+
+---
+### Sesión 2026-08-20 (~11:30) — Implementación Sistema i18n
+
+## Objetivo
+Implementar internacionalización (i18n) del TaskPane para soportar español e inglés.
+
+## Cambios implementados
+
+### Archivos creados
+| Archivo | Descripción |
+|---------|-------------|
+| `src/TaskPane/lang/es.js` | Diccionario español (~250 strings organizados por sección) |
+| `src/TaskPane/lang/en.js` | Diccionario inglés |
+| `src/TaskPane/lang/i18n.js` | Módulo de aplicación de idioma con API pública |
+
+### Funcionalidades del sistema i18n
+- `i18n.applyLanguage('en')` — Aplica idioma a todos los elementos con `data-i18n`
+- `i18n.t('buttons.run')` — Obtiene traducción de una clave
+- Soporta `data-i18n`, `data-i18n-placeholder`, `data-i18n-title`
+- Persistencia en `localStorage` (clave: `neven-lang`)
+- Evento `languageChanged` para componentes reactivos
+- Auto-inicialización al cargar DOM
+
+### Cambios en taskpane.html
+- Scripts de i18n cargados en `<head>` (después de KaTeX)
+- Tabs principales con atributos `data-i18n`
+- Nuevo sub-tab "General" en Settings con selector de idioma
+- Selector con banderas: 🇪🇸 Español / 🇬🇧 English
+
+## Commits
+- `6dae006` — feat(server): agregar endpoint /api/engines/config
+- `9b75a64` — feat(taskpane): implementar sistema de internacionalizacion (i18n)
+- `4ed09af` — feat(i18n): agregar traducciones especificas por ID y card-titles
+- `7af0753` — feat(i18n): agregar traducciones de selects y tipos de grafico
+- `e26ea72` — feat(i18n): agregar traducciones de placeholders de inputs
+
+## Tags
+- `pre-i18n-backup` — Punto de respaldo antes de implementar i18n
+
+## Archivos en producción
+```
+C:\NEVEN\TaskPane\taskpane.html
+C:\NEVEN\TaskPane\lang\es.js
+C:\NEVEN\TaskPane\lang\en.js
+C:\NEVEN\TaskPane\lang\i18n.js
+```
+
+## Decisiones de diseño
+- **Diccionarios separados**: Un archivo por idioma para facilitar traducciones futuras
+- **Atributos data-i18n**: Patrón estándar de i18n, no invasivo al HTML existente
+- **localStorage**: Persistencia simple sin necesidad de backend
+- **Sub-tab General en Settings**: Agrupa configuraciones de interfaz (idioma primero, tema futuro)
+
+## Pendientes
+| Prioridad | Tarea |
+|-----------|-------|
+| ALTA | Probar i18n en Excel (verificar que los scripts cargan correctamente) |
+| MEDIA | Traducir textos dinámicos generados por JavaScript (showToast, errores) |
+| MEDIA | Traducir sub-tabs de Settings (Motor IA, Conexiones DB, etc.) |
+| BAJA | Traducir labels de formularios y textos en panel de Ayuda |
+
+## Cobertura actual de traducciones
+| Categoría | Estado |
+|-----------|--------|
+| Tabs principales | ✅ 100% |
+| Botones Data Studio | ✅ 100% |
+| Botón Run Script | ✅ |
+| Tipos de gráfico (optgroup + options) | ✅ 100% |
+| Placeholders principales | ✅ ~80% |
+| Card titles | ✅ Parcial |
+| Sub-tabs Settings | ⏳ Pendiente |
+| Mensajes dinámicos JS | ⏳ Pendiente |
+| **Data Lab funciones** | ⏳ Pendiente (textos vienen de sidecars JSON) |
+
+## Nota: Estrategia EVALS para i18n (discutida)
+Se propuso usar EVALS para definir el contrato de traducciones y garantizar cobertura completa.
+
+**Opciones evaluadas:**
+- **Opción A**: Sidecars bilingües (`name_en`, `description_en` en cada JSON)
+- **Opción B**: Diccionario centralizado (todo en `lang/*.js`) ← **Recomendada**
+- **Opción C**: Híbrido (UI en diccionarios, funciones en sidecars)
+
+**Decisión pendiente** — usuario debe confirmar antes de implementar. |
 
 ---
 ### Sesión 2026-08-20 (~00:30) — Implementación EVALS para Ontologías
@@ -6592,3 +7132,113 @@ Ninguno — esperando confirmación del usuario para completar la fusión SQL.
 | **ALTA** | Eliminar tab SQL vacío |
 | **MEDIA** | Commit de todos los cambios de tabs |
 | **MEDIA** | Probar que todos los tabs funcionan correctamente |
+
+
+---
+### Sesión 2026-08-19 (~21:00-22:30) — i18n Expansión a Todos los Tabs
+
+## Objetivo
+Expandir las traducciones i18n a TODOS los tabs del TaskPane que aún mostraban textos en español cuando se seleccionaba inglés.
+
+## Problema identificado
+Tras las capturas del usuario, se identificaron múltiples elementos sin traducir:
+- **Data AI**: "ASISTENTE IA", "PROMPTS GUÍA", botones en español
+- **Econometrics**: Todo el laboratorio geométrico, 4 sub-tabs, sliders, explicaciones
+- **Presentations**: Panel derecho (CONTENIDO, POSICIÓN, ESTILO), tipos de slide
+- **Run Script**: "Lenguaje:", "sin título", botones Abrir/Guardar/Nuevo
+- **Header**: Badge "Conectado/Desconectado"
+- **Footer**: "Excel conectado"
+
+## Solución implementada
+
+### 1. Expansión masiva de diccionarios (~100 claves nuevas)
+
+**dataIA:**
+- `assistant`, `guidePrompts`, `send`, `addDataset`, `analyzeSheet`, `analyzeWorkbook`, `clear`, `exportChat`, `thinking`, `excelConsultant`
+
+**econometria:**
+- `labTitle`, `labSubtitle`, `tab1`-`tab4`, `professor`, `professorHint`, `askPlaceholder`, `askButton`
+- OLS: `subspaceAngle`, `degrees`, `regressorPlane`, `vectorYDirection`, `geometryOLS`, etc.
+- Panel/FWL: `withinOperator`, `pooledOLS`, `simpsonParadox`, `solution`, etc.
+- GLS: `heteroskedasticity`, `autocorrelation`, `choleskyTransform`, etc.
+- Unit Root: `dominantEigenvalue`, `unitCircle`, `danger`, etc.
+
+**presentaciones:**
+- `newSlide`, `preview`, `export`, `slides`, `content`, `position`, `style`, `text`, `slideContent`, `slideType`, `sendToSlide`, `sent`
+
+**runScript:**
+- `language`, `untitled`, `open`, `saveAs`, `new`, `examples`, `availableFunctions`
+
+**labels:**
+- `excelConnected`
+
+### 2. Atributos data-i18n agregados al HTML
+
+| Elemento | Atributo |
+|----------|----------|
+| Card "ASISTENTE IA" | `data-i18n="dataIA.assistant"` |
+| Card "PROMPTS GUÍA" | `data-i18n="dataIA.guidePrompts"` |
+| Botón "Enviar" | `data-i18n="dataIA.send"` |
+| Botón "+ Dataset" | `data-i18n="dataIA.addDataset"` |
+| Botón "Analizar Hoja" | `data-i18n="dataIA.analyzeSheet"` |
+| Botón "Analizar Libro" | `data-i18n="dataIA.analyzeWorkbook"` |
+| Botón "Limpiar" | `data-i18n="dataIA.clear"` |
+| Botón "Exportar Chat" | `data-i18n="dataIA.exportChat"` |
+| Label "Lenguaje:" | `data-i18n="runScript.language"` |
+| Span "sin título" | `data-i18n="runScript.untitled"` |
+| Botón "Abrir" | `data-i18n="runScript.open"` |
+| Botón "Guardar como" | `data-i18n="runScript.saveAs"` |
+| Botón "Nuevo" | `data-i18n="runScript.new"` |
+| Summary "AVAILABLE FUNCTIONS" | `data-i18n="runScript.availableFunctions"` |
+
+### 3. Código JS modificado para usar i18n.t()
+
+**updateStatus()** en checkServerStatus:
+```javascript
+var connectedText = window.i18n && window.i18n.t ? window.i18n.t('labels.connected') : 'Conectado';
+```
+
+**Indicador "Excel conectado"**:
+```javascript
+var excelConnectedText = window.i18n && window.i18n.t ? window.i18n.t('labels.excelConnected') : 'Excel conectado';
+```
+
+## Commits (2 esta sesión)
+| Hash | Descripción |
+|------|-------------|
+| `82fb472` | feat(i18n): expandir traducciones a Data AI, Econometrics, Presentations, Run Script |
+| `ae25d78` | feat(i18n): traducir status Conectado/Desconectado y Excel conectado |
+
+## Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `src/TaskPane/lang/en.js` | +~80 claves de traducción |
+| `src/TaskPane/lang/es.js` | +~80 claves de traducción |
+| `src/TaskPane/taskpane.html` | +data-i18n a ~15 elementos, código JS para status |
+
+## Copias a producción
+Todos los archivos copiados a `C:\NEVEN\TaskPane\` con `[System.IO.File]::Copy()`
+
+## PENDIENTES (próxima sesión)
+
+### ALTA
+- [ ] **Tab Econometrics completo** — Los labels de sliders y explicaciones están hardcodeados en el HTML, no usan data-i18n aún
+- [ ] **Tab Presentations panel derecho** — CONTENIDO, POSICIÓN, ESTILO, TIPO DE SLIDE
+
+### MEDIA
+- [ ] **Prompts guía de Data AI** — Vienen del servidor, no del diccionario
+- [ ] **Botón "Enviar a Slide"** — Aparece en ~8 lugares del código JS (Quick Chart, SQL, Group By, etc.)
+- [ ] **Mensajes de error/toast** — Muchos hardcodeados en español
+
+### BAJA
+- [ ] **Ejemplos de Run Script** — Los nombres de ejemplos en el dropdown
+- [ ] **Tooltips (title)** — Muchos aún en español
+
+## Notas técnicas
+- El patrón para traducir texto dinámico en JS es:
+  ```javascript
+  var text = window.i18n && window.i18n.t ? window.i18n.t('clave') : 'fallback';
+  if (text === 'clave') text = 'fallback';  // Si la clave no existe
+  ```
+- Los elementos con SVG adentro del botón necesitan `textNode: true` en specificTranslations o usar span separado para el texto
+
