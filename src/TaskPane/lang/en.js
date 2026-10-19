@@ -102,6 +102,8 @@ const LANG_EN = {
     loadingCharts: "Loading charts...",
     loadingDetails: "Loading details...",
     loadingCode: "Loading code...",
+    loadingDataToDuckDB: "Loading data into DuckDB...",
+    errorLoadingData: "Error loading data",
     executing: "Executing...",
     executingAnalysis: "Executing analysis...",
     processing: "Processing...",

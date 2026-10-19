@@ -642,7 +642,7 @@
         <div class="card-title" style="margin-bottom:0" data-i18n="dataIA.assistant">ASISTENTE IA</div>
         <div style="display:flex;align-items:center;gap:6px">
           <div id="ai-model-badge" style="font-size:9px;padding:2px 7px;border-radius:10px;
-               background:var(--bg-primary);color:var(--text-secondary);border:1px solid var(--border)">
+               background:var(--bg-primary);color:var(--text-secondary);border:1px solid var(--border)" data-i18n="messages.loading">
             cargando...
           </div>
           <button id="btn-ai-expand" class="btn btn-secondary" style="padding:4px 8px;font-size:10px" title="Abrir chat en ventana externa">
@@ -943,7 +943,7 @@
 
     <!-- Estado de carga -->
     <div id="ayuda-loading" class="msg-info" style="display:none">
-      <span class="spinner"></span> Cargando catalogo de funciones...
+      <span class="spinner"></span> <span data-i18n="messages.loadingCatalog">Cargando catálogo de funciones...</span>
     </div>
     <div id="ayuda-error" class="msg-error" style="display:none"></div>
 
@@ -1058,7 +1058,7 @@
           <button class="btn btn-primary" id="btn-ai-add" style="padding:3px 8px;font-size:9px">+ Nuevo</button>
         </div>
         <div id="ai-profiles-list" style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto">
-          <div class="msg-info" style="padding:8px;font-size:10px">Cargando perfiles...</div>
+          <div class="msg-info" style="padding:8px;font-size:10px" data-i18n="messages.loadingProfiles">Cargando perfiles...</div>
         </div>
       </div>
 
@@ -1151,7 +1151,7 @@
           <button class="btn btn-primary" id="btn-db-add" style="padding:3px 8px;font-size:9px">+ Nueva</button>
         </div>
         <div id="db-connections-list" style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto">
-          <div class="msg-info" style="padding:8px;font-size:10px">Cargando conexiones...</div>
+          <div class="msg-info" style="padding:8px;font-size:10px" data-i18n="messages.loadingConnections">Cargando conexiones...</div>
         </div>
       </div>
 
@@ -1241,7 +1241,7 @@
           <button class="btn btn-primary" id="btn-prompt-new" style="padding:3px 8px;font-size:9px">+ Nuevo</button>
         </div>
         <div id="prompts-list" style="display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto">
-          <div class="msg-info" style="padding:8px;font-size:10px">Cargando prompts...</div>
+          <div class="msg-info" style="padding:8px;font-size:10px" data-i18n="messages.loadingPrompts">Cargando prompts...</div>
         </div>
       </div>
 
@@ -1294,7 +1294,7 @@
           </div>
         </div>
         <div id="ontology-domains-list" style="display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto">
-          <div class="msg-info" style="padding:8px;font-size:10px">Cargando dominios...</div>
+          <div class="msg-info" style="padding:8px;font-size:10px" data-i18n="messages.loadingDomains">Cargando dominios...</div>
         </div>
       </div>
 
@@ -1440,7 +1440,7 @@
           <div class="card-title" style="margin-bottom:0">Base de Conocimiento</div>
           <button class="btn btn-secondary" id="rag-refresh-btn" style="padding:2px 8px;font-size:10px">Actualizar</button>
         </div>
-        <div id="rag-stats" style="font-size:11px;color:var(--text-secondary);margin-top:8px">Cargando estadisticas...</div>
+        <div id="rag-stats" style="font-size:11px;color:var(--text-secondary);margin-top:8px" data-i18n="messages.loadingStats">Cargando estadísticas...</div>
       </div>
 
       <!-- Cargar documento -->
@@ -1582,7 +1582,7 @@
           Ubicación: <code style="background:#333;padding:1px 4px;border-radius:2px">C:\NEVEN\notebooks\</code>
         </div>
         <div id="notebooks-list" style="display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto">
-          <div class="msg-info" style="padding:8px;font-size:10px">Cargando notebooks...</div>
+          <div class="msg-info" style="padding:8px;font-size:10px" data-i18n="messages.loadingNotebooks">Cargando notebooks...</div>
         </div>
       </div>
     </div>
@@ -2379,7 +2379,7 @@ function _loadFromContent(name, content) {
     return headers.map(function(h){ return r[h] !== undefined ? r[h] : null; });
   });
 
-  info.innerHTML = '<span class="spinner"></span> Cargando en DuckDB...';
+  info.innerHTML = '<span class="spinner"></span> ' + (typeof i18n !== 'undefined' ? i18n.t('messages.loadingInDuckDB') : 'Cargando en DuckDB...');
 
   fetch(API + '/api/load', {
     method: 'POST',
@@ -6588,7 +6588,7 @@ window._renderCreateFunctionBlock = function(jsonStr) {
       });
 
       // Paso 2: Cargar datos en DuckDB
-      _excelShowStatus('Cargando datos en DuckDB...', false);
+      _excelShowStatus(typeof i18n !== 'undefined' ? i18n.t('messages.loadingDataToDuckDB') : 'Cargando datos en DuckDB...', false);
       var loadResp = await fetch(API + '/api/load', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -6597,7 +6597,7 @@ window._renderCreateFunctionBlock = function(jsonStr) {
       var loadResult = await loadResp.json();
       
       if (loadResult.status !== 'ok') {
-        throw new Error('Error cargando datos: ' + (loadResult.message || 'desconocido'));
+        throw new Error((typeof i18n !== 'undefined' ? i18n.t('messages.errorLoadingData') : 'Error cargando datos') + ': ' + (loadResult.message || 'desconocido'));
       }
       console.log('[Excel Tab] Datos cargados en DuckDB:', loadResult.rows_loaded, 'filas');
 
@@ -7206,7 +7206,7 @@ window._renderCreateFunctionBlock = function(jsonStr) {
         return;
       }
       
-      booksListEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">Cargando libros...</div>';
+      booksListEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">' + (typeof i18n !== 'undefined' ? i18n.t('messages.loadingBooks') : 'Cargando libros...') + '</div>';
       
       try {
         var resp = await fetch(API + '/api/ontology/books?domain=' + encodeURIComponent(domainId));
@@ -7280,7 +7280,7 @@ window._renderCreateFunctionBlock = function(jsonStr) {
     async function ontologyLoadDomains(forceReload) {
       var listEl   = document.getElementById('ontology-domains-list');
       var selectEl = document.getElementById('ontology-target-domain');
-      if (listEl) listEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">Cargando...</div>';
+      if (listEl) listEl.innerHTML = '<div style="padding:8px;font-size:10px;color:var(--text-secondary)">' + (typeof i18n !== 'undefined' ? i18n.t('messages.loading') : 'Cargando...') + '</div>';
       try {
         var url = API + '/api/ontology/domains';
         if (forceReload) url += '?reload=1';
