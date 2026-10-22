@@ -1268,12 +1268,14 @@ function Install-RPackages {
     }
 
     # Batch 2: Visualization and interactive packages
+    # Includes anyplot libraries: ggplot2, ragg, dplyr, scales, tidyr, tibble
     $batch2 = @('plotly','htmlwidgets','ggplot2','corrplot','rpivotTable',
-                'highcharter','magrittr','rworldmap','RColorBrewer')
+                'highcharter','magrittr','rworldmap','RColorBrewer',
+                'ragg','dplyr','scales','tidyr','tibble')
     $batch2Str = ($batch2 | ForEach-Object { "'$_'" }) -join ','
     $batch2Cmd = "install.packages(c($batch2Str), repos='https://cloud.r-project.org', quiet=TRUE)"
 
-    Write-Host '  [2/4] Installing visualization packages...' -ForegroundColor White
+    Write-Host '  [2/4] Installing visualization packages (includes Chart Gallery support)...' -ForegroundColor White
     Write-Log "R batch 2 (visualization): $($batch2.Count) packages"
     try {
         & $RscriptPath -e $batch2Cmd 2>&1 | ForEach-Object { Write-Log "  R: $_" }
@@ -1351,21 +1353,70 @@ function Install-JuliaPackages {
     Write-Log 'Installing Julia packages...'
     Write-Host '  Installing Julia packages...' -ForegroundColor Cyan
 
-    # Julia packages: stdlib (no install) + Distributions for NEVEN-SIM
+    # Julia packages: stdlib (no install) + Distributions for NEVEN-SIM + Chart Gallery
     # LinearAlgebra, Statistics, DelimitedFiles, Dates, Random are all stdlib
     # Distributions.jl is needed for Monte Carlo simulation
-    Write-Host '  Installing Distributions.jl for NEVEN-SIM...' -ForegroundColor White
+    # CairoMakie, Colors, ColorSchemes are needed for Chart Gallery (anyplot)
+    
+    Write-Host '  Installing Julia packages for NEVEN-SIM and Chart Gallery...' -ForegroundColor White
+    
+    # Install Distributions.jl for NEVEN-SIM
+    Write-Host '    [1/4] Distributions.jl (Monte Carlo)...' -ForegroundColor White
     try {
         $juliaCmd = 'import Pkg; Pkg.add("Distributions"); println("DIST_OK")'
         $output = & $JuliaExePath -e $juliaCmd 2>&1 | Out-String
         if ($output -match 'DIST_OK') {
             Write-Log 'Julia Distributions.jl installed'
-            Write-Host '  [OK] Distributions.jl installed' -ForegroundColor Green
+            Write-Host '    [OK] Distributions.jl installed' -ForegroundColor Green
         }
     } catch {
         Write-Log "Julia Distributions install failed: $_" -Level WARN
-        Write-Host '  Distributions.jl failed. Install manually: =J.Instalar("Distributions")' -ForegroundColor Yellow
+        Write-Host '    Distributions.jl failed. Install manually: =J.Instalar("Distributions")' -ForegroundColor Yellow
     }
+    
+    # Install CairoMakie for Chart Gallery (anyplot)
+    Write-Host '    [2/4] CairoMakie (Chart Gallery)...' -ForegroundColor White
+    try {
+        $juliaCmd = 'import Pkg; Pkg.add("CairoMakie"); println("MAKIE_OK")'
+        $output = & $JuliaExePath -e $juliaCmd 2>&1 | Out-String
+        if ($output -match 'MAKIE_OK') {
+            Write-Log 'Julia CairoMakie installed'
+            Write-Host '    [OK] CairoMakie installed' -ForegroundColor Green
+        }
+    } catch {
+        Write-Log "Julia CairoMakie install failed: $_" -Level WARN
+        Write-Host '    CairoMakie failed. Chart Gallery Julia charts will not work.' -ForegroundColor Yellow
+        $script:HasWarnings = $true
+    }
+    
+    # Install Colors for Chart Gallery
+    Write-Host '    [3/4] Colors (Chart Gallery)...' -ForegroundColor White
+    try {
+        $juliaCmd = 'import Pkg; Pkg.add("Colors"); println("COLORS_OK")'
+        $output = & $JuliaExePath -e $juliaCmd 2>&1 | Out-String
+        if ($output -match 'COLORS_OK') {
+            Write-Log 'Julia Colors installed'
+            Write-Host '    [OK] Colors installed' -ForegroundColor Green
+        }
+    } catch {
+        Write-Log "Julia Colors install failed: $_" -Level WARN
+        $script:HasWarnings = $true
+    }
+    
+    # Install ColorSchemes for Chart Gallery
+    Write-Host '    [4/4] ColorSchemes (Chart Gallery)...' -ForegroundColor White
+    try {
+        $juliaCmd = 'import Pkg; Pkg.add("ColorSchemes"); println("SCHEMES_OK")'
+        $output = & $JuliaExePath -e $juliaCmd 2>&1 | Out-String
+        if ($output -match 'SCHEMES_OK') {
+            Write-Log 'Julia ColorSchemes installed'
+            Write-Host '    [OK] ColorSchemes installed' -ForegroundColor Green
+        }
+    } catch {
+        Write-Log "Julia ColorSchemes install failed: $_" -Level WARN
+        $script:HasWarnings = $true
+    }
+    
     $juliaCmd = 'using LinearAlgebra; using Statistics; using DelimitedFiles; using Dates; using Random; println("JULIA_PKGS_OK")'
 
     Write-Host '  Verifying Julia standard library modules...' -ForegroundColor White
@@ -1412,8 +1463,10 @@ function Install-PythonPackages {
     #   - EPUB (ebooklib)
     #   - HTML, CSV, JSON, XML, TXT, MD, ZIP (built-in, no deps)
     $pipPkgsMarkItDown = @('markitdown[pdf,docx,xlsx,pptx,xls]','ebooklib')
+    # Chart Gallery (anyplot) visualization libraries
+    $pipPkgsChartGallery = @('matplotlib','plotly','seaborn','pandas','Pillow','scipy','altair')
     
-    $pipPkgs = $pipPkgsCore + $pipPkgsRAG + $pipPkgsMarkItDown
+    $pipPkgs = $pipPkgsCore + $pipPkgsRAG + $pipPkgsMarkItDown + $pipPkgsChartGallery
 
     Write-Host '  Installing pip packages (ML + RAG + MarkItDown)...' -ForegroundColor White
     Write-Log "Python packages to install: $($pipPkgs -join ', ')"

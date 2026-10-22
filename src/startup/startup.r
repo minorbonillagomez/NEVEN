@@ -1,6 +1,31 @@
 # NEVEN Startup Script for R
 # Copyright (c) 2026 NEVEN Project - GPL v3
 
+# ══════════════════════════════════════════════════════════════════════════════
+# Configurar rutas de biblioteca de usuario
+# ══════════════════════════════════════════════════════════════════════════════
+# Asegurar que la biblioteca de usuario está en el path de búsqueda
+user_lib <- file.path(Sys.getenv("USERPROFILE"), "AppData", "Local", "R", "win-library", 
+                      paste0(R.version$major, ".", strsplit(R.version$minor, "\\.")[[1]][1]))
+if (dir.exists(user_lib) && !user_lib %in% .libPaths()) {
+  .libPaths(c(user_lib, .libPaths()))
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Pre-cargar librerías de anyplot para evitar cold start en Chart Gallery
+# ══════════════════════════════════════════════════════════════════════════════
+# Estas librerías se usan en la mayoría de gráficos R de anyplot
+.neven_preload <- function() {
+  libs <- c("ggplot2", "ragg", "dplyr", "scales")
+  for (lib in libs) {
+    tryCatch(
+      suppressPackageStartupMessages(library(lib, character.only = TRUE, quietly = TRUE)),
+      error = function(e) message("NEVEN: Could not preload ", lib)
+    )
+  }
+}
+.neven_preload()
+
 NEVEN <- new.env(parent = globalenv())
 
 NEVEN$install.application.pointer <- function(p) { assign("application.pointer", p, envir = NEVEN); invisible(NULL) }
