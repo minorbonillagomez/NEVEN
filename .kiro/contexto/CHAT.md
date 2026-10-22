@@ -2,7 +2,7 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-08-19 ~tarde (sesion: Eliminar botón NEVEN Studio duplicado del COM Ribbon)
+> **Ultima actualizacion:** 2026-08-19 ~tarde (sesion: Eliminar botón NEVEN Studio duplicado + commit)
 
 ---
 ### Sesion 2026-08-19 (~tarde) — Eliminar botón NEVEN Studio duplicado del COM Ribbon
@@ -49,22 +49,89 @@ cmake --build Build --target NEVENRibbon --config Release
 
 | Archivo | Cambio |
 |---------|--------|
-| `F:\...\src\Ribbon\ribbon_ui.xml` | Eliminado botón btnAIAssistant |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Ribbon\ribbon_ui.xml` | Eliminado botón btnAIAssistant |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Ribbon\ribbon_connect.h` | Logging en OnTaskPaneCommand |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Core\include\basic_functions.h` | Nueva función RJ_TaskPaneOpen (type-2) |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Core\src\basic_functions.cc` | Implementación RJ_TaskPaneOpen |
 | `C:\NEVEN\NEVENRibbon.dll` | Recompilado sin el botón |
 
-## Resultado esperado
-- La pestaña "NEVEN" del COM Add-in ya no tendrá el botón "NEVEN Studio" no funcional
-- El botón funcional del Office Web Add-in permanece en su pestaña separada
-- El usuario debe agregar el Office Add-in una vez (Insertar → Complementos → Mis complementos)
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `0642a1f` | fix(ribbon): remove non-functional NEVEN Studio button from COM Add-in |
+
+## Notas técnicas
+
+### Por qué el botón COM no funcionaba
+- `_Run2` (método COM para invocar macros) solo puede llamar funciones **type-2** (macros)
+- `NEVEN.View` era **type-1** (worksheet function), por eso retornaba `hr=0x800A03EC` (error 1004)
+- Se creó `NEVEN.TaskPane.Open` como type-2, pero la solución final fue usar Office Web Add-in
+
+### Cómo forzar recompilación del Ribbon
+El XML está embebido como recurso Windows (IDR_XML2 en RJ2XCLRibbon.rc). CMake no detecta cambios en .xml, hay que tocar el .rc:
+```powershell
+(Get-Item "src\Ribbon\RJ2XCLRibbon.rc").LastWriteTime = Get-Date
+```
 
 ## Pendientes
 
 | Prioridad | Tarea | Estado |
 |-----------|-------|--------|
-| **ALTA** | Probar en Excel que el botón desapareció | Pendiente |
-| MEDIA | Hacer commit de cambios | Pendiente |
+| **ALTA** | Probar en Excel que el botón desapareció | ✅ Hecho |
+| **ALTA** | Commit de otros cambios pendientes (Sandbox, Julia, TaskPane) | Pendiente |
 | MEDIA | Documentar configuración del catálogo en MANUAL_MANTENIMIENTO.md | Pendiente |
-| BAJA | Investigar si es posible que Office Add-in agregue botón a tab del COM Add-in | Futuro (probablemente no es posible) |
+| BAJA | Investigar si Office Add-in puede agregar botón a tab del COM Add-in | Futuro (probablemente no es posible) |
+
+---
+### Sesion 2026-08-19 (~tarde, continuación) — Problema: DOS pestañas "NEVEN"
+
+## Problema detectado
+Al abrir Excel, ahora hay **dos pestañas con el mismo nombre "NEVEN"**:
+1. **Tab del COM Add-in** (ribbon_ui.xml) — Activar, Actualizar, Texto, Simulación, Servidor, Pluto
+2. **Tab del Office Web Add-in** (manifest.xml) — solo botón NEVEN Studio
+
+## Causa raíz
+El manifest.xml del Office Add-in usa `<CustomTab id="NEVEN.Tab">` que crea una pestaña nueva con `<Label resid="TabLabel"/>` donde TabLabel = "NEVEN".
+
+## Limitación técnica
+**Office Add-ins NO pueden agregar botones a tabs de COM Add-ins** — solo pueden:
+- Usar tabs nativos de Office (TabHome, TabInsert, etc.)
+- Crear sus propios CustomTabs
+
+## Opciones propuestas
+
+| Opción | Descripción | Pros | Contras |
+|--------|-------------|------|---------|
+| **1. Mover a TabHome** | Cambiar manifest para usar OfficeTab TabHome | Un solo lugar conocido | Botón mezclado con otros comandos |
+| **2. Renombrar tab** | Cambiar label a "Studio" en lugar de "NEVEN" | Distingue claramente | Dos tabs para NEVEN |
+| **3. Sin tab propio** | Solo panel lateral via Insertar → Complementos | UI más limpia | Menos descubrible |
+
+## Decisión pendiente
+Usuario debe elegir cuál opción prefiere.
+
+**Recomendación:** Opción 1 (mover a TabHome) para evitar confusión de dos pestañas.
+
+## Archivos a modificar (próxima sesión)
+- `C:\NEVEN\manifest.xml`
+- `C:\NEVEN\manifest-share\manifest.xml`
+- `C:\NEVEN\catalog\manifest.xml`
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Decidir y aplicar solución para tabs duplicados | ✅ Aceptado como está |
+| **ALTA** | Commit de otros cambios pendientes | Pendiente |
+| MEDIA | Documentar configuración del catálogo | Pendiente |
+
+## Decisión final: Aceptar las dos pestañas "NEVEN"
+
+**Razón:** No es un problema grave. Las dos pestañas tienen propósitos distintos:
+- **Primera "NEVEN"** (COM Add-in): Herramientas del XLL (Activar, Actualizar, Texto, Simulación, Servidor, Pluto)
+- **Segunda "NEVEN"** (Office Add-in, al final del ribbon): Solo el botón NEVEN Studio para TaskPane integrado
+
+**Alternativa futura:** Si se desea distinguir, renombrar la segunda a "Studio". No es urgente.
 
 ---
 ### Sesion 2026-08-20 (~09:00-10:00) — Diagnóstico error Julia "Failed to deserialize CallResponse"

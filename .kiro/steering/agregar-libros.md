@@ -10,9 +10,28 @@ inclusion: manual
 
 ---
 
-## Resumen del Proceso
+## ⚠️ Para Libros con Ecuaciones Matemáticas
 
-Agregar un libro a NEVEN requiere **4 pasos** en este orden:
+**Si el libro contiene ecuaciones, fórmulas o símbolos matemáticos**, usar el pipeline especializado:
+
+👉 **Ver: `pdf-to-rag-pipeline.md`** — Pipeline completo PDF → Markdown → LaTeX → RAG
+
+Ese pipeline:
+1. Extrae con pymupdf4llm (preserva ecuaciones como Unicode)
+2. Convierte Unicode → LaTeX (α → `\alpha`, β̂ → `\hat{\beta}`)
+3. Indexa el Markdown procesado
+
+**Libros que requieren este pipeline:**
+- Econometría (Wooldridge, Greene, Hamilton)
+- Estadística (pruebas, distribuciones)
+- Álgebra lineal (matrices, vectores)
+- Machine Learning (funciones de pérdida, gradientes)
+
+---
+
+## Para Libros SIN Ecuaciones (Excel, manuales, etc.)
+
+El proceso simplificado de 4 pasos:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
