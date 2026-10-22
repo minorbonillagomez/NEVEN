@@ -1256,21 +1256,75 @@ void JuliaExec(RJ2XCLBuffers::CallResponse &response, const RJ2XCLBuffers::CallR
 
     if (jl_exception_occurred()) {
       CHILD_LOG("* [JE] EXCEPTION");
+      
+      // Try to extract exception message
+      std::string err_msg = "julia exception during execution";
+      jl_value_t *exc = jl_current_exception(jl_current_task);
+      if (exc) {
+        JL_TRY {
+          jl_function_t *sprint_fn = jl_get_function(jl_base_module, "sprint");
+          jl_function_t *showerror_fn = jl_get_function(jl_base_module, "showerror");
+          if (sprint_fn && showerror_fn) {
+            jl_value_t *exc_str = jl_call2(sprint_fn, showerror_fn, exc);
+            if (exc_str && jl_is_string(exc_str)) {
+              err_msg = std::string(jl_string_ptr(exc_str), jl_string_len(exc_str));
+              if (err_msg.length() > 500) {
+                err_msg = err_msg.substr(0, 497) + "...";
+              }
+            }
+          }
+        } JL_CATCH {
+          // Fallback to generic message
+        }
+      }
+      
+      response.set_err(err_msg);
       jl_exception_clear();
     }
-    
-    if (val) {
+    else if (val) {
       JlValueToVariable(response.mutable_result(), val);
+    }
+    else {
+      // No exception but no result - set nil to indicate success with no return value
+      response.mutable_result()->set_nil(true);
     }
 
   }
   JL_CATCH {
     CHILD_LOG("* CATCH [JE]");
-    jl_printf(JL_STDERR, "\nparser error:\n");
-    jl_static_show(JL_STDERR, jl_current_exception(jl_current_task));
-    jl_printf(JL_STDERR, "\n");
-    /* jlbacktrace removed for Julia 1.x */;
+    
+    // Try to extract exception message for better error reporting
+    std::string err_msg = "julia exception";
+    jl_value_t *exc = jl_current_exception(jl_current_task);
+    if (exc) {
+      // Try to get string representation of exception
+      jl_value_t *exc_str = nullptr;
+      JL_TRY {
+        jl_function_t *sprint_fn = jl_get_function(jl_base_module, "sprint");
+        jl_function_t *showerror_fn = jl_get_function(jl_base_module, "showerror");
+        if (sprint_fn && showerror_fn) {
+          exc_str = jl_call2(sprint_fn, showerror_fn, exc);
+        }
+      } JL_CATCH {
+        // Fallback if sprint fails
+      }
+      
+      if (exc_str && jl_is_string(exc_str)) {
+        err_msg = std::string(jl_string_ptr(exc_str), jl_string_len(exc_str));
+        // Truncate if too long
+        if (err_msg.length() > 500) {
+          err_msg = err_msg.substr(0, 497) + "...";
+        }
+      }
+      
+      // Also log to stderr for debugging
+      jl_printf(JL_STDERR, "\nJulia exception:\n");
+      jl_static_show(JL_STDERR, exc);
+      jl_printf(JL_STDERR, "\n");
+    }
+    
     jl_exception_clear();
+    response.set_err(err_msg);
   }
 
   // Startup flag: run post-init actions (callback registration, etc.)
