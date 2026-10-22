@@ -12,17 +12,40 @@ var SKETCH_CONFIG = {
   fillWeight: 1,
   bowing: 1,      // Curvatura de lineas rectas
   
-  // Paletas disponibles (sincronizadas con Quick Chart)
-  palettes: {
-    neven:   ['#a8e600', '#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da', '#fcbad3'],
-    viridis: ['#440154', '#482878', '#3e4989', '#31688e', '#26828e', '#1f9e89', '#35b779', '#6ece58'],
-    plasma:  ['#0d0887', '#46039f', '#7201a8', '#9c179e', '#bd3786', '#d8576b', '#ed7953', '#fb9f3a'],
-    rainbow: ['#e6194b', '#f58231', '#ffe119', '#3cb44b', '#42d4f4', '#4363d8', '#911eb4', '#f032e6'],
-    pastel:  ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#ffbae8', '#baffff'],
-    dark:    ['#1a535c', '#4ecdc4', '#ff6b6b', '#ffe66d', '#6b5b95', '#88d8b0', '#feb236', '#034f84'],
-    ocean:   ['#05445e', '#189ab4', '#75e6da', '#d4f1f9', '#0077b6', '#00b4d8', '#90e0ef', '#caf0f8'],
-    earth:   ['#8d6e63', '#a1887f', '#bcaaa4', '#d7ccc8', '#795548', '#6d4c41', '#5d4037', '#4e342e'],
-    anthropic: ['#D97757', '#C46686', '#6A9BBC', '#BCD1CA', '#D4883A', '#8B7355', '#9B8AA6', '#A3B18A']
+  // Paletas internas (fallback si ColorPalettes no está disponible)
+  _fallbackPalettes: {
+    neven:   ['#d7a538', '#4a9eff', '#50c878', '#ff6b6b', '#9b59b6', '#1abc9c'],
+    viridis: ['#440154', '#3b528b', '#21918c', '#5ec962', '#fde725'],
+    warm:    ['#d7263d', '#f46036', '#ffd166', '#ee964b', '#f95738'],
+    cool:    ['#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51'],
+    pastel:  ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff'],
+    ocean:   ['#03045e', '#0077b6', '#00b4d8', '#90e0ef', '#caf0f8'],
+    sunset:  ['#f72585', '#7209b7', '#3a0ca3', '#4361ee', '#4cc9f0'],
+    earth:   ['#606c38', '#283618', '#fefae0', '#dda15e', '#bc6c25'],
+    monochrome: ['#212529', '#495057', '#6c757d', '#adb5bd', '#dee2e6'],
+    tableau: ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948'],
+    ibm:     ['#648fff', '#785ef0', '#dc267f', '#fe6100', '#ffb000'],
+    retro:   ['#e63946', '#f1faee', '#a8dadc', '#457b9d', '#1d3557']
+  },
+  
+  // Getter dinámico de paletas (usa ColorPalettes si está disponible)
+  get palettes() {
+    if (window.ColorPalettes && ColorPalettes.PALETTES) {
+      var result = {};
+      Object.entries(ColorPalettes.PALETTES).forEach(function(entry) {
+        result[entry[0]] = entry[1].colors;
+      });
+      return result;
+    }
+    return this._fallbackPalettes;
+  },
+  
+  // Getter para paleta actual
+  getCurrentPalette: function() {
+    if (window.ColorPalettes) {
+      return ColorPalettes.getColors();
+    }
+    return this._fallbackPalettes.neven;
   }
 };
 
@@ -336,7 +359,7 @@ function _createSketchConfigPanel(containerId, plotlyData, onUpdate) {
   
   panel.innerHTML = 
     // Boton toggle siempre visible
-    '<button id="' + panelId + '-toggle" style="background:#333;border:1px solid #555;border-radius:4px;padding:4px 8px;color:#a8e600;font-size:10px;cursor:pointer" title="Mostrar/ocultar opciones">' +
+    '<button id="' + panelId + '-toggle" style="background:#333;border:1px solid #555;border-radius:4px;padding:4px 8px;color:var(--accent, #d7a538);font-size:10px;cursor:pointer" title="Mostrar/ocultar opciones">' +
       (isCollapsed ? '+ Estilo' : '- Estilo') +
     '</button>' +
     // Contenido colapsable

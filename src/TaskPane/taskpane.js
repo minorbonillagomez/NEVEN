@@ -16,6 +16,38 @@ let loadedData = null;      // { columns: [], types: {}, rows: [] } — SINGLE d
 let currentSqlPage = 1;
 let lastSqlQuery = '';
 
+// ─── Color Palette Helpers ───────────────────────────────────────────────────
+// Funciones para obtener colores de la paleta activa (si ColorPalettes está disponible)
+
+function _getPrimaryColor() {
+  return (window.ColorPalettes && ColorPalettes.getPrimaryColor) 
+    ? ColorPalettes.getPrimaryColor() 
+    : '#d7a538';
+}
+
+function _getPrimaryRgba(alpha) {
+  return (window.ColorPalettes && ColorPalettes.getPrimaryRgba) 
+    ? ColorPalettes.getPrimaryRgba(alpha) 
+    : 'rgba(215,165,56,' + (alpha || 0.7) + ')';
+}
+
+function _getColors() {
+  return (window.ColorPalettes && ColorPalettes.getColors) 
+    ? ColorPalettes.getColors() 
+    : ['#d7a538', '#4a9eff', '#50c878', '#ff6b6b', '#9b59b6', '#1abc9c'];
+}
+
+function _getColor(index) {
+  var colors = _getColors();
+  return colors[index % colors.length];
+}
+
+function _getPlotlyColorscale() {
+  return (window.ColorPalettes && ColorPalettes.getPlotlyColorscale) 
+    ? ColorPalettes.getPlotlyColorscale() 
+    : [[0,'#1a1a1a'],[0.5,'#444'],[1,'#d7a538']];
+}
+
 // ─── Initialization ──────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -372,7 +404,7 @@ function renderGroupBy(result, grpCol, grpVal, metric) {
 
   Plotly.newPlot('grp-chart', [{
     x: labels, y: values, type: 'bar',
-    marker: { color: 'rgba(168,230,0,0.7)', line: { color: '#a8e600', width: 0.5 } }
+    marker: { color: _getPrimaryRgba(0.7), line: { color: _getPrimaryColor(), width: 0.5 } }
   }], {
     paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
     font: { color: '#888', size: 9 },
@@ -746,7 +778,7 @@ function renderCTScatter(cols, types, rows, el) {
   var y = _getColValues(rows, cols, numCols[1]).map(Number);
 
   Plotly.newPlot(el, [{ x: x, y: y, mode: 'markers', type: 'scatter',
-    marker: { color: '#a8e600', size: 6, opacity: 0.7 } }], {
+    marker: { color: _getPrimaryColor(), size: 6, opacity: 0.7 } }], {
     paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
     font: { color: '#888', size: 10 },
     xaxis: { title: numCols[0], gridcolor: 'rgba(255,255,255,0.05)' },
@@ -771,7 +803,7 @@ function renderCTHeatmap(cols, types, rows, el) {
   }
 
   Plotly.newPlot(el, [{ z: corr, x: numCols, y: numCols, type: 'heatmap',
-    colorscale: [[0,'#1a1a1a'],[0.5,'#444'],[1,'#a8e600']], zmin: -1, zmax: 1 }], {
+    colorscale: _getPlotlyColorscale(), zmin: -1, zmax: 1 }], {
     paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
     font: { color: '#888', size: 9 },
     margin: { t: 10, r: 10, b: 80, l: 80 }
@@ -784,7 +816,7 @@ function renderCTBoxplot(cols, types, rows, el) {
 
   var traces = numCols.slice(0, 6).map(function(c) {
     return { y: _getColValues(rows, cols, c).map(Number), type: 'box', name: c,
-      marker: { color: '#a8e600' }, line: { color: '#a8e600' } };
+      marker: { color: _getPrimaryColor() }, line: { color: _getPrimaryColor() } };
   });
 
   Plotly.newPlot(el, traces, {
@@ -809,7 +841,7 @@ function renderSTLine(cols, types, rows, el) {
 
   var x = _getColValues(rows, cols, timeCol);
   var traces = [{ x: x, y: _getColValues(rows, cols, numCols[0]).map(Number),
-    type: 'scatter', mode: 'lines', line: { color: '#a8e600', width: 2 }, name: numCols[0] }];
+    type: 'scatter', mode: 'lines', line: { color: _getPrimaryColor(), width: 2 }, name: numCols[0] }];
 
   Plotly.newPlot(el, traces, {
     paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
@@ -828,7 +860,7 @@ function renderSTArea(cols, types, rows, el) {
   var x = _getColValues(rows, cols, timeCol);
   var traces = [{ x: x, y: _getColValues(rows, cols, numCols[0]).map(Number),
     type: 'scatter', mode: 'lines', fill: 'tozeroy',
-    line: { color: '#a8e600' }, fillcolor: 'rgba(168,230,0,0.2)', name: numCols[0] }];
+    line: { color: _getPrimaryColor() }, fillcolor: _getPrimaryRgba(0.2), name: numCols[0] }];
 
   Plotly.newPlot(el, traces, {
     paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
@@ -845,7 +877,7 @@ function renderSTMulti(cols, types, rows, el) {
   if (numCols.length === 0) return;
 
   var x = _getColValues(rows, cols, timeCol);
-  var colors = ['#a8e600', '#ff6b6b', '#4ecdc4', '#ffa502', '#a29bfe', '#fd79a8'];
+  var colors = _getColors();
   var traces = numCols.slice(0, 6).map(function(c, i) {
     return { x: x, y: _getColValues(rows, cols, c).map(Number),
       type: 'scatter', mode: 'lines', name: c, line: { color: colors[i % colors.length], width: 2 } };
@@ -921,11 +953,11 @@ function _renderGeoPlotly(data, showClusters) {
     mode: 'markers',
     marker: {
       size: 10,
-      color: colorValues || '#a8e600',
-      colorscale: colorValues ? [[0,'#1a1a1a'],[0.5,'#4ecdc4'],[1,'#a8e600']] : undefined,
+      color: colorValues || _getPrimaryColor(),
+      colorscale: colorValues ? _getPlotlyColorscale() : undefined,
       showscale: !!colorValues,
       opacity: 0.8,
-      line: { color: '#a8e600', width: 1 }
+      line: { color: _getPrimaryColor(), width: 1 }
     }
   };
 
@@ -980,8 +1012,8 @@ function renderRELSankey(cols, types, rows, el) {
   var values = valIdx >= 0 ? rows.map(function(r) { return Number(r[valIdx]) || 1; }) : rows.map(function() { return 1; });
 
   Plotly.newPlot(el, [{ type: 'sankey', orientation: 'h',
-    node: { label: labels, color: '#a8e600', pad: 15, thickness: 20 },
-    link: { source: sources, target: targets, value: values, color: 'rgba(168,230,0,0.3)' }
+    node: { label: labels, color: _getPrimaryColor(), pad: 15, thickness: 20 },
+    link: { source: sources, target: targets, value: values, color: _getPrimaryRgba(0.3) }
   }], {
     paper_bgcolor: 'rgba(0,0,0,0)', font: { color: '#888', size: 10 },
     margin: { t: 10, r: 10, b: 10, l: 10 }

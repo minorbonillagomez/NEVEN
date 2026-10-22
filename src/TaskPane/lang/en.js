@@ -594,6 +594,17 @@ const LANG_EN = {
     chartsAvailable: "charts available",
     librariesCount: "15 libraries",
     
+    // Classification tabs
+    standardCharts: "Standard",
+    advancedCharts: "Advanced",
+    standardDescription: "Charts with Y~X pattern for simple tabular data",
+    advancedDescription: "Charts with special structures (flows, hierarchies, finance)",
+    
+    // Excel data integration
+    useMyData: "Use my data",
+    dataInjected: "Excel data injected into code",
+    noDataAvailable: "No data selected in Excel",
+    
     // Languages
     languages: {
       python: "Python",
@@ -656,6 +667,27 @@ const LANG_EN = {
     avoidWhen: "Avoid when:",
     dataRequirements: "Data requirements:",
     implementations: "Available implementations:",
+    
+    // Chart execution
+    run: "Run",
+    preview: "Preview",
+    runningChart: "Running chart...",
+    chartRendered: "Chart rendered",
+    saveAs: "Save as...",
+    sendToSlide: "Send to Slide",
+    enterChartName: "Enter chart name:",
+    chartSaved: "Chart saved",
+    chartDeleted: "Chart deleted",
+    myCharts: "My Charts",
+    deleteChart: "Delete chart",
+    confirmDelete: "Delete this chart?",
+    
+    // Backend execution (R/Python/Julia)
+    executingCode: "Executing code",
+    codeExecuted: "Code executed successfully",
+    noVisualOutput: "No visual output",
+    engineNotRunning: "Engine not available",
+    checkEngineRunning: "Make sure the engine is running and libraries are installed",
     
     // Messages
     loading: "Loading chart gallery...",

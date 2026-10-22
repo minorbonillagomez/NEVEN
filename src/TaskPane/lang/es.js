@@ -466,6 +466,17 @@ const LANG_ES = {
     chartsAvailable: "gráficos disponibles",
     librariesCount: "15 librerías",
     
+    // Tabs de clasificación
+    standardCharts: "Estandar",
+    advancedCharts: "Avanzados",
+    standardDescription: "Graficos con patron Y~X para datos tabulares simples",
+    advancedDescription: "Graficos con estructuras especiales (flujos, jerarquias, finanzas)",
+    
+    // Integracion datos Excel
+    useMyData: "Usar mis datos",
+    dataInjected: "Datos de Excel inyectados en el codigo",
+    noDataAvailable: "No hay datos seleccionados en Excel",
+    
     // Lenguajes
     languages: {
       python: "Python",
@@ -528,6 +539,27 @@ const LANG_ES = {
     avoidWhen: "Evitar cuando:",
     dataRequirements: "Requisitos de datos:",
     implementations: "Implementaciones disponibles:",
+    
+    // Ejecución de gráficos
+    run: "Ejecutar",
+    preview: "Vista Previa",
+    runningChart: "Ejecutando gráfico...",
+    chartRendered: "Gráfico renderizado",
+    saveAs: "Guardar como...",
+    sendToSlide: "Enviar a Slide",
+    enterChartName: "Nombre del gráfico:",
+    chartSaved: "Gráfico guardado",
+    chartDeleted: "Gráfico eliminado",
+    myCharts: "Mis Gráficos",
+    deleteChart: "Eliminar gráfico",
+    confirmDelete: "¿Eliminar este gráfico?",
+    
+    // Ejecución backend (R/Python/Julia)
+    executingCode: "Ejecutando código",
+    codeExecuted: "Código ejecutado exitosamente",
+    noVisualOutput: "Sin salida visual",
+    engineNotRunning: "Motor no disponible",
+    checkEngineRunning: "Verifica que el motor esté corriendo y las librerías instaladas",
     
     // Mensajes
     loading: "Cargando galería de gráficos...",
