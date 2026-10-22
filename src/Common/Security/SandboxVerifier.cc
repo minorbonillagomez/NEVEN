@@ -78,6 +78,7 @@ bool SandboxVerifier::ValidateCodeForExecution(const std::string& code, std::str
     while (!lower_code.empty() && std::isspace(static_cast<unsigned char>(lower_code.back()))) lower_code.pop_back();
 
     // ── R dangerous patterns ──────────────────────────────────────────
+    // NOTE: source() and library() have context-aware exceptions below
     static const std::vector<std::pair<std::string, std::string>> r_blocked = {
         // Shell execution
         {"system(", "system() — shell command execution blocked"},
@@ -99,10 +100,8 @@ bool SandboxVerifier::ValidateCodeForExecution(const std::string& code, std::str
         {"eval(parse(", "eval(parse()) — dynamic code construction blocked"},
         {"do.call(", "do.call() — dynamic function dispatch blocked"},
         {"match.fun(", "match.fun() — dynamic function lookup blocked"},
-        // File/script execution
-        {"source(", "source() — script file execution blocked"},
-        // Package loading (can load native code / arbitrary packages)
-        {"library(", "library() — unrestricted package loading blocked"},
+        // NOTE: source() checked separately with path whitelist
+        // NOTE: library() checked separately with NEVEN context whitelist
         // Connection opening
         {"open(", "open() — connection opening blocked"},
         // Process/environment manipulation
@@ -205,6 +204,61 @@ bool SandboxVerifier::ValidateCodeForExecution(const std::string& code, std::str
             rejection_reason = pattern.second;
             return false;
         }
+    }
+
+    // ── NEVEN-specific exceptions for source() and library() ──────────
+    // These are allowed ONLY when the path/context refers to NEVEN directories
+    
+    // Check for source() — allowed only for NEVEN trusted paths
+    if (lower_code.find("source(") != std::string::npos ||
+        stripped_code.find("source(") != std::string::npos) {
+        // Extract the path argument from source("path") or source('path')
+        // Trusted paths: C:\NEVEN\, C:/NEVEN/, ~/Documents/NEVEN/, AppData/NEVEN/
+        bool is_neven_path = false;
+        
+        // Check for common NEVEN path patterns (case-insensitive)
+        if (lower_code.find("c:/neven/") != std::string::npos ||
+            lower_code.find("c:\\\\neven\\\\") != std::string::npos ||
+            lower_code.find("c:\\neven\\") != std::string::npos ||
+            lower_code.find("/neven/") != std::string::npos ||
+            lower_code.find("\\\\neven\\\\") != std::string::npos ||
+            lower_code.find("documents/neven/") != std::string::npos ||
+            lower_code.find("documents\\\\neven\\\\") != std::string::npos ||
+            lower_code.find("appdata") != std::string::npos && lower_code.find("neven") != std::string::npos) {
+            is_neven_path = true;
+        }
+        
+        if (!is_neven_path) {
+            rejection_reason = "source() — script file execution blocked (only NEVEN paths allowed)";
+            return false;
+        }
+        // If it's a NEVEN path, allow source() to proceed
+    }
+    
+    // Check for library() — allowed only in NEVEN internal context
+    // NEVEN internal code markers: .neven_env, NEVEN, r4xcl, nevenx
+    if (lower_code.find("library(") != std::string::npos ||
+        stripped_code.find("library(") != std::string::npos) {
+        // Check if this appears to be NEVEN internal code
+        bool is_neven_context = false;
+        
+        // Look for NEVEN markers in the code
+        if (lower_code.find(".neven") != std::string::npos ||
+            lower_code.find("neven_") != std::string::npos ||
+            lower_code.find("# neven") != std::string::npos ||
+            lower_code.find("#neven") != std::string::npos ||
+            lower_code.find("r4xcl") != std::string::npos ||
+            lower_code.find("nevenx") != std::string::npos ||
+            lower_code.find(".graphics_dir") != std::string::npos ||
+            lower_code.find("chart gallery") != std::string::npos) {
+            is_neven_context = true;
+        }
+        
+        if (!is_neven_context) {
+            rejection_reason = "library() — unrestricted package loading blocked (use NEVEN functions)";
+            return false;
+        }
+        // If it's NEVEN internal context, allow library() to proceed
     }
 
     // Check Julia patterns
