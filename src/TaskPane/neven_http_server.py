@@ -79,7 +79,9 @@ if not _log.handlers:
 # We add TaskPane to sys.path lazily so the server can still start without it.
 try:
     _HERE = os.path.dirname(os.path.abspath(__file__))
-    _TASKPANE = os.path.normpath(os.path.join(_HERE, "..", "..", "TaskPane"))
+    # TaskPane is at C:\NEVEN\TaskPane, startup is at C:\NEVEN\startup
+    # So we need to go up one level then into TaskPane
+    _TASKPANE = os.path.normpath(os.path.join(_HERE, "..", "TaskPane"))
     if _TASKPANE not in sys.path and os.path.isdir(_TASKPANE):
         sys.path.insert(0, _TASKPANE)
     from pipe_client import (  # type: ignore[import]
@@ -882,6 +884,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._handle_ontology_graph()
             return
 
+        # ── User Charts — Gráficos personalizados del usuario ─────────────────
+        if path.startswith('api/user-charts'):
+            self._handle_user_charts_api()
+            return
+
         # ── Chart Ontology endpoints — Catálogo de gráficos anyplot ───────────
         if path.startswith('api/charts'):
             self._handle_charts_api()
@@ -955,6 +962,40 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._serve_file(file_path)
             return
 
+        # ── Serve /file — Archivos desde rutas absolutas (Chart Gallery) ──────
+        # GET /file?path=C:\Users\...\graphics\plot.png
+        # Restringido a directorios seguros: graphics/, NEVEN/workspace/
+        if path == 'file' or path.startswith('file?'):
+            from urllib.parse import parse_qs
+            query_params = parse_qs(parsed.query)
+            file_path = query_params.get('path', [''])[0]
+            
+            if not file_path:
+                self._send_error_json("Missing 'path' parameter", 400)
+                return
+            
+            # Security: Solo permitir rutas en directorios seguros
+            allowed_dirs = [
+                os.path.normpath(os.path.expanduser("~/Documents/NEVEN/graphics")),
+                os.path.normpath(r"C:\NEVEN\workspace"),
+                os.path.normpath(r"C:\NEVEN\graphics"),
+            ]
+            
+            norm_path = os.path.normpath(file_path)
+            is_allowed = any(norm_path.startswith(d) for d in allowed_dirs)
+            
+            if not is_allowed:
+                _log.warning(f"File access denied (security): {file_path}")
+                self._send_error_json(f"Access denied: path not in allowed directories", 403)
+                return
+            
+            if not os.path.isfile(norm_path):
+                self._send_error_json(f"File not found: {file_path}", 404)
+                return
+            
+            self._serve_file(norm_path)
+            return
+
         # ══════════════════════════════════════════════════════════════════════
         # RAG Engine — GET endpoints
         # ══════════════════════════════════════════════════════════════════════
@@ -996,7 +1037,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
         content_types = {
             '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',
             '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml',
-            '.ico': 'image/x-icon', '.xml': 'application/xml'
+            '.ico': 'image/x-icon', '.xml': 'application/xml',
+            '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif'
         }
         ctype = content_type or content_types.get(ext, 'application/octet-stream')
 
@@ -1085,6 +1127,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
         elif path == 'api/show-taskpane':
             # Signal from Ribbon to show TaskPane (client polls this via GET)
             self._handle_show_taskpane()
+        # ── User Charts — Guardar/Eliminar gráficos personalizados ────────────
+        elif path == 'api/user-charts/save':
+            self._handle_user_chart_save(body)
+        elif path == 'api/user-charts/delete':
+            self._handle_user_chart_delete(body)
         elif path == 'api/shutdown':
             # Graceful shutdown requested from Ribbon "Detener Servidor" button
             self._handle_shutdown()
@@ -2903,6 +2950,215 @@ class NEVENHandler(BaseHTTPRequestHandler):
                 self._send_error_json(response.get("message", "Unknown error"), status)
         except Exception as e:
             self._send_error_json(f"Chart API error: {e}", 500)
+
+    # ── User Charts API — Gráficos personalizados del usuario ─────────────────
+    
+    def _handle_user_charts_api(self):
+        """Handle user custom charts.
+        
+        Endpoints:
+            GET  /api/user-charts         → Lista gráficos del usuario
+            GET  /api/user-charts/{id}    → Obtiene código de un gráfico
+        """
+        from urllib.parse import urlparse
+        parsed = urlparse(self.path)
+        path = parsed.path.lstrip('/')
+        
+        user_charts_dir = "C:\\NEVEN\\user-charts"
+        index_file = os.path.join(user_charts_dir, "index.json")
+        
+        # GET /api/user-charts — Lista todos
+        if path == 'api/user-charts':
+            try:
+                if os.path.isfile(index_file):
+                    with open(index_file, 'r', encoding='utf-8') as f:
+                        index = json.load(f)
+                    self._send_json({
+                        "status": "ok",
+                        "charts": index.get("charts", []),
+                        "total": len(index.get("charts", []))
+                    })
+                else:
+                    self._send_json({"status": "ok", "charts": [], "total": 0})
+            except Exception as e:
+                self._send_error_json(f"Error loading user charts: {e}", 500)
+            return
+        
+        # GET /api/user-charts/{id} — Obtiene código
+        if path.startswith('api/user-charts/'):
+            chart_id = path.split('api/user-charts/', 1)[1]
+            try:
+                # Leer index para obtener metadata
+                if not os.path.isfile(index_file):
+                    self._send_error_json("No user charts", 404)
+                    return
+                
+                with open(index_file, 'r', encoding='utf-8') as f:
+                    index = json.load(f)
+                
+                chart_meta = None
+                for c in index.get("charts", []):
+                    if c.get("id") == chart_id:
+                        chart_meta = c
+                        break
+                
+                if not chart_meta:
+                    self._send_error_json(f"Chart not found: {chart_id}", 404)
+                    return
+                
+                # Leer archivo de código
+                code_file = os.path.join(user_charts_dir, f"{chart_id}.js")
+                if not os.path.isfile(code_file):
+                    self._send_error_json(f"Code file not found: {chart_id}", 404)
+                    return
+                
+                with open(code_file, 'r', encoding='utf-8') as f:
+                    code = f.read()
+                
+                self._send_json({
+                    "status": "ok",
+                    "chart": chart_meta,
+                    "code": code
+                })
+            except Exception as e:
+                self._send_error_json(f"Error loading user chart: {e}", 500)
+            return
+        
+        self._send_error_json("Invalid user-charts endpoint", 400)
+
+    def _handle_user_chart_save(self, body: dict):
+        """POST /api/user-charts/save — Guardar gráfico personalizado.
+        
+        Body:
+            id: string (opcional, se genera si no se proporciona)
+            name: string (nombre del gráfico)
+            library: string (d3, echarts, chartjs)
+            code: string (código del gráfico)
+            basedOn: string (opcional, id del gráfico original)
+        """
+        import re
+        from datetime import datetime
+        
+        user_charts_dir = "C:\\NEVEN\\user-charts"
+        index_file = os.path.join(user_charts_dir, "index.json")
+        
+        # Validar campos requeridos
+        name = body.get("name", "").strip()
+        library = body.get("library", "").strip()
+        code = body.get("code", "").strip()
+        
+        if not name:
+            self._send_error_json("Field 'name' is required", 400)
+            return
+        if not library:
+            self._send_error_json("Field 'library' is required", 400)
+            return
+        if not code:
+            self._send_error_json("Field 'code' is required", 400)
+            return
+        
+        # Generar ID a partir del nombre si no se proporciona
+        chart_id = body.get("id", "").strip()
+        if not chart_id:
+            # Convertir nombre a slug
+            chart_id = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+        
+        # Asegurar que el directorio existe
+        os.makedirs(user_charts_dir, exist_ok=True)
+        
+        # Leer index actual
+        if os.path.isfile(index_file):
+            with open(index_file, 'r', encoding='utf-8') as f:
+                index = json.load(f)
+        else:
+            index = {"charts": []}
+        
+        # Buscar si ya existe
+        now = datetime.now().isoformat()
+        existing_idx = None
+        for i, c in enumerate(index.get("charts", [])):
+            if c.get("id") == chart_id:
+                existing_idx = i
+                break
+        
+        chart_meta = {
+            "id": chart_id,
+            "name": name,
+            "library": library,
+            "basedOn": body.get("basedOn", ""),
+            "created": index["charts"][existing_idx]["created"] if existing_idx is not None else now,
+            "modified": now
+        }
+        
+        if existing_idx is not None:
+            index["charts"][existing_idx] = chart_meta
+        else:
+            index["charts"].append(chart_meta)
+        
+        # Guardar código
+        code_file = os.path.join(user_charts_dir, f"{chart_id}.js")
+        with open(code_file, 'w', encoding='utf-8') as f:
+            f.write(code)
+        
+        # Guardar index
+        with open(index_file, 'w', encoding='utf-8') as f:
+            json.dump(index, f, indent=2, ensure_ascii=False)
+        
+        self._send_json({
+            "status": "ok",
+            "chart": chart_meta,
+            "message": f"Chart '{name}' saved successfully"
+        })
+
+    def _handle_user_chart_delete(self, body: dict):
+        """POST /api/user-charts/delete — Eliminar gráfico personalizado.
+        
+        Body:
+            id: string (id del gráfico a eliminar)
+        """
+        user_charts_dir = "C:\\NEVEN\\user-charts"
+        index_file = os.path.join(user_charts_dir, "index.json")
+        
+        chart_id = body.get("id", "").strip()
+        if not chart_id:
+            self._send_error_json("Field 'id' is required", 400)
+            return
+        
+        if not os.path.isfile(index_file):
+            self._send_error_json("No user charts to delete", 404)
+            return
+        
+        with open(index_file, 'r', encoding='utf-8') as f:
+            index = json.load(f)
+        
+        # Buscar y eliminar
+        found = False
+        new_charts = []
+        for c in index.get("charts", []):
+            if c.get("id") == chart_id:
+                found = True
+            else:
+                new_charts.append(c)
+        
+        if not found:
+            self._send_error_json(f"Chart not found: {chart_id}", 404)
+            return
+        
+        index["charts"] = new_charts
+        
+        # Eliminar archivo de código
+        code_file = os.path.join(user_charts_dir, f"{chart_id}.js")
+        if os.path.isfile(code_file):
+            os.remove(code_file)
+        
+        # Guardar index actualizado
+        with open(index_file, 'w', encoding='utf-8') as f:
+            json.dump(index, f, indent=2, ensure_ascii=False)
+        
+        self._send_json({
+            "status": "ok",
+            "message": f"Chart '{chart_id}' deleted successfully"
+        })
 
     # ── Ontology handlers ─────────────────────────────────────────────────────
     

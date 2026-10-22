@@ -79,7 +79,9 @@ if not _log.handlers:
 # We add TaskPane to sys.path lazily so the server can still start without it.
 try:
     _HERE = os.path.dirname(os.path.abspath(__file__))
-    _TASKPANE = os.path.normpath(os.path.join(_HERE, "..", "..", "TaskPane"))
+    # TaskPane is at C:\NEVEN\TaskPane, startup is at C:\NEVEN\startup
+    # So we need to go up one level then into TaskPane
+    _TASKPANE = os.path.normpath(os.path.join(_HERE, "..", "TaskPane"))
     if _TASKPANE not in sys.path and os.path.isdir(_TASKPANE):
         sys.path.insert(0, _TASKPANE)
     from pipe_client import (  # type: ignore[import]
