@@ -1151,23 +1151,36 @@ function Register-TaskPaneManifest {
         if (-not (Test-Path $catalogRegPath)) {
             New-Item -Path $catalogRegPath -Force | Out-Null
         }
-        Set-ItemProperty -Path $catalogRegPath -Name 'Url' -Value "\\$env:COMPUTERNAME\NEVEN_Catalog" -Type String
-        Set-ItemProperty -Path $catalogRegPath -Name 'Flags' -Value 1 -Type DWord
 
-        # Share the catalog folder
+        # Try SMB share first, fallback to localhost admin share
+        $catalogUrl = $null
         $shareName = 'NEVEN_Catalog'
         $existingShare = Get-SmbShare -Name $shareName -ErrorAction SilentlyContinue
-        if (-not $existingShare) {
+        
+        if ($existingShare) {
+            $catalogUrl = "\\$env:COMPUTERNAME\$shareName"
+            Write-Log "Using existing SMB share: $catalogUrl"
+        } else {
+            # Try to create SMB share (requires admin)
             try {
                 New-SmbShare -Name $shareName -Path $catalogDir -ReadAccess "$env:USERDOMAIN\$env:USERNAME" -ErrorAction Stop | Out-Null
-                Write-Log "Created network share \\$env:COMPUTERNAME\$shareName"
+                $catalogUrl = "\\$env:COMPUTERNAME\$shareName"
+                Write-Log "Created SMB share: $catalogUrl"
             } catch {
-                Write-Log "Could not create SMB share (requires admin): $_ - manual sideload needed" -Level WARN
-                $script:HasWarnings = $true
+                # Fallback: use localhost admin share (works without creating new share)
+                # Convert C:\NEVEN\catalog to \\localhost\C$\NEVEN\catalog
+                $driveLetter = $catalogDir.Substring(0, 1)
+                $pathWithoutDrive = $catalogDir.Substring(2)
+                $catalogUrl = "\\localhost\$driveLetter`$$pathWithoutDrive"
+                Write-Log "SMB share failed, using localhost path: $catalogUrl" -Level WARN
             }
         }
 
+        Set-ItemProperty -Path $catalogRegPath -Name 'Url' -Value $catalogUrl -Type String
+        Set-ItemProperty -Path $catalogRegPath -Name 'Flags' -Value 1 -Type DWord
+
         Write-Log "Task Pane manifest registered in Excel Trusted Catalogs"
+        Write-Log "  Catalog URL: $catalogUrl"
     }
     catch {
         Write-Log "Manifest registration failed: $_ - use manual sideload" -Level WARN
