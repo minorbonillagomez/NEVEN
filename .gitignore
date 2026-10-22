@@ -29,3 +29,7 @@ __pycache__/
 
 # Large binaries
 *.xll
+
+# Libros y materiales con derechos de autor
+ontologia-fuentes/LIBROS*/
+*.pdf
