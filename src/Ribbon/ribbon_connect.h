@@ -1062,20 +1062,12 @@ public:
 
     case DispIds::OnTaskPaneCommand:
     {
-      // Open NEVEN Studio Task Pane via local HTML file in WebView2 viewer.
-      // taskpane.html connects to the HTTP server at localhost:5555 once open.
-      CComQIPtr<Excel::_Application> pApp(m_pApplication);
-      if (pApp) {
-          CComVariant runCmd(L"NEVEN.View");
-          CComVariant docPath("C:/NEVEN/taskpane/taskpane.html");
-          CComVariant result;
-          CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
-          pApp->_Run2(runCmd, docPath, missing, missing, missing, missing, missing, missing,
-                       missing, missing, missing, missing, missing, missing, missing, missing,
-                       missing, missing, missing, missing, missing, missing, missing, missing,
-                       missing, missing, missing, missing, missing, missing, missing, 1033, &result);
-      }
-      return S_OK;
+      // Open NEVEN Studio Task Pane via NEVEN.TaskPane.Open (type 2 command)
+      FILE* dbg = nullptr;
+      fopen_s(&dbg, "C:\\NEVEN\\ribbon_debug.log", "a");
+      if (dbg) { fprintf(dbg, "OnTaskPaneCommand: calling NEVEN.TaskPane.Open\n"); fclose(dbg); }
+
+      return RunXllFunction(L"NEVEN.TaskPane.Open");
     }
 
     case DispIds::OnPresentacionesCommand:

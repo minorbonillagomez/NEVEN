@@ -24,14 +24,6 @@
 
         <!-- Grupo: Analisis -->
         <group id="grpAnalysis" label="Analisis">
-          <button id="btnAIAssistant"
-                  label="NEVEN Studio"
-                  size="large"
-                  onAction="OnAIAssistantCommand"
-                  imageMso="BlogHomePage"
-                  screentip="NEVEN Studio"
-                  supertip="Abre NEVEN Studio — análisis interactivo con R, Python, Julia, DuckDB y asistente IA." />
-
           <button id="btnTextAnalysis"
                   label="Texto"
                   size="large"

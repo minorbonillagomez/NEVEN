@@ -1455,6 +1455,35 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_ViewerCloseAll() {
 }
 
 /**
+ * @brief Opens NEVEN Studio TaskPane in a WebView2 viewer.
+ *
+ * This is a type-2 command function callable from the Ribbon via _Run2.
+ * Opens taskpane.html which connects to the HTTP server at localhost:5555.
+ *
+ * @return LPXLOPER12 Viewer ID (e.g. "viewer-N") or error message.
+ */
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_TaskPaneOpen() {
+    thread_local XLOPER12 rslt;
+
+    auto& viewer = rj2xcl::ViewerManager::Instance();
+    if (!viewer.IsAvailable()) {
+        Convert::StringToXLOPER(&rslt,
+            "WebView2 not available - install Edge WebView2 Runtime", false);
+        rslt.xltype |= xlbitDLLFree;
+        return &rslt;
+    }
+
+    // Path to taskpane.html
+    std::string taskpane_path = "C:/NEVEN/taskpane/taskpane.html";
+
+    // Create or reuse viewer
+    std::string viewer_id = viewer.CreateViewerFromFile(taskpane_path, "TaskPane", taskpane_path);
+    Convert::StringToXLOPER(&rslt, viewer_id, false);
+    rslt.xltype |= xlbitDLLFree;
+    return &rslt;
+}
+
+/**
  * @brief Opens NEVEN Studio AI Agent in a WebView2 window pointing to the local HTTP server.
  *
  * Activates advanced mode on port 5555 (same mechanism as Pluto.jl) so the

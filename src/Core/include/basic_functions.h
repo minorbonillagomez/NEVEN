@@ -77,6 +77,7 @@ static LPWSTR funcTemplates[][16] = {
   { L"RJ_NotebookOpen_Dialog", L"Q", L"NEVEN.Notebook.Dialog", L"", L"2", L"NEVEN", L"", L"", L"Show notebook library dialog", L"", L"", L"", L"", L"", L"", L"" },
   { L"RJ_About_Dialog", L"Q", L"NEVEN.About.Dialog", L"", L"2", L"NEVEN", L"", L"", L"Show About NEVEN dialog", L"", L"", L"", L"", L"", L"", L"" },
   { L"RJ_ViewerCloseAll", L"Q", L"NEVEN.View.CloseAll", L"", L"2", L"NEVEN", L"", L"", L"Close all viewer windows", L"", L"", L"", L"", L"", L"", L"" },
+  { L"RJ_TaskPaneOpen", L"Q", L"NEVEN.TaskPane.Open", L"", L"2", L"NEVEN", L"", L"", L"Open NEVEN Studio TaskPane in WebView2", L"", L"", L"", L"", L"", L"", L"" },
   { L"RJ_PlutoStartCmd", L"Q", L"NEVEN.Pluto.Start", L"", L"2", L"NEVEN", L"", L"", L"Start Pluto server (command)", L"", L"", L"", L"", L"", L"", L"" },
   { L"RJ_PlutoStopCmd", L"Q", L"NEVEN.Pluto.Stop", L"", L"2", L"NEVEN", L"", L"", L"Stop Pluto server (command)", L"", L"", L"", L"", L"", L"", L"" },
   { L"RJ_EditorCmd", L"Q", L"NEVEN.Editor", L"", L"2", L"NEVEN", L"", L"", L"Open presentation editor (command)", L"", L"", L"", L"", L"", L"", L"" },
@@ -145,6 +146,9 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Chart_J(
 
 // Version and about
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_Version();
+
+// TaskPane command (type 2) — opens NEVEN Studio in WebView2
+extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_TaskPaneOpen();
 
 
 #define BCALL(num) \
