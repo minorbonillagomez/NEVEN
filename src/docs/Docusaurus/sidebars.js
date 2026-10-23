@@ -20,9 +20,13 @@ const sidebars = {
     'rag-ontologia-metaheuristica',
     'python-ejemplos',
     'identidad-marca',
+    'chart-gallery',
+    'graficos-rapidos',
+    'internacionalizacion',
+    'office-addin',
+    'evolucion-arquitectura',
     'metricas-proyecto',
     'bert-vs-neven',
-    'evolucion-arquitectura',
   ],
 };
 
