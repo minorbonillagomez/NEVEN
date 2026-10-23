@@ -37,8 +37,10 @@ VIAddVersionKey "LegalCopyright" "Copyright (C) 2026 ${PUBLISHER}"
 !define MUI_ICON "Dist\NEVEN_studio.ico"
 !define MUI_UNICON "Dist\NEVEN_studio.ico"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis.bmp"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\win.bmp"
+!define MUI_HEADERIMAGE_BITMAP "Dist\header.bmp"
+!define MUI_HEADERIMAGE_RIGHT
+!define MUI_WELCOMEFINISHPAGE_BITMAP "Dist\wizard.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "Dist\wizard.bmp"
 !define MUI_ABORTWARNING
 
 ; Welcome Page
@@ -58,7 +60,7 @@ VIAddVersionKey "LegalCopyright" "Copyright (C) 2026 ${PUBLISHER}"
 ; ============================================================
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "license.txt"
+!insertmacro MUI_PAGE_LICENSE "license.rtf"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
