@@ -1,0 +1,146 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# EVAL: Data Lab Functions i18n
+# ═══════════════════════════════════════════════════════════════════════════
+# Verifica que todas las funciones de Data Lab tengan traducciones EN/ES
+# en el diccionario centralizado (lang/es.js, lang/en.js)
+
+name: "Data Lab functions must be fully translated"
+description: |
+  Las funciones que aparecen en Data Lab (Gráficos, Estadística, etc.)
+  deben tener nombre y descripción en ambos idiomas.
+  Las traducciones viven en dataLab.functions del diccionario.
+
+cases:
+  # ─────────────────────────────────────────────────────────────────────────
+  # FAMILIA: Gráficos
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "grafico_barras"
+    input:
+      function_id: "GR_Barras"
+      family: "Gráficos"
+    expected:
+      es:
+        name: "Gráfico de Barras"
+        description: "Gráfico de barras con soporte para modo agrupado, apilado, horizontal y vertical."
+      en:
+        name: "Bar Chart"
+        description: "Bar chart with support for grouped, stacked, horizontal and vertical modes."
+
+  - id: "boxplot"
+    input:
+      function_id: "GR_BoxPlot"
+      family: "Gráficos"
+    expected:
+      es:
+        name: "Box Plot (Diagrama de Caja)"
+        description: "Diagrama de caja y bigotes. Muestra la distribución estadística."
+      en:
+        name: "Box Plot"
+        description: "Box and whisker plot. Shows statistical distribution."
+
+  - id: "correlaciones"
+    input:
+      function_id: "GR_Correlaciones"
+      family: "Gráficos"
+    expected:
+      es:
+        name: "Mapa de Correlaciones"
+        description: "Heatmap de la matriz de correlaciones entre variables numéricas."
+      en:
+        name: "Correlation Map"
+        description: "Heatmap of correlation matrix between numeric variables."
+
+  - id: "histograma"
+    input:
+      function_id: "GR_Histograma"
+      family: "Gráficos"
+    expected:
+      es:
+        name: "Histograma"
+        description: "Distribución de frecuencias de una variable numérica."
+      en:
+        name: "Histogram"
+        description: "Frequency distribution of a numeric variable."
+
+  - id: "lineas"
+    input:
+      function_id: "GR_Lineas"
+      family: "Gráficos"
+    expected:
+      es:
+        name: "Gráfico de Líneas"
+        description: "Gráfico de líneas para visualizar tendencias y evolución."
+      en:
+        name: "Line Chart"
+        description: "Line chart to visualize trends and evolution."
+
+  - id: "scatter"
+    input:
+      function_id: "GR_Scatter"
+      family: "Gráficos"
+    expected:
+      es:
+        name: "Scatter Plot"
+        description: "Gráfico de dispersión interactivo."
+      en:
+        name: "Scatter Plot"
+        description: "Interactive scatter plot."
+
+  - id: "serie_tiempo"
+    input:
+      function_id: "GR_SerieTiempo"
+      family: "Gráficos"
+    expected:
+      es:
+        name: "Serie de Tiempo"
+        description: "Gráfico de líneas para series temporales."
+      en:
+        name: "Time Series"
+        description: "Line chart for time series data."
+
+  - id: "mapa"
+    input:
+      function_id: "GR_Mapa"
+      family: "Gráficos"
+    expected:
+      es:
+        name: "Mapa Interactivo (Leaflet)"
+        description: "Mapa interactivo con Leaflet.js usando tiles CartoDB oscuros."
+      en:
+        name: "Interactive Map (Leaflet)"
+        description: "Interactive map with Leaflet.js using dark CartoDB tiles."
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # UI ELEMENTS
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "selector_title"
+    input:
+      element: "card-title"
+      location: "Data Lab selector"
+    expected:
+      es: "Seleccionar función"
+      en: "Select function"
+
+  - id: "family_placeholder"
+    input:
+      element: "select option"
+      location: "dl-family-select"
+    expected:
+      es: "- Familia -"
+      en: "- Family -"
+
+  - id: "verify_packages_btn"
+    input:
+      element: "button"
+      id: "dl-verify-packages"
+    expected:
+      es: "Verificar paquetes"
+      en: "Verify packages"
+
+  - id: "run_analysis_btn"
+    input:
+      element: "button"
+      id: "dl-run-btn"
+    expected:
+      es: "Ejecutar análisis"
+      en: "Run analysis"

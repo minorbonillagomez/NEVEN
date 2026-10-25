@@ -1,0 +1,53 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# EVAL: Settings Sub-tabs i18n
+# ═══════════════════════════════════════════════════════════════════════════
+
+name: "Settings sub-tabs must be fully translated"
+description: |
+  Los sub-tabs del panel Settings deben tener traducciones completas.
+
+cases:
+  - id: "subtab_general"
+    expected:
+      es: "General"
+      en: "General"
+
+  - id: "subtab_motor_ia"
+    expected:
+      es: "Motor IA"
+      en: "AI Engine"
+
+  - id: "subtab_conexiones_db"
+    expected:
+      es: "Conexiones DB"
+      en: "DB Connections"
+
+  - id: "subtab_prompts"
+    expected:
+      es: "Prompts"
+      en: "Prompts"
+
+  - id: "subtab_conocimiento"
+    expected:
+      es: "Conocimiento"
+      en: "Knowledge"
+
+  - id: "subtab_rag"
+    expected:
+      es: "RAG"
+      en: "RAG"
+
+  - id: "subtab_notebooks"
+    expected:
+      es: "Notebooks"
+      en: "Notebooks"
+
+  - id: "subtab_motores"
+    expected:
+      es: "Motores"
+      en: "Engines"
+
+  - id: "subtab_graficos"
+    expected:
+      es: "Gráficos"
+      en: "Charts"

@@ -1,0 +1,109 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# EVAL: UI Elements i18n
+# ═══════════════════════════════════════════════════════════════════════════
+
+name: "All UI elements must be translated"
+description: |
+  Todos los elementos de UI visibles deben tener traducciones.
+
+cases:
+  # ─────────────────────────────────────────────────────────────────────────
+  # HEADER
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "server_status_connected"
+    expected:
+      es: "Conectado"
+      en: "Connected"
+
+  - id: "server_status_disconnected"
+    expected:
+      es: "Desconectado"
+      en: "Disconnected"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # DATA STUDIO
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "recent_files_label"
+    expected:
+      es: "Recientes"
+      en: "Recent"
+
+  - id: "listening_changes"
+    expected:
+      es: "Escuchando cambios"
+      en: "Listening for changes"
+
+  - id: "pivot_table_title"
+    expected:
+      es: "Pivot Table"
+      en: "Pivot Table"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # QUICK CHART
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "qc_x_axis"
+    expected:
+      es: "- Eje X -"
+      en: "- X Axis -"
+
+  - id: "qc_y_axis"
+    expected:
+      es: "- Eje Y -"
+      en: "- Y Axis -"
+
+  - id: "qc_show_trend"
+    expected:
+      es: "Tendencia"
+      en: "Trend"
+
+  - id: "qc_trend_linear"
+    expected:
+      es: "Lineal"
+      en: "Linear"
+
+  - id: "qc_trend_poly"
+    expected:
+      es: "Polinomial"
+      en: "Polynomial"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # RUN SCRIPT
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "available_functions"
+    expected:
+      es: "Funciones disponibles"
+      en: "Available Functions"
+
+  - id: "output_title"
+    expected:
+      es: "Output"
+      en: "Output"
+
+  - id: "console_title"
+    expected:
+      es: "Consola"
+      en: "Console"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ECONOMETRÍA
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "econ_tab_name"
+    expected:
+      es: "Econometría"
+      en: "Econometrics"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # PRESENTACIONES
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "send_to_slide"
+    expected:
+      es: "Enviar a Slide"
+      en: "Send to Slide"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # AYUDA
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "help_search_placeholder"
+    expected:
+      es: "Buscar función por nombre o descripción..."
+      en: "Search function by name or description..."
