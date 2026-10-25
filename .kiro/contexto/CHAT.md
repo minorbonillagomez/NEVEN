@@ -1358,3 +1358,625 @@ El paper academico es intencional que no este trackeado:
 | MEDIA | Revision por auditor-forense-ia | Opcional |
 | BAJA | Screenshots para Docusaurus | Futuro |
 
+
+
+---
+### Sesion 2026-08-19 (~noche, cierre) — Limpieza de archivos temporales del Paper
+
+## Trabajo realizado
+
+Limpieza de 12 archivos temporales e innecesarios del directorio `src/docs/Paper/`.
+
+## Archivos eliminados
+
+| Archivo | Razon de eliminacion |
+|---------|---------------------|
+| `main.aux` | Temporal LaTeX (regenerable) |
+| `main.bbl` | Temporal BibTeX (regenerable) |
+| `main.blg` | Log BibTeX (regenerable) |
+| `main.log` | Log LaTeX (regenerable) |
+| `main.out` | Hyperref (regenerable) |
+| `main.spl` | Spell check (regenerable) |
+| `main_v2.aux` | Version vieja obsoleta |
+| `main_v2.log` | Version vieja obsoleta |
+| `main_v2.out` | Version vieja obsoleta |
+| `main_v2.spl` | Version vieja obsoleta |
+| `latexmkrc.tex` | Nombre incorrecto (no es .tex) |
+| `gemini-code-1792126537627.md` | Codigo temporal de Gemini |
+
+## Estado final del directorio Paper
+
+```
+src/docs/Paper/
+├── main.tex              ← Documento principal
+├── main.pdf              ← PDF compilado (37 pag, 784 KB)
+├── references.bib        ← Bibliografia (45 refs)
+├── latexmkrc             ← Config de latexmk
+├── sections/             ← 9 archivos .tex
+├── figures/              ← Figuras del paper
+├── arxiv-submission/     ← Paquete para arXiv
+├── neven-arxiv-submission.zip  ← ZIP para arXiv (puede estar desactualizado)
+├── Informe.md            ← Reporte de auditoria forense
+├── auditor-forense-ia.md ← Spec del auditor
+├── redactor-academico.md ← Reglas anti-IA
+├── requerimientos-publicacion-arxiv-neven.md
+└── requerimientos-publicacion-q1-neven.md
+```
+
+## Commits realizados
+
+Ninguno — directorio Paper esta en .gitignore.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Regenerar neven-arxiv-submission.zip con cambios actuales | Pendiente |
+| MEDIA | Ejecutar auditor-forense-ia sobre paper actualizado | Opcional |
+| BAJA | Backup manual del directorio Paper | Recomendado |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, final) — Paquete arXiv generado
+
+## Trabajo realizado
+
+Generacion del paquete completo para submission a arXiv, incluyendo compilacion y verificacion.
+
+## Problema encontrado y solucion
+
+**Problema:** Al compilar el paper, LaTeX no encontraba `sections/02_architecturev1.tex`
+**Causa raiz:** El archivo `main.tex` referenciaba `02_architecturev1` pero el archivo correcto es `02_architecture`. El archivo viejo fue eliminado en la limpieza anterior.
+**Solucion:** Corregir la linea en `main.tex`:
+```latex
+% Antes:
+\input{sections/02_architecturev1}
+% Despues:
+\input{sections/02_architecture}
+```
+
+## Archivos limpiados (adicionales)
+
+| Directorio | Archivos eliminados |
+|------------|---------------------|
+| `figures/` | `*.aux`, `*.log`, `*.synctex.gz` |
+| `sections/` | `02_architecturev1.tex`, `*.log`, `*.synctex.gz` |
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/docs/Paper/main.tex` | Corregida referencia a 02_architecture |
+
+## Paquete arXiv generado
+
+**Archivo:** `src/docs/Paper/neven-arxiv-submission.zip` (208 KB)
+
+**Contenido (16 archivos):**
+```
+├── main.tex
+├── main.bbl
+├── references.bib
+├── figures/
+│   ├── architecture_diagram.pdf
+│   ├── architecture_diagram.tex
+│   ├── dashboard_screenshot.pdf
+│   └── dashboard_screenshot.tex
+└── sections/
+    ├── 00_abstract.tex
+    ├── 01_introduction.tex
+    ├── 02_architecture.tex
+    ├── 03_viewer_extensibility.tex
+    ├── 04_case_studies.tex
+    ├── 05_discussion.tex
+    ├── 06_conclusion.tex
+    ├── architecture_diagram.pdf
+    └── architecture_diagram.tex
+```
+
+## Verificacion
+
+- Compilacion en `arxiv-submission/`: OK
+- PDF generado: 725 KB (36 paginas)
+- Todos los cambios de la revision mayor incluidos
+
+## PDFs finales
+
+| Archivo | Ubicacion | Tamaño | Paginas |
+|---------|-----------|--------|---------|
+| Paper principal | `src/docs/Paper/main.pdf` | 781 KB | 36 |
+| Test arxiv | `arxiv-submission/main.pdf` | 725 KB | 36 |
+
+## Commits realizados
+
+Ninguno — directorio Paper esta en .gitignore.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir neven-arxiv-submission.zip a arXiv | Listo para subir |
+| MEDIA | Backup del directorio Paper completo | Recomendado |
+| BAJA | Ejecutar auditor-forense-ia como verificacion final | Opcional |
+
+
+
+---
+### Sesion 2026-08-19 (~tarde) — Revision del paper mejorado contra steerings
+
+## Contexto
+
+El usuario proporciono una nueva version mejorada del paper en `src/docs/Paper/sections/` y solicito revision usando los steerings `ai-artifact-prevention.md` y `redactor-academico.md` SIN hacer cambios hasta discutir los hallazgos.
+
+## Trabajo realizado
+
+### Revision exhaustiva del paper mejorado
+
+Analisis completo de todas las secciones contra las reglas de prevencion de artefactos IA:
+
+| Archivo | Lineas | Contenido clave |
+|---------|--------|-----------------|
+| `00_abstract.tex` | ~30 | NEVEN Studio, Chart Gallery 325, i18n, 342 tests |
+| `00_main_preamble_guide.tex` | NUEVO | Preamble completo para arXiv |
+| `01_introduction.tex` | ~85 | 8 contribuciones listadas |
+| `02_architecture.tex` | ~250 | 4 capas, Python resilience engineering |
+| `03_viewer_extensibility.tex` | ~280 | §3.5 NEVEN Studio con Table tab:studio_tabs |
+| `04_case_studies.tex` | ~300 | TipoOutput, FILTRO, German Credit |
+| `05_discussion.tex` | ~250 | Tabla comparacion, 342 tests breakdown |
+| `06_conclusion.tex` | ~130 | 4 future work directions |
+| `references.bib` | 45 refs | LIMPIO — 0 campos note |
+
+### Verificaciones realizadas
+
+| Criterio (ai-artifact-prevention) | Resultado |
+|-----------------------------------|-----------|
+| Campos `note` en BibTeX | **0** ✅ |
+| Em-dashes (`---`) | **0** ✅ Excelente |
+| `\paragraph{}` con punto final | **0** ✅ |
+| Tricolons "no X, no Y, no Z" | **0** ✅ |
+| Antitesis simetricas (student...engineer) | **0** ✅ |
+| "Not only...but also" | **0** ✅ |
+| Vocabulario slop IA (delve, tapestry, pivotal, etc.) | **0** ✅ |
+| Enfasis vacio (crucially, importantly, notably) | **0** ✅ |
+
+### Verificacion de consistencia numerica
+
+| Claim | Verificacion |
+|-------|--------------|
+| 342 tests totales | ✅ Sec 5.2: 133+34+32+16+14+17+96=342 (explicito en texto) |
+| 8 contribuciones (Intro) | ✅ Lista numerada 1-8 |
+| 4 future directions (Conclusion) | ✅ 4 \paragraph{} numerados |
+| 70 R + 70 Julia + 200+ functions | ✅ Consistente en Abstract/Intro/Sec 3 |
+| 26 chapters documentacion | ✅ Mencionado en Conclusion |
+| 9 modulos NEVEN Studio | ✅ Table tab:studio_tabs lista exactamente 9 |
+| 11 content formats | ✅ Table tab:viewer_formats lista exactamente 11 |
+
+## Veredicto
+
+**El paper cumple al 100% con las reglas del steering `ai-artifact-prevention.md`.**
+
+No se detectaron artefactos tipicos de generacion IA. El paper esta listo para arXiv/journal submission desde la perspectiva de deteccion de IA.
+
+## Archivos revisados (no modificados)
+
+- `src/docs/Paper/sections/00_abstract.tex`
+- `src/docs/Paper/sections/00_main_preamble_guide.tex`
+- `src/docs/Paper/sections/01_introduction.tex`
+- `src/docs/Paper/sections/02_architecture.tex`
+- `src/docs/Paper/sections/03_viewer_extensibility.tex`
+- `src/docs/Paper/sections/04_case_studies.tex`
+- `src/docs/Paper/sections/05_discussion.tex`
+- `src/docs/Paper/sections/06_conclusion.tex`
+- `src/docs/Paper/references.bib`
+
+## Commits realizados
+
+Ninguno — sesion de revision sin modificaciones.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Discutir hallazgos con usuario | COMPLETADO |
+| MEDIA | Compilar PDF final si usuario aprueba | Esperando decision |
+| MEDIA | Regenerar paquete arXiv | Pendiente tras aprobacion |
+| BAJA | Backup del paper mejorado | Recomendado |
+
+
+
+---
+### Sesion 2026-08-19 (~tarde, continuacion) — Compilacion del Paper mejorado
+
+## Contexto
+
+Continuacion de la sesion anterior. Tras aprobar la revision del paper contra steerings, el usuario solicito compilar el PDF.
+
+## Trabajo realizado
+
+### 1. Compilacion LaTeX
+
+Ejecutada compilacion completa (pdflatex + bibtex + pdflatex x2).
+
+### 2. Problema encontrado: PDF bloqueado
+
+**Sintoma:** Error "I can't write on file `main.pdf'"
+**Causa raiz:** El archivo main.pdf estaba abierto en un visor PDF externo, bloqueando la escritura.
+**Solucion:** Usuario cerro el visor PDF manualmente.
+
+### 3. Compilacion exitosa
+
+Tras cerrar el PDF, la compilacion completo sin errores.
+
+## PDF generado
+
+| Propiedad | Valor |
+|-----------|-------|
+| Archivo | `src/docs/Paper/main.pdf` |
+| Tamano | 714 KB |
+| Paginas | 34 |
+| Fecha | 2026-10-23 12:03:30 |
+
+## Archivos modificados
+
+Ninguno — solo compilacion (archivos temporales .aux, .bbl, .log regenerados).
+
+## Commits realizados
+
+Ninguno — directorio Paper esta en .gitignore.
+
+## Intento fallido
+
+| Intento | Error | Causa | Solucion |
+|---------|-------|-------|----------|
+| pdflatex primera vez | "can't write main.pdf" | PDF abierto en visor | Cerrar visor manualmente |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Regenerar paquete arXiv (neven-arxiv-submission.zip) | Pendiente — usuario no confirmo |
+| MEDIA | Backup del directorio Paper | Recomendado |
+| BAJA | Verificar que el PDF abre correctamente | Usuario puede verificar |
+
+
+
+---
+### Sesion 2026-08-19 (~tarde, final) — Paquete arXiv regenerado
+
+## Contexto
+
+Continuacion de la sesion. Tras compilar el PDF exitosamente, el usuario solicito regenerar el paquete arXiv.
+
+## Trabajo realizado
+
+### 1. Regeneracion del directorio arxiv-submission
+
+Actualizado con todos los archivos del paper mejorado:
+- main.tex, main.bbl, references.bib
+- 8 archivos en sections/ (incluyendo 00_main_preamble_guide.tex nuevo)
+- 4 archivos en figures/ (architecture_diagram + dashboard_screenshot)
+
+### 2. Creacion del ZIP
+
+Generado `neven-arxiv-submission.zip` con Compress-Archive.
+
+## Paquete arXiv generado
+
+| Propiedad | Valor |
+|-----------|-------|
+| Archivo | `neven-arxiv-submission.zip` |
+| Tamano | 149 KB |
+| Ubicacion | `src/docs/Paper/` |
+| Archivos | 16 |
+
+## Contenido del ZIP
+
+```
+neven-arxiv-submission.zip
+├── main.tex
+├── main.bbl
+├── references.bib
+├── figures/
+│   ├── architecture_diagram.pdf
+│   ├── architecture_diagram.tex
+│   ├── dashboard_screenshot.pdf
+│   └── dashboard_screenshot.tex
+└── sections/
+    ├── 00_abstract.tex
+    ├── 00_main_preamble_guide.tex
+    ├── 01_introduction.tex
+    ├── 02_architecture.tex
+    ├── 03_viewer_extensibility.tex
+    ├── 04_case_studies.tex
+    ├── 05_discussion.tex
+    └── 06_conclusion.tex
+```
+
+## Archivos generados/actualizados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/docs/Paper/main.pdf` | Compilado (714 KB, 34 pags) |
+| `src/docs/Paper/neven-arxiv-submission.zip` | Regenerado (149 KB) |
+| `src/docs/Paper/arxiv-submission/` | Actualizado con paper mejorado |
+
+## Commits realizados
+
+Ninguno — directorio Paper esta en .gitignore.
+
+## Resumen de la sesion completa
+
+1. **Revision del paper mejorado** — 100% cumplimiento con ai-artifact-prevention
+2. **Compilacion exitosa** — main.pdf (714 KB, 34 paginas)
+3. **Paquete arXiv** — neven-arxiv-submission.zip (149 KB, 16 archivos)
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir neven-arxiv-submission.zip a arXiv | Listo para subir |
+| MEDIA | Backup del directorio Paper | Recomendado |
+| BAJA | Verificar compilacion en servidor arXiv | Post-submission |
+
+
+
+---
+### Sesion 2026-08-19 (~noche) — Correccion bibliografia tesis de maestria
+
+## Contexto
+
+El usuario realizo cambios manuales a los archivos LaTeX y solicito corregir la referencia bibliografica de su tesis de maestria con la URL correcta de Kerwa UCR.
+
+## Correcciones realizadas
+
+### 1. Entrada BibTeX de la tesis
+
+**Antes:**
+```bibtex
+@mastersthesis{BonillaR4XCL2023,
+  year    = {2023},
+  url     = {https://hdl.handle.net/10669/104374}
+}
+```
+
+**Despues:**
+```bibtex
+@mastersthesis{BonillaR4XCL2026,
+  year    = {2026},
+  url     = {https://kerwa.ucr.ac.cr/items/220372b6-f386-49a5-b704-89afb50fd82a}
+}
+```
+
+### 2. Actualizacion de citas en el paper
+
+Todas las citas `\citep{BonillaR4XCL2023}` actualizadas a `\citep{BonillaR4XCL2026}`:
+- `01_introduction.tex` (linea 38)
+- `02_architecture.tex` (linea 25)
+- `05_discussion.tex` (linea 41) — tambien corregido "In 2023" → "In 2026"
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/docs/Paper/references.bib` | URL Kerwa + año 2026 + key BonillaR4XCL2026 |
+| `src/docs/Paper/sections/01_introduction.tex` | Cita actualizada |
+| `src/docs/Paper/sections/02_architecture.tex` | Cita actualizada |
+| `src/docs/Paper/sections/05_discussion.tex` | Cita + texto "In 2026" |
+
+## Archivos generados
+
+| Archivo | Tamaño | Descripcion |
+|---------|--------|-------------|
+| `src/docs/Paper/main.pdf` | 705 KB | PDF recompilado |
+| `src/docs/Paper/neven-arxiv-submission.zip` | 149 KB | Paquete arXiv actualizado |
+
+## Commits realizados
+
+Ninguno — directorio Paper esta en .gitignore.
+
+## Datos de la tesis (referencia correcta)
+
+- **Autor:** Minor Bonilla-Gomez
+- **Titulo:** Rompiendo barreras en el analisis de datos: R4XCL un puente de integracion entre R y Excel
+- **Universidad:** Universidad de Costa Rica
+- **Tipo:** Tesis de Maestria en Matematica Aplicada
+- **Año:** 2026
+- **URL:** https://kerwa.ucr.ac.cr/items/220372b6-f386-49a5-b704-89afb50fd82a
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir paquete arXiv | Listo para subir |
+| MEDIA | Backup del directorio Paper | Recomendado |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, continuacion) — Sincronizacion paquete arXiv
+
+## Contexto
+
+El usuario detecto que el paquete arXiv no estaba sincronizado con los archivos fuente modificados.
+
+## Problema identificado
+
+**Causa raiz:** El paquete arxiv-submission tenia versiones desactualizadas de varios archivos porque se habia generado antes de los ultimos cambios del usuario.
+
+**Archivos desactualizados detectados:**
+- `main.tex` (src: 20:16:27 vs arx: 17:06:22)
+- `02_architecture.tex`
+- `04_case_studies.tex`
+- `05_discussion.tex`
+
+## Solucion aplicada
+
+1. Eliminacion completa del directorio `arxiv-submission/` y del ZIP
+2. Recreacion desde cero con `[System.IO.File]::Copy()` para asegurar copias frescas
+3. Recompilacion del PDF (pdflatex + bibtex + pdflatex x2)
+4. Actualizacion del .bbl en el paquete arxiv
+5. Generacion del ZIP final
+
+## Verificacion realizada
+
+Confirmado que el .bbl contiene la cita correcta:
+```
+\bibitem[{Bonilla-G{\'o}mez(2026)}]{BonillaR4XCL2026}
+...
+\url{https://kerwa.ucr.ac.cr/items/220372b6-f386-49a5-b704-89afb50fd82a}
+```
+
+## Archivos generados
+
+| Archivo | Tamaño | Fecha |
+|---------|--------|-------|
+| `src/docs/Paper/main.pdf` | 705.6 KB | 2026-10-24 19:11:54 |
+| `src/docs/Paper/neven-arxiv-submission.zip` | 149.4 KB | 2026-10-24 19:11:55 |
+
+## Contenido final del ZIP (16 archivos)
+
+```
+neven-arxiv-submission.zip
+├── main.tex (4.4 KB)
+├── main.bbl (12 KB)
+├── references.bib (12.5 KB)
+├── figures/
+│   ├── architecture_diagram.pdf (66 KB)
+│   ├── architecture_diagram.tex (4 KB)
+│   ├── dashboard_screenshot.pdf (47 KB)
+│   └── dashboard_screenshot.tex (5 KB)
+└── sections/
+    ├── 00_abstract.tex (2.7 KB)
+    ├── 00_main_preamble_guide.tex (2 KB)
+    ├── 01_introduction.tex (7.6 KB)
+    ├── 02_architecture.tex (16 KB)
+    ├── 03_viewer_extensibility.tex (14 KB)
+    ├── 04_case_studies.tex (15 KB)
+    ├── 05_discussion.tex (11 KB)
+    ├── 06_conclusion.tex (4.6 KB)
+    └── architecture_diagram.tex (4 KB)
+```
+
+## Commits realizados
+
+Ninguno — directorio Paper esta en .gitignore.
+
+## Leccion aprendida
+
+**Siempre verificar fechas de modificacion** entre archivos fuente y paquete de distribucion antes de declarar el paquete como "listo". Usar comparacion de timestamps para detectar desincronizacion.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir paquete arXiv | LISTO PARA SUBIR |
+| MEDIA | Backup del directorio Paper | Recomendado |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, cierre) — Consulta licencia arXiv
+
+## Consulta
+
+Usuario pregunto cual licencia usar para la submission a arXiv.
+
+## Recomendacion
+
+**CC BY (Creative Commons Attribution)** — seleccionada como la mejor opcion.
+
+## Justificacion
+
+| Factor | Razon |
+|--------|-------|
+| Consistencia | El software NEVEN usa GPL v3 (open source). CC BY es el equivalente "open access" para papers. |
+| Impacto | Maximiza citabilidad — otros pueden usar, adaptar, traducir el trabajo con atribucion. |
+| Compatibilidad | La mayoria de journals Q1/Q2 aceptan preprints arXiv con CC BY. |
+| Estandar | Es la licencia mas comun en papers de CS/Software Engineering. |
+
+## Alternativas descartadas
+
+- **CC BY-SA:** Puede complicar integracion con otros trabajos.
+- **CC BY-NC-SA/ND:** Demasiado restrictivas, limitan impacto academico.
+- **arXiv perpetual:** Util si hay dudas sobre journal, pero menos abierta.
+- **CC Zero:** Pierde atribucion obligatoria.
+
+## Archivos modificados
+
+Ninguno — solo consulta.
+
+## Commits realizados
+
+Ninguno.
+
+## Estado del paper para arXiv
+
+| Item | Estado |
+|------|--------|
+| PDF compilado | ✅ 705.6 KB |
+| Paquete ZIP | ✅ 149.4 KB, 16 archivos |
+| Bibliografia corregida | ✅ Kerwa UCR, año 2026 |
+| Licencia elegida | ✅ CC BY |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Completar submission en arXiv | En proceso |
+| MEDIA | Backup del paper | Recomendado |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, revision commits) — Estado del repositorio
+
+## Consulta
+
+Usuario solicito revisar si hay commits pendientes.
+
+## Estado del repositorio
+
+### Archivos modificados (tracked)
+
+| Archivo | Estado |
+|---------|--------|
+| `.kiro/contexto/CHAT.md` | Modificado |
+| `.kiro/contexto/CHAT_LARGO.md` | Modificado |
+| `ontologia-fuentes/LIBROS.../An Introduction to Statistical Learning*` | Eliminados |
+
+### Archivos nuevos (untracked)
+
+| Archivo/Directorio | Descripcion |
+|--------------------|-------------|
+| `.kiro/evals/i18n-taskpane/` | Tests de internacionalizacion |
+| `.kiro/steering/latex-symbol-dictionary.md` | Steering LaTeX |
+| `.kiro/steering/pdf-to-rag-pipeline.md` | Steering RAG |
+| `scripts/*.py` | 8 scripts Python nuevos |
+| `src/TaskPane/chart-classification.js` | Clasificacion de graficos |
+| `src/TaskPane/color-palettes.js` | Paletas de colores |
+| `ext/`, `prompts/`, `tools/` | Nuevos directorios |
+
+### Nota importante
+
+El directorio `src/docs/Paper/` esta en `.gitignore` — los cambios del paper (PDF, arXiv, bibliografia) NO se commitean al repositorio. Esto es intencional para mantener el paper como documento privado.
+
+## Commits realizados
+
+Ninguno en esta sesion — pendiente decision del usuario sobre que incluir.
+
+## Commits sugeridos
+
+1. **Bitacora:** `git add .kiro/contexto/CHAT*.md`
+2. **Steering:** `git add .kiro/steering/*.md`
+3. **TaskPane:** `git add src/TaskPane/chart-*.js src/TaskPane/color-*.js`
+4. **Scripts:** Revisar cuales incluir
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Decidir y ejecutar commits pendientes | Esperando decision |
+| **ALTA** | Completar submission arXiv | Paper listo |
+| MEDIA | Revisar archivos eliminados de ontologia-fuentes | Verificar si intencional |
+
