@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: heatmap-calendar
+name:
+  en: Basic Calendar Heatmap
+  es: Mapa de Calor
+description:
+  en: A calendar heatmap visualizes time-series data on a calendar grid, where each
+    day is represented as a cell and color intensity indicates the value magnitude.
+    The layout follows a calendar structure with days as cells, weekdays as rows,
+    weeks as columns, and months as labeled sections along the top. This visualization
+    excels at revealing daily patterns, seasonal trends, and temporal anomalies over
+    extended time periods.
+  es: A calendar heatmap visualizes time-series data on a calendar grid, where each
+    day is represented as a cell and color intensity indicates the value magnitude.
+    The layout follows a calendar structure with days as cells, weekdays as rows,
+    weeks as columns, and months as labeled sections along the top. This visualization
+    excels at revealing daily patterns, seasonal trends, and temporal anomalies over
+    extended time periods.
+aliases:
+  en:
+  - heatmap-calendar
+  - heatmap calendar
+  - heatmap
+  es:
+  - heatmap-calendar
+  - heatmap calendar
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - GitHub-style contribution graphs showing daily coding activity
+  - Daily sales or website traffic patterns across months
+  - Habit tracking visualization for personal productivity
+  - Weather data patterns showing temperature or precipitation by day
+  es:
+  - GitHub-style contribution graphs showing daily coding activity
+  - Daily sales or website traffic patterns across months
+  - Habit tracking visualization for personal productivity
+  - Weather data patterns showing temperature or precipitation by day
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  - calendar
+  data_type:
+  - datetime
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - temporal
+  - color-mapped
+keywords:
+  en:
+  - heatmap
+  - calendar
+  - datetime
+  - numeric
+  - general
+  - business
+  - basic
+  - temporal
+  - color-mapped
+  es:
+  - mapa de calor
+  - calendar
+  - heatmap
+  - datetime
+  - numérico
+  - general
+  - negocios
+  - basic
+  - temporal
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/heatmap-calendar/implementations/javascript/chartjs.js
+    d3: plots/heatmap-calendar/implementations/javascript/d3.js
+    echarts: plots/heatmap-calendar/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-calendar/implementations/javascript/highcharts.js
+    muix: plots/heatmap-calendar/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-calendar/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-calendar/implementations/python/altair.py
+    bokeh: plots/heatmap-calendar/implementations/python/bokeh.py
+    letsplot: plots/heatmap-calendar/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-calendar/implementations/python/matplotlib.py
+    plotly: plots/heatmap-calendar/implementations/python/plotly.py
+    plotnine: plots/heatmap-calendar/implementations/python/plotnine.py
+    pygal: plots/heatmap-calendar/implementations/python/pygal.py
+    seaborn: plots/heatmap-calendar/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-calendar/implementations/r/ggplot2.R
+notes:
+- Display weekday labels (Mon-Sun) on the y-axis
+- Show month labels along the top or as section headers
+- Use a sequential colormap (light to dark) for positive values
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

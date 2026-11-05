@@ -1,0 +1,135 @@
+entity_type: ChartType
+id: swimmer-clinical-timeline
+name:
+  en: Swimmer Plot for Clinical Trial Timelines
+  es: Swimmer Clinical Timeline
+description:
+  en: A swimmer plot displays individual patient timelines as horizontal bars, commonly
+    used in clinical oncology to visualize treatment duration, response events, and
+    disease progression across a study cohort. Each bar represents one patient, typically
+    sorted by treatment duration, with symbols or color changes marking key clinical
+    events such as partial response, complete response, or progressive disease. This
+    plot is standard in clinical trial publications and regulatory submissions for
+    conveying patient-level longitudinal outcomes at a glance.
+  es: A swimmer plot displays individual patient timelines as horizontal bars, commonly
+    used in clinical oncology to visualize treatment duration, response events, and
+    disease progression across a study cohort. Each bar represents one patient, typically
+    sorted by treatment duration, with symbols or color changes marking key clinical
+    events such as partial response, complete response, or progressive disease. This
+    plot is standard in clinical trial publications and regulatory submissions for
+    conveying patient-level longitudinal outcomes at a glance.
+aliases:
+  en:
+  - swimmer-clinical-timeline
+  - swimmer clinical timeline
+  - swimmer clinical timeline
+  es:
+  - swimmer-clinical-timeline
+  - swimmer clinical timeline
+  - swimmer clinical timeline
+use_when:
+  en:
+  - A swimmer plot displays individual patient timelines as horizontal bars, commonly
+    used in clinical oncology to visualize treatment duration, response events, and
+    disease progression across a study coh
+  es:
+  - A swimmer plot displays individual patient timelines as horizontal bars, commonly
+    used in clinical oncology to visualize treatment duration, response events, and
+    disease progression across a study coh
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing treatment response timelines for patients in an oncology drug trial,
+    showing when each patient achieved response or experienced progression
+  - Comparing duration of therapy across patients in a Phase II clinical study, highlighting
+    differences between treatment arms
+  - Presenting patient-level safety and efficacy data in regulatory submission documents
+    and medical conference posters
+  es:
+  - Visualizing treatment response timelines for patients in an oncology drug trial,
+    showing when each patient achieved response or experienced progression
+  - Comparing duration of therapy across patients in a Phase II clinical study, highlighting
+    differences between treatment arms
+  - Presenting patient-level safety and efficacy data in regulatory submission documents
+    and medical conference posters
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - timeseries
+  - numeric
+  domain:
+  - healthcare
+  - research
+  features:
+  - horizontal
+  - annotated
+  - temporal
+  - comparison
+keywords:
+  en:
+  - swimmer
+  - clinical
+  - timeline
+  - bar
+  - categorical
+  - timeseries
+  - numeric
+  - healthcare
+  - research
+  - horizontal
+  - annotated
+  - temporal
+  - comparison
+  es:
+  - swimmer
+  - clinical
+  - timeline
+  - bar
+  - categórico
+  - timeseries
+  - numérico
+  - healthcare
+  - research
+  - horizontal
+  - annotated
+  - temporal
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/swimmer-clinical-timeline/implementations/javascript/chartjs.js
+    d3: plots/swimmer-clinical-timeline/implementations/javascript/d3.js
+    echarts: plots/swimmer-clinical-timeline/implementations/javascript/echarts.js
+    highcharts: plots/swimmer-clinical-timeline/implementations/javascript/highcharts.js
+    muix: plots/swimmer-clinical-timeline/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/swimmer-clinical-timeline/implementations/julia/makie.jl
+  python:
+    altair: plots/swimmer-clinical-timeline/implementations/python/altair.py
+    bokeh: plots/swimmer-clinical-timeline/implementations/python/bokeh.py
+    letsplot: plots/swimmer-clinical-timeline/implementations/python/letsplot.py
+    matplotlib: plots/swimmer-clinical-timeline/implementations/python/matplotlib.py
+    plotly: plots/swimmer-clinical-timeline/implementations/python/plotly.py
+    plotnine: plots/swimmer-clinical-timeline/implementations/python/plotnine.py
+    pygal: plots/swimmer-clinical-timeline/implementations/python/pygal.py
+    seaborn: plots/swimmer-clinical-timeline/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/swimmer-clinical-timeline/implementations/r/ggplot2.R
+notes:
+- Bars should be horizontal and sorted by duration (longest at top or bottom, consistently)
+- Use distinct markers/symbols for different event types (e.g., triangle for partial
+  response, star for complete response, diamond for progression)
+- Ongoing patients (still on treatment at data cutoff) should be visually distinguished
+  with an arrow or open-ended bar
+source: anyplot
+anyplot_updated: '2026-06-08T05:47:58Z'

@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: waterfall-basic
+name:
+  en: Basic Waterfall Chart
+  es: Gráfico de Cascada Básico
+description:
+  en: A waterfall chart visualizes how an initial value is affected by a series of
+    intermediate positive or negative values, leading to a final value. Each bar represents
+    a change from the previous cumulative total, with positive values extending upward
+    and negative values extending downward. This chart type is essential for understanding
+    cumulative effects and breaking down the components that contribute to a final
+    result.
+  es: A waterfall chart visualizes how an initial value is affected by a series of
+    intermediate positive or negative values, leading to a final value. Each bar represents
+    a change from the previous cumulative total, with positive values extending upward
+    and negative values extending downward. This chart type is essential for understanding
+    cumulative effects and breaking down the components that contribute to a final
+    result.
+aliases:
+  en:
+  - waterfall-basic
+  - waterfall basic
+  - basic waterfall chart
+  es:
+  - waterfall-basic
+  - waterfall basic
+  - gráfico de cascada básico
+use_when:
+  en:
+  - A waterfall chart visualizes how an initial value is affected by a series of intermediate
+    positive or negative values, leading to a final value. Each bar represents a change
+    from the previous cumulati
+  es:
+  - A waterfall chart visualizes how an initial value is affected by a series of intermediate
+    positive or negative values, leading to a final value. Each bar represents a change
+    from the previous cumulati
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Financial analysis: breaking down revenue to net profit through costs, taxes,
+    and adjustments'
+  - 'Inventory management: tracking stock levels through additions and withdrawals
+    over time'
+  - 'Project cost tracking: visualizing budget changes through additions and reductions'
+  - 'Sales pipeline progression: showing conversion rates and drop-offs through stages'
+  es:
+  - 'Financial analysis: breaking down revenue to net profit through costs, taxes,
+    and adjustments'
+  - 'Inventory management: tracking stock levels through additions and withdrawals
+    over time'
+  - 'Project cost tracking: visualizing budget changes through additions and reductions'
+  - 'Sales pipeline progression: showing conversion rates and drop-offs through stages'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - waterfall
+  - bar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - finance
+  - business
+  features:
+  - basic
+  - cumulative
+  - stepwise
+keywords:
+  en:
+  - waterfall chart
+  - basic
+  - waterfall
+  - bar
+  - numeric
+  - categorical
+  - finance
+  - business
+  - cumulative
+  - stepwise
+  es:
+  - gráfico de cascada
+  - básico
+  - waterfall
+  - bar
+  - numérico
+  - categórico
+  - finanzas
+  - negocios
+  - basic
+  - cumulative
+  - stepwise
+implementations:
+  javascript:
+    chartjs: plots/waterfall-basic/implementations/javascript/chartjs.js
+    d3: plots/waterfall-basic/implementations/javascript/d3.js
+    echarts: plots/waterfall-basic/implementations/javascript/echarts.js
+    highcharts: plots/waterfall-basic/implementations/javascript/highcharts.js
+    muix: plots/waterfall-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/waterfall-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/waterfall-basic/implementations/python/altair.py
+    bokeh: plots/waterfall-basic/implementations/python/bokeh.py
+    letsplot: plots/waterfall-basic/implementations/python/letsplot.py
+    matplotlib: plots/waterfall-basic/implementations/python/matplotlib.py
+    plotly: plots/waterfall-basic/implementations/python/plotly.py
+    plotnine: plots/waterfall-basic/implementations/python/plotnine.py
+    pygal: plots/waterfall-basic/implementations/python/pygal.py
+    seaborn: plots/waterfall-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/waterfall-basic/implementations/r/ggplot2.R
+notes:
+- Color positive and negative changes differently (e.g., green for positive, red for
+  negative)
+- Show connecting lines between bars to emphasize the cumulative flow
+- Include distinct start and end total bars (often in a different color like blue
+  or gray)
+source: anyplot
+anyplot_updated: 2026-05-06 00:48:53+00:00

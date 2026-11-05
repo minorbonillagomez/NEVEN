@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: scatter-shot-chart
+name:
+  en: Basketball Shot Chart
+  es: Diagrama de Dispersión
+description:
+  en: A basketball shot chart overlays shooting data on a half-court diagram, plotting
+    each shot attempt as a point colored by outcome (made or missed). The court drawing
+    includes the three-point arc, free-throw line, paint/key area, and basket, providing
+    spatial context for analyzing shooting patterns and efficiency. Essential for
+    basketball analytics and player evaluation.
+  es: A basketball shot chart overlays shooting data on a half-court diagram, plotting
+    each shot attempt as a point colored by outcome (made or missed). The court drawing
+    includes the three-point arc, free-throw line, paint/key area, and basket, providing
+    spatial context for analyzing shooting patterns and efficiency. Essential for
+    basketball analytics and player evaluation.
+aliases:
+  en:
+  - scatter-shot-chart
+  - scatter shot chart
+  - scatter plot
+  es:
+  - scatter-shot-chart
+  - scatter shot chart
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Analyzing a player's shooting tendencies and field-goal percentage by court zone
+  - Scouting opposing players to identify their preferred and weakest shooting locations
+  - Evaluating team offensive strategies and shot selection patterns
+  - Sports journalism and broadcast graphics summarizing game or season performance
+  es:
+  - Analyzing a player's shooting tendencies and field-goal percentage by court zone
+  - Scouting opposing players to identify their preferred and weakest shooting locations
+  - Evaluating team offensive strategies and shot selection patterns
+  - Sports journalism and broadcast graphics summarizing game or season performance
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - spatial
+  - categorical
+  domain:
+  - general
+  - sports
+  features:
+  - color-mapped
+  - 2d
+keywords:
+  en:
+  - scatter plot
+  - shot
+  - chart
+  - scatter
+  - numeric
+  - spatial
+  - categorical
+  - general
+  - sports
+  - color-mapped
+  - 2d
+  es:
+  - diagrama de dispersión
+  - shot
+  - chart
+  - scatter
+  - numérico
+  - spatial
+  - categórico
+  - general
+  - sports
+  - color-mapped
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/scatter-shot-chart/implementations/javascript/chartjs.js
+    d3: plots/scatter-shot-chart/implementations/javascript/d3.js
+    echarts: plots/scatter-shot-chart/implementations/javascript/echarts.js
+    highcharts: plots/scatter-shot-chart/implementations/javascript/highcharts.js
+    muix: plots/scatter-shot-chart/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-shot-chart/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-shot-chart/implementations/python/altair.py
+    bokeh: plots/scatter-shot-chart/implementations/python/bokeh.py
+    letsplot: plots/scatter-shot-chart/implementations/python/letsplot.py
+    matplotlib: plots/scatter-shot-chart/implementations/python/matplotlib.py
+    plotly: plots/scatter-shot-chart/implementations/python/plotly.py
+    plotnine: plots/scatter-shot-chart/implementations/python/plotnine.py
+    pygal: plots/scatter-shot-chart/implementations/python/pygal.py
+    seaborn: plots/scatter-shot-chart/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-shot-chart/implementations/r/ggplot2.R
+notes:
+- 'Draw an accurate NBA half-court outline using standard dimensions (50 ft wide x
+  47 ft deep): three-point arc (23.75 ft at top, 22 ft in corners), free-throw line
+  (15 ft from backboard), paint/key area (16 ft wide), restricted area arc, and basket/backboard'
+- 'Plot each shot as a point: green for made, red for missed'
+- Court lines should be drawn in a neutral color (gray or black) so shot markers stand
+  out
+source: anyplot
+anyplot_updated: '2026-06-21T07:38:39Z'

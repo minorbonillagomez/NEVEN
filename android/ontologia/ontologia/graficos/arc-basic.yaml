@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: arc-basic
+name:
+  en: Basic Arc Diagram
+  es: Arc Basic Básico
+description:
+  en: An arc diagram arranges nodes along a single horizontal line and draws connections
+    between them as curved arcs above the line. This layout excels at revealing patterns
+    in sequential or ordered data while minimizing visual clutter compared to force-directed
+    layouts. Arc height typically indicates the distance between connected nodes,
+    making it easy to spot long-range versus short-range connections.
+  es: An arc diagram arranges nodes along a single horizontal line and draws connections
+    between them as curved arcs above the line. This layout excels at revealing patterns
+    in sequential or ordered data while minimizing visual clutter compared to force-directed
+    layouts. Arc height typically indicates the distance between connected nodes,
+    making it easy to spot long-range versus short-range connections.
+aliases:
+  en:
+  - arc-basic
+  - arc basic
+  - basic arc basic
+  es:
+  - arc-basic
+  - arc basic
+  - arc basic básico
+use_when:
+  en:
+  - An arc diagram arranges nodes along a single horizontal line and draws connections
+    between them as curved arcs above the line. This layout excels at revealing patterns
+    in sequential or ordered data wh
+  es:
+  - An arc diagram arranges nodes along a single horizontal line and draws connections
+    between them as curved arcs above the line. This layout excels at revealing patterns
+    in sequential or ordered data wh
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing narrative flow and character interactions in stories or scripts
+  - Showing gene interactions along a chromosome in genomic analysis
+  - Displaying word co-occurrences or dependencies in text analysis
+  - Mapping sequential process dependencies in workflows
+  es:
+  - Visualizing narrative flow and character interactions in stories or scripts
+  - Showing gene interactions along a chromosome in genomic analysis
+  - Displaying word co-occurrences or dependencies in text analysis
+  - Mapping sequential process dependencies in workflows
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - arc
+  - network
+  data_type:
+  - network
+  - relational
+  - categorical
+  - ordinal
+  domain:
+  - general
+  features:
+  - basic
+  - 2d
+keywords:
+  en:
+  - arc
+  - basic
+  - network
+  - relational
+  - categorical
+  - ordinal
+  - general
+  - 2d
+  es:
+  - arc
+  - básico
+  - red
+  - relational
+  - categórico
+  - ordinal
+  - general
+  - basic
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/arc-basic/implementations/javascript/chartjs.js
+    d3: plots/arc-basic/implementations/javascript/d3.js
+    echarts: plots/arc-basic/implementations/javascript/echarts.js
+    highcharts: plots/arc-basic/implementations/javascript/highcharts.js
+    muix: plots/arc-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/arc-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/arc-basic/implementations/python/altair.py
+    bokeh: plots/arc-basic/implementations/python/bokeh.py
+    letsplot: plots/arc-basic/implementations/python/letsplot.py
+    matplotlib: plots/arc-basic/implementations/python/matplotlib.py
+    plotly: plots/arc-basic/implementations/python/plotly.py
+    plotnine: plots/arc-basic/implementations/python/plotnine.py
+    pygal: plots/arc-basic/implementations/python/pygal.py
+    seaborn: plots/arc-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/arc-basic/implementations/r/ggplot2.R
+notes:
+- Arcs should curve above the horizontal axis with height proportional to the distance
+  between connected nodes
+- Use semi-transparent arcs when many connections overlap
+- Node labels should be readable along the axis
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

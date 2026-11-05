@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: scatter-annotated
+name:
+  en: Annotated Scatter Plot with Text Labels
+  es: Diagrama de Dispersión
+description:
+  en: A scatter plot where each data point can have a text label annotation, useful
+    for identifying specific points of interest. This visualization enhances basic
+    scatter plots by adding contextual information directly on the chart, making it
+    easy to highlight outliers, named entities, or key data points that deserve special
+    attention.
+  es: A scatter plot where each data point can have a text label annotation, useful
+    for identifying specific points of interest. This visualization enhances basic
+    scatter plots by adding contextual information directly on the chart, making it
+    easy to highlight outliers, named entities, or key data points that deserve special
+    attention.
+aliases:
+  en:
+  - scatter-annotated
+  - scatter annotated
+  - scatter plot
+  es:
+  - scatter-annotated
+  - scatter annotated
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Labeling company names on a market cap vs. revenue scatter plot
+  - Identifying outlier cities in a population vs. area analysis
+  - Annotating key experiments in a scientific study comparing two measurements
+  - Highlighting top performers in a sales vs. customer satisfaction comparison
+  es:
+  - Labeling company names on a market cap vs. revenue scatter plot
+  - Identifying outlier cities in a population vs. area analysis
+  - Annotating key experiments in a scientific study comparing two measurements
+  - Highlighting top performers in a sales vs. customer satisfaction comparison
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - general
+  - business
+  - research
+  features:
+  - annotated
+  - 2d
+keywords:
+  en:
+  - scatter plot
+  - annotated
+  - scatter
+  - numeric
+  - continuous
+  - general
+  - business
+  - research
+  - 2d
+  es:
+  - diagrama de dispersión
+  - annotated
+  - scatter
+  - numérico
+  - continuo
+  - general
+  - negocios
+  - research
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/scatter-annotated/implementations/javascript/chartjs.js
+    d3: plots/scatter-annotated/implementations/javascript/d3.js
+    echarts: plots/scatter-annotated/implementations/javascript/echarts.js
+    highcharts: plots/scatter-annotated/implementations/javascript/highcharts.js
+    muix: plots/scatter-annotated/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-annotated/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-annotated/implementations/python/altair.py
+    bokeh: plots/scatter-annotated/implementations/python/bokeh.py
+    letsplot: plots/scatter-annotated/implementations/python/letsplot.py
+    matplotlib: plots/scatter-annotated/implementations/python/matplotlib.py
+    plotly: plots/scatter-annotated/implementations/python/plotly.py
+    plotnine: plots/scatter-annotated/implementations/python/plotnine.py
+    pygal: plots/scatter-annotated/implementations/python/pygal.py
+    seaborn: plots/scatter-annotated/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-annotated/implementations/r/ggplot2.R
+notes:
+- Use adjustText or similar libraries to avoid overlapping labels where supported
+- Consider annotating only a subset of important points for large datasets
+- Text should be legible with appropriate font size and contrast
+source: anyplot
+anyplot_updated: 2026-05-13 10:57:30+00:00

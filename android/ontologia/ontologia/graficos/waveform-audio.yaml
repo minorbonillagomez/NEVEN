@@ -1,0 +1,129 @@
+entity_type: ChartType
+id: waveform-audio
+name:
+  en: Audio Waveform Plot
+  es: Waveform Audio
+description:
+  en: A time-domain visualization of audio amplitude that displays the raw waveform
+    shape as seen in digital audio workstations (DAWs). The plot shows positive and
+    negative amplitude symmetrically around a zero baseline, with time on the x-axis
+    and normalized amplitude (-1 to +1) on the y-axis. This is the fundamental representation
+    for inspecting audio signals, revealing dynamics, clipping, silence, and transient
+    characteristics at a glance.
+  es: A time-domain visualization of audio amplitude that displays the raw waveform
+    shape as seen in digital audio workstations (DAWs). The plot shows positive and
+    negative amplitude symmetrically around a zero baseline, with time on the x-axis
+    and normalized amplitude (-1 to +1) on the y-axis. This is the fundamental representation
+    for inspecting audio signals, revealing dynamics, clipping, silence, and transient
+    characteristics at a glance.
+aliases:
+  en:
+  - waveform-audio
+  - waveform audio
+  - waveform audio
+  es:
+  - waveform-audio
+  - waveform audio
+  - waveform audio
+use_when:
+  en:
+  - 'A time-domain visualization of audio amplitude that displays the raw waveform
+    shape as seen in digital audio workstations (DAWs). The plot shows positive and
+    negative amplitude symmetrically around a '
+  es:
+  - 'A time-domain visualization of audio amplitude that displays the raw waveform
+    shape as seen in digital audio workstations (DAWs). The plot shows positive and
+    negative amplitude symmetrically around a '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Audio engineering: inspecting recordings in DAWs to identify clipping, silence
+    gaps, or dynamic range issues'
+  - 'Speech analysis: visualizing spoken utterances for phonetic segmentation and
+    timing analysis'
+  - 'Seismology: displaying seismogram traces to identify earthquake P-wave and S-wave
+    arrivals'
+  - 'Biomedical signal processing: reviewing EEG or EMG waveforms for diagnostic patterns'
+  es:
+  - 'Audio engineering: inspecting recordings in DAWs to identify clipping, silence
+    gaps, or dynamic range issues'
+  - 'Speech analysis: visualizing spoken utterances for phonetic segmentation and
+    timing analysis'
+  - 'Seismology: displaying seismogram traces to identify earthquake P-wave and S-wave
+    arrivals'
+  - 'Biomedical signal processing: reviewing EEG or EMG waveforms for diagnostic patterns'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - area
+  data_type:
+  - timeseries
+  - continuous
+  domain:
+  - engineering
+  - science
+  - signal-processing
+  features:
+  - basic
+  - temporal
+keywords:
+  en:
+  - waveform
+  - audio
+  - line
+  - area
+  - timeseries
+  - continuous
+  - engineering
+  - science
+  - signal-processing
+  - basic
+  - temporal
+  es:
+  - waveform
+  - audio
+  - line
+  - area
+  - timeseries
+  - continuo
+  - ingeniería
+  - ciencia
+  - signal-processing
+  - basic
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/waveform-audio/implementations/javascript/chartjs.js
+    d3: plots/waveform-audio/implementations/javascript/d3.js
+    echarts: plots/waveform-audio/implementations/javascript/echarts.js
+    highcharts: plots/waveform-audio/implementations/javascript/highcharts.js
+    muix: plots/waveform-audio/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/waveform-audio/implementations/julia/makie.jl
+  python:
+    altair: plots/waveform-audio/implementations/python/altair.py
+    bokeh: plots/waveform-audio/implementations/python/bokeh.py
+    letsplot: plots/waveform-audio/implementations/python/letsplot.py
+    matplotlib: plots/waveform-audio/implementations/python/matplotlib.py
+    plotly: plots/waveform-audio/implementations/python/plotly.py
+    plotnine: plots/waveform-audio/implementations/python/plotnine.py
+    pygal: plots/waveform-audio/implementations/python/pygal.py
+    seaborn: plots/waveform-audio/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/waveform-audio/implementations/r/ggplot2.R
+notes:
+- The waveform should be rendered as a filled area (mirrored above and below zero)
+  or as a dense line plot, symmetric around the zero axis
+- Use a semi-transparent fill color so overlapping regions remain visible
+- Include a horizontal zero-line for reference
+source: anyplot
+anyplot_updated: '2026-06-03T00:54:06Z'

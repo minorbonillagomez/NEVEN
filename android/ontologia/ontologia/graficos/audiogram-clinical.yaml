@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: audiogram-clinical
+name:
+  en: Clinical Audiogram
+  es: Audiogram Clinical
+description:
+  en: A standardized clinical audiogram that displays hearing test results, plotting
+    hearing threshold (dB HL) against test frequency for each ear. The y-axis is inverted
+    so that 0 dB HL (best hearing) sits at the top and increasing hearing loss extends
+    downward, while the x-axis is logarithmic spanning the standard audiometric frequencies
+    (125 Hz to 8 kHz). Thresholds are marked with the conventional symbols — a circle
+    (O) for the right ear in red and a cross (X) for the left ear in blue — and connected
+    per ear, with shaded horizontal bands indicating severity of hearing loss (normal,
+    mild, moderate, severe, profound).
+  es: A standardized clinical audiogram that displays hearing test results, plotting
+    hearing threshold (dB HL) against test frequency for each ear. The y-axis is inverted
+    so that 0 dB HL (best hearing) sits at the top and increasing hearing loss extends
+    downward, while the x-axis is logarithmic spanning the standard audiometric frequencies
+    (125 Hz to 8 kHz). Thresholds are marked with the conventional symbols — a circle
+    (O) for the right ear in red and a cross (X) for the left ear in blue — and connected
+    per ear, with shaded horizontal bands indicating severity of hearing loss (normal,
+    mild, moderate, severe, profound).
+aliases:
+  en:
+  - audiogram-clinical
+  - audiogram clinical
+  - audiogram clinical
+  es:
+  - audiogram-clinical
+  - audiogram clinical
+  - audiogram clinical
+use_when:
+  en:
+  - A standardized clinical audiogram that displays hearing test results, plotting
+    hearing threshold (dB HL) against test frequency for each ear. The y-axis is inverted
+    so that 0 dB HL (best hearing) sits
+  es:
+  - A standardized clinical audiogram that displays hearing test results, plotting
+    hearing threshold (dB HL) against test frequency for each ear. The y-axis is inverted
+    so that 0 dB HL (best hearing) sits
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Audiology clinics recording and interpreting pure-tone audiometry results to diagnose
+    and grade hearing loss
+  - ENT (otolaryngology) practices distinguishing conductive, sensorineural, and mixed
+    hearing loss patterns across ears
+  - Occupational health programs screening for noise-induced hearing loss in workers
+    exposed to loud environments
+  - Pediatric and educational audiology documenting hearing thresholds for hearing-aid
+    fitting and follow-up
+  es:
+  - Audiology clinics recording and interpreting pure-tone audiometry results to diagnose
+    and grade hearing loss
+  - ENT (otolaryngology) practices distinguishing conductive, sensorineural, and mixed
+    hearing loss patterns across ears
+  - Occupational health programs screening for noise-induced hearing loss in workers
+    exposed to loud environments
+  - Pediatric and educational audiology documenting hearing thresholds for hearing-aid
+    fitting and follow-up
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - scatter
+  data_type:
+  - numeric
+  - paired
+  domain:
+  - healthcare
+  - science
+  features:
+  - annotated
+  - comparison
+  - threshold
+keywords:
+  en:
+  - audiogram
+  - clinical
+  - line
+  - scatter
+  - numeric
+  - paired
+  - healthcare
+  - science
+  - annotated
+  - comparison
+  - threshold
+  es:
+  - audiogram
+  - clinical
+  - line
+  - scatter
+  - numérico
+  - paired
+  - healthcare
+  - ciencia
+  - annotated
+  - comparación
+  - threshold
+implementations:
+  javascript:
+    chartjs: plots/audiogram-clinical/implementations/javascript/chartjs.js
+    d3: plots/audiogram-clinical/implementations/javascript/d3.js
+    echarts: plots/audiogram-clinical/implementations/javascript/echarts.js
+    highcharts: plots/audiogram-clinical/implementations/javascript/highcharts.js
+    muix: plots/audiogram-clinical/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/audiogram-clinical/implementations/julia/makie.jl
+  python:
+    altair: plots/audiogram-clinical/implementations/python/altair.py
+    bokeh: plots/audiogram-clinical/implementations/python/bokeh.py
+    letsplot: plots/audiogram-clinical/implementations/python/letsplot.py
+    matplotlib: plots/audiogram-clinical/implementations/python/matplotlib.py
+    plotly: plots/audiogram-clinical/implementations/python/plotly.py
+    plotnine: plots/audiogram-clinical/implementations/python/plotnine.py
+    pygal: plots/audiogram-clinical/implementations/python/pygal.py
+    seaborn: plots/audiogram-clinical/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/audiogram-clinical/implementations/r/ggplot2.R
+notes:
+- 'Y-axis: hearing threshold in dB HL, **inverted** so 0 dB HL is at the top and values
+  increase downward (typical range -10 to 120 dB HL, gridlines every 10 dB)'
+- 'X-axis: **logarithmic** frequency from 125 Hz to 8 kHz; label octave frequencies
+  as ticks (125, 250, 500, 1k, 2k, 4k, 8k) using kHz shorthand where conventional'
+- 'Right ear: red, circle (O) marker, solid connecting line. Left ear: blue, cross
+  (X) marker, solid connecting line (dashed line is an acceptable convention to distinguish
+  ears)'
+source: anyplot
+anyplot_updated: null

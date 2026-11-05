@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    NEVEN Launcher Font Configuration
+    
+    Computer Modern fonts need to be added manually:
+    - computer_modern_regular.ttf
+    - computer_modern_bold.ttf
+    - computer_modern_italic.ttf
+    - computer_modern_bold_italic.ttf
+    
+    Download from: https://www.fontsquirrel.com/fonts/computer-modern
+    Or use Latin Modern as alternative: https://www.fontsquirrel.com/fonts/latin-modern-roman
+-->
+<resources>
+    <!-- Placeholder - fonts will be added separately -->
+</resources>

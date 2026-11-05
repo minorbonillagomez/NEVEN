@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: subplot-mosaic
+name:
+  en: Mosaic Subplot Layout with Varying Sizes
+  es: Subplot Mosaic
+description:
+  en: A complex subplot layout where different subplots can have varying sizes and
+    arrangements using intuitive ASCII-art style string definitions. Unlike GridSpec
+    approaches that require explicit row/column spanning, mosaic layouts allow defining
+    layouts through visual string patterns (e.g., "AB;CC" creates A and B on top,
+    C spanning below), making complex configurations more readable and maintainable.
+  es: A complex subplot layout where different subplots can have varying sizes and
+    arrangements using intuitive ASCII-art style string definitions. Unlike GridSpec
+    approaches that require explicit row/column spanning, mosaic layouts allow defining
+    layouts through visual string patterns (e.g., "AB;CC" creates A and B on top,
+    C spanning below), making complex configurations more readable and maintainable.
+aliases:
+  en:
+  - subplot-mosaic
+  - subplot mosaic
+  - subplot mosaic
+  es:
+  - subplot-mosaic
+  - subplot mosaic
+  - subplot mosaic
+use_when:
+  en:
+  - A complex subplot layout where different subplots can have varying sizes and arrangements
+    using intuitive ASCII-art style string definitions. Unlike GridSpec approaches
+    that require explicit row/colum
+  es:
+  - A complex subplot layout where different subplots can have varying sizes and arrangements
+    using intuitive ASCII-art style string definitions. Unlike GridSpec approaches
+    that require explicit row/colum
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Dashboard layouts with a dominant visualization surrounded by smaller supporting
+    charts
+  - Scientific figures where related plots need non-uniform visual emphasis
+  - Multi-panel reports combining wide time series with stacked detail panels
+  - Exploratory data analysis layouts with flexible panel arrangements
+  es:
+  - Dashboard layouts with a dominant visualization surrounded by smaller supporting
+    charts
+  - Scientific figures where related plots need non-uniform visual emphasis
+  - Multi-panel reports combining wide time series with stacked detail panels
+  - Exploratory data analysis layouts with flexible panel arrangements
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - mosaic
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - science
+  - business
+  features:
+  - layout
+  - multi
+  - asymmetric
+keywords:
+  en:
+  - subplot
+  - mosaic
+  - numeric
+  - categorical
+  - general
+  - science
+  - business
+  - layout
+  - multi
+  - asymmetric
+  es:
+  - subplot
+  - mosaic
+  - numérico
+  - categórico
+  - general
+  - ciencia
+  - negocios
+  - layout
+  - multi
+  - asymmetric
+implementations:
+  javascript:
+    chartjs: plots/subplot-mosaic/implementations/javascript/chartjs.js
+    d3: plots/subplot-mosaic/implementations/javascript/d3.js
+    echarts: plots/subplot-mosaic/implementations/javascript/echarts.js
+    highcharts: plots/subplot-mosaic/implementations/javascript/highcharts.js
+    muix: plots/subplot-mosaic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/subplot-mosaic/implementations/julia/makie.jl
+  python:
+    altair: plots/subplot-mosaic/implementations/python/altair.py
+    bokeh: plots/subplot-mosaic/implementations/python/bokeh.py
+    letsplot: plots/subplot-mosaic/implementations/python/letsplot.py
+    matplotlib: plots/subplot-mosaic/implementations/python/matplotlib.py
+    plotly: plots/subplot-mosaic/implementations/python/plotly.py
+    plotnine: plots/subplot-mosaic/implementations/python/plotnine.py
+    pygal: plots/subplot-mosaic/implementations/python/pygal.py
+    seaborn: plots/subplot-mosaic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/subplot-mosaic/implementations/r/ggplot2.R
+notes:
+- Layout defined using string patterns where repeated characters indicate spanning
+- Support patterns like "AAB;AAB;CCC" for complex asymmetric layouts
+- Allow empty cells using placeholder characters (e.g., "." for gaps)
+source: anyplot
+anyplot_updated: 2026-05-14 16:47:36+00:00

@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: ecg-twelve-lead
+name:
+  en: ECG/EKG 12-Lead Waveform Display
+  es: Ecg Twelve Lead
+description:
+  en: A multi-channel electrocardiogram display showing the 12 standard ECG leads
+    arranged in clinical format. Each lead displays realistic P-QRS-T wave complexes
+    on a medical-standard grid background with calibration markers. This visualization
+    replicates the familiar layout used in hospitals and clinics worldwide, making
+    it immediately recognizable to healthcare professionals and useful for medical
+    education.
+  es: A multi-channel electrocardiogram display showing the 12 standard ECG leads
+    arranged in clinical format. Each lead displays realistic P-QRS-T wave complexes
+    on a medical-standard grid background with calibration markers. This visualization
+    replicates the familiar layout used in hospitals and clinics worldwide, making
+    it immediately recognizable to healthcare professionals and useful for medical
+    education.
+aliases:
+  en:
+  - ecg-twelve-lead
+  - ecg twelve lead
+  - ecg twelve lead
+  es:
+  - ecg-twelve-lead
+  - ecg twelve lead
+  - ecg twelve lead
+use_when:
+  en:
+  - 'A multi-channel electrocardiogram display showing the 12 standard ECG leads arranged
+    in clinical format. Each lead displays realistic P-QRS-T wave complexes on a medical-standard
+    grid background with '
+  es:
+  - 'A multi-channel electrocardiogram display showing the 12 standard ECG leads arranged
+    in clinical format. Each lead displays realistic P-QRS-T wave complexes on a medical-standard
+    grid background with '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Cardiology: displaying heart rhythm and electrical activity for clinical review'
+  - 'Medical education: teaching ECG interpretation with labeled leads and waveform
+    anatomy'
+  - 'Clinical dashboards: patient monitoring displays in hospital information systems'
+  - 'Research: cardiac signal analysis and arrhythmia classification visualization'
+  es:
+  - 'Cardiology: displaying heart rhythm and electrical activity for clinical review'
+  - 'Medical education: teaching ECG interpretation with labeled leads and waveform
+    anatomy'
+  - 'Clinical dashboards: patient monitoring displays in hospital information systems'
+  - 'Research: cardiac signal analysis and arrhythmia classification visualization'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - healthcare
+  - science
+  features:
+  - multi
+  - annotated
+  - grid
+keywords:
+  en:
+  - ecg
+  - twelve
+  - lead
+  - line
+  - numeric
+  - timeseries
+  - healthcare
+  - science
+  - multi
+  - annotated
+  - grid
+  es:
+  - ecg
+  - twelve
+  - lead
+  - line
+  - numérico
+  - timeseries
+  - healthcare
+  - ciencia
+  - multi
+  - annotated
+  - grid
+implementations:
+  javascript:
+    chartjs: plots/ecg-twelve-lead/implementations/javascript/chartjs.js
+    d3: plots/ecg-twelve-lead/implementations/javascript/d3.js
+    echarts: plots/ecg-twelve-lead/implementations/javascript/echarts.js
+    highcharts: plots/ecg-twelve-lead/implementations/javascript/highcharts.js
+    muix: plots/ecg-twelve-lead/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ecg-twelve-lead/implementations/julia/makie.jl
+  python:
+    altair: plots/ecg-twelve-lead/implementations/python/altair.py
+    bokeh: plots/ecg-twelve-lead/implementations/python/bokeh.py
+    letsplot: plots/ecg-twelve-lead/implementations/python/letsplot.py
+    matplotlib: plots/ecg-twelve-lead/implementations/python/matplotlib.py
+    plotly: plots/ecg-twelve-lead/implementations/python/plotly.py
+    plotnine: plots/ecg-twelve-lead/implementations/python/plotnine.py
+    pygal: plots/ecg-twelve-lead/implementations/python/pygal.py
+    seaborn: plots/ecg-twelve-lead/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ecg-twelve-lead/implementations/r/ggplot2.R
+notes:
+- 'Arrange leads in standard clinical 3x4 grid layout: rows (I, aVR, V1, V4), (II,
+  aVL, V2, V5), (III, aVF, V3, V6)'
+- Optionally include a full-length Lead II rhythm strip across the bottom
+- 'Grid background should use standard ECG paper styling: light lines at 1mm intervals,
+  bold lines at 5mm intervals, with a distinct paper-like color (light red/pink or
+  light orange); on a dark background keep the ruling red or pink, muted or deepened
+  to stay visible yet subordinate, over the theme background or a faintly red-tinted
+  panel'
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

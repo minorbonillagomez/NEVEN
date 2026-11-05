@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: tree-decision
+name:
+  en: Decision Tree Visualization with Probabilities
+  es: Tree Decision
+description:
+  en: A tree-structured diagram for sequential decision analysis, displaying decision
+    nodes (squares), chance nodes (circles), and terminal outcome nodes (triangles)
+    connected by branching paths. Each chance branch is labeled with probabilities,
+    terminal nodes show payoff values, and Expected Monetary Values (EMV) are calculated
+    via rollback at each node. Rejected (pruned) branches are visually marked, making
+    it easy to trace the optimal decision path through a multi-stage problem.
+  es: A tree-structured diagram for sequential decision analysis, displaying decision
+    nodes (squares), chance nodes (circles), and terminal outcome nodes (triangles)
+    connected by branching paths. Each chance branch is labeled with probabilities,
+    terminal nodes show payoff values, and Expected Monetary Values (EMV) are calculated
+    via rollback at each node. Rejected (pruned) branches are visually marked, making
+    it easy to trace the optimal decision path through a multi-stage problem.
+aliases:
+  en:
+  - tree-decision
+  - tree decision
+  - tree decision
+  es:
+  - tree-decision
+  - tree decision
+  - tree decision
+use_when:
+  en:
+  - A tree-structured diagram for sequential decision analysis, displaying decision
+    nodes (squares), chance nodes (circles), and terminal outcome nodes (triangles)
+    connected by branching paths. Each chanc
+  es:
+  - A tree-structured diagram for sequential decision analysis, displaying decision
+    nodes (squares), chance nodes (circles), and terminal outcome nodes (triangles)
+    connected by branching paths. Each chanc
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Business strategy: evaluating whether to launch a new product line by comparing
+    investment options under uncertain market conditions'
+  - 'Medical decision-making: choosing between treatment pathways based on probability
+    of outcomes and quality-adjusted life years'
+  - 'Project management: analyzing go/no-go decisions for R&D projects with uncertain
+    technical success and market demand'
+  - 'Operations research: optimizing sequential decisions such as equipment replacement
+    or capacity expansion under uncertainty'
+  es:
+  - 'Business strategy: evaluating whether to launch a new product line by comparing
+    investment options under uncertain market conditions'
+  - 'Medical decision-making: choosing between treatment pathways based on probability
+    of outcomes and quality-adjusted life years'
+  - 'Project management: analyzing go/no-go decisions for R&D projects with uncertain
+    technical success and market demand'
+  - 'Operations research: optimizing sequential decisions such as equipment replacement
+    or capacity expansion under uncertainty'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - dendrogram
+  data_type:
+  - hierarchical
+  - numeric
+  - categorical
+  domain:
+  - business
+  - finance
+  features:
+  - annotated
+  - stepwise
+  - comparison
+keywords:
+  en:
+  - tree
+  - decision
+  - dendrogram
+  - hierarchical
+  - numeric
+  - categorical
+  - business
+  - finance
+  - annotated
+  - stepwise
+  - comparison
+  es:
+  - tree
+  - decision
+  - dendrogram
+  - jerárquico
+  - numérico
+  - categórico
+  - negocios
+  - finanzas
+  - annotated
+  - stepwise
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/tree-decision/implementations/javascript/chartjs.js
+    d3: plots/tree-decision/implementations/javascript/d3.js
+    echarts: plots/tree-decision/implementations/javascript/echarts.js
+    highcharts: plots/tree-decision/implementations/javascript/highcharts.js
+    muix: plots/tree-decision/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/tree-decision/implementations/julia/makie.jl
+  python:
+    altair: plots/tree-decision/implementations/python/altair.py
+    bokeh: plots/tree-decision/implementations/python/bokeh.py
+    letsplot: plots/tree-decision/implementations/python/letsplot.py
+    matplotlib: plots/tree-decision/implementations/python/matplotlib.py
+    plotly: plots/tree-decision/implementations/python/plotly.py
+    plotnine: plots/tree-decision/implementations/python/plotnine.py
+    pygal: plots/tree-decision/implementations/python/pygal.py
+    seaborn: plots/tree-decision/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/tree-decision/implementations/r/ggplot2.R
+notes:
+- Decision nodes should be rendered as squares, chance nodes as circles, and terminal
+  nodes as right-pointing triangles
+- Left-to-right layout is preferred for readability
+- Pruned branches should be marked with a double-strike or cross mark and rendered
+  with reduced opacity or a dashed line
+source: anyplot
+anyplot_updated: '2026-06-02T00:00:00Z'

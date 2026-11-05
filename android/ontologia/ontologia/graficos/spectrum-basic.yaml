@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: spectrum-basic
+name:
+  en: Frequency Spectrum Plot
+  es: Spectrum Basic Básico
+description:
+  en: A frequency spectrum plot displays signal amplitude or power across a range
+    of frequencies, showing the frequency domain representation of time-series data.
+    This visualization reveals the frequency components present in a signal, making
+    it essential for identifying dominant frequencies, harmonics, and noise characteristics.
+    It is fundamental in signal processing, audio engineering, and vibration analysis.
+  es: A frequency spectrum plot displays signal amplitude or power across a range
+    of frequencies, showing the frequency domain representation of time-series data.
+    This visualization reveals the frequency components present in a signal, making
+    it essential for identifying dominant frequencies, harmonics, and noise characteristics.
+    It is fundamental in signal processing, audio engineering, and vibration analysis.
+aliases:
+  en:
+  - spectrum-basic
+  - spectrum basic
+  - basic spectrum basic
+  es:
+  - spectrum-basic
+  - spectrum basic
+  - spectrum basic básico
+use_when:
+  en:
+  - A frequency spectrum plot displays signal amplitude or power across a range of
+    frequencies, showing the frequency domain representation of time-series data.
+    This visualization reveals the frequency co
+  es:
+  - A frequency spectrum plot displays signal amplitude or power across a range of
+    frequencies, showing the frequency domain representation of time-series data.
+    This visualization reveals the frequency co
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing audio signals to identify frequency content such as musical notes, speech
+    formants, or noise interference
+  - Detecting machinery vibration patterns and identifying potential mechanical faults
+    based on characteristic frequencies
+  - Examining electrical signals to find interference frequencies or verify filter
+    performance
+  es:
+  - Analyzing audio signals to identify frequency content such as musical notes, speech
+    formants, or noise interference
+  - Detecting machinery vibration patterns and identifying potential mechanical faults
+    based on characteristic frequencies
+  - Examining electrical signals to find interference frequencies or verify filter
+    performance
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  - frequency
+  domain:
+  - general
+  - engineering
+  - science
+  - signal-processing
+  features:
+  - basic
+  - signal-analysis
+keywords:
+  en:
+  - spectrum
+  - basic
+  - line
+  - numeric
+  - continuous
+  - frequency
+  - general
+  - engineering
+  - science
+  - signal-processing
+  - signal-analysis
+  es:
+  - spectrum
+  - básico
+  - line
+  - numérico
+  - continuo
+  - frequency
+  - general
+  - ingeniería
+  - ciencia
+  - signal-processing
+  - basic
+  - signal-analysis
+implementations:
+  javascript:
+    chartjs: plots/spectrum-basic/implementations/javascript/chartjs.js
+    d3: plots/spectrum-basic/implementations/javascript/d3.js
+    echarts: plots/spectrum-basic/implementations/javascript/echarts.js
+    highcharts: plots/spectrum-basic/implementations/javascript/highcharts.js
+    muix: plots/spectrum-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/spectrum-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/spectrum-basic/implementations/python/altair.py
+    bokeh: plots/spectrum-basic/implementations/python/bokeh.py
+    letsplot: plots/spectrum-basic/implementations/python/letsplot.py
+    matplotlib: plots/spectrum-basic/implementations/python/matplotlib.py
+    plotly: plots/spectrum-basic/implementations/python/plotly.py
+    plotnine: plots/spectrum-basic/implementations/python/plotnine.py
+    pygal: plots/spectrum-basic/implementations/python/pygal.py
+    seaborn: plots/spectrum-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/spectrum-basic/implementations/r/ggplot2.R
+notes:
+- Use logarithmic scale for frequency axis when spanning wide frequency ranges
+- Power spectral density (dB scale) is common for comparing signals with different
+  amplitudes
+- Include clear axis labels with units (Hz for frequency, dB or linear for amplitude)
+source: anyplot
+anyplot_updated: 2026-05-14 09:04:46+00:00

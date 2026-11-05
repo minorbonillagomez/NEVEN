@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: polar-bar
+name:
+  en: Polar Bar Chart (Wind Rose)
+  es: Gráfico Polar
+description:
+  en: A bar chart arranged in a circle with bars radiating outward from the center.
+    Each bar's angle represents a category (often direction) and length represents
+    magnitude. Commonly used as a wind rose for meteorological data.
+  es: A bar chart arranged in a circle with bars radiating outward from the center.
+    Each bar's angle represents a category (often direction) and length represents
+    magnitude. Commonly used as a wind rose for meteorological data.
+aliases:
+  en:
+  - polar-bar
+  - polar bar
+  - polar chart
+  es:
+  - polar-bar
+  - polar bar
+  - gráfico polar
+use_when:
+  en:
+  - A bar chart arranged in a circle with bars radiating outward from the center.
+    Each bar's angle represents a category (often direction) and length represents
+    magnitude. Commonly used as a wind rose for
+  es:
+  - A bar chart arranged in a circle with bars radiating outward from the center.
+    Each bar's angle represents a category (often direction) and length represents
+    magnitude. Commonly used as a wind rose for
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Wind direction and speed distribution
+  - Directional frequency analysis
+  - Cyclical category comparisons
+  - Compass-based data visualization
+  es:
+  - Wind direction and speed distribution
+  - Directional frequency analysis
+  - Cyclical category comparisons
+  - Compass-based data visualization
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - polar
+  - bar
+  domain:
+  - meteorology
+  - science
+  data_type:
+  - categorical
+  - numeric
+  - directional
+  features:
+  - circular
+  - radial
+keywords:
+  en:
+  - polar chart
+  - bar chart
+  - polar
+  - bar
+  - meteorology
+  - science
+  - categorical
+  - numeric
+  - directional
+  - circular
+  - radial
+  es:
+  - gráfico polar
+  - gráfico de barras
+  - polar
+  - bar
+  - meteorology
+  - ciencia
+  - categórico
+  - numérico
+  - directional
+  - circular
+  - radial
+implementations:
+  javascript:
+    chartjs: plots/polar-bar/implementations/javascript/chartjs.js
+    d3: plots/polar-bar/implementations/javascript/d3.js
+    echarts: plots/polar-bar/implementations/javascript/echarts.js
+    highcharts: plots/polar-bar/implementations/javascript/highcharts.js
+    muix: plots/polar-bar/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/polar-bar/implementations/julia/makie.jl
+  python:
+    altair: plots/polar-bar/implementations/python/altair.py
+    bokeh: plots/polar-bar/implementations/python/bokeh.py
+    letsplot: plots/polar-bar/implementations/python/letsplot.py
+    matplotlib: plots/polar-bar/implementations/python/matplotlib.py
+    plotly: plots/polar-bar/implementations/python/plotly.py
+    plotnine: plots/polar-bar/implementations/python/plotnine.py
+    pygal: plots/polar-bar/implementations/python/pygal.py
+    seaborn: plots/polar-bar/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/polar-bar/implementations/r/ggplot2.R
+notes:
+- Bars extend outward from center
+- Can be stacked for multiple categories (e.g., wind speed ranges)
+- Often uses 8 or 16 compass directions
+source: anyplot
+anyplot_updated: '2026-05-13T19:45:32Z'

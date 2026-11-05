@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: parliament-basic
+name:
+  en: Parliament Seat Chart
+  es: Parliament Basic Básico
+description:
+  en: A semicircular parliament seat chart visualizes political party representation
+    by arranging seats in concentric arcs. Each seat is displayed as an individual
+    dot or segment, colored by party affiliation. This visualization is ideal for
+    showing the composition of legislative bodies, election results, and voting bloc
+    distributions at a glance.
+  es: A semicircular parliament seat chart visualizes political party representation
+    by arranging seats in concentric arcs. Each seat is displayed as an individual
+    dot or segment, colored by party affiliation. This visualization is ideal for
+    showing the composition of legislative bodies, election results, and voting bloc
+    distributions at a glance.
+aliases:
+  en:
+  - parliament-basic
+  - parliament basic
+  - basic parliament basic
+  es:
+  - parliament-basic
+  - parliament basic
+  - parliament basic básico
+use_when:
+  en:
+  - A semicircular parliament seat chart visualizes political party representation
+    by arranging seats in concentric arcs. Each seat is displayed as an individual
+    dot or segment, colored by party affiliati
+  es:
+  - A semicircular parliament seat chart visualizes political party representation
+    by arranging seats in concentric arcs. Each seat is displayed as an individual
+    dot or segment, colored by party affiliati
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing election results showing party seat distributions in parliament
+  - Displaying committee or board composition by faction or affiliation
+  - Analyzing voting bloc strength and coalition possibilities
+  - Comparing party representation across different legislative periods
+  es:
+  - Visualizing election results showing party seat distributions in parliament
+  - Displaying committee or board composition by faction or affiliation
+  - Analyzing voting bloc strength and coalition possibilities
+  - Comparing party representation across different legislative periods
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - parliament
+  - point
+  data_type:
+  - categorical
+  - discrete
+  domain:
+  - general
+  - politics
+  features:
+  - basic
+  - proportional
+  - radial
+  - semicircular
+keywords:
+  en:
+  - parliament
+  - basic
+  - point
+  - categorical
+  - discrete
+  - general
+  - politics
+  - proportional
+  - radial
+  - semicircular
+  es:
+  - parliament
+  - básico
+  - point
+  - categórico
+  - discreto
+  - general
+  - politics
+  - basic
+  - proportional
+  - radial
+  - semicircular
+implementations:
+  javascript:
+    chartjs: plots/parliament-basic/implementations/javascript/chartjs.js
+    d3: plots/parliament-basic/implementations/javascript/d3.js
+    echarts: plots/parliament-basic/implementations/javascript/echarts.js
+    highcharts: plots/parliament-basic/implementations/javascript/highcharts.js
+    muix: plots/parliament-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/parliament-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/parliament-basic/implementations/python/altair.py
+    bokeh: plots/parliament-basic/implementations/python/bokeh.py
+    letsplot: plots/parliament-basic/implementations/python/letsplot.py
+    matplotlib: plots/parliament-basic/implementations/python/matplotlib.py
+    plotly: plots/parliament-basic/implementations/python/plotly.py
+    plotnine: plots/parliament-basic/implementations/python/plotnine.py
+    pygal: plots/parliament-basic/implementations/python/pygal.py
+    seaborn: plots/parliament-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/parliament-basic/implementations/r/ggplot2.R
+notes:
+- Seats arranged in semicircular arcs from left to right
+- Individual seats rendered as dots or small segments
+- Legend should display party names with seat counts
+source: anyplot
+anyplot_updated: 2026-10-04 12:00:00+00:00

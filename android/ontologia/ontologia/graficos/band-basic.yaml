@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: band-basic
+name:
+  en: Basic Band Plot
+  es: Band Basic Básico
+description:
+  en: A band plot displays a filled region between two boundary lines, commonly used
+    to show confidence intervals, prediction intervals, or ranges around a central
+    trend line. The semi-transparent band provides visual representation of uncertainty
+    or variability while maintaining visibility of underlying data or overlapping
+    elements.
+  es: A band plot displays a filled region between two boundary lines, commonly used
+    to show confidence intervals, prediction intervals, or ranges around a central
+    trend line. The semi-transparent band provides visual representation of uncertainty
+    or variability while maintaining visibility of underlying data or overlapping
+    elements.
+aliases:
+  en:
+  - band-basic
+  - band basic
+  - basic band basic
+  es:
+  - band-basic
+  - band basic
+  - band basic básico
+use_when:
+  en:
+  - A band plot displays a filled region between two boundary lines, commonly used
+    to show confidence intervals, prediction intervals, or ranges around a central
+    trend line. The semi-transparent band prov
+  es:
+  - A band plot displays a filled region between two boundary lines, commonly used
+    to show confidence intervals, prediction intervals, or ranges around a central
+    trend line. The semi-transparent band prov
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying confidence intervals around regression lines in statistical analysis
+  - Showing forecast uncertainty ranges in time series predictions
+  - Visualizing min/max ranges or tolerance zones in manufacturing quality control
+  - Representing measurement uncertainty bands in scientific experiments
+  es:
+  - Displaying confidence intervals around regression lines in statistical analysis
+  - Showing forecast uncertainty ranges in time series predictions
+  - Visualizing min/max ranges or tolerance zones in manufacturing quality control
+  - Representing measurement uncertainty bands in scientific experiments
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - band
+  - area
+  data_type:
+  - numeric
+  - continuous
+  - time-series
+  domain:
+  - statistics
+  - science
+  - general
+  - engineering
+  features:
+  - basic
+  - confidence-interval
+  - uncertainty
+  - 2d
+keywords:
+  en:
+  - band
+  - basic
+  - area
+  - numeric
+  - continuous
+  - time series
+  - statistics
+  - science
+  - general
+  - engineering
+  - confidence-interval
+  - uncertainty
+  - 2d
+  es:
+  - band
+  - básico
+  - area
+  - numérico
+  - continuo
+  - series temporales
+  - estadística
+  - ciencia
+  - general
+  - ingeniería
+  - basic
+  - confidence-interval
+  - uncertainty
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/band-basic/implementations/javascript/chartjs.js
+    d3: plots/band-basic/implementations/javascript/d3.js
+    echarts: plots/band-basic/implementations/javascript/echarts.js
+    highcharts: plots/band-basic/implementations/javascript/highcharts.js
+    muix: plots/band-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/band-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/band-basic/implementations/python/altair.py
+    bokeh: plots/band-basic/implementations/python/bokeh.py
+    letsplot: plots/band-basic/implementations/python/letsplot.py
+    matplotlib: plots/band-basic/implementations/python/matplotlib.py
+    plotly: plots/band-basic/implementations/python/plotly.py
+    plotnine: plots/band-basic/implementations/python/plotnine.py
+    pygal: plots/band-basic/implementations/python/pygal.py
+    seaborn: plots/band-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/band-basic/implementations/r/ggplot2.R
+notes:
+- Use semi-transparent fill (alpha 0.2-0.4) to allow visibility of overlapping elements
+- Include a central line in a contrasting color/style when showing mean or median
+- Boundaries and center line pass through every data value, with straight or monotone-interpolated
+  segments; no fitted smoothing
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

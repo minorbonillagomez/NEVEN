@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: gauge-basic
+name:
+  en: Basic Gauge Chart
+  es: Gráfico de Medidor Básico
+description:
+  en: A gauge chart (also known as a speedometer chart) displays a single value within
+    a defined range using a semi-circular or circular dial. It is ideal for showing
+    progress toward a goal, performance metrics, or any KPI that needs to be evaluated
+    against minimum and maximum bounds. The visual metaphor of a speedometer makes
+    it intuitive to quickly assess whether a value is in an acceptable range.
+  es: A gauge chart (also known as a speedometer chart) displays a single value within
+    a defined range using a semi-circular or circular dial. It is ideal for showing
+    progress toward a goal, performance metrics, or any KPI that needs to be evaluated
+    against minimum and maximum bounds. The visual metaphor of a speedometer makes
+    it intuitive to quickly assess whether a value is in an acceptable range.
+aliases:
+  en:
+  - gauge-basic
+  - gauge basic
+  - basic gauge chart
+  es:
+  - gauge-basic
+  - gauge basic
+  - gráfico de medidor básico
+use_when:
+  en:
+  - A gauge chart (also known as a speedometer chart) displays a single value within
+    a defined range using a semi-circular or circular dial. It is ideal for showing
+    progress toward a goal, performance met
+  es:
+  - A gauge chart (also known as a speedometer chart) displays a single value within
+    a defined range using a semi-circular or circular dial. It is ideal for showing
+    progress toward a goal, performance met
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying a company's quarterly revenue against annual targets in executive dashboards
+  - Showing CPU or memory utilization percentage in system monitoring tools
+  - Visualizing customer satisfaction scores or Net Promoter Scores (NPS) in business
+    analytics
+  - Indicating completion percentage for project milestones or fundraising goals
+  es:
+  - Displaying a company's quarterly revenue against annual targets in executive dashboards
+  - Showing CPU or memory utilization percentage in system monitoring tools
+  - Visualizing customer satisfaction scores or Net Promoter Scores (NPS) in business
+    analytics
+  - Indicating completion percentage for project milestones or fundraising goals
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - gauge
+  data_type:
+  - numeric
+  domain:
+  - business
+  - monitoring
+  features:
+  - basic
+  - single-value
+  - kpi
+keywords:
+  en:
+  - gauge chart
+  - basic
+  - gauge
+  - numeric
+  - business
+  - monitoring
+  - single-value
+  - kpi
+  es:
+  - gráfico de medidor
+  - básico
+  - gauge
+  - numérico
+  - negocios
+  - monitoring
+  - basic
+  - single-value
+  - kpi
+implementations:
+  javascript:
+    chartjs: plots/gauge-basic/implementations/javascript/chartjs.js
+    d3: plots/gauge-basic/implementations/javascript/d3.js
+    echarts: plots/gauge-basic/implementations/javascript/echarts.js
+    highcharts: plots/gauge-basic/implementations/javascript/highcharts.js
+    muix: plots/gauge-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/gauge-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/gauge-basic/implementations/python/altair.py
+    bokeh: plots/gauge-basic/implementations/python/bokeh.py
+    letsplot: plots/gauge-basic/implementations/python/letsplot.py
+    matplotlib: plots/gauge-basic/implementations/python/matplotlib.py
+    plotly: plots/gauge-basic/implementations/python/plotly.py
+    plotnine: plots/gauge-basic/implementations/python/plotnine.py
+    pygal: plots/gauge-basic/implementations/python/pygal.py
+    seaborn: plots/gauge-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/gauge-basic/implementations/r/ggplot2.R
+notes:
+- Use a semi-circular gauge for dashboard widgets where vertical space is limited
+- Color zones (red/yellow/green) should follow intuitive conventions (red = bad, green
+  = good)
+- Display the current value prominently as a label, typically centered below the gauge
+source: anyplot
+anyplot_updated: 2025-12-14 19:33:31+00:00

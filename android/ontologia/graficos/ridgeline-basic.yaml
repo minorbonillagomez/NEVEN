@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: ridgeline-basic
+name:
+  en: Basic Ridgeline Plot
+  es: Gráfico de Crestas Básico
+description:
+  en: A ridgeline plot (also known as Joy Plot, named after the Joy Division album
+    cover) displays the distribution of multiple groups by stacking partially overlapping
+    density curves vertically. This creates a mountain ridge appearance that allows
+    efficient comparison of many distributions simultaneously while maintaining a
+    compact and visually striking presentation.
+  es: A ridgeline plot (also known as Joy Plot, named after the Joy Division album
+    cover) displays the distribution of multiple groups by stacking partially overlapping
+    density curves vertically. This creates a mountain ridge appearance that allows
+    efficient comparison of many distributions simultaneously while maintaining a
+    compact and visually striking presentation.
+aliases:
+  en:
+  - ridgeline-basic
+  - ridgeline basic
+  - basic ridgeline plot
+  es:
+  - ridgeline-basic
+  - ridgeline basic
+  - gráfico de crestas básico
+use_when:
+  en:
+  - A ridgeline plot (also known as Joy Plot, named after the Joy Division album cover)
+    displays the distribution of multiple groups by stacking partially overlapping
+    density curves vertically. This creat
+  es:
+  - A ridgeline plot (also known as Joy Plot, named after the Joy Division album cover)
+    displays the distribution of multiple groups by stacking partially overlapping
+    density curves vertically. This creat
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing temperature distributions across months to reveal seasonal patterns
+  - Analyzing survey response distributions by demographic segments
+  - Visualizing population age distributions across different regions or time periods
+  - Showing how performance metrics vary across different teams or time windows
+  es:
+  - Comparing temperature distributions across months to reveal seasonal patterns
+  - Analyzing survey response distributions by demographic segments
+  - Visualizing population age distributions across different regions or time periods
+  - Showing how performance metrics vary across different teams or time windows
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - ridgeline
+  - density
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+  - comparison
+keywords:
+  en:
+  - ridgeline plot
+  - basic
+  - ridgeline
+  - density
+  - numeric
+  - categorical
+  - statistics
+  - general
+  - distribution
+  - comparison
+  es:
+  - gráfico de crestas
+  - básico
+  - ridgeline
+  - density
+  - numérico
+  - categórico
+  - estadística
+  - general
+  - basic
+  - distribución
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/ridgeline-basic/implementations/javascript/chartjs.js
+    d3: plots/ridgeline-basic/implementations/javascript/d3.js
+    echarts: plots/ridgeline-basic/implementations/javascript/echarts.js
+    highcharts: plots/ridgeline-basic/implementations/javascript/highcharts.js
+    muix: plots/ridgeline-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ridgeline-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/ridgeline-basic/implementations/python/altair.py
+    bokeh: plots/ridgeline-basic/implementations/python/bokeh.py
+    letsplot: plots/ridgeline-basic/implementations/python/letsplot.py
+    matplotlib: plots/ridgeline-basic/implementations/python/matplotlib.py
+    plotly: plots/ridgeline-basic/implementations/python/plotly.py
+    plotnine: plots/ridgeline-basic/implementations/python/plotnine.py
+    pygal: plots/ridgeline-basic/implementations/python/pygal.py
+    seaborn: plots/ridgeline-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ridgeline-basic/implementations/r/ggplot2.R
+notes:
+- Stack density curves vertically with partial overlap (typically 50-70% overlap)
+- Y-axis should display group labels rather than numeric values
+- Consider color gradients or distinct colors to differentiate ridges
+source: anyplot
+anyplot_updated: 2025-12-15 15:39:20+00:00

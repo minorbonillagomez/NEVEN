@@ -1,0 +1,135 @@
+entity_type: ChartType
+id: bar-stacked
+name:
+  en: Stacked Bar Chart
+  es: Gráfico de Barras Apilado
+description:
+  en: A stacked bar chart that displays multiple data series stacked on top of each
+    other within each category, showing both individual component values and their
+    cumulative totals. This visualization excels at revealing part-to-whole relationships
+    while maintaining the ability to compare totals across categories. Stacked bar
+    charts are particularly effective for composition analysis, where understanding
+    how different components contribute to a whole is as important as comparing totals.
+  es: A stacked bar chart that displays multiple data series stacked on top of each
+    other within each category, showing both individual component values and their
+    cumulative totals. This visualization excels at revealing part-to-whole relationships
+    while maintaining the ability to compare totals across categories. Stacked bar
+    charts are particularly effective for composition analysis, where understanding
+    how different components contribute to a whole is as important as comparing totals.
+aliases:
+  en:
+  - bar-stacked
+  - bar stacked
+  - stacked bar chart
+  es:
+  - bar-stacked
+  - bar stacked
+  - gráfico de barras apilado
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Analyzing budget allocations across departments showing expense categories as
+    stacked components
+  - Visualizing revenue composition over time with different product lines or regions
+    stacked
+  - Displaying survey responses where multiple answer options are stacked to show
+    total respondents per question
+  es:
+  - Analyzing budget allocations across departments showing expense categories as
+    stacked components
+  - Visualizing revenue composition over time with different product lines or regions
+    stacked
+  - Displaying survey responses where multiple answer options are stacked to show
+    total respondents per question
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  - stacked
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  - finance
+  features:
+  - stacked
+  - composition
+  - part-to-whole
+  - comparison
+keywords:
+  en:
+  - bar chart
+  - stacked
+  - bar
+  - categorical
+  - numeric
+  - general
+  - business
+  - finance
+  - composition
+  - part-to-whole
+  - comparison
+  es:
+  - gráfico de barras
+  - apilado
+  - bar
+  - stacked
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - finanzas
+  - composición
+  - part-to-whole
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/bar-stacked/implementations/javascript/chartjs.js
+    d3: plots/bar-stacked/implementations/javascript/d3.js
+    echarts: plots/bar-stacked/implementations/javascript/echarts.js
+    highcharts: plots/bar-stacked/implementations/javascript/highcharts.js
+    muix: plots/bar-stacked/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-stacked/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-stacked/implementations/python/altair.py
+    bokeh: plots/bar-stacked/implementations/python/bokeh.py
+    letsplot: plots/bar-stacked/implementations/python/letsplot.py
+    matplotlib: plots/bar-stacked/implementations/python/matplotlib.py
+    plotly: plots/bar-stacked/implementations/python/plotly.py
+    plotnine: plots/bar-stacked/implementations/python/plotnine.py
+    pygal: plots/bar-stacked/implementations/python/pygal.py
+    seaborn: plots/bar-stacked/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-stacked/implementations/r/ggplot2.R
+notes:
+- Use distinct, harmonious colors for each stacked component with a clear legend
+- Consider adding total value labels above each complete stack
+- Order components consistently across all bars (largest at bottom or by logical grouping)
+source: anyplot
+anyplot_updated: null

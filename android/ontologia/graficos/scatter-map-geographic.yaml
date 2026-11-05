@@ -1,0 +1,140 @@
+entity_type: ChartType
+id: scatter-map-geographic
+name:
+  en: Scatter Map with Geographic Points
+  es: Diagrama de Dispersión
+description:
+  en: A geographic scatter plot that displays data points on a world or regional map,
+    with each point positioned by its latitude and longitude coordinates. This visualization
+    is ideal for showing spatial distributions of events, locations, or measurements
+    across geographic areas. Points can optionally encode additional variables through
+    size and color, enabling multi-dimensional geographic analysis at a glance.
+  es: A geographic scatter plot that displays data points on a world or regional map,
+    with each point positioned by its latitude and longitude coordinates. This visualization
+    is ideal for showing spatial distributions of events, locations, or measurements
+    across geographic areas. Points can optionally encode additional variables through
+    size and color, enabling multi-dimensional geographic analysis at a glance.
+aliases:
+  en:
+  - scatter-map-geographic
+  - scatter map geographic
+  - scatter plot
+  es:
+  - scatter-map-geographic
+  - scatter map geographic
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Visualizing earthquake epicenters or natural disaster locations with magnitude
+    encoded as point size
+  - Mapping customer or store locations with sales volume represented by point size
+    and category by color
+  - Displaying sensor network readings across a geographic region with measurement
+    values encoded in color
+  - Tracking wildlife sightings or species distribution with population counts as
+    point size
+  es:
+  - Visualizing earthquake epicenters or natural disaster locations with magnitude
+    encoded as point size
+  - Mapping customer or store locations with sales volume represented by point size
+    and category by color
+  - Displaying sensor network readings across a geographic region with measurement
+    values encoded in color
+  - Tracking wildlife sightings or species distribution with population counts as
+    point size
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - map
+  data_type:
+  - geospatial
+  - numeric
+  domain:
+  - general
+  - science
+  - business
+  features:
+  - basic
+  - color-mapped
+  - proportional
+keywords:
+  en:
+  - scatter plot
+  - map
+  - geographic
+  - scatter
+  - geospatial
+  - numeric
+  - general
+  - science
+  - business
+  - basic
+  - color-mapped
+  - proportional
+  es:
+  - diagrama de dispersión
+  - mapa
+  - geographic
+  - scatter
+  - map
+  - geoespacial
+  - numérico
+  - general
+  - ciencia
+  - negocios
+  - basic
+  - color-mapped
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/scatter-map-geographic/implementations/javascript/chartjs.js
+    d3: plots/scatter-map-geographic/implementations/javascript/d3.js
+    echarts: plots/scatter-map-geographic/implementations/javascript/echarts.js
+    highcharts: plots/scatter-map-geographic/implementations/javascript/highcharts.js
+    muix: plots/scatter-map-geographic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-map-geographic/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-map-geographic/implementations/python/altair.py
+    bokeh: plots/scatter-map-geographic/implementations/python/bokeh.py
+    letsplot: plots/scatter-map-geographic/implementations/python/letsplot.py
+    matplotlib: plots/scatter-map-geographic/implementations/python/matplotlib.py
+    plotly: plots/scatter-map-geographic/implementations/python/plotly.py
+    plotnine: plots/scatter-map-geographic/implementations/python/plotnine.py
+    pygal: plots/scatter-map-geographic/implementations/python/pygal.py
+    seaborn: plots/scatter-map-geographic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-map-geographic/implementations/r/ggplot2.R
+notes:
+- Use an appropriate map projection (e.g., Natural Earth, Robinson for world maps;
+  Mercator for regional/city scale)
+- Include a basemap showing country boundaries, coastlines, or terrain for geographic
+  context
+- Add a color legend when color encoding is used, and a size legend when size varies
+source: anyplot
+anyplot_updated: null

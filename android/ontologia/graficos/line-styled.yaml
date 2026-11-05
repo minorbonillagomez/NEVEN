@@ -1,0 +1,118 @@
+entity_type: ChartType
+id: line-styled
+name:
+  en: Styled Line Plot
+  es: Gráfico de Líneas
+description:
+  en: A line plot using different line styles (solid, dashed, dotted, dash-dot) to
+    distinguish multiple data series. This is especially useful for black-and-white
+    printing or when color distinction is insufficient.
+  es: A line plot using different line styles (solid, dashed, dotted, dash-dot) to
+    distinguish multiple data series. This is especially useful for black-and-white
+    printing or when color distinction is insufficient.
+aliases:
+  en:
+  - line-styled
+  - line styled
+  - line chart
+  es:
+  - line-styled
+  - line styled
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing trends in print publications
+  - Distinguishing overlapping lines without color
+  - Accessibility-friendly visualizations
+  - Technical documentation with monochrome printing
+  es:
+  - Comparing trends in print publications
+  - Distinguishing overlapping lines without color
+  - Accessibility-friendly visualizations
+  - Technical documentation with monochrome printing
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  domain:
+  - general
+  - publishing
+  features:
+  - comparison
+  - line-styles
+  - multi
+  - printable
+  data_type:
+  - numeric
+  - continuous
+keywords:
+  en:
+  - line chart
+  - styled
+  - line
+  - general
+  - publishing
+  - comparison
+  - line-styles
+  - multi
+  - printable
+  - numeric
+  - continuous
+  es:
+  - gráfico de líneas
+  - styled
+  - line
+  - general
+  - publishing
+  - comparación
+  - line-styles
+  - multi
+  - printable
+  - numérico
+  - continuo
+implementations:
+  javascript:
+    chartjs: plots/line-styled/implementations/javascript/chartjs.js
+    d3: plots/line-styled/implementations/javascript/d3.js
+    echarts: plots/line-styled/implementations/javascript/echarts.js
+    highcharts: plots/line-styled/implementations/javascript/highcharts.js
+    muix: plots/line-styled/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-styled/implementations/julia/makie.jl
+  python:
+    altair: plots/line-styled/implementations/python/altair.py
+    bokeh: plots/line-styled/implementations/python/bokeh.py
+    letsplot: plots/line-styled/implementations/python/letsplot.py
+    matplotlib: plots/line-styled/implementations/python/matplotlib.py
+    plotly: plots/line-styled/implementations/python/plotly.py
+    plotnine: plots/line-styled/implementations/python/plotnine.py
+    pygal: plots/line-styled/implementations/python/pygal.py
+    seaborn: plots/line-styled/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-styled/implementations/r/ggplot2.R
+notes:
+- 'Standard styles: solid, dashed, dotted, dash-dot'
+- Include legend mapping styles to series names
+- Line width should be consistent across styles
+source: anyplot
+anyplot_updated: '2026-05-12T14:00:00Z'

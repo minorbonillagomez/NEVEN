@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: shap-waterfall
+name:
+  en: SHAP Waterfall Plot for Feature Attribution
+  es: Shap Waterfall
+description:
+  en: A waterfall-style chart showing how each feature contributes to pushing a model
+    prediction from a base value (expected model output) to the final predicted value.
+    Horizontal bar segments extend right for positive SHAP values and left for negative
+    SHAP values, stacking cumulatively so the viewer can trace the path from baseline
+    to prediction. This is a core ML explainability visualization for explaining individual
+    predictions, complementing the SHAP summary plot which shows feature effects across
+    many samples.
+  es: A waterfall-style chart showing how each feature contributes to pushing a model
+    prediction from a base value (expected model output) to the final predicted value.
+    Horizontal bar segments extend right for positive SHAP values and left for negative
+    SHAP values, stacking cumulatively so the viewer can trace the path from baseline
+    to prediction. This is a core ML explainability visualization for explaining individual
+    predictions, complementing the SHAP summary plot which shows feature effects across
+    many samples.
+aliases:
+  en:
+  - shap-waterfall
+  - shap waterfall
+  - shap waterfall
+  es:
+  - shap-waterfall
+  - shap waterfall
+  - shap waterfall
+use_when:
+  en:
+  - 'A waterfall-style chart showing how each feature contributes to pushing a model
+    prediction from a base value (expected model output) to the final predicted value.
+    Horizontal bar segments extend right '
+  es:
+  - 'A waterfall-style chart showing how each feature contributes to pushing a model
+    prediction from a base value (expected model output) to the final predicted value.
+    Horizontal bar segments extend right '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Explaining individual predictions in credit scoring models to auditors or loan
+    applicants
+  - Debugging unexpected model outputs in healthcare ML by identifying which features
+    drove the prediction
+  - Communicating feature impact to non-technical stakeholders in business decision-making
+  - Satisfying regulatory compliance requirements for model explainability (e.g.,
+    GDPR right to explanation)
+  es:
+  - Explaining individual predictions in credit scoring models to auditors or loan
+    applicants
+  - Debugging unexpected model outputs in healthcare ML by identifying which features
+    drove the prediction
+  - Communicating feature impact to non-technical stakeholders in business decision-making
+  - Satisfying regulatory compliance requirements for model explainability (e.g.,
+    GDPR right to explanation)
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - waterfall
+  - bar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - machine-learning
+  - model-evaluation
+  features:
+  - cumulative
+  - annotated
+  - color-mapped
+  - horizontal
+keywords:
+  en:
+  - shap
+  - waterfall chart
+  - waterfall
+  - bar
+  - numeric
+  - categorical
+  - machine learning
+  - model-evaluation
+  - cumulative
+  - annotated
+  - color-mapped
+  - horizontal
+  es:
+  - shap
+  - gráfico de cascada
+  - waterfall
+  - bar
+  - numérico
+  - categórico
+  - aprendizaje automático
+  - model-evaluation
+  - cumulative
+  - annotated
+  - color-mapped
+  - horizontal
+implementations:
+  javascript:
+    chartjs: plots/shap-waterfall/implementations/javascript/chartjs.js
+    d3: plots/shap-waterfall/implementations/javascript/d3.js
+    echarts: plots/shap-waterfall/implementations/javascript/echarts.js
+    highcharts: plots/shap-waterfall/implementations/javascript/highcharts.js
+    muix: plots/shap-waterfall/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/shap-waterfall/implementations/julia/makie.jl
+  python:
+    altair: plots/shap-waterfall/implementations/python/altair.py
+    bokeh: plots/shap-waterfall/implementations/python/bokeh.py
+    letsplot: plots/shap-waterfall/implementations/python/letsplot.py
+    matplotlib: plots/shap-waterfall/implementations/python/matplotlib.py
+    plotly: plots/shap-waterfall/implementations/python/plotly.py
+    plotnine: plots/shap-waterfall/implementations/python/plotnine.py
+    pygal: plots/shap-waterfall/implementations/python/pygal.py
+    seaborn: plots/shap-waterfall/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/shap-waterfall/implementations/r/ggplot2.R
+notes:
+- Order features by absolute SHAP value magnitude (largest contribution at top)
+- Cumulative bar segments flow from base_value to final_value
+- Color bars red/pink for positive SHAP contributions and blue for negative contributions
+source: anyplot
+anyplot_updated: null

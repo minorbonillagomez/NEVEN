@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: contour-density
+name:
+  en: Density Contour Plot
+  es: Gráfico de Contorno
+description:
+  en: A density contour plot (also known as a 2D KDE contour plot) displays the concentration
+    of points in a 2D scatter plot using contour lines. The contours connect points
+    of equal density, revealing clusters, patterns, and the overall bivariate distribution
+    shape.
+  es: A density contour plot (also known as a 2D KDE contour plot) displays the concentration
+    of points in a 2D scatter plot using contour lines. The contours connect points
+    of equal density, revealing clusters, patterns, and the overall bivariate distribution
+    shape.
+aliases:
+  en:
+  - contour-density
+  - contour density
+  - contour plot
+  es:
+  - contour-density
+  - contour density
+  - gráfico de contorno
+use_when:
+  en:
+  - A density contour plot (also known as a 2D KDE contour plot) displays the concentration
+    of points in a 2D scatter plot using contour lines. The contours connect points
+    of equal density, revealing clus
+  es:
+  - A density contour plot (also known as a 2D KDE contour plot) displays the concentration
+    of points in a 2D scatter plot using contour lines. The contours connect points
+    of equal density, revealing clus
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing bivariate distributions
+  - Finding clusters and patterns in large scatter datasets
+  - Geographic point concentration analysis
+  - Quality control (identifying process clusters)
+  - Scientific data where density matters more than individual points
+  es:
+  - Visualizing bivariate distributions
+  - Finding clusters and patterns in large scatter datasets
+  - Geographic point concentration analysis
+  - Quality control (identifying process clusters)
+  - Scientific data where density matters more than individual points
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - contour
+  - density
+  data_type:
+  - numeric
+  - continuous
+  - bivariate
+  domain:
+  - statistics
+  - science
+  features:
+  - 2d
+  - density
+  - clustering
+keywords:
+  en:
+  - contour plot
+  - density plot
+  - contour
+  - density
+  - numeric
+  - continuous
+  - bivariate
+  - statistics
+  - science
+  - 2d
+  - clustering
+  es:
+  - gráfico de contorno
+  - gráfico de densidad
+  - contour
+  - density
+  - numérico
+  - continuo
+  - bivariado
+  - estadística
+  - ciencia
+  - 2d
+  - clustering
+implementations:
+  javascript:
+    chartjs: plots/contour-density/implementations/javascript/chartjs.js
+    d3: plots/contour-density/implementations/javascript/d3.js
+    echarts: plots/contour-density/implementations/javascript/echarts.js
+    highcharts: plots/contour-density/implementations/javascript/highcharts.js
+    muix: plots/contour-density/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/contour-density/implementations/julia/makie.jl
+  python:
+    altair: plots/contour-density/implementations/python/altair.py
+    bokeh: plots/contour-density/implementations/python/bokeh.py
+    letsplot: plots/contour-density/implementations/python/letsplot.py
+    matplotlib: plots/contour-density/implementations/python/matplotlib.py
+    plotly: plots/contour-density/implementations/python/plotly.py
+    plotnine: plots/contour-density/implementations/python/plotnine.py
+    pygal: plots/contour-density/implementations/python/pygal.py
+    seaborn: plots/contour-density/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/contour-density/implementations/r/ggplot2.R
+notes:
+- Alternative to scatter plot for very large datasets (avoids overplotting)
+- Kernel density estimation (KDE) is used to compute density
+- Multiple contour levels show density gradients (inner = higher density)
+source: anyplot
+anyplot_updated: '2026-05-16T03:14:14Z'

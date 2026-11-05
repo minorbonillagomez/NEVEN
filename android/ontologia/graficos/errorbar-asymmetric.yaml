@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: errorbar-asymmetric
+name:
+  en: Asymmetric Error Bars Plot
+  es: Errorbar Asymmetric
+description:
+  en: An asymmetric error bar plot displays data points with separate upper and lower
+    error magnitudes, allowing different-sized bars extending above and below each
+    point. This visualization is essential for representing skewed distributions,
+    non-symmetric confidence intervals, or data where uncertainty differs in positive
+    and negative directions. Common applications include percentile-based intervals,
+    log-transformed data, and Bayesian credible intervals.
+  es: An asymmetric error bar plot displays data points with separate upper and lower
+    error magnitudes, allowing different-sized bars extending above and below each
+    point. This visualization is essential for representing skewed distributions,
+    non-symmetric confidence intervals, or data where uncertainty differs in positive
+    and negative directions. Common applications include percentile-based intervals,
+    log-transformed data, and Bayesian credible intervals.
+aliases:
+  en:
+  - errorbar-asymmetric
+  - errorbar asymmetric
+  - errorbar asymmetric
+  es:
+  - errorbar-asymmetric
+  - errorbar asymmetric
+  - errorbar asymmetric
+use_when:
+  en:
+  - An asymmetric error bar plot displays data points with separate upper and lower
+    error magnitudes, allowing different-sized bars extending above and below each
+    point. This visualization is essential fo
+  es:
+  - An asymmetric error bar plot displays data points with separate upper and lower
+    error magnitudes, allowing different-sized bars extending above and below each
+    point. This visualization is essential fo
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Scientific research presenting results with non-symmetric confidence intervals
+    (e.g., 5th-95th percentile)
+  - Financial forecasting showing different upside and downside risk projections
+  - Clinical trials displaying treatment effects with asymmetric uncertainty bounds
+  - Environmental monitoring reporting measurements with different detection limits
+    above and below
+  es:
+  - Scientific research presenting results with non-symmetric confidence intervals
+    (e.g., 5th-95th percentile)
+  - Financial forecasting showing different upside and downside risk projections
+  - Clinical trials displaying treatment effects with asymmetric uncertainty bounds
+  - Environmental monitoring reporting measurements with different detection limits
+    above and below
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - errorbar
+  - point
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  - science
+  features:
+  - asymmetric
+  - uncertainty
+  - confidence-interval
+keywords:
+  en:
+  - errorbar
+  - asymmetric
+  - point
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - science
+  - uncertainty
+  - confidence-interval
+  es:
+  - errorbar
+  - asymmetric
+  - point
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - ciencia
+  - uncertainty
+  - confidence-interval
+implementations:
+  javascript:
+    chartjs: plots/errorbar-asymmetric/implementations/javascript/chartjs.js
+    d3: plots/errorbar-asymmetric/implementations/javascript/d3.js
+    echarts: plots/errorbar-asymmetric/implementations/javascript/echarts.js
+    highcharts: plots/errorbar-asymmetric/implementations/javascript/highcharts.js
+    muix: plots/errorbar-asymmetric/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/errorbar-asymmetric/implementations/julia/makie.jl
+  python:
+    altair: plots/errorbar-asymmetric/implementations/python/altair.py
+    bokeh: plots/errorbar-asymmetric/implementations/python/bokeh.py
+    letsplot: plots/errorbar-asymmetric/implementations/python/letsplot.py
+    matplotlib: plots/errorbar-asymmetric/implementations/python/matplotlib.py
+    plotly: plots/errorbar-asymmetric/implementations/python/plotly.py
+    plotnine: plots/errorbar-asymmetric/implementations/python/plotnine.py
+    pygal: plots/errorbar-asymmetric/implementations/python/pygal.py
+    seaborn: plots/errorbar-asymmetric/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/errorbar-asymmetric/implementations/r/ggplot2.R
+notes:
+- Error bars should have visible caps (horizontal lines at ends) to clearly mark the
+  error range
+- Consider using different colors or markers when comparing multiple series
+- Include a legend or annotation explaining what the asymmetric bounds represent (e.g.,
+  "10th-90th percentile", "95% CI")
+source: anyplot
+anyplot_updated: null

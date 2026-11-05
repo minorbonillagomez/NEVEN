@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: network-weighted
+name:
+  en: Weighted Network Graph with Edge Thickness
+  es: Grafo de Red
+description:
+  en: A weighted network graph displays relationships between entities using edge
+    thickness to represent connection strength or weight. Unlike basic network graphs
+    where edges are uniform, the varying line widths immediately communicate the relative
+    importance of each relationship. This visualization makes it easy to identify
+    strong vs weak connections, central hubs with many heavy links, and structural
+    patterns in weighted relational data.
+  es: A weighted network graph displays relationships between entities using edge
+    thickness to represent connection strength or weight. Unlike basic network graphs
+    where edges are uniform, the varying line widths immediately communicate the relative
+    importance of each relationship. This visualization makes it easy to identify
+    strong vs weak connections, central hubs with many heavy links, and structural
+    patterns in weighted relational data.
+aliases:
+  en:
+  - network-weighted
+  - network weighted
+  - network graph
+  es:
+  - network-weighted
+  - network weighted
+  - grafo de red
+use_when:
+  en:
+  - 'A weighted network graph displays relationships between entities using edge thickness
+    to represent connection strength or weight. Unlike basic network graphs where
+    edges are uniform, the varying line '
+  es:
+  - 'A weighted network graph displays relationships between entities using edge thickness
+    to represent connection strength or weight. Unlike basic network graphs where
+    edges are uniform, the varying line '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing trade flows between countries where thicker edges represent higher export/import
+    volumes
+  - Visualizing communication patterns in organizations where edge weight shows message
+    frequency between teams
+  - Mapping collaboration networks in research where thickness indicates number of
+    co-authored papers
+  - Displaying transportation networks where edge weight represents passenger volume
+    or freight capacity
+  es:
+  - Analyzing trade flows between countries where thicker edges represent higher export/import
+    volumes
+  - Visualizing communication patterns in organizations where edge weight shows message
+    frequency between teams
+  - Mapping collaboration networks in research where thickness indicates number of
+    co-authored papers
+  - Displaying transportation networks where edge weight represents passenger volume
+    or freight capacity
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - network
+  data_type:
+  - network
+  - relational
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - weighted
+  - proportional
+keywords:
+  en:
+  - network graph
+  - weighted
+  - network
+  - relational
+  - numeric
+  - general
+  - business
+  - proportional
+  es:
+  - grafo de red
+  - weighted
+  - red
+  - relational
+  - numérico
+  - general
+  - negocios
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/network-weighted/implementations/javascript/chartjs.js
+    d3: plots/network-weighted/implementations/javascript/d3.js
+    echarts: plots/network-weighted/implementations/javascript/echarts.js
+    highcharts: plots/network-weighted/implementations/javascript/highcharts.js
+    muix: plots/network-weighted/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/network-weighted/implementations/julia/makie.jl
+  python:
+    altair: plots/network-weighted/implementations/python/altair.py
+    bokeh: plots/network-weighted/implementations/python/bokeh.py
+    letsplot: plots/network-weighted/implementations/python/letsplot.py
+    matplotlib: plots/network-weighted/implementations/python/matplotlib.py
+    plotly: plots/network-weighted/implementations/python/plotly.py
+    plotnine: plots/network-weighted/implementations/python/plotnine.py
+    pygal: plots/network-weighted/implementations/python/pygal.py
+    seaborn: plots/network-weighted/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/network-weighted/implementations/r/ggplot2.R
+notes:
+- Edge thickness should scale proportionally but remain visually distinguishable (avoid
+  too thin or too thick extremes)
+- Consider a legend or annotation explaining the weight scale
+- Nodes can optionally be sized by weighted degree (sum of connected edge weights)
+source: anyplot
+anyplot_updated: null

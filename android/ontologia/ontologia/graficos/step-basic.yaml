@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: step-basic
+name:
+  en: Basic Step Plot
+  es: Step Basic Básico
+description:
+  en: A step plot (also known as a stair plot or stepped line chart) displays data
+    using horizontal lines connected by vertical lines, creating a stair-step pattern.
+    Unlike line charts that interpolate between points, step plots show values as
+    constant until the next change occurs. This makes them ideal for visualizing data
+    that changes at discrete intervals, emphasizing the exact moments when values
+    change.
+  es: A step plot (also known as a stair plot or stepped line chart) displays data
+    using horizontal lines connected by vertical lines, creating a stair-step pattern.
+    Unlike line charts that interpolate between points, step plots show values as
+    constant until the next change occurs. This makes them ideal for visualizing data
+    that changes at discrete intervals, emphasizing the exact moments when values
+    change.
+aliases:
+  en:
+  - step-basic
+  - step basic
+  - basic step basic
+  es:
+  - step-basic
+  - step basic
+  - step basic básico
+use_when:
+  en:
+  - A step plot (also known as a stair plot or stepped line chart) displays data using
+    horizontal lines connected by vertical lines, creating a stair-step pattern. Unlike
+    line charts that interpolate betw
+  es:
+  - A step plot (also known as a stair plot or stepped line chart) displays data using
+    horizontal lines connected by vertical lines, creating a stair-step pattern. Unlike
+    line charts that interpolate betw
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Tracking cumulative sales or revenue over time where totals increase in discrete
+    jumps
+  - Visualizing stock price changes or pricing tier adjustments throughout a trading
+    day
+  - Displaying inventory levels that decrease or increase at specific events
+  - Showing digital signals, binary states, or step functions in engineering and mathematics
+  es:
+  - Tracking cumulative sales or revenue over time where totals increase in discrete
+    jumps
+  - Visualizing stock price changes or pricing tier adjustments throughout a trading
+    day
+  - Displaying inventory levels that decrease or increase at specific events
+  - Showing digital signals, binary states, or step functions in engineering and mathematics
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - step
+  data_type:
+  - numeric
+  - discrete
+  domain:
+  - general
+  - finance
+  features:
+  - basic
+  - stepwise
+keywords:
+  en:
+  - step
+  - basic
+  - numeric
+  - discrete
+  - general
+  - finance
+  - stepwise
+  es:
+  - step
+  - básico
+  - numérico
+  - discreto
+  - general
+  - finanzas
+  - basic
+  - stepwise
+implementations:
+  javascript:
+    chartjs: plots/step-basic/implementations/javascript/chartjs.js
+    d3: plots/step-basic/implementations/javascript/d3.js
+    echarts: plots/step-basic/implementations/javascript/echarts.js
+    highcharts: plots/step-basic/implementations/javascript/highcharts.js
+    muix: plots/step-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/step-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/step-basic/implementations/python/altair.py
+    bokeh: plots/step-basic/implementations/python/bokeh.py
+    letsplot: plots/step-basic/implementations/python/letsplot.py
+    matplotlib: plots/step-basic/implementations/python/matplotlib.py
+    plotly: plots/step-basic/implementations/python/plotly.py
+    plotnine: plots/step-basic/implementations/python/plotnine.py
+    pygal: plots/step-basic/implementations/python/pygal.py
+    seaborn: plots/step-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/step-basic/implementations/r/ggplot2.R
+notes:
+- Use 'pre' step style when the value applies from the previous point until the current
+  one
+- Use 'post' step style when the value applies from the current point until the next
+  one
+- Use 'mid' step style to center the step between adjacent points
+source: anyplot
+anyplot_updated: 2026-07-25 15:22:07+00:00

@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: area-stacked-percent
+name:
+  en: 100% Stacked Area Chart
+  es: Gráfico de Área Apilado
+description:
+  en: A stacked area chart normalized to 100%, where each area represents the percentage
+    contribution of a category to the total. The combined height always equals 100%,
+    showing proportional changes over time.
+  es: A stacked area chart normalized to 100%, where each area represents the percentage
+    contribution of a category to the total. The combined height always equals 100%,
+    showing proportional changes over time.
+aliases:
+  en:
+  - area-stacked-percent
+  - area stacked percent
+  - stacked area chart
+  es:
+  - area-stacked-percent
+  - area stacked percent
+  - gráfico de área apilado
+use_when:
+  en:
+  - A stacked area chart normalized to 100%, where each area represents the percentage
+    contribution of a category to the total. The combined height always equals 100%,
+    showing proportional changes over ti
+  es:
+  - A stacked area chart normalized to 100%, where each area represents the percentage
+    contribution of a category to the total. The combined height always equals 100%,
+    showing proportional changes over ti
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Market share evolution over time
+  - Portfolio composition changes
+  - Budget allocation trends
+  - Demographic proportion shifts
+  es:
+  - Market share evolution over time
+  - Portfolio composition changes
+  - Budget allocation trends
+  - Demographic proportion shifts
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  data_type:
+  - numeric
+  - continuous
+  - timeseries
+  - multivariate
+  domain:
+  - business
+  - finance
+  features:
+  - stacked
+  - normalized
+  - composition
+keywords:
+  en:
+  - area chart
+  - stacked
+  - percent
+  - area
+  - numeric
+  - continuous
+  - timeseries
+  - multivariate
+  - business
+  - finance
+  - normalized
+  - composition
+  es:
+  - gráfico de área
+  - apilado
+  - percent
+  - area
+  - numérico
+  - continuo
+  - timeseries
+  - multivariado
+  - negocios
+  - finanzas
+  - stacked
+  - normalized
+  - composición
+implementations:
+  javascript:
+    chartjs: plots/area-stacked-percent/implementations/javascript/chartjs.js
+    d3: plots/area-stacked-percent/implementations/javascript/d3.js
+    echarts: plots/area-stacked-percent/implementations/javascript/echarts.js
+    highcharts: plots/area-stacked-percent/implementations/javascript/highcharts.js
+    muix: plots/area-stacked-percent/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/area-stacked-percent/implementations/julia/makie.jl
+  python:
+    altair: plots/area-stacked-percent/implementations/python/altair.py
+    bokeh: plots/area-stacked-percent/implementations/python/bokeh.py
+    letsplot: plots/area-stacked-percent/implementations/python/letsplot.py
+    matplotlib: plots/area-stacked-percent/implementations/python/matplotlib.py
+    plotly: plots/area-stacked-percent/implementations/python/plotly.py
+    plotnine: plots/area-stacked-percent/implementations/python/plotnine.py
+    pygal: plots/area-stacked-percent/implementations/python/pygal.py
+    seaborn: plots/area-stacked-percent/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/area-stacked-percent/implementations/r/ggplot2.R
+notes:
+- Total always equals 100%
+- Shows relative proportions, not absolute values
+- Good for composition changes over time
+source: anyplot
+anyplot_updated: '2026-10-02T15:00:51Z'

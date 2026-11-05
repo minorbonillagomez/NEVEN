@@ -1,0 +1,114 @@
+entity_type: ChartType
+id: treemap-basic
+name:
+  en: Basic Treemap
+  es: Mapa de Árbol Básico
+description:
+  en: A treemap displaying hierarchical data as nested rectangles, where each rectangle's
+    area is proportional to its value. This visualization excels at showing part-to-whole
+    relationships in hierarchical structures, making it easy to spot large and small
+    items at a glance. Treemaps efficiently use screen space to display large amounts
+    of hierarchical data in a compact form.
+  es: A treemap displaying hierarchical data as nested rectangles, where each rectangle's
+    area is proportional to its value. This visualization excels at showing part-to-whole
+    relationships in hierarchical structures, making it easy to spot large and small
+    items at a glance. Treemaps efficiently use screen space to display large amounts
+    of hierarchical data in a compact form.
+aliases:
+  en:
+  - treemap-basic
+  - treemap basic
+  - basic treemap
+  es:
+  - treemap-basic
+  - treemap basic
+  - mapa de árbol básico
+use_when:
+  en:
+  - 'A treemap displaying hierarchical data as nested rectangles, where each rectangle''s
+    area is proportional to its value. This visualization excels at showing part-to-whole
+    relationships in hierarchical '
+  es:
+  - 'A treemap displaying hierarchical data as nested rectangles, where each rectangle''s
+    area is proportional to its value. This visualization excels at showing part-to-whole
+    relationships in hierarchical '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Disk space usage visualization by folder and file size
+  - Budget allocation breakdown by department and project
+  - Market capitalization comparison by sector and company
+  - Website traffic analysis by country and city
+  es:
+  - Disk space usage visualization by folder and file size
+  - Budget allocation breakdown by department and project
+  - Market capitalization comparison by sector and company
+  - Website traffic analysis by country and city
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - treemap
+  data_type:
+  - hierarchical
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - proportional
+keywords:
+  en:
+  - treemap
+  - basic
+  - hierarchical
+  - categorical
+  - numeric
+  - general
+  - business
+  - proportional
+  es:
+  - mapa de árbol
+  - básico
+  - treemap
+  - jerárquico
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - proportional
+implementations:
+  javascript:
+    d3: plots/treemap-basic/implementations/javascript/d3.js
+    echarts: plots/treemap-basic/implementations/javascript/echarts.js
+    highcharts: plots/treemap-basic/implementations/javascript/highcharts.js
+    muix: plots/treemap-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/treemap-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/treemap-basic/implementations/python/altair.py
+    bokeh: plots/treemap-basic/implementations/python/bokeh.py
+    letsplot: plots/treemap-basic/implementations/python/letsplot.py
+    matplotlib: plots/treemap-basic/implementations/python/matplotlib.py
+    plotly: plots/treemap-basic/implementations/python/plotly.py
+    plotnine: plots/treemap-basic/implementations/python/plotnine.py
+    pygal: plots/treemap-basic/implementations/python/pygal.py
+    seaborn: plots/treemap-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/treemap-basic/implementations/r/ggplot2.R
+notes:
+- Use distinct colors for main categories to aid quick identification
+- Add labels for larger rectangles; smaller ones may omit labels for clarity
+- Include subtle borders between rectangles to show hierarchy boundaries
+source: anyplot
+anyplot_updated: 2026-08-04 00:00:00+00:00

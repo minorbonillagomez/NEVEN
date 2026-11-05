@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: probability-weibull
+name:
+  en: Weibull Probability Plot for Reliability Analysis
+  es: Probability Weibull
+description:
+  en: A Weibull probability plot displays failure or lifetime data on Weibull probability
+    paper (logarithmic x-axis for time/cycles, linearized Weibull CDF on y-axis) with
+    a fitted straight line. It is the standard tool in reliability engineering for
+    estimating Weibull distribution parameters (shape and scale), assessing whether
+    data follow a Weibull distribution, and extrapolating failure probabilities. The
+    slope of the fitted line gives the shape parameter (beta), while the characteristic
+    life (eta) is read at the 63.2% failure probability crossing.
+  es: A Weibull probability plot displays failure or lifetime data on Weibull probability
+    paper (logarithmic x-axis for time/cycles, linearized Weibull CDF on y-axis) with
+    a fitted straight line. It is the standard tool in reliability engineering for
+    estimating Weibull distribution parameters (shape and scale), assessing whether
+    data follow a Weibull distribution, and extrapolating failure probabilities. The
+    slope of the fitted line gives the shape parameter (beta), while the characteristic
+    life (eta) is read at the 63.2% failure probability crossing.
+aliases:
+  en:
+  - probability-weibull
+  - probability weibull
+  - probability weibull
+  es:
+  - probability-weibull
+  - probability weibull
+  - probability weibull
+use_when:
+  en:
+  - 'A Weibull probability plot displays failure or lifetime data on Weibull probability
+    paper (logarithmic x-axis for time/cycles, linearized Weibull CDF on y-axis) with
+    a fitted straight line. It is the '
+  es:
+  - 'A Weibull probability plot displays failure or lifetime data on Weibull probability
+    paper (logarithmic x-axis for time/cycles, linearized Weibull CDF on y-axis) with
+    a fitted straight line. It is the '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Predicting product warranty returns by fitting field-failure data and extrapolating
+    to future time periods
+  - Comparing fatigue-life distributions of two material batches to determine which
+    has higher reliability
+  - Estimating B10 life (time at which 10% of units fail) for bearing or component
+    qualification testing
+  es:
+  - Predicting product warranty returns by fitting field-failure data and extrapolating
+    to future time periods
+  - Comparing fatigue-life distributions of two material batches to determine which
+    has higher reliability
+  - Estimating B10 life (time at which 10% of units fail) for bearing or component
+    qualification testing
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  - probability
+  domain:
+  - engineering
+  - statistics
+  features:
+  - fitted-line
+  - log-scale
+  - annotated
+keywords:
+  en:
+  - probability
+  - weibull
+  - scatter
+  - numeric
+  - continuous
+  - engineering
+  - statistics
+  - fitted-line
+  - log-scale
+  - annotated
+  es:
+  - probability
+  - weibull
+  - scatter
+  - numérico
+  - continuo
+  - ingeniería
+  - estadística
+  - fitted-line
+  - log-scale
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/probability-weibull/implementations/javascript/chartjs.js
+    d3: plots/probability-weibull/implementations/javascript/d3.js
+    echarts: plots/probability-weibull/implementations/javascript/echarts.js
+    highcharts: plots/probability-weibull/implementations/javascript/highcharts.js
+    muix: plots/probability-weibull/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/probability-weibull/implementations/julia/makie.jl
+  python:
+    altair: plots/probability-weibull/implementations/python/altair.py
+    bokeh: plots/probability-weibull/implementations/python/bokeh.py
+    letsplot: plots/probability-weibull/implementations/python/letsplot.py
+    matplotlib: plots/probability-weibull/implementations/python/matplotlib.py
+    plotly: plots/probability-weibull/implementations/python/plotly.py
+    plotnine: plots/probability-weibull/implementations/python/plotnine.py
+    pygal: plots/probability-weibull/implementations/python/pygal.py
+    seaborn: plots/probability-weibull/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/probability-weibull/implementations/r/ggplot2.R
+notes:
+- X-axis should use a logarithmic scale; y-axis should use a linearized Weibull scale
+  (ln(-ln(1-F))) so that Weibull-distributed data plots as a straight line
+- Display the fitted line with annotated shape parameter (beta) and scale parameter
+  (eta)
+- Use median rank approximation (i-0.3)/(n+0.4) for plotting positions
+source: anyplot
+anyplot_updated: '2026-06-07T22:32:14Z'

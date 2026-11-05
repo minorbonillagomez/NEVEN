@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: alluvial-opinion-flow
+name:
+  en: Opinion Flow Diagram
+  es: Alluvial Opinion Flow
+description:
+  en: An alluvial/Sankey-style diagram showing how opinions or group memberships shift
+    between survey waves or time periods. Flows connect the same response categories
+    across columns, revealing patterns of opinion change, stability, and polarization.
+    Unlike a basic alluvial diagram, this variant emphasizes distinguishing stable
+    respondents from net changers and displays respondent totals per category at each
+    wave.
+  es: An alluvial/Sankey-style diagram showing how opinions or group memberships shift
+    between survey waves or time periods. Flows connect the same response categories
+    across columns, revealing patterns of opinion change, stability, and polarization.
+    Unlike a basic alluvial diagram, this variant emphasizes distinguishing stable
+    respondents from net changers and displays respondent totals per category at each
+    wave.
+aliases:
+  en:
+  - alluvial-opinion-flow
+  - alluvial opinion flow
+  - alluvial opinion flow
+  es:
+  - alluvial-opinion-flow
+  - alluvial opinion flow
+  - alluvial opinion flow
+use_when:
+  en:
+  - 'An alluvial/Sankey-style diagram showing how opinions or group memberships shift
+    between survey waves or time periods. Flows connect the same response categories
+    across columns, revealing patterns of '
+  es:
+  - 'An alluvial/Sankey-style diagram showing how opinions or group memberships shift
+    between survey waves or time periods. Flows connect the same response categories
+    across columns, revealing patterns of '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Tracking voter preference changes between election polls across multiple survey
+    waves
+  - Monitoring brand perception shifts over marketing campaigns using repeated consumer
+    surveys
+  - Analyzing patient treatment response transitions in longitudinal clinical studies
+  - Studying opinion polarization in longitudinal survey data across demographic groups
+  es:
+  - Tracking voter preference changes between election polls across multiple survey
+    waves
+  - Monitoring brand perception shifts over marketing campaigns using repeated consumer
+    surveys
+  - Analyzing patient treatment response transitions in longitudinal clinical studies
+  - Studying opinion polarization in longitudinal survey data across demographic groups
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - alluvial
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - research
+  - marketing
+  features:
+  - flow
+  - temporal
+  - proportional
+  - annotated
+keywords:
+  en:
+  - alluvial
+  - opinion
+  - flow
+  - categorical
+  - numeric
+  - general
+  - research
+  - marketing
+  - temporal
+  - proportional
+  - annotated
+  es:
+  - alluvial
+  - opinion
+  - flow
+  - categórico
+  - numérico
+  - general
+  - research
+  - marketing
+  - flujo
+  - temporal
+  - proportional
+  - annotated
+implementations:
+  javascript:
+    d3: plots/alluvial-opinion-flow/implementations/javascript/d3.js
+    echarts: plots/alluvial-opinion-flow/implementations/javascript/echarts.js
+    highcharts: plots/alluvial-opinion-flow/implementations/javascript/highcharts.js
+    muix: plots/alluvial-opinion-flow/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/alluvial-opinion-flow/implementations/julia/makie.jl
+  python:
+    altair: plots/alluvial-opinion-flow/implementations/python/altair.py
+    bokeh: plots/alluvial-opinion-flow/implementations/python/bokeh.py
+    letsplot: plots/alluvial-opinion-flow/implementations/python/letsplot.py
+    matplotlib: plots/alluvial-opinion-flow/implementations/python/matplotlib.py
+    plotly: plots/alluvial-opinion-flow/implementations/python/plotly.py
+    plotnine: plots/alluvial-opinion-flow/implementations/python/plotnine.py
+    pygal: plots/alluvial-opinion-flow/implementations/python/pygal.py
+    seaborn: plots/alluvial-opinion-flow/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/alluvial-opinion-flow/implementations/r/ggplot2.R
+notes:
+- Use consistent colors for each opinion category across all waves
+- Flow width should be proportional to the number of respondents transitioning
+- Show total respondent count per category at each wave as node labels
+source: anyplot
+anyplot_updated: '2026-05-30T12:23:35Z'

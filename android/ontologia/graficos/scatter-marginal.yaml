@@ -1,0 +1,140 @@
+entity_type: ChartType
+id: scatter-marginal
+name:
+  en: Scatter Plot with Marginal Distributions
+  es: Diagrama de Dispersión
+description:
+  en: A scatter plot enhanced with marginal distribution plots (histograms or kernel
+    density estimates) on the top and right axes. This composite visualization simultaneously
+    shows the bivariate relationship between two variables in the central scatter
+    plot while displaying each variable's univariate distribution along its respective
+    axis. It provides a comprehensive view of both the joint and marginal distributions
+    in a single figure.
+  es: A scatter plot enhanced with marginal distribution plots (histograms or kernel
+    density estimates) on the top and right axes. This composite visualization simultaneously
+    shows the bivariate relationship between two variables in the central scatter
+    plot while displaying each variable's univariate distribution along its respective
+    axis. It provides a comprehensive view of both the joint and marginal distributions
+    in a single figure.
+aliases:
+  en:
+  - scatter-marginal
+  - scatter marginal
+  - scatter plot
+  es:
+  - scatter-marginal
+  - scatter marginal
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Exploring the correlation between two continuous variables while understanding
+    their individual distributions in exploratory data analysis
+  - Visualizing feature relationships in machine learning datasets to identify skewness,
+    multimodality, or outliers
+  - Analyzing measurement data in scientific research where both the relationship
+    and the distribution characteristics matter
+  es:
+  - Exploring the correlation between two continuous variables while understanding
+    their individual distributions in exploratory data analysis
+  - Visualizing feature relationships in machine learning datasets to identify skewness,
+    multimodality, or outliers
+  - Analyzing measurement data in scientific research where both the relationship
+    and the distribution characteristics matter
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - histogram
+  - density
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - marginal
+  - distribution
+  - correlation
+  - composite
+keywords:
+  en:
+  - scatter plot
+  - marginal
+  - scatter
+  - histogram
+  - density
+  - numeric
+  - continuous
+  - general
+  - statistics
+  - research
+  - distribution
+  - correlation
+  - composite
+  es:
+  - diagrama de dispersión
+  - marginal
+  - scatter
+  - histogram
+  - density
+  - numérico
+  - continuo
+  - general
+  - estadística
+  - research
+  - distribución
+  - correlación
+  - composite
+implementations:
+  javascript:
+    chartjs: plots/scatter-marginal/implementations/javascript/chartjs.js
+    d3: plots/scatter-marginal/implementations/javascript/d3.js
+    echarts: plots/scatter-marginal/implementations/javascript/echarts.js
+    highcharts: plots/scatter-marginal/implementations/javascript/highcharts.js
+    muix: plots/scatter-marginal/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-marginal/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-marginal/implementations/python/altair.py
+    bokeh: plots/scatter-marginal/implementations/python/bokeh.py
+    letsplot: plots/scatter-marginal/implementations/python/letsplot.py
+    matplotlib: plots/scatter-marginal/implementations/python/matplotlib.py
+    plotly: plots/scatter-marginal/implementations/python/plotly.py
+    plotnine: plots/scatter-marginal/implementations/python/plotnine.py
+    pygal: plots/scatter-marginal/implementations/python/pygal.py
+    seaborn: plots/scatter-marginal/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-marginal/implementations/r/ggplot2.R
+notes:
+- Main scatter plot should be positioned in the lower-left with marginal plots aligned
+  on top and right
+- Marginal plots can be histograms, KDE curves, or both overlaid
+- Axes of marginal plots must align with the main scatter plot axes
+source: anyplot
+anyplot_updated: null

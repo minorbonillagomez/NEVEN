@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Directorio para fragmentos MP3 compartidos -->
+    <cache-path
+        name="audiobook_fragments"
+        path="audiobook_fragments/" />
+    
+    <!-- Directorio de archivos externos (audiolibros M4B) -->
+    <external-files-path
+        name="audiobooks"
+        path="audiobooks/" />
+    
+    <!-- Acceso a almacenamiento externo para M4B del usuario -->
+    <external-path
+        name="external_audiobooks"
+        path="." />
+</paths>

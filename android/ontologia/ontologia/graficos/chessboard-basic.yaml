@@ -1,0 +1,117 @@
+entity_type: ChartType
+id: chessboard-basic
+name:
+  en: Chess Board Grid Visualization
+  es: Chessboard Basic Básico
+description:
+  en: A classic 8x8 chess board with alternating light and dark squares, labeled with
+    standard algebraic notation (columns a-h, rows 1-8). This clean grid visualization
+    serves as a foundation for chess diagrams, game position displays, and educational
+    chess materials.
+  es: A classic 8x8 chess board with alternating light and dark squares, labeled with
+    standard algebraic notation (columns a-h, rows 1-8). This clean grid visualization
+    serves as a foundation for chess diagrams, game position displays, and educational
+    chess materials.
+aliases:
+  en:
+  - chessboard-basic
+  - chessboard basic
+  - basic chessboard basic
+  es:
+  - chessboard-basic
+  - chessboard basic
+  - chessboard basic básico
+use_when:
+  en:
+  - A classic 8x8 chess board with alternating light and dark squares, labeled with
+    standard algebraic notation (columns a-h, rows 1-8). This clean grid visualization
+    serves as a foundation for chess diag
+  es:
+  - A classic 8x8 chess board with alternating light and dark squares, labeled with
+    standard algebraic notation (columns a-h, rows 1-8). This clean grid visualization
+    serves as a foundation for chess diag
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Chess game analysis and position diagrams for players and coaches
+  - Educational materials for learning chess notation and board orientation
+  - Game documentation and move visualization in chess publications
+  - Interactive chess applications and puzzle displays
+  es:
+  - Chess game analysis and position diagrams for players and coaches
+  - Educational materials for learning chess notation and board orientation
+  - Game documentation and move visualization in chess publications
+  - Interactive chess applications and puzzle displays
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - heatmap
+  - grid
+  data_type:
+  - categorical
+  - discrete
+  domain:
+  - general
+  - education
+  features:
+  - basic
+  - annotated
+  - 2d
+keywords:
+  en:
+  - chessboard
+  - basic
+  - heatmap
+  - grid
+  - categorical
+  - discrete
+  - general
+  - education
+  - annotated
+  - 2d
+  es:
+  - chessboard
+  - básico
+  - heatmap
+  - grid
+  - categórico
+  - discreto
+  - general
+  - education
+  - basic
+  - annotated
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/chessboard-basic/implementations/javascript/chartjs.js
+    d3: plots/chessboard-basic/implementations/javascript/d3.js
+    echarts: plots/chessboard-basic/implementations/javascript/echarts.js
+    highcharts: plots/chessboard-basic/implementations/javascript/highcharts.js
+    muix: plots/chessboard-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/chessboard-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/chessboard-basic/implementations/python/altair.py
+    bokeh: plots/chessboard-basic/implementations/python/bokeh.py
+    letsplot: plots/chessboard-basic/implementations/python/letsplot.py
+    matplotlib: plots/chessboard-basic/implementations/python/matplotlib.py
+    plotly: plots/chessboard-basic/implementations/python/plotly.py
+    plotnine: plots/chessboard-basic/implementations/python/plotnine.py
+    pygal: plots/chessboard-basic/implementations/python/pygal.py
+    seaborn: plots/chessboard-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/chessboard-basic/implementations/r/ggplot2.R
+notes:
+- Light squares traditionally appear at h1 and a8 corners
+- Column labels (a-h) appear at bottom, row labels (1-8) appear on left side
+- Color scheme should use classic light/dark contrast (e.g., cream/brown or white/gray)
+source: anyplot
+anyplot_updated: null

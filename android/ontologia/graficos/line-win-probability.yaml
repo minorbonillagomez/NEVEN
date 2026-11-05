@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: line-win-probability
+name:
+  en: Win Probability Chart
+  es: Gráfico de Líneas
+description:
+  en: A win probability chart shows how each team's likelihood of winning evolves
+    over the course of a game. The line starts near 50% and fluctuates based on scoring
+    events, ultimately reaching 100% or 0% at game end. The area above and below the
+    50% baseline is filled with team colors to convey momentum at a glance. This visualization
+    is widely used across major sports for post-game analysis and live broadcasting.
+  es: A win probability chart shows how each team's likelihood of winning evolves
+    over the course of a game. The line starts near 50% and fluctuates based on scoring
+    events, ultimately reaching 100% or 0% at game end. The area above and below the
+    50% baseline is filled with team colors to convey momentum at a glance. This visualization
+    is widely used across major sports for post-game analysis and live broadcasting.
+aliases:
+  en:
+  - line-win-probability
+  - line win probability
+  - line chart
+  es:
+  - line-win-probability
+  - line win probability
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing game momentum shifts and identifying critical turning points in close
+    contests
+  - Sports broadcasting overlays showing real-time win probability during live games
+  - Post-game journalism and analysis highlighting the most impactful plays
+  - Evaluating team resilience and performance under pressure across a season
+  es:
+  - Visualizing game momentum shifts and identifying critical turning points in close
+    contests
+  - Sports broadcasting overlays showing real-time win probability during live games
+  - Post-game journalism and analysis highlighting the most impactful plays
+  - Evaluating team resilience and performance under pressure across a season
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - area
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - general
+  - statistics
+  - sports
+  features:
+  - annotated
+  - color-mapped
+  - temporal
+keywords:
+  en:
+  - line chart
+  - win
+  - probability
+  - line
+  - area
+  - numeric
+  - timeseries
+  - general
+  - statistics
+  - sports
+  - annotated
+  - color-mapped
+  - temporal
+  es:
+  - gráfico de líneas
+  - win
+  - probability
+  - line
+  - area
+  - numérico
+  - timeseries
+  - general
+  - estadística
+  - sports
+  - annotated
+  - color-mapped
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/line-win-probability/implementations/javascript/chartjs.js
+    d3: plots/line-win-probability/implementations/javascript/d3.js
+    echarts: plots/line-win-probability/implementations/javascript/echarts.js
+    highcharts: plots/line-win-probability/implementations/javascript/highcharts.js
+    muix: plots/line-win-probability/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-win-probability/implementations/julia/makie.jl
+  python:
+    altair: plots/line-win-probability/implementations/python/altair.py
+    bokeh: plots/line-win-probability/implementations/python/bokeh.py
+    letsplot: plots/line-win-probability/implementations/python/letsplot.py
+    matplotlib: plots/line-win-probability/implementations/python/matplotlib.py
+    plotly: plots/line-win-probability/implementations/python/plotly.py
+    plotnine: plots/line-win-probability/implementations/python/plotnine.py
+    pygal: plots/line-win-probability/implementations/python/pygal.py
+    seaborn: plots/line-win-probability/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-win-probability/implementations/r/ggplot2.R
+notes:
+- Y-axis should range from 0% to 100% with a prominent horizontal reference line at
+  50%
+- Fill the area above 50% with the home team color and below 50% with the away team
+  color
+- Annotate key scoring events (touchdowns, goals, runs) that caused significant probability
+  swings
+source: anyplot
+anyplot_updated: '2026-06-21T03:09:46Z'

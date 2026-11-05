@@ -1,0 +1,141 @@
+entity_type: ChartType
+id: burndown-sprint
+name:
+  en: Agile Sprint Burndown Chart
+  es: Burndown Sprint
+description:
+  en: A sprint burndown chart tracks the amount of remaining work in an agile sprint
+    over time, plotted as a step (or line) series that descends as tasks are completed.
+    A straight ideal-burndown guideline runs diagonally from the total committed scope
+    on day one down to zero on the final day, giving the team an at-a-glance reference
+    for whether they are ahead of or behind schedule. It is one of the most widely
+    used project-management visualizations in software development, surfacing scope
+    creep, stalled progress, and end-of-sprint risk early enough to act on.
+  es: A sprint burndown chart tracks the amount of remaining work in an agile sprint
+    over time, plotted as a step (or line) series that descends as tasks are completed.
+    A straight ideal-burndown guideline runs diagonally from the total committed scope
+    on day one down to zero on the final day, giving the team an at-a-glance reference
+    for whether they are ahead of or behind schedule. It is one of the most widely
+    used project-management visualizations in software development, surfacing scope
+    creep, stalled progress, and end-of-sprint risk early enough to act on.
+aliases:
+  en:
+  - burndown-sprint
+  - burndown sprint
+  - burndown sprint
+  es:
+  - burndown-sprint
+  - burndown sprint
+  - burndown sprint
+use_when:
+  en:
+  - A sprint burndown chart tracks the amount of remaining work in an agile sprint
+    over time, plotted as a step (or line) series that descends as tasks are completed.
+    A straight ideal-burndown guideline r
+  es:
+  - A sprint burndown chart tracks the amount of remaining work in an agile sprint
+    over time, plotted as a step (or line) series that descends as tasks are completed.
+    A straight ideal-burndown guideline r
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Daily Scrum tracking of remaining story points across a two-week sprint to forecast
+    on-time completion
+  - Detecting scope changes mid-sprint, where the remaining-work line jumps up when
+    new work is added
+  - Comparing actual progress against the ideal trajectory to flag a team that is
+    consistently behind
+  - Release or milestone burndown over a longer horizon to communicate delivery confidence
+    to stakeholders
+  es:
+  - Daily Scrum tracking of remaining story points across a two-week sprint to forecast
+    on-time completion
+  - Detecting scope changes mid-sprint, where the remaining-work line jumps up when
+    new work is added
+  - Comparing actual progress against the ideal trajectory to flag a team that is
+    consistently behind
+  - Release or milestone burndown over a longer horizon to communicate delivery confidence
+    to stakeholders
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - step
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - project-management
+  - technology
+  - business
+  features:
+  - temporal
+  - comparison
+  - annotated
+  - trend
+keywords:
+  en:
+  - burndown
+  - sprint
+  - line
+  - step
+  - timeseries
+  - numeric
+  - project-management
+  - technology
+  - business
+  - temporal
+  - comparison
+  - annotated
+  - trend
+  es:
+  - burndown
+  - sprint
+  - line
+  - step
+  - timeseries
+  - numérico
+  - project-management
+  - technology
+  - negocios
+  - temporal
+  - comparación
+  - annotated
+  - trend
+implementations:
+  javascript:
+    chartjs: plots/burndown-sprint/implementations/javascript/chartjs.js
+    d3: plots/burndown-sprint/implementations/javascript/d3.js
+    echarts: plots/burndown-sprint/implementations/javascript/echarts.js
+    highcharts: plots/burndown-sprint/implementations/javascript/highcharts.js
+    muix: plots/burndown-sprint/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/burndown-sprint/implementations/julia/makie.jl
+  python:
+    altair: plots/burndown-sprint/implementations/python/altair.py
+    bokeh: plots/burndown-sprint/implementations/python/bokeh.py
+    letsplot: plots/burndown-sprint/implementations/python/letsplot.py
+    matplotlib: plots/burndown-sprint/implementations/python/matplotlib.py
+    plotly: plots/burndown-sprint/implementations/python/plotly.py
+    plotnine: plots/burndown-sprint/implementations/python/plotnine.py
+    pygal: plots/burndown-sprint/implementations/python/pygal.py
+    seaborn: plots/burndown-sprint/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/burndown-sprint/implementations/r/ggplot2.R
+notes:
+- Render the actual remaining work as a step series (work is completed in discrete
+  chunks), or a straight line if the library makes steps awkward
+- Draw the ideal burndown as a straight reference line from (start, total scope) to
+  (end, 0), visually distinct (e.g. dashed, muted color)
+- Y-axis starts at 0 and represents remaining work (story points or tasks); X-axis
+  is the sprint timeline
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

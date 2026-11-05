@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: renko-basic
+name:
+  en: Basic Renko Chart
+  es: Renko Basic Básico
+description:
+  en: A Renko chart displays price movements using fixed-size bricks that ignore time
+    and focus purely on price action. A new brick is drawn only when the price moves
+    by a specified amount (brick size), filtering out market noise and minor fluctuations.
+    Bullish bricks (price increase) and bearish bricks (price decrease) alternate
+    direction on trend reversals, making it easy to identify trends, support/resistance
+    levels, and potential trading signals.
+  es: A Renko chart displays price movements using fixed-size bricks that ignore time
+    and focus purely on price action. A new brick is drawn only when the price moves
+    by a specified amount (brick size), filtering out market noise and minor fluctuations.
+    Bullish bricks (price increase) and bearish bricks (price decrease) alternate
+    direction on trend reversals, making it easy to identify trends, support/resistance
+    levels, and potential trading signals.
+aliases:
+  en:
+  - renko-basic
+  - renko basic
+  - basic renko basic
+  es:
+  - renko-basic
+  - renko basic
+  - renko basic básico
+use_when:
+  en:
+  - A Renko chart displays price movements using fixed-size bricks that ignore time
+    and focus purely on price action. A new brick is drawn only when the price moves
+    by a specified amount (brick size), fil
+  es:
+  - A Renko chart displays price movements using fixed-size bricks that ignore time
+    and focus purely on price action. A new brick is drawn only when the price moves
+    by a specified amount (brick size), fil
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying clear trend directions in stock prices by filtering out intraday noise
+    and focusing on significant price movements
+  - Spotting support and resistance levels in forex trading where price repeatedly
+    reverses at certain brick levels
+  - Generating cleaner trading signals by removing time-based volatility from cryptocurrency
+    price analysis
+  es:
+  - Identifying clear trend directions in stock prices by filtering out intraday noise
+    and focusing on significant price movements
+  - Spotting support and resistance levels in forex trading where price repeatedly
+    reverses at certain brick levels
+  - Generating cleaner trading signals by removing time-based volatility from cryptocurrency
+    price analysis
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - renko
+  - candlestick
+  data_type:
+  - time-series
+  - numeric
+  domain:
+  - finance
+  - trading
+  features:
+  - basic
+  - price-action
+  - noise-filtering
+keywords:
+  en:
+  - renko
+  - basic
+  - candlestick
+  - time series
+  - numeric
+  - finance
+  - trading
+  - price-action
+  - noise-filtering
+  es:
+  - renko
+  - básico
+  - candlestick
+  - series temporales
+  - numérico
+  - finanzas
+  - trading
+  - basic
+  - price-action
+  - noise-filtering
+implementations:
+  javascript:
+    chartjs: plots/renko-basic/implementations/javascript/chartjs.js
+    d3: plots/renko-basic/implementations/javascript/d3.js
+    echarts: plots/renko-basic/implementations/javascript/echarts.js
+    highcharts: plots/renko-basic/implementations/javascript/highcharts.js
+    muix: plots/renko-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/renko-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/renko-basic/implementations/python/altair.py
+    bokeh: plots/renko-basic/implementations/python/bokeh.py
+    letsplot: plots/renko-basic/implementations/python/letsplot.py
+    matplotlib: plots/renko-basic/implementations/python/matplotlib.py
+    plotly: plots/renko-basic/implementations/python/plotly.py
+    plotnine: plots/renko-basic/implementations/python/plotnine.py
+    pygal: plots/renko-basic/implementations/python/pygal.py
+    seaborn: plots/renko-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/renko-basic/implementations/r/ggplot2.R
+notes:
+- Use green/up color for bullish bricks and red/down color for bearish bricks
+- Bricks should be uniform in size and clearly separated with a small gap
+- X-axis can show brick index or estimated date ranges (since time is irregular)
+source: anyplot
+anyplot_updated: 2026-05-17 11:25:49+00:00

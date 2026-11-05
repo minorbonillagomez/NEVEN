@@ -1,0 +1,108 @@
+entity_type: ChartType
+id: facet-grid
+name:
+  en: Faceted Grid Plot
+  es: Facet Grid
+description:
+  en: A grid of subplots where each cell shows the same type of plot for a different
+    subset of data, split by one or two categorical variables. Enables systematic
+    comparison across multiple dimensions.
+  es: A grid of subplots where each cell shows the same type of plot for a different
+    subset of data, split by one or two categorical variables. Enables systematic
+    comparison across multiple dimensions.
+aliases:
+  en:
+  - facet-grid
+  - facet grid
+  - facet grid
+  es:
+  - facet-grid
+  - facet grid
+  - facet grid
+use_when:
+  en:
+  - A grid of subplots where each cell shows the same type of plot for a different
+    subset of data, split by one or two categorical variables. Enables systematic
+    comparison across multiple dimensions.
+  es:
+  - A grid of subplots where each cell shows the same type of plot for a different
+    subset of data, split by one or two categorical variables. Enables systematic
+    comparison across multiple dimensions.
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Multi-dimensional data exploration
+  - Comparing patterns across categories
+  - Conditional distribution analysis
+  - Publication-ready multi-panel figures
+  es:
+  - Multi-dimensional data exploration
+  - Comparing patterns across categories
+  - Conditional distribution analysis
+  - Publication-ready multi-panel figures
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - facet
+  domain:
+  - statistics
+  - general
+  features:
+  - faceted
+  - comparison
+  data_type:
+  - categorical
+  - numeric
+keywords:
+  en:
+  - facet
+  - grid
+  - statistics
+  - general
+  - faceted
+  - comparison
+  - categorical
+  - numeric
+  es:
+  - facet
+  - grid
+  - estadística
+  - general
+  - faceted
+  - comparación
+  - categórico
+  - numérico
+implementations:
+  javascript:
+    chartjs: plots/facet-grid/implementations/javascript/chartjs.js
+    d3: plots/facet-grid/implementations/javascript/d3.js
+    echarts: plots/facet-grid/implementations/javascript/echarts.js
+    highcharts: plots/facet-grid/implementations/javascript/highcharts.js
+    muix: plots/facet-grid/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/facet-grid/implementations/julia/makie.jl
+  python:
+    altair: plots/facet-grid/implementations/python/altair.py
+    bokeh: plots/facet-grid/implementations/python/bokeh.py
+    letsplot: plots/facet-grid/implementations/python/letsplot.py
+    matplotlib: plots/facet-grid/implementations/python/matplotlib.py
+    plotly: plots/facet-grid/implementations/python/plotly.py
+    plotnine: plots/facet-grid/implementations/python/plotnine.py
+    pygal: plots/facet-grid/implementations/python/pygal.py
+    seaborn: plots/facet-grid/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/facet-grid/implementations/r/ggplot2.R
+notes:
+- All subplots share the same axes scales by default
+- Can facet by row, column, or both
+- Base plot can be scatter, line, histogram, etc.
+source: anyplot
+anyplot_updated: '2026-10-02T15:00:51Z'

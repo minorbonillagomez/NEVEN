@@ -1,0 +1,117 @@
+entity_type: ChartType
+id: pyramid-basic
+name:
+  en: Basic Pyramid Chart
+  es: Pyramid Basic Básico
+description:
+  en: A pyramid chart displays two opposing horizontal bar charts that share a central
+    axis, creating a pyramid or butterfly shape. This visualization is ideal for comparing
+    two related metrics across the same categories, revealing asymmetries and patterns
+    in bidirectional data. Most commonly used for population pyramids showing age-gender
+    distributions.
+  es: A pyramid chart displays two opposing horizontal bar charts that share a central
+    axis, creating a pyramid or butterfly shape. This visualization is ideal for comparing
+    two related metrics across the same categories, revealing asymmetries and patterns
+    in bidirectional data. Most commonly used for population pyramids showing age-gender
+    distributions.
+aliases:
+  en:
+  - pyramid-basic
+  - pyramid basic
+  - basic pyramid basic
+  es:
+  - pyramid-basic
+  - pyramid basic
+  - pyramid basic básico
+use_when:
+  en:
+  - A pyramid chart displays two opposing horizontal bar charts that share a central
+    axis, creating a pyramid or butterfly shape. This visualization is ideal for comparing
+    two related metrics across the s
+  es:
+  - A pyramid chart displays two opposing horizontal bar charts that share a central
+    axis, creating a pyramid or butterfly shape. This visualization is ideal for comparing
+    two related metrics across the s
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Population demographics showing age distribution by gender
+  - Survey analysis comparing agree vs disagree responses
+  - Before/after comparisons across categories
+  - Market research comparing two competing products or segments
+  es:
+  - Population demographics showing age distribution by gender
+  - Survey analysis comparing agree vs disagree responses
+  - Before/after comparisons across categories
+  - Market research comparing two competing products or segments
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - pyramid
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - statistics
+  - demographics
+  features:
+  - basic
+  - comparison
+  - horizontal
+keywords:
+  en:
+  - pyramid
+  - basic
+  - bar
+  - categorical
+  - numeric
+  - statistics
+  - demographics
+  - comparison
+  - horizontal
+  es:
+  - pyramid
+  - básico
+  - bar
+  - categórico
+  - numérico
+  - estadística
+  - demographics
+  - basic
+  - comparación
+  - horizontal
+implementations:
+  javascript:
+    chartjs: plots/pyramid-basic/implementations/javascript/chartjs.js
+    d3: plots/pyramid-basic/implementations/javascript/d3.js
+    echarts: plots/pyramid-basic/implementations/javascript/echarts.js
+    highcharts: plots/pyramid-basic/implementations/javascript/highcharts.js
+    muix: plots/pyramid-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/pyramid-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/pyramid-basic/implementations/python/altair.py
+    bokeh: plots/pyramid-basic/implementations/python/bokeh.py
+    letsplot: plots/pyramid-basic/implementations/python/letsplot.py
+    matplotlib: plots/pyramid-basic/implementations/python/matplotlib.py
+    plotly: plots/pyramid-basic/implementations/python/plotly.py
+    plotnine: plots/pyramid-basic/implementations/python/plotnine.py
+    pygal: plots/pyramid-basic/implementations/python/pygal.py
+    seaborn: plots/pyramid-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/pyramid-basic/implementations/r/ggplot2.R
+notes:
+- Left bars extend from center to the left, right bars extend from center to the right
+- Both sides should use symmetric axis scales for fair comparison
+- Use distinct colors for each side (e.g., blue/pink for gender)
+source: anyplot
+anyplot_updated: 2025-12-15 20:44:45+00:00

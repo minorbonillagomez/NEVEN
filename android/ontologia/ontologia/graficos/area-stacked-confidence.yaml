@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: area-stacked-confidence
+name:
+  en: Stacked Area Chart with Confidence Bands
+  es: Gráfico de Área Apilado
+description:
+  en: A stacked area chart that displays multiple data series as cumulative areas,
+    with each series surrounded by uncertainty or confidence bands. This visualization
+    combines the composition insight of stacked areas with the statistical rigor of
+    confidence intervals, making it ideal for showing how parts contribute to a whole
+    while simultaneously communicating uncertainty in each component. The bands reveal
+    where estimates are precise versus uncertain across the stacked series.
+  es: A stacked area chart that displays multiple data series as cumulative areas,
+    with each series surrounded by uncertainty or confidence bands. This visualization
+    combines the composition insight of stacked areas with the statistical rigor of
+    confidence intervals, making it ideal for showing how parts contribute to a whole
+    while simultaneously communicating uncertainty in each component. The bands reveal
+    where estimates are precise versus uncertain across the stacked series.
+aliases:
+  en:
+  - area-stacked-confidence
+  - area stacked confidence
+  - stacked area chart
+  es:
+  - area-stacked-confidence
+  - area stacked confidence
+  - gráfico de área apilado
+use_when:
+  en:
+  - A stacked area chart that displays multiple data series as cumulative areas, with
+    each series surrounded by uncertainty or confidence bands. This visualization
+    combines the composition insight of stac
+  es:
+  - A stacked area chart that displays multiple data series as cumulative areas, with
+    each series surrounded by uncertainty or confidence bands. This visualization
+    combines the composition insight of stac
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Forecasting market share by competitor with prediction intervals
+  - Displaying portfolio allocation over time with risk bands for each asset class
+  - Showing energy consumption breakdown by source with measurement uncertainty
+  - Visualizing population projections by age group with demographic uncertainty
+  es:
+  - Forecasting market share by competitor with prediction intervals
+  - Displaying portfolio allocation over time with risk bands for each asset class
+  - Showing energy consumption breakdown by source with measurement uncertainty
+  - Visualizing population projections by age group with demographic uncertainty
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - general
+  - statistics
+  - finance
+  features:
+  - stacked
+  - uncertainty
+  - cumulative
+  - temporal
+keywords:
+  en:
+  - area chart
+  - stacked
+  - confidence
+  - area
+  - numeric
+  - timeseries
+  - general
+  - statistics
+  - finance
+  - uncertainty
+  - cumulative
+  - temporal
+  es:
+  - gráfico de área
+  - apilado
+  - confidence
+  - area
+  - numérico
+  - timeseries
+  - general
+  - estadística
+  - finanzas
+  - stacked
+  - uncertainty
+  - cumulative
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/area-stacked-confidence/implementations/javascript/chartjs.js
+    d3: plots/area-stacked-confidence/implementations/javascript/d3.js
+    echarts: plots/area-stacked-confidence/implementations/javascript/echarts.js
+    highcharts: plots/area-stacked-confidence/implementations/javascript/highcharts.js
+    muix: plots/area-stacked-confidence/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/area-stacked-confidence/implementations/julia/makie.jl
+  python:
+    altair: plots/area-stacked-confidence/implementations/python/altair.py
+    bokeh: plots/area-stacked-confidence/implementations/python/bokeh.py
+    letsplot: plots/area-stacked-confidence/implementations/python/letsplot.py
+    matplotlib: plots/area-stacked-confidence/implementations/python/matplotlib.py
+    plotly: plots/area-stacked-confidence/implementations/python/plotly.py
+    plotnine: plots/area-stacked-confidence/implementations/python/plotnine.py
+    pygal: plots/area-stacked-confidence/implementations/python/pygal.py
+    seaborn: plots/area-stacked-confidence/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/area-stacked-confidence/implementations/r/ggplot2.R
+notes:
+- Use distinct colors for each series, with matching lighter shades for confidence
+  bands
+- Semi-transparent fills (alpha 0.2-0.4) for bands to show overlap without obscuring
+  data
+- Stack order should be consistent between central values and their bands
+source: anyplot
+anyplot_updated: 2026-05-18 00:00:00+00:00

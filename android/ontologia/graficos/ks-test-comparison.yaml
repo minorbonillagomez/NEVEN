@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: ks-test-comparison
+name:
+  en: Kolmogorov-Smirnov Plot for Distribution Comparison
+  es: Ks Test Comparison
+description:
+  en: A Kolmogorov-Smirnov (K-S) plot compares two empirical cumulative distribution
+    functions (ECDFs) and visualizes the K-S statistic, which is the maximum vertical
+    distance between the two distributions. The plot displays both ECDFs as step functions,
+    highlights the point of maximum divergence, and typically reports the K-S statistic
+    value and p-value for hypothesis testing. This visualization is essential for
+    determining whether two samples come from the same underlying distribution.
+  es: A Kolmogorov-Smirnov (K-S) plot compares two empirical cumulative distribution
+    functions (ECDFs) and visualizes the K-S statistic, which is the maximum vertical
+    distance between the two distributions. The plot displays both ECDFs as step functions,
+    highlights the point of maximum divergence, and typically reports the K-S statistic
+    value and p-value for hypothesis testing. This visualization is essential for
+    determining whether two samples come from the same underlying distribution.
+aliases:
+  en:
+  - ks-test-comparison
+  - ks test comparison
+  - ks test comparison
+  es:
+  - ks-test-comparison
+  - ks test comparison
+  - ks test comparison
+use_when:
+  en:
+  - A Kolmogorov-Smirnov (K-S) plot compares two empirical cumulative distribution
+    functions (ECDFs) and visualizes the K-S statistic, which is the maximum vertical
+    distance between the two distributions.
+  es:
+  - A Kolmogorov-Smirnov (K-S) plot compares two empirical cumulative distribution
+    functions (ECDFs) and visualizes the K-S statistic, which is the maximum vertical
+    distance between the two distributions.
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Model validation in credit scoring, comparing score distributions between Good
+    and Bad customers to assess model discrimination
+  - A/B testing to verify whether control and treatment groups have statistically
+    different outcome distributions
+  - Quality control analysis comparing actual product measurements against expected
+    or historical distributions
+  - Validating that model predictions or residuals follow expected distributions in
+    regression diagnostics
+  es:
+  - Model validation in credit scoring, comparing score distributions between Good
+    and Bad customers to assess model discrimination
+  - A/B testing to verify whether control and treatment groups have statistically
+    different outcome distributions
+  - Quality control analysis comparing actual product measurements against expected
+    or historical distributions
+  - Validating that model predictions or residuals follow expected distributions in
+    regression diagnostics
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - ecdf
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - finance
+  - model-evaluation
+  features:
+  - comparison
+  - hypothesis-testing
+  - annotated
+keywords:
+  en:
+  - ks
+  - test
+  - comparison
+  - ecdf
+  - numeric
+  - continuous
+  - statistics
+  - finance
+  - model-evaluation
+  - hypothesis-testing
+  - annotated
+  es:
+  - ks
+  - test
+  - comparison
+  - ecdf
+  - numérico
+  - continuo
+  - estadística
+  - finanzas
+  - model-evaluation
+  - comparación
+  - hypothesis-testing
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/ks-test-comparison/implementations/javascript/chartjs.js
+    d3: plots/ks-test-comparison/implementations/javascript/d3.js
+    echarts: plots/ks-test-comparison/implementations/javascript/echarts.js
+    highcharts: plots/ks-test-comparison/implementations/javascript/highcharts.js
+    muix: plots/ks-test-comparison/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ks-test-comparison/implementations/julia/makie.jl
+  python:
+    altair: plots/ks-test-comparison/implementations/python/altair.py
+    bokeh: plots/ks-test-comparison/implementations/python/bokeh.py
+    letsplot: plots/ks-test-comparison/implementations/python/letsplot.py
+    matplotlib: plots/ks-test-comparison/implementations/python/matplotlib.py
+    plotly: plots/ks-test-comparison/implementations/python/plotly.py
+    plotnine: plots/ks-test-comparison/implementations/python/plotnine.py
+    pygal: plots/ks-test-comparison/implementations/python/pygal.py
+    seaborn: plots/ks-test-comparison/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ks-test-comparison/implementations/r/ggplot2.R
+notes:
+- Display both empirical CDFs as step functions with distinct colors/styles
+- Show the K-S statistic value prominently (the maximum vertical distance)
+- Highlight the point where the maximum distance occurs with a vertical line or annotation
+source: anyplot
+anyplot_updated: 2026-05-29 03:05:32+00:00

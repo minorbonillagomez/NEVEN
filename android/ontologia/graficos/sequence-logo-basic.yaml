@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: sequence-logo-basic
+name:
+  en: Sequence Logo for Motif Visualization
+  es: Sequence Logo Basic
+description:
+  en: A sequence logo visualizes the consensus of multiple aligned DNA, RNA, or protein
+    sequences. At each position, letters are stacked vertically with height proportional
+    to information content (measured in bits), and individual letter heights within
+    the stack reflect their relative frequency. This is the standard visualization
+    for identifying conserved positions in transcription factor binding sites, splice
+    sites, and protein domains.
+  es: A sequence logo visualizes the consensus of multiple aligned DNA, RNA, or protein
+    sequences. At each position, letters are stacked vertically with height proportional
+    to information content (measured in bits), and individual letter heights within
+    the stack reflect their relative frequency. This is the standard visualization
+    for identifying conserved positions in transcription factor binding sites, splice
+    sites, and protein domains.
+aliases:
+  en:
+  - sequence-logo-basic
+  - sequence logo basic
+  - sequence logo basic
+  es:
+  - sequence-logo-basic
+  - sequence logo basic
+  - sequence logo basic
+use_when:
+  en:
+  - 'A sequence logo visualizes the consensus of multiple aligned DNA, RNA, or protein
+    sequences. At each position, letters are stacked vertically with height proportional
+    to information content (measured '
+  es:
+  - 'A sequence logo visualizes the consensus of multiple aligned DNA, RNA, or protein
+    sequences. At each position, letters are stacked vertically with height proportional
+    to information content (measured '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing transcription factor binding site motifs from ChIP-seq or SELEX experiments
+  - Analyzing conserved regions in multiple protein sequence alignments to identify
+    functional domains
+  - Displaying splice site consensus sequences in gene annotation studies
+  - Characterizing enzyme active site conservation across species
+  es:
+  - Visualizing transcription factor binding site motifs from ChIP-seq or SELEX experiments
+  - Analyzing conserved regions in multiple protein sequence alignments to identify
+    functional domains
+  - Displaying splice site consensus sequences in gene annotation studies
+  - Characterizing enzyme active site conservation across species
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - logo
+  - bar
+  data_type:
+  - categorical
+  - frequency
+  domain:
+  - science
+  - healthcare
+  features:
+  - basic
+  - annotated
+  - proportional
+keywords:
+  en:
+  - sequence
+  - logo
+  - basic
+  - bar
+  - categorical
+  - frequency
+  - science
+  - healthcare
+  - annotated
+  - proportional
+  es:
+  - sequence
+  - logo
+  - básico
+  - bar
+  - categórico
+  - frequency
+  - ciencia
+  - healthcare
+  - basic
+  - annotated
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/sequence-logo-basic/implementations/javascript/chartjs.js
+    d3: plots/sequence-logo-basic/implementations/javascript/d3.js
+    echarts: plots/sequence-logo-basic/implementations/javascript/echarts.js
+    highcharts: plots/sequence-logo-basic/implementations/javascript/highcharts.js
+    muix: plots/sequence-logo-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/sequence-logo-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/sequence-logo-basic/implementations/python/altair.py
+    bokeh: plots/sequence-logo-basic/implementations/python/bokeh.py
+    letsplot: plots/sequence-logo-basic/implementations/python/letsplot.py
+    matplotlib: plots/sequence-logo-basic/implementations/python/matplotlib.py
+    plotly: plots/sequence-logo-basic/implementations/python/plotly.py
+    plotnine: plots/sequence-logo-basic/implementations/python/plotnine.py
+    pygal: plots/sequence-logo-basic/implementations/python/pygal.py
+    seaborn: plots/sequence-logo-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/sequence-logo-basic/implementations/r/ggplot2.R
+notes:
+- Stack letters vertically at each position, ordered by frequency (most frequent on
+  top)
+- Scale the total stack height by information content in bits (max 2 bits for DNA,
+  max ~4.32 bits for protein)
+- 'Use standard color schemes: DNA — A=green, C=blue, G=orange/yellow, T=red; protein
+  — chemistry-based coloring (e.g., hydrophobic, polar, charged groups)'
+source: anyplot
+anyplot_updated: null

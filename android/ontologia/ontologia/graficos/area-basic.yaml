@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: area-basic
+name:
+  en: Basic Area Chart
+  es: Gráfico de Área Básico
+description:
+  en: An area chart showing quantitative data over a continuous axis with the area
+    below the line filled. It emphasizes the magnitude of values over time by filling
+    the space between the line and axis, creating visual weight that helps readers
+    understand volume and trends. Particularly effective for showing cumulative totals,
+    resource consumption, or any data where the "amount" is as important as the trend.
+  es: An area chart showing quantitative data over a continuous axis with the area
+    below the line filled. It emphasizes the magnitude of values over time by filling
+    the space between the line and axis, creating visual weight that helps readers
+    understand volume and trends. Particularly effective for showing cumulative totals,
+    resource consumption, or any data where the "amount" is as important as the trend.
+aliases:
+  en:
+  - area-basic
+  - area basic
+  - basic area chart
+  es:
+  - area-basic
+  - area basic
+  - gráfico de área básico
+use_when:
+  en:
+  - An area chart showing quantitative data over a continuous axis with the area below
+    the line filled. It emphasizes the magnitude of values over time by filling the
+    space between the line and axis, crea
+  es:
+  - An area chart showing quantitative data over a continuous axis with the area below
+    the line filled. It emphasizes the magnitude of values over time by filling the
+    space between the line and axis, crea
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Website traffic over time showing visitor volume
+  - Revenue trends with cumulative effect visualization
+  - Stock price movements with volume emphasis
+  - Resource utilization (CPU, memory) over time
+  es:
+  - Website traffic over time showing visitor volume
+  - Revenue trends with cumulative effect visualization
+  - Stock price movements with volume emphasis
+  - Resource utilization (CPU, memory) over time
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - filled
+  - trend
+keywords:
+  en:
+  - area chart
+  - basic
+  - area
+  - numeric
+  - timeseries
+  - general
+  - business
+  - filled
+  - trend
+  es:
+  - gráfico de área
+  - básico
+  - area
+  - numérico
+  - timeseries
+  - general
+  - negocios
+  - basic
+  - filled
+  - trend
+implementations:
+  javascript:
+    chartjs: plots/area-basic/implementations/javascript/chartjs.js
+    d3: plots/area-basic/implementations/javascript/d3.js
+    echarts: plots/area-basic/implementations/javascript/echarts.js
+    highcharts: plots/area-basic/implementations/javascript/highcharts.js
+    muix: plots/area-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/area-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/area-basic/implementations/python/altair.py
+    bokeh: plots/area-basic/implementations/python/bokeh.py
+    letsplot: plots/area-basic/implementations/python/letsplot.py
+    matplotlib: plots/area-basic/implementations/python/matplotlib.py
+    plotly: plots/area-basic/implementations/python/plotly.py
+    plotnine: plots/area-basic/implementations/python/plotnine.py
+    pygal: plots/area-basic/implementations/python/pygal.py
+    seaborn: plots/area-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/area-basic/implementations/r/ggplot2.R
+notes:
+- Use semi-transparent fill (alpha 0.3-0.5) for better readability
+- Include gridlines for value estimation
+- Add clear axis labels with units
+source: anyplot
+anyplot_updated: 2026-05-28 05:24:35+00:00

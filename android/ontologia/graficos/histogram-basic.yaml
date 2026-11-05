@@ -1,0 +1,110 @@
+entity_type: ChartType
+id: histogram-basic
+name:
+  en: Basic Histogram
+  es: Histograma Básico
+description:
+  en: A histogram displays the distribution of a single continuous variable by dividing
+    the data range into bins and showing the frequency (count) of observations in
+    each bin. It reveals the shape of the data distribution, including central tendency,
+    spread, and presence of outliers or multiple modes.
+  es: A histogram displays the distribution of a single continuous variable by dividing
+    the data range into bins and showing the frequency (count) of observations in
+    each bin. It reveals the shape of the data distribution, including central tendency,
+    spread, and presence of outliers or multiple modes.
+aliases:
+  en:
+  - histogram-basic
+  - histogram basic
+  - basic histogram
+  es:
+  - histogram-basic
+  - histogram basic
+  - histograma básico
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing exam score distributions to understand student performance patterns
+  - Exploring measurement data to identify quality control issues in manufacturing
+  - Understanding customer age demographics for marketing segmentation
+  es:
+  - Analyzing exam score distributions to understand student performance patterns
+  - Exploring measurement data to identify quality control issues in manufacturing
+  - Understanding customer age demographics for marketing segmentation
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+keywords:
+  en:
+  - histogram
+  - basic
+  - numeric
+  - continuous
+  - statistics
+  - general
+  - distribution
+  es:
+  - histograma
+  - básico
+  - histogram
+  - numérico
+  - continuo
+  - estadística
+  - general
+  - basic
+  - distribución
+implementations:
+  javascript:
+    chartjs: plots/histogram-basic/implementations/javascript/chartjs.js
+    d3: plots/histogram-basic/implementations/javascript/d3.js
+    echarts: plots/histogram-basic/implementations/javascript/echarts.js
+    highcharts: plots/histogram-basic/implementations/javascript/highcharts.js
+    muix: plots/histogram-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-basic/implementations/python/altair.py
+    bokeh: plots/histogram-basic/implementations/python/bokeh.py
+    letsplot: plots/histogram-basic/implementations/python/letsplot.py
+    matplotlib: plots/histogram-basic/implementations/python/matplotlib.py
+    plotly: plots/histogram-basic/implementations/python/plotly.py
+    plotnine: plots/histogram-basic/implementations/python/plotnine.py
+    pygal: plots/histogram-basic/implementations/python/pygal.py
+    seaborn: plots/histogram-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-basic/implementations/r/ggplot2.R
+notes:
+- Clear bin edges with no gaps between bars; thin visible edges between bars help
+  distinguish bins
+- Readable axis labels showing frequency and value ranges
+- Consider appropriate bin count (too few hides patterns, too many creates noise)
+source: anyplot
+anyplot_updated: 2025-12-13 23:33:19+00:00

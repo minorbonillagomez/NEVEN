@@ -1,0 +1,117 @@
+entity_type: ChartType
+id: donut-basic
+name:
+  en: Basic Donut Chart
+  es: Gráfico de Dona Básico
+description:
+  en: A donut chart (ring chart) showing proportions of categorical data as segments
+    of a ring, with a hollow center. Similar to pie charts but the empty center can
+    display summary statistics or additional information. The ring format can be easier
+    to read when comparing segment sizes.
+  es: A donut chart (ring chart) showing proportions of categorical data as segments
+    of a ring, with a hollow center. Similar to pie charts but the empty center can
+    display summary statistics or additional information. The ring format can be easier
+    to read when comparing segment sizes.
+aliases:
+  en:
+  - donut-basic
+  - donut basic
+  - basic donut chart
+  es:
+  - donut-basic
+  - donut basic
+  - gráfico de dona básico
+use_when:
+  en:
+  - Showing part-to-whole relationships
+  - Displaying composition with few categories (≤6)
+  - Emphasizing proportions
+  es:
+  - Mostrar relaciones parte-todo
+  - Visualizar composición con pocas categorías (≤6)
+  - Enfatizar proporciones
+avoid_when:
+  en:
+  - Many categories (>6)
+  - Comparing values (use bar)
+  es:
+  - Muchas categorías (>6)
+  - Comparar valores (usar barras)
+applications:
+  en:
+  - Budget allocation by category with total in center
+  - Market share distribution with company logo in center
+  - Progress tracking (completion percentage)
+  - Portfolio allocation by asset class
+  es:
+  - Budget allocation by category with total in center
+  - Market share distribution with company logo in center
+  - Progress tracking (completion percentage)
+  - Portfolio allocation by asset class
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 2
+    max: 10
+tags:
+  plot_type:
+  - donut
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - proportional
+keywords:
+  en:
+  - donut chart
+  - basic
+  - donut
+  - categorical
+  - numeric
+  - general
+  - business
+  - proportional
+  es:
+  - gráfico de dona
+  - básico
+  - donut
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/donut-basic/implementations/javascript/chartjs.js
+    d3: plots/donut-basic/implementations/javascript/d3.js
+    echarts: plots/donut-basic/implementations/javascript/echarts.js
+    highcharts: plots/donut-basic/implementations/javascript/highcharts.js
+    muix: plots/donut-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/donut-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/donut-basic/implementations/python/altair.py
+    bokeh: plots/donut-basic/implementations/python/bokeh.py
+    letsplot: plots/donut-basic/implementations/python/letsplot.py
+    matplotlib: plots/donut-basic/implementations/python/matplotlib.py
+    plotly: plots/donut-basic/implementations/python/plotly.py
+    plotnine: plots/donut-basic/implementations/python/plotnine.py
+    pygal: plots/donut-basic/implementations/python/pygal.py
+    seaborn: plots/donut-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/donut-basic/implementations/r/ggplot2.R
+notes:
+- Use the center space for key metric or label
+- Include percentage labels on segments
+- Maintain consistent segment ordering
+source: anyplot
+anyplot_updated: 2026-06-25 05:31:38+00:00

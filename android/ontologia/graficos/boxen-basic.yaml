@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: boxen-basic
+name:
+  en: Basic Boxen Plot (Letter-Value Plot)
+  es: Boxen Basic Básico
+description:
+  en: A boxen plot (also known as letter-value plot) extends the traditional box plot
+    to show more quantile information, making it ideal for large datasets with 1000+
+    observations. Instead of just displaying the median and quartiles, it shows additional
+    "letter values" (eighths, sixteenths, etc.) as nested boxes, revealing the full
+    shape of the distribution including tail behavior. This makes outlier detection
+    more meaningful and distribution comparison more detailed.
+  es: A boxen plot (also known as letter-value plot) extends the traditional box plot
+    to show more quantile information, making it ideal for large datasets with 1000+
+    observations. Instead of just displaying the median and quartiles, it shows additional
+    "letter values" (eighths, sixteenths, etc.) as nested boxes, revealing the full
+    shape of the distribution including tail behavior. This makes outlier detection
+    more meaningful and distribution comparison more detailed.
+aliases:
+  en:
+  - boxen-basic
+  - boxen basic
+  - basic boxen basic
+  es:
+  - boxen-basic
+  - boxen basic
+  - boxen basic básico
+use_when:
+  en:
+  - A boxen plot (also known as letter-value plot) extends the traditional box plot
+    to show more quantile information, making it ideal for large datasets with 1000+
+    observations. Instead of just displayin
+  es:
+  - A boxen plot (also known as letter-value plot) extends the traditional box plot
+    to show more quantile information, making it ideal for large datasets with 1000+
+    observations. Instead of just displayin
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing response time distributions across server clusters with millions of
+    requests
+  - Comparing gene expression levels in large-scale genomics studies
+  - Quality control in manufacturing with high-volume production data
+  - Exploring salary or income distributions in large census datasets
+  es:
+  - Analyzing response time distributions across server clusters with millions of
+    requests
+  - Comparing gene expression levels in large-scale genomics studies
+  - Quality control in manufacturing with high-volume production data
+  - Exploring salary or income distributions in large census datasets
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - boxen
+  - box
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+  - large-data
+keywords:
+  en:
+  - boxen
+  - basic
+  - box
+  - numeric
+  - continuous
+  - statistics
+  - general
+  - distribution
+  - large-data
+  es:
+  - boxen
+  - básico
+  - box
+  - numérico
+  - continuo
+  - estadística
+  - general
+  - basic
+  - distribución
+  - large-data
+implementations:
+  javascript:
+    chartjs: plots/boxen-basic/implementations/javascript/chartjs.js
+    d3: plots/boxen-basic/implementations/javascript/d3.js
+    echarts: plots/boxen-basic/implementations/javascript/echarts.js
+    highcharts: plots/boxen-basic/implementations/javascript/highcharts.js
+    muix: plots/boxen-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/boxen-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/boxen-basic/implementations/python/altair.py
+    bokeh: plots/boxen-basic/implementations/python/bokeh.py
+    letsplot: plots/boxen-basic/implementations/python/letsplot.py
+    matplotlib: plots/boxen-basic/implementations/python/matplotlib.py
+    plotly: plots/boxen-basic/implementations/python/plotly.py
+    plotnine: plots/boxen-basic/implementations/python/plotnine.py
+    pygal: plots/boxen-basic/implementations/python/pygal.py
+    seaborn: plots/boxen-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/boxen-basic/implementations/r/ggplot2.R
+notes:
+- Show nested boxes representing letter values (median, quartiles, eighths, sixteenths,
+  etc.)
+- Boxes should decrease in width for deeper quantiles
+- Use contrasting colors or shading to distinguish quantile levels
+source: anyplot
+anyplot_updated: null

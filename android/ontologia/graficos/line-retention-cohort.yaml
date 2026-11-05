@@ -1,0 +1,129 @@
+entity_type: ChartType
+id: line-retention-cohort
+name:
+  en: User Retention Curve by Cohort
+  es: Gráfico de Líneas
+description:
+  en: A line chart showing the percentage of retained users over time since signup,
+    with separate curves for different cohorts. All curves start at 100% at time zero
+    and typically exhibit exponential decay, revealing how well a product retains
+    users over their lifecycle. By overlaying multiple cohorts, teams can visually
+    compare whether retention is improving or degrading across signup periods.
+  es: A line chart showing the percentage of retained users over time since signup,
+    with separate curves for different cohorts. All curves start at 100% at time zero
+    and typically exhibit exponential decay, revealing how well a product retains
+    users over their lifecycle. By overlaying multiple cohorts, teams can visually
+    compare whether retention is improving or degrading across signup periods.
+aliases:
+  en:
+  - line-retention-cohort
+  - line retention cohort
+  - line chart
+  es:
+  - line-retention-cohort
+  - line retention cohort
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Product analytics teams comparing user retention across monthly or weekly signup
+    cohorts to measure engagement trends
+  - A/B testing analysts evaluating how a new onboarding flow affects long-term user
+    retention versus a control group
+  - Growth teams reporting retention improvements to stakeholders by showing cohort
+    curves shifting upward over time
+  es:
+  - Product analytics teams comparing user retention across monthly or weekly signup
+    cohorts to measure engagement trends
+  - A/B testing analysts evaluating how a new onboarding flow affects long-term user
+    retention versus a control group
+  - Growth teams reporting retention improvements to stakeholders by showing cohort
+    curves shifting upward over time
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - categorical
+  - timeseries
+  domain:
+  - marketing
+  - business
+  features:
+  - multi
+  - comparison
+  - temporal
+keywords:
+  en:
+  - line chart
+  - retention
+  - cohort
+  - line
+  - numeric
+  - categorical
+  - timeseries
+  - marketing
+  - business
+  - multi
+  - comparison
+  - temporal
+  es:
+  - gráfico de líneas
+  - retention
+  - cohort
+  - line
+  - numérico
+  - categórico
+  - timeseries
+  - marketing
+  - negocios
+  - multi
+  - comparación
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/line-retention-cohort/implementations/javascript/chartjs.js
+    d3: plots/line-retention-cohort/implementations/javascript/d3.js
+    echarts: plots/line-retention-cohort/implementations/javascript/echarts.js
+    highcharts: plots/line-retention-cohort/implementations/javascript/highcharts.js
+    muix: plots/line-retention-cohort/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-retention-cohort/implementations/julia/makie.jl
+  python:
+    altair: plots/line-retention-cohort/implementations/python/altair.py
+    bokeh: plots/line-retention-cohort/implementations/python/bokeh.py
+    letsplot: plots/line-retention-cohort/implementations/python/letsplot.py
+    matplotlib: plots/line-retention-cohort/implementations/python/matplotlib.py
+    plotly: plots/line-retention-cohort/implementations/python/plotly.py
+    plotnine: plots/line-retention-cohort/implementations/python/plotnine.py
+    pygal: plots/line-retention-cohort/implementations/python/pygal.py
+    seaborn: plots/line-retention-cohort/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-retention-cohort/implementations/r/ggplot2.R
+notes:
+- All curves must start at 100% at time zero
+- Use distinct colors for each cohort with a legend showing cohort label and size
+  (e.g., "Jan 2025 (n=1,245)")
+- Y-axis should range from 0% to 100% with gridlines for easy reading
+source: anyplot
+anyplot_updated: null

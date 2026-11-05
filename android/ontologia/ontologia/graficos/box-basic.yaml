@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: box-basic
+name:
+  en: Basic Box Plot
+  es: Diagrama de Caja Básico
+description:
+  en: A box plot (box-and-whisker plot) showing the distribution of numerical data
+    through quartiles. Displays the median, first and third quartiles as a box, with
+    whiskers extending to show the data range. Essential for comparing distributions
+    across categories and identifying outliers.
+  es: A box plot (box-and-whisker plot) showing the distribution of numerical data
+    through quartiles. Displays the median, first and third quartiles as a box, with
+    whiskers extending to show the data range. Essential for comparing distributions
+    across categories and identifying outliers.
+aliases:
+  en:
+  - box-basic
+  - box basic
+  - basic box plot
+  es:
+  - box-basic
+  - box basic
+  - diagrama de caja básico
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing salary distributions across departments
+  - Analyzing test score distributions by class
+  - 'Quality control: comparing measurements across production batches'
+  - 'Research: comparing experimental groups'
+  es:
+  - Comparing salary distributions across departments
+  - Analyzing test score distributions by class
+  - 'Quality control: comparing measurements across production batches'
+  - 'Research: comparing experimental groups'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - box
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+  - comparison
+  - outliers
+keywords:
+  en:
+  - box plot
+  - basic
+  - box
+  - numeric
+  - categorical
+  - statistics
+  - general
+  - distribution
+  - comparison
+  - outliers
+  es:
+  - diagrama de caja
+  - básico
+  - box
+  - numérico
+  - categórico
+  - estadística
+  - general
+  - basic
+  - distribución
+  - comparación
+  - outliers
+implementations:
+  javascript:
+    chartjs: plots/box-basic/implementations/javascript/chartjs.js
+    d3: plots/box-basic/implementations/javascript/d3.js
+    echarts: plots/box-basic/implementations/javascript/echarts.js
+    highcharts: plots/box-basic/implementations/javascript/highcharts.js
+    muix: plots/box-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/box-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/box-basic/implementations/python/altair.py
+    bokeh: plots/box-basic/implementations/python/bokeh.py
+    letsplot: plots/box-basic/implementations/python/letsplot.py
+    matplotlib: plots/box-basic/implementations/python/matplotlib.py
+    plotly: plots/box-basic/implementations/python/plotly.py
+    plotnine: plots/box-basic/implementations/python/plotnine.py
+    pygal: plots/box-basic/implementations/python/pygal.py
+    seaborn: plots/box-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/box-basic/implementations/r/ggplot2.R
+notes:
+- Show median line within the box
+- Display outliers as individual points
+- Include whiskers at 1.5*IQR
+source: anyplot
+anyplot_updated: 2025-12-14 08:58:33+00:00

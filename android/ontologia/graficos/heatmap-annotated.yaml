@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: heatmap-annotated
+name:
+  en: Annotated Heatmap
+  es: Mapa de Calor
+description:
+  en: A heatmap with numeric values displayed inside each cell, combining color intensity
+    with exact value labels. Essential for correlation matrices, confusion matrices,
+    and any matrix visualization where both pattern recognition and precise values
+    matter. Text color automatically contrasts with background for readability.
+  es: A heatmap with numeric values displayed inside each cell, combining color intensity
+    with exact value labels. Essential for correlation matrices, confusion matrices,
+    and any matrix visualization where both pattern recognition and precise values
+    matter. Text color automatically contrasts with background for readability.
+aliases:
+  en:
+  - heatmap-annotated
+  - heatmap annotated
+  - heatmap
+  es:
+  - heatmap-annotated
+  - heatmap annotated
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Correlation matrices showing relationships between variables with exact coefficients
+  - Confusion matrices in machine learning model evaluation
+  - Performance matrices comparing metrics across categories and time periods
+  - Statistical analysis requiring both visual patterns and precise values
+  es:
+  - Correlation matrices showing relationships between variables with exact coefficients
+  - Confusion matrices in machine learning model evaluation
+  - Performance matrices comparing metrics across categories and time periods
+  - Statistical analysis requiring both visual patterns and precise values
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  - matrix
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  - science
+  - machine-learning
+  features:
+  - annotated
+  - correlation
+  - color-mapped
+keywords:
+  en:
+  - heatmap
+  - annotated
+  - matrix
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - science
+  - machine learning
+  - correlation
+  - color-mapped
+  es:
+  - mapa de calor
+  - annotated
+  - heatmap
+  - matrix
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - ciencia
+  - aprendizaje automático
+  - correlación
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/heatmap-annotated/implementations/javascript/chartjs.js
+    d3: plots/heatmap-annotated/implementations/javascript/d3.js
+    echarts: plots/heatmap-annotated/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-annotated/implementations/javascript/highcharts.js
+    muix: plots/heatmap-annotated/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-annotated/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-annotated/implementations/python/altair.py
+    bokeh: plots/heatmap-annotated/implementations/python/bokeh.py
+    letsplot: plots/heatmap-annotated/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-annotated/implementations/python/matplotlib.py
+    plotly: plots/heatmap-annotated/implementations/python/plotly.py
+    plotnine: plots/heatmap-annotated/implementations/python/plotnine.py
+    pygal: plots/heatmap-annotated/implementations/python/pygal.py
+    seaborn: plots/heatmap-annotated/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-annotated/implementations/r/ggplot2.R
+notes:
+- Text annotations must have sufficient contrast with background color
+- Use appropriate number formatting (e.g., 2 decimal places for correlations)
+- Include a colorbar legend showing the value scale
+source: anyplot
+anyplot_updated: 2026-08-05 09:17:09+00:00

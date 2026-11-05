@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: shap-summary
+name:
+  en: SHAP Summary Plot
+  es: Shap Summary
+description:
+  en: A SHAP (SHapley Additive exPlanations) summary plot displaying the distribution
+    of SHAP values for each feature, ordered by mean absolute SHAP value (importance).
+    Each dot represents a sample, positioned horizontally by its SHAP value and colored
+    by the feature's value (typically low=blue to high=red). This visualization is
+    essential for machine learning interpretability, showing both feature importance
+    and the direction and magnitude of feature effects on model predictions.
+  es: A SHAP (SHapley Additive exPlanations) summary plot displaying the distribution
+    of SHAP values for each feature, ordered by mean absolute SHAP value (importance).
+    Each dot represents a sample, positioned horizontally by its SHAP value and colored
+    by the feature's value (typically low=blue to high=red). This visualization is
+    essential for machine learning interpretability, showing both feature importance
+    and the direction and magnitude of feature effects on model predictions.
+aliases:
+  en:
+  - shap-summary
+  - shap summary
+  - shap summary
+  es:
+  - shap-summary
+  - shap summary
+  - shap summary
+use_when:
+  en:
+  - A SHAP (SHapley Additive exPlanations) summary plot displaying the distribution
+    of SHAP values for each feature, ordered by mean absolute SHAP value (importance).
+    Each dot represents a sample, positio
+  es:
+  - A SHAP (SHapley Additive exPlanations) summary plot displaying the distribution
+    of SHAP values for each feature, ordered by mean absolute SHAP value (importance).
+    Each dot represents a sample, positio
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Explaining gradient boosting or random forest model predictions to stakeholders
+    by showing which features drive predictions up or down
+  - Identifying non-linear relationships where high and low feature values both push
+    predictions in the same direction
+  - Detecting feature interactions by observing clustered or bimodal SHAP value distributions
+  es:
+  - Explaining gradient boosting or random forest model predictions to stakeholders
+    by showing which features drive predictions up or down
+  - Identifying non-linear relationships where high and low feature values both push
+    predictions in the same direction
+  - Detecting feature interactions by observing clustered or bimodal SHAP value distributions
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - strip
+  - swarm
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - machine-learning
+  - statistics
+  - general
+  features:
+  - interpretability
+  - color-mapped
+  - distribution
+  - ranking
+keywords:
+  en:
+  - shap
+  - summary
+  - strip
+  - swarm
+  - numeric
+  - categorical
+  - machine learning
+  - statistics
+  - general
+  - interpretability
+  - color-mapped
+  - distribution
+  - ranking
+  es:
+  - shap
+  - summary
+  - strip
+  - swarm
+  - numérico
+  - categórico
+  - aprendizaje automático
+  - estadística
+  - general
+  - interpretability
+  - color-mapped
+  - distribución
+  - clasificación
+implementations:
+  javascript:
+    chartjs: plots/shap-summary/implementations/javascript/chartjs.js
+    d3: plots/shap-summary/implementations/javascript/d3.js
+    echarts: plots/shap-summary/implementations/javascript/echarts.js
+    highcharts: plots/shap-summary/implementations/javascript/highcharts.js
+    muix: plots/shap-summary/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/shap-summary/implementations/julia/makie.jl
+  python:
+    altair: plots/shap-summary/implementations/python/altair.py
+    bokeh: plots/shap-summary/implementations/python/bokeh.py
+    letsplot: plots/shap-summary/implementations/python/letsplot.py
+    matplotlib: plots/shap-summary/implementations/python/matplotlib.py
+    plotly: plots/shap-summary/implementations/python/plotly.py
+    plotnine: plots/shap-summary/implementations/python/plotnine.py
+    pygal: plots/shap-summary/implementations/python/pygal.py
+    seaborn: plots/shap-summary/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/shap-summary/implementations/r/ggplot2.R
+notes:
+- Sort features by mean absolute SHAP value (most important at top)
+- Use diverging color scale (blue-red) to indicate low-to-high feature values
+- Add vertical line at x=0 to clearly separate positive and negative impacts
+source: anyplot
+anyplot_updated: 2026-05-14 12:47:05+00:00

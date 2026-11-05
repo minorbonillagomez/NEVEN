@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: contour-map-geographic
+name:
+  en: Contour Lines on Geographic Map
+  es: Gráfico de Contorno
+description:
+  en: A contour map overlays isolines (lines of equal value) onto a geographic basemap,
+    visualizing continuous spatial data such as elevation, temperature, or atmospheric
+    pressure across real-world coordinates. Unlike basic contour plots that use abstract
+    x/y coordinates, this plot anchors contours to latitude/longitude positions with
+    geographic context like coastlines, borders, or terrain. It combines the precision
+    of isoline visualization with spatial awareness, making it ideal for meteorological,
+    topographic, and environmental applications.
+  es: A contour map overlays isolines (lines of equal value) onto a geographic basemap,
+    visualizing continuous spatial data such as elevation, temperature, or atmospheric
+    pressure across real-world coordinates. Unlike basic contour plots that use abstract
+    x/y coordinates, this plot anchors contours to latitude/longitude positions with
+    geographic context like coastlines, borders, or terrain. It combines the precision
+    of isoline visualization with spatial awareness, making it ideal for meteorological,
+    topographic, and environmental applications.
+aliases:
+  en:
+  - contour-map-geographic
+  - contour map geographic
+  - contour plot
+  es:
+  - contour-map-geographic
+  - contour map geographic
+  - gráfico de contorno
+use_when:
+  en:
+  - A contour map overlays isolines (lines of equal value) onto a geographic basemap,
+    visualizing continuous spatial data such as elevation, temperature, or atmospheric
+    pressure across real-world coordina
+  es:
+  - A contour map overlays isolines (lines of equal value) onto a geographic basemap,
+    visualizing continuous spatial data such as elevation, temperature, or atmospheric
+    pressure across real-world coordina
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Topographic elevation maps showing terrain contours with labeled heights
+  - Weather maps displaying pressure systems (isobars) or temperature gradients (isotherms)
+  - Environmental monitoring showing pollution concentration or radiation levels across
+    a region
+  - Oceanographic charts displaying water temperature or salinity isolines
+  es:
+  - Topographic elevation maps showing terrain contours with labeled heights
+  - Weather maps displaying pressure systems (isobars) or temperature gradients (isotherms)
+  - Environmental monitoring showing pollution concentration or radiation levels across
+    a region
+  - Oceanographic charts displaying water temperature or salinity isolines
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - contour
+  - map
+  data_type:
+  - geospatial
+  - numeric
+  - continuous
+  domain:
+  - general
+  - science
+  - environment
+  features:
+  - basic
+  - annotated
+  - color-mapped
+keywords:
+  en:
+  - contour plot
+  - map
+  - geographic
+  - contour
+  - geospatial
+  - numeric
+  - continuous
+  - general
+  - science
+  - environment
+  - basic
+  - annotated
+  - color-mapped
+  es:
+  - gráfico de contorno
+  - mapa
+  - geographic
+  - contour
+  - map
+  - geoespacial
+  - numérico
+  - continuo
+  - general
+  - ciencia
+  - environment
+  - basic
+  - annotated
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/contour-map-geographic/implementations/javascript/chartjs.js
+    d3: plots/contour-map-geographic/implementations/javascript/d3.js
+    echarts: plots/contour-map-geographic/implementations/javascript/echarts.js
+    highcharts: plots/contour-map-geographic/implementations/javascript/highcharts.js
+    muix: plots/contour-map-geographic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/contour-map-geographic/implementations/julia/makie.jl
+  python:
+    altair: plots/contour-map-geographic/implementations/python/altair.py
+    bokeh: plots/contour-map-geographic/implementations/python/bokeh.py
+    letsplot: plots/contour-map-geographic/implementations/python/letsplot.py
+    matplotlib: plots/contour-map-geographic/implementations/python/matplotlib.py
+    plotly: plots/contour-map-geographic/implementations/python/plotly.py
+    plotnine: plots/contour-map-geographic/implementations/python/plotnine.py
+    pygal: plots/contour-map-geographic/implementations/python/pygal.py
+    seaborn: plots/contour-map-geographic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/contour-map-geographic/implementations/r/ggplot2.R
+notes:
+- Overlay smooth contour lines on a geographic basemap (coastlines, borders, or terrain)
+- Label contour lines with values at appropriate intervals
+- Support both line-only contours and optional filled contours between levels
+source: anyplot
+anyplot_updated: null

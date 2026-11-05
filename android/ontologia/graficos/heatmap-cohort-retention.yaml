@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: heatmap-cohort-retention
+name:
+  en: Cohort Retention Heatmap
+  es: Mapa de Calor
+description:
+  en: A triangular heatmap displaying user retention rates across signup cohorts and
+    time periods. Each row represents a cohort (e.g., users who signed up in a specific
+    month), each column represents periods since signup, and cell color intensity
+    indicates the retention percentage. The triangular shape naturally emerges because
+    more recent cohorts have fewer elapsed periods. This visualization reveals retention
+    trends, highlights churn patterns, and enables comparison of cohort quality over
+    time.
+  es: A triangular heatmap displaying user retention rates across signup cohorts and
+    time periods. Each row represents a cohort (e.g., users who signed up in a specific
+    month), each column represents periods since signup, and cell color intensity
+    indicates the retention percentage. The triangular shape naturally emerges because
+    more recent cohorts have fewer elapsed periods. This visualization reveals retention
+    trends, highlights churn patterns, and enables comparison of cohort quality over
+    time.
+aliases:
+  en:
+  - heatmap-cohort-retention
+  - heatmap cohort retention
+  - heatmap
+  es:
+  - heatmap-cohort-retention
+  - heatmap cohort retention
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'SaaS product analytics: tracking weekly or monthly user retention to measure
+    feature stickiness and identify engagement drops'
+  - 'Mobile app growth: comparing retention curves across acquisition channels or
+    app versions to optimize onboarding'
+  - 'Subscription business monitoring: identifying seasonal churn patterns and evaluating
+    the impact of retention interventions'
+  - 'Gaming analytics: measuring player return rates across cohorts to assess content
+    update effectiveness'
+  es:
+  - 'SaaS product analytics: tracking weekly or monthly user retention to measure
+    feature stickiness and identify engagement drops'
+  - 'Mobile app growth: comparing retention curves across acquisition channels or
+    app versions to optimize onboarding'
+  - 'Subscription business monitoring: identifying seasonal churn patterns and evaluating
+    the impact of retention interventions'
+  - 'Gaming analytics: measuring player return rates across cohorts to assess content
+    update effectiveness'
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - categorical
+  - numeric
+  - timeseries
+  domain:
+  - business
+  - marketing
+  features:
+  - annotated
+  - color-mapped
+  - temporal
+keywords:
+  en:
+  - heatmap
+  - cohort
+  - retention
+  - categorical
+  - numeric
+  - timeseries
+  - business
+  - marketing
+  - annotated
+  - color-mapped
+  - temporal
+  es:
+  - mapa de calor
+  - cohort
+  - retention
+  - heatmap
+  - categórico
+  - numérico
+  - timeseries
+  - negocios
+  - marketing
+  - annotated
+  - color-mapped
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/heatmap-cohort-retention/implementations/javascript/chartjs.js
+    d3: plots/heatmap-cohort-retention/implementations/javascript/d3.js
+    echarts: plots/heatmap-cohort-retention/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-cohort-retention/implementations/javascript/highcharts.js
+    muix: plots/heatmap-cohort-retention/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-cohort-retention/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-cohort-retention/implementations/python/altair.py
+    bokeh: plots/heatmap-cohort-retention/implementations/python/bokeh.py
+    letsplot: plots/heatmap-cohort-retention/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-cohort-retention/implementations/python/matplotlib.py
+    plotly: plots/heatmap-cohort-retention/implementations/python/plotly.py
+    plotnine: plots/heatmap-cohort-retention/implementations/python/plotnine.py
+    pygal: plots/heatmap-cohort-retention/implementations/python/pygal.py
+    seaborn: plots/heatmap-cohort-retention/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-cohort-retention/implementations/r/ggplot2.R
+notes:
+- Period 0 (signup period) should always show 100% retention for every cohort
+- 'The heatmap should have a triangular shape: the first cohort has the most columns,
+  each subsequent cohort has one fewer'
+- Use a sequential colormap from light (low retention) to dark (high retention), such
+  as a green or blue gradient
+source: anyplot
+anyplot_updated: '2026-10-02T15:00:51Z'

@@ -1,0 +1,142 @@
+entity_type: ChartType
+id: flowmap-origin-destination
+name:
+  en: Origin-Destination Flow Map
+  es: Flowmap Origin Destination
+description:
+  en: An origin-destination flow map visualizes movement or transfer between geographic
+    locations using curved arcs overlaid on a map. Each arc connects an origin point
+    to a destination point, with line thickness proportional to the flow magnitude.
+    This visualization excels at revealing spatial patterns in migration, trade, or
+    travel data, making it easy to identify major corridors, hub locations, and directional
+    imbalances in movement between places.
+  es: An origin-destination flow map visualizes movement or transfer between geographic
+    locations using curved arcs overlaid on a map. Each arc connects an origin point
+    to a destination point, with line thickness proportional to the flow magnitude.
+    This visualization excels at revealing spatial patterns in migration, trade, or
+    travel data, making it easy to identify major corridors, hub locations, and directional
+    imbalances in movement between places.
+aliases:
+  en:
+  - flowmap-origin-destination
+  - flowmap origin destination
+  - flowmap origin destination
+  es:
+  - flowmap-origin-destination
+  - flowmap origin destination
+  - flowmap origin destination
+use_when:
+  en:
+  - An origin-destination flow map visualizes movement or transfer between geographic
+    locations using curved arcs overlaid on a map. Each arc connects an origin point
+    to a destination point, with line thi
+  es:
+  - An origin-destination flow map visualizes movement or transfer between geographic
+    locations using curved arcs overlaid on a map. Each arc connects an origin point
+    to a destination point, with line thi
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing international migration flows showing population movement between
+    countries or regions
+  - Analyzing trade routes displaying import/export volumes between ports or economic
+    centers
+  - Mapping commuter patterns showing daily travel flows between residential areas
+    and employment centers
+  - Displaying supply chain logistics illustrating shipment volumes between distribution
+    centers and retail locations
+  es:
+  - Visualizing international migration flows showing population movement between
+    countries or regions
+  - Analyzing trade routes displaying import/export volumes between ports or economic
+    centers
+  - Mapping commuter patterns showing daily travel flows between residential areas
+    and employment centers
+  - Displaying supply chain logistics illustrating shipment volumes between distribution
+    centers and retail locations
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - map
+  - arc
+  data_type:
+  - geospatial
+  - numeric
+  - relational
+  domain:
+  - general
+  - business
+  - statistics
+  features:
+  - flow
+  - proportional
+  - geographic
+  - connection
+keywords:
+  en:
+  - flowmap
+  - origin
+  - destination
+  - map
+  - arc
+  - geospatial
+  - numeric
+  - relational
+  - general
+  - business
+  - statistics
+  - flow
+  - proportional
+  - geographic
+  - connection
+  es:
+  - flowmap
+  - origin
+  - destination
+  - map
+  - arc
+  - geoespacial
+  - numérico
+  - relational
+  - general
+  - negocios
+  - estadística
+  - flujo
+  - proportional
+  - geographic
+  - connection
+implementations:
+  javascript:
+    chartjs: plots/flowmap-origin-destination/implementations/javascript/chartjs.js
+    d3: plots/flowmap-origin-destination/implementations/javascript/d3.js
+    echarts: plots/flowmap-origin-destination/implementations/javascript/echarts.js
+    highcharts: plots/flowmap-origin-destination/implementations/javascript/highcharts.js
+    muix: plots/flowmap-origin-destination/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/flowmap-origin-destination/implementations/julia/makie.jl
+  python:
+    altair: plots/flowmap-origin-destination/implementations/python/altair.py
+    bokeh: plots/flowmap-origin-destination/implementations/python/bokeh.py
+    letsplot: plots/flowmap-origin-destination/implementations/python/letsplot.py
+    matplotlib: plots/flowmap-origin-destination/implementations/python/matplotlib.py
+    plotly: plots/flowmap-origin-destination/implementations/python/plotly.py
+    plotnine: plots/flowmap-origin-destination/implementations/python/plotnine.py
+    pygal: plots/flowmap-origin-destination/implementations/python/pygal.py
+    seaborn: plots/flowmap-origin-destination/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/flowmap-origin-destination/implementations/r/ggplot2.R
+notes:
+- Use curved arcs (Bezier curves or great circle paths) to connect origin and destination
+  points
+- Line width should be proportional to flow magnitude for visual comparison
+- Apply transparency (alpha 0.4-0.7) to handle overlapping arcs in dense flow networks
+source: anyplot
+anyplot_updated: 2026-05-20 09:17:42+00:00

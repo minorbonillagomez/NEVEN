@@ -1,0 +1,145 @@
+entity_type: ChartType
+id: bar-diverging-likert
+name:
+  en: Likert Scale Diverging Bar Chart
+  es: Gráfico de Barras
+description:
+  en: A diverging stacked bar chart designed for Likert scale survey responses (e.g.,
+    Strongly Disagree to Strongly Agree). Bars diverge from a central neutral point,
+    with negative responses (Disagree, Strongly Disagree) extending left and positive
+    responses (Agree, Strongly Agree) extending right. This layout makes it easy to
+    compare overall agreement levels across multiple survey questions at a glance.
+  es: A diverging stacked bar chart designed for Likert scale survey responses (e.g.,
+    Strongly Disagree to Strongly Agree). Bars diverge from a central neutral point,
+    with negative responses (Disagree, Strongly Disagree) extending left and positive
+    responses (Agree, Strongly Agree) extending right. This layout makes it easy to
+    compare overall agreement levels across multiple survey questions at a glance.
+aliases:
+  en:
+  - bar-diverging-likert
+  - bar diverging likert
+  - bar chart
+  es:
+  - bar-diverging-likert
+  - bar diverging likert
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Visualizing survey results in social science research with multi-point agreement
+    scales
+  - Displaying employee satisfaction and engagement survey outcomes across departments
+    or questions
+  - Analyzing customer feedback and Net Promoter Score distributions
+  - Comparing course evaluation responses across educational assessment items
+  es:
+  - Visualizing survey results in social science research with multi-point agreement
+    scales
+  - Displaying employee satisfaction and engagement survey outcomes across departments
+    or questions
+  - Analyzing customer feedback and Net Promoter Score distributions
+  - Comparing course evaluation responses across educational assessment items
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - ordinal
+  - numeric
+  domain:
+  - research
+  - business
+  - education
+  features:
+  - diverging
+  - stacked
+  - horizontal
+  - comparison
+  - annotated
+  - centered-baseline
+keywords:
+  en:
+  - bar chart
+  - diverging
+  - likert
+  - bar
+  - categorical
+  - ordinal
+  - numeric
+  - research
+  - business
+  - education
+  - stacked
+  - horizontal
+  - comparison
+  - annotated
+  - centered-baseline
+  es:
+  - gráfico de barras
+  - diverging
+  - likert
+  - bar
+  - categórico
+  - ordinal
+  - numérico
+  - research
+  - negocios
+  - education
+  - stacked
+  - horizontal
+  - comparación
+  - annotated
+  - centered-baseline
+implementations:
+  javascript:
+    chartjs: plots/bar-diverging-likert/implementations/javascript/chartjs.js
+    d3: plots/bar-diverging-likert/implementations/javascript/d3.js
+    echarts: plots/bar-diverging-likert/implementations/javascript/echarts.js
+    highcharts: plots/bar-diverging-likert/implementations/javascript/highcharts.js
+    muix: plots/bar-diverging-likert/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-diverging-likert/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-diverging-likert/implementations/python/altair.py
+    bokeh: plots/bar-diverging-likert/implementations/python/bokeh.py
+    letsplot: plots/bar-diverging-likert/implementations/python/letsplot.py
+    matplotlib: plots/bar-diverging-likert/implementations/python/matplotlib.py
+    plotly: plots/bar-diverging-likert/implementations/python/plotly.py
+    plotnine: plots/bar-diverging-likert/implementations/python/plotnine.py
+    pygal: plots/bar-diverging-likert/implementations/python/pygal.py
+    seaborn: plots/bar-diverging-likert/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-diverging-likert/implementations/r/ggplot2.R
+notes:
+- Center the chart on the neutral response category, splitting it evenly across the
+  midpoint
+- Use a diverging color scheme (e.g., red-to-blue or orange-to-teal) with a muted
+  tone for neutral
+- Sort questions by net agreement (agree + strongly agree minus disagree + strongly
+  disagree) for easy comparison
+source: anyplot
+anyplot_updated: 2026-05-30 14:32:23+00:00

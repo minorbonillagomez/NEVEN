@@ -1,0 +1,135 @@
+entity_type: ChartType
+id: indicator-ichimoku
+name:
+  en: Ichimoku Cloud Technical Indicator Chart
+  es: Indicator Ichimoku
+description:
+  en: Displays the Ichimoku Kinko Hyo ("one glance equilibrium chart") overlay on
+    a candlestick price chart. The indicator plots five lines — Tenkan-sen (conversion),
+    Kijun-sen (base), Senkou Span A, Senkou Span B, and Chikou Span (lagging) — with
+    the area between Senkou Span A and B filled as the "Kumo" (cloud). The cloud color
+    changes depending on which span is on top, providing an at-a-glance view of trend
+    direction, momentum, and support/resistance zones.
+  es: Displays the Ichimoku Kinko Hyo ("one glance equilibrium chart") overlay on
+    a candlestick price chart. The indicator plots five lines — Tenkan-sen (conversion),
+    Kijun-sen (base), Senkou Span A, Senkou Span B, and Chikou Span (lagging) — with
+    the area between Senkou Span A and B filled as the "Kumo" (cloud). The cloud color
+    changes depending on which span is on top, providing an at-a-glance view of trend
+    direction, momentum, and support/resistance zones.
+aliases:
+  en:
+  - indicator-ichimoku
+  - indicator ichimoku
+  - indicator ichimoku
+  es:
+  - indicator-ichimoku
+  - indicator ichimoku
+  - indicator ichimoku
+use_when:
+  en:
+  - Displays the Ichimoku Kinko Hyo ("one glance equilibrium chart") overlay on a
+    candlestick price chart. The indicator plots five lines — Tenkan-sen (conversion),
+    Kijun-sen (base), Senkou Span A, Senkou
+  es:
+  - Displays the Ichimoku Kinko Hyo ("one glance equilibrium chart") overlay on a
+    candlestick price chart. The indicator plots five lines — Tenkan-sen (conversion),
+    Kijun-sen (base), Senkou Span A, Senkou
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Equity or forex traders identifying trend direction and momentum using the cloud
+    color and thickness
+  - Technical analysts locating dynamic support and resistance zones formed by the
+    Kumo
+  - Swing traders spotting bullish/bearish crossover signals between Tenkan-sen and
+    Kijun-sen
+  es:
+  - Equity or forex traders identifying trend direction and momentum using the cloud
+    color and thickness
+  - Technical analysts locating dynamic support and resistance zones formed by the
+    Kumo
+  - Swing traders spotting bullish/bearish crossover signals between Tenkan-sen and
+    Kijun-sen
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - candlestick
+  - line
+  - area
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  features:
+  - advanced
+  - temporal
+  - color-mapped
+  - annotated
+  - technical-analysis
+keywords:
+  en:
+  - indicator
+  - ichimoku
+  - candlestick
+  - line
+  - area
+  - timeseries
+  - numeric
+  - finance
+  - advanced
+  - temporal
+  - color-mapped
+  - annotated
+  - technical-analysis
+  es:
+  - indicator
+  - ichimoku
+  - candlestick
+  - line
+  - area
+  - timeseries
+  - numérico
+  - finanzas
+  - advanced
+  - temporal
+  - color-mapped
+  - annotated
+  - technical-analysis
+implementations:
+  javascript:
+    chartjs: plots/indicator-ichimoku/implementations/javascript/chartjs.js
+    d3: plots/indicator-ichimoku/implementations/javascript/d3.js
+    echarts: plots/indicator-ichimoku/implementations/javascript/echarts.js
+    highcharts: plots/indicator-ichimoku/implementations/javascript/highcharts.js
+    muix: plots/indicator-ichimoku/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/indicator-ichimoku/implementations/julia/makie.jl
+  python:
+    altair: plots/indicator-ichimoku/implementations/python/altair.py
+    bokeh: plots/indicator-ichimoku/implementations/python/bokeh.py
+    letsplot: plots/indicator-ichimoku/implementations/python/letsplot.py
+    matplotlib: plots/indicator-ichimoku/implementations/python/matplotlib.py
+    plotly: plots/indicator-ichimoku/implementations/python/plotly.py
+    plotnine: plots/indicator-ichimoku/implementations/python/plotnine.py
+    pygal: plots/indicator-ichimoku/implementations/python/pygal.py
+    seaborn: plots/indicator-ichimoku/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/indicator-ichimoku/implementations/r/ggplot2.R
+notes:
+- The cloud (Kumo) should be filled between Senkou Span A and Senkou Span B, with
+  a green/bullish tint when Span A > Span B and a red/bearish tint when Span B > Span
+  A
+- Tenkan-sen and Kijun-sen should be drawn as distinct colored lines over the candlestick
+  chart
+- Chikou Span should be plotted shifted 26 periods into the past
+source: anyplot
+anyplot_updated: 2026-06-08 01:19:23+00:00

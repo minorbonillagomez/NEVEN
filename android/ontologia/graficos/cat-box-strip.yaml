@@ -1,0 +1,115 @@
+entity_type: ChartType
+id: cat-box-strip
+name:
+  en: Box Plot with Strip Overlay
+  es: Cat Box Strip
+description:
+  en: A combined visualization that overlays individual data points (strip plot) on
+    top of a box plot. This provides both summary statistics (median, quartiles, whiskers)
+    and visibility of the actual data distribution.
+  es: A combined visualization that overlays individual data points (strip plot) on
+    top of a box plot. This provides both summary statistics (median, quartiles, whiskers)
+    and visibility of the actual data distribution.
+aliases:
+  en:
+  - cat-box-strip
+  - cat box strip
+  - cat box strip
+  es:
+  - cat-box-strip
+  - cat box strip
+  - cat box strip
+use_when:
+  en:
+  - A combined visualization that overlays individual data points (strip plot) on
+    top of a box plot. This provides both summary statistics (median, quartiles, whiskers)
+    and visibility of the actual data d
+  es:
+  - A combined visualization that overlays individual data points (strip plot) on
+    top of a box plot. This provides both summary statistics (median, quartiles, whiskers)
+    and visibility of the actual data d
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Complete distribution visualization
+  - Identifying outliers with context
+  - Comparing groups with sample size awareness
+  - Statistical presentations requiring raw data visibility
+  es:
+  - Complete distribution visualization
+  - Identifying outliers with context
+  - Comparing groups with sample size awareness
+  - Statistical presentations requiring raw data visibility
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - box
+  - strip
+  domain:
+  - statistics
+  features:
+  - overlay
+  - distribution
+  - quartiles
+  data_type:
+  - categorical
+  - numeric
+keywords:
+  en:
+  - cat
+  - box plot
+  - strip plot
+  - box
+  - strip
+  - statistics
+  - overlay
+  - distribution
+  - quartiles
+  - categorical
+  - numeric
+  es:
+  - cat
+  - diagrama de caja
+  - diagrama de tiras
+  - box
+  - strip
+  - estadística
+  - overlay
+  - distribución
+  - quartiles
+  - categórico
+  - numérico
+implementations:
+  javascript:
+    chartjs: plots/cat-box-strip/implementations/javascript/chartjs.js
+    d3: plots/cat-box-strip/implementations/javascript/d3.js
+    echarts: plots/cat-box-strip/implementations/javascript/echarts.js
+    highcharts: plots/cat-box-strip/implementations/javascript/highcharts.js
+    muix: plots/cat-box-strip/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/cat-box-strip/implementations/julia/makie.jl
+  python:
+    altair: plots/cat-box-strip/implementations/python/altair.py
+    bokeh: plots/cat-box-strip/implementations/python/bokeh.py
+    letsplot: plots/cat-box-strip/implementations/python/letsplot.py
+    matplotlib: plots/cat-box-strip/implementations/python/matplotlib.py
+    plotly: plots/cat-box-strip/implementations/python/plotly.py
+    plotnine: plots/cat-box-strip/implementations/python/plotnine.py
+    pygal: plots/cat-box-strip/implementations/python/pygal.py
+    seaborn: plots/cat-box-strip/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/cat-box-strip/implementations/r/ggplot2.R
+notes:
+- Strip points overlay the box plot
+- Box shows median, Q1, Q3; whiskers show range
+- Points use jitter and transparency to reduce overlap
+source: anyplot
+anyplot_updated: '2026-05-13T05:24:55Z'

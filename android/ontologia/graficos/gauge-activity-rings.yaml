@@ -1,0 +1,143 @@
+entity_type: ChartType
+id: gauge-activity-rings
+name:
+  en: Activity Rings Progress Chart
+  es: Gráfico de Medidor
+description:
+  en: An activity rings chart displays goal completion for several metrics at once
+    using concentric radial progress arcs, in the style popularized by fitness trackers.
+    Each ring is a partial arc with rounded end caps that starts at the top (12 o'clock)
+    and sweeps clockwise in proportion to how close the metric is to its goal, with
+    a distinct color per metric and a faint background track showing the full circle.
+    It is instantly recognizable and ideal for at-a-glance comparison of progress
+    across a small set of related goals, filling the general radial-progress gap that
+    needle gauges (`gauge-basic`) and polar bars (`polar-bar`) do not cover.
+  es: An activity rings chart displays goal completion for several metrics at once
+    using concentric radial progress arcs, in the style popularized by fitness trackers.
+    Each ring is a partial arc with rounded end caps that starts at the top (12 o'clock)
+    and sweeps clockwise in proportion to how close the metric is to its goal, with
+    a distinct color per metric and a faint background track showing the full circle.
+    It is instantly recognizable and ideal for at-a-glance comparison of progress
+    across a small set of related goals, filling the general radial-progress gap that
+    needle gauges (`gauge-basic`) and polar bars (`polar-bar`) do not cover.
+aliases:
+  en:
+  - gauge-activity-rings
+  - gauge activity rings
+  - gauge chart
+  es:
+  - gauge-activity-rings
+  - gauge activity rings
+  - gráfico de medidor
+use_when:
+  en:
+  - An activity rings chart displays goal completion for several metrics at once using
+    concentric radial progress arcs, in the style popularized by fitness trackers.
+    Each ring is a partial arc with rounde
+  es:
+  - An activity rings chart displays goal completion for several metrics at once using
+    concentric radial progress arcs, in the style popularized by fitness trackers.
+    Each ring is a partial arc with rounde
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Daily fitness summary showing move, exercise, and stand goal completion on a wearable
+    or health dashboard
+  - Personal productivity tracker comparing progress toward calories, active minutes,
+    and step targets
+  - Project or fundraising dashboard showing percent-to-goal for several parallel
+    campaigns
+  - Onboarding or gamification widgets indicating completion of multiple task categories
+  es:
+  - Daily fitness summary showing move, exercise, and stand goal completion on a wearable
+    or health dashboard
+  - Personal productivity tracker comparing progress toward calories, active minutes,
+    and step targets
+  - Project or fundraising dashboard showing percent-to-goal for several parallel
+    campaigns
+  - Onboarding or gamification widgets indicating completion of multiple task categories
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - gauge
+  - donut
+  data_type:
+  - numeric
+  - categorical
+  - proportion
+  domain:
+  - general
+  - healthcare
+  features:
+  - radial
+  - circular
+  - proportional
+  - comparison
+keywords:
+  en:
+  - gauge chart
+  - activity
+  - rings
+  - gauge
+  - donut
+  - numeric
+  - categorical
+  - proportion
+  - general
+  - healthcare
+  - radial
+  - circular
+  - proportional
+  - comparison
+  es:
+  - gráfico de medidor
+  - activity
+  - rings
+  - gauge
+  - donut
+  - numérico
+  - categórico
+  - proportion
+  - general
+  - healthcare
+  - radial
+  - circular
+  - proportional
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/gauge-activity-rings/implementations/javascript/chartjs.js
+    d3: plots/gauge-activity-rings/implementations/javascript/d3.js
+    echarts: plots/gauge-activity-rings/implementations/javascript/echarts.js
+    highcharts: plots/gauge-activity-rings/implementations/javascript/highcharts.js
+    muix: plots/gauge-activity-rings/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/gauge-activity-rings/implementations/julia/makie.jl
+  python:
+    altair: plots/gauge-activity-rings/implementations/python/altair.py
+    bokeh: plots/gauge-activity-rings/implementations/python/bokeh.py
+    letsplot: plots/gauge-activity-rings/implementations/python/letsplot.py
+    matplotlib: plots/gauge-activity-rings/implementations/python/matplotlib.py
+    plotly: plots/gauge-activity-rings/implementations/python/plotly.py
+    plotnine: plots/gauge-activity-rings/implementations/python/plotnine.py
+    pygal: plots/gauge-activity-rings/implementations/python/pygal.py
+    seaborn: plots/gauge-activity-rings/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/gauge-activity-rings/implementations/r/ggplot2.R
+notes:
+- Draw each ring as a thick partial arc starting at 90° (top) and progressing clockwise;
+  use rounded line caps for the iconic look
+- Behind each colored arc, render a faint full-circle track (typically the ring color
+  at low opacity) so remaining progress is visible
+- Fraction = value / goal; clamp the visible sweep to 360° but allow values that exceed
+  the goal to be indicated (e.g., full ring plus a label) where the library permits
+source: anyplot
+anyplot_updated: null

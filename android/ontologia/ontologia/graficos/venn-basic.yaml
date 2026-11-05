@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: venn-basic
+name:
+  en: Venn Diagram
+  es: Diagrama de Venn Básico
+description:
+  en: A Venn diagram visualizes the logical relationships between two or three sets
+    using overlapping circles. Each circle represents a set, and overlapping regions
+    show elements shared between sets. This classic visualization is ideal for showing
+    intersections, unions, and exclusive memberships, making abstract set relationships
+    immediately intuitive.
+  es: A Venn diagram visualizes the logical relationships between two or three sets
+    using overlapping circles. Each circle represents a set, and overlapping regions
+    show elements shared between sets. This classic visualization is ideal for showing
+    intersections, unions, and exclusive memberships, making abstract set relationships
+    immediately intuitive.
+aliases:
+  en:
+  - venn-basic
+  - venn basic
+  - basic venn diagram
+  es:
+  - venn-basic
+  - venn basic
+  - diagrama de venn básico
+use_when:
+  en:
+  - A Venn diagram visualizes the logical relationships between two or three sets
+    using overlapping circles. Each circle represents a set, and overlapping regions
+    show elements shared between sets. This c
+  es:
+  - A Venn diagram visualizes the logical relationships between two or three sets
+    using overlapping circles. Each circle represents a set, and overlapping regions
+    show elements shared between sets. This c
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing feature overlap between product offerings or service tiers
+  - Analyzing survey responses where respondents may belong to multiple groups
+  - Visualizing gene expression overlap in biological research
+  - Illustrating shared and unique skills across team members or job candidates
+  es:
+  - Comparing feature overlap between product offerings or service tiers
+  - Analyzing survey responses where respondents may belong to multiple groups
+  - Visualizing gene expression overlap in biological research
+  - Illustrating shared and unique skills across team members or job candidates
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - venn
+  - set-diagram
+  data_type:
+  - categorical
+  - numeric
+  - discrete
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - basic
+  - comparison
+  - proportional
+keywords:
+  en:
+  - venn diagram
+  - basic
+  - venn
+  - set-diagram
+  - categorical
+  - numeric
+  - discrete
+  - general
+  - statistics
+  - research
+  - comparison
+  - proportional
+  es:
+  - diagrama de venn
+  - básico
+  - venn
+  - set-diagram
+  - categórico
+  - numérico
+  - discreto
+  - general
+  - estadística
+  - research
+  - basic
+  - comparación
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/venn-basic/implementations/javascript/chartjs.js
+    d3: plots/venn-basic/implementations/javascript/d3.js
+    echarts: plots/venn-basic/implementations/javascript/echarts.js
+    highcharts: plots/venn-basic/implementations/javascript/highcharts.js
+    muix: plots/venn-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/venn-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/venn-basic/implementations/python/altair.py
+    bokeh: plots/venn-basic/implementations/python/bokeh.py
+    letsplot: plots/venn-basic/implementations/python/letsplot.py
+    matplotlib: plots/venn-basic/implementations/python/matplotlib.py
+    plotly: plots/venn-basic/implementations/python/plotly.py
+    plotnine: plots/venn-basic/implementations/python/plotnine.py
+    pygal: plots/venn-basic/implementations/python/pygal.py
+    seaborn: plots/venn-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/venn-basic/implementations/r/ggplot2.R
+notes:
+- Limit to 2 or 3 circles for visual clarity (more circles become unreadable)
+- Area proportional to size when possible (proportional Venn diagrams)
+- Display the exclusive count (or percentage) of each region
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

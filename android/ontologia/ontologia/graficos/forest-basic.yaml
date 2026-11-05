@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: forest-basic
+name:
+  en: Meta-Analysis Forest Plot
+  es: Gráfico de Bosque Básico
+description:
+  en: A forest plot displays effect sizes with confidence intervals from multiple
+    studies in a meta-analysis. Each study is represented as a point estimate with
+    horizontal whiskers showing the confidence interval, and a diamond at the bottom
+    shows the pooled estimate. The plot includes a vertical reference line at the
+    null effect (typically 0 or 1), making it easy to assess statistical significance
+    and heterogeneity across studies.
+  es: A forest plot displays effect sizes with confidence intervals from multiple
+    studies in a meta-analysis. Each study is represented as a point estimate with
+    horizontal whiskers showing the confidence interval, and a diamond at the bottom
+    shows the pooled estimate. The plot includes a vertical reference line at the
+    null effect (typically 0 or 1), making it easy to assess statistical significance
+    and heterogeneity across studies.
+aliases:
+  en:
+  - forest-basic
+  - forest basic
+  - basic forest plot
+  es:
+  - forest-basic
+  - forest basic
+  - gráfico de bosque básico
+use_when:
+  en:
+  - A forest plot displays effect sizes with confidence intervals from multiple studies
+    in a meta-analysis. Each study is represented as a point estimate with horizontal
+    whiskers showing the confidence in
+  es:
+  - A forest plot displays effect sizes with confidence intervals from multiple studies
+    in a meta-analysis. Each study is represented as a point estimate with horizontal
+    whiskers showing the confidence in
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Summarizing results from systematic reviews in medical research
+  - Comparing treatment effects across multiple clinical trials
+  - Visualizing heterogeneity and consistency of findings across studies
+  - Presenting pooled effect estimates with confidence intervals
+  es:
+  - Summarizing results from systematic reviews in medical research
+  - Comparing treatment effects across multiple clinical trials
+  - Visualizing heterogeneity and consistency of findings across studies
+  - Presenting pooled effect estimates with confidence intervals
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - forest
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - healthcare
+  - research
+  - statistics
+  features:
+  - basic
+  - confidence-interval
+  - comparison
+  - meta-analysis
+keywords:
+  en:
+  - forest plot
+  - basic
+  - forest
+  - numeric
+  - categorical
+  - healthcare
+  - research
+  - statistics
+  - confidence-interval
+  - comparison
+  - meta-analysis
+  es:
+  - gráfico de bosque
+  - básico
+  - forest
+  - numérico
+  - categórico
+  - healthcare
+  - research
+  - estadística
+  - basic
+  - confidence-interval
+  - comparación
+  - meta-analysis
+implementations:
+  javascript:
+    chartjs: plots/forest-basic/implementations/javascript/chartjs.js
+    d3: plots/forest-basic/implementations/javascript/d3.js
+    echarts: plots/forest-basic/implementations/javascript/echarts.js
+    highcharts: plots/forest-basic/implementations/javascript/highcharts.js
+    muix: plots/forest-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/forest-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/forest-basic/implementations/python/altair.py
+    bokeh: plots/forest-basic/implementations/python/bokeh.py
+    letsplot: plots/forest-basic/implementations/python/letsplot.py
+    matplotlib: plots/forest-basic/implementations/python/matplotlib.py
+    plotly: plots/forest-basic/implementations/python/plotly.py
+    plotnine: plots/forest-basic/implementations/python/plotnine.py
+    pygal: plots/forest-basic/implementations/python/pygal.py
+    seaborn: plots/forest-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/forest-basic/implementations/r/ggplot2.R
+notes:
+- Diamond shape for the pooled/overall estimate at the bottom, computed from the studies
+  (e.g., inverse-variance weights)
+- Vertical reference line at null effect (0 for mean difference, 1 for ratios)
+- Marker size proportional to study weight when provided
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

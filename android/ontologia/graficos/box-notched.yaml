@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: box-notched
+name:
+  en: Notched Box Plot
+  es: Diagrama de Caja
+description:
+  en: A notched box plot extends the standard box plot by adding notches around the
+    median that represent a confidence interval. If the notches of two boxes do not
+    overlap, this provides visual evidence that the medians differ significantly.
+    This variant is particularly valuable for quick visual hypothesis testing and
+    comparing group medians in statistical analysis.
+  es: A notched box plot extends the standard box plot by adding notches around the
+    median that represent a confidence interval. If the notches of two boxes do not
+    overlap, this provides visual evidence that the medians differ significantly.
+    This variant is particularly valuable for quick visual hypothesis testing and
+    comparing group medians in statistical analysis.
+aliases:
+  en:
+  - box-notched
+  - box notched
+  - box plot
+  es:
+  - box-notched
+  - box notched
+  - diagrama de caja
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing treatment effects across experimental groups in research studies
+  - Analyzing salary distributions across departments with statistical significance
+    testing
+  - 'Quality control: identifying statistically different production batches'
+  - 'Clinical trials: comparing patient outcomes between control and treatment groups'
+  es:
+  - Comparing treatment effects across experimental groups in research studies
+  - Analyzing salary distributions across departments with statistical significance
+    testing
+  - 'Quality control: identifying statistically different production batches'
+  - 'Clinical trials: comparing patient outcomes between control and treatment groups'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - box
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - notched
+  - comparison
+  - distribution
+  - confidence-interval
+keywords:
+  en:
+  - box plot
+  - notched
+  - box
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - research
+  - comparison
+  - distribution
+  - confidence-interval
+  es:
+  - diagrama de caja
+  - notched
+  - box
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - research
+  - comparación
+  - distribución
+  - confidence-interval
+implementations:
+  javascript:
+    chartjs: plots/box-notched/implementations/javascript/chartjs.js
+    d3: plots/box-notched/implementations/javascript/d3.js
+    echarts: plots/box-notched/implementations/javascript/echarts.js
+    highcharts: plots/box-notched/implementations/javascript/highcharts.js
+    muix: plots/box-notched/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/box-notched/implementations/julia/makie.jl
+  python:
+    altair: plots/box-notched/implementations/python/altair.py
+    bokeh: plots/box-notched/implementations/python/bokeh.py
+    letsplot: plots/box-notched/implementations/python/letsplot.py
+    matplotlib: plots/box-notched/implementations/python/matplotlib.py
+    plotly: plots/box-notched/implementations/python/plotly.py
+    plotnine: plots/box-notched/implementations/python/plotnine.py
+    pygal: plots/box-notched/implementations/python/pygal.py
+    seaborn: plots/box-notched/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/box-notched/implementations/r/ggplot2.R
+notes:
+- Display notches at 95% confidence interval around the median
+- Include standard box plot elements (median, quartiles, whiskers at 1.5*IQR)
+- Show outliers as individual points beyond the whiskers
+source: anyplot
+anyplot_updated: 2026-05-07 22:28:33+00:00

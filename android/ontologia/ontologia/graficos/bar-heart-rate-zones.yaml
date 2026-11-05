@@ -1,0 +1,143 @@
+entity_type: ChartType
+id: bar-heart-rate-zones
+name:
+  en: Time in Heart Rate Zones Bar Chart
+  es: Gráfico de Barras
+description:
+  en: A vertical bar chart showing the time spent in each heart rate training zone
+    (Z1–Z5) during a workout or training period. Each bar uses the conventional zone
+    color semantics (grey for Z1 recovery, blue for Z2 endurance, green for Z3 aerobic,
+    orange for Z4 threshold, red for Z5 maximum) and is annotated with its duration,
+    making the distribution of training intensity immediately readable. This is the
+    standard summary chart found in fitness platforms such as Garmin, Strava, and
+    Polar, and it reveals at a glance whether a session was easy, balanced, or high-intensity.
+  es: A vertical bar chart showing the time spent in each heart rate training zone
+    (Z1–Z5) during a workout or training period. Each bar uses the conventional zone
+    color semantics (grey for Z1 recovery, blue for Z2 endurance, green for Z3 aerobic,
+    orange for Z4 threshold, red for Z5 maximum) and is annotated with its duration,
+    making the distribution of training intensity immediately readable. This is the
+    standard summary chart found in fitness platforms such as Garmin, Strava, and
+    Polar, and it reveals at a glance whether a session was easy, balanced, or high-intensity.
+aliases:
+  en:
+  - bar-heart-rate-zones
+  - bar heart rate zones
+  - bar chart
+  es:
+  - bar-heart-rate-zones
+  - bar heart rate zones
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - 'Endurance training: reviewing a single run or ride to confirm time was spent
+    in the intended intensity zone (e.g. mostly Z2 for a base session)'
+  - 'Coaching and training-load analysis: summarizing a week or training block to
+    balance easy vs. hard time and avoid overtraining'
+  - 'Fitness app workout summaries: presenting per-zone duration in the familiar Garmin/Strava/Polar
+    style after an activity'
+  - 'Polarized-training assessment: checking the 80/20 split between low- and high-intensity
+    zones'
+  es:
+  - 'Endurance training: reviewing a single run or ride to confirm time was spent
+    in the intended intensity zone (e.g. mostly Z2 for a base session)'
+  - 'Coaching and training-load analysis: summarizing a week or training block to
+    balance easy vs. hard time and avoid overtraining'
+  - 'Fitness app workout summaries: presenting per-zone duration in the familiar Garmin/Strava/Polar
+    style after an activity'
+  - 'Polarized-training assessment: checking the 80/20 split between low- and high-intensity
+    zones'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - healthcare
+  - general
+  features:
+  - basic
+  - color-mapped
+  - annotated
+  - ranking
+keywords:
+  en:
+  - bar chart
+  - heart
+  - rate
+  - zones
+  - bar
+  - categorical
+  - numeric
+  - healthcare
+  - general
+  - basic
+  - color-mapped
+  - annotated
+  - ranking
+  es:
+  - gráfico de barras
+  - heart
+  - rate
+  - zones
+  - bar
+  - categórico
+  - numérico
+  - healthcare
+  - general
+  - basic
+  - color-mapped
+  - annotated
+  - clasificación
+implementations:
+  javascript:
+    chartjs: plots/bar-heart-rate-zones/implementations/javascript/chartjs.js
+    d3: plots/bar-heart-rate-zones/implementations/javascript/d3.js
+    echarts: plots/bar-heart-rate-zones/implementations/javascript/echarts.js
+    highcharts: plots/bar-heart-rate-zones/implementations/javascript/highcharts.js
+    muix: plots/bar-heart-rate-zones/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-heart-rate-zones/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-heart-rate-zones/implementations/python/altair.py
+    bokeh: plots/bar-heart-rate-zones/implementations/python/bokeh.py
+    letsplot: plots/bar-heart-rate-zones/implementations/python/letsplot.py
+    matplotlib: plots/bar-heart-rate-zones/implementations/python/matplotlib.py
+    plotly: plots/bar-heart-rate-zones/implementations/python/plotly.py
+    plotnine: plots/bar-heart-rate-zones/implementations/python/plotnine.py
+    pygal: plots/bar-heart-rate-zones/implementations/python/pygal.py
+    seaborn: plots/bar-heart-rate-zones/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-heart-rate-zones/implementations/r/ggplot2.R
+notes:
+- 'Use the conventional per-zone colors in order: Z1 grey, Z2 blue, Z3 green, Z4 orange,
+  Z5 red'
+- Keep zones in fixed Z1→Z5 order on the x-axis (do not sort by duration)
+- Label each bar with its duration (e.g. formatted as "MM:SS" or "X min")
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: bar-error
+name:
+  en: Bar Chart with Error Bars
+  es: Gráfico de Barras
+description:
+  en: A bar chart with error bars displays categorical data as rectangular bars with
+    vertical (or horizontal) lines extending from each bar to indicate uncertainty
+    or variability. Error bars typically represent standard deviation, standard error,
+    confidence intervals, or min/max ranges. This visualization is essential for comparing
+    group means while communicating the reliability and precision of each measurement.
+  es: A bar chart with error bars displays categorical data as rectangular bars with
+    vertical (or horizontal) lines extending from each bar to indicate uncertainty
+    or variability. Error bars typically represent standard deviation, standard error,
+    confidence intervals, or min/max ranges. This visualization is essential for comparing
+    group means while communicating the reliability and precision of each measurement.
+aliases:
+  en:
+  - bar-error
+  - bar error
+  - bar chart
+  es:
+  - bar-error
+  - bar error
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Scientific experiments comparing treatment groups with measurement uncertainty
+  - Survey results displaying response means with confidence intervals
+  - A/B test results showing conversion rates with statistical bounds
+  - Comparing group means with standard deviations across categories
+  es:
+  - Scientific experiments comparing treatment groups with measurement uncertainty
+  - Survey results displaying response means with confidence intervals
+  - A/B test results showing conversion rates with statistical bounds
+  - Comparing group means with standard deviations across categories
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - statistics
+  - science
+  features:
+  - error-bars
+  - comparison
+  - uncertainty
+keywords:
+  en:
+  - bar chart
+  - error
+  - bar
+  - categorical
+  - numeric
+  - general
+  - statistics
+  - science
+  - error-bars
+  - comparison
+  - uncertainty
+  es:
+  - gráfico de barras
+  - error
+  - bar
+  - categórico
+  - numérico
+  - general
+  - estadística
+  - ciencia
+  - error-bars
+  - comparación
+  - uncertainty
+implementations:
+  javascript:
+    chartjs: plots/bar-error/implementations/javascript/chartjs.js
+    d3: plots/bar-error/implementations/javascript/d3.js
+    echarts: plots/bar-error/implementations/javascript/echarts.js
+    highcharts: plots/bar-error/implementations/javascript/highcharts.js
+    muix: plots/bar-error/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-error/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-error/implementations/python/altair.py
+    bokeh: plots/bar-error/implementations/python/bokeh.py
+    letsplot: plots/bar-error/implementations/python/letsplot.py
+    matplotlib: plots/bar-error/implementations/python/matplotlib.py
+    plotly: plots/bar-error/implementations/python/plotly.py
+    plotnine: plots/bar-error/implementations/python/plotnine.py
+    pygal: plots/bar-error/implementations/python/pygal.py
+    seaborn: plots/bar-error/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-error/implementations/r/ggplot2.R
+notes:
+- Error bars should have visible caps (horizontal lines at ends) to clearly mark the
+  error range
+- Include a legend or annotation explaining what the error bars represent (e.g., "±1
+  SD", "95% CI")
+- Consider horizontal orientation when category labels are long or numerous
+source: anyplot
+anyplot_updated: 2026-05-10 14:30:54+00:00

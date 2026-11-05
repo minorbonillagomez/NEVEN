@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: depth-order-book
+name:
+  en: Order Book Depth Chart
+  es: Depth Order Book
+description:
+  en: A market depth chart visualizes a snapshot of an exchange order book as two
+    cumulative step areas around the mid price. Cumulative bid volume rises as a green
+    step area to the left of the mid price (summing buy orders from the best bid downward),
+    while cumulative ask volume rises as a red step area to the right (summing sell
+    orders from the best ask upward). The bid-ask spread appears as a gap at the center,
+    with price on the x-axis and cumulative quantity on the y-axis. This is the iconic
+    chart found in nearly every trading and crypto exchange UI, revealing liquidity,
+    support/resistance walls, and the imbalance between buying and selling pressure.
+  es: A market depth chart visualizes a snapshot of an exchange order book as two
+    cumulative step areas around the mid price. Cumulative bid volume rises as a green
+    step area to the left of the mid price (summing buy orders from the best bid downward),
+    while cumulative ask volume rises as a red step area to the right (summing sell
+    orders from the best ask upward). The bid-ask spread appears as a gap at the center,
+    with price on the x-axis and cumulative quantity on the y-axis. This is the iconic
+    chart found in nearly every trading and crypto exchange UI, revealing liquidity,
+    support/resistance walls, and the imbalance between buying and selling pressure.
+aliases:
+  en:
+  - depth-order-book
+  - depth order book
+  - depth order book
+  es:
+  - depth-order-book
+  - depth order book
+  - depth order book
+use_when:
+  en:
+  - A market depth chart visualizes a snapshot of an exchange order book as two cumulative
+    step areas around the mid price. Cumulative bid volume rises as a green step area
+    to the left of the mid price (s
+  es:
+  - A market depth chart visualizes a snapshot of an exchange order book as two cumulative
+    step areas around the mid price. Cumulative bid volume rises as a green step area
+    to the left of the mid price (s
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Assessing liquidity and slippage risk before placing a large market order on a
+    crypto or equities exchange
+  - Spotting large "walls" of resting limit orders that may act as short-term support
+    or resistance levels
+  - Comparing buy-side versus sell-side pressure to gauge near-term directional bias
+    around the mid price
+  es:
+  - Assessing liquidity and slippage risk before placing a large market order on a
+    crypto or equities exchange
+  - Spotting large "walls" of resting limit orders that may act as short-term support
+    or resistance levels
+  - Comparing buy-side versus sell-side pressure to gauge near-term directional bias
+    around the mid price
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  - step
+  data_type:
+  - numeric
+  - bivariate
+  domain:
+  - finance
+  - trading
+  features:
+  - cumulative
+  - stepwise
+  - annotated
+  - static
+keywords:
+  en:
+  - depth
+  - order
+  - book
+  - area
+  - step
+  - numeric
+  - bivariate
+  - finance
+  - trading
+  - cumulative
+  - stepwise
+  - annotated
+  - static
+  es:
+  - depth
+  - order
+  - book
+  - area
+  - step
+  - numérico
+  - bivariado
+  - finanzas
+  - trading
+  - cumulative
+  - stepwise
+  - annotated
+  - static
+implementations:
+  javascript:
+    chartjs: plots/depth-order-book/implementations/javascript/chartjs.js
+    d3: plots/depth-order-book/implementations/javascript/d3.js
+    echarts: plots/depth-order-book/implementations/javascript/echarts.js
+    highcharts: plots/depth-order-book/implementations/javascript/highcharts.js
+    muix: plots/depth-order-book/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/depth-order-book/implementations/julia/makie.jl
+  python:
+    altair: plots/depth-order-book/implementations/python/altair.py
+    bokeh: plots/depth-order-book/implementations/python/bokeh.py
+    letsplot: plots/depth-order-book/implementations/python/letsplot.py
+    matplotlib: plots/depth-order-book/implementations/python/matplotlib.py
+    plotly: plots/depth-order-book/implementations/python/plotly.py
+    plotnine: plots/depth-order-book/implementations/python/plotnine.py
+    pygal: plots/depth-order-book/implementations/python/pygal.py
+    seaborn: plots/depth-order-book/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/depth-order-book/implementations/r/ggplot2.R
+notes:
+- Compute cumulative quantity separately per side, accumulating from the best bid/best
+  ask (nearest the mid price) outward toward worse prices
+- Render both areas as left-continuous step (staircase) curves, not smooth lines,
+  to reflect discrete price levels
+- Use green for the bid area and red for the ask area, with semi-transparent fills
+  and matching solid outline strokes
+source: anyplot
+anyplot_updated: null

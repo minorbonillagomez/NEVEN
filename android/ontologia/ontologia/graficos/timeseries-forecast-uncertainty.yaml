@@ -1,0 +1,146 @@
+entity_type: ChartType
+id: timeseries-forecast-uncertainty
+name:
+  en: Time Series Forecast with Uncertainty Band
+  es: Serie Temporal
+description:
+  en: A time series plot that displays historical observed data followed by a forecast
+    projection with confidence intervals or uncertainty bands. The plot clearly distinguishes
+    between the historical period and the forecast period using a vertical line marker,
+    with shaded bands representing different confidence levels (typically 80% and
+    95%). This visualization is essential for communicating prediction uncertainty
+    in forecasting applications, helping stakeholders understand both the expected
+    values and the range of possible outcomes.
+  es: A time series plot that displays historical observed data followed by a forecast
+    projection with confidence intervals or uncertainty bands. The plot clearly distinguishes
+    between the historical period and the forecast period using a vertical line marker,
+    with shaded bands representing different confidence levels (typically 80% and
+    95%). This visualization is essential for communicating prediction uncertainty
+    in forecasting applications, helping stakeholders understand both the expected
+    values and the range of possible outcomes.
+aliases:
+  en:
+  - timeseries-forecast-uncertainty
+  - timeseries forecast uncertainty
+  - time series
+  es:
+  - timeseries-forecast-uncertainty
+  - timeseries forecast uncertainty
+  - serie temporal
+use_when:
+  en:
+  - A time series plot that displays historical observed data followed by a forecast
+    projection with confidence intervals or uncertainty bands. The plot clearly distinguishes
+    between the historical period
+  es:
+  - A time series plot that displays historical observed data followed by a forecast
+    projection with confidence intervals or uncertainty bands. The plot clearly distinguishes
+    between the historical period
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing sales and demand forecasting with confidence intervals for inventory
+    planning
+  - Displaying stock price or financial indicator predictions with uncertainty ranges
+    for risk assessment
+  - Communicating weather forecast uncertainty with multiple confidence bands
+  - Presenting economic projections with confidence intervals for policy decisions
+  - Illustrating capacity planning forecasts with uncertainty bounds for resource
+    allocation
+  es:
+  - Visualizing sales and demand forecasting with confidence intervals for inventory
+    planning
+  - Displaying stock price or financial indicator predictions with uncertainty ranges
+    for risk assessment
+  - Communicating weather forecast uncertainty with multiple confidence bands
+  - Presenting economic projections with confidence intervals for policy decisions
+  - Illustrating capacity planning forecasts with uncertainty bounds for resource
+    allocation
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - area
+  data_type:
+  - timeseries
+  - numeric
+  - datetime
+  domain:
+  - general
+  - business
+  - finance
+  - statistics
+  features:
+  - temporal
+  - forecast
+  - uncertainty
+  - confidence-interval
+  - annotated
+keywords:
+  en:
+  - time series
+  - forecast
+  - uncertainty
+  - line
+  - area
+  - timeseries
+  - numeric
+  - datetime
+  - general
+  - business
+  - finance
+  - statistics
+  - temporal
+  - confidence-interval
+  - annotated
+  es:
+  - serie temporal
+  - forecast
+  - uncertainty
+  - line
+  - area
+  - timeseries
+  - numérico
+  - datetime
+  - general
+  - negocios
+  - finanzas
+  - estadística
+  - temporal
+  - confidence-interval
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/timeseries-forecast-uncertainty/implementations/javascript/chartjs.js
+    d3: plots/timeseries-forecast-uncertainty/implementations/javascript/d3.js
+    echarts: plots/timeseries-forecast-uncertainty/implementations/javascript/echarts.js
+    highcharts: plots/timeseries-forecast-uncertainty/implementations/javascript/highcharts.js
+    muix: plots/timeseries-forecast-uncertainty/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/timeseries-forecast-uncertainty/implementations/julia/makie.jl
+  python:
+    altair: plots/timeseries-forecast-uncertainty/implementations/python/altair.py
+    bokeh: plots/timeseries-forecast-uncertainty/implementations/python/bokeh.py
+    letsplot: plots/timeseries-forecast-uncertainty/implementations/python/letsplot.py
+    matplotlib: plots/timeseries-forecast-uncertainty/implementations/python/matplotlib.py
+    plotly: plots/timeseries-forecast-uncertainty/implementations/python/plotly.py
+    plotnine: plots/timeseries-forecast-uncertainty/implementations/python/plotnine.py
+    pygal: plots/timeseries-forecast-uncertainty/implementations/python/pygal.py
+    seaborn: plots/timeseries-forecast-uncertainty/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/timeseries-forecast-uncertainty/implementations/r/ggplot2.R
+notes:
+- Use a solid line for historical data and a distinct style (dashed or different color)
+  for forecast
+- Mark the forecast start with a vertical line or shaded region
+- 'Use nested shaded bands for confidence intervals: darker for 80%, lighter for 95%'
+source: anyplot
+anyplot_updated: null

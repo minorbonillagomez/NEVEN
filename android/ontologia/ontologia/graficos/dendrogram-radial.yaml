@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: dendrogram-radial
+name:
+  en: Radial Dendrogram
+  es: Dendrograma
+description:
+  en: A radial dendrogram renders hierarchical clustering in a circular layout where
+    the root node sits at the center and branches extend outward, with leaf nodes
+    arranged around the circumference. This layout is a space-efficient alternative
+    to linear dendrograms for large hierarchies, making it well-suited for datasets
+    with hundreds of leaves. Branch lengths are proportional to distance or dissimilarity,
+    preserving the quantitative interpretation of cluster merges.
+  es: A radial dendrogram renders hierarchical clustering in a circular layout where
+    the root node sits at the center and branches extend outward, with leaf nodes
+    arranged around the circumference. This layout is a space-efficient alternative
+    to linear dendrograms for large hierarchies, making it well-suited for datasets
+    with hundreds of leaves. Branch lengths are proportional to distance or dissimilarity,
+    preserving the quantitative interpretation of cluster merges.
+aliases:
+  en:
+  - dendrogram-radial
+  - dendrogram radial
+  - dendrogram
+  es:
+  - dendrogram-radial
+  - dendrogram radial
+  - dendrograma
+use_when:
+  en:
+  - A radial dendrogram renders hierarchical clustering in a circular layout where
+    the root node sits at the center and branches extend outward, with leaf nodes
+    arranged around the circumference. This lay
+  es:
+  - A radial dendrogram renders hierarchical clustering in a circular layout where
+    the root node sits at the center and branches extend outward, with leaf nodes
+    arranged around the circumference. This lay
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying phylogenetic trees with hundreds of species in a compact circular form
+  - Visualizing organizational hierarchies or reporting structures without excessive
+    horizontal/vertical scrolling
+  - Showing file system or taxonomy structures where many leaf nodes need to be visible
+    simultaneously
+  - Presenting clustering dendrograms for gene expression data with color-coded cluster
+    assignments
+  es:
+  - Displaying phylogenetic trees with hundreds of species in a compact circular form
+  - Visualizing organizational hierarchies or reporting structures without excessive
+    horizontal/vertical scrolling
+  - Showing file system or taxonomy structures where many leaf nodes need to be visible
+    simultaneously
+  - Presenting clustering dendrograms for gene expression data with color-coded cluster
+    assignments
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - dendrogram
+  data_type:
+  - hierarchical
+  - numeric
+  domain:
+  - science
+  - general
+  features:
+  - radial
+  - color-mapped
+  - clustering
+keywords:
+  en:
+  - dendrogram
+  - radial
+  - hierarchical
+  - numeric
+  - science
+  - general
+  - color-mapped
+  - clustering
+  es:
+  - dendrograma
+  - radial
+  - dendrogram
+  - jerárquico
+  - numérico
+  - ciencia
+  - general
+  - color-mapped
+  - clustering
+implementations:
+  javascript:
+    chartjs: plots/dendrogram-radial/implementations/javascript/chartjs.js
+    d3: plots/dendrogram-radial/implementations/javascript/d3.js
+    echarts: plots/dendrogram-radial/implementations/javascript/echarts.js
+    highcharts: plots/dendrogram-radial/implementations/javascript/highcharts.js
+    muix: plots/dendrogram-radial/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/dendrogram-radial/implementations/julia/makie.jl
+  python:
+    altair: plots/dendrogram-radial/implementations/python/altair.py
+    bokeh: plots/dendrogram-radial/implementations/python/bokeh.py
+    letsplot: plots/dendrogram-radial/implementations/python/letsplot.py
+    matplotlib: plots/dendrogram-radial/implementations/python/matplotlib.py
+    plotly: plots/dendrogram-radial/implementations/python/plotly.py
+    plotnine: plots/dendrogram-radial/implementations/python/plotnine.py
+    pygal: plots/dendrogram-radial/implementations/python/pygal.py
+    seaborn: plots/dendrogram-radial/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/dendrogram-radial/implementations/r/ggplot2.R
+notes:
+- Root is positioned at the center; leaves are placed at equal angular spacing around
+  the circumference
+- Branch length (radial distance) should be proportional to merge distance/dissimilarity
+- Color branches by cluster assignment using a categorical colormap
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

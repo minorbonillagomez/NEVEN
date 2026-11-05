@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: density-rug
+name:
+  en: Density Plot with Rug Marks
+  es: Gráfico de Densidad
+description:
+  en: 'A kernel density estimation (KDE) plot combined with rug marks along the x-axis,
+    showing both the smoothed probability distribution and the exact location of each
+    individual data point. This combination provides the best of both worlds: the
+    KDE reveals the overall shape, modality, and smoothed density of the distribution,
+    while the rug marks preserve transparency about where actual observations fall,
+    highlighting data density and potential gaps.'
+  es: 'A kernel density estimation (KDE) plot combined with rug marks along the x-axis,
+    showing both the smoothed probability distribution and the exact location of each
+    individual data point. This combination provides the best of both worlds: the
+    KDE reveals the overall shape, modality, and smoothed density of the distribution,
+    while the rug marks preserve transparency about where actual observations fall,
+    highlighting data density and potential gaps.'
+aliases:
+  en:
+  - density-rug
+  - density rug
+  - density plot
+  es:
+  - density-rug
+  - density rug
+  - gráfico de densidad
+use_when:
+  en:
+  - A kernel density estimation (KDE) plot combined with rug marks along the x-axis,
+    showing both the smoothed probability distribution and the exact location of each
+    individual data point. This combinati
+  es:
+  - A kernel density estimation (KDE) plot combined with rug marks along the x-axis,
+    showing both the smoothed probability distribution and the exact location of each
+    individual data point. This combinati
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Exploratory data analysis where understanding both distribution shape and raw
+    data placement matters
+  - Comparing sample distributions while maintaining visibility of actual observation
+    counts and clustering
+  - Quality control analysis to identify process variations alongside individual measurement
+    locations
+  - Academic and research presentations requiring both statistical summaries and data
+    transparency
+  es:
+  - Exploratory data analysis where understanding both distribution shape and raw
+    data placement matters
+  - Comparing sample distributions while maintaining visibility of actual observation
+    counts and clustering
+  - Quality control analysis to identify process variations alongside individual measurement
+    locations
+  - Academic and research presentations requiring both statistical summaries and data
+    transparency
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - density
+  - rug
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - general
+  features:
+  - distribution
+  - combined
+keywords:
+  en:
+  - density plot
+  - rug
+  - density
+  - numeric
+  - continuous
+  - statistics
+  - general
+  - distribution
+  - combined
+  es:
+  - gráfico de densidad
+  - rug
+  - density
+  - numérico
+  - continuo
+  - estadística
+  - general
+  - distribución
+  - combined
+implementations:
+  javascript:
+    chartjs: plots/density-rug/implementations/javascript/chartjs.js
+    d3: plots/density-rug/implementations/javascript/d3.js
+    echarts: plots/density-rug/implementations/javascript/echarts.js
+    highcharts: plots/density-rug/implementations/javascript/highcharts.js
+    muix: plots/density-rug/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/density-rug/implementations/julia/makie.jl
+  python:
+    altair: plots/density-rug/implementations/python/altair.py
+    bokeh: plots/density-rug/implementations/python/bokeh.py
+    letsplot: plots/density-rug/implementations/python/letsplot.py
+    matplotlib: plots/density-rug/implementations/python/matplotlib.py
+    plotly: plots/density-rug/implementations/python/plotly.py
+    plotnine: plots/density-rug/implementations/python/plotnine.py
+    pygal: plots/density-rug/implementations/python/pygal.py
+    seaborn: plots/density-rug/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/density-rug/implementations/r/ggplot2.R
+notes:
+- Display the KDE curve with fill for visual weight and the rug marks as small tick
+  marks along the x-axis
+- Use semi-transparent fill under the density curve to avoid obscuring the rug
+- Rug marks should be subtle but visible, with slight transparency for overlapping
+  points
+source: anyplot
+anyplot_updated: null

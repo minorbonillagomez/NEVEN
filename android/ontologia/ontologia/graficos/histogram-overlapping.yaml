@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: histogram-overlapping
+name:
+  en: Overlapping Histograms
+  es: Histograma
+description:
+  en: Overlapping histograms display multiple distributions on the same axes using
+    semi-transparent bars, enabling direct visual comparison between groups. This
+    technique reveals differences in central tendency, spread, and shape across categories
+    while maintaining the familiar histogram format. The transparency allows viewers
+    to see where distributions overlap and diverge.
+  es: Overlapping histograms display multiple distributions on the same axes using
+    semi-transparent bars, enabling direct visual comparison between groups. This
+    technique reveals differences in central tendency, spread, and shape across categories
+    while maintaining the familiar histogram format. The transparency allows viewers
+    to see where distributions overlap and diverge.
+aliases:
+  en:
+  - histogram-overlapping
+  - histogram overlapping
+  - histogram
+  es:
+  - histogram-overlapping
+  - histogram overlapping
+  - histograma
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing test score distributions between control and treatment groups in A/B
+    testing
+  - Analyzing salary distributions across different departments or job levels
+  - Visualizing before/after measurement changes in clinical trials or process improvements
+  es:
+  - Comparing test score distributions between control and treatment groups in A/B
+    testing
+  - Analyzing salary distributions across different departments or job levels
+  - Visualizing before/after measurement changes in clinical trials or process improvements
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  data_type:
+  - numeric
+  - continuous
+  - categorical
+  domain:
+  - general
+  - statistics
+  - business
+  features:
+  - comparison
+  - distribution
+  - grouped
+  - multi
+keywords:
+  en:
+  - histogram
+  - overlapping
+  - numeric
+  - continuous
+  - categorical
+  - general
+  - statistics
+  - business
+  - comparison
+  - distribution
+  - grouped
+  - multi
+  es:
+  - histograma
+  - overlapping
+  - histogram
+  - numérico
+  - continuo
+  - categórico
+  - general
+  - estadística
+  - negocios
+  - comparación
+  - distribución
+  - grouped
+  - multi
+implementations:
+  javascript:
+    chartjs: plots/histogram-overlapping/implementations/javascript/chartjs.js
+    d3: plots/histogram-overlapping/implementations/javascript/d3.js
+    echarts: plots/histogram-overlapping/implementations/javascript/echarts.js
+    highcharts: plots/histogram-overlapping/implementations/javascript/highcharts.js
+    muix: plots/histogram-overlapping/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-overlapping/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-overlapping/implementations/python/altair.py
+    bokeh: plots/histogram-overlapping/implementations/python/bokeh.py
+    letsplot: plots/histogram-overlapping/implementations/python/letsplot.py
+    matplotlib: plots/histogram-overlapping/implementations/python/matplotlib.py
+    plotly: plots/histogram-overlapping/implementations/python/plotly.py
+    plotnine: plots/histogram-overlapping/implementations/python/plotnine.py
+    pygal: plots/histogram-overlapping/implementations/python/pygal.py
+    seaborn: plots/histogram-overlapping/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-overlapping/implementations/r/ggplot2.R
+notes:
+- Use semi-transparent fills (alpha ~0.4-0.6) so overlapping regions remain visible
+- Assign distinct, contrasting colors to each group
+- Include a legend clearly identifying each group
+source: anyplot
+anyplot_updated: 2026-05-08 06:44:54+00:00

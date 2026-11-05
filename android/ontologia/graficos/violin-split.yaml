@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: violin-split
+name:
+  en: Split Violin Plot
+  es: Diagrama de Violín
+description:
+  en: A split violin plot displaying two distributions side-by-side within each violin,
+    with each half representing a different group. Unlike standard violin plots that
+    mirror the same distribution, split violins use the left and right halves to compare
+    two conditions (such as before/after, male/female, or control/treatment) at each
+    category level. This enables direct visual comparison of distribution shapes between
+    paired groups.
+  es: A split violin plot displaying two distributions side-by-side within each violin,
+    with each half representing a different group. Unlike standard violin plots that
+    mirror the same distribution, split violins use the left and right halves to compare
+    two conditions (such as before/after, male/female, or control/treatment) at each
+    category level. This enables direct visual comparison of distribution shapes between
+    paired groups.
+aliases:
+  en:
+  - violin-split
+  - violin split
+  - violin plot
+  es:
+  - violin-split
+  - violin split
+  - diagrama de violín
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing patient outcomes before and after treatment across multiple clinics
+  - Analyzing salary distributions by gender across job categories
+  - Comparing test score distributions between control and experimental groups
+  - Visualizing seasonal patterns (summer vs winter) across different regions
+  es:
+  - Comparing patient outcomes before and after treatment across multiple clinics
+  - Analyzing salary distributions by gender across job categories
+  - Comparing test score distributions between control and experimental groups
+  - Visualizing seasonal patterns (summer vs winter) across different regions
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - violin
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - split
+  - comparison
+  - grouped
+  - distribution
+keywords:
+  en:
+  - violin plot
+  - split
+  - violin
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - research
+  - comparison
+  - grouped
+  - distribution
+  es:
+  - diagrama de violín
+  - split
+  - violin
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - research
+  - comparación
+  - grouped
+  - distribución
+implementations:
+  javascript:
+    chartjs: plots/violin-split/implementations/javascript/chartjs.js
+    d3: plots/violin-split/implementations/javascript/d3.js
+    echarts: plots/violin-split/implementations/javascript/echarts.js
+    highcharts: plots/violin-split/implementations/javascript/highcharts.js
+    muix: plots/violin-split/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/violin-split/implementations/julia/makie.jl
+  python:
+    altair: plots/violin-split/implementations/python/altair.py
+    bokeh: plots/violin-split/implementations/python/bokeh.py
+    letsplot: plots/violin-split/implementations/python/letsplot.py
+    matplotlib: plots/violin-split/implementations/python/matplotlib.py
+    plotly: plots/violin-split/implementations/python/plotly.py
+    plotnine: plots/violin-split/implementations/python/plotnine.py
+    pygal: plots/violin-split/implementations/python/pygal.py
+    seaborn: plots/violin-split/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/violin-split/implementations/r/ggplot2.R
+notes:
+- Use distinct colors for each split group with legend
+- Ensure the two halves meet at the center line
+- Consider adding inner box plot or quartile markers
+source: anyplot
+anyplot_updated: 2026-05-08 12:34:56+00:00

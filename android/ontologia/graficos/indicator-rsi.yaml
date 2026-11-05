@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: indicator-rsi
+name:
+  en: RSI Technical Indicator Chart
+  es: Indicator Rsi
+description:
+  en: A Relative Strength Index (RSI) chart displaying the momentum oscillator on
+    a 0-100 scale with horizontal threshold lines at 70 (overbought) and 30 (oversold).
+    The RSI measures the speed and magnitude of recent price changes to evaluate overbought
+    or oversold conditions. This is a fundamental momentum indicator in technical
+    analysis, helping traders identify potential reversal points when the market reaches
+    extreme conditions.
+  es: A Relative Strength Index (RSI) chart displaying the momentum oscillator on
+    a 0-100 scale with horizontal threshold lines at 70 (overbought) and 30 (oversold).
+    The RSI measures the speed and magnitude of recent price changes to evaluate overbought
+    or oversold conditions. This is a fundamental momentum indicator in technical
+    analysis, helping traders identify potential reversal points when the market reaches
+    extreme conditions.
+aliases:
+  en:
+  - indicator-rsi
+  - indicator rsi
+  - indicator rsi
+  es:
+  - indicator-rsi
+  - indicator rsi
+  - indicator rsi
+use_when:
+  en:
+  - A Relative Strength Index (RSI) chart displaying the momentum oscillator on a
+    0-100 scale with horizontal threshold lines at 70 (overbought) and 30 (oversold).
+    The RSI measures the speed and magnitude
+  es:
+  - A Relative Strength Index (RSI) chart displaying the momentum oscillator on a
+    0-100 scale with horizontal threshold lines at 70 (overbought) and 30 (oversold).
+    The RSI measures the speed and magnitude
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying overbought conditions in stocks when RSI exceeds 70, signaling potential
+    sell opportunities
+  - Detecting oversold conditions in cryptocurrency markets when RSI drops below 30,
+    indicating potential buying points
+  - Confirming trend strength and momentum by observing RSI behavior relative to thresholds
+  es:
+  - Identifying overbought conditions in stocks when RSI exceeds 70, signaling potential
+    sell opportunities
+  - Detecting oversold conditions in cryptocurrency markets when RSI drops below 30,
+    indicating potential buying points
+  - Confirming trend strength and momentum by observing RSI behavior relative to thresholds
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  - trading
+  features:
+  - basic
+  - threshold
+  - oscillator
+keywords:
+  en:
+  - indicator
+  - rsi
+  - line
+  - timeseries
+  - numeric
+  - finance
+  - trading
+  - basic
+  - threshold
+  - oscillator
+  es:
+  - indicator
+  - rsi
+  - line
+  - timeseries
+  - numérico
+  - finanzas
+  - trading
+  - basic
+  - threshold
+  - oscillator
+implementations:
+  javascript:
+    chartjs: plots/indicator-rsi/implementations/javascript/chartjs.js
+    d3: plots/indicator-rsi/implementations/javascript/d3.js
+    echarts: plots/indicator-rsi/implementations/javascript/echarts.js
+    highcharts: plots/indicator-rsi/implementations/javascript/highcharts.js
+    muix: plots/indicator-rsi/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/indicator-rsi/implementations/julia/makie.jl
+  python:
+    altair: plots/indicator-rsi/implementations/python/altair.py
+    bokeh: plots/indicator-rsi/implementations/python/bokeh.py
+    letsplot: plots/indicator-rsi/implementations/python/letsplot.py
+    matplotlib: plots/indicator-rsi/implementations/python/matplotlib.py
+    plotly: plots/indicator-rsi/implementations/python/plotly.py
+    plotnine: plots/indicator-rsi/implementations/python/plotnine.py
+    pygal: plots/indicator-rsi/implementations/python/pygal.py
+    seaborn: plots/indicator-rsi/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/indicator-rsi/implementations/r/ggplot2.R
+notes:
+- Y-axis must be fixed from 0 to 100
+- Include horizontal reference lines at 30 (oversold) and 70 (overbought)
+- Optionally include a centerline at 50 to show bullish/bearish bias
+source: anyplot
+anyplot_updated: 2026-05-16 16:25:14+00:00

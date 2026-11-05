@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: indicator-macd
+name:
+  en: MACD Technical Indicator Chart
+  es: Indicator Macd
+description:
+  en: 'A MACD (Moving Average Convergence Divergence) chart displaying three components:
+    the MACD line, signal line, and histogram. The MACD line represents the difference
+    between 12-day and 26-day exponential moving averages, while the signal line is
+    a 9-day EMA of the MACD. The histogram visualizes the difference between these
+    two lines. This is an essential momentum oscillator for technical analysis, helping
+    traders identify trend direction, momentum strength, and potential buy/sell signals
+    through line crossovers.'
+  es: 'A MACD (Moving Average Convergence Divergence) chart displaying three components:
+    the MACD line, signal line, and histogram. The MACD line represents the difference
+    between 12-day and 26-day exponential moving averages, while the signal line is
+    a 9-day EMA of the MACD. The histogram visualizes the difference between these
+    two lines. This is an essential momentum oscillator for technical analysis, helping
+    traders identify trend direction, momentum strength, and potential buy/sell signals
+    through line crossovers.'
+aliases:
+  en:
+  - indicator-macd
+  - indicator macd
+  - indicator macd
+  es:
+  - indicator-macd
+  - indicator macd
+  - indicator macd
+use_when:
+  en:
+  - 'A MACD (Moving Average Convergence Divergence) chart displaying three components:
+    the MACD line, signal line, and histogram. The MACD line represents the difference
+    between 12-day and 26-day exponenti'
+  es:
+  - 'A MACD (Moving Average Convergence Divergence) chart displaying three components:
+    the MACD line, signal line, and histogram. The MACD line represents the difference
+    between 12-day and 26-day exponenti'
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing stock price momentum to identify trend reversals and entry/exit points
+  - Generating trading signals for cryptocurrency markets based on MACD/signal line
+    crossovers
+  - Confirming trend strength by observing histogram expansion or contraction
+  es:
+  - Analyzing stock price momentum to identify trend reversals and entry/exit points
+  - Generating trading signals for cryptocurrency markets based on MACD/signal line
+    crossovers
+  - Confirming trend strength by observing histogram expansion or contraction
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - bar
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  - trading
+  features:
+  - technical-analysis
+  - momentum
+  - crossover
+  - multi
+keywords:
+  en:
+  - indicator
+  - macd
+  - line
+  - bar
+  - timeseries
+  - numeric
+  - finance
+  - trading
+  - technical-analysis
+  - momentum
+  - crossover
+  - multi
+  es:
+  - indicator
+  - macd
+  - line
+  - bar
+  - timeseries
+  - numérico
+  - finanzas
+  - trading
+  - technical-analysis
+  - momentum
+  - crossover
+  - multi
+implementations:
+  javascript:
+    chartjs: plots/indicator-macd/implementations/javascript/chartjs.js
+    d3: plots/indicator-macd/implementations/javascript/d3.js
+    echarts: plots/indicator-macd/implementations/javascript/echarts.js
+    highcharts: plots/indicator-macd/implementations/javascript/highcharts.js
+    muix: plots/indicator-macd/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/indicator-macd/implementations/julia/makie.jl
+  python:
+    altair: plots/indicator-macd/implementations/python/altair.py
+    bokeh: plots/indicator-macd/implementations/python/bokeh.py
+    letsplot: plots/indicator-macd/implementations/python/letsplot.py
+    matplotlib: plots/indicator-macd/implementations/python/matplotlib.py
+    plotly: plots/indicator-macd/implementations/python/plotly.py
+    plotnine: plots/indicator-macd/implementations/python/plotnine.py
+    pygal: plots/indicator-macd/implementations/python/pygal.py
+    seaborn: plots/indicator-macd/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/indicator-macd/implementations/r/ggplot2.R
+notes:
+- Display histogram as bars with green (positive) and red (negative) colors
+- Include a zero reference line to highlight crossover signals
+- MACD and signal lines should use distinct colors (e.g., blue and orange)
+source: anyplot
+anyplot_updated: 2026-05-16 07:17:34+00:00

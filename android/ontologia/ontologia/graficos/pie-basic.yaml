@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: pie-basic
+name:
+  en: Basic Pie Chart
+  es: Gráfico Circular Básico
+description:
+  en: A pie chart showing proportions of categorical data as slices of a circle. Each
+    slice represents a category's contribution to the whole, with the angle proportional
+    to its value. Essential for visualizing parts-to-whole relationships in a simple,
+    intuitive format.
+  es: A pie chart showing proportions of categorical data as slices of a circle. Each
+    slice represents a category's contribution to the whole, with the angle proportional
+    to its value. Essential for visualizing parts-to-whole relationships in a simple,
+    intuitive format.
+aliases:
+  en:
+  - pie-basic
+  - pie basic
+  - basic pie chart
+  es:
+  - pie-basic
+  - pie basic
+  - gráfico circular básico
+use_when:
+  en:
+  - Showing part-to-whole relationships
+  - Displaying composition with few categories (≤6)
+  - Emphasizing proportions
+  es:
+  - Mostrar relaciones parte-todo
+  - Visualizar composición con pocas categorías (≤6)
+  - Enfatizar proporciones
+avoid_when:
+  en:
+  - Many categories (>6)
+  - Comparing values (use bar)
+  es:
+  - Muchas categorías (>6)
+  - Comparar valores (usar barras)
+applications:
+  en:
+  - Market share distribution across competitors
+  - Budget allocation by department
+  - Survey response breakdown
+  - Resource utilization by category
+  es:
+  - Market share distribution across competitors
+  - Budget allocation by department
+  - Survey response breakdown
+  - Resource utilization by category
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 2
+    max: 10
+tags:
+  plot_type:
+  - pie
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - proportional
+  - comparison
+keywords:
+  en:
+  - pie chart
+  - basic
+  - pie
+  - categorical
+  - numeric
+  - general
+  - business
+  - proportional
+  - comparison
+  es:
+  - gráfico circular
+  - básico
+  - pie
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - proportional
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/pie-basic/implementations/javascript/chartjs.js
+    d3: plots/pie-basic/implementations/javascript/d3.js
+    echarts: plots/pie-basic/implementations/javascript/echarts.js
+    highcharts: plots/pie-basic/implementations/javascript/highcharts.js
+    muix: plots/pie-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/pie-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/pie-basic/implementations/python/altair.py
+    bokeh: plots/pie-basic/implementations/python/bokeh.py
+    letsplot: plots/pie-basic/implementations/python/letsplot.py
+    matplotlib: plots/pie-basic/implementations/python/matplotlib.py
+    plotly: plots/pie-basic/implementations/python/plotly.py
+    plotnine: plots/pie-basic/implementations/python/plotnine.py
+    pygal: plots/pie-basic/implementations/python/pygal.py
+    seaborn: plots/pie-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/pie-basic/implementations/r/ggplot2.R
+notes:
+- Include percentage labels on slices
+- Use distinct colors for each category
+- Add a legend for category identification
+source: anyplot
+anyplot_updated: 2025-12-14 08:35:40+00:00

@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: bar-grouped
+name:
+  en: Grouped Bar Chart
+  es: Gráfico de Barras Agrupado
+description:
+  en: A grouped bar chart that displays multiple bars side-by-side for each category,
+    enabling direct comparison of values across different groups within the same categorical
+    dimension. This visualization excels at showing how different groups perform relative
+    to each other across multiple categories, making patterns and differences immediately
+    apparent. Grouped bar charts are essential for comparative analysis where you
+    need to track multiple series against the same set of categories.
+  es: A grouped bar chart that displays multiple bars side-by-side for each category,
+    enabling direct comparison of values across different groups within the same categorical
+    dimension. This visualization excels at showing how different groups perform relative
+    to each other across multiple categories, making patterns and differences immediately
+    apparent. Grouped bar charts are essential for comparative analysis where you
+    need to track multiple series against the same set of categories.
+aliases:
+  en:
+  - bar-grouped
+  - bar grouped
+  - grouped bar chart
+  es:
+  - bar-grouped
+  - bar grouped
+  - gráfico de barras agrupado
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Comparing quarterly sales figures for multiple products across different regions
+  - Visualizing survey responses across demographic groups (age, gender, location)
+  - Displaying performance metrics for different teams or departments over several
+    time periods
+  es:
+  - Comparing quarterly sales figures for multiple products across different regions
+  - Visualizing survey responses across demographic groups (age, gender, location)
+  - Displaying performance metrics for different teams or departments over several
+    time periods
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - grouped
+  - comparison
+  - multi
+keywords:
+  en:
+  - bar chart
+  - grouped
+  - bar
+  - categorical
+  - numeric
+  - general
+  - business
+  - comparison
+  - multi
+  es:
+  - gráfico de barras
+  - agrupado
+  - bar
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - grouped
+  - comparación
+  - multi
+implementations:
+  javascript:
+    chartjs: plots/bar-grouped/implementations/javascript/chartjs.js
+    d3: plots/bar-grouped/implementations/javascript/d3.js
+    echarts: plots/bar-grouped/implementations/javascript/echarts.js
+    highcharts: plots/bar-grouped/implementations/javascript/highcharts.js
+    muix: plots/bar-grouped/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-grouped/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-grouped/implementations/python/altair.py
+    bokeh: plots/bar-grouped/implementations/python/bokeh.py
+    letsplot: plots/bar-grouped/implementations/python/letsplot.py
+    matplotlib: plots/bar-grouped/implementations/python/matplotlib.py
+    plotly: plots/bar-grouped/implementations/python/plotly.py
+    plotnine: plots/bar-grouped/implementations/python/plotnine.py
+    pygal: plots/bar-grouped/implementations/python/pygal.py
+    seaborn: plots/bar-grouped/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-grouped/implementations/r/ggplot2.R
+notes:
+- Use distinct colors for each group with a clear legend
+- Maintain consistent bar widths and spacing between groups
+- Consider ordering categories or groups meaningfully (by value, alphabetically, or
+  chronologically)
+source: anyplot
+anyplot_updated: 2026-05-06 10:47:32+00:00

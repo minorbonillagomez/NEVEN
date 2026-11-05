@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: lightcurve-transit
+name:
+  en: Astronomical Light Curve
+  es: Lightcurve Transit
+description:
+  en: A time-series plot showing the brightness of an astronomical object over time,
+    designed to reveal exoplanet transit events as characteristic dips in flux. The
+    plot displays photometric measurements with error bars against orbital phase,
+    with a fitted transit model overlay. This visualization is fundamental in observational
+    astronomy for detecting and characterizing planetary transits, variable stars,
+    and other periodic brightness variations.
+  es: A time-series plot showing the brightness of an astronomical object over time,
+    designed to reveal exoplanet transit events as characteristic dips in flux. The
+    plot displays photometric measurements with error bars against orbital phase,
+    with a fitted transit model overlay. This visualization is fundamental in observational
+    astronomy for detecting and characterizing planetary transits, variable stars,
+    and other periodic brightness variations.
+aliases:
+  en:
+  - lightcurve-transit
+  - lightcurve transit
+  - lightcurve transit
+  es:
+  - lightcurve-transit
+  - lightcurve transit
+  - lightcurve transit
+use_when:
+  en:
+  - A time-series plot showing the brightness of an astronomical object over time,
+    designed to reveal exoplanet transit events as characteristic dips in flux. The
+    plot displays photometric measurements wi
+  es:
+  - A time-series plot showing the brightness of an astronomical object over time,
+    designed to reveal exoplanet transit events as characteristic dips in flux. The
+    plot displays photometric measurements wi
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Detecting exoplanet transits in Kepler/TESS photometric survey data by identifying
+    periodic flux dips
+  - Classifying variable stars (Cepheids, eclipsing binaries) through phase-folded
+    brightness patterns
+  - Monitoring supernova brightness evolution over weeks to months for distance calibration
+  es:
+  - Detecting exoplanet transits in Kepler/TESS photometric survey data by identifying
+    periodic flux dips
+  - Classifying variable stars (Cepheids, eclipsing binaries) through phase-folded
+    brightness patterns
+  - Monitoring supernova brightness evolution over weeks to months for distance calibration
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - scatter
+  data_type:
+  - time-series
+  - numeric
+  - continuous
+  domain:
+  - science
+  features:
+  - annotated
+  - temporal
+  - correlation
+keywords:
+  en:
+  - lightcurve
+  - transit
+  - line
+  - scatter
+  - time series
+  - numeric
+  - continuous
+  - science
+  - annotated
+  - temporal
+  - correlation
+  es:
+  - lightcurve
+  - transit
+  - line
+  - scatter
+  - series temporales
+  - numérico
+  - continuo
+  - ciencia
+  - annotated
+  - temporal
+  - correlación
+implementations:
+  javascript:
+    chartjs: plots/lightcurve-transit/implementations/javascript/chartjs.js
+    d3: plots/lightcurve-transit/implementations/javascript/d3.js
+    echarts: plots/lightcurve-transit/implementations/javascript/echarts.js
+    highcharts: plots/lightcurve-transit/implementations/javascript/highcharts.js
+    muix: plots/lightcurve-transit/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/lightcurve-transit/implementations/julia/makie.jl
+  python:
+    altair: plots/lightcurve-transit/implementations/python/altair.py
+    bokeh: plots/lightcurve-transit/implementations/python/bokeh.py
+    letsplot: plots/lightcurve-transit/implementations/python/letsplot.py
+    matplotlib: plots/lightcurve-transit/implementations/python/matplotlib.py
+    plotly: plots/lightcurve-transit/implementations/python/plotly.py
+    plotnine: plots/lightcurve-transit/implementations/python/plotnine.py
+    pygal: plots/lightcurve-transit/implementations/python/pygal.py
+    seaborn: plots/lightcurve-transit/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/lightcurve-transit/implementations/r/ggplot2.R
+notes:
+- Y-axis should show relative flux (not magnitude) with the transit dip going downward
+- Error bars on each data point are essential for conveying measurement precision
+- Include a smooth model curve overlaid on the scatter data to show the fitted transit
+  shape
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

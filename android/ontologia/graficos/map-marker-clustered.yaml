@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: map-marker-clustered
+name:
+  en: Clustered Marker Map
+  es: Mapa
+description:
+  en: A geographic map that dynamically clusters nearby markers based on the current
+    zoom level. At lower zoom levels, clusters aggregate multiple points into a single
+    marker displaying the count, while zooming in progressively expands clusters to
+    reveal individual markers. This visualization is essential for efficiently displaying
+    large geographic datasets without visual clutter, enabling users to see both the
+    overall distribution and specific locations through interactive exploration.
+  es: A geographic map that dynamically clusters nearby markers based on the current
+    zoom level. At lower zoom levels, clusters aggregate multiple points into a single
+    marker displaying the count, while zooming in progressively expands clusters to
+    reveal individual markers. This visualization is essential for efficiently displaying
+    large geographic datasets without visual clutter, enabling users to see both the
+    overall distribution and specific locations through interactive exploration.
+aliases:
+  en:
+  - map-marker-clustered
+  - map marker clustered
+  - map
+  es:
+  - map-marker-clustered
+  - map marker clustered
+  - mapa
+use_when:
+  en:
+  - A geographic map that dynamically clusters nearby markers based on the current
+    zoom level. At lower zoom levels, clusters aggregate multiple points into a single
+    marker displaying the count, while zoo
+  es:
+  - A geographic map that dynamically clusters nearby markers based on the current
+    zoom level. At lower zoom levels, clusters aggregate multiple points into a single
+    marker displaying the count, while zoo
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Store locator maps showing retail locations that cluster regionally and expand
+    to individual stores when zoomed
+  - Event venue mapping where concerts, conferences, or festivals are grouped by city
+    or neighborhood
+  - POI (Point of Interest) visualization for tourism, real estate, or service directories
+  - Large-scale geographic datasets (e.g., sensor networks, incident reports) where
+    thousands of points need efficient display
+  es:
+  - Store locator maps showing retail locations that cluster regionally and expand
+    to individual stores when zoomed
+  - Event venue mapping where concerts, conferences, or festivals are grouped by city
+    or neighborhood
+  - POI (Point of Interest) visualization for tourism, real estate, or service directories
+  - Large-scale geographic datasets (e.g., sensor networks, incident reports) where
+    thousands of points need efficient display
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - map
+  data_type:
+  - geospatial
+  - numeric
+  - categorical
+  domain:
+  - general
+  - business
+  features:
+  - interactive
+  - clustered
+  - animated
+keywords:
+  en:
+  - map
+  - marker
+  - clustered
+  - geospatial
+  - numeric
+  - categorical
+  - general
+  - business
+  - interactive
+  - animated
+  es:
+  - mapa
+  - marker
+  - clustered
+  - map
+  - geoespacial
+  - numérico
+  - categórico
+  - general
+  - negocios
+  - interactive
+  - animated
+implementations:
+  javascript:
+    chartjs: plots/map-marker-clustered/implementations/javascript/chartjs.js
+    d3: plots/map-marker-clustered/implementations/javascript/d3.js
+    echarts: plots/map-marker-clustered/implementations/javascript/echarts.js
+    highcharts: plots/map-marker-clustered/implementations/javascript/highcharts.js
+    muix: plots/map-marker-clustered/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/map-marker-clustered/implementations/julia/makie.jl
+  python:
+    altair: plots/map-marker-clustered/implementations/python/altair.py
+    bokeh: plots/map-marker-clustered/implementations/python/bokeh.py
+    letsplot: plots/map-marker-clustered/implementations/python/letsplot.py
+    matplotlib: plots/map-marker-clustered/implementations/python/matplotlib.py
+    plotly: plots/map-marker-clustered/implementations/python/plotly.py
+    plotnine: plots/map-marker-clustered/implementations/python/plotnine.py
+    pygal: plots/map-marker-clustered/implementations/python/pygal.py
+    seaborn: plots/map-marker-clustered/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/map-marker-clustered/implementations/r/ggplot2.R
+notes:
+- Cluster markers should display the count of grouped points
+- Implement smooth zoom transitions when clusters expand or collapse
+- Use distinct colors for different categories, with cluster markers reflecting the
+  dominant or mixed category
+source: anyplot
+anyplot_updated: 2026-05-23 11:31:37+00:00

@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: bar-stacked-labeled
+name:
+  en: Stacked Bar Chart with Total Labels
+  es: Gráfico de Barras Apilado
+description:
+  en: A stacked bar chart that displays multiple data series stacked on top of each
+    other with total value labels prominently shown above each bar stack. This variant
+    combines part-to-whole visualization with explicit numerical annotations, making
+    it easy to read both individual segment contributions and cumulative totals at
+    a glance. The total labels eliminate the need for mental arithmetic when comparing
+    overall values across categories.
+  es: A stacked bar chart that displays multiple data series stacked on top of each
+    other with total value labels prominently shown above each bar stack. This variant
+    combines part-to-whole visualization with explicit numerical annotations, making
+    it easy to read both individual segment contributions and cumulative totals at
+    a glance. The total labels eliminate the need for mental arithmetic when comparing
+    overall values across categories.
+aliases:
+  en:
+  - bar-stacked-labeled
+  - bar stacked labeled
+  - stacked bar chart
+  es:
+  - bar-stacked-labeled
+  - bar stacked labeled
+  - gráfico de barras apilado
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Comparing quarterly sales by product line with clear total revenue figures for
+    executive presentations
+  - Displaying project budget breakdowns by task category with visible total costs
+    for each project phase
+  - Visualizing survey response distributions with total respondent counts labeled
+    for each question
+  es:
+  - Comparing quarterly sales by product line with clear total revenue figures for
+    executive presentations
+  - Displaying project budget breakdowns by task category with visible total costs
+    for each project phase
+  - Visualizing survey response distributions with total respondent counts labeled
+    for each question
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  - stacked
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - stacked
+  - annotated
+  - comparison
+keywords:
+  en:
+  - bar chart
+  - stacked
+  - labeled
+  - bar
+  - categorical
+  - numeric
+  - general
+  - business
+  - annotated
+  - comparison
+  es:
+  - gráfico de barras
+  - apilado
+  - labeled
+  - bar
+  - stacked
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - annotated
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/bar-stacked-labeled/implementations/javascript/chartjs.js
+    d3: plots/bar-stacked-labeled/implementations/javascript/d3.js
+    echarts: plots/bar-stacked-labeled/implementations/javascript/echarts.js
+    highcharts: plots/bar-stacked-labeled/implementations/javascript/highcharts.js
+    muix: plots/bar-stacked-labeled/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-stacked-labeled/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-stacked-labeled/implementations/python/altair.py
+    bokeh: plots/bar-stacked-labeled/implementations/python/bokeh.py
+    letsplot: plots/bar-stacked-labeled/implementations/python/letsplot.py
+    matplotlib: plots/bar-stacked-labeled/implementations/python/matplotlib.py
+    plotly: plots/bar-stacked-labeled/implementations/python/plotly.py
+    plotnine: plots/bar-stacked-labeled/implementations/python/plotnine.py
+    pygal: plots/bar-stacked-labeled/implementations/python/pygal.py
+    seaborn: plots/bar-stacked-labeled/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-stacked-labeled/implementations/r/ggplot2.R
+notes:
+- Total labels should be placed directly above each complete bar stack with clear
+  formatting
+- Use a consistent number format for labels (e.g., rounded integers, one decimal place,
+  or with units)
+- Ensure adequate vertical space above the tallest bar for label placement
+source: anyplot
+anyplot_updated: null

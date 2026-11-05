@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: ma-differential-expression
+name:
+  en: MA Plot for Differential Expression
+  es: Ma Differential Expression
+description:
+  en: An MA plot (M-versus-A plot) visualizes the relationship between log fold change
+    (M) and mean average expression (A) when comparing two experimental conditions.
+    Each point represents a gene or feature, with significantly differentially expressed
+    genes highlighted. This plot is a standard diagnostic tool in RNA-seq and microarray
+    analysis for assessing differential expression results and detecting systematic
+    expression-dependent bias.
+  es: An MA plot (M-versus-A plot) visualizes the relationship between log fold change
+    (M) and mean average expression (A) when comparing two experimental conditions.
+    Each point represents a gene or feature, with significantly differentially expressed
+    genes highlighted. This plot is a standard diagnostic tool in RNA-seq and microarray
+    analysis for assessing differential expression results and detecting systematic
+    expression-dependent bias.
+aliases:
+  en:
+  - ma-differential-expression
+  - ma differential expression
+  - ma differential expression
+  es:
+  - ma-differential-expression
+  - ma differential expression
+  - ma differential expression
+use_when:
+  en:
+  - An MA plot (M-versus-A plot) visualizes the relationship between log fold change
+    (M) and mean average expression (A) when comparing two experimental conditions.
+    Each point represents a gene or feature
+  es:
+  - An MA plot (M-versus-A plot) visualizes the relationship between log fold change
+    (M) and mean average expression (A) when comparing two experimental conditions.
+    Each point represents a gene or feature
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying differentially expressed genes between treatment and control conditions
+    in RNA-seq experiments
+  - Assessing normalization quality and detecting expression-dependent bias in microarray
+    data
+  - Comparing treatment versus control conditions in transcriptomics studies
+  - Quality control in high-throughput genomics pipelines to verify fold-change distributions
+  es:
+  - Identifying differentially expressed genes between treatment and control conditions
+    in RNA-seq experiments
+  - Assessing normalization quality and detecting expression-dependent bias in microarray
+    data
+  - Comparing treatment versus control conditions in transcriptomics studies
+  - Quality control in high-throughput genomics pipelines to verify fold-change distributions
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - research
+  - bioinformatics
+  features:
+  - color-mapped
+  - annotated
+  - comparison
+  - diagnostic
+keywords:
+  en:
+  - ma
+  - differential
+  - expression
+  - scatter
+  - numeric
+  - continuous
+  - science
+  - research
+  - bioinformatics
+  - color-mapped
+  - annotated
+  - comparison
+  - diagnostic
+  es:
+  - ma
+  - differential
+  - expression
+  - scatter
+  - numérico
+  - continuo
+  - ciencia
+  - research
+  - bioinformatics
+  - color-mapped
+  - annotated
+  - comparación
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/ma-differential-expression/implementations/javascript/chartjs.js
+    d3: plots/ma-differential-expression/implementations/javascript/d3.js
+    echarts: plots/ma-differential-expression/implementations/javascript/echarts.js
+    highcharts: plots/ma-differential-expression/implementations/javascript/highcharts.js
+    muix: plots/ma-differential-expression/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ma-differential-expression/implementations/julia/makie.jl
+  python:
+    altair: plots/ma-differential-expression/implementations/python/altair.py
+    bokeh: plots/ma-differential-expression/implementations/python/bokeh.py
+    letsplot: plots/ma-differential-expression/implementations/python/letsplot.py
+    matplotlib: plots/ma-differential-expression/implementations/python/matplotlib.py
+    plotly: plots/ma-differential-expression/implementations/python/plotly.py
+    plotnine: plots/ma-differential-expression/implementations/python/plotnine.py
+    pygal: plots/ma-differential-expression/implementations/python/pygal.py
+    seaborn: plots/ma-differential-expression/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ma-differential-expression/implementations/r/ggplot2.R
+notes:
+- Highlight significant genes (adjusted p < 0.05) in a distinct color (e.g., red)
+  against non-significant genes in gray
+- Draw a horizontal reference line at M = 0 (no change) and dashed lines at M = +1
+  and M = -1 (2-fold change thresholds)
+- Include a LOESS smoothing curve to reveal any systematic expression-dependent bias
+source: anyplot
+anyplot_updated: '2026-06-21T00:43:51Z'

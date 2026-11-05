@@ -1,0 +1,136 @@
+entity_type: ChartType
+id: calibration-curve
+name:
+  en: Calibration Curve
+  es: Calibration Curve
+description:
+  en: A calibration curve (reliability diagram) visualizes how well the predicted
+    probabilities of a binary classifier match actual outcomes. By plotting the fraction
+    of positives against mean predicted probability in binned intervals, it reveals
+    whether a model is well-calibrated, overconfident, or underconfident. A perfectly
+    calibrated model follows the diagonal line where predicted probability equals
+    observed frequency.
+  es: A calibration curve (reliability diagram) visualizes how well the predicted
+    probabilities of a binary classifier match actual outcomes. By plotting the fraction
+    of positives against mean predicted probability in binned intervals, it reveals
+    whether a model is well-calibrated, overconfident, or underconfident. A perfectly
+    calibrated model follows the diagonal line where predicted probability equals
+    observed frequency.
+aliases:
+  en:
+  - calibration-curve
+  - calibration curve
+  - calibration curve
+  es:
+  - calibration-curve
+  - calibration curve
+  - calibration curve
+use_when:
+  en:
+  - A calibration curve (reliability diagram) visualizes how well the predicted probabilities
+    of a binary classifier match actual outcomes. By plotting the fraction of positives
+    against mean predicted pro
+  es:
+  - A calibration curve (reliability diagram) visualizes how well the predicted probabilities
+    of a binary classifier match actual outcomes. By plotting the fraction of positives
+    against mean predicted pro
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Evaluating probability predictions in credit scoring models where accurate risk
+    estimates determine loan pricing
+  - Assessing diagnostic confidence in medical screening systems where probability
+    calibration affects treatment decisions
+  - Comparing calibration across multiple classifiers to select models that produce
+    reliable probability estimates
+  - Validating risk assessment models in insurance and fraud detection where miscalibrated
+    probabilities lead to financial losses
+  es:
+  - Evaluating probability predictions in credit scoring models where accurate risk
+    estimates determine loan pricing
+  - Assessing diagnostic confidence in medical screening systems where probability
+    calibration affects treatment decisions
+  - Comparing calibration across multiple classifiers to select models that produce
+    reliable probability estimates
+  - Validating risk assessment models in insurance and fraud detection where miscalibrated
+    probabilities lead to financial losses
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - calibration
+  data_type:
+  - numeric
+  - probability
+  - binary
+  domain:
+  - statistics
+  - machine-learning
+  - finance
+  - healthcare
+  features:
+  - basic
+  - model-evaluation
+  - reference-line
+keywords:
+  en:
+  - calibration
+  - curve
+  - numeric
+  - probability
+  - binary
+  - statistics
+  - machine learning
+  - finance
+  - healthcare
+  - basic
+  - model-evaluation
+  - reference-line
+  es:
+  - calibration
+  - curve
+  - numérico
+  - probability
+  - binario
+  - estadística
+  - aprendizaje automático
+  - finanzas
+  - healthcare
+  - basic
+  - model-evaluation
+  - reference-line
+implementations:
+  javascript:
+    chartjs: plots/calibration-curve/implementations/javascript/chartjs.js
+    d3: plots/calibration-curve/implementations/javascript/d3.js
+    echarts: plots/calibration-curve/implementations/javascript/echarts.js
+    highcharts: plots/calibration-curve/implementations/javascript/highcharts.js
+    muix: plots/calibration-curve/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/calibration-curve/implementations/julia/makie.jl
+  python:
+    altair: plots/calibration-curve/implementations/python/altair.py
+    bokeh: plots/calibration-curve/implementations/python/bokeh.py
+    letsplot: plots/calibration-curve/implementations/python/letsplot.py
+    matplotlib: plots/calibration-curve/implementations/python/matplotlib.py
+    plotly: plots/calibration-curve/implementations/python/plotly.py
+    plotnine: plots/calibration-curve/implementations/python/plotnine.py
+    pygal: plots/calibration-curve/implementations/python/pygal.py
+    seaborn: plots/calibration-curve/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/calibration-curve/implementations/r/ggplot2.R
+notes:
+- Include a diagonal reference line representing perfect calibration (predicted probability
+  = observed frequency)
+- Use 10 bins by default, with bin edges at equal probability intervals (0.0-0.1,
+  0.1-0.2, etc.)
+- Display Brier score or Expected Calibration Error (ECE) as a summary metric
+source: anyplot
+anyplot_updated: 2026-05-10 20:45:30+00:00

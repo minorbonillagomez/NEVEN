@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: alluvial-basic
+name:
+  en: Basic Alluvial Diagram
+  es: Alluvial Basic Básico
+description:
+  en: An alluvial diagram visualizes how entities flow or transition between discrete
+    categories across multiple time points or ordered stages. Unlike general Sankey
+    diagrams, alluvial diagrams enforce strict vertical ordering where each column
+    represents a specific time step or category dimension. Bands connect related segments
+    to show how proportions shift over time, making it ideal for tracking structural
+    changes, migrations, and transitions in categorical data.
+  es: An alluvial diagram visualizes how entities flow or transition between discrete
+    categories across multiple time points or ordered stages. Unlike general Sankey
+    diagrams, alluvial diagrams enforce strict vertical ordering where each column
+    represents a specific time step or category dimension. Bands connect related segments
+    to show how proportions shift over time, making it ideal for tracking structural
+    changes, migrations, and transitions in categorical data.
+aliases:
+  en:
+  - alluvial-basic
+  - alluvial basic
+  - basic alluvial basic
+  es:
+  - alluvial-basic
+  - alluvial basic
+  - alluvial basic básico
+use_when:
+  en:
+  - An alluvial diagram visualizes how entities flow or transition between discrete
+    categories across multiple time points or ordered stages. Unlike general Sankey
+    diagrams, alluvial diagrams enforce stri
+  es:
+  - An alluvial diagram visualizes how entities flow or transition between discrete
+    categories across multiple time points or ordered stages. Unlike general Sankey
+    diagrams, alluvial diagrams enforce stri
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Tracking voter migration between political parties across multiple election cycles
+  - Visualizing customer journey stages from acquisition through retention or churn
+  - Showing how students transition between academic tracks or performance categories
+    over semesters
+  es:
+  - Tracking voter migration between political parties across multiple election cycles
+  - Visualizing customer journey stages from acquisition through retention or churn
+  - Showing how students transition between academic tracks or performance categories
+    over semesters
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - alluvial
+  - sankey
+  data_type:
+  - categorical
+  - numeric
+  - timeseries
+  domain:
+  - general
+  - business
+  - politics
+  features:
+  - basic
+  - flow
+  - temporal
+  - proportional
+keywords:
+  en:
+  - alluvial
+  - basic
+  - sankey
+  - categorical
+  - numeric
+  - timeseries
+  - general
+  - business
+  - politics
+  - flow
+  - temporal
+  - proportional
+  es:
+  - alluvial
+  - básico
+  - sankey
+  - categórico
+  - numérico
+  - timeseries
+  - general
+  - negocios
+  - politics
+  - basic
+  - flujo
+  - temporal
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/alluvial-basic/implementations/javascript/chartjs.js
+    d3: plots/alluvial-basic/implementations/javascript/d3.js
+    echarts: plots/alluvial-basic/implementations/javascript/echarts.js
+    highcharts: plots/alluvial-basic/implementations/javascript/highcharts.js
+    muix: plots/alluvial-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/alluvial-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/alluvial-basic/implementations/python/altair.py
+    bokeh: plots/alluvial-basic/implementations/python/bokeh.py
+    letsplot: plots/alluvial-basic/implementations/python/letsplot.py
+    matplotlib: plots/alluvial-basic/implementations/python/matplotlib.py
+    plotly: plots/alluvial-basic/implementations/python/plotly.py
+    plotnine: plots/alluvial-basic/implementations/python/plotnine.py
+    pygal: plots/alluvial-basic/implementations/python/pygal.py
+    seaborn: plots/alluvial-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/alluvial-basic/implementations/r/ggplot2.R
+notes:
+- Time points should be arranged left-to-right in chronological or logical order
+- Use consistent colors for categories that persist across time points
+- Band width should be proportional to flow magnitude
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

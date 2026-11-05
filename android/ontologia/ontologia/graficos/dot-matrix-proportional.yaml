@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: dot-matrix-proportional
+name:
+  en: Dot Matrix Chart for Proportional Counts
+  es: Dot Matrix Proportional
+description:
+  en: A dot matrix chart displays proportions using a grid of equally-sized dots where
+    filled or colored dots represent counts out of a total. Each dot corresponds to
+    one unit, making it intuitive to read "X out of N" statistics at a glance. Unlike
+    waffle charts that use percentage-based squares, dot matrix charts emphasize absolute
+    counts with variable grid sizes, excelling at risk communication and survey result
+    visualization.
+  es: A dot matrix chart displays proportions using a grid of equally-sized dots where
+    filled or colored dots represent counts out of a total. Each dot corresponds to
+    one unit, making it intuitive to read "X out of N" statistics at a glance. Unlike
+    waffle charts that use percentage-based squares, dot matrix charts emphasize absolute
+    counts with variable grid sizes, excelling at risk communication and survey result
+    visualization.
+aliases:
+  en:
+  - dot-matrix-proportional
+  - dot matrix proportional
+  - dot matrix proportional
+  es:
+  - dot-matrix-proportional
+  - dot matrix proportional
+  - dot matrix proportional
+use_when:
+  en:
+  - A dot matrix chart displays proportions using a grid of equally-sized dots where
+    filled or colored dots represent counts out of a total. Each dot corresponds to
+    one unit, making it intuitive to read "
+  es:
+  - A dot matrix chart displays proportions using a grid of equally-sized dots where
+    filled or colored dots represent counts out of a total. Each dot corresponds to
+    one unit, making it intuitive to read "
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Showing survey results where 47 out of 100 respondents agreed with a statement
+  - Visualizing medical risk such as 3 in 1,000 patients experiencing a side effect
+  - Displaying election or vote breakdowns across candidates or parties
+  - Communicating proportions in infographics and reports for general audiences
+  es:
+  - Showing survey results where 47 out of 100 respondents agreed with a statement
+  - Visualizing medical risk such as 3 in 1,000 patients experiencing a side effect
+  - Displaying election or vote breakdowns across candidates or parties
+  - Communicating proportions in infographics and reports for general audiences
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - point
+  - heatmap
+  data_type:
+  - categorical
+  - discrete
+  domain:
+  - general
+  - statistics
+  - healthcare
+  features:
+  - proportional
+  - color-mapped
+  - comparison
+keywords:
+  en:
+  - dot
+  - matrix
+  - proportional
+  - point
+  - heatmap
+  - categorical
+  - discrete
+  - general
+  - statistics
+  - healthcare
+  - color-mapped
+  - comparison
+  es:
+  - dot
+  - matrix
+  - proportional
+  - point
+  - heatmap
+  - categórico
+  - discreto
+  - general
+  - estadística
+  - healthcare
+  - color-mapped
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/dot-matrix-proportional/implementations/javascript/chartjs.js
+    d3: plots/dot-matrix-proportional/implementations/javascript/d3.js
+    echarts: plots/dot-matrix-proportional/implementations/javascript/echarts.js
+    highcharts: plots/dot-matrix-proportional/implementations/javascript/highcharts.js
+    muix: plots/dot-matrix-proportional/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/dot-matrix-proportional/implementations/julia/makie.jl
+  python:
+    altair: plots/dot-matrix-proportional/implementations/python/altair.py
+    bokeh: plots/dot-matrix-proportional/implementations/python/bokeh.py
+    letsplot: plots/dot-matrix-proportional/implementations/python/letsplot.py
+    matplotlib: plots/dot-matrix-proportional/implementations/python/matplotlib.py
+    plotly: plots/dot-matrix-proportional/implementations/python/plotly.py
+    plotnine: plots/dot-matrix-proportional/implementations/python/plotnine.py
+    pygal: plots/dot-matrix-proportional/implementations/python/pygal.py
+    seaborn: plots/dot-matrix-proportional/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/dot-matrix-proportional/implementations/r/ggplot2.R
+notes:
+- Grid layout should match the total (e.g., 10x10 for 100, 10x50 for 500)
+- Each dot represents exactly one unit
+- Dots are color-coded by category, filled left-to-right, top-to-bottom
+source: anyplot
+anyplot_updated: null

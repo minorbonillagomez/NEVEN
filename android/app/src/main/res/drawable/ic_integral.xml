@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    NEVEN Launcher - Integral Symbol Vector Asset
+    LaTeX Calculus Integral (\int)
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer subtle alignment ring -->
+    <path
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="1"
+        android:pathData="M54,14 A40,40 0 1,0 54,94 A40,40 0 1,0 54,14 Z" />
+
+    <!-- Main Integral symbol (\int) -->
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M62,24 C67,24 70,27 70,31 C70,33.5 68.5,35 66.5,35 C64.8,35 63.5,33.8 63.5,32.2 C63.5,31.2 64.1,30.3 64.8,29.7 C64.2,29.1 63.3,28.8 62,28.8 C58.5,28.8 55.5,33.5 53.5,43 L48.5,66 C46.5,75.5 43.5,80.2 40,80.2 C38.7,80.2 37.8,79.9 37.2,79.3 C37.9,78.7 38.5,77.8 38.5,76.8 C38.5,75.2 37.2,74 35.5,74 C33.5,74 32,75.5 32,78 C32,82 35,85 40,85 C45,85 49.5,79 52,67 L57,44 C59,33 63.5,24 62,24 Z" />
+
+    <!-- Upper Limit superscript -->
+    <path
+        android:fillColor="#FAF9F6"
+        android:pathData="M72,28 A3.5,3.5 0 1,0 72,21 A3.5,3.5 0 1,0 72,28 Z" />
+
+    <!-- Lower Limit subscript -->
+    <path
+        android:fillColor="#FAF9F6"
+        android:pathData="M36,86 A3.5,3.5 0 1,0 36,79 A3.5,3.5 0 1,0 36,86 Z" />
+</vector>

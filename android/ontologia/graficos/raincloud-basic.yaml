@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: raincloud-basic
+name:
+  en: Basic Raincloud Plot
+  es: Diagrama de Nube de Lluvia Básico
+description:
+  en: A raincloud plot combines three visualization elements—a half-violin (the "cloud"),
+    jittered strip points (the "rain"), and a box plot—to provide a comprehensive
+    view of data distribution. This hybrid approach shows distribution shape, summary
+    statistics, and individual observations simultaneously, addressing the limitation
+    of box plots that can hide multimodal distributions. Often called the "gold standard"
+    for transparent statistical visualization in scientific publications.
+  es: A raincloud plot combines three visualization elements—a half-violin (the "cloud"),
+    jittered strip points (the "rain"), and a box plot—to provide a comprehensive
+    view of data distribution. This hybrid approach shows distribution shape, summary
+    statistics, and individual observations simultaneously, addressing the limitation
+    of box plots that can hide multimodal distributions. Often called the "gold standard"
+    for transparent statistical visualization in scientific publications.
+aliases:
+  en:
+  - raincloud-basic
+  - raincloud basic
+  - basic raincloud plot
+  es:
+  - raincloud-basic
+  - raincloud basic
+  - diagrama de nube de lluvia básico
+use_when:
+  en:
+  - A raincloud plot combines three visualization elements—a half-violin (the "cloud"),
+    jittered strip points (the "rain"), and a box plot—to provide a comprehensive
+    view of data distribution. This hybrid
+  es:
+  - A raincloud plot combines three visualization elements—a half-violin (the "cloud"),
+    jittered strip points (the "rain"), and a box plot—to provide a comprehensive
+    view of data distribution. This hybrid
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing treatment effects across experimental groups in clinical trials
+  - Visualizing response time distributions in psychology experiments
+  - Analyzing score distributions across different conditions in A/B testing
+  - Presenting survey response distributions by demographic groups
+  es:
+  - Comparing treatment effects across experimental groups in clinical trials
+  - Visualizing response time distributions in psychology experiments
+  - Analyzing score distributions across different conditions in A/B testing
+  - Presenting survey response distributions by demographic groups
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - raincloud
+  - violin
+  - strip
+  - box
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - basic
+  - distribution
+  - comparison
+  - combined
+keywords:
+  en:
+  - raincloud plot
+  - basic
+  - raincloud
+  - violin
+  - strip
+  - box
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - research
+  - distribution
+  - comparison
+  - combined
+  es:
+  - diagrama de nube de lluvia
+  - básico
+  - raincloud
+  - violin
+  - strip
+  - box
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - research
+  - basic
+  - distribución
+  - comparación
+  - combined
+implementations:
+  javascript:
+    chartjs: plots/raincloud-basic/implementations/javascript/chartjs.js
+    d3: plots/raincloud-basic/implementations/javascript/d3.js
+    echarts: plots/raincloud-basic/implementations/javascript/echarts.js
+    highcharts: plots/raincloud-basic/implementations/javascript/highcharts.js
+    muix: plots/raincloud-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/raincloud-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/raincloud-basic/implementations/python/altair.py
+    bokeh: plots/raincloud-basic/implementations/python/bokeh.py
+    letsplot: plots/raincloud-basic/implementations/python/letsplot.py
+    matplotlib: plots/raincloud-basic/implementations/python/matplotlib.py
+    plotly: plots/raincloud-basic/implementations/python/plotly.py
+    plotnine: plots/raincloud-basic/implementations/python/plotnine.py
+    pygal: plots/raincloud-basic/implementations/python/pygal.py
+    seaborn: plots/raincloud-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/raincloud-basic/implementations/r/ggplot2.R
+notes:
+- '**Required Orientation**: Use HORIZONTAL orientation with categories on y-axis
+  and values on x-axis. "Above" and "below" always refer to the y-direction (screen
+  up/down), not the x-direction'
+- '**Critical Layout**: For each category on the y-axis: the "cloud" (half-violin/KDE)
+  must extend ABOVE the category baseline (upward on screen), the boxplot sits centered
+  ON the category baseline, and "rain" (jittered points) must appear BELOW the category
+  baseline (downward on screen) - like rain falling from a cloud'
+- Clip the violin to show only half (the "cloud" portion), not a full violin
+source: anyplot
+anyplot_updated: 2025-12-24 22:09:44+00:00

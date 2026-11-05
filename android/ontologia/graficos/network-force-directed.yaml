@@ -1,0 +1,118 @@
+entity_type: ChartType
+id: network-force-directed
+name:
+  en: Force-Directed Graph
+  es: Grafo de Red
+description:
+  en: A force-directed graph uses physics simulation to position nodes, where connected
+    nodes attract each other and all nodes repel. This creates organic layouts that
+    naturally reveal community structure, central nodes, and overall network topology
+    without manual positioning. The algorithm balances attractive forces (edges pulling
+    connected nodes together) and repulsive forces (nodes pushing apart) until reaching
+    equilibrium.
+  es: A force-directed graph uses physics simulation to position nodes, where connected
+    nodes attract each other and all nodes repel. This creates organic layouts that
+    naturally reveal community structure, central nodes, and overall network topology
+    without manual positioning. The algorithm balances attractive forces (edges pulling
+    connected nodes together) and repulsive forces (nodes pushing apart) until reaching
+    equilibrium.
+aliases:
+  en:
+  - network-force-directed
+  - network force directed
+  - network graph
+  es:
+  - network-force-directed
+  - network force directed
+  - grafo de red
+use_when:
+  en:
+  - 'A force-directed graph uses physics simulation to position nodes, where connected
+    nodes attract each other and all nodes repel. This creates organic layouts that
+    naturally reveal community structure, '
+  es:
+  - 'A force-directed graph uses physics simulation to position nodes, where connected
+    nodes attract each other and all nodes repel. This creates organic layouts that
+    naturally reveal community structure, '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing social network connections to identify communities and influential
+    individuals
+  - Mapping software dependencies to understand module relationships and coupling
+  - Displaying knowledge graphs and ontologies showing concept relationships
+  - Analyzing co-occurrence networks in text analysis or biological interactions
+  es:
+  - Visualizing social network connections to identify communities and influential
+    individuals
+  - Mapping software dependencies to understand module relationships and coupling
+  - Displaying knowledge graphs and ontologies showing concept relationships
+  - Analyzing co-occurrence networks in text analysis or biological interactions
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - network
+  data_type:
+  - network
+  - relational
+  domain:
+  - general
+  - technology
+  features:
+  - force-directed
+  - interactive
+keywords:
+  en:
+  - network graph
+  - force
+  - directed
+  - network
+  - relational
+  - general
+  - technology
+  - force-directed
+  - interactive
+  es:
+  - grafo de red
+  - force
+  - directed
+  - red
+  - relational
+  - general
+  - technology
+  - force-directed
+  - interactive
+implementations:
+  javascript:
+    chartjs: plots/network-force-directed/implementations/javascript/chartjs.js
+    d3: plots/network-force-directed/implementations/javascript/d3.js
+    echarts: plots/network-force-directed/implementations/javascript/echarts.js
+    highcharts: plots/network-force-directed/implementations/javascript/highcharts.js
+    muix: plots/network-force-directed/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/network-force-directed/implementations/julia/makie.jl
+  python:
+    altair: plots/network-force-directed/implementations/python/altair.py
+    bokeh: plots/network-force-directed/implementations/python/bokeh.py
+    letsplot: plots/network-force-directed/implementations/python/letsplot.py
+    matplotlib: plots/network-force-directed/implementations/python/matplotlib.py
+    plotly: plots/network-force-directed/implementations/python/plotly.py
+    plotnine: plots/network-force-directed/implementations/python/plotnine.py
+    pygal: plots/network-force-directed/implementations/python/pygal.py
+    seaborn: plots/network-force-directed/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/network-force-directed/implementations/r/ggplot2.R
+notes:
+- Node size can optionally scale by degree (number of connections)
+- Edge thickness can optionally represent connection strength or weight
+- Use sufficient iterations to allow the layout to stabilize
+source: anyplot
+anyplot_updated: 2026-07-01 01:06:42+00:00

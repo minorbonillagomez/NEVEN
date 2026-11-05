@@ -1,0 +1,142 @@
+entity_type: ChartType
+id: precision-recall
+name:
+  en: Precision-Recall Curve
+  es: Precision Recall
+description:
+  en: A Precision-Recall curve plots precision (positive predictive value) against
+    recall (sensitivity) at various classification thresholds. This visualization
+    is essential for evaluating binary classifiers on imbalanced datasets where accuracy
+    alone is misleading. The area under the curve (Average Precision) summarizes classifier
+    performance, with higher values indicating better performance.
+  es: A Precision-Recall curve plots precision (positive predictive value) against
+    recall (sensitivity) at various classification thresholds. This visualization
+    is essential for evaluating binary classifiers on imbalanced datasets where accuracy
+    alone is misleading. The area under the curve (Average Precision) summarizes classifier
+    performance, with higher values indicating better performance.
+aliases:
+  en:
+  - precision-recall
+  - precision recall
+  - precision recall
+  es:
+  - precision-recall
+  - precision recall
+  - precision recall
+use_when:
+  en:
+  - A Precision-Recall curve plots precision (positive predictive value) against recall
+    (sensitivity) at various classification thresholds. This visualization is essential
+    for evaluating binary classifier
+  es:
+  - A Precision-Recall curve plots precision (positive predictive value) against recall
+    (sensitivity) at various classification thresholds. This visualization is essential
+    for evaluating binary classifier
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Evaluating fraud detection models where fraudulent transactions are rare compared
+    to legitimate ones
+  - Assessing medical diagnostic systems where correctly identifying positive cases
+    (high recall) is critical
+  - Comparing information retrieval systems for document search relevance ranking
+  - Optimizing spam filters to balance catching spam (recall) with minimizing false
+    positives (precision)
+  es:
+  - Evaluating fraud detection models where fraudulent transactions are rare compared
+    to legitimate ones
+  - Assessing medical diagnostic systems where correctly identifying positive cases
+    (high recall) is critical
+  - Comparing information retrieval systems for document search relevance ranking
+  - Optimizing spam filters to balance catching spam (recall) with minimizing false
+    positives (precision)
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - curve
+  - evaluation
+  data_type:
+  - numeric
+  - binary
+  - probability
+  domain:
+  - machine-learning
+  - statistics
+  - healthcare
+  - information-retrieval
+  features:
+  - basic
+  - classification
+  - model-evaluation
+  - imbalanced-data
+keywords:
+  en:
+  - precision
+  - recall
+  - line
+  - curve
+  - evaluation
+  - numeric
+  - binary
+  - probability
+  - machine learning
+  - statistics
+  - healthcare
+  - information-retrieval
+  - basic
+  - classification
+  - model-evaluation
+  - imbalanced-data
+  es:
+  - precision
+  - recall
+  - line
+  - curve
+  - evaluation
+  - numérico
+  - binario
+  - probability
+  - aprendizaje automático
+  - estadística
+  - healthcare
+  - information-retrieval
+  - basic
+  - classification
+  - model-evaluation
+  - imbalanced-data
+implementations:
+  javascript:
+    chartjs: plots/precision-recall/implementations/javascript/chartjs.js
+    d3: plots/precision-recall/implementations/javascript/d3.js
+    echarts: plots/precision-recall/implementations/javascript/echarts.js
+    highcharts: plots/precision-recall/implementations/javascript/highcharts.js
+    muix: plots/precision-recall/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/precision-recall/implementations/julia/makie.jl
+  python:
+    altair: plots/precision-recall/implementations/python/altair.py
+    bokeh: plots/precision-recall/implementations/python/bokeh.py
+    letsplot: plots/precision-recall/implementations/python/letsplot.py
+    matplotlib: plots/precision-recall/implementations/python/matplotlib.py
+    plotly: plots/precision-recall/implementations/python/plotly.py
+    plotnine: plots/precision-recall/implementations/python/plotnine.py
+    pygal: plots/precision-recall/implementations/python/pygal.py
+    seaborn: plots/precision-recall/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/precision-recall/implementations/r/ggplot2.R
+notes:
+- Display Average Precision (AP) score in legend or annotation
+- Include baseline reference line showing random classifier performance (horizontal
+  line at positive class ratio)
+- Use stepped line style to accurately represent threshold-based curve
+source: anyplot
+anyplot_updated: null

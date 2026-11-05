@@ -1,0 +1,158 @@
+entity_type: ChartType
+id: line-training-load-pmc
+name:
+  en: Training Load Performance Management Chart
+  es: Gráfico de Líneas
+description:
+  en: A Performance Management Chart (PMC), popularized by TrainingPeaks, summarizes
+    an endurance athlete's training history on a single shared time axis. Two exponentially-smoothed
+    lines track Chronic Training Load (CTL, "fitness", ~42-day time constant) and
+    Acute Training Load (ATL, "fatigue", ~7-day time constant), while a filled area
+    or band shows Training Stress Balance (TSB, "form" = CTL − ATL) above and below
+    a zero baseline. Daily Training Stress Score (TSS) values appear as points or
+    thin vertical bars, giving the raw workout intensity behind the smoothed trends.
+    The chart reveals whether an athlete is building fitness, accumulating fatigue,
+    or freshening up (positive form) for a target event.
+  es: A Performance Management Chart (PMC), popularized by TrainingPeaks, summarizes
+    an endurance athlete's training history on a single shared time axis. Two exponentially-smoothed
+    lines track Chronic Training Load (CTL, "fitness", ~42-day time constant) and
+    Acute Training Load (ATL, "fatigue", ~7-day time constant), while a filled area
+    or band shows Training Stress Balance (TSB, "form" = CTL − ATL) above and below
+    a zero baseline. Daily Training Stress Score (TSS) values appear as points or
+    thin vertical bars, giving the raw workout intensity behind the smoothed trends.
+    The chart reveals whether an athlete is building fitness, accumulating fatigue,
+    or freshening up (positive form) for a target event.
+aliases:
+  en:
+  - line-training-load-pmc
+  - line training load pmc
+  - line chart
+  es:
+  - line-training-load-pmc
+  - line training load pmc
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Coaches periodizing an athlete's season to peak fitness while managing fatigue
+    before a key race
+  - Cyclists and runners deciding rest vs. overload by reading current form (TSB)
+    against rising fitness (CTL)
+  - Sports scientists studying training monotony, ramp rate, and injury/overtraining
+    risk from acute:chronic load
+  - Self-coached endurance athletes tracking long-term progression and taper timing
+    across a training block
+  es:
+  - Coaches periodizing an athlete's season to peak fitness while managing fatigue
+    before a key race
+  - Cyclists and runners deciding rest vs. overload by reading current form (TSB)
+    against rising fitness (CTL)
+  - Sports scientists studying training monotony, ramp rate, and injury/overtraining
+    risk from acute:chronic load
+  - Self-coached endurance athletes tracking long-term progression and taper timing
+    across a training block
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - area
+  - point
+  data_type:
+  - timeseries
+  - numeric
+  - continuous
+  domain:
+  - sports
+  - health
+  - general
+  features:
+  - multi
+  - composite
+  - temporal
+  - trend
+keywords:
+  en:
+  - line chart
+  - training
+  - load
+  - pmc
+  - line
+  - area
+  - point
+  - timeseries
+  - numeric
+  - continuous
+  - sports
+  - health
+  - general
+  - multi
+  - composite
+  - temporal
+  - trend
+  es:
+  - gráfico de líneas
+  - training
+  - load
+  - pmc
+  - line
+  - area
+  - point
+  - timeseries
+  - numérico
+  - continuo
+  - sports
+  - health
+  - general
+  - multi
+  - composite
+  - temporal
+  - trend
+implementations:
+  javascript:
+    chartjs: plots/line-training-load-pmc/implementations/javascript/chartjs.js
+    d3: plots/line-training-load-pmc/implementations/javascript/d3.js
+    echarts: plots/line-training-load-pmc/implementations/javascript/echarts.js
+    highcharts: plots/line-training-load-pmc/implementations/javascript/highcharts.js
+    muix: plots/line-training-load-pmc/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-training-load-pmc/implementations/julia/makie.jl
+  python:
+    altair: plots/line-training-load-pmc/implementations/python/altair.py
+    bokeh: plots/line-training-load-pmc/implementations/python/bokeh.py
+    letsplot: plots/line-training-load-pmc/implementations/python/letsplot.py
+    matplotlib: plots/line-training-load-pmc/implementations/python/matplotlib.py
+    plotly: plots/line-training-load-pmc/implementations/python/plotly.py
+    plotnine: plots/line-training-load-pmc/implementations/python/plotnine.py
+    pygal: plots/line-training-load-pmc/implementations/python/pygal.py
+    seaborn: plots/line-training-load-pmc/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-training-load-pmc/implementations/r/ggplot2.R
+notes:
+- Plot CTL and ATL as smooth lines on the primary axis (e.g. blue for fitness, purple/magenta
+  for fatigue); CTL should look smoother and lag ATL
+- Render TSB as a filled area or band relative to a zero baseline, ideally two-toned
+  (positive form = fresh/blue, negative = fatigued/red); it may sit on a secondary
+  axis since it oscillates around zero
+- Draw daily TSS as light points or thin bars near the bottom so they read as the
+  raw input without dominating the smoothed lines
+source: anyplot
+anyplot_updated: null

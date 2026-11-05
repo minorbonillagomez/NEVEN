@@ -1,0 +1,110 @@
+entity_type: ChartType
+id: barcode-ean13
+name:
+  en: EAN-13 Barcode
+  es: Barcode Ean13
+description:
+  en: A standard EAN-13 barcode visualization commonly used for retail products worldwide.
+    The plot renders a scannable linear barcode encoding a 13-digit number with proper
+    bar widths, guard patterns, and human-readable digits. This visualization is essential
+    for product identification, inventory management, and point-of-sale systems.
+  es: A standard EAN-13 barcode visualization commonly used for retail products worldwide.
+    The plot renders a scannable linear barcode encoding a 13-digit number with proper
+    bar widths, guard patterns, and human-readable digits. This visualization is essential
+    for product identification, inventory management, and point-of-sale systems.
+aliases:
+  en:
+  - barcode-ean13
+  - barcode ean13
+  - barcode ean13
+  es:
+  - barcode-ean13
+  - barcode ean13
+  - barcode ean13
+use_when:
+  en:
+  - 'A standard EAN-13 barcode visualization commonly used for retail products worldwide.
+    The plot renders a scannable linear barcode encoding a 13-digit number with proper
+    bar widths, guard patterns, and '
+  es:
+  - 'A standard EAN-13 barcode visualization commonly used for retail products worldwide.
+    The plot renders a scannable linear barcode encoding a 13-digit number with proper
+    bar widths, guard patterns, and '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Product labeling for retail and e-commerce inventory management
+  - Supply chain tracking and logistics identification
+  - Educational demonstrations of barcode encoding technology
+  - Generating scannable labels for custom product catalogs
+  es:
+  - Product labeling for retail and e-commerce inventory management
+  - Supply chain tracking and logistics identification
+  - Educational demonstrations of barcode encoding technology
+  - Generating scannable labels for custom product catalogs
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - barcode
+  data_type:
+  - numeric
+  - text
+  domain:
+  - business
+  - general
+  features:
+  - basic
+  - encoding
+keywords:
+  en:
+  - barcode
+  - ean13
+  - numeric
+  - text
+  - business
+  - general
+  - basic
+  - encoding
+  es:
+  - barcode
+  - ean13
+  - numérico
+  - texto
+  - negocios
+  - general
+  - basic
+  - encoding
+implementations:
+  javascript:
+    chartjs: plots/barcode-ean13/implementations/javascript/chartjs.js
+    d3: plots/barcode-ean13/implementations/javascript/d3.js
+    echarts: plots/barcode-ean13/implementations/javascript/echarts.js
+    highcharts: plots/barcode-ean13/implementations/javascript/highcharts.js
+    muix: plots/barcode-ean13/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/barcode-ean13/implementations/julia/makie.jl
+  python:
+    altair: plots/barcode-ean13/implementations/python/altair.py
+    bokeh: plots/barcode-ean13/implementations/python/bokeh.py
+    letsplot: plots/barcode-ean13/implementations/python/letsplot.py
+    matplotlib: plots/barcode-ean13/implementations/python/matplotlib.py
+    plotly: plots/barcode-ean13/implementations/python/plotly.py
+    plotnine: plots/barcode-ean13/implementations/python/plotnine.py
+    pygal: plots/barcode-ean13/implementations/python/pygal.py
+    seaborn: plots/barcode-ean13/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/barcode-ean13/implementations/r/ggplot2.R
+notes:
+- Include quiet zones (white space) of at least 9 module widths on left and 9 on right
+- Render start guard (101), center guard (01010), and end guard (101) patterns
+- 'Use standard bar width ratios: bars are 1, 2, 3, or 4 modules wide'
+source: anyplot
+anyplot_updated: null

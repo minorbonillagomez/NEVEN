@@ -1,0 +1,111 @@
+entity_type: ChartType
+id: line-basic
+name:
+  en: Basic Line Plot
+  es: Gráfico de Líneas Básico
+description:
+  en: A basic line plot connects data points with straight lines to show how a continuous
+    variable changes over a sequence or time. It's ideal for revealing trends, patterns,
+    and changes in data over ordered intervals. The simplicity of a single-line design
+    makes it easy to interpret at a glance.
+  es: A basic line plot connects data points with straight lines to show how a continuous
+    variable changes over a sequence or time. It's ideal for revealing trends, patterns,
+    and changes in data over ordered intervals. The simplicity of a single-line design
+    makes it easy to interpret at a glance.
+aliases:
+  en:
+  - line-basic
+  - line basic
+  - basic line chart
+  es:
+  - line-basic
+  - line basic
+  - gráfico de líneas básico
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Tracking stock prices or financial metrics over trading days
+  - Monitoring website traffic or user engagement over time
+  - Visualizing temperature changes throughout a day or season
+  es:
+  - Tracking stock prices or financial metrics over trading days
+  - Monitoring website traffic or user engagement over time
+  - Visualizing temperature changes throughout a day or season
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - general
+  - statistics
+  features:
+  - basic
+  - trend
+keywords:
+  en:
+  - line chart
+  - basic
+  - line
+  - numeric
+  - continuous
+  - general
+  - statistics
+  - trend
+  es:
+  - gráfico de líneas
+  - básico
+  - line
+  - numérico
+  - continuo
+  - general
+  - estadística
+  - basic
+  - trend
+implementations:
+  javascript:
+    chartjs: plots/line-basic/implementations/javascript/chartjs.js
+    d3: plots/line-basic/implementations/javascript/d3.js
+    echarts: plots/line-basic/implementations/javascript/echarts.js
+    highcharts: plots/line-basic/implementations/javascript/highcharts.js
+    muix: plots/line-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/line-basic/implementations/python/altair.py
+    bokeh: plots/line-basic/implementations/python/bokeh.py
+    letsplot: plots/line-basic/implementations/python/letsplot.py
+    matplotlib: plots/line-basic/implementations/python/matplotlib.py
+    plotly: plots/line-basic/implementations/python/plotly.py
+    plotnine: plots/line-basic/implementations/python/plotnine.py
+    pygal: plots/line-basic/implementations/python/pygal.py
+    seaborn: plots/line-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-basic/implementations/r/ggplot2.R
+notes:
+- Clean, minimal design with a single line
+- Clear axis labels for both X and Y axes
+- Grid lines for improved readability
+source: anyplot
+anyplot_updated: 2025-12-13 23:33:16+00:00

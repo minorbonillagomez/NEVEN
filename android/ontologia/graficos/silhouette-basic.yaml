@@ -1,0 +1,118 @@
+entity_type: ChartType
+id: silhouette-basic
+name:
+  en: Silhouette Plot
+  es: Silhouette Basic Básico
+description:
+  en: A silhouette plot visualizes the quality of clustering results by showing the
+    silhouette coefficient for each sample, grouped by cluster assignment. Each horizontal
+    bar represents a sample's silhouette score (-1 to 1), where positive values indicate
+    good cluster membership and negative values suggest potential misclassification.
+    This visualization helps evaluate cluster cohesion (how similar samples are to
+    their own cluster) and separation (how distinct they are from neighboring clusters).
+  es: A silhouette plot visualizes the quality of clustering results by showing the
+    silhouette coefficient for each sample, grouped by cluster assignment. Each horizontal
+    bar represents a sample's silhouette score (-1 to 1), where positive values indicate
+    good cluster membership and negative values suggest potential misclassification.
+    This visualization helps evaluate cluster cohesion (how similar samples are to
+    their own cluster) and separation (how distinct they are from neighboring clusters).
+aliases:
+  en:
+  - silhouette-basic
+  - silhouette basic
+  - basic silhouette basic
+  es:
+  - silhouette-basic
+  - silhouette basic
+  - silhouette basic básico
+use_when:
+  en:
+  - A silhouette plot visualizes the quality of clustering results by showing the
+    silhouette coefficient for each sample, grouped by cluster assignment. Each horizontal
+    bar represents a sample's silhouett
+  es:
+  - A silhouette plot visualizes the quality of clustering results by showing the
+    silhouette coefficient for each sample, grouped by cluster assignment. Each horizontal
+    bar represents a sample's silhouett
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Evaluating K-means, hierarchical, or other clustering algorithm results
+  - Judging one choice of k, as one step in finding the optimal k
+  - Identifying poorly clustered or potentially misclassified samples
+  - Validating cluster assignments before downstream analysis
+  es:
+  - Evaluating K-means, hierarchical, or other clustering algorithm results
+  - Judging one choice of k, as one step in finding the optimal k
+  - Identifying poorly clustered or potentially misclassified samples
+  - Validating cluster assignments before downstream analysis
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - machine-learning
+  features:
+  - basic
+  - clustering
+  - diagnostic
+keywords:
+  en:
+  - silhouette
+  - basic
+  - bar
+  - numeric
+  - categorical
+  - statistics
+  - machine learning
+  - clustering
+  - diagnostic
+  es:
+  - silhouette
+  - básico
+  - bar
+  - numérico
+  - categórico
+  - estadística
+  - aprendizaje automático
+  - basic
+  - clustering
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/silhouette-basic/implementations/javascript/chartjs.js
+    d3: plots/silhouette-basic/implementations/javascript/d3.js
+    echarts: plots/silhouette-basic/implementations/javascript/echarts.js
+    highcharts: plots/silhouette-basic/implementations/javascript/highcharts.js
+    muix: plots/silhouette-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/silhouette-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/silhouette-basic/implementations/python/altair.py
+    bokeh: plots/silhouette-basic/implementations/python/bokeh.py
+    letsplot: plots/silhouette-basic/implementations/python/letsplot.py
+    matplotlib: plots/silhouette-basic/implementations/python/matplotlib.py
+    plotly: plots/silhouette-basic/implementations/python/plotly.py
+    plotnine: plots/silhouette-basic/implementations/python/plotnine.py
+    pygal: plots/silhouette-basic/implementations/python/pygal.py
+    seaborn: plots/silhouette-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/silhouette-basic/implementations/r/ggplot2.R
+notes:
+- Display horizontal bars for each sample's silhouette score, sorted within each cluster
+- Group samples by cluster with distinct colors per cluster
+- Include vertical line at average silhouette score for reference
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

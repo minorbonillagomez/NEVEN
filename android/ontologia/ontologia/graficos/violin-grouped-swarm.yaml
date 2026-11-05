@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: violin-grouped-swarm
+name:
+  en: Grouped Violin Plot with Swarm Overlay
+  es: Diagrama de Violín Agrupado
+description:
+  en: A grouped violin plot with individual data points overlaid as swarm points,
+    showing distributions across two categorical dimensions simultaneously. Multiple
+    violin plots are arranged by category on the x-axis and grouped by a secondary
+    variable using color/hue, with swarm points revealing the underlying raw data.
+    This visualization combines distribution shape visualization with complete data
+    transparency, ideal for comparing how distributions differ across multiple factors.
+  es: A grouped violin plot with individual data points overlaid as swarm points,
+    showing distributions across two categorical dimensions simultaneously. Multiple
+    violin plots are arranged by category on the x-axis and grouped by a secondary
+    variable using color/hue, with swarm points revealing the underlying raw data.
+    This visualization combines distribution shape visualization with complete data
+    transparency, ideal for comparing how distributions differ across multiple factors.
+aliases:
+  en:
+  - violin-grouped-swarm
+  - violin grouped swarm
+  - grouped violin plot
+  es:
+  - violin-grouped-swarm
+  - violin grouped swarm
+  - diagrama de violín agrupado
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing drug efficacy distributions across multiple dosage levels and treatment
+    groups
+  - Analyzing performance metrics across departments and employee seniority levels
+  - Visualizing experimental results across conditions and time points in research
+    studies
+  - Comparing customer satisfaction scores across product categories and regions
+  es:
+  - Comparing drug efficacy distributions across multiple dosage levels and treatment
+    groups
+  - Analyzing performance metrics across departments and employee seniority levels
+  - Visualizing experimental results across conditions and time points in research
+    studies
+  - Comparing customer satisfaction scores across product categories and regions
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - violin
+  - swarm
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - research
+  - general
+  features:
+  - grouped
+  - distribution
+  - comparison
+keywords:
+  en:
+  - violin plot
+  - grouped
+  - swarm plot
+  - violin
+  - swarm
+  - numeric
+  - categorical
+  - statistics
+  - research
+  - general
+  - distribution
+  - comparison
+  es:
+  - diagrama de violín
+  - agrupado
+  - diagrama de enjambre
+  - violin
+  - swarm
+  - numérico
+  - categórico
+  - estadística
+  - research
+  - general
+  - grouped
+  - distribución
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/violin-grouped-swarm/implementations/javascript/chartjs.js
+    d3: plots/violin-grouped-swarm/implementations/javascript/d3.js
+    echarts: plots/violin-grouped-swarm/implementations/javascript/echarts.js
+    highcharts: plots/violin-grouped-swarm/implementations/javascript/highcharts.js
+    muix: plots/violin-grouped-swarm/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/violin-grouped-swarm/implementations/julia/makie.jl
+  python:
+    altair: plots/violin-grouped-swarm/implementations/python/altair.py
+    bokeh: plots/violin-grouped-swarm/implementations/python/bokeh.py
+    letsplot: plots/violin-grouped-swarm/implementations/python/letsplot.py
+    matplotlib: plots/violin-grouped-swarm/implementations/python/matplotlib.py
+    plotly: plots/violin-grouped-swarm/implementations/python/plotly.py
+    plotnine: plots/violin-grouped-swarm/implementations/python/plotnine.py
+    pygal: plots/violin-grouped-swarm/implementations/python/pygal.py
+    seaborn: plots/violin-grouped-swarm/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/violin-grouped-swarm/implementations/r/ggplot2.R
+notes:
+- Use distinct colors for each group with a clear legend
+- Apply transparency to violins (alpha 0.4-0.6) so swarm points remain visible
+- Size swarm points appropriately (smaller than single-category version due to space
+  constraints)
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,112 @@
+entity_type: ChartType
+id: stem-basic
+name:
+  en: Basic Stem Plot
+  es: Stem Basic Básico
+description:
+  en: A stem plot displays data points as markers connected to a baseline by vertical
+    lines (stems). Each data point is represented by a marker at the data value with
+    a thin line extending down to a baseline, making it ideal for visualizing discrete
+    or sequential data where individual values matter. This plot type is particularly
+    useful in signal processing and scientific applications where the discrete nature
+    of measurements needs emphasis.
+  es: A stem plot displays data points as markers connected to a baseline by vertical
+    lines (stems). Each data point is represented by a marker at the data value with
+    a thin line extending down to a baseline, making it ideal for visualizing discrete
+    or sequential data where individual values matter. This plot type is particularly
+    useful in signal processing and scientific applications where the discrete nature
+    of measurements needs emphasis.
+aliases:
+  en:
+  - stem-basic
+  - stem basic
+  - basic stem basic
+  es:
+  - stem-basic
+  - stem basic
+  - stem basic básico
+use_when:
+  en:
+  - A stem plot displays data points as markers connected to a baseline by vertical
+    lines (stems). Each data point is represented by a marker at the data value with
+    a thin line extending down to a baselin
+  es:
+  - A stem plot displays data points as markers connected to a baseline by vertical
+    lines (stems). Each data point is represented by a marker at the data value with
+    a thin line extending down to a baselin
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing impulse responses and discrete-time signals in signal processing
+  - Displaying discrete probability distributions where individual probabilities need
+    highlighting
+  - Showing time series with discrete events or measurements
+  - Scientific data visualization emphasizing individual measurement points
+  es:
+  - Visualizing impulse responses and discrete-time signals in signal processing
+  - Displaying discrete probability distributions where individual probabilities need
+    highlighting
+  - Showing time series with discrete events or measurements
+  - Scientific data visualization emphasizing individual measurement points
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - stem
+  data_type:
+  - numeric
+  - discrete
+  domain:
+  - science
+  - engineering
+  features:
+  - basic
+keywords:
+  en:
+  - stem
+  - basic
+  - numeric
+  - discrete
+  - science
+  - engineering
+  es:
+  - stem
+  - básico
+  - numérico
+  - discreto
+  - ciencia
+  - ingeniería
+  - basic
+implementations:
+  javascript:
+    chartjs: plots/stem-basic/implementations/javascript/chartjs.js
+    d3: plots/stem-basic/implementations/javascript/d3.js
+    echarts: plots/stem-basic/implementations/javascript/echarts.js
+    highcharts: plots/stem-basic/implementations/javascript/highcharts.js
+    muix: plots/stem-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/stem-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/stem-basic/implementations/python/altair.py
+    bokeh: plots/stem-basic/implementations/python/bokeh.py
+    letsplot: plots/stem-basic/implementations/python/letsplot.py
+    matplotlib: plots/stem-basic/implementations/python/matplotlib.py
+    plotly: plots/stem-basic/implementations/python/plotly.py
+    plotnine: plots/stem-basic/implementations/python/plotnine.py
+    pygal: plots/stem-basic/implementations/python/pygal.py
+    seaborn: plots/stem-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/stem-basic/implementations/r/ggplot2.R
+notes:
+- Stems should be thin vertical lines from baseline (typically y=0) to data points
+- Markers should be clearly visible circles at the top of each stem
+- Baseline position at y=0 unless data requires different baseline
+source: anyplot
+anyplot_updated: 2026-07-25 17:18:56+00:00

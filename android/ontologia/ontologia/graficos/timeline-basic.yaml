@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: timeline-basic
+name:
+  en: Event Timeline
+  es: Timeline Basic Básico
+description:
+  en: A timeline visualization that displays events and milestones along a temporal
+    axis. Events are represented as points or markers with accompanying labels, making
+    it easy to understand the sequence and timing of events. This plot type excels
+    at showing chronological progressions and is particularly effective for communicating
+    project phases, historical events, or any time-ordered sequence of occurrences.
+  es: A timeline visualization that displays events and milestones along a temporal
+    axis. Events are represented as points or markers with accompanying labels, making
+    it easy to understand the sequence and timing of events. This plot type excels
+    at showing chronological progressions and is particularly effective for communicating
+    project phases, historical events, or any time-ordered sequence of occurrences.
+aliases:
+  en:
+  - timeline-basic
+  - timeline basic
+  - basic timeline basic
+  es:
+  - timeline-basic
+  - timeline basic
+  - timeline basic básico
+use_when:
+  en:
+  - 'A timeline visualization that displays events and milestones along a temporal
+    axis. Events are represented as points or markers with accompanying labels, making
+    it easy to understand the sequence and '
+  es:
+  - 'A timeline visualization that displays events and milestones along a temporal
+    axis. Events are represented as points or markers with accompanying labels, making
+    it easy to understand the sequence and '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Tracking project milestones and deliverables in software development or construction
+    projects
+  - Visualizing historical events for educational presentations or museum displays
+  - Presenting product roadmaps to stakeholders showing feature releases over time
+  - Displaying company history or biographical timelines for annual reports
+  es:
+  - Tracking project milestones and deliverables in software development or construction
+    projects
+  - Visualizing historical events for educational presentations or museum displays
+  - Presenting product roadmaps to stakeholders showing feature releases over time
+  - Displaying company history or biographical timelines for annual reports
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - datetime
+  - categorical
+  domain:
+  - general
+  - business
+  - education
+  features:
+  - basic
+  - temporal
+  - annotated
+keywords:
+  en:
+  - timeline
+  - basic
+  - scatter
+  - datetime
+  - categorical
+  - general
+  - business
+  - education
+  - temporal
+  - annotated
+  es:
+  - timeline
+  - básico
+  - scatter
+  - datetime
+  - categórico
+  - general
+  - negocios
+  - education
+  - basic
+  - temporal
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/timeline-basic/implementations/javascript/chartjs.js
+    d3: plots/timeline-basic/implementations/javascript/d3.js
+    echarts: plots/timeline-basic/implementations/javascript/echarts.js
+    highcharts: plots/timeline-basic/implementations/javascript/highcharts.js
+    muix: plots/timeline-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/timeline-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/timeline-basic/implementations/python/altair.py
+    bokeh: plots/timeline-basic/implementations/python/bokeh.py
+    letsplot: plots/timeline-basic/implementations/python/letsplot.py
+    matplotlib: plots/timeline-basic/implementations/python/matplotlib.py
+    plotly: plots/timeline-basic/implementations/python/plotly.py
+    plotnine: plots/timeline-basic/implementations/python/plotnine.py
+    pygal: plots/timeline-basic/implementations/python/pygal.py
+    seaborn: plots/timeline-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/timeline-basic/implementations/r/ggplot2.R
+notes:
+- Horizontal orientation is most common for reading left-to-right
+- Alternate label positions above and below the axis to prevent text overlap
+- Use clear date formatting appropriate to the time scale (days, months, years)
+source: anyplot
+anyplot_updated: 2026-05-11 05:27:25+00:00

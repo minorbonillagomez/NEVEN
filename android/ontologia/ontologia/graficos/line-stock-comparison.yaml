@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: line-stock-comparison
+name:
+  en: Stock Price Comparison Chart
+  es: Gráfico de Líneas
+description:
+  en: A multi-line chart comparing multiple stock price series normalized to a common
+    starting point (rebased to 100) for direct performance comparison over time. By
+    rebasing all series to the same initial value, investors can easily compare relative
+    returns regardless of absolute price differences. This visualization reveals which
+    stocks outperformed or underperformed relative to each other, making it essential
+    for portfolio analysis and benchmark comparisons.
+  es: A multi-line chart comparing multiple stock price series normalized to a common
+    starting point (rebased to 100) for direct performance comparison over time. By
+    rebasing all series to the same initial value, investors can easily compare relative
+    returns regardless of absolute price differences. This visualization reveals which
+    stocks outperformed or underperformed relative to each other, making it essential
+    for portfolio analysis and benchmark comparisons.
+aliases:
+  en:
+  - line-stock-comparison
+  - line stock comparison
+  - line chart
+  es:
+  - line-stock-comparison
+  - line stock comparison
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing performance of multiple stocks in an investment portfolio
+  - Benchmark comparison (individual stock vs S&P 500 or sector index)
+  - Sector comparison analysis across competing companies
+  - Investment strategy backtesting visualization
+  es:
+  - Comparing performance of multiple stocks in an investment portfolio
+  - Benchmark comparison (individual stock vs S&P 500 or sector index)
+  - Sector comparison analysis across competing companies
+  - Investment strategy backtesting visualization
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  features:
+  - comparison
+  - multi
+  - normalized
+keywords:
+  en:
+  - line chart
+  - stock
+  - comparison
+  - line
+  - timeseries
+  - numeric
+  - finance
+  - multi
+  - normalized
+  es:
+  - gráfico de líneas
+  - stock
+  - comparison
+  - line
+  - timeseries
+  - numérico
+  - finanzas
+  - comparación
+  - multi
+  - normalized
+implementations:
+  javascript:
+    chartjs: plots/line-stock-comparison/implementations/javascript/chartjs.js
+    d3: plots/line-stock-comparison/implementations/javascript/d3.js
+    echarts: plots/line-stock-comparison/implementations/javascript/echarts.js
+    highcharts: plots/line-stock-comparison/implementations/javascript/highcharts.js
+    muix: plots/line-stock-comparison/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-stock-comparison/implementations/julia/makie.jl
+  python:
+    altair: plots/line-stock-comparison/implementations/python/altair.py
+    bokeh: plots/line-stock-comparison/implementations/python/bokeh.py
+    letsplot: plots/line-stock-comparison/implementations/python/letsplot.py
+    matplotlib: plots/line-stock-comparison/implementations/python/matplotlib.py
+    plotly: plots/line-stock-comparison/implementations/python/plotly.py
+    plotnine: plots/line-stock-comparison/implementations/python/plotnine.py
+    pygal: plots/line-stock-comparison/implementations/python/pygal.py
+    seaborn: plots/line-stock-comparison/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-stock-comparison/implementations/r/ggplot2.R
+notes:
+- Normalize all series to 100 at the first date (rebased = price / first_price * 100)
+- Use distinct colors for each stock with a clear legend identifying symbols
+- Y-axis should show rebased values (percentage change from start, centered around
+  100)
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: bifurcation-basic
+name:
+  en: Bifurcation Diagram for Dynamical Systems
+  es: Bifurcation Basic Básico
+description:
+  en: A bifurcation diagram shows how the steady-state behavior of a dynamical system
+    changes as a control parameter varies. By plotting the long-term values of a state
+    variable against a continuously varied parameter, it reveals transitions from
+    stable fixed points through period-doubling cascades to chaotic regimes. The classic
+    example is the logistic map, where the route to chaos is clearly visible as the
+    growth rate parameter increases.
+  es: A bifurcation diagram shows how the steady-state behavior of a dynamical system
+    changes as a control parameter varies. By plotting the long-term values of a state
+    variable against a continuously varied parameter, it reveals transitions from
+    stable fixed points through period-doubling cascades to chaotic regimes. The classic
+    example is the logistic map, where the route to chaos is clearly visible as the
+    growth rate parameter increases.
+aliases:
+  en:
+  - bifurcation-basic
+  - bifurcation basic
+  - basic bifurcation basic
+  es:
+  - bifurcation-basic
+  - bifurcation basic
+  - bifurcation basic básico
+use_when:
+  en:
+  - A bifurcation diagram shows how the steady-state behavior of a dynamical system
+    changes as a control parameter varies. By plotting the long-term values of a state
+    variable against a continuously varie
+  es:
+  - A bifurcation diagram shows how the steady-state behavior of a dynamical system
+    changes as a control parameter varies. By plotting the long-term values of a state
+    variable against a continuously varie
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Studying the onset of chaos through period-doubling cascades in nonlinear dynamical
+    systems
+  - Analyzing population dynamics and carrying capacity transitions in ecology
+  - Understanding period-doubling routes and mode-locking in laser physics
+  - Teaching nonlinear dynamics and chaos theory with the logistic map as a canonical
+    example
+  es:
+  - Studying the onset of chaos through period-doubling cascades in nonlinear dynamical
+    systems
+  - Analyzing population dynamics and carrying capacity transitions in ecology
+  - Understanding period-doubling routes and mode-locking in laser physics
+  - Teaching nonlinear dynamics and chaos theory with the logistic map as a canonical
+    example
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  - point
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - education
+  features:
+  - basic
+  - annotated
+  - 2d
+keywords:
+  en:
+  - bifurcation
+  - basic
+  - scatter
+  - point
+  - numeric
+  - continuous
+  - science
+  - education
+  - annotated
+  - 2d
+  es:
+  - bifurcation
+  - básico
+  - scatter
+  - point
+  - numérico
+  - continuo
+  - ciencia
+  - education
+  - basic
+  - annotated
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/bifurcation-basic/implementations/javascript/chartjs.js
+    d3: plots/bifurcation-basic/implementations/javascript/d3.js
+    echarts: plots/bifurcation-basic/implementations/javascript/echarts.js
+    highcharts: plots/bifurcation-basic/implementations/javascript/highcharts.js
+    muix: plots/bifurcation-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bifurcation-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/bifurcation-basic/implementations/python/altair.py
+    bokeh: plots/bifurcation-basic/implementations/python/bokeh.py
+    letsplot: plots/bifurcation-basic/implementations/python/letsplot.py
+    matplotlib: plots/bifurcation-basic/implementations/python/matplotlib.py
+    plotly: plots/bifurcation-basic/implementations/python/plotly.py
+    plotnine: plots/bifurcation-basic/implementations/python/plotnine.py
+    pygal: plots/bifurcation-basic/implementations/python/pygal.py
+    seaborn: plots/bifurcation-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bifurcation-basic/implementations/r/ggplot2.R
+notes:
+- Use very small point size (1px or smaller) with low alpha transparency to create
+  density-based visualization
+- Show the full period-doubling cascade from period-1 through period-2, period-4,
+  etc., leading into chaos
+- Use the logistic map x(n+1) = r * x(n) * (1 - x(n)) as the default example system
+source: anyplot
+anyplot_updated: '2026-10-02T15:00:51Z'

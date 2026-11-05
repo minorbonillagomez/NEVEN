@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: dashboard-metrics-tiles
+name:
+  en: Real-Time Dashboard Tiles
+  es: Dashboard Metrics Tiles
+description:
+  en: A dashboard layout displaying multiple metric tiles in a responsive grid, where
+    each tile shows a KPI value with its label, an embedded sparkline showing recent
+    trend, and a change indicator (up/down arrow with percentage). This visualization
+    is essential for operations monitoring and business dashboards where multiple
+    metrics need to be tracked simultaneously at a glance. The combination of current
+    value, trend visualization, and change direction provides comprehensive metric
+    context in a compact format.
+  es: A dashboard layout displaying multiple metric tiles in a responsive grid, where
+    each tile shows a KPI value with its label, an embedded sparkline showing recent
+    trend, and a change indicator (up/down arrow with percentage). This visualization
+    is essential for operations monitoring and business dashboards where multiple
+    metrics need to be tracked simultaneously at a glance. The combination of current
+    value, trend visualization, and change direction provides comprehensive metric
+    context in a compact format.
+aliases:
+  en:
+  - dashboard-metrics-tiles
+  - dashboard metrics tiles
+  - dashboard metrics tiles
+  es:
+  - dashboard-metrics-tiles
+  - dashboard metrics tiles
+  - dashboard metrics tiles
+use_when:
+  en:
+  - 'A dashboard layout displaying multiple metric tiles in a responsive grid, where
+    each tile shows a KPI value with its label, an embedded sparkline showing recent
+    trend, and a change indicator (up/down '
+  es:
+  - 'A dashboard layout displaying multiple metric tiles in a responsive grid, where
+    each tile shows a KPI value with its label, an embedded sparkline showing recent
+    trend, and a change indicator (up/down '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Operations monitoring dashboards displaying server health metrics (CPU, memory,
+    latency)
+  - Business KPI displays showing sales, revenue, and conversion metrics
+  - Infrastructure monitoring with real-time system performance indicators
+  - Marketing analytics dashboards tracking campaign performance metrics
+  es:
+  - Operations monitoring dashboards displaying server health metrics (CPU, memory,
+    latency)
+  - Business KPI displays showing sales, revenue, and conversion metrics
+  - Infrastructure monitoring with real-time system performance indicators
+  - Marketing analytics dashboards tracking campaign performance metrics
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - dashboard
+  - sparkline
+  - indicator
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - business
+  - technology
+  - general
+  features:
+  - multi
+  - interactive
+  - annotated
+  - color-mapped
+keywords:
+  en:
+  - dashboard
+  - metrics
+  - tiles
+  - sparkline
+  - indicator
+  - numeric
+  - timeseries
+  - business
+  - technology
+  - general
+  - multi
+  - interactive
+  - annotated
+  - color-mapped
+  es:
+  - dashboard
+  - metrics
+  - tiles
+  - sparkline
+  - indicator
+  - numérico
+  - timeseries
+  - negocios
+  - technology
+  - general
+  - multi
+  - interactive
+  - annotated
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/dashboard-metrics-tiles/implementations/javascript/chartjs.js
+    d3: plots/dashboard-metrics-tiles/implementations/javascript/d3.js
+    echarts: plots/dashboard-metrics-tiles/implementations/javascript/echarts.js
+    highcharts: plots/dashboard-metrics-tiles/implementations/javascript/highcharts.js
+    muix: plots/dashboard-metrics-tiles/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/dashboard-metrics-tiles/implementations/julia/makie.jl
+  python:
+    altair: plots/dashboard-metrics-tiles/implementations/python/altair.py
+    bokeh: plots/dashboard-metrics-tiles/implementations/python/bokeh.py
+    letsplot: plots/dashboard-metrics-tiles/implementations/python/letsplot.py
+    matplotlib: plots/dashboard-metrics-tiles/implementations/python/matplotlib.py
+    plotly: plots/dashboard-metrics-tiles/implementations/python/plotly.py
+    plotnine: plots/dashboard-metrics-tiles/implementations/python/plotnine.py
+    pygal: plots/dashboard-metrics-tiles/implementations/python/pygal.py
+    seaborn: plots/dashboard-metrics-tiles/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/dashboard-metrics-tiles/implementations/r/ggplot2.R
+notes:
+- 'Grid layout should be responsive: 2x2 for 4 tiles, 3x2 for 6 tiles, 3x3 or 4x3
+  for more'
+- 'Each tile contains: prominent value display, metric label, mini sparkline, change
+  indicator with arrow'
+- 'Color coding for status: green for good/normal, yellow/orange for warning, red
+  for critical'
+source: anyplot
+anyplot_updated: null

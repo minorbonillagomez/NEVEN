@@ -1,0 +1,115 @@
+entity_type: ChartType
+id: bump-basic
+name:
+  en: Basic Bump Chart
+  es: Bump Basic Básico
+description:
+  en: A bump chart visualizes how rankings change over time by plotting rank positions
+    and connecting them with lines. Unlike line charts that show values, bump charts
+    focus specifically on ordinal rankings, making it easy to track position changes,
+    overtakes, and rank stability across time periods.
+  es: A bump chart visualizes how rankings change over time by plotting rank positions
+    and connecting them with lines. Unlike line charts that show values, bump charts
+    focus specifically on ordinal rankings, making it easy to track position changes,
+    overtakes, and rank stability across time periods.
+aliases:
+  en:
+  - bump-basic
+  - bump basic
+  - basic bump basic
+  es:
+  - bump-basic
+  - bump basic
+  - bump basic básico
+use_when:
+  en:
+  - A bump chart visualizes how rankings change over time by plotting rank positions
+    and connecting them with lines. Unlike line charts that show values, bump charts
+    focus specifically on ordinal rankings
+  es:
+  - A bump chart visualizes how rankings change over time by plotting rank positions
+    and connecting them with lines. Unlike line charts that show values, bump charts
+    focus specifically on ordinal rankings
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Sports league standings tracking over a season
+  - Company market share ranking changes over quarters
+  - Product popularity rankings across time periods
+  - Election polling position changes over campaign weeks
+  es:
+  - Sports league standings tracking over a season
+  - Company market share ranking changes over quarters
+  - Product popularity rankings across time periods
+  - Election polling position changes over campaign weeks
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bump
+  data_type:
+  - categorical
+  - ordinal
+  - timeseries
+  domain:
+  - general
+  features:
+  - basic
+  - ranking
+  - temporal
+  - comparison
+keywords:
+  en:
+  - bump
+  - basic
+  - categorical
+  - ordinal
+  - timeseries
+  - general
+  - ranking
+  - temporal
+  - comparison
+  es:
+  - bump
+  - básico
+  - categórico
+  - ordinal
+  - timeseries
+  - general
+  - basic
+  - clasificación
+  - temporal
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/bump-basic/implementations/javascript/chartjs.js
+    d3: plots/bump-basic/implementations/javascript/d3.js
+    echarts: plots/bump-basic/implementations/javascript/echarts.js
+    highcharts: plots/bump-basic/implementations/javascript/highcharts.js
+    muix: plots/bump-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bump-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/bump-basic/implementations/python/altair.py
+    bokeh: plots/bump-basic/implementations/python/bokeh.py
+    letsplot: plots/bump-basic/implementations/python/letsplot.py
+    matplotlib: plots/bump-basic/implementations/python/matplotlib.py
+    plotly: plots/bump-basic/implementations/python/plotly.py
+    plotnine: plots/bump-basic/implementations/python/plotnine.py
+    pygal: plots/bump-basic/implementations/python/pygal.py
+    seaborn: plots/bump-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bump-basic/implementations/r/ggplot2.R
+notes:
+- Y-axis should be inverted (rank 1 at top)
+- Use distinct colors or labels for each entity
+- Consider dot markers at each period for clarity
+source: anyplot
+anyplot_updated: 2026-05-29 00:00:00+00:00

@@ -1,0 +1,129 @@
+entity_type: ChartType
+id: heatmap-correlation
+name:
+  en: Correlation Matrix Heatmap
+  es: Mapa de Calor Correlación
+description:
+  en: A heatmap specifically designed to display correlation coefficients between
+    variables, using a diverging color scheme centered at zero. The symmetric matrix
+    visualization makes it easy to identify positive correlations, negative correlations,
+    and independent variables at a glance. Essential for exploratory data analysis,
+    feature engineering, and multicollinearity detection in statistical and machine
+    learning workflows.
+  es: A heatmap specifically designed to display correlation coefficients between
+    variables, using a diverging color scheme centered at zero. The symmetric matrix
+    visualization makes it easy to identify positive correlations, negative correlations,
+    and independent variables at a glance. Essential for exploratory data analysis,
+    feature engineering, and multicollinearity detection in statistical and machine
+    learning workflows.
+aliases:
+  en:
+  - heatmap-correlation
+  - heatmap correlation
+  - correlation heatmap
+  es:
+  - heatmap-correlation
+  - heatmap correlation
+  - mapa de calor correlación
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Feature correlation analysis in machine learning to identify redundant predictors
+  - Understanding variable relationships in exploratory data analysis
+  - Multicollinearity detection before regression modeling
+  - Portfolio diversification analysis in finance
+  es:
+  - Feature correlation analysis in machine learning to identify redundant predictors
+  - Understanding variable relationships in exploratory data analysis
+  - Multicollinearity detection before regression modeling
+  - Portfolio diversification analysis in finance
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - numeric
+  - continuous
+  - matrix
+  - correlation
+  domain:
+  - general
+  - statistics
+  - machine-learning
+  features:
+  - correlation
+  - annotated
+  - diverging-colormap
+  - symmetric
+keywords:
+  en:
+  - heatmap
+  - correlation
+  - numeric
+  - continuous
+  - matrix
+  - general
+  - statistics
+  - machine learning
+  - annotated
+  - diverging-colormap
+  - symmetric
+  es:
+  - mapa de calor
+  - correlación
+  - heatmap
+  - numérico
+  - continuo
+  - matrix
+  - general
+  - estadística
+  - aprendizaje automático
+  - annotated
+  - diverging-colormap
+  - symmetric
+implementations:
+  javascript:
+    chartjs: plots/heatmap-correlation/implementations/javascript/chartjs.js
+    d3: plots/heatmap-correlation/implementations/javascript/d3.js
+    echarts: plots/heatmap-correlation/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-correlation/implementations/javascript/highcharts.js
+    muix: plots/heatmap-correlation/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-correlation/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-correlation/implementations/python/altair.py
+    bokeh: plots/heatmap-correlation/implementations/python/bokeh.py
+    letsplot: plots/heatmap-correlation/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-correlation/implementations/python/matplotlib.py
+    plotly: plots/heatmap-correlation/implementations/python/plotly.py
+    plotnine: plots/heatmap-correlation/implementations/python/plotnine.py
+    pygal: plots/heatmap-correlation/implementations/python/pygal.py
+    seaborn: plots/heatmap-correlation/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-correlation/implementations/r/ggplot2.R
+notes:
+- Use a diverging colormap (e.g., blue-white-red or coolwarm) centered at zero
+- Annotate cells with correlation values (2 decimal places)
+- Display as symmetric matrix with variable names on both axes
+source: anyplot
+anyplot_updated: 2026-08-18 16:31:53+00:00

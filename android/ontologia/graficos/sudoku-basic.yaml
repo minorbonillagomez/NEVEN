@@ -1,0 +1,110 @@
+entity_type: ChartType
+id: sudoku-basic
+name:
+  en: Basic Sudoku Grid
+  es: Sudoku Basic Básico
+description:
+  en: A standard 9×9 Sudoku grid with proper visual hierarchy showing 3×3 box regions.
+    Thick lines separate the nine boxes while thin lines divide individual cells.
+    The clean black-and-white design is optimized for printing and solving puzzles.
+  es: A standard 9×9 Sudoku grid with proper visual hierarchy showing 3×3 box regions.
+    Thick lines separate the nine boxes while thin lines divide individual cells.
+    The clean black-and-white design is optimized for printing and solving puzzles.
+aliases:
+  en:
+  - sudoku-basic
+  - sudoku basic
+  - basic sudoku basic
+  es:
+  - sudoku-basic
+  - sudoku basic
+  - sudoku basic básico
+use_when:
+  en:
+  - A standard 9×9 Sudoku grid with proper visual hierarchy showing 3×3 box regions.
+    Thick lines separate the nine boxes while thin lines divide individual cells.
+    The clean black-and-white design is optim
+  es:
+  - A standard 9×9 Sudoku grid with proper visual hierarchy showing 3×3 box regions.
+    Thick lines separate the nine boxes while thin lines divide individual cells.
+    The clean black-and-white design is optim
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Printable puzzle sheets for personal use or distribution
+  - Educational materials for teaching logic and problem-solving skills
+  - Game development mockups and prototyping interfaces
+  es:
+  - Printable puzzle sheets for personal use or distribution
+  - Educational materials for teaching logic and problem-solving skills
+  - Game development mockups and prototyping interfaces
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - discrete
+  - categorical
+  domain:
+  - general
+  - education
+  features:
+  - basic
+  - printable
+  - annotated
+keywords:
+  en:
+  - sudoku
+  - basic
+  - heatmap
+  - discrete
+  - categorical
+  - general
+  - education
+  - printable
+  - annotated
+  es:
+  - sudoku
+  - básico
+  - heatmap
+  - discreto
+  - categórico
+  - general
+  - education
+  - basic
+  - printable
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/sudoku-basic/implementations/javascript/chartjs.js
+    d3: plots/sudoku-basic/implementations/javascript/d3.js
+    echarts: plots/sudoku-basic/implementations/javascript/echarts.js
+    highcharts: plots/sudoku-basic/implementations/javascript/highcharts.js
+    muix: plots/sudoku-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/sudoku-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/sudoku-basic/implementations/python/altair.py
+    bokeh: plots/sudoku-basic/implementations/python/bokeh.py
+    letsplot: plots/sudoku-basic/implementations/python/letsplot.py
+    matplotlib: plots/sudoku-basic/implementations/python/matplotlib.py
+    plotly: plots/sudoku-basic/implementations/python/plotly.py
+    plotnine: plots/sudoku-basic/implementations/python/plotnine.py
+    pygal: plots/sudoku-basic/implementations/python/pygal.py
+    seaborn: plots/sudoku-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/sudoku-basic/implementations/r/ggplot2.R
+notes:
+- Bold/thick lines for 3×3 box boundaries (every 3rd line)
+- Thin lines for individual cell boundaries
+- Numbers centered in cells with clear, readable font
+source: anyplot
+anyplot_updated: 2026-06-25 21:42:15+00:00

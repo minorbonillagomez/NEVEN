@@ -1,0 +1,136 @@
+entity_type: ChartType
+id: bar-feature-importance
+name:
+  en: Feature Importance Bar Chart
+  es: Gráfico de Barras
+description:
+  en: A horizontal bar chart displaying feature importances from machine learning
+    models, with features sorted by importance value and bars colored by a gradient
+    to emphasize relative contribution. This visualization is essential for model
+    interpretability, helping data scientists and stakeholders understand which features
+    drive model predictions. The horizontal orientation allows for readable feature
+    names of varying lengths.
+  es: A horizontal bar chart displaying feature importances from machine learning
+    models, with features sorted by importance value and bars colored by a gradient
+    to emphasize relative contribution. This visualization is essential for model
+    interpretability, helping data scientists and stakeholders understand which features
+    drive model predictions. The horizontal orientation allows for readable feature
+    names of varying lengths.
+aliases:
+  en:
+  - bar-feature-importance
+  - bar feature importance
+  - bar chart
+  es:
+  - bar-feature-importance
+  - bar feature importance
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Explaining random forest or gradient boosting model decisions to stakeholders
+  - Feature selection by identifying low-importance variables for removal
+  - Model debugging by detecting unexpected high-importance features that may indicate
+    data leakage
+  es:
+  - Explaining random forest or gradient boosting model decisions to stakeholders
+  - Feature selection by identifying low-importance variables for removal
+  - Model debugging by detecting unexpected high-importance features that may indicate
+    data leakage
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  - technology
+  - machine-learning
+  features:
+  - horizontal
+  - sorted
+  - color-mapped
+  - ranking
+keywords:
+  en:
+  - bar chart
+  - feature
+  - importance
+  - bar
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - technology
+  - machine learning
+  - horizontal
+  - sorted
+  - color-mapped
+  - ranking
+  es:
+  - gráfico de barras
+  - feature
+  - importance
+  - bar
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - technology
+  - aprendizaje automático
+  - horizontal
+  - sorted
+  - color-mapped
+  - clasificación
+implementations:
+  javascript:
+    chartjs: plots/bar-feature-importance/implementations/javascript/chartjs.js
+    d3: plots/bar-feature-importance/implementations/javascript/d3.js
+    echarts: plots/bar-feature-importance/implementations/javascript/echarts.js
+    highcharts: plots/bar-feature-importance/implementations/javascript/highcharts.js
+    muix: plots/bar-feature-importance/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-feature-importance/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-feature-importance/implementations/python/altair.py
+    bokeh: plots/bar-feature-importance/implementations/python/bokeh.py
+    letsplot: plots/bar-feature-importance/implementations/python/letsplot.py
+    matplotlib: plots/bar-feature-importance/implementations/python/matplotlib.py
+    plotly: plots/bar-feature-importance/implementations/python/plotly.py
+    plotnine: plots/bar-feature-importance/implementations/python/plotnine.py
+    pygal: plots/bar-feature-importance/implementations/python/pygal.py
+    seaborn: plots/bar-feature-importance/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-feature-importance/implementations/r/ggplot2.R
+notes:
+- Sort bars by importance value (highest at top) for easy identification of key features
+- Use a sequential color gradient (e.g., light to dark) mapped to importance values
+- Error bars are optional but valuable for ensemble methods showing importance variability
+source: anyplot
+anyplot_updated: 2026-05-10 00:56:15+00:00

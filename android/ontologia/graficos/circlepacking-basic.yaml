@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: circlepacking-basic
+name:
+  en: Circle Packing Chart
+  es: Circlepacking Basic Básico
+description:
+  en: A circle packing chart displays hierarchical data as nested circles, where each
+    circle contains smaller circles representing its children. Circle size is proportional
+    to node value, and circles are packed efficiently without overlap. This visualization
+    excels at revealing hierarchical structures while simultaneously showing quantitative
+    relationships through area encoding.
+  es: A circle packing chart displays hierarchical data as nested circles, where each
+    circle contains smaller circles representing its children. Circle size is proportional
+    to node value, and circles are packed efficiently without overlap. This visualization
+    excels at revealing hierarchical structures while simultaneously showing quantitative
+    relationships through area encoding.
+aliases:
+  en:
+  - circlepacking-basic
+  - circlepacking basic
+  - basic circlepacking basic
+  es:
+  - circlepacking-basic
+  - circlepacking basic
+  - circlepacking basic básico
+use_when:
+  en:
+  - A circle packing chart displays hierarchical data as nested circles, where each
+    circle contains smaller circles representing its children. Circle size is proportional
+    to node value, and circles are pa
+  es:
+  - A circle packing chart displays hierarchical data as nested circles, where each
+    circle contains smaller circles representing its children. Circle size is proportional
+    to node value, and circles are pa
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - File and folder size visualization showing directory hierarchy and storage consumption
+  - Organizational structure display with team sizes proportional to headcount or
+    budget
+  - Portfolio composition analysis breaking down investments by asset class and holdings
+  - Taxonomy or classification hierarchies with proportional representation of categories
+  es:
+  - File and folder size visualization showing directory hierarchy and storage consumption
+  - Organizational structure display with team sizes proportional to headcount or
+    budget
+  - Portfolio composition analysis breaking down investments by asset class and holdings
+  - Taxonomy or classification hierarchies with proportional representation of categories
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - circlepacking
+  data_type:
+  - hierarchical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - nested
+  - proportional
+keywords:
+  en:
+  - circlepacking
+  - basic
+  - hierarchical
+  - numeric
+  - general
+  - business
+  - nested
+  - proportional
+  es:
+  - circlepacking
+  - básico
+  - jerárquico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - nested
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/circlepacking-basic/implementations/javascript/chartjs.js
+    d3: plots/circlepacking-basic/implementations/javascript/d3.js
+    echarts: plots/circlepacking-basic/implementations/javascript/echarts.js
+    highcharts: plots/circlepacking-basic/implementations/javascript/highcharts.js
+    muix: plots/circlepacking-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/circlepacking-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/circlepacking-basic/implementations/python/altair.py
+    bokeh: plots/circlepacking-basic/implementations/python/bokeh.py
+    letsplot: plots/circlepacking-basic/implementations/python/letsplot.py
+    matplotlib: plots/circlepacking-basic/implementations/python/matplotlib.py
+    plotly: plots/circlepacking-basic/implementations/python/plotly.py
+    plotnine: plots/circlepacking-basic/implementations/python/plotnine.py
+    pygal: plots/circlepacking-basic/implementations/python/pygal.py
+    seaborn: plots/circlepacking-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/circlepacking-basic/implementations/r/ggplot2.R
+notes:
+- Pack circles efficiently using force simulation or specialized packing algorithms
+- Color by depth level or category to distinguish hierarchy levels
+- Display labels for larger circles; smaller circles may show labels on hover
+source: anyplot
+anyplot_updated: 2026-05-11 17:42:30+00:00

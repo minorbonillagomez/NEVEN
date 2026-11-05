@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">NEVEN</string>
+    <string name="app_tagline">Scienca Lanĉilo</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Agordoj</string>
+    <string name="settings_appearance">Aspekto</string>
+    <string name="settings_theme">Etoso</string>
+    <string name="settings_palette">Kolorpaletro</string>
+    <string name="settings_dark_mode">Malhela reĝimo</string>
+    <string name="settings_language">Lingvo</string>
+    <string name="settings_clock">Horloĝo</string>
+    <string name="settings_show_seconds">Montri sekundojn</string>
+    <string name="settings_about">Pri</string>
+    <string name="settings_version">Versio</string>
+    
+    <!-- Settings Sections - Nova scienca dezajno -->
+    <string name="settings_search_engine">Serĉilo</string>
+    <string name="settings_search_engine_desc">Agordi defaŭltan serĉilon</string>
+    <string name="settings_appearance_desc">Etoso, paletro kaj hela/malhela reĝimo</string>
+    <string name="settings_font_size">Litera grandeco</string>
+    <string name="settings_font_size_desc">Ĝustigi tekstan grandecon</string>
+    <string name="settings_home_screen">Hejmekrano</string>
+    <string name="settings_home_screen_desc">Ŝatataj kaj horloĝo</string>
+    <string name="settings_app_drawer">Aplikaĵa tirkesto</string>
+    <string name="settings_app_drawer_desc">Aspekto de aplikaĵa listo</string>
+    <string name="settings_screen_time">Ekrana tempo</string>
+    <string name="settings_screen_time_desc">Uzadaj statistikoj</string>
+    <string name="settings_language_desc">Español, English, Esperanto</string>
+    <string name="settings_about_desc">Versio kaj informoj</string>
+    
+    <!-- Font Size Settings -->
+    <string name="settings_font_size_select">Elekti grandecon</string>
+    <string name="settings_font_size_preview">Antaŭrigardo</string>
+    <string name="font_size_xs">Tre malgranda</string>
+    <string name="font_size_s">Malgranda</string>
+    <string name="font_size_m">Meza</string>
+    <string name="font_size_l">Granda</string>
+    <string name="font_size_xl">Tre granda</string>
+    <string name="font_size_xxl">Ekstra granda</string>
+    <string name="font_size_scale">Skalo</string>
+    <string name="font_size_preview_title">Ekzempla titolo</string>
+    <string name="font_size_preview_body">Ĉi tio estas ekzempla teksto por antaŭrigardi kiel enhavo aspektos kun la elektita grandeco.</string>
+    <string name="font_size_preview_label">Sekundara etikedo</string>
+    
+    <!-- Home -->
+    <string name="home_swipe_drawer">Ŝovu supren por ĉiuj aplikaĵoj</string>
+    <string name="home_search_hint">Serĉi aplikaĵojn…</string>
+    <string name="home_no_favorites">Neniuj ŝatataj aplikaĵoj</string>
+    <string name="home_add_favorite">Longa premo por aldoni</string>
+    
+    <!-- App Drawer -->
+    <string name="drawer_title">Ĉiuj Aplikaĵoj</string>
+    <string name="drawer_search">Serĉi</string>
+    <string name="drawer_empty">Neniuj aplikaĵoj trovitaj</string>
+    
+    <!-- Notes -->
+    <string name="notes_title">Notoj</string>
+    <string name="notes_new">Nova noto</string>
+    <string name="notes_latex_hint">Skribu en LaTeX…</string>
+    <string name="notes_save">Konservi</string>
+    <string name="notes_cancel">Nuligi</string>
+    <string name="notes_delete">Forigi</string>
+    
+    <!-- Widgets -->
+    <string name="widgets_title">Fenestraĵoj</string>
+    <string name="widgets_add">Aldoni fenestraĵon</string>
+    <string name="widgets_remove">Forigi fenestraĵon</string>
+    <string name="widgets_resize">Regrandigi</string>
+    
+    <!-- Palettes -->
+    <string name="palette_clasico">Klasika</string>
+    <string name="palette_oceano">Oceano</string>
+    <string name="palette_bosque">Arbaro</string>
+    <string name="palette_ambar">Sukceno</string>
+    <string name="palette_lavanda">Lavendo</string>
+    <string name="palette_monocromo">Unukolora</string>
+    <string name="palette_kobenhavn">København</string>
+    
+    <!-- Context Menu -->
+    <string name="menu_add_favorite">Aldoni al ŝatataj</string>
+    <string name="menu_remove_favorite">Forigi de ŝatataj</string>
+    <string name="menu_app_info">Info pri aplikaĵo</string>
+    
+    <!-- Favorites -->
+    <string name="favorites_added">Aldonita al ŝatataj</string>
+    <string name="favorites_removed">Forigita de ŝatataj</string>
+    <string name="favorites_full">Maksimuma ŝatataj atingita</string>
+    <string name="favorites_count">Maksimumaj ŝatataj</string>
+    
+    <!-- Settings Expanded -->
+    <string name="settings_theme_mode">Etosa reĝimo</string>
+    <string name="settings_theme_light">Hela</string>
+    <string name="settings_theme_dark">Malhela</string>
+    <string name="settings_theme_auto">Aŭto</string>
+    
+    <!-- Screen Time -->
+    <string name="screen_time_permission_title">Permeso bezonata</string>
+    <string name="screen_time_permission_desc">Por vidi uzadan tempon, NEVEN bezonas aliron al uzadaj statistikoj.</string>
+    <string name="screen_time_grant_permission">Doni permeson</string>
+    <string name="screen_time_refresh">Aktualigi</string>
+    <string name="screen_time_today">Hodiaŭ</string>
+    <string name="screen_time_week">Semajno</string>
+    <string name="screen_time_total">tuta tempo</string>
+    <string name="screen_time_top_apps">Plej uzataj aplikaĵoj</string>
+    
+    <!-- Wallpaper / Fono -->
+    <string name="settings_wallpaper">Fono</string>
+    <string name="wallpaper_solid_color">Solida koloro</string>
+    <string name="wallpaper_image">Bildo</string>
+    <string name="wallpaper_select_image">Elekti bildon...</string>
+    <string name="wallpaper_position">Pozicio</string>
+    <string name="wallpaper_fit">Adapti</string>
+    <string name="wallpaper_fill">Plenigi</string>
+    <string name="wallpaper_center">Centri</string>
+    <string name="wallpaper_opacity_label">λ (opakeco):</string>
+    <string name="wallpaper_opacity_light">Hela</string>
+    <string name="wallpaper_opacity_soft">Milda</string>
+    <string name="wallpaper_opacity_medium">Meza</string>
+    <string name="wallpaper_opacity_dark">Malhela</string>
+    <string name="wallpaper_palette_tint">Palettinto</string>
+    <string name="sync_lock_screen">Apliki al ŝlosekrano</string>
+    <string name="sync_lock_screen_description">Uzi saman fonon sur ŝlosekrano</string>
+    <string name="wallpaper_error">Ne eblis establi fonon</string>
+    
+    <!-- Accessibility -->
+    <string name="a11y_clock">Horloĝo</string>
+    <string name="a11y_app_icon">Aplikaĵa ikono</string>
+    <string name="a11y_notification_badge">%d sciigoj</string>
+    
+    <!-- Kontrastkoloro / Accent color -->
+    <string name="accent_color_title">Kontrastkoloro</string>
+    <string name="accent_color_custom">Persona...</string>
+    <string name="accent_color_red">Ruĝa</string>
+    <string name="accent_color_blue">Blua</string>
+    <string name="accent_color_green">Verda</string>
+    <string name="accent_color_orange">Oranĝa</string>
+    <string name="accent_color_purple">Purpura</string>
+    <string name="accent_color_teal">Bluverda</string>
+    <string name="accent_color_pink">Rozkolora</string>
+    <string name="accent_color_gray">Griza</string>
+    <string name="color_picker_title">Elekti koloron</string>
+    <string name="color_picker_preview">Antaŭrigardo</string>
+    <string name="color_picker_apply">Apliki</string>
+    
+    <!-- Tiparo / Font family -->
+    <string name="settings_font_family">Tiparìo</string>
+    <string name="settings_font_family_desc">Teksta tiparo</string>
+    <string name="font_family_serif">Serif</string>
+    <string name="font_family_serif_desc">Eleganta, LaTeX stilo</string>
+    <string name="font_family_sans_serif">Sans-serif</string>
+    <string name="font_family_sans_serif_desc">Moderna, minimuma</string>
+    <string name="font_family_monospace">Monospace</string>
+    <string name="font_family_monospace_desc">Teknika, kodo</string>
+    <string name="font_family_cursive">Cursive</string>
+    <string name="font_family_cursive_desc">Arta, flua</string>
+    <string name="font_family_preview">Tipara antaŭrigardo</string>
+    
+    <!-- Markdown Viewer / Markdown Vidilo -->
+    <string name="markdown_viewer">Vidilo</string>
+    <string name="markdown_document">Dokumento</string>
+    <string name="markdown_empty_file">Malplena dosiero</string>
+    <string name="markdown_error_no_file">Ne eblis malfermi dosieron</string>
+    <string name="markdown_error_permission">Sen permeso legi dosieron</string>
+    <string name="markdown_error_reading">Eraro legante dosieron</string>
+</resources>

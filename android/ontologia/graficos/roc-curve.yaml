@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: roc-curve
+name:
+  en: ROC Curve with AUC
+  es: Curva ROC
+description:
+  en: A Receiver Operating Characteristic (ROC) curve visualizes the performance of
+    a binary classifier by plotting the True Positive Rate (TPR) against the False
+    Positive Rate (FPR) at various classification thresholds. The Area Under the Curve
+    (AUC) provides a single metric summarizing model performance, where 1.0 indicates
+    perfect classification and 0.5 represents random guessing.
+  es: A Receiver Operating Characteristic (ROC) curve visualizes the performance of
+    a binary classifier by plotting the True Positive Rate (TPR) against the False
+    Positive Rate (FPR) at various classification thresholds. The Area Under the Curve
+    (AUC) provides a single metric summarizing model performance, where 1.0 indicates
+    perfect classification and 0.5 represents random guessing.
+aliases:
+  en:
+  - roc-curve
+  - roc curve
+  - roc curve
+  es:
+  - roc-curve
+  - roc curve
+  - curva roc
+use_when:
+  en:
+  - A Receiver Operating Characteristic (ROC) curve visualizes the performance of
+    a binary classifier by plotting the True Positive Rate (TPR) against the False
+    Positive Rate (FPR) at various classificati
+  es:
+  - A Receiver Operating Characteristic (ROC) curve visualizes the performance of
+    a binary classifier by plotting the True Positive Rate (TPR) against the False
+    Positive Rate (FPR) at various classificati
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Evaluating binary classification model performance in machine learning pipelines
+  - Comparing multiple models to select the best classifier for production
+  - Selecting optimal classification thresholds based on sensitivity/specificity trade-offs
+  - Assessing diagnostic test accuracy in medical research
+  es:
+  - Evaluating binary classification model performance in machine learning pipelines
+  - Comparing multiple models to select the best classifier for production
+  - Selecting optimal classification thresholds based on sensitivity/specificity trade-offs
+  - Assessing diagnostic test accuracy in medical research
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - machine-learning
+  - healthcare
+  features:
+  - basic
+  - model-evaluation
+  - classification
+  - comparison
+  - diagnostic
+keywords:
+  en:
+  - roc curve
+  - curve
+  - line
+  - numeric
+  - continuous
+  - statistics
+  - machine learning
+  - healthcare
+  - basic
+  - model-evaluation
+  - classification
+  - comparison
+  - diagnostic
+  es:
+  - curva roc
+  - curve
+  - line
+  - numérico
+  - continuo
+  - estadística
+  - aprendizaje automático
+  - healthcare
+  - basic
+  - model-evaluation
+  - classification
+  - comparación
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/roc-curve/implementations/javascript/chartjs.js
+    d3: plots/roc-curve/implementations/javascript/d3.js
+    echarts: plots/roc-curve/implementations/javascript/echarts.js
+    highcharts: plots/roc-curve/implementations/javascript/highcharts.js
+    muix: plots/roc-curve/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/roc-curve/implementations/julia/makie.jl
+  python:
+    altair: plots/roc-curve/implementations/python/altair.py
+    bokeh: plots/roc-curve/implementations/python/bokeh.py
+    letsplot: plots/roc-curve/implementations/python/letsplot.py
+    matplotlib: plots/roc-curve/implementations/python/matplotlib.py
+    plotly: plots/roc-curve/implementations/python/plotly.py
+    plotnine: plots/roc-curve/implementations/python/plotnine.py
+    pygal: plots/roc-curve/implementations/python/pygal.py
+    seaborn: plots/roc-curve/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/roc-curve/implementations/r/ggplot2.R
+notes:
+- Include a diagonal reference line (y=x) representing random classifier performance
+- Display AUC score in legend or annotation
+- Use distinct colors/styles when comparing multiple models
+source: anyplot
+anyplot_updated: 2026-05-09 22:20:56+00:00

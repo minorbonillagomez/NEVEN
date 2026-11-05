@@ -1,0 +1,143 @@
+entity_type: ChartType
+id: line-cycle-seasonal
+name:
+  en: Cycle Plot (Seasonal Subseries)
+  es: Gráfico de Líneas
+description:
+  en: A cycle plot, also known as a seasonal subseries plot (introduced by William
+    Cleveland), separates the seasonal pattern of a time series from the trend within
+    each season. The series is split by seasonal period (e.g. one group per month
+    or weekday); within each group the values are drawn in chronological order as
+    a small line, and a horizontal reference line marks that group's mean. Comparing
+    the mean lines across groups reveals the seasonal effect, while the slope of each
+    subseries reveals the trend within that season — two patterns that are entangled
+    in a standard time series plot.
+  es: A cycle plot, also known as a seasonal subseries plot (introduced by William
+    Cleveland), separates the seasonal pattern of a time series from the trend within
+    each season. The series is split by seasonal period (e.g. one group per month
+    or weekday); within each group the values are drawn in chronological order as
+    a small line, and a horizontal reference line marks that group's mean. Comparing
+    the mean lines across groups reveals the seasonal effect, while the slope of each
+    subseries reveals the trend within that season — two patterns that are entangled
+    in a standard time series plot.
+aliases:
+  en:
+  - line-cycle-seasonal
+  - line cycle seasonal
+  - line chart
+  es:
+  - line-cycle-seasonal
+  - line cycle seasonal
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing monthly retail sales to see which months are seasonally strongest (mean
+    differences) and whether each month is growing or shrinking year over year (within-group
+    slope)
+  - Examining electricity demand by hour-of-day or day-of-week to isolate recurring
+    usage cycles from long-term growth
+  - Studying climate records (e.g. average temperature by month across many years)
+    to distinguish the annual cycle from warming trends within individual months
+  es:
+  - Analyzing monthly retail sales to see which months are seasonally strongest (mean
+    differences) and whether each month is growing or shrinking year over year (within-group
+    slope)
+  - Examining electricity demand by hour-of-day or day-of-week to isolate recurring
+    usage cycles from long-term growth
+  - Studying climate records (e.g. average temperature by month across many years)
+    to distinguish the annual cycle from warming trends within individual months
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - categorical
+  - numeric
+  domain:
+  - statistics
+  - general
+  - science
+  features:
+  - seasonal
+  - trend
+  - multi
+  - diagnostic
+keywords:
+  en:
+  - line chart
+  - cycle
+  - seasonal
+  - line
+  - timeseries
+  - categorical
+  - numeric
+  - statistics
+  - general
+  - science
+  - trend
+  - multi
+  - diagnostic
+  es:
+  - gráfico de líneas
+  - cycle
+  - seasonal
+  - line
+  - timeseries
+  - categórico
+  - numérico
+  - estadística
+  - general
+  - ciencia
+  - trend
+  - multi
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/line-cycle-seasonal/implementations/javascript/chartjs.js
+    d3: plots/line-cycle-seasonal/implementations/javascript/d3.js
+    echarts: plots/line-cycle-seasonal/implementations/javascript/echarts.js
+    highcharts: plots/line-cycle-seasonal/implementations/javascript/highcharts.js
+    muix: plots/line-cycle-seasonal/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-cycle-seasonal/implementations/julia/makie.jl
+  python:
+    altair: plots/line-cycle-seasonal/implementations/python/altair.py
+    bokeh: plots/line-cycle-seasonal/implementations/python/bokeh.py
+    letsplot: plots/line-cycle-seasonal/implementations/python/letsplot.py
+    matplotlib: plots/line-cycle-seasonal/implementations/python/matplotlib.py
+    plotly: plots/line-cycle-seasonal/implementations/python/plotly.py
+    plotnine: plots/line-cycle-seasonal/implementations/python/plotnine.py
+    pygal: plots/line-cycle-seasonal/implementations/python/pygal.py
+    seaborn: plots/line-cycle-seasonal/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-cycle-seasonal/implementations/r/ggplot2.R
+notes:
+- Lay seasonal groups left to right along the x-axis (Jan, Feb, ... or Mon, Tue, ...);
+  within each group plot the chronological subseries as a thin connected line
+- Draw a horizontal reference line at each group's mean spanning the width of that
+  group — these mean lines are the key visual for comparing seasons
+- Keep a shared y-axis across all groups so heights are directly comparable; separate
+  groups with subtle gaps or light vertical dividers
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: histogram-density
+name:
+  en: Density Histogram
+  es: Histograma
+description:
+  en: A density histogram displays the distribution of a continuous variable normalized
+    so that the total area under the histogram equals 1, representing probability
+    density instead of raw counts. This normalization allows direct comparison between
+    distributions with different sample sizes and enables overlaying theoretical probability
+    density functions (PDFs) for statistical analysis.
+  es: A density histogram displays the distribution of a continuous variable normalized
+    so that the total area under the histogram equals 1, representing probability
+    density instead of raw counts. This normalization allows direct comparison between
+    distributions with different sample sizes and enables overlaying theoretical probability
+    density functions (PDFs) for statistical analysis.
+aliases:
+  en:
+  - histogram-density
+  - histogram density
+  - histogram
+  es:
+  - histogram-density
+  - histogram density
+  - histograma
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing empirical distributions across datasets with different sample sizes
+  - Overlaying theoretical distributions (normal, exponential, etc.) to assess goodness
+    of fit
+  - Visualizing probability density for statistical inference and hypothesis testing
+  - Standardizing distribution displays for publication-quality statistical graphics
+  es:
+  - Comparing empirical distributions across datasets with different sample sizes
+  - Overlaying theoretical distributions (normal, exponential, etc.) to assess goodness
+    of fit
+  - Visualizing probability density for statistical inference and hypothesis testing
+  - Standardizing distribution displays for publication-quality statistical graphics
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - general
+  - statistics
+  features:
+  - normalized
+  - density
+  - probability
+keywords:
+  en:
+  - histogram
+  - density plot
+  - numeric
+  - continuous
+  - general
+  - statistics
+  - normalized
+  - density
+  - probability
+  es:
+  - histograma
+  - gráfico de densidad
+  - histogram
+  - numérico
+  - continuo
+  - general
+  - estadística
+  - normalized
+  - density
+  - probability
+implementations:
+  javascript:
+    chartjs: plots/histogram-density/implementations/javascript/chartjs.js
+    d3: plots/histogram-density/implementations/javascript/d3.js
+    echarts: plots/histogram-density/implementations/javascript/echarts.js
+    highcharts: plots/histogram-density/implementations/javascript/highcharts.js
+    muix: plots/histogram-density/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-density/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-density/implementations/python/altair.py
+    bokeh: plots/histogram-density/implementations/python/bokeh.py
+    letsplot: plots/histogram-density/implementations/python/letsplot.py
+    matplotlib: plots/histogram-density/implementations/python/matplotlib.py
+    plotly: plots/histogram-density/implementations/python/plotly.py
+    plotnine: plots/histogram-density/implementations/python/plotnine.py
+    pygal: plots/histogram-density/implementations/python/pygal.py
+    seaborn: plots/histogram-density/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-density/implementations/r/ggplot2.R
+notes:
+- Y-axis shows density (probability per unit), not count
+- Total area under histogram bars equals 1
+- Bin width affects visual interpretation; use consistent binning for comparisons
+source: anyplot
+anyplot_updated: 2026-05-11 17:25:30+00:00

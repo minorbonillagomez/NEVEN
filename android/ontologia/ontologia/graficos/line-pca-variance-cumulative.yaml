@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: line-pca-variance-cumulative
+name:
+  en: Cumulative Explained Variance for PCA Component Selection
+  es: Gráfico de Líneas
+description:
+  en: A line plot showing the cumulative proportion of explained variance as a function
+    of the number of Principal Component Analysis (PCA) components. This visualization
+    helps determine the optimal number of components to retain by displaying the trade-off
+    between dimensionality reduction and information preservation. The cumulative
+    curve typically exhibits an elbow pattern where additional components yield diminishing
+    returns, and horizontal threshold lines (e.g., 90%, 95%) guide component selection
+    decisions.
+  es: A line plot showing the cumulative proportion of explained variance as a function
+    of the number of Principal Component Analysis (PCA) components. This visualization
+    helps determine the optimal number of components to retain by displaying the trade-off
+    between dimensionality reduction and information preservation. The cumulative
+    curve typically exhibits an elbow pattern where additional components yield diminishing
+    returns, and horizontal threshold lines (e.g., 90%, 95%) guide component selection
+    decisions.
+aliases:
+  en:
+  - line-pca-variance-cumulative
+  - line pca variance cumulative
+  - line chart
+  es:
+  - line-pca-variance-cumulative
+  - line pca variance cumulative
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Dimensionality reduction: choosing how many PCA components to retain for downstream
+    machine learning tasks'
+  - 'Feature engineering: determining the optimal reduced feature space size while
+    preserving target variance thresholds'
+  - 'Data compression: evaluating information loss vs. computational efficiency trade-offs
+    in high-dimensional data'
+  - 'Exploratory data analysis: understanding the intrinsic dimensionality and complexity
+    of multivariate datasets'
+  es:
+  - 'Dimensionality reduction: choosing how many PCA components to retain for downstream
+    machine learning tasks'
+  - 'Feature engineering: determining the optimal reduced feature space size while
+    preserving target variance thresholds'
+  - 'Data compression: evaluating information loss vs. computational efficiency trade-offs
+    in high-dimensional data'
+  - 'Exploratory data analysis: understanding the intrinsic dimensionality and complexity
+    of multivariate datasets'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - machine-learning
+  - statistics
+  features:
+  - cumulative
+  - threshold
+  - model-evaluation
+keywords:
+  en:
+  - line chart
+  - pca
+  - variance
+  - cumulative
+  - line
+  - numeric
+  - continuous
+  - machine learning
+  - statistics
+  - threshold
+  - model-evaluation
+  es:
+  - gráfico de líneas
+  - pca
+  - variance
+  - cumulative
+  - line
+  - numérico
+  - continuo
+  - aprendizaje automático
+  - estadística
+  - threshold
+  - model-evaluation
+implementations:
+  javascript:
+    chartjs: plots/line-pca-variance-cumulative/implementations/javascript/chartjs.js
+    d3: plots/line-pca-variance-cumulative/implementations/javascript/d3.js
+    echarts: plots/line-pca-variance-cumulative/implementations/javascript/echarts.js
+    highcharts: plots/line-pca-variance-cumulative/implementations/javascript/highcharts.js
+    muix: plots/line-pca-variance-cumulative/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-pca-variance-cumulative/implementations/julia/makie.jl
+  python:
+    altair: plots/line-pca-variance-cumulative/implementations/python/altair.py
+    bokeh: plots/line-pca-variance-cumulative/implementations/python/bokeh.py
+    letsplot: plots/line-pca-variance-cumulative/implementations/python/letsplot.py
+    matplotlib: plots/line-pca-variance-cumulative/implementations/python/matplotlib.py
+    plotly: plots/line-pca-variance-cumulative/implementations/python/plotly.py
+    plotnine: plots/line-pca-variance-cumulative/implementations/python/plotnine.py
+    pygal: plots/line-pca-variance-cumulative/implementations/python/pygal.py
+    seaborn: plots/line-pca-variance-cumulative/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-pca-variance-cumulative/implementations/r/ggplot2.R
+notes:
+- Display cumulative sum on y-axis, not individual variance per component
+- Y-axis should show percentage (0-100%) or proportion (0.0-1.0)
+- 'Add horizontal dashed reference lines at common thresholds: 90%, 95%, and optionally
+  99%'
+source: anyplot
+anyplot_updated: null

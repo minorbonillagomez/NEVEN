@@ -1,0 +1,115 @@
+entity_type: ChartType
+id: swarm-basic
+name:
+  en: Basic Swarm Plot
+  es: Diagrama de Enjambre Básico
+description:
+  en: A swarm plot (beeswarm plot) displays individual data points for categorical
+    comparisons, with points spread horizontally to avoid overlap. This reveals the
+    full distribution shape and density while preserving exact values - combining
+    the benefits of strip plots (individual points) and violin plots (density visualization).
+    Ideal when you need to see every observation rather than just summary statistics.
+  es: A swarm plot (beeswarm plot) displays individual data points for categorical
+    comparisons, with points spread horizontally to avoid overlap. This reveals the
+    full distribution shape and density while preserving exact values - combining
+    the benefits of strip plots (individual points) and violin plots (density visualization).
+    Ideal when you need to see every observation rather than just summary statistics.
+aliases:
+  en:
+  - swarm-basic
+  - swarm basic
+  - basic swarm plot
+  es:
+  - swarm-basic
+  - swarm basic
+  - diagrama de enjambre básico
+use_when:
+  en:
+  - A swarm plot (beeswarm plot) displays individual data points for categorical comparisons,
+    with points spread horizontally to avoid overlap. This reveals the full distribution
+    shape and density while p
+  es:
+  - A swarm plot (beeswarm plot) displays individual data points for categorical comparisons,
+    with points spread horizontally to avoid overlap. This reveals the full distribution
+    shape and density while p
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing response times across different experimental conditions in psychology
+    research
+  - Visualizing patient biomarker levels across treatment groups in clinical trials
+  - Analyzing employee performance scores by department
+  - Displaying student test scores by classroom to identify patterns and outliers
+  es:
+  - Comparing response times across different experimental conditions in psychology
+    research
+  - Visualizing patient biomarker levels across treatment groups in clinical trials
+  - Analyzing employee performance scores by department
+  - Displaying student test scores by classroom to identify patterns and outliers
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - swarm
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+keywords:
+  en:
+  - swarm plot
+  - basic
+  - swarm
+  - numeric
+  - categorical
+  - statistics
+  - general
+  - distribution
+  es:
+  - diagrama de enjambre
+  - básico
+  - swarm
+  - numérico
+  - categórico
+  - estadística
+  - general
+  - basic
+  - distribución
+implementations:
+  javascript:
+    chartjs: plots/swarm-basic/implementations/javascript/chartjs.js
+    d3: plots/swarm-basic/implementations/javascript/d3.js
+    echarts: plots/swarm-basic/implementations/javascript/echarts.js
+    highcharts: plots/swarm-basic/implementations/javascript/highcharts.js
+    muix: plots/swarm-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/swarm-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/swarm-basic/implementations/python/altair.py
+    bokeh: plots/swarm-basic/implementations/python/bokeh.py
+    letsplot: plots/swarm-basic/implementations/python/letsplot.py
+    matplotlib: plots/swarm-basic/implementations/python/matplotlib.py
+    plotly: plots/swarm-basic/implementations/python/plotly.py
+    plotnine: plots/swarm-basic/implementations/python/plotnine.py
+    pygal: plots/swarm-basic/implementations/python/pygal.py
+    seaborn: plots/swarm-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/swarm-basic/implementations/r/ggplot2.R
+notes:
+- Points should be sized appropriately to show spread without excessive overlap
+- Use consistent point sizes within the plot
+- Consider adding a subtle mean or median marker for each category
+source: anyplot
+anyplot_updated: 2026-07-26 06:50:36+00:00

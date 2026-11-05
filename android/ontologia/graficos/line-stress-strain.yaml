@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: line-stress-strain
+name:
+  en: Engineering Stress-Strain Curve
+  es: Gráfico de Líneas
+description:
+  en: An engineering stress-strain curve visualizes the relationship between applied
+    stress (MPa) and resulting strain (dimensionless) in a material under uniaxial
+    tensile loading. The curve reveals distinct mechanical behavior regions — elastic
+    deformation, yielding, strain hardening, and necking — culminating in fracture.
+    It is the foundational plot for characterizing material mechanical properties
+    and comparing material performance.
+  es: An engineering stress-strain curve visualizes the relationship between applied
+    stress (MPa) and resulting strain (dimensionless) in a material under uniaxial
+    tensile loading. The curve reveals distinct mechanical behavior regions — elastic
+    deformation, yielding, strain hardening, and necking — culminating in fracture.
+    It is the foundational plot for characterizing material mechanical properties
+    and comparing material performance.
+aliases:
+  en:
+  - line-stress-strain
+  - line stress strain
+  - line chart
+  es:
+  - line-stress-strain
+  - line stress strain
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing mechanical properties (yield strength, UTS, ductility) of different
+    materials or alloys for design selection
+  - Determining yield strength using the 0.2% offset method for structural engineering
+    design calculations
+  - Quality control testing in manufacturing to verify materials meet specified mechanical
+    property requirements
+  - Teaching material science and mechanics of materials concepts in engineering education
+  es:
+  - Comparing mechanical properties (yield strength, UTS, ductility) of different
+    materials or alloys for design selection
+  - Determining yield strength using the 0.2% offset method for structural engineering
+    design calculations
+  - Quality control testing in manufacturing to verify materials meet specified mechanical
+    property requirements
+  - Teaching material science and mechanics of materials concepts in engineering education
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - science
+  - education
+  features:
+  - annotated
+  - comparison
+keywords:
+  en:
+  - line chart
+  - stress
+  - strain
+  - line
+  - numeric
+  - continuous
+  - engineering
+  - science
+  - education
+  - annotated
+  - comparison
+  es:
+  - gráfico de líneas
+  - stress
+  - strain
+  - line
+  - numérico
+  - continuo
+  - ingeniería
+  - ciencia
+  - education
+  - annotated
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/line-stress-strain/implementations/javascript/chartjs.js
+    d3: plots/line-stress-strain/implementations/javascript/d3.js
+    echarts: plots/line-stress-strain/implementations/javascript/echarts.js
+    highcharts: plots/line-stress-strain/implementations/javascript/highcharts.js
+    muix: plots/line-stress-strain/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-stress-strain/implementations/julia/makie.jl
+  python:
+    altair: plots/line-stress-strain/implementations/python/altair.py
+    bokeh: plots/line-stress-strain/implementations/python/bokeh.py
+    letsplot: plots/line-stress-strain/implementations/python/letsplot.py
+    matplotlib: plots/line-stress-strain/implementations/python/matplotlib.py
+    plotly: plots/line-stress-strain/implementations/python/plotly.py
+    plotnine: plots/line-stress-strain/implementations/python/plotnine.py
+    pygal: plots/line-stress-strain/implementations/python/pygal.py
+    seaborn: plots/line-stress-strain/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-stress-strain/implementations/r/ggplot2.R
+notes:
+- 'Label key regions on the curve: elastic, plastic (strain hardening), and necking'
+- 'Mark critical points: yield point (0.2% offset method), ultimate tensile strength
+  (UTS), and fracture point'
+- Annotate the elastic modulus (Young's modulus) as the slope in the elastic region,
+  with a visible slope line or text annotation
+source: anyplot
+anyplot_updated: null

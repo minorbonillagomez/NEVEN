@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: area-cumulative-flow
+name:
+  en: Cumulative Flow Diagram for Workflow Analytics
+  es: Gráfico de Área
+description:
+  en: A cumulative flow diagram (CFD) displays the cumulative count of items in each
+    workflow stage as stacked areas over time. Each band represents a stage (e.g.,
+    Backlog, In Progress, Done), and the vertical distance between two adjacent band
+    boundaries shows the number of items currently in that stage (work-in-progress).
+    This is a key visualization in Lean and Agile project management for identifying
+    bottlenecks, monitoring throughput, and assessing flow efficiency across a delivery
+    pipeline.
+  es: A cumulative flow diagram (CFD) displays the cumulative count of items in each
+    workflow stage as stacked areas over time. Each band represents a stage (e.g.,
+    Backlog, In Progress, Done), and the vertical distance between two adjacent band
+    boundaries shows the number of items currently in that stage (work-in-progress).
+    This is a key visualization in Lean and Agile project management for identifying
+    bottlenecks, monitoring throughput, and assessing flow efficiency across a delivery
+    pipeline.
+aliases:
+  en:
+  - area-cumulative-flow
+  - area cumulative flow
+  - area chart
+  es:
+  - area-cumulative-flow
+  - area cumulative flow
+  - gráfico de área
+use_when:
+  en:
+  - A cumulative flow diagram (CFD) displays the cumulative count of items in each
+    workflow stage as stacked areas over time. Each band represents a stage (e.g.,
+    Backlog, In Progress, Done), and the verti
+  es:
+  - A cumulative flow diagram (CFD) displays the cumulative count of items in each
+    workflow stage as stacked areas over time. Each band represents a stage (e.g.,
+    Backlog, In Progress, Done), and the verti
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Monitoring Kanban board throughput and cycle time to assess team delivery performance
+  - Identifying bottlenecks in software development pipelines by spotting widening
+    or narrowing bands
+  - Tracking manufacturing workflow stages over time to optimize production flow
+  - Visualizing support ticket lifecycle stages to measure resolution efficiency
+  es:
+  - Monitoring Kanban board throughput and cycle time to assess team delivery performance
+  - Identifying bottlenecks in software development pipelines by spotting widening
+    or narrowing bands
+  - Tracking manufacturing workflow stages over time to optimize production flow
+  - Visualizing support ticket lifecycle stages to measure resolution efficiency
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  data_type:
+  - timeseries
+  - categorical
+  - numeric
+  domain:
+  - business
+  - technology
+  features:
+  - stacked
+  - cumulative
+  - flow
+  - temporal
+keywords:
+  en:
+  - area chart
+  - cumulative
+  - flow
+  - area
+  - timeseries
+  - categorical
+  - numeric
+  - business
+  - technology
+  - stacked
+  - temporal
+  es:
+  - gráfico de área
+  - cumulative
+  - flow
+  - area
+  - timeseries
+  - categórico
+  - numérico
+  - negocios
+  - technology
+  - stacked
+  - flujo
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/area-cumulative-flow/implementations/javascript/chartjs.js
+    d3: plots/area-cumulative-flow/implementations/javascript/d3.js
+    echarts: plots/area-cumulative-flow/implementations/javascript/echarts.js
+    highcharts: plots/area-cumulative-flow/implementations/javascript/highcharts.js
+    muix: plots/area-cumulative-flow/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/area-cumulative-flow/implementations/julia/makie.jl
+  python:
+    altair: plots/area-cumulative-flow/implementations/python/altair.py
+    bokeh: plots/area-cumulative-flow/implementations/python/bokeh.py
+    letsplot: plots/area-cumulative-flow/implementations/python/letsplot.py
+    matplotlib: plots/area-cumulative-flow/implementations/python/matplotlib.py
+    plotly: plots/area-cumulative-flow/implementations/python/plotly.py
+    plotnine: plots/area-cumulative-flow/implementations/python/plotnine.py
+    pygal: plots/area-cumulative-flow/implementations/python/pygal.py
+    seaborn: plots/area-cumulative-flow/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/area-cumulative-flow/implementations/r/ggplot2.R
+notes:
+- 'Stages must be stacked in workflow order: earliest stage (e.g., Backlog) on top,
+  latest stage (e.g., Done) on bottom'
+- The vertical distance between two adjacent band boundaries represents the number
+  of items currently in that stage (WIP)
+- Cumulative counts are monotonically non-decreasing; each stage's count should always
+  be greater than or equal to the count of the next stage in the workflow
+source: anyplot
+anyplot_updated: '2026-08-18T02:42:07Z'

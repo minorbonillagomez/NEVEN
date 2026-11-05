@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: histogram-returns-distribution
+name:
+  en: Returns Distribution Histogram
+  es: Histograma
+description:
+  en: A histogram showing the distribution of financial returns (daily, weekly, or
+    monthly) with a normal distribution overlay for comparison. This visualization
+    is essential for risk analysis, allowing analysts to assess whether returns follow
+    a normal distribution, identify fat tails indicating higher-than-expected extreme
+    events, and measure asymmetry through skewness. Key statistics are displayed directly
+    on the plot for quick interpretation.
+  es: A histogram showing the distribution of financial returns (daily, weekly, or
+    monthly) with a normal distribution overlay for comparison. This visualization
+    is essential for risk analysis, allowing analysts to assess whether returns follow
+    a normal distribution, identify fat tails indicating higher-than-expected extreme
+    events, and measure asymmetry through skewness. Key statistics are displayed directly
+    on the plot for quick interpretation.
+aliases:
+  en:
+  - histogram-returns-distribution
+  - histogram returns distribution
+  - histogram
+  es:
+  - histogram-returns-distribution
+  - histogram returns distribution
+  - histograma
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Risk analysis and return distribution assessment for portfolio management
+  - Comparing actual return distributions to theoretical normal distribution assumptions
+  - Identifying fat tails and skewness in financial time series for VaR calculations
+  - Evaluating portfolio return characteristics and risk metrics
+  es:
+  - Risk analysis and return distribution assessment for portfolio management
+  - Comparing actual return distributions to theoretical normal distribution assumptions
+  - Identifying fat tails and skewness in financial time series for VaR calculations
+  - Evaluating portfolio return characteristics and risk metrics
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  - density
+  data_type:
+  - numeric
+  - continuous
+  - timeseries
+  domain:
+  - finance
+  - statistics
+  features:
+  - distribution
+  - annotated
+  - comparison
+keywords:
+  en:
+  - histogram
+  - returns
+  - distribution
+  - density
+  - numeric
+  - continuous
+  - timeseries
+  - finance
+  - statistics
+  - annotated
+  - comparison
+  es:
+  - histograma
+  - returns
+  - distribution
+  - histogram
+  - density
+  - numérico
+  - continuo
+  - timeseries
+  - finanzas
+  - estadística
+  - distribución
+  - annotated
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/histogram-returns-distribution/implementations/javascript/chartjs.js
+    d3: plots/histogram-returns-distribution/implementations/javascript/d3.js
+    echarts: plots/histogram-returns-distribution/implementations/javascript/echarts.js
+    highcharts: plots/histogram-returns-distribution/implementations/javascript/highcharts.js
+    muix: plots/histogram-returns-distribution/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-returns-distribution/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-returns-distribution/implementations/python/altair.py
+    bokeh: plots/histogram-returns-distribution/implementations/python/bokeh.py
+    letsplot: plots/histogram-returns-distribution/implementations/python/letsplot.py
+    matplotlib: plots/histogram-returns-distribution/implementations/python/matplotlib.py
+    plotly: plots/histogram-returns-distribution/implementations/python/plotly.py
+    plotnine: plots/histogram-returns-distribution/implementations/python/plotnine.py
+    pygal: plots/histogram-returns-distribution/implementations/python/pygal.py
+    seaborn: plots/histogram-returns-distribution/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-returns-distribution/implementations/r/ggplot2.R
+notes:
+- Show percentage returns on x-axis with clear labels
+- Overlay normal distribution curve fitted to the data for comparison
+- 'Display key statistics in a text box: mean, standard deviation, skewness, kurtosis'
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: pictogram-basic
+name:
+  en: Pictogram Chart (Isotype Visualization)
+  es: Pictogram Basic Básico
+description:
+  en: A pictogram chart represents quantities using repeated icons or symbols, where
+    each icon stands for a fixed number of units. Inspired by Otto Neurath's ISOTYPE
+    system, this visualization makes numerical comparisons more intuitive and engaging
+    than plain bar charts. It is especially effective for public-facing data communication
+    and infographics where visual appeal and immediate comprehension are important.
+  es: A pictogram chart represents quantities using repeated icons or symbols, where
+    each icon stands for a fixed number of units. Inspired by Otto Neurath's ISOTYPE
+    system, this visualization makes numerical comparisons more intuitive and engaging
+    than plain bar charts. It is especially effective for public-facing data communication
+    and infographics where visual appeal and immediate comprehension are important.
+aliases:
+  en:
+  - pictogram-basic
+  - pictogram basic
+  - basic pictogram basic
+  es:
+  - pictogram-basic
+  - pictogram basic
+  - pictogram basic básico
+use_when:
+  en:
+  - A pictogram chart represents quantities using repeated icons or symbols, where
+    each icon stands for a fixed number of units. Inspired by Otto Neurath's ISOTYPE
+    system, this visualization makes numeric
+  es:
+  - A pictogram chart represents quantities using repeated icons or symbols, where
+    each icon stands for a fixed number of units. Inspired by Otto Neurath's ISOTYPE
+    system, this visualization makes numeric
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing population counts across countries using person icons, where each icon
+    represents 1 million people
+  - Showing annual production volumes of different crops using crop-specific symbols
+    in an agricultural report
+  - Visualizing survey results (e.g., customer satisfaction ratings) with star or
+    smiley icons for a marketing dashboard
+  es:
+  - Comparing population counts across countries using person icons, where each icon
+    represents 1 million people
+  - Showing annual production volumes of different crops using crop-specific symbols
+    in an agricultural report
+  - Visualizing survey results (e.g., customer satisfaction ratings) with star or
+    smiley icons for a marketing dashboard
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - marketing
+  - education
+  features:
+  - basic
+  - proportional
+  - comparison
+keywords:
+  en:
+  - pictogram
+  - basic
+  - bar
+  - categorical
+  - numeric
+  - general
+  - marketing
+  - education
+  - proportional
+  - comparison
+  es:
+  - pictogram
+  - básico
+  - bar
+  - categórico
+  - numérico
+  - general
+  - marketing
+  - education
+  - basic
+  - proportional
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/pictogram-basic/implementations/javascript/chartjs.js
+    d3: plots/pictogram-basic/implementations/javascript/d3.js
+    echarts: plots/pictogram-basic/implementations/javascript/echarts.js
+    highcharts: plots/pictogram-basic/implementations/javascript/highcharts.js
+    muix: plots/pictogram-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/pictogram-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/pictogram-basic/implementations/python/altair.py
+    bokeh: plots/pictogram-basic/implementations/python/bokeh.py
+    letsplot: plots/pictogram-basic/implementations/python/letsplot.py
+    matplotlib: plots/pictogram-basic/implementations/python/matplotlib.py
+    plotly: plots/pictogram-basic/implementations/python/plotly.py
+    plotnine: plots/pictogram-basic/implementations/python/plotnine.py
+    pygal: plots/pictogram-basic/implementations/python/pygal.py
+    seaborn: plots/pictogram-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/pictogram-basic/implementations/r/ggplot2.R
+notes:
+- Each icon should represent a consistent unit value (e.g., 1 icon = 10 units); display
+  a legend indicating this
+- Partial icons (e.g., half-filled) should represent fractional remainders
+- Icons should be arranged in a grid-like row for each category, aligned left for
+  easy comparison
+source: anyplot
+anyplot_updated: '2026-06-03T13:40:38Z'

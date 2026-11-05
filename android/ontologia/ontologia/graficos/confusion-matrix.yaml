@@ -1,0 +1,118 @@
+entity_type: ChartType
+id: confusion-matrix
+name:
+  en: Confusion Matrix Heatmap
+  es: Matriz de Confusión
+description:
+  en: A specialized heatmap visualization for evaluating classification model performance,
+    displaying the counts or proportions of predicted vs actual class labels. The
+    confusion matrix reveals true positives, false positives, true negatives, and
+    false negatives at a glance, making it essential for understanding model behavior,
+    identifying class imbalances, and diagnosing specific misclassification patterns.
+  es: A specialized heatmap visualization for evaluating classification model performance,
+    displaying the counts or proportions of predicted vs actual class labels. The
+    confusion matrix reveals true positives, false positives, true negatives, and
+    false negatives at a glance, making it essential for understanding model behavior,
+    identifying class imbalances, and diagnosing specific misclassification patterns.
+aliases:
+  en:
+  - confusion-matrix
+  - confusion matrix
+  - confusion matrix
+  es:
+  - confusion-matrix
+  - confusion matrix
+  - matriz de confusión
+use_when:
+  en:
+  - A specialized heatmap visualization for evaluating classification model performance,
+    displaying the counts or proportions of predicted vs actual class labels. The
+    confusion matrix reveals true positiv
+  es:
+  - A specialized heatmap visualization for evaluating classification model performance,
+    displaying the counts or proportions of predicted vs actual class labels. The
+    confusion matrix reveals true positiv
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Binary classification model evaluation showing sensitivity and specificity
+  - Multi-class classifier performance analysis with per-class accuracy breakdown
+  - Model comparison to identify which classes are most often confused
+  - Error analysis to understand systematic misclassification patterns
+  es:
+  - Binary classification model evaluation showing sensitivity and specificity
+  - Multi-class classifier performance analysis with per-class accuracy breakdown
+  - Model comparison to identify which classes are most often confused
+  - Error analysis to understand systematic misclassification patterns
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - categorical
+  domain:
+  - machine-learning
+  - statistics
+  features:
+  - annotated
+  - model-evaluation
+  - classification
+  - model-performance
+keywords:
+  en:
+  - confusion matrix
+  - matrix
+  - heatmap
+  - categorical
+  - machine learning
+  - statistics
+  - annotated
+  - model-evaluation
+  - classification
+  - model-performance
+  es:
+  - matriz de confusión
+  - matrix
+  - heatmap
+  - categórico
+  - aprendizaje automático
+  - estadística
+  - annotated
+  - model-evaluation
+  - classification
+  - model-performance
+implementations:
+  javascript:
+    chartjs: plots/confusion-matrix/implementations/javascript/chartjs.js
+    d3: plots/confusion-matrix/implementations/javascript/d3.js
+    echarts: plots/confusion-matrix/implementations/javascript/echarts.js
+    highcharts: plots/confusion-matrix/implementations/javascript/highcharts.js
+    muix: plots/confusion-matrix/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/confusion-matrix/implementations/julia/makie.jl
+  python:
+    altair: plots/confusion-matrix/implementations/python/altair.py
+    bokeh: plots/confusion-matrix/implementations/python/bokeh.py
+    letsplot: plots/confusion-matrix/implementations/python/letsplot.py
+    matplotlib: plots/confusion-matrix/implementations/python/matplotlib.py
+    plotly: plots/confusion-matrix/implementations/python/plotly.py
+    plotnine: plots/confusion-matrix/implementations/python/plotnine.py
+    pygal: plots/confusion-matrix/implementations/python/pygal.py
+    seaborn: plots/confusion-matrix/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/confusion-matrix/implementations/r/ggplot2.R
+notes:
+- 'Label axes clearly: "True Label" (y-axis) and "Predicted Label" (x-axis)'
+- Annotate cells with counts or percentages for precise interpretation
+- 'Support normalization options: none (raw counts), by row (recall), by column (precision),
+  or by total'
+source: anyplot
+anyplot_updated: 2026-05-09 16:24:31+00:00

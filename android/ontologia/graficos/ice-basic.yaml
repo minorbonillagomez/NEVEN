@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: ice-basic
+name:
+  en: Individual Conditional Expectation (ICE) Plot
+  es: Ice Basic Básico
+description:
+  en: An Individual Conditional Expectation (ICE) plot visualizes how the predicted
+    outcome of a machine learning model changes for each individual observation as
+    a single feature varies across its range. Unlike partial dependence plots (PDP)
+    that show the average marginal effect, ICE plots display one line per observation,
+    revealing heterogeneous effects, feature interactions, and subgroup-specific behaviors
+    that would be hidden by averaging. This makes ICE plots essential for detecting
+    when a feature's effect varies across the population.
+  es: An Individual Conditional Expectation (ICE) plot visualizes how the predicted
+    outcome of a machine learning model changes for each individual observation as
+    a single feature varies across its range. Unlike partial dependence plots (PDP)
+    that show the average marginal effect, ICE plots display one line per observation,
+    revealing heterogeneous effects, feature interactions, and subgroup-specific behaviors
+    that would be hidden by averaging. This makes ICE plots essential for detecting
+    when a feature's effect varies across the population.
+aliases:
+  en:
+  - ice-basic
+  - ice basic
+  - basic ice basic
+  es:
+  - ice-basic
+  - ice basic
+  - ice basic básico
+use_when:
+  en:
+  - An Individual Conditional Expectation (ICE) plot visualizes how the predicted
+    outcome of a machine learning model changes for each individual observation as
+    a single feature varies across its range. U
+  es:
+  - An Individual Conditional Expectation (ICE) plot visualizes how the predicted
+    outcome of a machine learning model changes for each individual observation as
+    a single feature varies across its range. U
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Detecting feature interactions in ensemble models by identifying observations
+    whose prediction curves diverge from the average trend
+  - Identifying subgroups with different feature responses in clinical prediction
+    models, such as patients who respond differently to dosage changes
+  - Validating monotonicity assumptions in pricing or risk models by checking whether
+    all individual curves move in the expected direction
+  - Exploring non-linear and heterogeneous effects in gradient boosting or random
+    forest models during model audit and interpretability review
+  es:
+  - Detecting feature interactions in ensemble models by identifying observations
+    whose prediction curves diverge from the average trend
+  - Identifying subgroups with different feature responses in clinical prediction
+    models, such as patients who respond differently to dosage changes
+  - Validating monotonicity assumptions in pricing or risk models by checking whether
+    all individual curves move in the expected direction
+  - Exploring non-linear and heterogeneous effects in gradient boosting or random
+    forest models during model audit and interpretability review
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - machine-learning
+  - statistics
+  features:
+  - basic
+  - multi
+  - comparison
+keywords:
+  en:
+  - ice
+  - basic
+  - line
+  - numeric
+  - continuous
+  - machine learning
+  - statistics
+  - multi
+  - comparison
+  es:
+  - ice
+  - básico
+  - line
+  - numérico
+  - continuo
+  - aprendizaje automático
+  - estadística
+  - basic
+  - multi
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/ice-basic/implementations/javascript/chartjs.js
+    d3: plots/ice-basic/implementations/javascript/d3.js
+    echarts: plots/ice-basic/implementations/javascript/echarts.js
+    highcharts: plots/ice-basic/implementations/javascript/highcharts.js
+    muix: plots/ice-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ice-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/ice-basic/implementations/python/altair.py
+    bokeh: plots/ice-basic/implementations/python/bokeh.py
+    letsplot: plots/ice-basic/implementations/python/letsplot.py
+    matplotlib: plots/ice-basic/implementations/python/matplotlib.py
+    plotly: plots/ice-basic/implementations/python/plotly.py
+    plotnine: plots/ice-basic/implementations/python/plotnine.py
+    pygal: plots/ice-basic/implementations/python/pygal.py
+    seaborn: plots/ice-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ice-basic/implementations/r/ggplot2.R
+notes:
+- Individual lines should use low alpha (semi-transparent) to show density and overlap
+  patterns
+- Overlay the partial dependence (PDP) line as a bold, opaque curve to show the average
+  effect
+- Consider a centered ICE (c-ICE) variant that shifts all lines to start at zero for
+  easier comparison of effect shapes
+source: anyplot
+anyplot_updated: null

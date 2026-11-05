@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Launcher Permissions -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.BIND_APPWIDGET" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS" />
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Notification Access (for badges) -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    
+    <!-- System Alert Window (for notification popup) -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    
+    <!-- Usage Stats (for Screen Time) -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    
+    <!-- Sandbox / Work Profile Management -->
+    <uses-permission android:name="android.permission.MANAGE_USERS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_PROFILES" />
+    
+    <!-- Calendar Access (for Calendar Widget) -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    
+    <!-- Location (for Weather Widget) -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    
+    <!-- Internet (for widgets that need it) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Storage (for audiobook M4B files) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    
+    <!-- Foreground Service for audiobook playback -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <application
+        android:name=".NevenApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Neven"
+        android:crossProfile="true"
+        tools:targetApi="34">
+
+        <!-- Main Launcher Activity -->
+        <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:clearTaskOnLaunch="true"
+            android:stateNotNeeded="true"
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="nosensor"
+            android:resumeWhilePausing="true"
+            android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenSize|screenLayout|smallestScreenSize">
+            
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.MONKEY" />
+            </intent-filter>
+        </activity>
+
+        <!-- App Drawer Activity -->
+        <activity
+            android:name=".ui.drawer.AppDrawerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Neven.Transparent"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Search Activity -->
+        <activity
+            android:name=".ui.search.SearchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Neven.Transparent"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Settings Activity -->
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="true"
+            android:label="@string/settings_title">
+            <intent-filter>
+                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- Screen Time Activity -->
+        <activity
+            android:name=".ui.settings.ScreenTimeActivity"
+            android:exported="false"
+            android:label="@string/settings_screen_time" />
+
+        <!-- Notes Activity (LaTeX) -->
+        <activity
+            android:name=".ui.notes.NotesActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Markdown Viewer Activity -->
+        <activity
+            android:name=".ui.markdown.MarkdownViewerActivity"
+            android:exported="true"
+            android:label="@string/markdown_viewer"
+            android:theme="@style/Theme.Neven">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="text/markdown" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="text/x-markdown" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.md" />
+                <data android:pathPattern=".*\\..*\\.md" />
+                <data android:pathPattern=".*\\..*\\..*\\.md" />
+            </intent-filter>
+        </activity>
+
+        <!-- Scientific Notification Popup Activity (legacy, kept for compatibility) -->
+        <activity
+            android:name=".ui.notifications.ScientificNotificationActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Neven.Dialog" />
+        
+        <!-- Floating Notification Service (draggable paper popup) -->
+        <service
+            android:name=".ui.notifications.FloatingNotificationService"
+            android:exported="false" />
+
+        <!-- Notification Listener Service (for badges and scientific popup) -->
+        <service
+            android:name=".services.NevenNotificationListenerService"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- Boot Receiver -->
+        <receiver
+            android:name=".services.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Widget Host Provider -->
+        <receiver
+            android:name=".widgets.WidgetHostReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_HOST_RESTORED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Device Admin Receiver for Sandbox / Work Profile -->
+        <receiver
+            android:name=".services.NevenDeviceAdminReceiver"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_receiver" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Sandbox Install Activity (for cross-profile app installation) -->
+        <activity
+            android:name=".services.SandboxInstallActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:label="NEVEN Sandbox">
+            <intent-filter>
+                <action android:name="com.neven.launcher.action.INSTALL_IN_SANDBOX" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        
+        <!-- Sandbox Install Receiver (can run in non-current user) -->
+        <receiver
+            android:name=".services.SandboxInstallReceiver"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="com.neven.launcher.action.BROADCAST_INSTALL_IN_SANDBOX" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- Sandbox ContentProvider for cross-profile communication -->
+        <provider
+            android:name=".services.SandboxContentProvider"
+            android:authorities="com.neven.launcher.sandbox"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:directBootAware="true">
+        </provider>
+
+        <!-- Floating Recents Button Service -->
+        <service
+            android:name=".services.FloatingRecentsService"
+            android:exported="false" />
+
+        <!-- Recent Apps Activity (custom recents screen) -->
+        <activity
+            android:name=".ui.recents.RecentAppsActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Neven.Transparent"
+            android:launchMode="singleTop" />
+
+        <!-- Accessibility Service for global actions (recents, home, back) -->
+        <service
+            android:name=".services.NevenAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Audiobook Player Service (Media3) -->
+        <service
+            android:name=".services.AudiobookPlayerService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <!-- FileProvider for sharing MP3 fragments -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- Audiobook Library Activity -->
+        <activity
+            android:name=".ui.audiobook.AudiobookActivity"
+            android:exported="false"
+            android:label="Audiolibros"
+            android:theme="@style/Theme.Neven" />
+
+    </application>
+
+</manifest>

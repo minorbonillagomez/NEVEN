@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: rose-basic
+name:
+  en: Basic Rose Chart
+  es: Rose Basic Básico
+description:
+  en: A rose chart (also called Nightingale or coxcomb diagram) displays categorical
+    data in a circular format where segments are arranged around the center like pie
+    slices, but with radius proportional to the value rather than angle. This visualization
+    excels at showing cyclical or directional patterns where the circular arrangement
+    has natural meaning. The equal-angle wedges make comparison of values across categories
+    intuitive while emphasizing the periodic nature of the data.
+  es: A rose chart (also called Nightingale or coxcomb diagram) displays categorical
+    data in a circular format where segments are arranged around the center like pie
+    slices, but with radius proportional to the value rather than angle. This visualization
+    excels at showing cyclical or directional patterns where the circular arrangement
+    has natural meaning. The equal-angle wedges make comparison of values across categories
+    intuitive while emphasizing the periodic nature of the data.
+aliases:
+  en:
+  - rose-basic
+  - rose basic
+  - basic rose basic
+  es:
+  - rose-basic
+  - rose basic
+  - rose basic básico
+use_when:
+  en:
+  - 'A rose chart (also called Nightingale or coxcomb diagram) displays categorical
+    data in a circular format where segments are arranged around the center like pie
+    slices, but with radius proportional to '
+  es:
+  - 'A rose chart (also called Nightingale or coxcomb diagram) displays categorical
+    data in a circular format where segments are arranged around the center like pie
+    slices, but with radius proportional to '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing monthly sales, weather patterns, or other data with natural 12-month
+    cycles
+  - Displaying wind direction frequency (wind rose) showing how often wind blows from
+    each compass direction
+  - Comparing day-of-week patterns like customer visits, social media engagement,
+    or energy consumption
+  - Showing hourly distributions where the circular clock face arrangement aids interpretation
+  es:
+  - Visualizing monthly sales, weather patterns, or other data with natural 12-month
+    cycles
+  - Displaying wind direction frequency (wind rose) showing how often wind blows from
+    each compass direction
+  - Comparing day-of-week patterns like customer visits, social media engagement,
+    or energy consumption
+  - Showing hourly distributions where the circular clock face arrangement aids interpretation
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - polar
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - science
+  features:
+  - basic
+  - circular
+  - directional
+keywords:
+  en:
+  - rose
+  - basic
+  - polar
+  - categorical
+  - numeric
+  - general
+  - science
+  - circular
+  - directional
+  es:
+  - rose
+  - básico
+  - polar
+  - categórico
+  - numérico
+  - general
+  - ciencia
+  - basic
+  - circular
+  - directional
+implementations:
+  javascript:
+    chartjs: plots/rose-basic/implementations/javascript/chartjs.js
+    d3: plots/rose-basic/implementations/javascript/d3.js
+    echarts: plots/rose-basic/implementations/javascript/echarts.js
+    highcharts: plots/rose-basic/implementations/javascript/highcharts.js
+    muix: plots/rose-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/rose-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/rose-basic/implementations/python/altair.py
+    bokeh: plots/rose-basic/implementations/python/bokeh.py
+    letsplot: plots/rose-basic/implementations/python/letsplot.py
+    matplotlib: plots/rose-basic/implementations/python/matplotlib.py
+    plotly: plots/rose-basic/implementations/python/plotly.py
+    plotnine: plots/rose-basic/implementations/python/plotnine.py
+    pygal: plots/rose-basic/implementations/python/pygal.py
+    seaborn: plots/rose-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/rose-basic/implementations/r/ggplot2.R
+notes:
+- Segment radius should be proportional to value (not area) for easier visual comparison
+- Categories should have natural circular ordering (months, compass directions, hours)
+- Use consistent color scheme; single color with varying saturation or distinct colors
+  per category
+source: anyplot
+anyplot_updated: 2026-07-25 10:02:46+00:00

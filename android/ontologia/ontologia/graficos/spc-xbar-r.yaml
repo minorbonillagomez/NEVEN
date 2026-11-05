@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: spc-xbar-r
+name:
+  en: Statistical Process Control Chart (X-bar/R)
+  es: Spc Xbar R
+description:
+  en: A Statistical Process Control (SPC) chart displaying sample means (X-bar) and
+    ranges (R) plotted over time against control limits. The chart includes a center
+    line representing the process mean, Upper Control Limit (UCL) and Lower Control
+    Limit (LCL) at ±3 sigma, and optional warning limits at ±2 sigma. Out-of-control
+    points are highlighted to signal process instability. This is a fundamental tool
+    in manufacturing quality control and Six Sigma methodology for monitoring process
+    stability.
+  es: A Statistical Process Control (SPC) chart displaying sample means (X-bar) and
+    ranges (R) plotted over time against control limits. The chart includes a center
+    line representing the process mean, Upper Control Limit (UCL) and Lower Control
+    Limit (LCL) at ±3 sigma, and optional warning limits at ±2 sigma. Out-of-control
+    points are highlighted to signal process instability. This is a fundamental tool
+    in manufacturing quality control and Six Sigma methodology for monitoring process
+    stability.
+aliases:
+  en:
+  - spc-xbar-r
+  - spc xbar r
+  - spc xbar r
+  es:
+  - spc-xbar-r
+  - spc xbar r
+  - spc xbar r
+use_when:
+  en:
+  - A Statistical Process Control (SPC) chart displaying sample means (X-bar) and
+    ranges (R) plotted over time against control limits. The chart includes a center
+    line representing the process mean, Upper
+  es:
+  - A Statistical Process Control (SPC) chart displaying sample means (X-bar) and
+    ranges (R) plotted over time against control limits. The chart includes a center
+    line representing the process mean, Upper
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Manufacturing quality control: monitoring dimensional measurements across production
+    batches to detect process drift'
+  - 'Healthcare process improvement: tracking patient wait times or lab turnaround
+    times to identify systemic changes'
+  - 'Service industry operations: monitoring call center response times or error rates
+    to maintain service quality'
+  - 'Software engineering: tracking build times or defect rates across releases to
+    detect process degradation'
+  es:
+  - 'Manufacturing quality control: monitoring dimensional measurements across production
+    batches to detect process drift'
+  - 'Healthcare process improvement: tracking patient wait times or lab turnaround
+    times to identify systemic changes'
+  - 'Service industry operations: monitoring call center response times or error rates
+    to maintain service quality'
+  - 'Software engineering: tracking build times or defect rates across releases to
+    detect process degradation'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - engineering
+  - statistics
+  features:
+  - annotated
+  - multi
+  - comparison
+keywords:
+  en:
+  - spc
+  - xbar
+  - r
+  - line
+  - numeric
+  - timeseries
+  - engineering
+  - statistics
+  - annotated
+  - multi
+  - comparison
+  es:
+  - spc
+  - xbar
+  - r
+  - line
+  - numérico
+  - timeseries
+  - ingeniería
+  - estadística
+  - annotated
+  - multi
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/spc-xbar-r/implementations/javascript/chartjs.js
+    d3: plots/spc-xbar-r/implementations/javascript/d3.js
+    echarts: plots/spc-xbar-r/implementations/javascript/echarts.js
+    highcharts: plots/spc-xbar-r/implementations/javascript/highcharts.js
+    muix: plots/spc-xbar-r/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/spc-xbar-r/implementations/julia/makie.jl
+  python:
+    altair: plots/spc-xbar-r/implementations/python/altair.py
+    bokeh: plots/spc-xbar-r/implementations/python/bokeh.py
+    letsplot: plots/spc-xbar-r/implementations/python/letsplot.py
+    matplotlib: plots/spc-xbar-r/implementations/python/matplotlib.py
+    plotly: plots/spc-xbar-r/implementations/python/plotly.py
+    plotnine: plots/spc-xbar-r/implementations/python/plotnine.py
+    pygal: plots/spc-xbar-r/implementations/python/pygal.py
+    seaborn: plots/spc-xbar-r/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/spc-xbar-r/implementations/r/ggplot2.R
+notes:
+- Display X-bar chart on top and R chart on bottom as a vertically stacked pair sharing
+  the same x-axis
+- UCL and LCL lines should be dashed and clearly labeled
+- Center line should be solid and distinct from data line
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

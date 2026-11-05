@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: andrews-curves
+name:
+  en: Andrews Curves for Multivariate Data
+  es: Andrews Curves
+description:
+  en: Andrews curves visualization transforms multivariate observations into smooth
+    Fourier series curves. Each data point is represented as a continuous function
+    where variable values become coefficients in a Fourier expansion, producing distinctive
+    wave patterns. This technique enables visual comparison of multivariate patterns,
+    cluster identification, and outlier detection—observations with similar values
+    across variables produce similar curves, while outliers appear as distinctly different
+    patterns.
+  es: Andrews curves visualization transforms multivariate observations into smooth
+    Fourier series curves. Each data point is represented as a continuous function
+    where variable values become coefficients in a Fourier expansion, producing distinctive
+    wave patterns. This technique enables visual comparison of multivariate patterns,
+    cluster identification, and outlier detection—observations with similar values
+    across variables produce similar curves, while outliers appear as distinctly different
+    patterns.
+aliases:
+  en:
+  - andrews-curves
+  - andrews curves
+  - andrews curves
+  es:
+  - andrews-curves
+  - andrews curves
+  - andrews curves
+use_when:
+  en:
+  - Andrews curves visualization transforms multivariate observations into smooth
+    Fourier series curves. Each data point is represented as a continuous function
+    where variable values become coefficients i
+  es:
+  - Andrews curves visualization transforms multivariate observations into smooth
+    Fourier series curves. Each data point is represented as a continuous function
+    where variable values become coefficients i
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing iris flower species across sepal/petal measurements to visualize natural
+    clustering in botanical data
+  - Detecting anomalous network traffic patterns by transforming connection metrics
+    into curves and identifying outliers
+  - Analyzing wine quality factors (acidity, sugar, alcohol, pH) to reveal how different
+    quality grades separate visually
+  es:
+  - Comparing iris flower species across sepal/petal measurements to visualize natural
+    clustering in botanical data
+  - Detecting anomalous network traffic patterns by transforming connection metrics
+    into curves and identifying outliers
+  - Analyzing wine quality factors (acidity, sugar, alcohol, pH) to reveal how different
+    quality grades separate visually
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - multivariate
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - basic
+  - comparison
+  - outlier-detection
+  - fourier-transform
+keywords:
+  en:
+  - andrews
+  - curves
+  - line
+  - numeric
+  - multivariate
+  - general
+  - statistics
+  - research
+  - basic
+  - comparison
+  - outlier-detection
+  - fourier-transform
+  es:
+  - andrews
+  - curves
+  - line
+  - numérico
+  - multivariado
+  - general
+  - estadística
+  - research
+  - basic
+  - comparación
+  - outlier-detection
+  - fourier-transform
+implementations:
+  javascript:
+    chartjs: plots/andrews-curves/implementations/javascript/chartjs.js
+    d3: plots/andrews-curves/implementations/javascript/d3.js
+    echarts: plots/andrews-curves/implementations/javascript/echarts.js
+    highcharts: plots/andrews-curves/implementations/javascript/highcharts.js
+    muix: plots/andrews-curves/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/andrews-curves/implementations/julia/makie.jl
+  python:
+    altair: plots/andrews-curves/implementations/python/altair.py
+    bokeh: plots/andrews-curves/implementations/python/bokeh.py
+    letsplot: plots/andrews-curves/implementations/python/letsplot.py
+    matplotlib: plots/andrews-curves/implementations/python/matplotlib.py
+    plotly: plots/andrews-curves/implementations/python/plotly.py
+    plotnine: plots/andrews-curves/implementations/python/plotnine.py
+    pygal: plots/andrews-curves/implementations/python/pygal.py
+    seaborn: plots/andrews-curves/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/andrews-curves/implementations/r/ggplot2.R
+notes:
+- Normalize variables to similar scales before transformation to prevent dominant
+  variables
+- Use transparency (alpha < 0.5) when plotting many curves to reveal density patterns
+- Color by category to highlight cluster separation between groups
+source: anyplot
+anyplot_updated: 2026-05-15 12:46:26+00:00

@@ -1,0 +1,129 @@
+entity_type: ChartType
+id: drawdown-basic
+name:
+  en: Drawdown Chart
+  es: Drawdown Basic Básico
+description:
+  en: A drawdown chart visualizes the percentage decline from peak value over time,
+    showing how far an investment or asset has fallen from its highest point. This
+    chart is essential for risk assessment and understanding the magnitude of losses
+    during unfavorable market periods. The filled area below the zero line emphasizes
+    the depth and duration of drawdowns, making it easy to identify maximum drawdown
+    periods and recovery points.
+  es: A drawdown chart visualizes the percentage decline from peak value over time,
+    showing how far an investment or asset has fallen from its highest point. This
+    chart is essential for risk assessment and understanding the magnitude of losses
+    during unfavorable market periods. The filled area below the zero line emphasizes
+    the depth and duration of drawdowns, making it easy to identify maximum drawdown
+    periods and recovery points.
+aliases:
+  en:
+  - drawdown-basic
+  - drawdown basic
+  - basic drawdown basic
+  es:
+  - drawdown-basic
+  - drawdown basic
+  - drawdown basic básico
+use_when:
+  en:
+  - 'A drawdown chart visualizes the percentage decline from peak value over time,
+    showing how far an investment or asset has fallen from its highest point. This
+    chart is essential for risk assessment and '
+  es:
+  - 'A drawdown chart visualizes the percentage decline from peak value over time,
+    showing how far an investment or asset has fallen from its highest point. This
+    chart is essential for risk assessment and '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Risk management analysis to identify maximum drawdown periods and evaluate worst-case
+    scenarios
+  - Portfolio performance evaluation comparing drawdown characteristics across different
+    assets or strategies
+  - Investment decision-making by visualizing historical recovery times and drawdown
+    frequencies
+  - Trading strategy assessment to understand downside risk and volatility patterns
+  es:
+  - Risk management analysis to identify maximum drawdown periods and evaluate worst-case
+    scenarios
+  - Portfolio performance evaluation comparing drawdown characteristics across different
+    assets or strategies
+  - Investment decision-making by visualizing historical recovery times and drawdown
+    frequencies
+  - Trading strategy assessment to understand downside risk and volatility patterns
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  - line
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  - business
+  features:
+  - basic
+  - temporal
+  - risk-analysis
+keywords:
+  en:
+  - drawdown
+  - basic
+  - area
+  - line
+  - timeseries
+  - numeric
+  - finance
+  - business
+  - temporal
+  - risk-analysis
+  es:
+  - drawdown
+  - básico
+  - area
+  - line
+  - timeseries
+  - numérico
+  - finanzas
+  - negocios
+  - basic
+  - temporal
+  - risk-analysis
+implementations:
+  javascript:
+    chartjs: plots/drawdown-basic/implementations/javascript/chartjs.js
+    d3: plots/drawdown-basic/implementations/javascript/d3.js
+    echarts: plots/drawdown-basic/implementations/javascript/echarts.js
+    highcharts: plots/drawdown-basic/implementations/javascript/highcharts.js
+    muix: plots/drawdown-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/drawdown-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/drawdown-basic/implementations/python/altair.py
+    bokeh: plots/drawdown-basic/implementations/python/bokeh.py
+    letsplot: plots/drawdown-basic/implementations/python/letsplot.py
+    matplotlib: plots/drawdown-basic/implementations/python/matplotlib.py
+    plotly: plots/drawdown-basic/implementations/python/plotly.py
+    plotnine: plots/drawdown-basic/implementations/python/plotnine.py
+    pygal: plots/drawdown-basic/implementations/python/pygal.py
+    seaborn: plots/drawdown-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/drawdown-basic/implementations/r/ggplot2.R
+notes:
+- 'Calculate drawdown as percentage decline from the running maximum: `(value - running_max)
+  / running_max * 100`'
+- Fill the area from the drawdown line to zero baseline with a semi-transparent color
+  (typically red)
+- Highlight the maximum drawdown period with a distinct marker or annotation
+source: anyplot
+anyplot_updated: null

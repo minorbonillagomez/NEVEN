@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: sn-curve-basic
+name:
+  en: S-N Curve (Wöhler Curve)
+  es: Sn Curve Basic
+description:
+  en: An S-N curve (also known as a Wöhler curve) visualizes the relationship between
+    alternating stress amplitude and the number of cycles to failure for a material
+    under fatigue loading. Both axes typically use logarithmic scales, with stress
+    on the y-axis and cycle count on the x-axis. This plot is fundamental for predicting
+    material fatigue life and identifying key material properties such as ultimate
+    strength, yield strength, and endurance limit.
+  es: An S-N curve (also known as a Wöhler curve) visualizes the relationship between
+    alternating stress amplitude and the number of cycles to failure for a material
+    under fatigue loading. Both axes typically use logarithmic scales, with stress
+    on the y-axis and cycle count on the x-axis. This plot is fundamental for predicting
+    material fatigue life and identifying key material properties such as ultimate
+    strength, yield strength, and endurance limit.
+aliases:
+  en:
+  - sn-curve-basic
+  - sn curve basic
+  - sn curve basic
+  es:
+  - sn-curve-basic
+  - sn curve basic
+  - sn curve basic
+use_when:
+  en:
+  - An S-N curve (also known as a Wöhler curve) visualizes the relationship between
+    alternating stress amplitude and the number of cycles to failure for a material
+    under fatigue loading. Both axes typical
+  es:
+  - An S-N curve (also known as a Wöhler curve) visualizes the relationship between
+    alternating stress amplitude and the number of cycles to failure for a material
+    under fatigue loading. Both axes typical
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing fatigue test data from metal coupon testing machines to characterize
+    material behavior
+  - Predicting the fatigue life of mechanical components subjected to cyclic loading
+    using Miner's Rule
+  - Comparing fatigue resistance between different materials or alloys for engineering
+    design decisions
+  - Identifying the endurance limit to determine safe operating stress levels for
+    infinite life design
+  es:
+  - Analyzing fatigue test data from metal coupon testing machines to characterize
+    material behavior
+  - Predicting the fatigue life of mechanical components subjected to cyclic loading
+    using Miner's Rule
+  - Comparing fatigue resistance between different materials or alloys for engineering
+    design decisions
+  - Identifying the endurance limit to determine safe operating stress levels for
+    infinite life design
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - science
+  features:
+  - basic
+  - logarithmic
+  - regression
+keywords:
+  en:
+  - sn
+  - curve
+  - basic
+  - line
+  - scatter
+  - numeric
+  - continuous
+  - engineering
+  - science
+  - logarithmic
+  - regression
+  es:
+  - sn
+  - curve
+  - básico
+  - line
+  - scatter
+  - numérico
+  - continuo
+  - ingeniería
+  - ciencia
+  - basic
+  - logarithmic
+  - regression
+implementations:
+  javascript:
+    chartjs: plots/sn-curve-basic/implementations/javascript/chartjs.js
+    d3: plots/sn-curve-basic/implementations/javascript/d3.js
+    echarts: plots/sn-curve-basic/implementations/javascript/echarts.js
+    highcharts: plots/sn-curve-basic/implementations/javascript/highcharts.js
+    muix: plots/sn-curve-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/sn-curve-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/sn-curve-basic/implementations/python/altair.py
+    bokeh: plots/sn-curve-basic/implementations/python/bokeh.py
+    letsplot: plots/sn-curve-basic/implementations/python/letsplot.py
+    matplotlib: plots/sn-curve-basic/implementations/python/matplotlib.py
+    plotly: plots/sn-curve-basic/implementations/python/plotly.py
+    plotnine: plots/sn-curve-basic/implementations/python/plotnine.py
+    pygal: plots/sn-curve-basic/implementations/python/pygal.py
+    seaborn: plots/sn-curve-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/sn-curve-basic/implementations/r/ggplot2.R
+notes:
+- Both axes should use logarithmic scales for proper visualization of the wide range
+  of values
+- 'Include horizontal reference lines for key material properties: Ultimate Strength,
+  Yield Strength, and Endurance Limit'
+- 'The curve typically shows three distinct regions: low-cycle fatigue (plastic),
+  high-cycle fatigue (elastic), and infinite life (below endurance limit)'
+source: anyplot
+anyplot_updated: 2026-05-19 23:31:19+00:00

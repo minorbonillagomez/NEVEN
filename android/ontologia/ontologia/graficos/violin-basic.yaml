@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: violin-basic
+name:
+  en: Basic Violin Plot
+  es: Diagrama de Violín Básico
+description:
+  en: A violin plot combining a box plot with a kernel density estimation on each
+    side, showing the distribution shape of numerical data. The width of the violin
+    at each point represents the frequency of data values at that level. Excellent
+    for comparing distributions across categories while revealing their underlying
+    shape, providing more detail than a traditional box plot.
+  es: A violin plot combining a box plot with a kernel density estimation on each
+    side, showing the distribution shape of numerical data. The width of the violin
+    at each point represents the frequency of data values at that level. Excellent
+    for comparing distributions across categories while revealing their underlying
+    shape, providing more detail than a traditional box plot.
+aliases:
+  en:
+  - violin-basic
+  - violin basic
+  - basic violin plot
+  es:
+  - violin-basic
+  - violin basic
+  - diagrama de violín básico
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing salary distributions across job titles
+  - Analyzing test score distributions by school
+  - Comparing customer spending patterns by segment
+  - 'Research: comparing measurement distributions between groups'
+  es:
+  - Comparing salary distributions across job titles
+  - Analyzing test score distributions by school
+  - Comparing customer spending patterns by segment
+  - 'Research: comparing measurement distributions between groups'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - violin
+  data_type:
+  - numeric
+  - continuous
+  - categorical
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+  - density
+  - comparison
+keywords:
+  en:
+  - violin plot
+  - basic
+  - violin
+  - numeric
+  - continuous
+  - categorical
+  - statistics
+  - general
+  - distribution
+  - density
+  - comparison
+  es:
+  - diagrama de violín
+  - básico
+  - violin
+  - numérico
+  - continuo
+  - categórico
+  - estadística
+  - general
+  - basic
+  - distribución
+  - density
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/violin-basic/implementations/javascript/chartjs.js
+    d3: plots/violin-basic/implementations/javascript/d3.js
+    echarts: plots/violin-basic/implementations/javascript/echarts.js
+    highcharts: plots/violin-basic/implementations/javascript/highcharts.js
+    muix: plots/violin-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/violin-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/violin-basic/implementations/python/altair.py
+    bokeh: plots/violin-basic/implementations/python/bokeh.py
+    letsplot: plots/violin-basic/implementations/python/letsplot.py
+    matplotlib: plots/violin-basic/implementations/python/matplotlib.py
+    plotly: plots/violin-basic/implementations/python/plotly.py
+    plotnine: plots/violin-basic/implementations/python/plotnine.py
+    pygal: plots/violin-basic/implementations/python/pygal.py
+    seaborn: plots/violin-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/violin-basic/implementations/r/ggplot2.R
+notes:
+- Show quartile markers inside the violin
+- Use mirrored density on both sides
+- Include median line
+source: anyplot
+anyplot_updated: 2026-02-21 12:00:00+00:00

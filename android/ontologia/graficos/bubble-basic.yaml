@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: bubble-basic
+name:
+  en: Basic Bubble Chart
+  es: Gráfico de Burbujas Básico
+description:
+  en: A bubble chart extending scatter plots by adding a third dimension through bubble
+    size. Each point's position shows two variables (x, y) while the bubble size represents
+    a third quantitative variable. This visualization is excellent for understanding
+    relationships between three numerical variables simultaneously, revealing patterns
+    that would be hidden in traditional 2D scatter plots.
+  es: A bubble chart extending scatter plots by adding a third dimension through bubble
+    size. Each point's position shows two variables (x, y) while the bubble size represents
+    a third quantitative variable. This visualization is excellent for understanding
+    relationships between three numerical variables simultaneously, revealing patterns
+    that would be hidden in traditional 2D scatter plots.
+aliases:
+  en:
+  - bubble-basic
+  - bubble basic
+  - basic bubble chart
+  es:
+  - bubble-basic
+  - bubble basic
+  - gráfico de burbujas básico
+use_when:
+  en:
+  - A bubble chart extending scatter plots by adding a third dimension through bubble
+    size. Each point's position shows two variables (x, y) while the bubble size represents
+    a third quantitative variable.
+  es:
+  - A bubble chart extending scatter plots by adding a third dimension through bubble
+    size. Each point's position shows two variables (x, y) while the bubble size represents
+    a third quantitative variable.
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Market analysis: comparing companies by revenue vs growth rate with bubble size
+    showing market share'
+  - 'City comparison: population vs GDP per capita with bubble size representing total
+    area'
+  - 'Product portfolio analysis: price vs quality rating with bubble size indicating
+    sales volume'
+  - 'Scientific research: visualizing three continuous measurements across samples'
+  es:
+  - 'Market analysis: comparing companies by revenue vs growth rate with bubble size
+    showing market share'
+  - 'City comparison: population vs GDP per capita with bubble size representing total
+    area'
+  - 'Product portfolio analysis: price vs quality rating with bubble size indicating
+    sales volume'
+  - 'Scientific research: visualizing three continuous measurements across samples'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bubble
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - size-encoded
+  - correlation
+  - proportional
+keywords:
+  en:
+  - bubble chart
+  - basic
+  - bubble
+  - scatter
+  - numeric
+  - continuous
+  - general
+  - business
+  - size-encoded
+  - correlation
+  - proportional
+  es:
+  - gráfico de burbujas
+  - básico
+  - bubble
+  - scatter
+  - numérico
+  - continuo
+  - general
+  - negocios
+  - basic
+  - size-encoded
+  - correlación
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/bubble-basic/implementations/javascript/chartjs.js
+    d3: plots/bubble-basic/implementations/javascript/d3.js
+    echarts: plots/bubble-basic/implementations/javascript/echarts.js
+    highcharts: plots/bubble-basic/implementations/javascript/highcharts.js
+    muix: plots/bubble-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bubble-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/bubble-basic/implementations/python/altair.py
+    bokeh: plots/bubble-basic/implementations/python/bokeh.py
+    letsplot: plots/bubble-basic/implementations/python/letsplot.py
+    matplotlib: plots/bubble-basic/implementations/python/matplotlib.py
+    plotly: plots/bubble-basic/implementations/python/plotly.py
+    plotnine: plots/bubble-basic/implementations/python/plotnine.py
+    pygal: plots/bubble-basic/implementations/python/pygal.py
+    seaborn: plots/bubble-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bubble-basic/implementations/r/ggplot2.R
+notes:
+- Scale bubble sizes by area (not radius) for accurate visual perception
+- Use transparency (alpha ~0.5-0.7) to handle overlapping bubbles
+- Include a size legend to explain bubble scaling
+source: anyplot
+anyplot_updated: 2026-05-28 17:14:58+00:00

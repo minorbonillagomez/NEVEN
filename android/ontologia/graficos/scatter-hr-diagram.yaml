@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: scatter-hr-diagram
+name:
+  en: Hertzsprung-Russell Diagram
+  es: Diagrama de Dispersión
+description:
+  en: The Hertzsprung-Russell (HR) diagram is the iconic astrophysics scatter plot
+    that shows stellar luminosity (or absolute magnitude) versus surface temperature
+    (or spectral class). Stars naturally cluster along the main sequence diagonal,
+    with distinct regions for red giants, supergiants, and white dwarfs, revealing
+    the fundamental relationship between stellar temperature and brightness.
+  es: The Hertzsprung-Russell (HR) diagram is the iconic astrophysics scatter plot
+    that shows stellar luminosity (or absolute magnitude) versus surface temperature
+    (or spectral class). Stars naturally cluster along the main sequence diagonal,
+    with distinct regions for red giants, supergiants, and white dwarfs, revealing
+    the fundamental relationship between stellar temperature and brightness.
+aliases:
+  en:
+  - scatter-hr-diagram
+  - scatter hr diagram
+  - scatter plot
+  es:
+  - scatter-hr-diagram
+  - scatter hr diagram
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - 'Astrophysics research: classifying stellar populations and studying stellar evolution
+    pathways'
+  - 'Astronomy education: teaching students about stellar life cycles and spectral
+    classification'
+  - 'Observational astronomy: determining cluster ages by fitting main sequence turnoff
+    points'
+  es:
+  - 'Astrophysics research: classifying stellar populations and studying stellar evolution
+    pathways'
+  - 'Astronomy education: teaching students about stellar life cycles and spectral
+    classification'
+  - 'Observational astronomy: determining cluster ages by fitting main sequence turnoff
+    points'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  - categorical
+  domain:
+  - science
+  features:
+  - color-mapped
+  - annotated
+  - 2d
+keywords:
+  en:
+  - scatter plot
+  - hr
+  - diagram
+  - scatter
+  - numeric
+  - continuous
+  - categorical
+  - science
+  - color-mapped
+  - annotated
+  - 2d
+  es:
+  - diagrama de dispersión
+  - hr
+  - diagram
+  - scatter
+  - numérico
+  - continuo
+  - categórico
+  - ciencia
+  - color-mapped
+  - annotated
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/scatter-hr-diagram/implementations/javascript/chartjs.js
+    d3: plots/scatter-hr-diagram/implementations/javascript/d3.js
+    echarts: plots/scatter-hr-diagram/implementations/javascript/echarts.js
+    highcharts: plots/scatter-hr-diagram/implementations/javascript/highcharts.js
+    muix: plots/scatter-hr-diagram/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-hr-diagram/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-hr-diagram/implementations/python/altair.py
+    bokeh: plots/scatter-hr-diagram/implementations/python/bokeh.py
+    letsplot: plots/scatter-hr-diagram/implementations/python/letsplot.py
+    matplotlib: plots/scatter-hr-diagram/implementations/python/matplotlib.py
+    plotly: plots/scatter-hr-diagram/implementations/python/plotly.py
+    plotnine: plots/scatter-hr-diagram/implementations/python/plotnine.py
+    pygal: plots/scatter-hr-diagram/implementations/python/pygal.py
+    seaborn: plots/scatter-hr-diagram/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-hr-diagram/implementations/r/ggplot2.R
+notes:
+- X-axis must be reversed (high temperature/blue on left, low temperature/red on right)
+  following the astrophysical convention
+- Y-axis should use logarithmic scale for luminosity
+- Points should be color-coded by spectral type using conventional colors (blue for
+  O/B, white for A, yellow for F/G, orange for K, red for M)
+source: anyplot
+anyplot_updated: null

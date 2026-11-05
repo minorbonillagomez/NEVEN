@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: diagnostic-regression-panel
+name:
+  en: Regression Diagnostic Panel (Four-Plot Display)
+  es: Diagnostic Regression Panel Regresión
+description:
+  en: 'A 2x2 panel of diagnostic plots for evaluating linear regression model assumptions,
+    replicating the classic output of R''s `plot(lm)`. The four subplots are: (1)
+    Residuals vs Fitted values to detect non-linearity and heteroscedasticity, (2)
+    Normal Q-Q plot of standardized residuals to assess normality, (3) Scale-Location
+    plot (square root of standardized residuals vs fitted values) to check homoscedasticity,
+    and (4) Residuals vs Leverage with Cook''s distance contours to identify influential
+    observations. This composite display is the standard first step in regression
+    model validation across statistics, academia, and regulated industries.'
+  es: 'A 2x2 panel of diagnostic plots for evaluating linear regression model assumptions,
+    replicating the classic output of R''s `plot(lm)`. The four subplots are: (1)
+    Residuals vs Fitted values to detect non-linearity and heteroscedasticity, (2)
+    Normal Q-Q plot of standardized residuals to assess normality, (3) Scale-Location
+    plot (square root of standardized residuals vs fitted values) to check homoscedasticity,
+    and (4) Residuals vs Leverage with Cook''s distance contours to identify influential
+    observations. This composite display is the standard first step in regression
+    model validation across statistics, academia, and regulated industries.'
+aliases:
+  en:
+  - diagnostic-regression-panel
+  - diagnostic regression panel
+  - regression diagnostic regression panel
+  es:
+  - diagnostic-regression-panel
+  - diagnostic regression panel
+  - diagnostic regression panel regresión
+use_when:
+  en:
+  - 'A 2x2 panel of diagnostic plots for evaluating linear regression model assumptions,
+    replicating the classic output of R''s `plot(lm)`. The four subplots are: (1)
+    Residuals vs Fitted values to detect no'
+  es:
+  - 'A 2x2 panel of diagnostic plots for evaluating linear regression model assumptions,
+    replicating the classic output of R''s `plot(lm)`. The four subplots are: (1)
+    Residuals vs Fitted values to detect no'
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Validating linear regression assumptions before reporting results in statistical
+    analysis
+  - Checking for heteroscedasticity, non-linearity, and influential outliers in fitted
+    models
+  - Teaching regression diagnostics in academic statistics courses and textbooks
+  - Regulatory model validation in finance (credit risk models) and pharma (dose-response
+    modeling)
+  es:
+  - Validating linear regression assumptions before reporting results in statistical
+    analysis
+  - Checking for heteroscedasticity, non-linearity, and influential outliers in fitted
+    models
+  - Teaching regression diagnostics in academic statistics courses and textbooks
+  - Regulatory model validation in finance (credit risk models) and pharma (dose-response
+    modeling)
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  - qq
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - research
+  features:
+  - multi
+  - annotated
+  - diagnostic
+  - correlation
+keywords:
+  en:
+  - diagnostic
+  - regression
+  - panel
+  - scatter
+  - qq
+  - numeric
+  - continuous
+  - statistics
+  - research
+  - multi
+  - annotated
+  - correlation
+  es:
+  - diagnostic
+  - regresión
+  - panel
+  - scatter
+  - qq
+  - numérico
+  - continuo
+  - estadística
+  - research
+  - multi
+  - annotated
+  - correlación
+implementations:
+  javascript:
+    chartjs: plots/diagnostic-regression-panel/implementations/javascript/chartjs.js
+    d3: plots/diagnostic-regression-panel/implementations/javascript/d3.js
+    echarts: plots/diagnostic-regression-panel/implementations/javascript/echarts.js
+    highcharts: plots/diagnostic-regression-panel/implementations/javascript/highcharts.js
+    muix: plots/diagnostic-regression-panel/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/diagnostic-regression-panel/implementations/julia/makie.jl
+  python:
+    altair: plots/diagnostic-regression-panel/implementations/python/altair.py
+    bokeh: plots/diagnostic-regression-panel/implementations/python/bokeh.py
+    letsplot: plots/diagnostic-regression-panel/implementations/python/letsplot.py
+    matplotlib: plots/diagnostic-regression-panel/implementations/python/matplotlib.py
+    plotly: plots/diagnostic-regression-panel/implementations/python/plotly.py
+    plotnine: plots/diagnostic-regression-panel/implementations/python/plotnine.py
+    pygal: plots/diagnostic-regression-panel/implementations/python/pygal.py
+    seaborn: plots/diagnostic-regression-panel/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/diagnostic-regression-panel/implementations/r/ggplot2.R
+notes:
+- Four subplots arranged in a 2x2 grid layout with shared figure title
+- '**Subplot 1 (Residuals vs Fitted):** Scatter of residuals against fitted values
+  with a horizontal zero-reference line and a LOWESS smoother to reveal non-linear
+  patterns'
+- '**Subplot 2 (Normal Q-Q):** Standardized residuals plotted against theoretical
+  normal quantiles with a 45-degree reference line; deviations indicate non-normality'
+source: anyplot
+anyplot_updated: null

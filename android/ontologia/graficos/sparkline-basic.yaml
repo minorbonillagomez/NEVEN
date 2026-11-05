@@ -1,0 +1,118 @@
+entity_type: ChartType
+id: sparkline-basic
+name:
+  en: Basic Sparkline
+  es: Minigráfico Básico
+description:
+  en: 'A sparkline is a small, condensed line chart designed to be embedded inline
+    with text or in dashboard cells. It shows trends at a glance without axes, axis
+    labels, or detailed scales - pure data visualization in minimal space. The defining
+    characteristic is extreme minimalism: a single continuous line that conveys the
+    shape of data without any chart chrome.'
+  es: 'A sparkline is a small, condensed line chart designed to be embedded inline
+    with text or in dashboard cells. It shows trends at a glance without axes, axis
+    labels, or detailed scales - pure data visualization in minimal space. The defining
+    characteristic is extreme minimalism: a single continuous line that conveys the
+    shape of data without any chart chrome.'
+aliases:
+  en:
+  - sparkline-basic
+  - sparkline basic
+  - basic sparkline
+  es:
+  - sparkline-basic
+  - sparkline basic
+  - minigráfico básico
+use_when:
+  en:
+  - A sparkline is a small, condensed line chart designed to be embedded inline with
+    text or in dashboard cells. It shows trends at a glance without axes, axis labels,
+    or detailed scales - pure data visua
+  es:
+  - A sparkline is a small, condensed line chart designed to be embedded inline with
+    text or in dashboard cells. It shows trends at a glance without axes, axis labels,
+    or detailed scales - pure data visua
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Dashboard KPI trend indicators showing metric changes over time
+  - Inline stock price trends embedded in financial tables or reports
+  - Table cells displaying metric history for quick comparison across rows
+  - Small multiples for comparing many series side-by-side
+  es:
+  - Dashboard KPI trend indicators showing metric changes over time
+  - Inline stock price trends embedded in financial tables or reports
+  - Table cells displaying metric history for quick comparison across rows
+  - Small multiples for comparing many series side-by-side
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - sparkline
+  - line
+  data_type:
+  - numeric
+  - timeseries
+  domain:
+  - business
+  - finance
+  features:
+  - basic
+  - compact
+  - inline
+keywords:
+  en:
+  - sparkline
+  - basic
+  - line
+  - numeric
+  - timeseries
+  - business
+  - finance
+  - compact
+  - inline
+  es:
+  - minigráfico
+  - básico
+  - sparkline
+  - line
+  - numérico
+  - timeseries
+  - negocios
+  - finanzas
+  - basic
+  - compact
+  - inline
+implementations:
+  javascript:
+    chartjs: plots/sparkline-basic/implementations/javascript/chartjs.js
+    d3: plots/sparkline-basic/implementations/javascript/d3.js
+    echarts: plots/sparkline-basic/implementations/javascript/echarts.js
+    highcharts: plots/sparkline-basic/implementations/javascript/highcharts.js
+    muix: plots/sparkline-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/sparkline-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/sparkline-basic/implementations/python/altair.py
+    bokeh: plots/sparkline-basic/implementations/python/bokeh.py
+    letsplot: plots/sparkline-basic/implementations/python/letsplot.py
+    matplotlib: plots/sparkline-basic/implementations/python/matplotlib.py
+    plotly: plots/sparkline-basic/implementations/python/plotly.py
+    plotnine: plots/sparkline-basic/implementations/python/plotnine.py
+    pygal: plots/sparkline-basic/implementations/python/pygal.py
+    seaborn: plots/sparkline-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/sparkline-basic/implementations/r/ggplot2.R
+notes:
+- No axes, axis labels, or gridlines - pure visualization
+- Compact aspect ratio (wide and short, typically 4:1 to 8:1)
+- 'Optional: highlight min/max points with colored dots'
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

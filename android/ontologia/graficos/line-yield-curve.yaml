@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: line-yield-curve
+name:
+  en: Yield Curve (Interest Rate Term Structure)
+  es: Gráfico de Líneas
+description:
+  en: A yield curve plots interest rates (yields) of bonds against their maturities,
+    from short-term (e.g., 1 month) to long-term (e.g., 30 years). It is one of the
+    most iconic charts in macroeconomics and finance, used to assess market expectations
+    for future interest rates, economic growth, and inflation. An inverted yield curve
+    (where short-term rates exceed long-term rates) is a widely followed recession
+    indicator. The plot should support displaying multiple curves (e.g., different
+    dates) on the same axes to show how the term structure evolves over time.
+  es: A yield curve plots interest rates (yields) of bonds against their maturities,
+    from short-term (e.g., 1 month) to long-term (e.g., 30 years). It is one of the
+    most iconic charts in macroeconomics and finance, used to assess market expectations
+    for future interest rates, economic growth, and inflation. An inverted yield curve
+    (where short-term rates exceed long-term rates) is a widely followed recession
+    indicator. The plot should support displaying multiple curves (e.g., different
+    dates) on the same axes to show how the term structure evolves over time.
+aliases:
+  en:
+  - line-yield-curve
+  - line yield curve
+  - line chart
+  es:
+  - line-yield-curve
+  - line yield curve
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing U.S. Treasury yield curves across different dates to track monetary
+    policy shifts and recession signals
+  - Visualizing the term structure of government bonds for central bank publications
+    and financial media
+  - Analyzing spread compression or inversion between short-term and long-term maturities
+    for investment strategy decisions
+  es:
+  - Comparing U.S. Treasury yield curves across different dates to track monetary
+    policy shifts and recession signals
+  - Visualizing the term structure of government bonds for central bank publications
+    and financial media
+  - Analyzing spread compression or inversion between short-term and long-term maturities
+    for investment strategy decisions
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - categorical
+  - timeseries
+  domain:
+  - finance
+  features:
+  - comparison
+  - annotated
+  - multi
+keywords:
+  en:
+  - line chart
+  - yield
+  - curve
+  - line
+  - numeric
+  - categorical
+  - timeseries
+  - finance
+  - comparison
+  - annotated
+  - multi
+  es:
+  - gráfico de líneas
+  - yield
+  - curve
+  - line
+  - numérico
+  - categórico
+  - timeseries
+  - finanzas
+  - comparación
+  - annotated
+  - multi
+implementations:
+  javascript:
+    chartjs: plots/line-yield-curve/implementations/javascript/chartjs.js
+    d3: plots/line-yield-curve/implementations/javascript/d3.js
+    echarts: plots/line-yield-curve/implementations/javascript/echarts.js
+    highcharts: plots/line-yield-curve/implementations/javascript/highcharts.js
+    muix: plots/line-yield-curve/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-yield-curve/implementations/julia/makie.jl
+  python:
+    altair: plots/line-yield-curve/implementations/python/altair.py
+    bokeh: plots/line-yield-curve/implementations/python/bokeh.py
+    letsplot: plots/line-yield-curve/implementations/python/letsplot.py
+    matplotlib: plots/line-yield-curve/implementations/python/matplotlib.py
+    plotly: plots/line-yield-curve/implementations/python/plotly.py
+    plotnine: plots/line-yield-curve/implementations/python/plotnine.py
+    pygal: plots/line-yield-curve/implementations/python/pygal.py
+    seaborn: plots/line-yield-curve/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-yield-curve/implementations/r/ggplot2.R
+notes:
+- Use `maturity_years` for x-axis positioning to reflect true time spacing (log or
+  linear scale); use `maturity` labels for tick marks
+- Include at least two curves on the same plot to show how the yield curve shape changes
+  over time (e.g., a normal upward-sloping curve vs. an inverted curve)
+- Highlight the inversion region where short-term yields exceed long-term yields using
+  shading or annotation
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

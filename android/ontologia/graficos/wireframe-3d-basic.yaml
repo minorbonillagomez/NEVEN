@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: wireframe-3d-basic
+name:
+  en: Basic 3D Wireframe Plot
+  es: Wireframe 3D Basic 3D
+description:
+  en: A 3D wireframe plot displays a mathematical surface as a mesh of lines connecting
+    grid points in three-dimensional space. Unlike solid surface plots, wireframes
+    render only the edges between grid points, creating a see-through visualization
+    that reveals the underlying structure and allows viewing parts of the surface
+    that would otherwise be hidden. This makes wireframes ideal for understanding
+    the topology and shape of 3D functions.
+  es: A 3D wireframe plot displays a mathematical surface as a mesh of lines connecting
+    grid points in three-dimensional space. Unlike solid surface plots, wireframes
+    render only the edges between grid points, creating a see-through visualization
+    that reveals the underlying structure and allows viewing parts of the surface
+    that would otherwise be hidden. This makes wireframes ideal for understanding
+    the topology and shape of 3D functions.
+aliases:
+  en:
+  - wireframe-3d-basic
+  - wireframe 3d basic
+  - 3d wireframe 3d basic
+  es:
+  - wireframe-3d-basic
+  - wireframe 3d basic
+  - wireframe 3d basic 3d
+use_when:
+  en:
+  - A 3D wireframe plot displays a mathematical surface as a mesh of lines connecting
+    grid points in three-dimensional space. Unlike solid surface plots, wireframes
+    render only the edges between grid poin
+  es:
+  - A 3D wireframe plot displays a mathematical surface as a mesh of lines connecting
+    grid points in three-dimensional space. Unlike solid surface plots, wireframes
+    render only the edges between grid poin
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing mathematical functions z = f(x, y) to understand their shape and behavior
+  - Debugging and validating 3D surface models before rendering solid surfaces
+  - Teaching 3D coordinate systems and surface geometry in educational contexts
+  - Exploring terrain data or topographical information with structural clarity
+  es:
+  - Visualizing mathematical functions z = f(x, y) to understand their shape and behavior
+  - Debugging and validating 3D surface models before rendering solid surfaces
+  - Teaching 3D coordinate systems and surface geometry in educational contexts
+  - Exploring terrain data or topographical information with structural clarity
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - surface
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - engineering
+  features:
+  - basic
+  - 3d
+  - mesh
+keywords:
+  en:
+  - wireframe
+  - 3d
+  - basic
+  - surface
+  - numeric
+  - continuous
+  - science
+  - engineering
+  - mesh
+  es:
+  - wireframe
+  - 3d
+  - básico
+  - surface
+  - numérico
+  - continuo
+  - ciencia
+  - ingeniería
+  - basic
+  - mesh
+implementations:
+  javascript:
+    chartjs: plots/wireframe-3d-basic/implementations/javascript/chartjs.js
+    d3: plots/wireframe-3d-basic/implementations/javascript/d3.js
+    echarts: plots/wireframe-3d-basic/implementations/javascript/echarts.js
+    highcharts: plots/wireframe-3d-basic/implementations/javascript/highcharts.js
+    muix: plots/wireframe-3d-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/wireframe-3d-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/wireframe-3d-basic/implementations/python/altair.py
+    bokeh: plots/wireframe-3d-basic/implementations/python/bokeh.py
+    letsplot: plots/wireframe-3d-basic/implementations/python/letsplot.py
+    matplotlib: plots/wireframe-3d-basic/implementations/python/matplotlib.py
+    plotly: plots/wireframe-3d-basic/implementations/python/plotly.py
+    plotnine: plots/wireframe-3d-basic/implementations/python/plotnine.py
+    pygal: plots/wireframe-3d-basic/implementations/python/pygal.py
+    seaborn: plots/wireframe-3d-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/wireframe-3d-basic/implementations/r/ggplot2.R
+notes:
+- Grid lines should be rendered in both x and y directions
+- Consider using a consistent line color or optional height-based coloring
+- 3D perspective projection with appropriate viewing angle (e.g., elevation 30, azimuth
+  45)
+source: anyplot
+anyplot_updated: 2026-08-04 18:06:27+00:00

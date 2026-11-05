@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: subplot-grid
+name:
+  en: Subplot Grid Layout
+  es: Subplot Grid
+description:
+  en: A customizable grid of multiple subplots allowing different plot types in each
+    cell, with shared or independent axes. Unlike faceted plots that repeat the same
+    visualization for data subsets, subplot grids enable combining distinct visualizations
+    (scatter, line, bar, histogram, etc.) into a cohesive multi-panel figure for comprehensive
+    data presentation.
+  es: A customizable grid of multiple subplots allowing different plot types in each
+    cell, with shared or independent axes. Unlike faceted plots that repeat the same
+    visualization for data subsets, subplot grids enable combining distinct visualizations
+    (scatter, line, bar, histogram, etc.) into a cohesive multi-panel figure for comprehensive
+    data presentation.
+aliases:
+  en:
+  - subplot-grid
+  - subplot grid
+  - subplot grid
+  es:
+  - subplot-grid
+  - subplot grid
+  - subplot grid
+use_when:
+  en:
+  - 'A customizable grid of multiple subplots allowing different plot types in each
+    cell, with shared or independent axes. Unlike faceted plots that repeat the same
+    visualization for data subsets, subplot '
+  es:
+  - 'A customizable grid of multiple subplots allowing different plot types in each
+    cell, with shared or independent axes. Unlike faceted plots that repeat the same
+    visualization for data subsets, subplot '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Dashboard-style visualizations combining multiple metrics in a single figure
+  - Scientific publications requiring related but distinct plots side-by-side
+  - Exploratory data analysis comparing different visualization approaches
+  - Technical reports showing complementary views of the same dataset
+  es:
+  - Dashboard-style visualizations combining multiple metrics in a single figure
+  - Scientific publications requiring related but distinct plots side-by-side
+  - Exploratory data analysis comparing different visualization approaches
+  - Technical reports showing complementary views of the same dataset
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type: []
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - science
+  - business
+  features:
+  - multi
+  - layout
+  - customizable
+  - composite
+  - subplot
+  - grid
+keywords:
+  en:
+  - subplot
+  - grid
+  - numeric
+  - categorical
+  - general
+  - science
+  - business
+  - multi
+  - layout
+  - customizable
+  - composite
+  es:
+  - subplot
+  - grid
+  - numérico
+  - categórico
+  - general
+  - ciencia
+  - negocios
+  - multi
+  - layout
+  - customizable
+  - composite
+implementations:
+  javascript:
+    chartjs: plots/subplot-grid/implementations/javascript/chartjs.js
+    d3: plots/subplot-grid/implementations/javascript/d3.js
+    echarts: plots/subplot-grid/implementations/javascript/echarts.js
+    highcharts: plots/subplot-grid/implementations/javascript/highcharts.js
+    muix: plots/subplot-grid/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/subplot-grid/implementations/julia/makie.jl
+  python:
+    altair: plots/subplot-grid/implementations/python/altair.py
+    bokeh: plots/subplot-grid/implementations/python/bokeh.py
+    letsplot: plots/subplot-grid/implementations/python/letsplot.py
+    matplotlib: plots/subplot-grid/implementations/python/matplotlib.py
+    plotly: plots/subplot-grid/implementations/python/plotly.py
+    plotnine: plots/subplot-grid/implementations/python/plotnine.py
+    pygal: plots/subplot-grid/implementations/python/pygal.py
+    seaborn: plots/subplot-grid/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/subplot-grid/implementations/r/ggplot2.R
+notes:
+- Grid dimensions should be configurable (e.g., 2x2, 2x3, 3x1)
+- Support both shared axes (for comparison) and independent axes (for different scales)
+- Each cell can contain a different plot type
+source: anyplot
+anyplot_updated: 2026-05-13 16:30:00+00:00

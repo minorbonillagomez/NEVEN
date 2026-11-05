@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: funnel-meta-analysis
+name:
+  en: Meta-Analysis Funnel Plot for Publication Bias
+  es: Gráfico de Embudo
+description:
+  en: A funnel plot used in meta-analysis to assess publication bias by plotting individual
+    study effect sizes against their precision (typically standard error). Studies
+    scatter around a summary effect line, with pseudo 95% confidence limits forming
+    an inverted funnel shape. In the absence of bias, studies distribute symmetrically
+    around the summary effect; asymmetry suggests publication bias or systematic heterogeneity.
+    This is a standard tool in systematic reviews and Cochrane-style meta-analyses.
+  es: A funnel plot used in meta-analysis to assess publication bias by plotting individual
+    study effect sizes against their precision (typically standard error). Studies
+    scatter around a summary effect line, with pseudo 95% confidence limits forming
+    an inverted funnel shape. In the absence of bias, studies distribute symmetrically
+    around the summary effect; asymmetry suggests publication bias or systematic heterogeneity.
+    This is a standard tool in systematic reviews and Cochrane-style meta-analyses.
+aliases:
+  en:
+  - funnel-meta-analysis
+  - funnel meta analysis
+  - funnel plot
+  es:
+  - funnel-meta-analysis
+  - funnel meta analysis
+  - gráfico de embudo
+use_when:
+  en:
+  - A funnel plot used in meta-analysis to assess publication bias by plotting individual
+    study effect sizes against their precision (typically standard error). Studies
+    scatter around a summary effect lin
+  es:
+  - A funnel plot used in meta-analysis to assess publication bias by plotting individual
+    study effect sizes against their precision (typically standard error). Studies
+    scatter around a summary effect lin
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Systematic review authors assessing whether small-study effects indicate publication
+    bias across included trials
+  - Cochrane reviewers generating standard funnel plots as part of required reporting
+    for intervention reviews
+  - Research methodologists evaluating selective reporting by visually inspecting
+    funnel asymmetry
+  - Epidemiologists checking meta-analytic robustness before drawing pooled conclusions
+  es:
+  - Systematic review authors assessing whether small-study effects indicate publication
+    bias across included trials
+  - Cochrane reviewers generating standard funnel plots as part of required reporting
+    for intervention reviews
+  - Research methodologists evaluating selective reporting by visually inspecting
+    funnel asymmetry
+  - Epidemiologists checking meta-analytic robustness before drawing pooled conclusions
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  - funnel
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - healthcare
+  - research
+  features:
+  - annotated
+  - comparison
+  - confidence-interval
+keywords:
+  en:
+  - funnel plot
+  - meta
+  - analysis
+  - scatter
+  - funnel
+  - numeric
+  - continuous
+  - statistics
+  - healthcare
+  - research
+  - annotated
+  - comparison
+  - confidence-interval
+  es:
+  - gráfico de embudo
+  - meta
+  - analysis
+  - scatter
+  - funnel
+  - numérico
+  - continuo
+  - estadística
+  - healthcare
+  - research
+  - annotated
+  - comparación
+  - confidence-interval
+implementations:
+  javascript:
+    chartjs: plots/funnel-meta-analysis/implementations/javascript/chartjs.js
+    d3: plots/funnel-meta-analysis/implementations/javascript/d3.js
+    echarts: plots/funnel-meta-analysis/implementations/javascript/echarts.js
+    highcharts: plots/funnel-meta-analysis/implementations/javascript/highcharts.js
+    muix: plots/funnel-meta-analysis/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/funnel-meta-analysis/implementations/julia/makie.jl
+  python:
+    altair: plots/funnel-meta-analysis/implementations/python/altair.py
+    bokeh: plots/funnel-meta-analysis/implementations/python/bokeh.py
+    letsplot: plots/funnel-meta-analysis/implementations/python/letsplot.py
+    matplotlib: plots/funnel-meta-analysis/implementations/python/matplotlib.py
+    plotly: plots/funnel-meta-analysis/implementations/python/plotly.py
+    plotnine: plots/funnel-meta-analysis/implementations/python/plotnine.py
+    pygal: plots/funnel-meta-analysis/implementations/python/pygal.py
+    seaborn: plots/funnel-meta-analysis/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/funnel-meta-analysis/implementations/r/ggplot2.R
+notes:
+- Y-axis shows standard error (inverted so that larger/more precise studies appear
+  at the top)
+- X-axis shows the effect size measure
+- Draw a vertical line at the summary/pooled effect size
+source: anyplot
+anyplot_updated: null

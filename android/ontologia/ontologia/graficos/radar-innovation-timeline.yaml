@@ -1,0 +1,137 @@
+entity_type: ChartType
+id: radar-innovation-timeline
+name:
+  en: Innovation Radar with Time-Horizon Rings
+  es: Gráfico de Radar
+description:
+  en: A radial chart that maps innovations, technologies, or trends onto concentric
+    rings representing time horizons and angular sectors representing thematic categories.
+    Inner rings represent near-term items (e.g., "Now", "Next 6 months") while outer
+    rings represent longer-term or emerging trends (e.g., "2-5 years", "Future").
+    Each item is placed as a labeled point within its sector and ring, with distinct
+    markers or colors encoding categories. Inspired by ThoughtWorks Technology Radar
+    and similar strategic planning visualizations.
+  es: A radial chart that maps innovations, technologies, or trends onto concentric
+    rings representing time horizons and angular sectors representing thematic categories.
+    Inner rings represent near-term items (e.g., "Now", "Next 6 months") while outer
+    rings represent longer-term or emerging trends (e.g., "2-5 years", "Future").
+    Each item is placed as a labeled point within its sector and ring, with distinct
+    markers or colors encoding categories. Inspired by ThoughtWorks Technology Radar
+    and similar strategic planning visualizations.
+aliases:
+  en:
+  - radar-innovation-timeline
+  - radar innovation timeline
+  - radar chart
+  es:
+  - radar-innovation-timeline
+  - radar innovation timeline
+  - gráfico de radar
+use_when:
+  en:
+  - A radial chart that maps innovations, technologies, or trends onto concentric
+    rings representing time horizons and angular sectors representing thematic categories.
+    Inner rings represent near-term ite
+  es:
+  - A radial chart that maps innovations, technologies, or trends onto concentric
+    rings representing time horizons and angular sectors representing thematic categories.
+    Inner rings represent near-term ite
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Strategic technology planning: mapping emerging technologies by expected adoption
+    timeline across domains like AI, cloud, and security'
+  - 'Corporate innovation management: visualizing an R&D pipeline by expected market
+    readiness and business unit'
+  - 'Trend analysis: positioning industry trends from immediate to long-term horizon
+    for executive briefings'
+  - 'Investment planning: categorizing portfolio opportunities by time-to-market and
+    sector'
+  es:
+  - 'Strategic technology planning: mapping emerging technologies by expected adoption
+    timeline across domains like AI, cloud, and security'
+  - 'Corporate innovation management: visualizing an R&D pipeline by expected market
+    readiness and business unit'
+  - 'Trend analysis: positioning industry trends from immediate to long-term horizon
+    for executive briefings'
+  - 'Investment planning: categorizing portfolio opportunities by time-to-market and
+    sector'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - radar
+  - polar
+  data_type:
+  - categorical
+  - ordinal
+  domain:
+  - business
+  - technology
+  features:
+  - annotated
+  - color-mapped
+  - temporal
+keywords:
+  en:
+  - radar chart
+  - innovation
+  - timeline
+  - radar
+  - polar
+  - categorical
+  - ordinal
+  - business
+  - technology
+  - annotated
+  - color-mapped
+  - temporal
+  es:
+  - gráfico de radar
+  - innovation
+  - timeline
+  - radar
+  - polar
+  - categórico
+  - ordinal
+  - negocios
+  - technology
+  - annotated
+  - color-mapped
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/radar-innovation-timeline/implementations/javascript/chartjs.js
+    d3: plots/radar-innovation-timeline/implementations/javascript/d3.js
+    echarts: plots/radar-innovation-timeline/implementations/javascript/echarts.js
+    highcharts: plots/radar-innovation-timeline/implementations/javascript/highcharts.js
+    muix: plots/radar-innovation-timeline/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/radar-innovation-timeline/implementations/julia/makie.jl
+  python:
+    altair: plots/radar-innovation-timeline/implementations/python/altair.py
+    bokeh: plots/radar-innovation-timeline/implementations/python/bokeh.py
+    letsplot: plots/radar-innovation-timeline/implementations/python/letsplot.py
+    matplotlib: plots/radar-innovation-timeline/implementations/python/matplotlib.py
+    plotly: plots/radar-innovation-timeline/implementations/python/plotly.py
+    plotnine: plots/radar-innovation-timeline/implementations/python/plotnine.py
+    pygal: plots/radar-innovation-timeline/implementations/python/pygal.py
+    seaborn: plots/radar-innovation-timeline/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/radar-innovation-timeline/implementations/r/ggplot2.R
+notes:
+- Use a half-circle (180 degrees) or three-quarter (270 degrees) layout to leave room
+  for a legend or title area
+- Draw concentric rings with clear boundary lines and label each ring with its time-horizon
+  name
+- Divide the angular space into equal sectors with labeled sector headers along the
+  outer edge
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: bar-basic
+name:
+  en: Basic Bar Chart
+  es: Gráfico de Barras Básico
+description:
+  en: A vertical bar chart that displays categorical data with rectangular bars whose
+    heights are proportional to the values they represent. This fundamental visualization
+    is ideal for comparing discrete categories and identifying which categories have
+    the highest or lowest values. Bar charts excel at showing rankings, distributions
+    across categories, and making relative comparisons intuitive.
+  es: A vertical bar chart that displays categorical data with rectangular bars whose
+    heights are proportional to the values they represent. This fundamental visualization
+    is ideal for comparing discrete categories and identifying which categories have
+    the highest or lowest values. Bar charts excel at showing rankings, distributions
+    across categories, and making relative comparisons intuitive.
+aliases:
+  en:
+  - bar-basic
+  - bar basic
+  - basic bar chart
+  es:
+  - bar-basic
+  - bar basic
+  - gráfico de barras básico
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Comparing quarterly sales figures across different product lines
+  - Visualizing survey responses showing preference counts for different options
+  - Displaying population statistics across different age groups or regions
+  es:
+  - Comparing quarterly sales figures across different product lines
+  - Visualizing survey responses showing preference counts for different options
+  - Displaying population statistics across different age groups or regions
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - numeric
+  - discrete
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - comparison
+  - ranking
+keywords:
+  en:
+  - bar chart
+  - basic
+  - bar
+  - categorical
+  - numeric
+  - discrete
+  - general
+  - business
+  - comparison
+  - ranking
+  es:
+  - gráfico de barras
+  - básico
+  - bar
+  - categórico
+  - numérico
+  - discreto
+  - general
+  - negocios
+  - basic
+  - comparación
+  - clasificación
+implementations:
+  javascript:
+    chartjs: plots/bar-basic/implementations/javascript/chartjs.js
+    d3: plots/bar-basic/implementations/javascript/d3.js
+    echarts: plots/bar-basic/implementations/javascript/echarts.js
+    highcharts: plots/bar-basic/implementations/javascript/highcharts.js
+    muix: plots/bar-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-basic/implementations/python/altair.py
+    bokeh: plots/bar-basic/implementations/python/bokeh.py
+    letsplot: plots/bar-basic/implementations/python/letsplot.py
+    matplotlib: plots/bar-basic/implementations/python/matplotlib.py
+    plotly: plots/bar-basic/implementations/python/plotly.py
+    plotnine: plots/bar-basic/implementations/python/plotnine.py
+    pygal: plots/bar-basic/implementations/python/pygal.py
+    seaborn: plots/bar-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-basic/implementations/r/ggplot2.R
+notes:
+- Bar widths should be consistent across all categories
+- Consider adding value labels on or above bars for precise reading
+- Use a single color for all bars, or highlight specific bars to draw attention
+source: anyplot
+anyplot_updated: 2025-12-11 22:46:28+00:00

@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: ternary-density
+name:
+  en: Ternary Density Plot
+  es: Diagrama Ternario
+description:
+  en: A ternary density plot combines a three-component ternary diagram with kernel
+    density estimation to visualize where compositional data concentrates. Instead
+    of showing individual points, this visualization uses a heatmap overlay to reveal
+    the underlying probability distribution of compositions, making it ideal for identifying
+    clusters, modes, and patterns in large compositional datasets.
+  es: A ternary density plot combines a three-component ternary diagram with kernel
+    density estimation to visualize where compositional data concentrates. Instead
+    of showing individual points, this visualization uses a heatmap overlay to reveal
+    the underlying probability distribution of compositions, making it ideal for identifying
+    clusters, modes, and patterns in large compositional datasets.
+aliases:
+  en:
+  - ternary-density
+  - ternary density
+  - ternary plot
+  es:
+  - ternary-density
+  - ternary density
+  - diagrama ternario
+use_when:
+  en:
+  - A ternary density plot combines a three-component ternary diagram with kernel
+    density estimation to visualize where compositional data concentrates. Instead
+    of showing individual points, this visualiz
+  es:
+  - A ternary density plot combines a three-component ternary diagram with kernel
+    density estimation to visualize where compositional data concentrates. Instead
+    of showing individual points, this visualiz
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing sediment composition distributions across geological samples (sand/silt/clay)
+  - Visualizing alloy mixture preferences in materials science research
+  - Identifying common flavor profiles in food science (sweet/sour/bitter ratios)
+  - Understanding market positioning patterns among three competing attributes
+  es:
+  - Analyzing sediment composition distributions across geological samples (sand/silt/clay)
+  - Visualizing alloy mixture preferences in materials science research
+  - Identifying common flavor profiles in food science (sweet/sour/bitter ratios)
+  - Understanding market positioning patterns among three competing attributes
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - ternary
+  - density
+  - heatmap
+  data_type:
+  - numeric
+  - compositional
+  domain:
+  - science
+  - general
+  features:
+  - density
+  - kde
+  - color-mapped
+keywords:
+  en:
+  - ternary plot
+  - density plot
+  - ternary
+  - density
+  - heatmap
+  - numeric
+  - compositional
+  - science
+  - general
+  - kde
+  - color-mapped
+  es:
+  - diagrama ternario
+  - gráfico de densidad
+  - ternary
+  - density
+  - heatmap
+  - numérico
+  - compositional
+  - ciencia
+  - general
+  - kde
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/ternary-density/implementations/javascript/chartjs.js
+    d3: plots/ternary-density/implementations/javascript/d3.js
+    echarts: plots/ternary-density/implementations/javascript/echarts.js
+    highcharts: plots/ternary-density/implementations/javascript/highcharts.js
+    muix: plots/ternary-density/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ternary-density/implementations/julia/makie.jl
+  python:
+    altair: plots/ternary-density/implementations/python/altair.py
+    bokeh: plots/ternary-density/implementations/python/bokeh.py
+    letsplot: plots/ternary-density/implementations/python/letsplot.py
+    matplotlib: plots/ternary-density/implementations/python/matplotlib.py
+    plotly: plots/ternary-density/implementations/python/plotly.py
+    plotnine: plots/ternary-density/implementations/python/plotnine.py
+    pygal: plots/ternary-density/implementations/python/pygal.py
+    seaborn: plots/ternary-density/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ternary-density/implementations/r/ggplot2.R
+notes:
+- Use a perceptually uniform colormap (viridis, plasma) for the density overlay
+- Grid lines should be visible beneath the density layer with appropriate transparency
+- Each vertex should be clearly labeled with component names
+source: anyplot
+anyplot_updated: null

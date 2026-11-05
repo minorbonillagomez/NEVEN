@@ -1,0 +1,135 @@
+entity_type: ChartType
+id: column-stratigraphic
+name:
+  en: Stratigraphic Column with Lithology Patterns
+  es: Column Stratigraphic
+description:
+  en: A vertical column visualization showing geological rock layers with standardized
+    lithology patterns, formation names, ages, and thickness scales. Each layer is
+    represented as a stacked rectangular block filled with a distinctive pattern (e.g.,
+    brick pattern for limestone, dots for sandstone, dashes for shale) following FGDC/USGS
+    conventions. This plot is essential for communicating subsurface geology and sedimentary
+    sequences in a compact, standardized format.
+  es: A vertical column visualization showing geological rock layers with standardized
+    lithology patterns, formation names, ages, and thickness scales. Each layer is
+    represented as a stacked rectangular block filled with a distinctive pattern (e.g.,
+    brick pattern for limestone, dots for sandstone, dashes for shale) following FGDC/USGS
+    conventions. This plot is essential for communicating subsurface geology and sedimentary
+    sequences in a compact, standardized format.
+aliases:
+  en:
+  - column-stratigraphic
+  - column stratigraphic
+  - column stratigraphic
+  es:
+  - column-stratigraphic
+  - column stratigraphic
+  - column stratigraphic
+use_when:
+  en:
+  - A vertical column visualization showing geological rock layers with standardized
+    lithology patterns, formation names, ages, and thickness scales. Each layer is
+    represented as a stacked rectangular blo
+  es:
+  - A vertical column visualization showing geological rock layers with standardized
+    lithology patterns, formation names, ages, and thickness scales. Each layer is
+    represented as a stacked rectangular blo
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Stratigraphy: describing borehole or outcrop sections with standardized lithology
+    symbols for geological reports'
+  - 'Petroleum geology: visualizing well log lithological intervals alongside wireline
+    log data'
+  - 'Environmental geology: site characterization showing subsurface material types
+    and aquifer geometry'
+  - 'Geological education: teaching sedimentary sequences, unconformities, and stratigraphic
+    principles'
+  es:
+  - 'Stratigraphy: describing borehole or outcrop sections with standardized lithology
+    symbols for geological reports'
+  - 'Petroleum geology: visualizing well log lithological intervals alongside wireline
+    log data'
+  - 'Environmental geology: site characterization showing subsurface material types
+    and aquifer geometry'
+  - 'Geological education: teaching sedimentary sequences, unconformities, and stratigraphic
+    principles'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  - column
+  data_type:
+  - categorical
+  - numeric
+  - ordinal
+  domain:
+  - science
+  - geology
+  features:
+  - stacked
+  - annotated
+  - patterned
+keywords:
+  en:
+  - column
+  - stratigraphic
+  - bar
+  - categorical
+  - numeric
+  - ordinal
+  - science
+  - geology
+  - stacked
+  - annotated
+  - patterned
+  es:
+  - column
+  - stratigraphic
+  - bar
+  - categórico
+  - numérico
+  - ordinal
+  - ciencia
+  - geology
+  - stacked
+  - annotated
+  - patterned
+implementations:
+  javascript:
+    chartjs: plots/column-stratigraphic/implementations/javascript/chartjs.js
+    d3: plots/column-stratigraphic/implementations/javascript/d3.js
+    echarts: plots/column-stratigraphic/implementations/javascript/echarts.js
+    highcharts: plots/column-stratigraphic/implementations/javascript/highcharts.js
+    muix: plots/column-stratigraphic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/column-stratigraphic/implementations/julia/makie.jl
+  python:
+    altair: plots/column-stratigraphic/implementations/python/altair.py
+    bokeh: plots/column-stratigraphic/implementations/python/bokeh.py
+    letsplot: plots/column-stratigraphic/implementations/python/letsplot.py
+    matplotlib: plots/column-stratigraphic/implementations/python/matplotlib.py
+    plotly: plots/column-stratigraphic/implementations/python/plotly.py
+    plotnine: plots/column-stratigraphic/implementations/python/plotnine.py
+    pygal: plots/column-stratigraphic/implementations/python/pygal.py
+    seaborn: plots/column-stratigraphic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/column-stratigraphic/implementations/r/ggplot2.R
+notes:
+- Each lithology type should use a distinct fill pattern (hatching or texture) that
+  approximates standard geological map symbols (e.g., brick pattern for limestone,
+  stipple dots for sandstone, horizontal dashes for shale, random dashes for siltstone)
+- The vertical axis represents depth or thickness (increasing downward by convention
+  in borehole logs, or upward for outcrop sections); use increasing downward for this
+  spec
+- Formation names should be labeled to the right of or within each layer
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: heatmap-loss-triangle
+name:
+  en: Actuarial Loss Development Triangle
+  es: Mapa de Calor
+description:
+  en: A triangular matrix visualization showing cumulative insurance claim payments
+    developing over time. Rows represent accident/origin years, columns represent
+    development periods (e.g., 1-10 years), with the upper-left triangle displaying
+    actual observed cumulative claims and the lower-right triangle showing projected/estimated
+    values (IBNR). This plot is essential for actuarial reserving, enabling analysts
+    to visualize the chain-ladder method and identify development patterns in loss
+    data.
+  es: A triangular matrix visualization showing cumulative insurance claim payments
+    developing over time. Rows represent accident/origin years, columns represent
+    development periods (e.g., 1-10 years), with the upper-left triangle displaying
+    actual observed cumulative claims and the lower-right triangle showing projected/estimated
+    values (IBNR). This plot is essential for actuarial reserving, enabling analysts
+    to visualize the chain-ladder method and identify development patterns in loss
+    data.
+aliases:
+  en:
+  - heatmap-loss-triangle
+  - heatmap loss triangle
+  - heatmap
+  es:
+  - heatmap-loss-triangle
+  - heatmap loss triangle
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Insurance reserving: visualizing cumulative claims development to estimate IBNR
+    (Incurred But Not Reported) reserves using the chain-ladder method'
+  - 'Reinsurance pricing: assessing reserve adequacy and treaty pricing by examining
+    historical loss development patterns'
+  - 'Financial reporting: preparing loss reserve disclosures and communicating reserve
+    estimates to stakeholders'
+  es:
+  - 'Insurance reserving: visualizing cumulative claims development to estimate IBNR
+    (Incurred But Not Reported) reserves using the chain-ladder method'
+  - 'Reinsurance pricing: assessing reserve adequacy and treaty pricing by examining
+    historical loss development patterns'
+  - 'Financial reporting: preparing loss reserve disclosures and communicating reserve
+    estimates to stakeholders'
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - numeric
+  - matrix
+  domain:
+  - finance
+  - insurance
+  features:
+  - annotated
+  - color-mapped
+  - cumulative
+keywords:
+  en:
+  - heatmap
+  - loss
+  - triangle
+  - numeric
+  - matrix
+  - finance
+  - insurance
+  - annotated
+  - color-mapped
+  - cumulative
+  es:
+  - mapa de calor
+  - loss
+  - triangle
+  - heatmap
+  - numérico
+  - matrix
+  - finanzas
+  - insurance
+  - annotated
+  - color-mapped
+  - cumulative
+implementations:
+  javascript:
+    chartjs: plots/heatmap-loss-triangle/implementations/javascript/chartjs.js
+    d3: plots/heatmap-loss-triangle/implementations/javascript/d3.js
+    echarts: plots/heatmap-loss-triangle/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-loss-triangle/implementations/javascript/highcharts.js
+    muix: plots/heatmap-loss-triangle/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-loss-triangle/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-loss-triangle/implementations/python/altair.py
+    bokeh: plots/heatmap-loss-triangle/implementations/python/bokeh.py
+    letsplot: plots/heatmap-loss-triangle/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-loss-triangle/implementations/python/matplotlib.py
+    plotly: plots/heatmap-loss-triangle/implementations/python/plotly.py
+    plotnine: plots/heatmap-loss-triangle/implementations/python/plotnine.py
+    pygal: plots/heatmap-loss-triangle/implementations/python/pygal.py
+    seaborn: plots/heatmap-loss-triangle/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-loss-triangle/implementations/r/ggplot2.R
+notes:
+- The upper-left triangle contains actual/observed values; the lower-right triangle
+  contains projected values
+- Use distinct visual styling (e.g., different background colors or hatching) to clearly
+  differentiate actual from projected cells
+- The diagonal from top-right to bottom-left represents the latest evaluation date
+source: anyplot
+anyplot_updated: '2026-06-03T17:28:45Z'

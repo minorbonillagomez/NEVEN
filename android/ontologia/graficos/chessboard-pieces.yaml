@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: chessboard-pieces
+name:
+  en: Chess Board with Pieces for Position Diagrams
+  es: Chessboard Pieces
+description:
+  en: 'A chess board visualization with pieces that can be positioned programmatically
+    to display specific game positions, puzzles, or notable games. Pieces are defined
+    using a dictionary mapping squares (e.g., ''e4'': ''K'') to standard chess notation
+    where uppercase letters represent white pieces (K/Q/R/B/N/P) and lowercase represent
+    black pieces (k/q/r/b/n/p). Unicode chess symbols provide clean, recognizable
+    piece rendering.'
+  es: 'A chess board visualization with pieces that can be positioned programmatically
+    to display specific game positions, puzzles, or notable games. Pieces are defined
+    using a dictionary mapping squares (e.g., ''e4'': ''K'') to standard chess notation
+    where uppercase letters represent white pieces (K/Q/R/B/N/P) and lowercase represent
+    black pieces (k/q/r/b/n/p). Unicode chess symbols provide clean, recognizable
+    piece rendering.'
+aliases:
+  en:
+  - chessboard-pieces
+  - chessboard pieces
+  - chessboard pieces
+  es:
+  - chessboard-pieces
+  - chessboard pieces
+  - chessboard pieces
+use_when:
+  en:
+  - A chess board visualization with pieces that can be positioned programmatically
+    to display specific game positions, puzzles, or notable games. Pieces are defined
+    using a dictionary mapping squares (e.
+  es:
+  - A chess board visualization with pieces that can be positioned programmatically
+    to display specific game positions, puzzles, or notable games. Pieces are defined
+    using a dictionary mapping squares (e.
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Chess puzzle diagrams for tactics training and educational materials
+  - Game position documentation showing critical moments from famous matches
+  - Opening repertoire visualization for chess study and preparation
+  - Tournament analysis and annotated game publications
+  es:
+  - Chess puzzle diagrams for tactics training and educational materials
+  - Game position documentation showing critical moments from famous matches
+  - Opening repertoire visualization for chess study and preparation
+  - Tournament analysis and annotated game publications
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - categorical
+  - discrete
+  domain:
+  - general
+  - education
+  features:
+  - basic
+  - annotated
+  - symbolic
+keywords:
+  en:
+  - chessboard
+  - pieces
+  - heatmap
+  - categorical
+  - discrete
+  - general
+  - education
+  - basic
+  - annotated
+  - symbolic
+  es:
+  - chessboard
+  - pieces
+  - heatmap
+  - categórico
+  - discreto
+  - general
+  - education
+  - basic
+  - annotated
+  - symbolic
+implementations:
+  javascript:
+    chartjs: plots/chessboard-pieces/implementations/javascript/chartjs.js
+    d3: plots/chessboard-pieces/implementations/javascript/d3.js
+    echarts: plots/chessboard-pieces/implementations/javascript/echarts.js
+    highcharts: plots/chessboard-pieces/implementations/javascript/highcharts.js
+    muix: plots/chessboard-pieces/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/chessboard-pieces/implementations/julia/makie.jl
+  python:
+    altair: plots/chessboard-pieces/implementations/python/altair.py
+    bokeh: plots/chessboard-pieces/implementations/python/bokeh.py
+    letsplot: plots/chessboard-pieces/implementations/python/letsplot.py
+    matplotlib: plots/chessboard-pieces/implementations/python/matplotlib.py
+    plotly: plots/chessboard-pieces/implementations/python/plotly.py
+    plotnine: plots/chessboard-pieces/implementations/python/plotnine.py
+    pygal: plots/chessboard-pieces/implementations/python/pygal.py
+    seaborn: plots/chessboard-pieces/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/chessboard-pieces/implementations/r/ggplot2.R
+notes:
+- 'Use Unicode chess symbols: White pieces (U+2654 to U+2659), Black pieces (U+265A
+  to U+265F)'
+- Board orientation follows standard convention with white at bottom (rows 1-2)
+- Light square at h1 corner as per chess standards
+source: anyplot
+anyplot_updated: 2026-05-17 03:02:21+00:00

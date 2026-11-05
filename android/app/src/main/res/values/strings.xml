@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">NEVEN</string>
+    <string name="app_tagline">Launcher Científico</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_palette">Paleta de colores</string>
+    <string name="settings_dark_mode">Modo oscuro</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_clock">Reloj</string>
+    <string name="settings_show_seconds">Mostrar segundos</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Versión</string>
+    <string name="about_created_by">Creado por</string>
+    
+    <!-- Settings Sections - Nuevo diseño científico -->
+    <string name="settings_search_engine">Motor de búsqueda</string>
+    <string name="settings_search_engine_desc">Configura el buscador predeterminado</string>
+    <string name="settings_appearance_desc">Tema, paleta y modo claro/oscuro</string>
+    <string name="settings_font_size">Tamaño de letra</string>
+    <string name="settings_font_size_desc">Ajusta el tamaño del texto</string>
+    <string name="settings_home_screen">Pantalla de inicio</string>
+    <string name="settings_home_screen_desc">Favoritos y reloj</string>
+    <string name="settings_app_drawer">Cajón de aplicaciones</string>
+    <string name="settings_app_drawer_desc">Diseño de la lista de apps</string>
+    <string name="settings_screen_time">Tiempo de pantalla</string>
+    <string name="settings_screen_time_desc">Estadísticas de uso</string>
+    <string name="settings_language_desc">Español, English, Esperanto</string>
+    <string name="settings_about_desc">Versión e información</string>
+    
+    <!-- Font Size Settings -->
+    <string name="settings_font_size_select">Seleccionar tamaño</string>
+    <string name="settings_font_size_preview">Vista previa</string>
+    <string name="font_size_xs">Muy pequeño</string>
+    <string name="font_size_s">Pequeño</string>
+    <string name="font_size_m">Mediano</string>
+    <string name="font_size_l">Grande</string>
+    <string name="font_size_xl">Muy grande</string>
+    <string name="font_size_xxl">Extra grande</string>
+    <string name="font_size_scale">Escala</string>
+    <string name="font_size_preview_title">Título de ejemplo</string>
+    <string name="font_size_preview_body">Este es un texto de ejemplo para visualizar cómo se verá el contenido con el tamaño seleccionado.</string>
+    <string name="font_size_preview_label">Etiqueta secundaria</string>
+    
+    <!-- Home -->
+    <string name="home_swipe_drawer">Desliza hacia arriba para todas las apps</string>
+    <string name="home_search_hint">Buscar apps…</string>
+    <string name="home_no_favorites">Sin apps favoritas</string>
+    <string name="home_add_favorite">Mantén presionada una app para agregarla</string>
+    
+    <!-- App Drawer -->
+    <string name="drawer_title">Todas las Apps</string>
+    <string name="drawer_search">Buscar</string>
+    <string name="drawer_empty">No se encontraron apps</string>
+    
+    <!-- Notes -->
+    <string name="notes_title">Notas</string>
+    <string name="notes_new">Nueva nota</string>
+    <string name="notes_latex_hint">Escribe en LaTeX…</string>
+    <string name="notes_save">Guardar</string>
+    <string name="notes_cancel">Cancelar</string>
+    <string name="notes_delete">Eliminar</string>
+    
+    <!-- Widgets -->
+    <string name="widgets_title">Widgets</string>
+    <string name="widgets_add">Agregar widget</string>
+    <string name="widgets_remove">Quitar widget</string>
+    <string name="widgets_resize">Redimensionar</string>
+    
+    <!-- Palettes -->
+    <string name="palette_clasico">Clásico</string>
+    <string name="palette_oceano">Océano</string>
+    <string name="palette_bosque">Bosque</string>
+    <string name="palette_ambar">Ámbar</string>
+    <string name="palette_lavanda">Lavanda</string>
+    <string name="palette_monocromo">Monocromo</string>
+    <string name="palette_kobenhavn">København</string>
+    
+    <!-- LaTeX Symbols (for UI) -->
+    <string name="symbol_settings">⊚</string>
+    <string name="symbol_collapse">⊟</string>
+    <string name="symbol_expand">⊞</string>
+    <string name="symbol_menu">⋒</string>
+    <string name="symbol_separator">≬</string>
+    <string name="symbol_back">↩</string>
+    <string name="symbol_more">∴</string>
+    <string name="symbol_end">∎</string>
+    <string name="symbol_section">§</string>
+    <string name="symbol_paragraph">¶</string>
+    <string name="symbol_sum">∑</string>
+    <string name="symbol_integral">∫</string>
+    
+    <!-- Context Menu -->
+    <string name="menu_add_favorite">Agregar a favoritos</string>
+    <string name="menu_remove_favorite">Quitar de favoritos</string>
+    <string name="menu_app_info">Info de la app</string>
+    
+    <!-- Favorites -->
+    <string name="favorites_added">Agregado a favoritos</string>
+    <string name="favorites_removed">Quitado de favoritos</string>
+    <string name="favorites_full">Máximo de favoritos alcanzado</string>
+    <string name="favorites_count">Máximo de favoritos</string>
+    
+    <!-- Settings Expanded -->
+    <string name="settings_theme_mode">Modo de tema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_theme_auto">Auto</string>
+    
+    <!-- Screen Time -->
+    <string name="screen_time_permission_title">Permiso requerido</string>
+    <string name="screen_time_permission_desc">Para ver el tiempo de uso, NEVEN necesita acceso a las estadísticas de uso.</string>
+    <string name="screen_time_grant_permission">Otorgar permiso</string>
+    <string name="screen_time_refresh">Actualizar</string>
+    <string name="screen_time_today">Hoy</string>
+    <string name="screen_time_week">Semana</string>
+    <string name="screen_time_total">tiempo total</string>
+    <string name="screen_time_top_apps">Apps más usadas</string>
+    
+    <!-- Wallpaper / Fondo de pantalla -->
+    <string name="settings_wallpaper">Fondo de pantalla</string>
+    <string name="wallpaper_solid_color">Color sólido</string>
+    <string name="wallpaper_image">Imagen</string>
+    <string name="wallpaper_select_image">Seleccionar imagen...</string>
+    <string name="wallpaper_position">Posición</string>
+    <string name="wallpaper_fit">Ajustar</string>
+    <string name="wallpaper_fill">Rellenar</string>
+    <string name="wallpaper_center">Centrar</string>
+    <string name="wallpaper_opacity_label">λ (opacidad):</string>
+    <string name="wallpaper_opacity_light">Claro</string>
+    <string name="wallpaper_opacity_soft">Suave</string>
+    <string name="wallpaper_opacity_medium">Medio</string>
+    <string name="wallpaper_opacity_dark">Oscuro</string>
+    <string name="wallpaper_palette_tint">Tinte de paleta</string>
+    <string name="sync_lock_screen">Aplicar a pantalla de bloqueo</string>
+    <string name="sync_lock_screen_description">Usa el mismo fondo en la pantalla de bloqueo</string>
+    <string name="wallpaper_error">No se pudo establecer el fondo</string>
+    
+    <!-- Accessibility -->
+    <string name="a11y_clock">Reloj</string>
+    <string name="a11y_app_icon">Icono de aplicación</string>
+    <string name="a11y_notification_badge">%d notificaciones</string>
+    
+    <!-- Color de contraste / Accent color -->
+    <string name="accent_color_title">Color de contraste</string>
+    <string name="accent_color_custom">Personalizado...</string>
+    <string name="accent_color_red">Rojo</string>
+    <string name="accent_color_blue">Azul</string>
+    <string name="accent_color_green">Verde</string>
+    <string name="accent_color_orange">Naranja</string>
+    <string name="accent_color_purple">Púrpura</string>
+    <string name="accent_color_teal">Turquesa</string>
+    <string name="accent_color_pink">Rosa</string>
+    <string name="accent_color_gray">Gris</string>
+    <string name="color_picker_title">Seleccionar color</string>
+    <string name="color_picker_preview">Vista previa</string>
+    <string name="color_picker_apply">Aplicar</string>
+    
+    <!-- Tipo de fuente / Font family -->
+    <string name="settings_font_family">Tipo de letra</string>
+    <string name="settings_font_family_desc">Fuente del texto</string>
+    <string name="font_family_serif">Serif</string>
+    <string name="font_family_serif_desc">Elegante, estilo LaTeX</string>
+    <string name="font_family_sans_serif">Sans-serif</string>
+    <string name="font_family_sans_serif_desc">Moderno, minimalista</string>
+    <string name="font_family_monospace">Monospace</string>
+    <string name="font_family_monospace_desc">Técnico, código</string>
+    <string name="font_family_cursive">Cursive</string>
+    <string name="font_family_cursive_desc">Artístico, fluido</string>
+    <string name="font_family_roboto">Roboto</string>
+    <string name="font_family_roboto_desc">Google, sans moderna</string>
+    <string name="font_family_open_sans">Open Sans</string>
+    <string name="font_family_open_sans_desc">Limpia, legible</string>
+    <string name="font_family_lora">Lora</string>
+    <string name="font_family_lora_desc">Serif elegante</string>
+    <string name="font_family_playfair">Playfair Display</string>
+    <string name="font_family_playfair_desc">Títulos elegantes</string>
+    <string name="font_family_jetbrains_mono">JetBrains Mono</string>
+    <string name="font_family_jetbrains_mono_desc">Código profesional</string>
+    <string name="font_family_source_code_pro">Source Code Pro</string>
+    <string name="font_family_source_code_pro_desc">Adobe, mono legible</string>
+    <string name="font_family_preview">Vista previa de la fuente</string>
+    
+    <!-- Haptic Feedback Settings -->
+    <string name="settings_haptic">Retroalimentación táctil</string>
+    <string name="settings_haptic_desc">Escala, vibración y sonido</string>
+    <string name="haptic_scale_title">Tamaño de selección</string>
+    <string name="haptic_scale_small">Pequeño</string>
+    <string name="haptic_scale_medium">Mediano</string>
+    <string name="haptic_scale_large">Grande</string>
+    <string name="haptic_scale_extra_large">Extra grande</string>
+    <string name="haptic_intensity_title">Intensidad de vibración</string>
+    <string name="haptic_intensity_none">Ninguna</string>
+    <string name="haptic_intensity_light">Suave</string>
+    <string name="haptic_intensity_medium">Media</string>
+    <string name="haptic_intensity_strong">Fuerte</string>
+    <string name="haptic_sound_title">Sonido de selección</string>
+    <string name="haptic_sound_none">Ninguno</string>
+    <string name="haptic_sound_click">Click</string>
+    <string name="haptic_sound_tick">Tick</string>
+    <string name="haptic_sound_pop">Pop</string>
+    
+    <!-- Calendar Widget -->
+    <string name="calendar_title">Calendario</string>
+    <string name="calendar_no_permission">Toca para otorgar permiso de calendario</string>
+    <string name="calendar_no_events">Sin eventos próximos</string>
+    <string name="calendar_today">Hoy</string>
+    <string name="calendar_tomorrow">Mañana</string>
+    <string name="calendar_all_day">Todo el día</string>
+    
+    <!-- Calendar Settings -->
+    <string name="settings_calendars">Calendarios</string>
+    <string name="settings_calendars_desc">Selecciona cuáles mostrar en Glance</string>
+    <string name="calendars_screen_title">Calendarios</string>
+    <string name="calendars_no_permission">Sin acceso al calendario</string>
+    <string name="calendars_no_permission_hint">Otorga permiso desde la página Glance</string>
+    <string name="calendars_empty">No hay calendarios</string>
+    <string name="calendars_empty_hint">Sincroniza una cuenta con calendarios</string>
+    <string name="calendars_footer_note">Los calendarios desactivados no aparecerán en el widget de Glance. Para agregar más calendarios, sincroniza nuevas cuentas desde Configuración del sistema.</string>
+    
+    <!-- Pages / Páginas -->
+    <string name="pages_title">Páginas</string>
+    <string name="pages_desc">Glance, Adventure y más páginas</string>
+    <string name="pages_add_left">Agregar página a la izquierda</string>
+    <string name="pages_add_right">Agregar página a la derecha</string>
+    <string name="pages_remove">Eliminar página</string>
+    <string name="pages_home">Inicio</string>
+    <string name="pages_glance">Glance</string>
+    <string name="pages_widgets">Widgets</string>
+    <string name="pages_adventure">Adventure</string>
+    <string name="pages_glance_desc">Calendario, eventos próximos y tareas del día</string>
+    <string name="pages_adventure_desc">Brújula, altitud, clima y datos meteorológicos</string>
+    <string name="pages_activate_all">Activar todas las páginas</string>
+    <string name="pages_reset_default">Restaurar configuración por defecto</string>
+    <string name="pages_navigation_note">La página HOME siempre permanece en el centro</string>
+    
+    <!-- Adventure Clock -->
+    <string name="adventure_title">Aventura</string>
+    <string name="adventure_altitude">Altitud</string>
+    <string name="adventure_compass">Brújula</string>
+    <string name="adventure_above_sea_level">sobre nivel del mar</string>
+    <string name="adventure_rain">Lluvia</string>
+    <string name="adventure_wind">Viento</string>
+    <string name="adventure_humidity">Humedad</string>
+    <string name="adventure_sunrise">Amanecer</string>
+    <string name="adventure_sunset">Anochecer</string>
+    <string name="adventure_uv">UV</string>
+    <string name="adventure_uv_low">Bajo</string>
+    <string name="adventure_uv_moderate">Moderado</string>
+    <string name="adventure_uv_high">Alto</string>
+    <string name="adventure_uv_very_high">Muy alto</string>
+    <string name="adventure_uv_extreme">Extremo</string>
+    <string name="adventure_condition_favorable">Favorable</string>
+    <string name="adventure_condition_not_recommended">No recomendado</string>
+    <string name="adventure_condition_caution">Precaución</string>
+    <string name="adventure_condition_sun_protection">Protección solar</string>
+    <string name="adventure_condition_strong_wind">Viento fuerte</string>
+    <string name="adventure_condition_intense_cold">Frío intenso</string>
+    <string name="adventure_condition_extreme_heat">Calor extremo</string>
+    <string name="adventure_feels_like">Sensación</string>
+    <string name="adventure_conditions">Condiciones</string>
+    <string name="adventure_location_permission">Toca para permitir ubicación</string>
+    <string name="adventure_loading_weather">Obteniendo datos meteorológicos…</string>
+    
+    <!-- Scientific Notifications -->
+    <string name="settings_notifications">Notificaciones</string>
+    <string name="settings_notifications_desc">Popup científico estilo paper</string>
+    <string name="notifications_popup_enabled">Popup científico</string>
+    <string name="notifications_popup_enabled_desc">Mostrar notificaciones como papers académicos</string>
+    <string name="notifications_popup_size">Tamaño del popup</string>
+    <string name="notifications_popup_size_compact">Compacto (4×2)</string>
+    <string name="notifications_popup_size_normal">Normal (4×4)</string>
+    <string name="notifications_popup_size_expanded">Expandido (6×4)</string>
+    <string name="notifications_render_latex">Renderizar LaTeX</string>
+    <string name="notifications_render_latex_desc">Mostrar ecuaciones matemáticas</string>
+    <string name="notifications_show_timestamp">Mostrar timestamp</string>
+    <string name="notifications_show_timestamp_desc">Fecha y hora de recepción</string>
+    <string name="notifications_quick_reply">Respuesta rápida</string>
+    <string name="notifications_quick_reply_desc">Responder sin abrir la app</string>
+    <string name="notifications_excluded_apps">Apps excluidas</string>
+    <string name="notifications_excluded_apps_desc">Apps que no mostrarán popup</string>
+    <string name="notifications_permission_required">Permiso requerido</string>
+    <string name="notifications_permission_desc">NEVEN necesita acceso a las notificaciones para mostrar el popup científico</string>
+    <string name="notifications_grant_permission">Otorgar permiso</string>
+    <string name="notifications_max_popups">Máximo de popups</string>
+    <string name="notifications_max_popups_desc">Cantidad máxima de popups simultáneos</string>
+    
+    <!-- Markdown Viewer -->
+    <string name="markdown_viewer">Visualizador</string>
+    <string name="markdown_document">Documento</string>
+    <string name="markdown_empty_file">Archivo vacío</string>
+    <string name="markdown_error_no_file">No se pudo abrir el archivo</string>
+    <string name="markdown_error_permission">Sin permiso para leer el archivo</string>
+    <string name="markdown_error_reading">Error al leer el archivo</string>
+    
+    <!-- Sandbox Settings -->
+    <string name="settings_sandbox">Sandbox</string>
+    <string name="settings_sandbox_desc">Aislar apps de alta telemetría</string>
+    <string name="sandbox_status">Estado del Sandbox</string>
+    <string name="sandbox_loading">Cargando…</string>
+    <string name="sandbox_work_profile">Perfil de trabajo</string>
+    <string name="sandbox_active">Activo</string>
+    <string name="sandbox_not_configured">No configurado</string>
+    <string name="sandbox_profile_owner">Administrador del perfil</string>
+    <string name="sandbox_not_assigned">No asignado</string>
+    <string name="sandbox_freeze_all">Congelar todo el perfil</string>
+    <string name="sandbox_freeze_all_desc">Suspende todas las apps del sandbox</string>
+    <string name="sandbox_suggested_apps">Apps sugeridas</string>
+    <string name="sandbox_suggested_apps_desc">Redes sociales y alta telemetría</string>
+    <string name="sandbox_high_telemetry">Alta telemetría</string>
+    <string name="sandbox_select_all">Seleccionar todo</string>
+    <string name="sandbox_freeze_selected">Congelar (%1$d)</string>
+    <string name="sandbox_other_apps">Otras aplicaciones</string>
+    <string name="sandbox_other_apps_count">%1$d apps instaladas</string>
+    <string name="sandbox_frozen">Congelada</string>
+    <string name="sandbox_info_title">¿Qué es el Sandbox?</string>
+    <string name="sandbox_info_desc">El sandbox aísla aplicaciones en un perfil de trabajo separado. Los archivos de estas apps (fotos, videos) se guardan en un storage separado y no aparecen en tu galería personal.</string>
+    <string name="sandbox_freezing">Congelando…</string>
+    <string name="sandbox_frozen_message">apps congeladas</string>
+    <string name="sandbox_error_message">No se pudo congelar las apps</string>
+    
+    <!-- Sandbox Migration -->
+    <string name="sandbox_in_sandbox">En el Sandbox</string>
+    <string name="sandbox_in_sandbox_desc">Apps aisladas con storage separado</string>
+    <string name="sandbox_app_isolated">Aislada</string>
+    <string name="sandbox_remove">Restaurar</string>
+    <string name="sandbox_migrate">Aislar</string>
+    <string name="sandbox_migrate_title">Migrar al Sandbox</string>
+    <string name="sandbox_migrate_files_found">Archivos encontrados:</string>
+    <string name="sandbox_migrate_files">archivos</string>
+    <string name="sandbox_migrate_actions">Esto va a:\n1. Mover archivos al storage aislado\n2. Instalar la app en el sandbox\n3. Remover del perfil principal</string>
+    <string name="sandbox_migrate_warning">Necesitarás iniciar sesión nuevamente</string>
+    <string name="sandbox_migrate_button">Migrar</string>
+    <string name="sandbox_migrating">Migrando…</string>
+    <string name="sandbox_migration_complete">Migración completada</string>
+    <string name="sandbox_migration_error">Error en migración</string>
+    <string name="sandbox_cancel">Cancelar</string>
+    
+    <!-- Sandbox ADB -->
+    <string name="sandbox_adb_required">Comandos ADB</string>
+    <string name="sandbox_adb_instructions">Los archivos ya fueron migrados. Ejecuta estos comandos en tu terminal con el dispositivo conectado:</string>
+    <string name="sandbox_files_migrated">%1$d archivos migrados al sandbox</string>
+    <string name="sandbox_copy">Copiar</string>
+    <string name="sandbox_copied">Copiado ✓</string>
+    <string name="sandbox_done">Listo</string>
+    
+    <!-- Floating Recents Button -->
+    <string name="accessibility_service_description">Permite a NEVEN mostrar las aplicaciones recientes y ejecutar acciones de navegación cuando los gestos del sistema no funcionan correctamente.</string>
+    <string name="settings_floating_recents">Botón flotante de recientes</string>
+    <string name="settings_floating_recents_desc">Muestra un botón sobre todas las apps para acceder a recientes</string>
+    <string name="floating_recents_enable">Habilitar botón flotante</string>
+    <string name="floating_recents_accessibility_required">Se requiere habilitar el servicio de accesibilidad de NEVEN</string>
+    <string name="floating_recents_overlay_required">Se requiere permiso para mostrar sobre otras apps</string>
+</resources>

@@ -1,0 +1,160 @@
+entity_type: ChartType
+id: area-mountain-panorama
+name:
+  en: Mountain Panorama Profile with Labeled Peaks
+  es: Gráfico de Área
+description:
+  en: A panoramic mountain silhouette chart that renders the horizon as seen from
+    a fixed vantage point, like a photograph of a ridgeline against the sky. A filled
+    area under the skyline curve traces the ridgeline across a horizontal viewing
+    range (in degrees of bearing or horizontal distance), and major summits are annotated
+    with their name and elevation. The skyline is jagged and angular — sharp triangular
+    peaks with steep, often asymmetric flanks meeting at pointed apexes, connected
+    by rugged ridges with cols, sub-peaks and rocky notches — not a sequence of smooth
+    bell-shaped bumps. Unlike an elevation-profile-along-a-trail, this plot is the
+    angular view of the surrounding peaks from a single observer, making it ideal
+    for summit-identification infographics, alpine panoramas, and travel guides.
+  es: A panoramic mountain silhouette chart that renders the horizon as seen from
+    a fixed vantage point, like a photograph of a ridgeline against the sky. A filled
+    area under the skyline curve traces the ridgeline across a horizontal viewing
+    range (in degrees of bearing or horizontal distance), and major summits are annotated
+    with their name and elevation. The skyline is jagged and angular — sharp triangular
+    peaks with steep, often asymmetric flanks meeting at pointed apexes, connected
+    by rugged ridges with cols, sub-peaks and rocky notches — not a sequence of smooth
+    bell-shaped bumps. Unlike an elevation-profile-along-a-trail, this plot is the
+    angular view of the surrounding peaks from a single observer, making it ideal
+    for summit-identification infographics, alpine panoramas, and travel guides.
+aliases:
+  en:
+  - area-mountain-panorama
+  - area mountain panorama
+  - area chart
+  es:
+  - area-mountain-panorama
+  - area mountain panorama
+  - gráfico de área
+use_when:
+  en:
+  - A panoramic mountain silhouette chart that renders the horizon as seen from a
+    fixed vantage point, like a photograph of a ridgeline against the sky. A filled
+    area under the skyline curve traces the ri
+  es:
+  - A panoramic mountain silhouette chart that renders the horizon as seen from a
+    fixed vantage point, like a photograph of a ridgeline against the sky. A filled
+    area under the skyline curve traces the ri
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Tourism and alpine-guide infographics: labeled summit panoramas from viewpoints,
+    huts, or gondola stations (e.g., the classic Zermatt / Gornergrat view of the
+    Matterhorn and surrounding 4000-m Wallis peaks)'
+  - 'Mountaineering route planning: identifying summits visible from a given vantage
+    point and orienting by bearing'
+  - 'Geography and earth-science education: introducing real topography and ridgeline
+    structure to students'
+  - 'Travel blogs, hiking magazines, and ski-resort marketing: stylized horizon illustrations
+    with named peaks'
+  - 'Cross-section communication: visualizing the ridgeline profile along a travel
+    path or compass sweep'
+  es:
+  - 'Tourism and alpine-guide infographics: labeled summit panoramas from viewpoints,
+    huts, or gondola stations (e.g., the classic Zermatt / Gornergrat view of the
+    Matterhorn and surrounding 4000-m Wallis peaks)'
+  - 'Mountaineering route planning: identifying summits visible from a given vantage
+    point and orienting by bearing'
+  - 'Geography and earth-science education: introducing real topography and ridgeline
+    structure to students'
+  - 'Travel blogs, hiking magazines, and ski-resort marketing: stylized horizon illustrations
+    with named peaks'
+  - 'Cross-section communication: visualizing the ridgeline profile along a travel
+    path or compass sweep'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - area
+  - line
+  data_type:
+  - numeric
+  - continuous
+  - geospatial
+  domain:
+  - general
+  - science
+  - education
+  features:
+  - annotated
+  - silhouette
+  - jagged
+keywords:
+  en:
+  - area chart
+  - mountain
+  - panorama
+  - area
+  - line
+  - numeric
+  - continuous
+  - geospatial
+  - general
+  - science
+  - education
+  - annotated
+  - silhouette
+  - jagged
+  es:
+  - gráfico de área
+  - mountain
+  - panorama
+  - area
+  - line
+  - numérico
+  - continuo
+  - geoespacial
+  - general
+  - ciencia
+  - education
+  - annotated
+  - silhouette
+  - jagged
+implementations:
+  javascript:
+    chartjs: plots/area-mountain-panorama/implementations/javascript/chartjs.js
+    d3: plots/area-mountain-panorama/implementations/javascript/d3.js
+    echarts: plots/area-mountain-panorama/implementations/javascript/echarts.js
+    highcharts: plots/area-mountain-panorama/implementations/javascript/highcharts.js
+    muix: plots/area-mountain-panorama/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/area-mountain-panorama/implementations/julia/makie.jl
+  python:
+    altair: plots/area-mountain-panorama/implementations/python/altair.py
+    bokeh: plots/area-mountain-panorama/implementations/python/bokeh.py
+    letsplot: plots/area-mountain-panorama/implementations/python/letsplot.py
+    matplotlib: plots/area-mountain-panorama/implementations/python/matplotlib.py
+    plotly: plots/area-mountain-panorama/implementations/python/plotly.py
+    plotnine: plots/area-mountain-panorama/implementations/python/plotnine.py
+    pygal: plots/area-mountain-panorama/implementations/python/pygal.py
+    seaborn: plots/area-mountain-panorama/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/area-mountain-panorama/implementations/r/ggplot2.R
+notes:
+- 'Render the ridgeline as a piecewise-linear / fractal silhouette: triangular peaks
+  with sharp apexes and steep linear flanks, with small irregular jaggedness along
+  the ridges (e.g. midpoint-displacement noise, jittered linear segments, or summed
+  steep triangle/tent functions). Do NOT model summits as Gaussian / bell-curve bumps
+  — the silhouette must read as alpine rock, not as a probability density'
+- Vary slope steepness and asymmetry per summit (e.g. one flank steeper than the other),
+  and let saddles between neighboring peaks dip far enough to make each summit individually
+  recognizable
+- 'Optional layered depth: a darker foreground ridge in front of one or two lighter
+  background ridges fading toward the sky color, like a classic Zermatt / Matterhorn
+  panorama photograph'
+source: anyplot
+anyplot_updated: 2026-06-30 21:43:15+00:00

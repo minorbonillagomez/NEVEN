@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: scatter-constellation-diagram
+name:
+  en: Digital Modulation Constellation Diagram
+  es: Diagrama de Dispersión
+description:
+  en: An I/Q (In-phase/Quadrature) scatter plot showing symbol positions of a digitally
+    modulated signal. Ideal constellation points are displayed as reference markers
+    with received symbols scattered around them, revealing modulation quality and
+    signal impairments such as noise, phase offset, and amplitude distortion. This
+    plot is the standard diagnostic tool for evaluating digital modulation schemes
+    like 16-QAM.
+  es: An I/Q (In-phase/Quadrature) scatter plot showing symbol positions of a digitally
+    modulated signal. Ideal constellation points are displayed as reference markers
+    with received symbols scattered around them, revealing modulation quality and
+    signal impairments such as noise, phase offset, and amplitude distortion. This
+    plot is the standard diagnostic tool for evaluating digital modulation schemes
+    like 16-QAM.
+aliases:
+  en:
+  - scatter-constellation-diagram
+  - scatter constellation diagram
+  - scatter plot
+  es:
+  - scatter-constellation-diagram
+  - scatter constellation diagram
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - 'Wireless communications engineering: assessing modulation quality and signal
+    integrity for QAM/PSK/APSK schemes'
+  - 'Software-defined radio development: debugging demodulator performance and carrier
+    recovery'
+  - 'Standards compliance testing: verifying transmitter conformance for Wi-Fi, 5G
+    NR, and DVB specifications'
+  - 'Radar signal processing: analyzing digitally modulated waveform fidelity'
+  es:
+  - 'Wireless communications engineering: assessing modulation quality and signal
+    integrity for QAM/PSK/APSK schemes'
+  - 'Software-defined radio development: debugging demodulator performance and carrier
+    recovery'
+  - 'Standards compliance testing: verifying transmitter conformance for Wi-Fi, 5G
+    NR, and DVB specifications'
+  - 'Radar signal processing: analyzing digitally modulated waveform fidelity'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - technology
+  features:
+  - annotated
+  - 2d
+  - color-mapped
+keywords:
+  en:
+  - scatter plot
+  - constellation
+  - diagram
+  - scatter
+  - numeric
+  - continuous
+  - engineering
+  - technology
+  - annotated
+  - 2d
+  - color-mapped
+  es:
+  - diagrama de dispersión
+  - constellation
+  - diagram
+  - scatter
+  - numérico
+  - continuo
+  - ingeniería
+  - technology
+  - annotated
+  - 2d
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/scatter-constellation-diagram/implementations/javascript/chartjs.js
+    d3: plots/scatter-constellation-diagram/implementations/javascript/d3.js
+    echarts: plots/scatter-constellation-diagram/implementations/javascript/echarts.js
+    highcharts: plots/scatter-constellation-diagram/implementations/javascript/highcharts.js
+    muix: plots/scatter-constellation-diagram/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-constellation-diagram/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-constellation-diagram/implementations/python/altair.py
+    bokeh: plots/scatter-constellation-diagram/implementations/python/bokeh.py
+    letsplot: plots/scatter-constellation-diagram/implementations/python/letsplot.py
+    matplotlib: plots/scatter-constellation-diagram/implementations/python/matplotlib.py
+    plotly: plots/scatter-constellation-diagram/implementations/python/plotly.py
+    plotnine: plots/scatter-constellation-diagram/implementations/python/plotnine.py
+    pygal: plots/scatter-constellation-diagram/implementations/python/pygal.py
+    seaborn: plots/scatter-constellation-diagram/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-constellation-diagram/implementations/r/ggplot2.R
+notes:
+- Use a 16-QAM modulation scheme as the primary example
+- Show ideal constellation points as large, distinct markers (e.g., red crosses or
+  circles)
+- Show received symbols as smaller, semi-transparent dots clustered around ideal points
+source: anyplot
+anyplot_updated: null

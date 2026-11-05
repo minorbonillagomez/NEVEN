@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    NEVEN Launcher Preferences Configuration
+    Used for backup/restore and settings structure
+-->
+<preferences>
+    <preference
+        key="theme_palette"
+        defaultValue="CLASICO" />
+    
+    <preference
+        key="dark_mode"
+        defaultValue="true" />
+    
+    <preference
+        key="language"
+        defaultValue="es" />
+    
+    <preference
+        key="show_seconds"
+        defaultValue="true" />
+    
+    <preference
+        key="favorite_apps"
+        defaultValue="" />
+    
+    <preference
+        key="widget_config"
+        defaultValue="" />
+</preferences>

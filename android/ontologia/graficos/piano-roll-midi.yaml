@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: piano-roll-midi
+name:
+  en: MIDI Piano Roll Visualization
+  es: Piano Roll Midi
+description:
+  en: A grid-based visualization of musical notes over time, as seen in digital audio
+    workstations (DAWs). Each note is represented as a horizontal rectangle positioned
+    by pitch (y-axis) and time (x-axis), with bar length indicating note duration
+    and color indicating velocity (dynamics). The background alternates between white
+    and dark rows to mirror piano keyboard layout, with vertical grid lines marking
+    beats and measures.
+  es: A grid-based visualization of musical notes over time, as seen in digital audio
+    workstations (DAWs). Each note is represented as a horizontal rectangle positioned
+    by pitch (y-axis) and time (x-axis), with bar length indicating note duration
+    and color indicating velocity (dynamics). The background alternates between white
+    and dark rows to mirror piano keyboard layout, with vertical grid lines marking
+    beats and measures.
+aliases:
+  en:
+  - piano-roll-midi
+  - piano roll midi
+  - piano roll midi
+  es:
+  - piano-roll-midi
+  - piano roll midi
+  - piano roll midi
+use_when:
+  en:
+  - 'A grid-based visualization of musical notes over time, as seen in digital audio
+    workstations (DAWs). Each note is represented as a horizontal rectangle positioned
+    by pitch (y-axis) and time (x-axis), '
+  es:
+  - 'A grid-based visualization of musical notes over time, as seen in digital audio
+    workstations (DAWs). Each note is represented as a horizontal rectangle positioned
+    by pitch (y-axis) and time (x-axis), '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Music production: visualizing and editing MIDI data in DAWs (Ableton Live, FL
+    Studio, Logic Pro)'
+  - 'Music analysis: examining melodic contour, rhythmic patterns, and harmonic structure
+    of compositions'
+  - 'Algorithmic composition: displaying output from generative music algorithms or
+    AI-composed pieces'
+  - 'Music education: teaching note relationships, intervals, and arrangement concepts
+    visually'
+  es:
+  - 'Music production: visualizing and editing MIDI data in DAWs (Ableton Live, FL
+    Studio, Logic Pro)'
+  - 'Music analysis: examining melodic contour, rhythmic patterns, and harmonic structure
+    of compositions'
+  - 'Algorithmic composition: displaying output from generative music algorithms or
+    AI-composed pieces'
+  - 'Music education: teaching note relationships, intervals, and arrangement concepts
+    visually'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - gantt
+  - bar
+  data_type:
+  - numeric
+  - discrete
+  - timeseries
+  domain:
+  - music
+  - education
+  features:
+  - color-mapped
+  - annotated
+  - temporal
+keywords:
+  en:
+  - piano
+  - roll
+  - midi
+  - gantt
+  - bar
+  - numeric
+  - discrete
+  - timeseries
+  - music
+  - education
+  - color-mapped
+  - annotated
+  - temporal
+  es:
+  - piano
+  - roll
+  - midi
+  - gantt
+  - bar
+  - numérico
+  - discreto
+  - timeseries
+  - music
+  - education
+  - color-mapped
+  - annotated
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/piano-roll-midi/implementations/javascript/chartjs.js
+    d3: plots/piano-roll-midi/implementations/javascript/d3.js
+    echarts: plots/piano-roll-midi/implementations/javascript/echarts.js
+    highcharts: plots/piano-roll-midi/implementations/javascript/highcharts.js
+    muix: plots/piano-roll-midi/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/piano-roll-midi/implementations/julia/makie.jl
+  python:
+    altair: plots/piano-roll-midi/implementations/python/altair.py
+    bokeh: plots/piano-roll-midi/implementations/python/bokeh.py
+    letsplot: plots/piano-roll-midi/implementations/python/letsplot.py
+    matplotlib: plots/piano-roll-midi/implementations/python/matplotlib.py
+    plotly: plots/piano-roll-midi/implementations/python/plotly.py
+    plotnine: plots/piano-roll-midi/implementations/python/plotnine.py
+    pygal: plots/piano-roll-midi/implementations/python/pygal.py
+    seaborn: plots/piano-roll-midi/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/piano-roll-midi/implementations/r/ggplot2.R
+notes:
+- Y-axis should display note names (C4, D4, etc.) alongside or instead of raw MIDI
+  numbers
+- Background rows should alternate shading to distinguish black keys from white keys
+  on a piano
+- Vertical grid lines should mark beat divisions (quarter notes) with stronger lines
+  at measure boundaries
+source: anyplot
+anyplot_updated: '2026-06-03T00:00:00Z'

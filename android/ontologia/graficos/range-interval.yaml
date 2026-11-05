@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: range-interval
+name:
+  en: Range Interval Chart
+  es: Range Interval
+description:
+  en: A range interval chart displays min-max ranges or intervals as vertical or horizontal
+    bars/segments for each category, making it ideal for visualizing uncertainty bounds,
+    confidence intervals, or value spreads. Unlike error bars which extend from a
+    central data point, range intervals show the full span between two values as a
+    filled bar or line segment, emphasizing the range itself rather than deviation
+    from a center. This visualization excels at comparing ranges across multiple categories
+    simultaneously.
+  es: A range interval chart displays min-max ranges or intervals as vertical or horizontal
+    bars/segments for each category, making it ideal for visualizing uncertainty bounds,
+    confidence intervals, or value spreads. Unlike error bars which extend from a
+    central data point, range intervals show the full span between two values as a
+    filled bar or line segment, emphasizing the range itself rather than deviation
+    from a center. This visualization excels at comparing ranges across multiple categories
+    simultaneously.
+aliases:
+  en:
+  - range-interval
+  - range interval
+  - range interval
+  es:
+  - range-interval
+  - range interval
+  - range interval
+use_when:
+  en:
+  - A range interval chart displays min-max ranges or intervals as vertical or horizontal
+    bars/segments for each category, making it ideal for visualizing uncertainty bounds,
+    confidence intervals, or valu
+  es:
+  - A range interval chart displays min-max ranges or intervals as vertical or horizontal
+    bars/segments for each category, making it ideal for visualizing uncertainty bounds,
+    confidence intervals, or valu
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying temperature ranges (daily high/low) across months or locations
+  - Comparing salary ranges by job title or department
+  - Showing confidence intervals for statistical estimates across groups
+  - Visualizing stock price ranges (high/low) over multiple periods
+  es:
+  - Displaying temperature ranges (daily high/low) across months or locations
+  - Comparing salary ranges by job title or department
+  - Showing confidence intervals for statistical estimates across groups
+  - Visualizing stock price ranges (high/low) over multiple periods
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bar
+  - range
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - statistics
+  features:
+  - basic
+  - comparison
+  - interval
+keywords:
+  en:
+  - range
+  - interval
+  - bar
+  - numeric
+  - categorical
+  - general
+  - statistics
+  - basic
+  - comparison
+  es:
+  - range
+  - interval
+  - bar
+  - numérico
+  - categórico
+  - general
+  - estadística
+  - basic
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/range-interval/implementations/javascript/chartjs.js
+    d3: plots/range-interval/implementations/javascript/d3.js
+    echarts: plots/range-interval/implementations/javascript/echarts.js
+    highcharts: plots/range-interval/implementations/javascript/highcharts.js
+    muix: plots/range-interval/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/range-interval/implementations/julia/makie.jl
+  python:
+    altair: plots/range-interval/implementations/python/altair.py
+    bokeh: plots/range-interval/implementations/python/bokeh.py
+    letsplot: plots/range-interval/implementations/python/letsplot.py
+    matplotlib: plots/range-interval/implementations/python/matplotlib.py
+    plotly: plots/range-interval/implementations/python/plotly.py
+    plotnine: plots/range-interval/implementations/python/plotnine.py
+    pygal: plots/range-interval/implementations/python/pygal.py
+    seaborn: plots/range-interval/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/range-interval/implementations/r/ggplot2.R
+notes:
+- Use horizontal orientation when category labels are long
+- Sort categories by range size, midpoint, or logical order (e.g., chronological)
+- Consider adding markers at min/max endpoints for emphasis
+source: anyplot
+anyplot_updated: 2026-01-09 23:40:20+00:00

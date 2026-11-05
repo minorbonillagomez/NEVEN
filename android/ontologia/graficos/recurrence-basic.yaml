@@ -1,0 +1,143 @@
+entity_type: ChartType
+id: recurrence-basic
+name:
+  en: Recurrence Plot for Nonlinear Time Series
+  es: Recurrence Basic Básico
+description:
+  en: A recurrence plot is a binary or distance-based matrix visualization that reveals
+    when states in a dynamical system recur over time. Both axes represent time indices,
+    and a point is plotted at position (i, j) when the system state at time i is sufficiently
+    similar to the state at time j (distance below a threshold). The resulting symmetric
+    matrix exposes hidden structure in complex, nonlinear dynamics — diagonal lines
+    indicate determinism, vertical/horizontal lines reveal laminar states, and block
+    structures signal regime changes.
+  es: A recurrence plot is a binary or distance-based matrix visualization that reveals
+    when states in a dynamical system recur over time. Both axes represent time indices,
+    and a point is plotted at position (i, j) when the system state at time i is sufficiently
+    similar to the state at time j (distance below a threshold). The resulting symmetric
+    matrix exposes hidden structure in complex, nonlinear dynamics — diagonal lines
+    indicate determinism, vertical/horizontal lines reveal laminar states, and block
+    structures signal regime changes.
+aliases:
+  en:
+  - recurrence-basic
+  - recurrence basic
+  - basic recurrence basic
+  es:
+  - recurrence-basic
+  - recurrence basic
+  - recurrence basic básico
+use_when:
+  en:
+  - A recurrence plot is a binary or distance-based matrix visualization that reveals
+    when states in a dynamical system recur over time. Both axes represent time indices,
+    and a point is plotted at positio
+  es:
+  - A recurrence plot is a binary or distance-based matrix visualization that reveals
+    when states in a dynamical system recur over time. Both axes represent time indices,
+    and a point is plotted at positio
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Nonlinear dynamics research: detecting transitions between chaotic and periodic
+    behavior in simulated or observed dynamical systems'
+  - 'Climate science: identifying regime shifts and recurring patterns in paleoclimate
+    proxy records'
+  - 'Cardiology: analyzing heart rate variability recurrence structure to distinguish
+    healthy from pathological rhythms'
+  - 'Financial engineering: detecting recurring volatility regimes and structural
+    breaks in asset return series'
+  - 'Mechanical engineering: fault detection in rotating machinery through vibration
+    signal recurrence analysis'
+  es:
+  - 'Nonlinear dynamics research: detecting transitions between chaotic and periodic
+    behavior in simulated or observed dynamical systems'
+  - 'Climate science: identifying regime shifts and recurring patterns in paleoclimate
+    proxy records'
+  - 'Cardiology: analyzing heart rate variability recurrence structure to distinguish
+    healthy from pathological rhythms'
+  - 'Financial engineering: detecting recurring volatility regimes and structural
+    breaks in asset return series'
+  - 'Mechanical engineering: fault detection in rotating machinery through vibration
+    signal recurrence analysis'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - heatmap
+  - matrix
+  data_type:
+  - timeseries
+  - numeric
+  - matrix
+  domain:
+  - statistics
+  - science
+  - engineering
+  features:
+  - color-mapped
+  - temporal
+  - 2d
+keywords:
+  en:
+  - recurrence
+  - basic
+  - heatmap
+  - matrix
+  - timeseries
+  - numeric
+  - statistics
+  - science
+  - engineering
+  - color-mapped
+  - temporal
+  - 2d
+  es:
+  - recurrence
+  - básico
+  - heatmap
+  - matrix
+  - timeseries
+  - numérico
+  - estadística
+  - ciencia
+  - ingeniería
+  - color-mapped
+  - temporal
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/recurrence-basic/implementations/javascript/chartjs.js
+    d3: plots/recurrence-basic/implementations/javascript/d3.js
+    echarts: plots/recurrence-basic/implementations/javascript/echarts.js
+    highcharts: plots/recurrence-basic/implementations/javascript/highcharts.js
+    muix: plots/recurrence-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/recurrence-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/recurrence-basic/implementations/python/altair.py
+    bokeh: plots/recurrence-basic/implementations/python/bokeh.py
+    letsplot: plots/recurrence-basic/implementations/python/letsplot.py
+    matplotlib: plots/recurrence-basic/implementations/python/matplotlib.py
+    plotly: plots/recurrence-basic/implementations/python/plotly.py
+    plotnine: plots/recurrence-basic/implementations/python/plotnine.py
+    pygal: plots/recurrence-basic/implementations/python/pygal.py
+    seaborn: plots/recurrence-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/recurrence-basic/implementations/r/ggplot2.R
+notes:
+- The main diagonal is always filled (every state recurs with itself) and should be
+  visually present
+- Use Euclidean distance in the embedding space to compute the distance matrix; apply
+  a binary threshold for the standard recurrence plot
+- Consider embedding the scalar time series using time-delay embedding (Takens' theorem)
+  with appropriate embedding dimension and delay before computing distances
+source: anyplot
+anyplot_updated: null

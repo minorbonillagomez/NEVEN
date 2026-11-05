@@ -1,0 +1,135 @@
+entity_type: ChartType
+id: manhattan-gwas
+name:
+  en: Manhattan Plot for GWAS
+  es: Manhattan Gwas
+description:
+  en: A Manhattan plot visualizes genome-wide association study (GWAS) results by
+    displaying -log10 transformed p-values across chromosomal positions. Points are
+    arranged by genomic position along the x-axis with alternating colors for each
+    chromosome, making it easy to identify significant associations. A horizontal
+    threshold line indicates genome-wide significance (typically p < 5×10⁻⁸). This
+    plot is essential for identifying genetic variants associated with traits or diseases.
+  es: A Manhattan plot visualizes genome-wide association study (GWAS) results by
+    displaying -log10 transformed p-values across chromosomal positions. Points are
+    arranged by genomic position along the x-axis with alternating colors for each
+    chromosome, making it easy to identify significant associations. A horizontal
+    threshold line indicates genome-wide significance (typically p < 5×10⁻⁸). This
+    plot is essential for identifying genetic variants associated with traits or diseases.
+aliases:
+  en:
+  - manhattan-gwas
+  - manhattan gwas
+  - manhattan gwas
+  es:
+  - manhattan-gwas
+  - manhattan gwas
+  - manhattan gwas
+use_when:
+  en:
+  - A Manhattan plot visualizes genome-wide association study (GWAS) results by displaying
+    -log10 transformed p-values across chromosomal positions. Points are arranged
+    by genomic position along the x-axi
+  es:
+  - A Manhattan plot visualizes genome-wide association study (GWAS) results by displaying
+    -log10 transformed p-values across chromosomal positions. Points are arranged
+    by genomic position along the x-axi
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying significant SNPs in genome-wide association studies for complex diseases
+  - Visualizing genetic association results across the entire genome in pharmacogenomics
+    research
+  - Presenting GWAS findings in scientific publications and research presentations
+  - Screening for candidate loci in agricultural genomics and breeding programs
+  es:
+  - Identifying significant SNPs in genome-wide association studies for complex diseases
+  - Visualizing genetic association results across the entire genome in pharmacogenomics
+    research
+  - Presenting GWAS findings in scientific publications and research presentations
+  - Screening for candidate loci in agricultural genomics and breeding programs
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  - point
+  data_type:
+  - numeric
+  - categorical
+  - genomic
+  domain:
+  - science
+  - bioinformatics
+  - genetics
+  - healthcare
+  features:
+  - threshold-line
+  - color-mapped
+  - chromosome-segmented
+keywords:
+  en:
+  - manhattan
+  - gwas
+  - scatter
+  - point
+  - numeric
+  - categorical
+  - genomic
+  - science
+  - bioinformatics
+  - genetics
+  - healthcare
+  - threshold-line
+  - color-mapped
+  - chromosome-segmented
+  es:
+  - manhattan
+  - gwas
+  - scatter
+  - point
+  - numérico
+  - categórico
+  - genomic
+  - ciencia
+  - bioinformatics
+  - genetics
+  - healthcare
+  - threshold-line
+  - color-mapped
+  - chromosome-segmented
+implementations:
+  javascript:
+    chartjs: plots/manhattan-gwas/implementations/javascript/chartjs.js
+    d3: plots/manhattan-gwas/implementations/javascript/d3.js
+    echarts: plots/manhattan-gwas/implementations/javascript/echarts.js
+    highcharts: plots/manhattan-gwas/implementations/javascript/highcharts.js
+    muix: plots/manhattan-gwas/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/manhattan-gwas/implementations/julia/makie.jl
+  python:
+    altair: plots/manhattan-gwas/implementations/python/altair.py
+    bokeh: plots/manhattan-gwas/implementations/python/bokeh.py
+    letsplot: plots/manhattan-gwas/implementations/python/letsplot.py
+    matplotlib: plots/manhattan-gwas/implementations/python/matplotlib.py
+    plotly: plots/manhattan-gwas/implementations/python/plotly.py
+    plotnine: plots/manhattan-gwas/implementations/python/plotnine.py
+    pygal: plots/manhattan-gwas/implementations/python/pygal.py
+    seaborn: plots/manhattan-gwas/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/manhattan-gwas/implementations/r/ggplot2.R
+notes:
+- X-axis should show cumulative genomic position with chromosome labels centered below
+  their region
+- Use alternating colors (e.g., blue/gray) for adjacent chromosomes for visual distinction
+- Include horizontal dashed line at -log10(5×10⁻⁸) ≈ 7.3 for genome-wide significance
+  threshold
+source: anyplot
+anyplot_updated: 2026-05-15 03:17:27+00:00

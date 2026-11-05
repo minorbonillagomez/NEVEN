@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: psychrometric-basic
+name:
+  en: Psychrometric Chart for HVAC
+  es: Psychrometric Basic Básico
+description:
+  en: A psychrometric chart plots dry-bulb temperature against humidity ratio, overlaid
+    with curves for relative humidity, wet-bulb temperature, enthalpy, and specific
+    volume. It is the fundamental tool for HVAC system design and air conditioning
+    process analysis. The chart reveals the thermodynamic properties of moist air
+    at a glance, enabling engineers to trace heating, cooling, humidification, and
+    dehumidification processes as paths on the diagram.
+  es: A psychrometric chart plots dry-bulb temperature against humidity ratio, overlaid
+    with curves for relative humidity, wet-bulb temperature, enthalpy, and specific
+    volume. It is the fundamental tool for HVAC system design and air conditioning
+    process analysis. The chart reveals the thermodynamic properties of moist air
+    at a glance, enabling engineers to trace heating, cooling, humidification, and
+    dehumidification processes as paths on the diagram.
+aliases:
+  en:
+  - psychrometric-basic
+  - psychrometric basic
+  - basic psychrometric basic
+  es:
+  - psychrometric-basic
+  - psychrometric basic
+  - psychrometric basic básico
+use_when:
+  en:
+  - A psychrometric chart plots dry-bulb temperature against humidity ratio, overlaid
+    with curves for relative humidity, wet-bulb temperature, enthalpy, and specific
+    volume. It is the fundamental tool for
+  es:
+  - A psychrometric chart plots dry-bulb temperature against humidity ratio, overlaid
+    with curves for relative humidity, wet-bulb temperature, enthalpy, and specific
+    volume. It is the fundamental tool for
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'HVAC engineering: designing and analyzing air conditioning systems by tracing
+    process paths (heating, cooling, mixing) on the chart'
+  - 'Building science: evaluating indoor thermal comfort zones and identifying condensation
+    risks'
+  - 'Industrial process engineering: optimizing drying operations and clean room environmental
+    control'
+  es:
+  - 'HVAC engineering: designing and analyzing air conditioning systems by tracing
+    process paths (heating, cooling, mixing) on the chart'
+  - 'Building science: evaluating indoor thermal comfort zones and identifying condensation
+    risks'
+  - 'Industrial process engineering: optimizing drying operations and clean room environmental
+    control'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - contour
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - energy
+  features:
+  - advanced
+  - annotated
+  - multi
+keywords:
+  en:
+  - psychrometric
+  - basic
+  - line
+  - contour
+  - numeric
+  - continuous
+  - engineering
+  - energy
+  - advanced
+  - annotated
+  - multi
+  es:
+  - psychrometric
+  - básico
+  - line
+  - contour
+  - numérico
+  - continuo
+  - ingeniería
+  - energy
+  - advanced
+  - annotated
+  - multi
+implementations:
+  javascript:
+    chartjs: plots/psychrometric-basic/implementations/javascript/chartjs.js
+    d3: plots/psychrometric-basic/implementations/javascript/d3.js
+    echarts: plots/psychrometric-basic/implementations/javascript/echarts.js
+    highcharts: plots/psychrometric-basic/implementations/javascript/highcharts.js
+    muix: plots/psychrometric-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/psychrometric-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/psychrometric-basic/implementations/python/altair.py
+    bokeh: plots/psychrometric-basic/implementations/python/bokeh.py
+    letsplot: plots/psychrometric-basic/implementations/python/letsplot.py
+    matplotlib: plots/psychrometric-basic/implementations/python/matplotlib.py
+    plotly: plots/psychrometric-basic/implementations/python/plotly.py
+    plotnine: plots/psychrometric-basic/implementations/python/plotnine.py
+    pygal: plots/psychrometric-basic/implementations/python/pygal.py
+    seaborn: plots/psychrometric-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/psychrometric-basic/implementations/r/ggplot2.R
+notes:
+- The saturation curve (100% RH) forms the upper boundary of the chart and should
+  be visually prominent
+- Relative humidity curves (10%-100%) should be drawn as smooth curves between the
+  saturation line and x-axis
+- Wet-bulb and enthalpy lines run diagonally from upper-left to lower-right
+source: anyplot
+anyplot_updated: null

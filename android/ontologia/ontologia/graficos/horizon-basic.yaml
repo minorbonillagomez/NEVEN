@@ -1,0 +1,139 @@
+entity_type: ChartType
+id: horizon-basic
+name:
+  en: Horizon Chart
+  es: Horizon Basic Básico
+description:
+  en: A horizon chart displays many time series compactly by folding values into color-coded
+    bands, preserving local resolution while minimizing vertical space. It divides
+    the y-axis into bands and uses color intensity to encode magnitude, allowing dozens
+    of series to be compared in limited space. This technique is particularly effective
+    when monitoring many metrics simultaneously where traditional line charts would
+    become unreadable.
+  es: A horizon chart displays many time series compactly by folding values into color-coded
+    bands, preserving local resolution while minimizing vertical space. It divides
+    the y-axis into bands and uses color intensity to encode magnitude, allowing dozens
+    of series to be compared in limited space. This technique is particularly effective
+    when monitoring many metrics simultaneously where traditional line charts would
+    become unreadable.
+aliases:
+  en:
+  - horizon-basic
+  - horizon basic
+  - basic horizon basic
+  es:
+  - horizon-basic
+  - horizon basic
+  - horizon basic básico
+use_when:
+  en:
+  - A horizon chart displays many time series compactly by folding values into color-coded
+    bands, preserving local resolution while minimizing vertical space. It divides
+    the y-axis into bands and uses col
+  es:
+  - A horizon chart displays many time series compactly by folding values into color-coded
+    bands, preserving local resolution while minimizing vertical space. It divides
+    the y-axis into bands and uses col
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Dashboard monitoring displaying 50+ system metrics (CPU, memory, network) in a
+    compact panel
+  - Stock market sector analysis comparing performance of multiple securities over
+    time
+  - Environmental monitoring showing temperature, humidity, and other readings from
+    multiple sensors
+  es:
+  - Dashboard monitoring displaying 50+ system metrics (CPU, memory, network) in a
+    compact panel
+  - Stock market sector analysis comparing performance of multiple securities over
+    time
+  - Environmental monitoring showing temperature, humidity, and other readings from
+    multiple sensors
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - horizon
+  - area
+  - line
+  data_type:
+  - timeseries
+  - numeric
+  - continuous
+  domain:
+  - general
+  - business
+  - technology
+  - finance
+  features:
+  - basic
+  - multi
+  - compact
+  - color-mapped
+keywords:
+  en:
+  - horizon
+  - basic
+  - area
+  - line
+  - timeseries
+  - numeric
+  - continuous
+  - general
+  - business
+  - technology
+  - finance
+  - multi
+  - compact
+  - color-mapped
+  es:
+  - horizon
+  - básico
+  - area
+  - line
+  - timeseries
+  - numérico
+  - continuo
+  - general
+  - negocios
+  - technology
+  - finanzas
+  - basic
+  - multi
+  - compact
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/horizon-basic/implementations/javascript/chartjs.js
+    d3: plots/horizon-basic/implementations/javascript/d3.js
+    echarts: plots/horizon-basic/implementations/javascript/echarts.js
+    highcharts: plots/horizon-basic/implementations/javascript/highcharts.js
+    muix: plots/horizon-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/horizon-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/horizon-basic/implementations/python/altair.py
+    bokeh: plots/horizon-basic/implementations/python/bokeh.py
+    letsplot: plots/horizon-basic/implementations/python/letsplot.py
+    matplotlib: plots/horizon-basic/implementations/python/matplotlib.py
+    plotly: plots/horizon-basic/implementations/python/plotly.py
+    plotnine: plots/horizon-basic/implementations/python/plotnine.py
+    pygal: plots/horizon-basic/implementations/python/pygal.py
+    seaborn: plots/horizon-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/horizon-basic/implementations/r/ggplot2.R
+notes:
+- Typically uses 2-4 bands with mirrored positive/negative coloring (e.g., blue for
+  positive, red for negative)
+- Color intensity increases with magnitude within each band
+- Baseline should be meaningful (often zero or mean value)
+source: anyplot
+anyplot_updated: 2026-08-18 00:32:58+00:00

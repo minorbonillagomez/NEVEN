@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: map-route-path
+name:
+  en: Route Path Map
+  es: Mapa
+description:
+  en: A geographic map visualization showing a connected path or route between sequential
+    waypoints. Unlike scatter maps that display discrete points, this plot connects
+    coordinates in order to reveal journeys, tracks, and navigation paths. Ideal for
+    GPS data, delivery routes, and travel visualization where the sequence and continuity
+    of movement matters.
+  es: A geographic map visualization showing a connected path or route between sequential
+    waypoints. Unlike scatter maps that display discrete points, this plot connects
+    coordinates in order to reveal journeys, tracks, and navigation paths. Ideal for
+    GPS data, delivery routes, and travel visualization where the sequence and continuity
+    of movement matters.
+aliases:
+  en:
+  - map-route-path
+  - map route path
+  - map
+  es:
+  - map-route-path
+  - map route path
+  - mapa
+use_when:
+  en:
+  - A geographic map visualization showing a connected path or route between sequential
+    waypoints. Unlike scatter maps that display discrete points, this plot connects
+    coordinates in order to reveal journ
+  es:
+  - A geographic map visualization showing a connected path or route between sequential
+    waypoints. Unlike scatter maps that display discrete points, this plot connects
+    coordinates in order to reveal journ
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing GPS tracks from fitness activities like running, hiking, or cycling
+    routes
+  - Mapping delivery or logistics routes to analyze coverage and efficiency
+  - Displaying historical journeys or expedition paths for storytelling and education
+  - Reconstructing vehicle trajectories from telematics or tracking data
+  es:
+  - Visualizing GPS tracks from fitness activities like running, hiking, or cycling
+    routes
+  - Mapping delivery or logistics routes to analyze coverage and efficiency
+  - Displaying historical journeys or expedition paths for storytelling and education
+  - Reconstructing vehicle trajectories from telematics or tracking data
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - map
+  - line
+  data_type:
+  - geospatial
+  - numeric
+  - timeseries
+  domain:
+  - general
+  - technology
+  features:
+  - basic
+  - temporal
+  - annotated
+keywords:
+  en:
+  - map
+  - route
+  - path
+  - line
+  - geospatial
+  - numeric
+  - timeseries
+  - general
+  - technology
+  - basic
+  - temporal
+  - annotated
+  es:
+  - mapa
+  - route
+  - path
+  - map
+  - line
+  - geoespacial
+  - numérico
+  - timeseries
+  - general
+  - technology
+  - basic
+  - temporal
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/map-route-path/implementations/javascript/chartjs.js
+    d3: plots/map-route-path/implementations/javascript/d3.js
+    echarts: plots/map-route-path/implementations/javascript/echarts.js
+    highcharts: plots/map-route-path/implementations/javascript/highcharts.js
+    muix: plots/map-route-path/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/map-route-path/implementations/julia/makie.jl
+  python:
+    altair: plots/map-route-path/implementations/python/altair.py
+    bokeh: plots/map-route-path/implementations/python/bokeh.py
+    letsplot: plots/map-route-path/implementations/python/letsplot.py
+    matplotlib: plots/map-route-path/implementations/python/matplotlib.py
+    plotly: plots/map-route-path/implementations/python/plotly.py
+    plotnine: plots/map-route-path/implementations/python/plotnine.py
+    pygal: plots/map-route-path/implementations/python/pygal.py
+    seaborn: plots/map-route-path/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/map-route-path/implementations/r/ggplot2.R
+notes:
+- Connect waypoints in sequence order with continuous lines
+- Use distinct markers for start and end points (e.g., green circle for start, red
+  square for end)
+- Consider color gradients along the path to show time progression, speed, or elevation
+source: anyplot
+anyplot_updated: 2026-01-11 22:51:09+00:00

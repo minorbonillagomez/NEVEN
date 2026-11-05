@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: sunburst-basic
+name:
+  en: Basic Sunburst Chart
+  es: Gráfico de Explosión Solar Básico
+description:
+  en: A sunburst chart displays hierarchical data as concentric rings, where each
+    ring represents a level in the hierarchy. Inner rings show parent categories while
+    outer rings show their children, with segment angles proportional to values. This
+    radial visualization excels at revealing hierarchical structures and part-to-whole
+    relationships across multiple levels simultaneously.
+  es: A sunburst chart displays hierarchical data as concentric rings, where each
+    ring represents a level in the hierarchy. Inner rings show parent categories while
+    outer rings show their children, with segment angles proportional to values. This
+    radial visualization excels at revealing hierarchical structures and part-to-whole
+    relationships across multiple levels simultaneously.
+aliases:
+  en:
+  - sunburst-basic
+  - sunburst basic
+  - basic sunburst chart
+  es:
+  - sunburst-basic
+  - sunburst basic
+  - gráfico de explosión solar básico
+use_when:
+  en:
+  - A sunburst chart displays hierarchical data as concentric rings, where each ring
+    represents a level in the hierarchy. Inner rings show parent categories while
+    outer rings show their children, with seg
+  es:
+  - A sunburst chart displays hierarchical data as concentric rings, where each ring
+    represents a level in the hierarchy. Inner rings show parent categories while
+    outer rings show their children, with seg
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - File system visualization showing directory sizes and nested folder structures
+  - Organizational budget breakdown by department, team, and project
+  - Taxonomy or classification hierarchies with proportional representation
+  - Website navigation paths showing user flow through page hierarchies
+  es:
+  - File system visualization showing directory sizes and nested folder structures
+  - Organizational budget breakdown by department, team, and project
+  - Taxonomy or classification hierarchies with proportional representation
+  - Website navigation paths showing user flow through page hierarchies
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - sunburst
+  data_type:
+  - hierarchical
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - radial
+  - proportional
+keywords:
+  en:
+  - sunburst chart
+  - basic
+  - sunburst
+  - hierarchical
+  - categorical
+  - numeric
+  - general
+  - business
+  - radial
+  - proportional
+  es:
+  - gráfico de explosión solar
+  - básico
+  - sunburst
+  - jerárquico
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - radial
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/sunburst-basic/implementations/javascript/chartjs.js
+    d3: plots/sunburst-basic/implementations/javascript/d3.js
+    echarts: plots/sunburst-basic/implementations/javascript/echarts.js
+    highcharts: plots/sunburst-basic/implementations/javascript/highcharts.js
+    muix: plots/sunburst-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/sunburst-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/sunburst-basic/implementations/python/altair.py
+    bokeh: plots/sunburst-basic/implementations/python/bokeh.py
+    letsplot: plots/sunburst-basic/implementations/python/letsplot.py
+    matplotlib: plots/sunburst-basic/implementations/python/matplotlib.py
+    plotly: plots/sunburst-basic/implementations/python/plotly.py
+    plotnine: plots/sunburst-basic/implementations/python/plotnine.py
+    pygal: plots/sunburst-basic/implementations/python/pygal.py
+    seaborn: plots/sunburst-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/sunburst-basic/implementations/r/ggplot2.R
+notes:
+- Use consistent colors within each branch to show relationships
+- Label major segments; smaller segments may show labels on hover/interaction
+- Maintain clear visual separation between hierarchy levels
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

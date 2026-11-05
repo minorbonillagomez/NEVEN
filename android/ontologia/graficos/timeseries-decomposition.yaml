@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: timeseries-decomposition
+name:
+  en: Time Series Decomposition Plot
+  es: Serie Temporal
+description:
+  en: 'A time series decomposition plot displays a time series broken down into its
+    constituent components: the original series, trend, seasonal pattern, and residual
+    noise. Each component is shown as a separate subplot stacked vertically, sharing
+    a common time axis. This visualization is essential for understanding the underlying
+    structure of time series data and identifying patterns that may not be visible
+    in the raw series.'
+  es: 'A time series decomposition plot displays a time series broken down into its
+    constituent components: the original series, trend, seasonal pattern, and residual
+    noise. Each component is shown as a separate subplot stacked vertically, sharing
+    a common time axis. This visualization is essential for understanding the underlying
+    structure of time series data and identifying patterns that may not be visible
+    in the raw series.'
+aliases:
+  en:
+  - timeseries-decomposition
+  - timeseries decomposition
+  - time series
+  es:
+  - timeseries-decomposition
+  - timeseries decomposition
+  - serie temporal
+use_when:
+  en:
+  - 'A time series decomposition plot displays a time series broken down into its
+    constituent components: the original series, trend, seasonal pattern, and residual
+    noise. Each component is shown as a sepa'
+  es:
+  - 'A time series decomposition plot displays a time series broken down into its
+    constituent components: the original series, trend, seasonal pattern, and residual
+    noise. Each component is shown as a sepa'
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing sales data to separate long-term growth trends from seasonal holiday
+    patterns
+  - Decomposing temperature records to isolate climate trends from annual cycles
+  - Understanding stock market behavior by separating systematic patterns from random
+    fluctuations
+  - Preprocessing time series for forecasting by examining component predictability
+  es:
+  - Analyzing sales data to separate long-term growth trends from seasonal holiday
+    patterns
+  - Decomposing temperature records to isolate climate trends from annual cycles
+  - Understanding stock market behavior by separating systematic patterns from random
+    fluctuations
+  - Preprocessing time series for forecasting by examining component predictability
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - datetime
+  - numeric
+  domain:
+  - general
+  - statistics
+  - finance
+  - science
+  features:
+  - multi-panel
+  - trend
+  - seasonal
+  - residual
+  - diagnostic
+keywords:
+  en:
+  - time series
+  - decomposition
+  - line
+  - timeseries
+  - datetime
+  - numeric
+  - general
+  - statistics
+  - finance
+  - science
+  - multi-panel
+  - trend
+  - seasonal
+  - residual
+  - diagnostic
+  es:
+  - serie temporal
+  - decomposition
+  - line
+  - timeseries
+  - datetime
+  - numérico
+  - general
+  - estadística
+  - finanzas
+  - ciencia
+  - multi-panel
+  - trend
+  - seasonal
+  - residual
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/timeseries-decomposition/implementations/javascript/chartjs.js
+    d3: plots/timeseries-decomposition/implementations/javascript/d3.js
+    echarts: plots/timeseries-decomposition/implementations/javascript/echarts.js
+    highcharts: plots/timeseries-decomposition/implementations/javascript/highcharts.js
+    muix: plots/timeseries-decomposition/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/timeseries-decomposition/implementations/julia/makie.jl
+  python:
+    altair: plots/timeseries-decomposition/implementations/python/altair.py
+    bokeh: plots/timeseries-decomposition/implementations/python/bokeh.py
+    letsplot: plots/timeseries-decomposition/implementations/python/letsplot.py
+    matplotlib: plots/timeseries-decomposition/implementations/python/matplotlib.py
+    plotly: plots/timeseries-decomposition/implementations/python/plotly.py
+    plotnine: plots/timeseries-decomposition/implementations/python/plotnine.py
+    pygal: plots/timeseries-decomposition/implementations/python/pygal.py
+    seaborn: plots/timeseries-decomposition/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/timeseries-decomposition/implementations/r/ggplot2.R
+notes:
+- 'Display four vertically stacked subplots: Original, Trend, Seasonal, and Residual'
+- Use consistent x-axis (time) across all subplots for easy comparison
+- Label each subplot clearly with component name
+source: anyplot
+anyplot_updated: 2026-05-14 22:30:07+00:00

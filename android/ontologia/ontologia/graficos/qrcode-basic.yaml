@@ -1,0 +1,118 @@
+entity_type: ChartType
+id: qrcode-basic
+name:
+  en: Basic QR Code Generator
+  es: Qrcode Basic Básico
+description:
+  en: A QR (Quick Response) code visualization that encodes text or URL data into
+    a square matrix barcode pattern. QR codes are two-dimensional barcodes that store
+    information in a grid of black and white squares, readable by smartphones and
+    dedicated scanners. This visualization is useful for generating scannable codes
+    for quick data sharing and mobile access.
+  es: A QR (Quick Response) code visualization that encodes text or URL data into
+    a square matrix barcode pattern. QR codes are two-dimensional barcodes that store
+    information in a grid of black and white squares, readable by smartphones and
+    dedicated scanners. This visualization is useful for generating scannable codes
+    for quick data sharing and mobile access.
+aliases:
+  en:
+  - qrcode-basic
+  - qrcode basic
+  - basic qrcode basic
+  es:
+  - qrcode-basic
+  - qrcode basic
+  - qrcode basic básico
+use_when:
+  en:
+  - A QR (Quick Response) code visualization that encodes text or URL data into a
+    square matrix barcode pattern. QR codes are two-dimensional barcodes that store
+    information in a grid of black and white s
+  es:
+  - A QR (Quick Response) code visualization that encodes text or URL data into a
+    square matrix barcode pattern. QR codes are two-dimensional barcodes that store
+    information in a grid of black and white s
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Encoding URLs for easy mobile website access via smartphone camera
+  - Generating WiFi network credentials for quick device connection
+  - Creating vCard contact information for instant address book import
+  - Event ticket and badge generation for access control
+  - Product identification and inventory tracking
+  es:
+  - Encoding URLs for easy mobile website access via smartphone camera
+  - Generating WiFi network credentials for quick device connection
+  - Creating vCard contact information for instant address book import
+  - Event ticket and badge generation for access control
+  - Product identification and inventory tracking
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - barcode
+  data_type:
+  - text
+  domain:
+  - general
+  - technology
+  - business
+  features:
+  - basic
+  - 2d
+  - encoding
+keywords:
+  en:
+  - qrcode
+  - basic
+  - barcode
+  - text
+  - general
+  - technology
+  - business
+  - 2d
+  - encoding
+  es:
+  - qrcode
+  - básico
+  - barcode
+  - texto
+  - general
+  - technology
+  - negocios
+  - basic
+  - 2d
+  - encoding
+implementations:
+  javascript:
+    chartjs: plots/qrcode-basic/implementations/javascript/chartjs.js
+    d3: plots/qrcode-basic/implementations/javascript/d3.js
+    echarts: plots/qrcode-basic/implementations/javascript/echarts.js
+    highcharts: plots/qrcode-basic/implementations/javascript/highcharts.js
+    muix: plots/qrcode-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/qrcode-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/qrcode-basic/implementations/python/altair.py
+    bokeh: plots/qrcode-basic/implementations/python/bokeh.py
+    letsplot: plots/qrcode-basic/implementations/python/letsplot.py
+    matplotlib: plots/qrcode-basic/implementations/python/matplotlib.py
+    plotly: plots/qrcode-basic/implementations/python/plotly.py
+    plotnine: plots/qrcode-basic/implementations/python/plotnine.py
+    pygal: plots/qrcode-basic/implementations/python/pygal.py
+    seaborn: plots/qrcode-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/qrcode-basic/implementations/r/ggplot2.R
+notes:
+- Include a quiet zone (white border) around the QR code for reliable scanning
+- Use high contrast black on white for maximum readability
+- Position detection patterns (finder patterns) in three corners are required
+source: anyplot
+anyplot_updated: 2026-06-24 16:53:08+00:00

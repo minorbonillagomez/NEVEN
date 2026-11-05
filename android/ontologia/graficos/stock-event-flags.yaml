@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: stock-event-flags
+name:
+  en: Stock Chart with Event Flags
+  es: Stock Event Flags
+description:
+  en: A stock price chart with flag-style markers annotating significant events such
+    as earnings releases, dividends, stock splits, or news events. Unlike simple line
+    annotations, flags are positioned above or below the price data with connector
+    lines and styled icons that distinguish event types. This visualization is standard
+    in financial trading platforms, enabling investors to correlate price movements
+    with corporate actions and market events at a glance.
+  es: A stock price chart with flag-style markers annotating significant events such
+    as earnings releases, dividends, stock splits, or news events. Unlike simple line
+    annotations, flags are positioned above or below the price data with connector
+    lines and styled icons that distinguish event types. This visualization is standard
+    in financial trading platforms, enabling investors to correlate price movements
+    with corporate actions and market events at a glance.
+aliases:
+  en:
+  - stock-event-flags
+  - stock event flags
+  - stock event flags
+  es:
+  - stock-event-flags
+  - stock event flags
+  - stock event flags
+use_when:
+  en:
+  - A stock price chart with flag-style markers annotating significant events such
+    as earnings releases, dividends, stock splits, or news events. Unlike simple line
+    annotations, flags are positioned above
+  es:
+  - A stock price chart with flag-style markers annotating significant events such
+    as earnings releases, dividends, stock splits, or news events. Unlike simple line
+    annotations, flags are positioned above
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Annotating quarterly earnings announcements on equity price charts to analyze
+    market reactions
+  - Marking dividend payment and ex-dividend dates on income-focused stock analysis
+  - Highlighting stock splits, reverse splits, or corporate restructuring events
+  - Visualizing the impact of news events, analyst upgrades/downgrades, or regulatory
+    filings on price
+  es:
+  - Annotating quarterly earnings announcements on equity price charts to analyze
+    market reactions
+  - Marking dividend payment and ex-dividend dates on income-focused stock analysis
+  - Highlighting stock splits, reverse splits, or corporate restructuring events
+  - Visualizing the impact of news events, analyst upgrades/downgrades, or regulatory
+    filings on price
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - candlestick
+  data_type:
+  - timeseries
+  - numeric
+  - categorical
+  domain:
+  - finance
+  features:
+  - annotated
+  - interactive
+  - temporal
+keywords:
+  en:
+  - stock
+  - event
+  - flags
+  - line
+  - candlestick
+  - timeseries
+  - numeric
+  - categorical
+  - finance
+  - annotated
+  - interactive
+  - temporal
+  es:
+  - stock
+  - event
+  - flags
+  - line
+  - candlestick
+  - timeseries
+  - numérico
+  - categórico
+  - finanzas
+  - annotated
+  - interactive
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/stock-event-flags/implementations/javascript/chartjs.js
+    d3: plots/stock-event-flags/implementations/javascript/d3.js
+    echarts: plots/stock-event-flags/implementations/javascript/echarts.js
+    highcharts: plots/stock-event-flags/implementations/javascript/highcharts.js
+    muix: plots/stock-event-flags/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/stock-event-flags/implementations/julia/makie.jl
+  python:
+    altair: plots/stock-event-flags/implementations/python/altair.py
+    bokeh: plots/stock-event-flags/implementations/python/bokeh.py
+    letsplot: plots/stock-event-flags/implementations/python/letsplot.py
+    matplotlib: plots/stock-event-flags/implementations/python/matplotlib.py
+    plotly: plots/stock-event-flags/implementations/python/plotly.py
+    plotnine: plots/stock-event-flags/implementations/python/plotnine.py
+    pygal: plots/stock-event-flags/implementations/python/pygal.py
+    seaborn: plots/stock-event-flags/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/stock-event-flags/implementations/r/ggplot2.R
+notes:
+- Flags should be positioned to avoid obscuring price data, using alternating heights
+  or smart placement
+- Use distinct icons or colors for different event types (e.g., dollar sign for dividends,
+  chart icon for earnings)
+- Include vertical dashed lines from flags to the price level for precise date alignment
+source: anyplot
+anyplot_updated: null

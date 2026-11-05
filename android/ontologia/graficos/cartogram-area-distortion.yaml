@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: cartogram-area-distortion
+name:
+  en: Cartogram with Area Distortion by Data Value
+  es: Cartogram Area Distortion
+description:
+  en: A cartogram distorts geographic regions so that their area becomes proportional
+    to a data variable (e.g., population, GDP, election votes) rather than physical
+    land area. This solves the classic problem of large but sparsely populated areas
+    dominating standard maps, making it easier to compare values across regions at
+    a glance. Contiguous cartograms preserve adjacency and rough shape of regions
+    while rescaling them, famously used in election coverage worldwide.
+  es: A cartogram distorts geographic regions so that their area becomes proportional
+    to a data variable (e.g., population, GDP, election votes) rather than physical
+    land area. This solves the classic problem of large but sparsely populated areas
+    dominating standard maps, making it easier to compare values across regions at
+    a glance. Contiguous cartograms preserve adjacency and rough shape of regions
+    while rescaling them, famously used in election coverage worldwide.
+aliases:
+  en:
+  - cartogram-area-distortion
+  - cartogram area distortion
+  - cartogram area distortion
+  es:
+  - cartogram-area-distortion
+  - cartogram area distortion
+  - cartogram area distortion
+use_when:
+  en:
+  - A cartogram distorts geographic regions so that their area becomes proportional
+    to a data variable (e.g., population, GDP, election votes) rather than physical
+    land area. This solves the classic probl
+  es:
+  - A cartogram distorts geographic regions so that their area becomes proportional
+    to a data variable (e.g., population, GDP, election votes) rather than physical
+    land area. This solves the classic probl
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing national election results where each state or district is sized by
+    number of voters or electoral votes
+  - Comparing GDP or economic output across countries, avoiding the visual bias of
+    geographically large but economically small regions
+  - Displaying population distribution across administrative regions to highlight
+    urbanization patterns
+  es:
+  - Visualizing national election results where each state or district is sized by
+    number of voters or electoral votes
+  - Comparing GDP or economic output across countries, avoiding the visual bias of
+    geographically large but economically small regions
+  - Displaying population distribution across administrative regions to highlight
+    urbanization patterns
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - map
+  - choropleth
+  data_type:
+  - geospatial
+  - numeric
+  domain:
+  - general
+  - statistics
+  features:
+  - proportional
+  - color-mapped
+  - annotated
+keywords:
+  en:
+  - cartogram
+  - area chart
+  - distortion
+  - map
+  - choropleth
+  - geospatial
+  - numeric
+  - general
+  - statistics
+  - proportional
+  - color-mapped
+  - annotated
+  es:
+  - cartogram
+  - gráfico de área
+  - distortion
+  - map
+  - choropleth
+  - geoespacial
+  - numérico
+  - general
+  - estadística
+  - proportional
+  - color-mapped
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/cartogram-area-distortion/implementations/javascript/chartjs.js
+    d3: plots/cartogram-area-distortion/implementations/javascript/d3.js
+    echarts: plots/cartogram-area-distortion/implementations/javascript/echarts.js
+    highcharts: plots/cartogram-area-distortion/implementations/javascript/highcharts.js
+    muix: plots/cartogram-area-distortion/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/cartogram-area-distortion/implementations/julia/makie.jl
+  python:
+    altair: plots/cartogram-area-distortion/implementations/python/altair.py
+    bokeh: plots/cartogram-area-distortion/implementations/python/bokeh.py
+    letsplot: plots/cartogram-area-distortion/implementations/python/letsplot.py
+    matplotlib: plots/cartogram-area-distortion/implementations/python/matplotlib.py
+    plotly: plots/cartogram-area-distortion/implementations/python/plotly.py
+    plotnine: plots/cartogram-area-distortion/implementations/python/plotnine.py
+    pygal: plots/cartogram-area-distortion/implementations/python/pygal.py
+    seaborn: plots/cartogram-area-distortion/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/cartogram-area-distortion/implementations/r/ggplot2.R
+notes:
+- Prefer a contiguous cartogram (regions keep sharing borders after distortion) to
+  preserve geographic context; where boundary geometry or a contiguous cartogram algorithm
+  isn't available, a non-contiguous form (Dorling circles or Demers squares) is accepted,
+  each region near its true position, shapes not overlapping, neighbors kept close
+- Include original region outlines or a reference map inset for comparison
+- Use a color scale to encode a secondary variable or to reinforce the size variable
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

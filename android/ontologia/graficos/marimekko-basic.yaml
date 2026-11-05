@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: marimekko-basic
+name:
+  en: Basic Marimekko Chart
+  es: Marimekko Basic Básico
+description:
+  en: A Marimekko chart (also called mekko or mosaic plot) is a stacked bar chart
+    where both the width and height of segments represent data values. This visualization
+    shows two categorical dimensions simultaneously with proportional areas, making
+    it ideal for understanding how parts relate to wholes across categories of different
+    sizes.
+  es: A Marimekko chart (also called mekko or mosaic plot) is a stacked bar chart
+    where both the width and height of segments represent data values. This visualization
+    shows two categorical dimensions simultaneously with proportional areas, making
+    it ideal for understanding how parts relate to wholes across categories of different
+    sizes.
+aliases:
+  en:
+  - marimekko-basic
+  - marimekko basic
+  - basic marimekko basic
+  es:
+  - marimekko-basic
+  - marimekko basic
+  - marimekko basic básico
+use_when:
+  en:
+  - A Marimekko chart (also called mekko or mosaic plot) is a stacked bar chart where
+    both the width and height of segments represent data values. This visualization
+    shows two categorical dimensions simul
+  es:
+  - A Marimekko chart (also called mekko or mosaic plot) is a stacked bar chart where
+    both the width and height of segments represent data values. This visualization
+    shows two categorical dimensions simul
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Market share analysis across segments of varying market sizes
+  - Product mix visualization by customer segment or region
+  - Revenue breakdown by region and product line
+  - Cross-tabulation data where both dimensions matter equally
+  es:
+  - Market share analysis across segments of varying market sizes
+  - Product mix visualization by customer segment or region
+  - Revenue breakdown by region and product line
+  - Cross-tabulation data where both dimensions matter equally
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - mosaic
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - business
+  - statistics
+  features:
+  - basic
+  - proportional
+  - stacked
+keywords:
+  en:
+  - marimekko
+  - basic
+  - mosaic
+  - categorical
+  - numeric
+  - business
+  - statistics
+  - proportional
+  - stacked
+  es:
+  - marimekko
+  - básico
+  - mosaic
+  - categórico
+  - numérico
+  - negocios
+  - estadística
+  - basic
+  - proportional
+  - stacked
+implementations:
+  javascript:
+    chartjs: plots/marimekko-basic/implementations/javascript/chartjs.js
+    d3: plots/marimekko-basic/implementations/javascript/d3.js
+    echarts: plots/marimekko-basic/implementations/javascript/echarts.js
+    highcharts: plots/marimekko-basic/implementations/javascript/highcharts.js
+    muix: plots/marimekko-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/marimekko-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/marimekko-basic/implementations/python/altair.py
+    bokeh: plots/marimekko-basic/implementations/python/bokeh.py
+    letsplot: plots/marimekko-basic/implementations/python/letsplot.py
+    matplotlib: plots/marimekko-basic/implementations/python/matplotlib.py
+    plotly: plots/marimekko-basic/implementations/python/plotly.py
+    plotnine: plots/marimekko-basic/implementations/python/plotnine.py
+    pygal: plots/marimekko-basic/implementations/python/pygal.py
+    seaborn: plots/marimekko-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/marimekko-basic/implementations/r/ggplot2.R
+notes:
+- Bar widths should be proportional to the total value of each x-category
+- Segment heights within each bar show the proportion of each y-category
+- Area of each segment represents the actual value (width x height proportion)
+source: anyplot
+anyplot_updated: 2026-07-24 14:15:20+00:00

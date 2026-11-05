@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: radar-multi
+name:
+  en: Multi-Series Radar Chart
+  es: Gráfico de Radar Múltiple
+description:
+  en: A multi-series radar chart overlays multiple data polygons on shared axes radiating
+    from a center point, enabling direct comparison across several entities or categories.
+    Each series is rendered as a distinct colored polygon, making it easy to identify
+    relative strengths and weaknesses at a glance. This visualization excels at comparative
+    analysis where multiple subjects are evaluated across the same set of metrics.
+  es: A multi-series radar chart overlays multiple data polygons on shared axes radiating
+    from a center point, enabling direct comparison across several entities or categories.
+    Each series is rendered as a distinct colored polygon, making it easy to identify
+    relative strengths and weaknesses at a glance. This visualization excels at comparative
+    analysis where multiple subjects are evaluated across the same set of metrics.
+aliases:
+  en:
+  - radar-multi
+  - radar multi
+  - multiple radar chart
+  es:
+  - radar-multi
+  - radar multi
+  - gráfico de radar múltiple
+use_when:
+  en:
+  - 'A multi-series radar chart overlays multiple data polygons on shared axes radiating
+    from a center point, enabling direct comparison across several entities or categories.
+    Each series is rendered as a '
+  es:
+  - 'A multi-series radar chart overlays multiple data polygons on shared axes radiating
+    from a center point, enabling direct comparison across several entities or categories.
+    Each series is rendered as a '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Product feature comparison showing how competing products score across attributes
+    like price, quality, durability, and support
+  - Employee or team skill assessments comparing individuals across competencies such
+    as communication, technical skills, leadership, and creativity
+  - Sports player or team performance comparison across metrics like speed, accuracy,
+    endurance, and teamwork
+  - Business competitor analysis across key performance indicators such as market
+    share, customer satisfaction, and innovation
+  es:
+  - Product feature comparison showing how competing products score across attributes
+    like price, quality, durability, and support
+  - Employee or team skill assessments comparing individuals across competencies such
+    as communication, technical skills, leadership, and creativity
+  - Sports player or team performance comparison across metrics like speed, accuracy,
+    endurance, and teamwork
+  - Business competitor analysis across key performance indicators such as market
+    share, customer satisfaction, and innovation
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - radar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - business
+  features:
+  - multi
+  - comparison
+  - overlay
+keywords:
+  en:
+  - radar chart
+  - multiple
+  - radar
+  - numeric
+  - categorical
+  - general
+  - business
+  - multi
+  - comparison
+  - overlay
+  es:
+  - gráfico de radar
+  - múltiple
+  - radar
+  - numérico
+  - categórico
+  - general
+  - negocios
+  - multi
+  - comparación
+  - overlay
+implementations:
+  javascript:
+    chartjs: plots/radar-multi/implementations/javascript/chartjs.js
+    d3: plots/radar-multi/implementations/javascript/d3.js
+    echarts: plots/radar-multi/implementations/javascript/echarts.js
+    highcharts: plots/radar-multi/implementations/javascript/highcharts.js
+    muix: plots/radar-multi/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/radar-multi/implementations/julia/makie.jl
+  python:
+    altair: plots/radar-multi/implementations/python/altair.py
+    bokeh: plots/radar-multi/implementations/python/bokeh.py
+    letsplot: plots/radar-multi/implementations/python/letsplot.py
+    matplotlib: plots/radar-multi/implementations/python/matplotlib.py
+    plotly: plots/radar-multi/implementations/python/plotly.py
+    plotnine: plots/radar-multi/implementations/python/plotnine.py
+    pygal: plots/radar-multi/implementations/python/pygal.py
+    seaborn: plots/radar-multi/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/radar-multi/implementations/r/ggplot2.R
+notes:
+- Use filled polygons with transparency (alpha ~0.2-0.3) to allow visibility of overlapping
+  areas
+- Assign distinct, contrasting colors to each series for easy differentiation
+- Include a legend identifying each series by color
+source: anyplot
+anyplot_updated: 2026-05-07 16:41:00+00:00

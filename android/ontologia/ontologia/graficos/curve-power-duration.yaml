@@ -1,0 +1,144 @@
+entity_type: ChartType
+id: curve-power-duration
+name:
+  en: Mean-Maximal Power Duration Curve
+  es: Curve Power Duration
+description:
+  en: A power duration curve plots an athlete's best mean-maximal power output (watts)
+    against effort duration on a logarithmic time axis spanning roughly 1 second to
+    several hours. Each point answers "what is the highest average power this rider
+    could sustain for exactly this long?", producing a characteristic monotonically
+    decreasing decay curve. A critical power (CP) model is fitted and overlaid, decomposing
+    performance into an aerobic asymptote (CP) and a finite anaerobic work capacity
+    (W′). The chart is a cornerstone of cycling and endurance sports analytics for
+    profiling rider strengths, tracking fitness, and setting training zones.
+  es: A power duration curve plots an athlete's best mean-maximal power output (watts)
+    against effort duration on a logarithmic time axis spanning roughly 1 second to
+    several hours. Each point answers "what is the highest average power this rider
+    could sustain for exactly this long?", producing a characteristic monotonically
+    decreasing decay curve. A critical power (CP) model is fitted and overlaid, decomposing
+    performance into an aerobic asymptote (CP) and a finite anaerobic work capacity
+    (W′). The chart is a cornerstone of cycling and endurance sports analytics for
+    profiling rider strengths, tracking fitness, and setting training zones.
+aliases:
+  en:
+  - curve-power-duration
+  - curve power duration
+  - curve power duration
+  es:
+  - curve-power-duration
+  - curve power duration
+  - curve power duration
+use_when:
+  en:
+  - A power duration curve plots an athlete's best mean-maximal power output (watts)
+    against effort duration on a logarithmic time axis spanning roughly 1 second to
+    several hours. Each point answers "what
+  es:
+  - A power duration curve plots an athlete's best mean-maximal power output (watts)
+    against effort duration on a logarithmic time axis spanning roughly 1 second to
+    several hours. Each point answers "what
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Cycling performance analysis: profiling a rider as a sprinter, puncheur, or time-trialist
+    by the shape of their power-duration curve and the height of its short- vs long-duration
+    regions'
+  - 'Critical power testing: fitting the CP/W′ model to a handful of maximal efforts
+    to estimate sustainable aerobic power and anaerobic reserve'
+  - 'Training prescription: deriving Functional Threshold Power (FTP) and training
+    zones from the 20-minute and 60-minute power points'
+  - 'Longitudinal fitness tracking: overlaying curves from different training blocks
+    or seasons to visualize gains across the durational spectrum'
+  es:
+  - 'Cycling performance analysis: profiling a rider as a sprinter, puncheur, or time-trialist
+    by the shape of their power-duration curve and the height of its short- vs long-duration
+    regions'
+  - 'Critical power testing: fitting the CP/W′ model to a handful of maximal efforts
+    to estimate sustainable aerobic power and anaerobic reserve'
+  - 'Training prescription: deriving Functional Threshold Power (FTP) and training
+    zones from the 20-minute and 60-minute power points'
+  - 'Longitudinal fitness tracking: overlaying curves from different training blocks
+    or seasons to visualize gains across the durational spectrum'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - sports-science
+  - science
+  features:
+  - curve-fitting
+  - annotated
+  - logarithmic
+  - overlay
+keywords:
+  en:
+  - curve
+  - power
+  - duration
+  - line
+  - scatter
+  - numeric
+  - continuous
+  - sports-science
+  - science
+  - curve-fitting
+  - annotated
+  - logarithmic
+  - overlay
+  es:
+  - curve
+  - power
+  - duration
+  - line
+  - scatter
+  - numérico
+  - continuo
+  - sports-science
+  - ciencia
+  - curve-fitting
+  - annotated
+  - logarithmic
+  - overlay
+implementations:
+  javascript:
+    chartjs: plots/curve-power-duration/implementations/javascript/chartjs.js
+    d3: plots/curve-power-duration/implementations/javascript/d3.js
+    echarts: plots/curve-power-duration/implementations/javascript/echarts.js
+    highcharts: plots/curve-power-duration/implementations/javascript/highcharts.js
+    muix: plots/curve-power-duration/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/curve-power-duration/implementations/julia/makie.jl
+  python:
+    altair: plots/curve-power-duration/implementations/python/altair.py
+    bokeh: plots/curve-power-duration/implementations/python/bokeh.py
+    letsplot: plots/curve-power-duration/implementations/python/letsplot.py
+    matplotlib: plots/curve-power-duration/implementations/python/matplotlib.py
+    plotly: plots/curve-power-duration/implementations/python/plotly.py
+    plotnine: plots/curve-power-duration/implementations/python/plotnine.py
+    pygal: plots/curve-power-duration/implementations/python/pygal.py
+    seaborn: plots/curve-power-duration/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/curve-power-duration/implementations/r/ggplot2.R
+notes:
+- X-axis MUST be logarithmic in time (seconds), with human-readable tick labels (e.g.
+  1s, 5s, 30s, 1min, 5min, 20min, 1h)
+- Plot the empirical mean-maximal curve as the primary series and overlay the fitted
+  critical power model as a distinct (e.g. dashed) line
+- 'Annotate reference durations with vertical markers and labels: 5 s sprint, 1 min,
+  5 min, and 20 min (FTP proxy); optionally annotate the corresponding power values'
+source: anyplot
+anyplot_updated: null

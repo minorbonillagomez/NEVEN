@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: network-hierarchical
+name:
+  en: Hierarchical Network Graph with Tree Layout
+  es: Grafo de Red
+description:
+  en: A hierarchical network graph organizes nodes in distinct levels from root to
+    leaves, with edges showing parent-child relationships between levels. Unlike force-directed
+    layouts that optimize for aesthetic spacing, hierarchical layouts explicitly encode
+    tree structure by positioning nodes at fixed vertical or horizontal levels. This
+    visualization reveals organizational depth, branching patterns, and the overall
+    tree structure at a glance.
+  es: A hierarchical network graph organizes nodes in distinct levels from root to
+    leaves, with edges showing parent-child relationships between levels. Unlike force-directed
+    layouts that optimize for aesthetic spacing, hierarchical layouts explicitly encode
+    tree structure by positioning nodes at fixed vertical or horizontal levels. This
+    visualization reveals organizational depth, branching patterns, and the overall
+    tree structure at a glance.
+aliases:
+  en:
+  - network-hierarchical
+  - network hierarchical
+  - network graph
+  es:
+  - network-hierarchical
+  - network hierarchical
+  - grafo de red
+use_when:
+  en:
+  - A hierarchical network graph organizes nodes in distinct levels from root to leaves,
+    with edges showing parent-child relationships between levels. Unlike force-directed
+    layouts that optimize for aesth
+  es:
+  - A hierarchical network graph organizes nodes in distinct levels from root to leaves,
+    with edges showing parent-child relationships between levels. Unlike force-directed
+    layouts that optimize for aesth
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing organizational charts showing reporting relationships from executives
+    to individual contributors
+  - Displaying file system or directory structures with folders and subfolders organized
+    by depth
+  - Mapping software class hierarchies showing inheritance relationships from base
+    to derived classes
+  - Illustrating decision trees or classification hierarchies with clear branching
+    paths
+  es:
+  - Visualizing organizational charts showing reporting relationships from executives
+    to individual contributors
+  - Displaying file system or directory structures with folders and subfolders organized
+    by depth
+  - Mapping software class hierarchies showing inheritance relationships from base
+    to derived classes
+  - Illustrating decision trees or classification hierarchies with clear branching
+    paths
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - network
+  - tree
+  data_type:
+  - hierarchical
+  - relational
+  domain:
+  - general
+  - business
+  - technology
+  features:
+  - basic
+  - hierarchical
+keywords:
+  en:
+  - network graph
+  - hierarchical
+  - network
+  - tree
+  - relational
+  - general
+  - business
+  - technology
+  - basic
+  es:
+  - grafo de red
+  - hierarchical
+  - red
+  - tree
+  - jerárquico
+  - relational
+  - general
+  - negocios
+  - technology
+  - basic
+implementations:
+  javascript:
+    chartjs: plots/network-hierarchical/implementations/javascript/chartjs.js
+    d3: plots/network-hierarchical/implementations/javascript/d3.js
+    echarts: plots/network-hierarchical/implementations/javascript/echarts.js
+    highcharts: plots/network-hierarchical/implementations/javascript/highcharts.js
+    muix: plots/network-hierarchical/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/network-hierarchical/implementations/julia/makie.jl
+  python:
+    altair: plots/network-hierarchical/implementations/python/altair.py
+    bokeh: plots/network-hierarchical/implementations/python/bokeh.py
+    letsplot: plots/network-hierarchical/implementations/python/letsplot.py
+    matplotlib: plots/network-hierarchical/implementations/python/matplotlib.py
+    plotly: plots/network-hierarchical/implementations/python/plotly.py
+    plotnine: plots/network-hierarchical/implementations/python/plotnine.py
+    pygal: plots/network-hierarchical/implementations/python/pygal.py
+    seaborn: plots/network-hierarchical/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/network-hierarchical/implementations/r/ggplot2.R
+notes:
+- Use tree or hierarchical layout algorithms (e.g., NetworkX's graphviz_layout with
+  'dot')
+- Root nodes should be positioned at the top (or left for horizontal layouts)
+- Edges should be straight or curved lines without arrows unless direction needs emphasis
+source: anyplot
+anyplot_updated: null

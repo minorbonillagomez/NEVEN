@@ -1,0 +1,137 @@
+entity_type: ChartType
+id: bar-permutation-importance
+name:
+  en: Permutation Feature Importance Plot
+  es: Gráfico de Barras
+description:
+  en: A horizontal bar chart displaying permutation feature importance from machine
+    learning models, showing the decrease in model score when each feature is randomly
+    shuffled. Unlike model-specific feature importances, permutation importance is
+    model-agnostic and measures how much the model's performance degrades when a feature's
+    relationship with the target is broken. Error bars indicate variability across
+    multiple shuffles, providing a confidence measure for each importance score.
+  es: A horizontal bar chart displaying permutation feature importance from machine
+    learning models, showing the decrease in model score when each feature is randomly
+    shuffled. Unlike model-specific feature importances, permutation importance is
+    model-agnostic and measures how much the model's performance degrades when a feature's
+    relationship with the target is broken. Error bars indicate variability across
+    multiple shuffles, providing a confidence measure for each importance score.
+aliases:
+  en:
+  - bar-permutation-importance
+  - bar permutation importance
+  - bar chart
+  es:
+  - bar-permutation-importance
+  - bar permutation importance
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Comparing feature importance across different model types (e.g., comparing a random
+    forest vs neural network on the same dataset)
+  - Identifying features that may be redundant or have spurious correlations by examining
+    importance variability
+  - Model validation by verifying that domain-expected important features rank highly
+    in permutation importance
+  es:
+  - Comparing feature importance across different model types (e.g., comparing a random
+    forest vs neural network on the same dataset)
+  - Identifying features that may be redundant or have spurious correlations by examining
+    importance variability
+  - Model validation by verifying that domain-expected important features rank highly
+    in permutation importance
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - machine-learning
+  - statistics
+  features:
+  - horizontal
+  - error-bars
+  - ranking
+  - model-interpretability
+keywords:
+  en:
+  - bar chart
+  - permutation
+  - importance
+  - bar
+  - numeric
+  - categorical
+  - general
+  - machine learning
+  - statistics
+  - horizontal
+  - error-bars
+  - ranking
+  - model-interpretability
+  es:
+  - gráfico de barras
+  - permutation
+  - importance
+  - bar
+  - numérico
+  - categórico
+  - general
+  - aprendizaje automático
+  - estadística
+  - horizontal
+  - error-bars
+  - clasificación
+  - model-interpretability
+implementations:
+  javascript:
+    chartjs: plots/bar-permutation-importance/implementations/javascript/chartjs.js
+    d3: plots/bar-permutation-importance/implementations/javascript/d3.js
+    echarts: plots/bar-permutation-importance/implementations/javascript/echarts.js
+    highcharts: plots/bar-permutation-importance/implementations/javascript/highcharts.js
+    muix: plots/bar-permutation-importance/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-permutation-importance/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-permutation-importance/implementations/python/altair.py
+    bokeh: plots/bar-permutation-importance/implementations/python/bokeh.py
+    letsplot: plots/bar-permutation-importance/implementations/python/letsplot.py
+    matplotlib: plots/bar-permutation-importance/implementations/python/matplotlib.py
+    plotly: plots/bar-permutation-importance/implementations/python/plotly.py
+    plotnine: plots/bar-permutation-importance/implementations/python/plotnine.py
+    pygal: plots/bar-permutation-importance/implementations/python/pygal.py
+    seaborn: plots/bar-permutation-importance/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-permutation-importance/implementations/r/ggplot2.R
+notes:
+- Sort bars by mean importance (highest at top) for easy identification of key features
+- Include horizontal error bars to show importance variability across shuffles
+- Use a sequential color gradient mapped to importance values for visual emphasis
+source: anyplot
+anyplot_updated: 2026-05-17 12:14:43+00:00

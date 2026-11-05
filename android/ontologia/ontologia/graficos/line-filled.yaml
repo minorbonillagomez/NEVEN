@@ -1,0 +1,113 @@
+entity_type: ChartType
+id: line-filled
+name:
+  en: Filled Line Plot
+  es: Gráfico de Líneas
+description:
+  en: A line plot with the area between the line and the baseline (typically x-axis)
+    filled with a semi-transparent color. This creates an area chart effect for a
+    single series, emphasizing the magnitude of values.
+  es: A line plot with the area between the line and the baseline (typically x-axis)
+    filled with a semi-transparent color. This creates an area chart effect for a
+    single series, emphasizing the magnitude of values.
+aliases:
+  en:
+  - line-filled
+  - line filled
+  - line chart
+  es:
+  - line-filled
+  - line filled
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Emphasizing magnitude of values over time
+  - Volume or quantity visualization
+  - Single series with area emphasis
+  - Stock price or metric trends
+  es:
+  - Emphasizing magnitude of values over time
+  - Volume or quantity visualization
+  - Single series with area emphasis
+  - Stock price or metric trends
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - area
+  domain:
+  - general
+  - finance
+  features:
+  - filled
+  - single-series
+  data_type:
+  - numeric
+  - continuous
+keywords:
+  en:
+  - line chart
+  - filled
+  - line
+  - area
+  - general
+  - finance
+  - single-series
+  - numeric
+  - continuous
+  es:
+  - gráfico de líneas
+  - filled
+  - line
+  - area
+  - general
+  - finanzas
+  - single-series
+  - numérico
+  - continuo
+implementations:
+  javascript:
+    chartjs: plots/line-filled/implementations/javascript/chartjs.js
+    d3: plots/line-filled/implementations/javascript/d3.js
+    echarts: plots/line-filled/implementations/javascript/echarts.js
+    highcharts: plots/line-filled/implementations/javascript/highcharts.js
+    muix: plots/line-filled/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-filled/implementations/julia/makie.jl
+  python:
+    altair: plots/line-filled/implementations/python/altair.py
+    bokeh: plots/line-filled/implementations/python/bokeh.py
+    letsplot: plots/line-filled/implementations/python/letsplot.py
+    matplotlib: plots/line-filled/implementations/python/matplotlib.py
+    plotly: plots/line-filled/implementations/python/plotly.py
+    plotnine: plots/line-filled/implementations/python/plotnine.py
+    pygal: plots/line-filled/implementations/python/pygal.py
+    seaborn: plots/line-filled/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-filled/implementations/r/ggplot2.R
+notes:
+- Fill should be semi-transparent (alpha ~0.3-0.5)
+- Line should be visible on top of the fill
+- Fill color typically matches line color
+source: anyplot
+anyplot_updated: '2025-12-30T11:00:00Z'

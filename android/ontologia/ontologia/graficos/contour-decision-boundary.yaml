@@ -1,0 +1,134 @@
+entity_type: ChartType
+id: contour-decision-boundary
+name:
+  en: Decision Boundary Classifier Visualization
+  es: Gráfico de Contorno
+description:
+  en: A decision boundary visualization showing how a classifier partitions 2D feature
+    space into predicted class regions. Colored regions indicate the predicted class
+    at each point in the feature space, with training data points overlaid to show
+    how well the classifier separates different classes. This visualization is essential
+    for understanding classifier behavior, identifying decision boundaries, and evaluating
+    classification accuracy in machine learning.
+  es: A decision boundary visualization showing how a classifier partitions 2D feature
+    space into predicted class regions. Colored regions indicate the predicted class
+    at each point in the feature space, with training data points overlaid to show
+    how well the classifier separates different classes. This visualization is essential
+    for understanding classifier behavior, identifying decision boundaries, and evaluating
+    classification accuracy in machine learning.
+aliases:
+  en:
+  - contour-decision-boundary
+  - contour decision boundary
+  - contour plot
+  es:
+  - contour-decision-boundary
+  - contour decision boundary
+  - gráfico de contorno
+use_when:
+  en:
+  - A decision boundary visualization showing how a classifier partitions 2D feature
+    space into predicted class regions. Colored regions indicate the predicted class
+    at each point in the feature space, wi
+  es:
+  - A decision boundary visualization showing how a classifier partitions 2D feature
+    space into predicted class regions. Colored regions indicate the predicted class
+    at each point in the feature space, wi
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Evaluating the performance of classification algorithms (SVM, KNN, logistic regression,
+    decision trees) on 2D data
+  - Teaching machine learning concepts by visualizing how different classifiers create
+    decision boundaries
+  - Comparing classifier complexity and potential overfitting by examining boundary
+    smoothness
+  - Debugging classification models by identifying misclassified training samples
+  es:
+  - Evaluating the performance of classification algorithms (SVM, KNN, logistic regression,
+    decision trees) on 2D data
+  - Teaching machine learning concepts by visualizing how different classifiers create
+    decision boundaries
+  - Comparing classifier complexity and potential overfitting by examining boundary
+    smoothness
+  - Debugging classification models by identifying misclassified training samples
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - contour
+  - scatter
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - machine-learning
+  - statistics
+  - education
+  features:
+  - classification
+  - decision-boundary
+  - 2d
+keywords:
+  en:
+  - contour plot
+  - decision
+  - boundary
+  - contour
+  - scatter
+  - numeric
+  - categorical
+  - machine learning
+  - statistics
+  - education
+  - classification
+  - decision-boundary
+  - 2d
+  es:
+  - gráfico de contorno
+  - decision
+  - boundary
+  - contour
+  - scatter
+  - numérico
+  - categórico
+  - aprendizaje automático
+  - estadística
+  - education
+  - classification
+  - decision-boundary
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/contour-decision-boundary/implementations/javascript/chartjs.js
+    d3: plots/contour-decision-boundary/implementations/javascript/d3.js
+    echarts: plots/contour-decision-boundary/implementations/javascript/echarts.js
+    highcharts: plots/contour-decision-boundary/implementations/javascript/highcharts.js
+    muix: plots/contour-decision-boundary/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/contour-decision-boundary/implementations/julia/makie.jl
+  python:
+    altair: plots/contour-decision-boundary/implementations/python/altair.py
+    bokeh: plots/contour-decision-boundary/implementations/python/bokeh.py
+    letsplot: plots/contour-decision-boundary/implementations/python/letsplot.py
+    matplotlib: plots/contour-decision-boundary/implementations/python/matplotlib.py
+    plotly: plots/contour-decision-boundary/implementations/python/plotly.py
+    plotnine: plots/contour-decision-boundary/implementations/python/plotnine.py
+    pygal: plots/contour-decision-boundary/implementations/python/pygal.py
+    seaborn: plots/contour-decision-boundary/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/contour-decision-boundary/implementations/r/ggplot2.R
+notes:
+- Use distinct colors for each class region with appropriate transparency
+- Overlay training points with markers showing true class labels
+- Consider using different marker styles to highlight correctly vs incorrectly classified
+  points
+source: anyplot
+anyplot_updated: 2025-12-31 05:22:31+00:00

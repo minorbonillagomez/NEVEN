@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: coefficient-confidence
+name:
+  en: Coefficient Plot with Confidence Intervals
+  es: Coefficient Confidence
+description:
+  en: A coefficient plot displays regression coefficients as points positioned along
+    a horizontal axis, with horizontal error bars showing confidence intervals. This
+    visualization makes it easy to assess effect sizes and statistical significance
+    - coefficients whose confidence intervals cross zero are not statistically significant.
+    Typically used to summarize results from linear, logistic, or other regression
+    models in a clear, publication-ready format.
+  es: A coefficient plot displays regression coefficients as points positioned along
+    a horizontal axis, with horizontal error bars showing confidence intervals. This
+    visualization makes it easy to assess effect sizes and statistical significance
+    - coefficients whose confidence intervals cross zero are not statistically significant.
+    Typically used to summarize results from linear, logistic, or other regression
+    models in a clear, publication-ready format.
+aliases:
+  en:
+  - coefficient-confidence
+  - coefficient confidence
+  - coefficient confidence
+  es:
+  - coefficient-confidence
+  - coefficient confidence
+  - coefficient confidence
+use_when:
+  en:
+  - A coefficient plot displays regression coefficients as points positioned along
+    a horizontal axis, with horizontal error bars showing confidence intervals. This
+    visualization makes it easy to assess ef
+  es:
+  - A coefficient plot displays regression coefficients as points positioned along
+    a horizontal axis, with horizontal error bars showing confidence intervals. This
+    visualization makes it easy to assess ef
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing effect sizes and significance from multiple regression models
+  - Comparing predictor importance in linear or logistic regression analysis
+  - Presenting regression results in academic publications and reports
+  - Communicating which variables have significant effects in statistical models
+  es:
+  - Visualizing effect sizes and significance from multiple regression models
+  - Comparing predictor importance in linear or logistic regression analysis
+  - Presenting regression results in academic publications and reports
+  - Communicating which variables have significant effects in statistical models
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - point
+  - errorbar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - research
+  features:
+  - basic
+  - comparison
+  - horizontal
+keywords:
+  en:
+  - coefficient
+  - confidence
+  - point
+  - errorbar
+  - numeric
+  - categorical
+  - statistics
+  - research
+  - basic
+  - comparison
+  - horizontal
+  es:
+  - coefficient
+  - confidence
+  - point
+  - errorbar
+  - numérico
+  - categórico
+  - estadística
+  - research
+  - basic
+  - comparación
+  - horizontal
+implementations:
+  javascript:
+    chartjs: plots/coefficient-confidence/implementations/javascript/chartjs.js
+    d3: plots/coefficient-confidence/implementations/javascript/d3.js
+    echarts: plots/coefficient-confidence/implementations/javascript/echarts.js
+    highcharts: plots/coefficient-confidence/implementations/javascript/highcharts.js
+    muix: plots/coefficient-confidence/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/coefficient-confidence/implementations/julia/makie.jl
+  python:
+    altair: plots/coefficient-confidence/implementations/python/altair.py
+    bokeh: plots/coefficient-confidence/implementations/python/bokeh.py
+    letsplot: plots/coefficient-confidence/implementations/python/letsplot.py
+    matplotlib: plots/coefficient-confidence/implementations/python/matplotlib.py
+    plotly: plots/coefficient-confidence/implementations/python/plotly.py
+    plotnine: plots/coefficient-confidence/implementations/python/plotnine.py
+    pygal: plots/coefficient-confidence/implementations/python/pygal.py
+    seaborn: plots/coefficient-confidence/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/coefficient-confidence/implementations/r/ggplot2.R
+notes:
+- Vertical reference line at zero to indicate the null hypothesis threshold
+- Variables typically ordered by coefficient magnitude for easier comparison
+- Use different colors or markers to distinguish significant vs non-significant coefficients
+source: anyplot
+anyplot_updated: null

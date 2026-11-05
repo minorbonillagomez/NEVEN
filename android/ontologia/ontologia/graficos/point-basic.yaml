@@ -1,0 +1,115 @@
+entity_type: ChartType
+id: point-basic
+name:
+  en: Point Estimate Plot
+  es: Point Basic Básico
+description:
+  en: A point estimate plot displays central tendency values (means, medians, or other
+    estimates) with confidence intervals or error bars for each category. Each point
+    represents the estimate, and the lines extending from it show the uncertainty
+    range.
+  es: A point estimate plot displays central tendency values (means, medians, or other
+    estimates) with confidence intervals or error bars for each category. Each point
+    represents the estimate, and the lines extending from it show the uncertainty
+    range.
+aliases:
+  en:
+  - point-basic
+  - point basic
+  - basic point basic
+  es:
+  - point-basic
+  - point basic
+  - point basic básico
+use_when:
+  en:
+  - A point estimate plot displays central tendency values (means, medians, or other
+    estimates) with confidence intervals or error bars for each category. Each point
+    represents the estimate, and the lines
+  es:
+  - A point estimate plot displays central tendency values (means, medians, or other
+    estimates) with confidence intervals or error bars for each category. Each point
+    represents the estimate, and the lines
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing group means with statistical uncertainty
+  - Displaying regression coefficients with confidence intervals
+  - Treatment effect visualization in clinical trials
+  - Survey results with margin of error
+  - Meta-analysis effect size summaries
+  es:
+  - Comparing group means with statistical uncertainty
+  - Displaying regression coefficients with confidence intervals
+  - Treatment effect visualization in clinical trials
+  - Survey results with margin of error
+  - Meta-analysis effect size summaries
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - point
+  domain:
+  - statistics
+  - research
+  features:
+  - confidence-interval
+  - uncertainty
+  - comparison
+  data_type:
+  - categorical
+  - numeric
+keywords:
+  en:
+  - point
+  - basic
+  - statistics
+  - research
+  - confidence-interval
+  - uncertainty
+  - comparison
+  - categorical
+  - numeric
+  es:
+  - point
+  - básico
+  - estadística
+  - research
+  - confidence-interval
+  - uncertainty
+  - comparación
+  - categórico
+  - numérico
+implementations:
+  javascript:
+    chartjs: plots/point-basic/implementations/javascript/chartjs.js
+    d3: plots/point-basic/implementations/javascript/d3.js
+    echarts: plots/point-basic/implementations/javascript/echarts.js
+    highcharts: plots/point-basic/implementations/javascript/highcharts.js
+    muix: plots/point-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/point-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/point-basic/implementations/python/altair.py
+    bokeh: plots/point-basic/implementations/python/bokeh.py
+    letsplot: plots/point-basic/implementations/python/letsplot.py
+    matplotlib: plots/point-basic/implementations/python/matplotlib.py
+    plotly: plots/point-basic/implementations/python/plotly.py
+    plotnine: plots/point-basic/implementations/python/plotnine.py
+    pygal: plots/point-basic/implementations/python/pygal.py
+    seaborn: plots/point-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/point-basic/implementations/r/ggplot2.R
+notes:
+- Horizontal orientation is common for reading category labels
+- Points should be clearly visible (distinct markers)
+- Confidence intervals typically at 95% level
+source: anyplot
+anyplot_updated: '2026-05-11T00:00:00Z'

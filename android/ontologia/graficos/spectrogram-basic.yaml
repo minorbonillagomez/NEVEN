@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: spectrogram-basic
+name:
+  en: Spectrogram Time-Frequency Heatmap
+  es: Spectrogram Basic Básico
+description:
+  en: A spectrogram displaying time-frequency representation of a signal as a heatmap.
+    It shows how the frequency content of a signal changes over time, with color intensity
+    representing the amplitude or power at each time-frequency point. Essential for
+    analyzing non-stationary signals where frequency characteristics vary, revealing
+    patterns invisible in time-domain or frequency-domain views alone.
+  es: A spectrogram displaying time-frequency representation of a signal as a heatmap.
+    It shows how the frequency content of a signal changes over time, with color intensity
+    representing the amplitude or power at each time-frequency point. Essential for
+    analyzing non-stationary signals where frequency characteristics vary, revealing
+    patterns invisible in time-domain or frequency-domain views alone.
+aliases:
+  en:
+  - spectrogram-basic
+  - spectrogram basic
+  - basic spectrogram basic
+  es:
+  - spectrogram-basic
+  - spectrogram basic
+  - spectrogram basic básico
+use_when:
+  en:
+  - A spectrogram displaying time-frequency representation of a signal as a heatmap.
+    It shows how the frequency content of a signal changes over time, with color intensity
+    representing the amplitude or po
+  es:
+  - A spectrogram displaying time-frequency representation of a signal as a heatmap.
+    It shows how the frequency content of a signal changes over time, with color intensity
+    representing the amplitude or po
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Audio analysis including speech recognition and music processing
+  - Vibration monitoring for machinery health and fault detection
+  - Seismic data analysis for earthquake and geological studies
+  - Biomedical signal processing such as EEG and ECG analysis
+  es:
+  - Audio analysis including speech recognition and music processing
+  - Vibration monitoring for machinery health and fault detection
+  - Seismic data analysis for earthquake and geological studies
+  - Biomedical signal processing such as EEG and ECG analysis
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - timeseries
+  - numeric
+  - continuous
+  domain:
+  - general
+  - science
+  - engineering
+  - signal-processing
+  features:
+  - basic
+  - spectrogram
+  - time-frequency
+keywords:
+  en:
+  - spectrogram
+  - basic
+  - heatmap
+  - timeseries
+  - numeric
+  - continuous
+  - general
+  - science
+  - engineering
+  - signal-processing
+  - time-frequency
+  es:
+  - spectrogram
+  - básico
+  - heatmap
+  - timeseries
+  - numérico
+  - continuo
+  - general
+  - ciencia
+  - ingeniería
+  - signal-processing
+  - basic
+  - time-frequency
+implementations:
+  javascript:
+    chartjs: plots/spectrogram-basic/implementations/javascript/chartjs.js
+    d3: plots/spectrogram-basic/implementations/javascript/d3.js
+    echarts: plots/spectrogram-basic/implementations/javascript/echarts.js
+    highcharts: plots/spectrogram-basic/implementations/javascript/highcharts.js
+    muix: plots/spectrogram-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/spectrogram-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/spectrogram-basic/implementations/python/altair.py
+    bokeh: plots/spectrogram-basic/implementations/python/bokeh.py
+    letsplot: plots/spectrogram-basic/implementations/python/letsplot.py
+    matplotlib: plots/spectrogram-basic/implementations/python/matplotlib.py
+    plotly: plots/spectrogram-basic/implementations/python/plotly.py
+    plotnine: plots/spectrogram-basic/implementations/python/plotnine.py
+    pygal: plots/spectrogram-basic/implementations/python/pygal.py
+    seaborn: plots/spectrogram-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/spectrogram-basic/implementations/r/ggplot2.R
+notes:
+- Use a perceptually uniform colormap (viridis, inferno) for accurate magnitude representation
+- Include colorbar with power/amplitude units (dB scale often preferred)
+- 'Label axes clearly: time (seconds) on x-axis, frequency (Hz) on y-axis'
+source: anyplot
+anyplot_updated: 2026-05-15 07:17:22+00:00

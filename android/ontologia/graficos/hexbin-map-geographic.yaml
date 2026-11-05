@@ -1,0 +1,136 @@
+entity_type: ChartType
+id: hexbin-map-geographic
+name:
+  en: Hexagonal Binning Map
+  es: Diagrama Hexagonal
+description:
+  en: A geographic map visualization that aggregates point data into hexagonal cells,
+    displaying density or aggregated values per cell using color intensity. Unlike
+    continuous heatmaps that use kernel density estimation, hexbin maps provide discrete
+    binning that clearly shows data aggregation boundaries. The hexagonal grid is
+    superior to square grids due to isotropy (equal distance to neighboring cells)
+    and better visual continuity, making it ideal for spatial statistics and urban
+    data analysis.
+  es: A geographic map visualization that aggregates point data into hexagonal cells,
+    displaying density or aggregated values per cell using color intensity. Unlike
+    continuous heatmaps that use kernel density estimation, hexbin maps provide discrete
+    binning that clearly shows data aggregation boundaries. The hexagonal grid is
+    superior to square grids due to isotropy (equal distance to neighboring cells)
+    and better visual continuity, making it ideal for spatial statistics and urban
+    data analysis.
+aliases:
+  en:
+  - hexbin-map-geographic
+  - hexbin map geographic
+  - hexbin plot
+  es:
+  - hexbin-map-geographic
+  - hexbin map geographic
+  - diagrama hexagonal
+use_when:
+  en:
+  - A geographic map visualization that aggregates point data into hexagonal cells,
+    displaying density or aggregated values per cell using color intensity. Unlike
+    continuous heatmaps that use kernel densi
+  es:
+  - A geographic map visualization that aggregates point data into hexagonal cells,
+    displaying density or aggregated values per cell using color intensity. Unlike
+    continuous heatmaps that use kernel densi
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Aggregating taxi pickup/dropoff locations to identify transportation demand zones
+    in urban mobility analysis
+  - Visualizing species observation density across geographic regions for ecological
+    monitoring
+  - Displaying crime incident patterns with hexagonal aggregation for law enforcement
+    resource allocation
+  - Mapping sensor readings or IoT device measurements aggregated into geographic
+    zones
+  es:
+  - Aggregating taxi pickup/dropoff locations to identify transportation demand zones
+    in urban mobility analysis
+  - Visualizing species observation density across geographic regions for ecological
+    monitoring
+  - Displaying crime incident patterns with hexagonal aggregation for law enforcement
+    resource allocation
+  - Mapping sensor readings or IoT device measurements aggregated into geographic
+    zones
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - hexbin
+  data_type:
+  - geospatial
+  - numeric
+  domain:
+  - general
+  - statistics
+  - business
+  features:
+  - aggregation
+  - color-mapped
+  - interactive
+keywords:
+  en:
+  - hexbin plot
+  - map
+  - geographic
+  - hexbin
+  - geospatial
+  - numeric
+  - general
+  - statistics
+  - business
+  - aggregation
+  - color-mapped
+  - interactive
+  es:
+  - diagrama hexagonal
+  - mapa
+  - geographic
+  - hexbin
+  - geoespacial
+  - numérico
+  - general
+  - estadística
+  - negocios
+  - aggregation
+  - color-mapped
+  - interactive
+implementations:
+  javascript:
+    chartjs: plots/hexbin-map-geographic/implementations/javascript/chartjs.js
+    d3: plots/hexbin-map-geographic/implementations/javascript/d3.js
+    echarts: plots/hexbin-map-geographic/implementations/javascript/echarts.js
+    highcharts: plots/hexbin-map-geographic/implementations/javascript/highcharts.js
+    muix: plots/hexbin-map-geographic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/hexbin-map-geographic/implementations/julia/makie.jl
+  python:
+    altair: plots/hexbin-map-geographic/implementations/python/altair.py
+    bokeh: plots/hexbin-map-geographic/implementations/python/bokeh.py
+    letsplot: plots/hexbin-map-geographic/implementations/python/letsplot.py
+    matplotlib: plots/hexbin-map-geographic/implementations/python/matplotlib.py
+    plotly: plots/hexbin-map-geographic/implementations/python/plotly.py
+    plotnine: plots/hexbin-map-geographic/implementations/python/plotnine.py
+    pygal: plots/hexbin-map-geographic/implementations/python/pygal.py
+    seaborn: plots/hexbin-map-geographic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/hexbin-map-geographic/implementations/r/ggplot2.R
+notes:
+- Hexagon size should be configurable to balance detail vs. aggregation (larger hexagons
+  for overview, smaller for detailed patterns)
+- 'Support aggregation methods: count (default), sum, and mean of values'
+- Use a sequential colormap (e.g., viridis, plasma, YlOrRd) with a color legend showing
+  the scale
+source: anyplot
+anyplot_updated: 2026-05-27 22:30:45+00:00

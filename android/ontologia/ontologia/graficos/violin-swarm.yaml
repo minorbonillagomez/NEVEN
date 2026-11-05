@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: violin-swarm
+name:
+  en: Violin Plot with Overlaid Swarm Points
+  es: Diagrama de Violín
+description:
+  en: A violin plot with individual data points overlaid as a swarm plot, combining
+    smooth kernel density estimation with raw data visibility. The violin shape shows
+    the distribution density while the swarm points reveal actual observations, enabling
+    viewers to see both the overall distribution pattern and individual data values
+    simultaneously. This hybrid approach provides maximum transparency, showing exactly
+    how many observations exist at each level while maintaining the smooth distribution
+    visualization.
+  es: A violin plot with individual data points overlaid as a swarm plot, combining
+    smooth kernel density estimation with raw data visibility. The violin shape shows
+    the distribution density while the swarm points reveal actual observations, enabling
+    viewers to see both the overall distribution pattern and individual data values
+    simultaneously. This hybrid approach provides maximum transparency, showing exactly
+    how many observations exist at each level while maintaining the smooth distribution
+    visualization.
+aliases:
+  en:
+  - violin-swarm
+  - violin swarm
+  - violin plot
+  es:
+  - violin-swarm
+  - violin swarm
+  - diagrama de violín
+use_when:
+  en:
+  - Comparing distributions across groups
+  - Identifying outliers and spread
+  - Showing median, quartiles, and range
+  es:
+  - Comparar distribuciones entre grupos
+  - Identificar valores atípicos y dispersión
+  - Mostrar mediana, cuartiles y rango
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing gene expression levels across treatment conditions in biological research
+  - Analyzing response time distributions across experimental groups while showing
+    individual trials
+  - Visualizing patient biomarker values across clinical groups with full data transparency
+  - Presenting survey response distributions where sample sizes vary between groups
+  es:
+  - Comparing gene expression levels across treatment conditions in biological research
+  - Analyzing response time distributions across experimental groups while showing
+    individual trials
+  - Visualizing patient biomarker values across clinical groups with full data transparency
+  - Presenting survey response distributions where sample sizes vary between groups
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 10000
+tags:
+  plot_type:
+  - violin
+  - swarm
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - research
+  - general
+  features:
+  - distribution
+  - comparison
+  - combined
+keywords:
+  en:
+  - violin plot
+  - swarm plot
+  - violin
+  - swarm
+  - numeric
+  - categorical
+  - statistics
+  - research
+  - general
+  - distribution
+  - comparison
+  - combined
+  es:
+  - diagrama de violín
+  - diagrama de enjambre
+  - violin
+  - swarm
+  - numérico
+  - categórico
+  - estadística
+  - research
+  - general
+  - distribución
+  - comparación
+  - combined
+implementations:
+  javascript:
+    chartjs: plots/violin-swarm/implementations/javascript/chartjs.js
+    d3: plots/violin-swarm/implementations/javascript/d3.js
+    echarts: plots/violin-swarm/implementations/javascript/echarts.js
+    highcharts: plots/violin-swarm/implementations/javascript/highcharts.js
+    muix: plots/violin-swarm/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/violin-swarm/implementations/julia/makie.jl
+  python:
+    altair: plots/violin-swarm/implementations/python/altair.py
+    bokeh: plots/violin-swarm/implementations/python/bokeh.py
+    letsplot: plots/violin-swarm/implementations/python/letsplot.py
+    matplotlib: plots/violin-swarm/implementations/python/matplotlib.py
+    plotly: plots/violin-swarm/implementations/python/plotly.py
+    plotnine: plots/violin-swarm/implementations/python/plotnine.py
+    pygal: plots/violin-swarm/implementations/python/pygal.py
+    seaborn: plots/violin-swarm/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/violin-swarm/implementations/r/ggplot2.R
+notes:
+- Overlay swarm points on top of the violin, centered within the violin shape
+- Use transparency on the violin (alpha 0.3-0.5) so swarm points remain visible
+- Size swarm points appropriately to avoid excessive overlap while remaining visible
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: pdp-basic
+name:
+  en: Partial Dependence Plot
+  es: Pdp Basic Básico
+description:
+  en: A partial dependence plot (PDP) showing the marginal effect of one feature on
+    the predicted outcome of a machine learning model. The plot displays how predictions
+    change as a feature varies across its range, while averaging over the effects
+    of all other features. This visualization is essential for understanding the relationship
+    between individual features and model predictions in interpretable machine learning.
+  es: A partial dependence plot (PDP) showing the marginal effect of one feature on
+    the predicted outcome of a machine learning model. The plot displays how predictions
+    change as a feature varies across its range, while averaging over the effects
+    of all other features. This visualization is essential for understanding the relationship
+    between individual features and model predictions in interpretable machine learning.
+aliases:
+  en:
+  - pdp-basic
+  - pdp basic
+  - basic pdp basic
+  es:
+  - pdp-basic
+  - pdp basic
+  - pdp basic básico
+use_when:
+  en:
+  - A partial dependence plot (PDP) showing the marginal effect of one feature on
+    the predicted outcome of a machine learning model. The plot displays how predictions
+    change as a feature varies across its
+  es:
+  - A partial dependence plot (PDP) showing the marginal effect of one feature on
+    the predicted outcome of a machine learning model. The plot displays how predictions
+    change as a feature varies across its
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Interpreting complex models like gradient boosting or random forests by revealing
+    how features influence predictions
+  - Validating that learned relationships align with domain knowledge (e.g., higher
+    prices lead to lower demand)
+  - Communicating model behavior to non-technical stakeholders by showing intuitive
+    feature-response curves
+  es:
+  - Interpreting complex models like gradient boosting or random forests by revealing
+    how features influence predictions
+  - Validating that learned relationships align with domain knowledge (e.g., higher
+    prices lead to lower demand)
+  - Communicating model behavior to non-technical stakeholders by showing intuitive
+    feature-response curves
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - machine-learning
+  - statistics
+  features:
+  - basic
+  - diagnostic
+  - interpretability
+  - model-explanation
+keywords:
+  en:
+  - pdp
+  - basic
+  - line
+  - numeric
+  - continuous
+  - machine learning
+  - statistics
+  - diagnostic
+  - interpretability
+  - model-explanation
+  es:
+  - pdp
+  - básico
+  - line
+  - numérico
+  - continuo
+  - aprendizaje automático
+  - estadística
+  - basic
+  - diagnostic
+  - interpretability
+  - model-explanation
+implementations:
+  javascript:
+    chartjs: plots/pdp-basic/implementations/javascript/chartjs.js
+    d3: plots/pdp-basic/implementations/javascript/d3.js
+    echarts: plots/pdp-basic/implementations/javascript/echarts.js
+    highcharts: plots/pdp-basic/implementations/javascript/highcharts.js
+    muix: plots/pdp-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/pdp-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/pdp-basic/implementations/python/altair.py
+    bokeh: plots/pdp-basic/implementations/python/bokeh.py
+    letsplot: plots/pdp-basic/implementations/python/letsplot.py
+    matplotlib: plots/pdp-basic/implementations/python/matplotlib.py
+    plotly: plots/pdp-basic/implementations/python/plotly.py
+    plotnine: plots/pdp-basic/implementations/python/plotnine.py
+    pygal: plots/pdp-basic/implementations/python/pygal.py
+    seaborn: plots/pdp-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/pdp-basic/implementations/r/ggplot2.R
+notes:
+- The y-axis represents partial dependence (average prediction), not probability
+- Include a confidence band or individual conditional expectation (ICE) lines for
+  uncertainty visualization
+- A rug plot along the x-axis can show the distribution of training data values
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

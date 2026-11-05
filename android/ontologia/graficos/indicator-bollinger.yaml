@@ -1,0 +1,122 @@
+entity_type: ChartType
+id: indicator-bollinger
+name:
+  en: Bollinger Bands Indicator Chart
+  es: Indicator Bollinger
+description:
+  en: 'A Bollinger Bands chart displays price data with a volatility envelope consisting
+    of three lines: a middle band (simple moving average), an upper band (SMA plus
+    2 standard deviations), and a lower band (SMA minus 2 standard deviations). This
+    technical indicator helps traders identify overbought/oversold conditions, volatility
+    patterns, and potential price breakouts by showing how prices relate to their
+    recent statistical range.'
+  es: 'A Bollinger Bands chart displays price data with a volatility envelope consisting
+    of three lines: a middle band (simple moving average), an upper band (SMA plus
+    2 standard deviations), and a lower band (SMA minus 2 standard deviations). This
+    technical indicator helps traders identify overbought/oversold conditions, volatility
+    patterns, and potential price breakouts by showing how prices relate to their
+    recent statistical range.'
+aliases:
+  en:
+  - indicator-bollinger
+  - indicator bollinger
+  - indicator bollinger
+  es:
+  - indicator-bollinger
+  - indicator bollinger
+  - indicator bollinger
+use_when:
+  en:
+  - 'A Bollinger Bands chart displays price data with a volatility envelope consisting
+    of three lines: a middle band (simple moving average), an upper band (SMA plus
+    2 standard deviations), and a lower ban'
+  es:
+  - 'A Bollinger Bands chart displays price data with a volatility envelope consisting
+    of three lines: a middle band (simple moving average), an upper band (SMA plus
+    2 standard deviations), and a lower ban'
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying overbought conditions when price touches the upper band in stock trading
+  - Detecting oversold opportunities when price approaches the lower band in cryptocurrency
+    analysis
+  - Measuring market volatility by observing band width expansion and contraction
+  - Spotting potential trend reversals when prices break outside the bands
+  es:
+  - Identifying overbought conditions when price touches the upper band in stock trading
+  - Detecting oversold opportunities when price approaches the lower band in cryptocurrency
+    analysis
+  - Measuring market volatility by observing band width expansion and contraction
+  - Spotting potential trend reversals when prices break outside the bands
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  - trading
+  features:
+  - volatility
+  - technical-analysis
+  - overlay
+keywords:
+  en:
+  - indicator
+  - bollinger
+  - line
+  - timeseries
+  - numeric
+  - finance
+  - trading
+  - volatility
+  - technical-analysis
+  - overlay
+  es:
+  - indicator
+  - bollinger
+  - line
+  - timeseries
+  - numérico
+  - finanzas
+  - trading
+  - volatility
+  - technical-analysis
+  - overlay
+implementations:
+  javascript:
+    chartjs: plots/indicator-bollinger/implementations/javascript/chartjs.js
+    d3: plots/indicator-bollinger/implementations/javascript/d3.js
+    echarts: plots/indicator-bollinger/implementations/javascript/echarts.js
+    highcharts: plots/indicator-bollinger/implementations/javascript/highcharts.js
+    muix: plots/indicator-bollinger/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/indicator-bollinger/implementations/julia/makie.jl
+  python:
+    altair: plots/indicator-bollinger/implementations/python/altair.py
+    bokeh: plots/indicator-bollinger/implementations/python/bokeh.py
+    letsplot: plots/indicator-bollinger/implementations/python/letsplot.py
+    matplotlib: plots/indicator-bollinger/implementations/python/matplotlib.py
+    plotly: plots/indicator-bollinger/implementations/python/plotly.py
+    plotnine: plots/indicator-bollinger/implementations/python/plotnine.py
+    pygal: plots/indicator-bollinger/implementations/python/pygal.py
+    seaborn: plots/indicator-bollinger/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/indicator-bollinger/implementations/r/ggplot2.R
+notes:
+- Display the price line (close) prominently, typically as a line or candlestick
+- Upper and lower bands should use the same color with semi-transparent fill between
+  them
+- Middle band (SMA) should be clearly visible, often as a dashed or dotted line
+source: anyplot
+anyplot_updated: 2026-05-17 17:42:35+00:00

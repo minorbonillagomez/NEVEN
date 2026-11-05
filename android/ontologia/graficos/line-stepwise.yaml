@@ -1,0 +1,116 @@
+entity_type: ChartType
+id: line-stepwise
+name:
+  en: Step Line Plot
+  es: Gráfico de Líneas
+description:
+  en: A step function plot where values remain constant until the next change, creating
+    horizontal-then-vertical transitions. This visualization emphasizes discrete changes
+    rather than interpolated values.
+  es: A step function plot where values remain constant until the next change, creating
+    horizontal-then-vertical transitions. This visualization emphasizes discrete changes
+    rather than interpolated values.
+aliases:
+  en:
+  - line-stepwise
+  - line stepwise
+  - line chart
+  es:
+  - line-stepwise
+  - line stepwise
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Discrete state changes over time
+  - Price/value stepping (stock prices at close)
+  - Cumulative counts that increase discretely
+  - Digital signals and binary states
+  - Piecewise constant functions
+  es:
+  - Discrete state changes over time
+  - Price/value stepping (stock prices at close)
+  - Cumulative counts that increase discretely
+  - Digital signals and binary states
+  - Piecewise constant functions
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - step
+  domain:
+  - general
+  - signal-processing
+  features:
+  - discrete
+  - stepwise
+  - piecewise
+  data_type:
+  - numeric
+  - discrete
+keywords:
+  en:
+  - line chart
+  - stepwise
+  - line
+  - step
+  - general
+  - signal-processing
+  - discrete
+  - piecewise
+  - numeric
+  es:
+  - gráfico de líneas
+  - stepwise
+  - line
+  - step
+  - general
+  - signal-processing
+  - discreto
+  - piecewise
+  - numérico
+implementations:
+  javascript:
+    chartjs: plots/line-stepwise/implementations/javascript/chartjs.js
+    d3: plots/line-stepwise/implementations/javascript/d3.js
+    echarts: plots/line-stepwise/implementations/javascript/echarts.js
+    highcharts: plots/line-stepwise/implementations/javascript/highcharts.js
+    muix: plots/line-stepwise/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-stepwise/implementations/julia/makie.jl
+  python:
+    altair: plots/line-stepwise/implementations/python/altair.py
+    bokeh: plots/line-stepwise/implementations/python/bokeh.py
+    letsplot: plots/line-stepwise/implementations/python/letsplot.py
+    matplotlib: plots/line-stepwise/implementations/python/matplotlib.py
+    plotly: plots/line-stepwise/implementations/python/plotly.py
+    plotnine: plots/line-stepwise/implementations/python/plotnine.py
+    pygal: plots/line-stepwise/implementations/python/pygal.py
+    seaborn: plots/line-stepwise/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-stepwise/implementations/r/ggplot2.R
+notes:
+- 'Step alignment options: ''pre'' (before), ''mid'' (middle), ''post'' (after)'
+- Clear distinction from smooth line interpolation
+- Horizontal segments show value persistence
+source: anyplot
+anyplot_updated: '2026-05-13T15:08:42Z'

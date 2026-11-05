@@ -1,0 +1,142 @@
+entity_type: ChartType
+id: bar-tornado-sensitivity
+name:
+  en: Tornado Diagram for Sensitivity Analysis
+  es: Gráfico de Barras
+description:
+  en: A horizontal bar chart where bars are sorted by influence magnitude, extending
+    left and right from a base case vertical reference line. Each bar represents one
+    input parameter and shows how varying that parameter between its low and high
+    values affects the output, creating a characteristic tornado shape (widest bars
+    at top, narrowest at bottom). Dual colors distinguish low-input from high-input
+    effects, making it immediately clear which parameters drive the most uncertainty.
+  es: A horizontal bar chart where bars are sorted by influence magnitude, extending
+    left and right from a base case vertical reference line. Each bar represents one
+    input parameter and shows how varying that parameter between its low and high
+    values affects the output, creating a characteristic tornado shape (widest bars
+    at top, narrowest at bottom). Dual colors distinguish low-input from high-input
+    effects, making it immediately clear which parameters drive the most uncertainty.
+aliases:
+  en:
+  - bar-tornado-sensitivity
+  - bar tornado sensitivity
+  - bar chart
+  es:
+  - bar-tornado-sensitivity
+  - bar tornado sensitivity
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - 'Financial modeling: identifying which assumptions (discount rate, growth rate,
+    costs) most affect net present value'
+  - 'Risk analysis: performing one-way sensitivity analysis to rank uncertainty drivers
+    in project cost or schedule estimates'
+  - 'Engineering design: determining which design parameters have the greatest impact
+    on system performance'
+  - 'Consulting and stakeholder communication: presenting sensitivity results in an
+    intuitive, ranked format'
+  es:
+  - 'Financial modeling: identifying which assumptions (discount rate, growth rate,
+    costs) most affect net present value'
+  - 'Risk analysis: performing one-way sensitivity analysis to rank uncertainty drivers
+    in project cost or schedule estimates'
+  - 'Engineering design: determining which design parameters have the greatest impact
+    on system performance'
+  - 'Consulting and stakeholder communication: presenting sensitivity results in an
+    intuitive, ranked format'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - finance
+  - business
+  - engineering
+  features:
+  - horizontal
+  - comparison
+  - ranking
+  - annotated
+keywords:
+  en:
+  - bar chart
+  - tornado
+  - sensitivity
+  - bar
+  - numeric
+  - categorical
+  - finance
+  - business
+  - engineering
+  - horizontal
+  - comparison
+  - ranking
+  - annotated
+  es:
+  - gráfico de barras
+  - tornado
+  - sensitivity
+  - bar
+  - numérico
+  - categórico
+  - finanzas
+  - negocios
+  - ingeniería
+  - horizontal
+  - comparación
+  - clasificación
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/bar-tornado-sensitivity/implementations/javascript/chartjs.js
+    d3: plots/bar-tornado-sensitivity/implementations/javascript/d3.js
+    echarts: plots/bar-tornado-sensitivity/implementations/javascript/echarts.js
+    highcharts: plots/bar-tornado-sensitivity/implementations/javascript/highcharts.js
+    muix: plots/bar-tornado-sensitivity/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-tornado-sensitivity/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-tornado-sensitivity/implementations/python/altair.py
+    bokeh: plots/bar-tornado-sensitivity/implementations/python/bokeh.py
+    letsplot: plots/bar-tornado-sensitivity/implementations/python/letsplot.py
+    matplotlib: plots/bar-tornado-sensitivity/implementations/python/matplotlib.py
+    plotly: plots/bar-tornado-sensitivity/implementations/python/plotly.py
+    plotnine: plots/bar-tornado-sensitivity/implementations/python/plotnine.py
+    pygal: plots/bar-tornado-sensitivity/implementations/python/pygal.py
+    seaborn: plots/bar-tornado-sensitivity/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-tornado-sensitivity/implementations/r/ggplot2.R
+notes:
+- Draw a vertical reference line at the base case value
+- Sort bars by total range (|high_value - low_value|) with the widest bar at the top
+- 'Use two distinct colors: one for the low-scenario side and one for the high-scenario
+  side'
+source: anyplot
+anyplot_updated: null

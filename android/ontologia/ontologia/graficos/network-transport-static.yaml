@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: network-transport-static
+name:
+  en: Static Transport Network Diagram
+  es: Grafo de Red
+description:
+  en: A directed network visualization for transportation systems where stations are
+    displayed as labeled nodes and train/bus routes as directed edges. Edges display
+    departure times, arrival times, and route identifiers. Designed for visualizing
+    timetables, route maps, and connection patterns in rail, bus, or flight networks.
+    This static version focuses on clear, readable presentation without interactive
+    repositioning.
+  es: A directed network visualization for transportation systems where stations are
+    displayed as labeled nodes and train/bus routes as directed edges. Edges display
+    departure times, arrival times, and route identifiers. Designed for visualizing
+    timetables, route maps, and connection patterns in rail, bus, or flight networks.
+    This static version focuses on clear, readable presentation without interactive
+    repositioning.
+aliases:
+  en:
+  - network-transport-static
+  - network transport static
+  - network graph
+  es:
+  - network-transport-static
+  - network transport static
+  - grafo de red
+use_when:
+  en:
+  - A directed network visualization for transportation systems where stations are
+    displayed as labeled nodes and train/bus routes as directed edges. Edges display
+    departure times, arrival times, and rout
+  es:
+  - A directed network visualization for transportation systems where stations are
+    displayed as labeled nodes and train/bus routes as directed edges. Edges display
+    departure times, arrival times, and rout
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing regional train networks with departure and arrival times at each station
+  - Displaying bus route maps showing service frequency and travel times between stops
+  - Analyzing flight connections between airports with layover and connection information
+  - Planning public transit coverage by mapping routes and identifying service gaps
+  es:
+  - Visualizing regional train networks with departure and arrival times at each station
+  - Displaying bus route maps showing service frequency and travel times between stops
+  - Analyzing flight connections between airports with layover and connection information
+  - Planning public transit coverage by mapping routes and identifying service gaps
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - network
+  data_type:
+  - network
+  - relational
+  - temporal
+  - directional
+  domain:
+  - transportation
+  - logistics
+  - infrastructure
+  features:
+  - labels
+  - directed-edges
+  - multi-edge
+keywords:
+  en:
+  - network graph
+  - transport
+  - static
+  - network
+  - relational
+  - temporal
+  - directional
+  - transportation
+  - logistics
+  - infrastructure
+  - labels
+  - directed-edges
+  - multi-edge
+  es:
+  - grafo de red
+  - transport
+  - static
+  - red
+  - relational
+  - temporal
+  - directional
+  - transportation
+  - logistics
+  - infrastructure
+  - labels
+  - directed-edges
+  - multi-edge
+implementations:
+  javascript:
+    chartjs: plots/network-transport-static/implementations/javascript/chartjs.js
+    d3: plots/network-transport-static/implementations/javascript/d3.js
+    echarts: plots/network-transport-static/implementations/javascript/echarts.js
+    highcharts: plots/network-transport-static/implementations/javascript/highcharts.js
+    muix: plots/network-transport-static/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/network-transport-static/implementations/julia/makie.jl
+  python:
+    altair: plots/network-transport-static/implementations/python/altair.py
+    bokeh: plots/network-transport-static/implementations/python/bokeh.py
+    letsplot: plots/network-transport-static/implementations/python/letsplot.py
+    matplotlib: plots/network-transport-static/implementations/python/matplotlib.py
+    plotly: plots/network-transport-static/implementations/python/plotly.py
+    plotnine: plots/network-transport-static/implementations/python/plotnine.py
+    pygal: plots/network-transport-static/implementations/python/pygal.py
+    seaborn: plots/network-transport-static/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/network-transport-static/implementations/r/ggplot2.R
+notes:
+- Station nodes should display labels clearly; size nodes to accommodate station names
+- Edges must show direction with arrows indicating travel direction
+- Edge labels should display route identifier and times (e.g., "RE 42 | 08:15 → 09:30")
+source: anyplot
+anyplot_updated: 2026-05-18 22:50:32+00:00

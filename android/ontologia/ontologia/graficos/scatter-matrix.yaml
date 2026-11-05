@@ -1,0 +1,141 @@
+entity_type: ChartType
+id: scatter-matrix
+name:
+  en: Scatter Plot Matrix
+  es: Diagrama de Dispersión
+description:
+  en: A grid of scatter plots showing all pairwise relationships between multiple
+    variables, with histograms or kernel density estimates on the diagonal. This comprehensive
+    visualization enables simultaneous exploration of correlations and distributions
+    across an entire dataset, making it invaluable for understanding multivariate
+    data structure at a glance. Also known as a pairplot or SPLOM (Scatter Plot Matrix).
+  es: A grid of scatter plots showing all pairwise relationships between multiple
+    variables, with histograms or kernel density estimates on the diagonal. This comprehensive
+    visualization enables simultaneous exploration of correlations and distributions
+    across an entire dataset, making it invaluable for understanding multivariate
+    data structure at a glance. Also known as a pairplot or SPLOM (Scatter Plot Matrix).
+aliases:
+  en:
+  - scatter-matrix
+  - scatter matrix
+  - scatter plot
+  es:
+  - scatter-matrix
+  - scatter matrix
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Exploratory data analysis to quickly identify correlations, clusters, and outliers
+    across multiple features in a dataset
+  - Feature selection in machine learning by visually assessing variable relationships
+    before modeling
+  - Dataset overview and quality checking to understand distributions and detect anomalies
+    in multivariate data
+  es:
+  - Exploratory data analysis to quickly identify correlations, clusters, and outliers
+    across multiple features in a dataset
+  - Feature selection in machine learning by visually assessing variable relationships
+    before modeling
+  - Dataset overview and quality checking to understand distributions and detect anomalies
+    in multivariate data
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - matrix
+  - pairplot
+  data_type:
+  - numeric
+  - continuous
+  - multivariate
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - grid
+  - distribution
+  - correlation
+  - exploratory
+keywords:
+  en:
+  - scatter plot
+  - matrix
+  - scatter
+  - pairplot
+  - numeric
+  - continuous
+  - multivariate
+  - general
+  - statistics
+  - research
+  - grid
+  - distribution
+  - correlation
+  - exploratory
+  es:
+  - diagrama de dispersión
+  - matrix
+  - scatter
+  - pairplot
+  - numérico
+  - continuo
+  - multivariado
+  - general
+  - estadística
+  - research
+  - grid
+  - distribución
+  - correlación
+  - exploratory
+implementations:
+  javascript:
+    chartjs: plots/scatter-matrix/implementations/javascript/chartjs.js
+    d3: plots/scatter-matrix/implementations/javascript/d3.js
+    echarts: plots/scatter-matrix/implementations/javascript/echarts.js
+    highcharts: plots/scatter-matrix/implementations/javascript/highcharts.js
+    muix: plots/scatter-matrix/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-matrix/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-matrix/implementations/python/altair.py
+    bokeh: plots/scatter-matrix/implementations/python/bokeh.py
+    letsplot: plots/scatter-matrix/implementations/python/letsplot.py
+    matplotlib: plots/scatter-matrix/implementations/python/matplotlib.py
+    plotly: plots/scatter-matrix/implementations/python/plotly.py
+    plotnine: plots/scatter-matrix/implementations/python/plotnine.py
+    pygal: plots/scatter-matrix/implementations/python/pygal.py
+    seaborn: plots/scatter-matrix/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-matrix/implementations/r/ggplot2.R
+notes:
+- Diagonal cells should show univariate distributions (histograms or KDE) for each
+  variable
+- Off-diagonal cells show scatter plots for each variable pair
+- Variable names should appear along the edges (left and bottom) as axis labels
+source: anyplot
+anyplot_updated: null

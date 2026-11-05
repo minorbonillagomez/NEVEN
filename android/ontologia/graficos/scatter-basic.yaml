@@ -1,0 +1,121 @@
+entity_type: ChartType
+id: scatter-basic
+name:
+  en: Basic Scatter Plot
+  es: Diagrama de Dispersión Básico
+description:
+  en: A fundamental 2D scatter plot that displays the relationship between two numeric
+    variables by plotting points on a Cartesian coordinate system. This visualization
+    is essential for exploring correlations, identifying patterns, detecting outliers,
+    and understanding the distribution of paired data points.
+  es: A fundamental 2D scatter plot that displays the relationship between two numeric
+    variables by plotting points on a Cartesian coordinate system. This visualization
+    is essential for exploring correlations, identifying patterns, detecting outliers,
+    and understanding the distribution of paired data points.
+aliases:
+  en:
+  - scatter-basic
+  - scatter basic
+  - basic scatter plot
+  es:
+  - scatter-basic
+  - scatter basic
+  - diagrama de dispersión básico
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Analyzing the correlation between height and weight in a health study
+  - Exploring the relationship between marketing spend and sales revenue
+  - Investigating the connection between study hours and exam scores
+  es:
+  - Analyzing the correlation between height and weight in a health study
+  - Exploring the relationship between marketing spend and sales revenue
+  - Investigating the connection between study hours and exam scores
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  - bivariate
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - 2d
+  - correlation
+keywords:
+  en:
+  - scatter plot
+  - basic
+  - scatter
+  - numeric
+  - continuous
+  - bivariate
+  - statistics
+  - general
+  - 2d
+  - correlation
+  es:
+  - diagrama de dispersión
+  - básico
+  - scatter
+  - numérico
+  - continuo
+  - bivariado
+  - estadística
+  - general
+  - basic
+  - 2d
+  - correlación
+implementations:
+  javascript:
+    chartjs: plots/scatter-basic/implementations/javascript/chartjs.js
+    d3: plots/scatter-basic/implementations/javascript/d3.js
+    echarts: plots/scatter-basic/implementations/javascript/echarts.js
+    highcharts: plots/scatter-basic/implementations/javascript/highcharts.js
+    muix: plots/scatter-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-basic/implementations/python/altair.py
+    bokeh: plots/scatter-basic/implementations/python/bokeh.py
+    letsplot: plots/scatter-basic/implementations/python/letsplot.py
+    matplotlib: plots/scatter-basic/implementations/python/matplotlib.py
+    plotly: plots/scatter-basic/implementations/python/plotly.py
+    plotnine: plots/scatter-basic/implementations/python/plotnine.py
+    pygal: plots/scatter-basic/implementations/python/pygal.py
+    seaborn: plots/scatter-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-basic/implementations/r/ggplot2.R
+notes:
+- Points should have moderate transparency (alpha ~0.7) to reveal overlapping data
+- Include axis labels and a descriptive title
+- Grid lines help with value estimation
+source: anyplot
+anyplot_updated: 2026-06-25 01:09:20+00:00

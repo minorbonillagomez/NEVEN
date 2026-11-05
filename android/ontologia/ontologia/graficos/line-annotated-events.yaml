@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: line-annotated-events
+name:
+  en: Annotated Line Plot with Event Markers
+  es: Gráfico de Líneas
+description:
+  en: A line plot with annotations at key points marking important events or milestones.
+    This visualization enhances time series data by highlighting significant occurrences
+    such as product launches, policy changes, or market events directly on the chart.
+    Vertical lines, markers, and text labels draw attention to specific moments in
+    time, making it easy to correlate data trends with real-world events.
+  es: A line plot with annotations at key points marking important events or milestones.
+    This visualization enhances time series data by highlighting significant occurrences
+    such as product launches, policy changes, or market events directly on the chart.
+    Vertical lines, markers, and text labels draw attention to specific moments in
+    time, making it easy to correlate data trends with real-world events.
+aliases:
+  en:
+  - line-annotated-events
+  - line annotated events
+  - line chart
+  es:
+  - line-annotated-events
+  - line annotated events
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Marking earnings announcements, dividends, or splits on a stock price chart
+  - Highlighting product releases or feature launches on user growth metrics
+  - Annotating policy changes or regulatory events on economic indicators
+  - Indicating equipment failures or maintenance windows on sensor data
+  es:
+  - Marking earnings announcements, dividends, or splits on a stock price chart
+  - Highlighting product releases or feature launches on user growth metrics
+  - Annotating policy changes or regulatory events on economic indicators
+  - Indicating equipment failures or maintenance windows on sensor data
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - timeseries
+  data_type:
+  - timeseries
+  - datetime
+  - numeric
+  domain:
+  - general
+  - finance
+  - business
+  features:
+  - annotated
+  - event-markers
+  - interactive
+keywords:
+  en:
+  - line chart
+  - annotated
+  - events
+  - line
+  - timeseries
+  - datetime
+  - numeric
+  - general
+  - finance
+  - business
+  - event-markers
+  - interactive
+  es:
+  - gráfico de líneas
+  - annotated
+  - events
+  - line
+  - timeseries
+  - datetime
+  - numérico
+  - general
+  - finanzas
+  - negocios
+  - event-markers
+  - interactive
+implementations:
+  javascript:
+    chartjs: plots/line-annotated-events/implementations/javascript/chartjs.js
+    d3: plots/line-annotated-events/implementations/javascript/d3.js
+    echarts: plots/line-annotated-events/implementations/javascript/echarts.js
+    highcharts: plots/line-annotated-events/implementations/javascript/highcharts.js
+    muix: plots/line-annotated-events/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-annotated-events/implementations/julia/makie.jl
+  python:
+    altair: plots/line-annotated-events/implementations/python/altair.py
+    bokeh: plots/line-annotated-events/implementations/python/bokeh.py
+    letsplot: plots/line-annotated-events/implementations/python/letsplot.py
+    matplotlib: plots/line-annotated-events/implementations/python/matplotlib.py
+    plotly: plots/line-annotated-events/implementations/python/plotly.py
+    plotnine: plots/line-annotated-events/implementations/python/plotnine.py
+    pygal: plots/line-annotated-events/implementations/python/pygal.py
+    seaborn: plots/line-annotated-events/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-annotated-events/implementations/r/ggplot2.R
+notes:
+- Use vertical lines (axvline) to mark event dates clearly
+- Position event labels to avoid overlapping with data or each other
+- Consider rotating labels or using alternating heights for dense event clusters
+source: anyplot
+anyplot_updated: 2025-12-31 10:26:23+00:00

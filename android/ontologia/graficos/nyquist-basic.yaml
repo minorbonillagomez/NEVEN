@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: nyquist-basic
+name:
+  en: Nyquist Plot for Control Systems
+  es: Nyquist Basic Básico
+description:
+  en: A Nyquist plot maps a system's open-loop frequency response onto the complex
+    plane by plotting the imaginary part against the real part of the transfer function
+    as frequency varies from zero to infinity. It is the primary tool for applying
+    the Nyquist stability criterion to determine whether a closed-loop control system
+    is stable. The plot visually reveals gain and phase margins and is widely used
+    in classical control theory and electronic circuit design.
+  es: A Nyquist plot maps a system's open-loop frequency response onto the complex
+    plane by plotting the imaginary part against the real part of the transfer function
+    as frequency varies from zero to infinity. It is the primary tool for applying
+    the Nyquist stability criterion to determine whether a closed-loop control system
+    is stable. The plot visually reveals gain and phase margins and is widely used
+    in classical control theory and electronic circuit design.
+aliases:
+  en:
+  - nyquist-basic
+  - nyquist basic
+  - basic nyquist basic
+  es:
+  - nyquist-basic
+  - nyquist basic
+  - nyquist basic básico
+use_when:
+  en:
+  - A Nyquist plot maps a system's open-loop frequency response onto the complex plane
+    by plotting the imaginary part against the real part of the transfer function
+    as frequency varies from zero to infini
+  es:
+  - A Nyquist plot maps a system's open-loop frequency response onto the complex plane
+    by plotting the imaginary part against the real part of the transfer function
+    as frequency varies from zero to infini
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Assessing closed-loop stability of a feedback control system using the Nyquist
+    stability criterion
+  - Determining gain margin and phase margin from the proximity of the curve to the
+    critical point (-1, 0)
+  - Designing and tuning robust controllers for industrial processes
+  - Characterizing amplifier stability and loop gain in analog electronics
+  es:
+  - Assessing closed-loop stability of a feedback control system using the Nyquist
+    stability criterion
+  - Determining gain margin and phase margin from the proximity of the curve to the
+    critical point (-1, 0)
+  - Designing and tuning robust controllers for industrial processes
+  - Characterizing amplifier stability and loop gain in analog electronics
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - nyquist
+  - polar
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - science
+  features:
+  - annotated
+  - 2d
+  - stability-analysis
+keywords:
+  en:
+  - nyquist
+  - basic
+  - polar
+  - numeric
+  - continuous
+  - engineering
+  - science
+  - annotated
+  - 2d
+  - stability-analysis
+  es:
+  - nyquist
+  - básico
+  - polar
+  - numérico
+  - continuo
+  - ingeniería
+  - ciencia
+  - annotated
+  - 2d
+  - stability-analysis
+implementations:
+  javascript:
+    chartjs: plots/nyquist-basic/implementations/javascript/chartjs.js
+    d3: plots/nyquist-basic/implementations/javascript/d3.js
+    echarts: plots/nyquist-basic/implementations/javascript/echarts.js
+    highcharts: plots/nyquist-basic/implementations/javascript/highcharts.js
+    muix: plots/nyquist-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/nyquist-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/nyquist-basic/implementations/python/altair.py
+    bokeh: plots/nyquist-basic/implementations/python/bokeh.py
+    letsplot: plots/nyquist-basic/implementations/python/letsplot.py
+    matplotlib: plots/nyquist-basic/implementations/python/matplotlib.py
+    plotly: plots/nyquist-basic/implementations/python/plotly.py
+    plotnine: plots/nyquist-basic/implementations/python/plotnine.py
+    pygal: plots/nyquist-basic/implementations/python/pygal.py
+    seaborn: plots/nyquist-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/nyquist-basic/implementations/r/ggplot2.R
+notes:
+- Mark the critical point (-1, 0) with a distinct marker (e.g., red "x" or filled
+  circle)
+- Draw a unit circle centered at the origin for reference
+- Annotate selected frequency values along the curve at key points (e.g., gain crossover,
+  phase crossover), optionally with the phase margin and gain margin read there
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

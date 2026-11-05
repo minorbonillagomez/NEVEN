@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: titration-curve
+name:
+  en: Acid-Base Titration Curve
+  es: Titration Curve
+description:
+  en: A titration curve plotting pH against volume of titrant added, producing the
+    characteristic S-shaped (sigmoidal) curve used in analytical chemistry. The plot
+    reveals buffer regions, equivalence points, and acid/base strength at a glance.
+    Essential for chemistry education and laboratory analysis, it helps identify when
+    a reaction reaches completion and which indicators are appropriate.
+  es: A titration curve plotting pH against volume of titrant added, producing the
+    characteristic S-shaped (sigmoidal) curve used in analytical chemistry. The plot
+    reveals buffer regions, equivalence points, and acid/base strength at a glance.
+    Essential for chemistry education and laboratory analysis, it helps identify when
+    a reaction reaches completion and which indicators are appropriate.
+aliases:
+  en:
+  - titration-curve
+  - titration curve
+  - titration curve
+  es:
+  - titration-curve
+  - titration curve
+  - titration curve
+use_when:
+  en:
+  - A titration curve plotting pH against volume of titrant added, producing the characteristic
+    S-shaped (sigmoidal) curve used in analytical chemistry. The plot reveals buffer
+    regions, equivalence points
+  es:
+  - A titration curve plotting pH against volume of titrant added, producing the characteristic
+    S-shaped (sigmoidal) curve used in analytical chemistry. The plot reveals buffer
+    regions, equivalence points
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Determining the concentration of an unknown acid or base solution through volumetric
+    analysis
+  - Identifying the equivalence point and selecting appropriate pH indicators for
+    endpoint detection
+  - Teaching acid-base equilibrium, buffer capacity, and neutralization concepts in
+    chemistry courses
+  - Quality control analysis in pharmaceutical manufacturing and food industry processes
+  es:
+  - Determining the concentration of an unknown acid or base solution through volumetric
+    analysis
+  - Identifying the equivalence point and selecting appropriate pH indicators for
+    endpoint detection
+  - Teaching acid-base equilibrium, buffer capacity, and neutralization concepts in
+    chemistry courses
+  - Quality control analysis in pharmaceutical manufacturing and food industry processes
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - education
+  features:
+  - annotated
+  - diagnostic
+keywords:
+  en:
+  - titration
+  - curve
+  - line
+  - numeric
+  - continuous
+  - science
+  - education
+  - annotated
+  - diagnostic
+  es:
+  - titration
+  - curve
+  - line
+  - numérico
+  - continuo
+  - ciencia
+  - education
+  - annotated
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/titration-curve/implementations/javascript/chartjs.js
+    d3: plots/titration-curve/implementations/javascript/d3.js
+    echarts: plots/titration-curve/implementations/javascript/echarts.js
+    highcharts: plots/titration-curve/implementations/javascript/highcharts.js
+    muix: plots/titration-curve/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/titration-curve/implementations/julia/makie.jl
+  python:
+    altair: plots/titration-curve/implementations/python/altair.py
+    bokeh: plots/titration-curve/implementations/python/bokeh.py
+    letsplot: plots/titration-curve/implementations/python/letsplot.py
+    matplotlib: plots/titration-curve/implementations/python/matplotlib.py
+    plotly: plots/titration-curve/implementations/python/plotly.py
+    plotnine: plots/titration-curve/implementations/python/plotnine.py
+    pygal: plots/titration-curve/implementations/python/pygal.py
+    seaborn: plots/titration-curve/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/titration-curve/implementations/r/ggplot2.R
+notes:
+- Mark the equivalence point with a vertical dashed line and text annotation showing
+  the volume and pH
+- Include an optional derivative curve (dpH/dV) as a secondary y-axis overlay to precisely
+  locate the equivalence point as the maximum of the derivative
+- For a weak acid or base titration, shade the buffer region (typically the area around
+  pH = pKa ± 1) with a semi-transparent fill; a strong acid/strong base titration
+  has none, so leave it unshaded or shade only a region labeled for what it is, never
+  called a buffer
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

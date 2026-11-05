@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: lollipop-grouped
+name:
+  en: Grouped Lollipop Chart
+  es: Gráfico de Piruleta Agrupado
+description:
+  en: A grouped lollipop chart displays multiple series across categorical variables
+    using thin stems and circular markers arranged in groups. Each category has multiple
+    lollipops side by side, one for each series, enabling direct comparison of metrics
+    across groups. It combines the clarity of dot plots with the organization of grouped
+    bar charts while reducing visual clutter.
+  es: A grouped lollipop chart displays multiple series across categorical variables
+    using thin stems and circular markers arranged in groups. Each category has multiple
+    lollipops side by side, one for each series, enabling direct comparison of metrics
+    across groups. It combines the clarity of dot plots with the organization of grouped
+    bar charts while reducing visual clutter.
+aliases:
+  en:
+  - lollipop-grouped
+  - lollipop grouped
+  - grouped lollipop chart
+  es:
+  - lollipop-grouped
+  - lollipop grouped
+  - gráfico de piruleta agrupado
+use_when:
+  en:
+  - A grouped lollipop chart displays multiple series across categorical variables
+    using thin stems and circular markers arranged in groups. Each category has multiple
+    lollipops side by side, one for each
+  es:
+  - A grouped lollipop chart displays multiple series across categorical variables
+    using thin stems and circular markers arranged in groups. Each category has multiple
+    lollipops side by side, one for each
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing sales performance across regions for multiple product lines
+  - Survey results showing scores for different questions across demographic groups
+  - Performance metrics (accuracy, speed, cost) across different algorithms or models
+  - Year-over-year comparisons of multiple KPIs across departments
+  es:
+  - Comparing sales performance across regions for multiple product lines
+  - Survey results showing scores for different questions across demographic groups
+  - Performance metrics (accuracy, speed, cost) across different algorithms or models
+  - Year-over-year comparisons of multiple KPIs across departments
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - lollipop
+  - point
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - grouped
+  - comparison
+  - multi
+keywords:
+  en:
+  - lollipop chart
+  - grouped
+  - lollipop
+  - point
+  - categorical
+  - numeric
+  - general
+  - business
+  - comparison
+  - multi
+  es:
+  - gráfico de piruleta
+  - agrupado
+  - lollipop
+  - point
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - grouped
+  - comparación
+  - multi
+implementations:
+  javascript:
+    chartjs: plots/lollipop-grouped/implementations/javascript/chartjs.js
+    d3: plots/lollipop-grouped/implementations/javascript/d3.js
+    echarts: plots/lollipop-grouped/implementations/javascript/echarts.js
+    highcharts: plots/lollipop-grouped/implementations/javascript/highcharts.js
+    muix: plots/lollipop-grouped/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/lollipop-grouped/implementations/julia/makie.jl
+  python:
+    altair: plots/lollipop-grouped/implementations/python/altair.py
+    bokeh: plots/lollipop-grouped/implementations/python/bokeh.py
+    letsplot: plots/lollipop-grouped/implementations/python/letsplot.py
+    matplotlib: plots/lollipop-grouped/implementations/python/matplotlib.py
+    plotly: plots/lollipop-grouped/implementations/python/plotly.py
+    plotnine: plots/lollipop-grouped/implementations/python/plotnine.py
+    pygal: plots/lollipop-grouped/implementations/python/pygal.py
+    seaborn: plots/lollipop-grouped/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/lollipop-grouped/implementations/r/ggplot2.R
+notes:
+- Stems should be thin lines connecting baseline to marker
+- Markers should be circular dots with distinct colors for each series
+- Lollipops within a group should be positioned side by side with slight offset
+source: anyplot
+anyplot_updated: null

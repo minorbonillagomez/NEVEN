@@ -1,0 +1,113 @@
+entity_type: ChartType
+id: errorbar-basic
+name:
+  en: Basic Error Bar Plot
+  es: Errorbar Basic Básico
+description:
+  en: An error bar plot displays data points with associated uncertainty or variability
+    represented by bars extending above and below (or left and right of) each point.
+    Error bars commonly represent standard deviation, standard error, confidence intervals,
+    or min/max ranges. This visualization is essential for communicating the reliability
+    and precision of measurements or statistical estimates.
+  es: An error bar plot displays data points with associated uncertainty or variability
+    represented by bars extending above and below (or left and right of) each point.
+    Error bars commonly represent standard deviation, standard error, confidence intervals,
+    or min/max ranges. This visualization is essential for communicating the reliability
+    and precision of measurements or statistical estimates.
+aliases:
+  en:
+  - errorbar-basic
+  - errorbar basic
+  - basic errorbar basic
+  es:
+  - errorbar-basic
+  - errorbar basic
+  - errorbar basic básico
+use_when:
+  en:
+  - An error bar plot displays data points with associated uncertainty or variability
+    represented by bars extending above and below (or left and right of) each point.
+    Error bars commonly represent standar
+  es:
+  - An error bar plot displays data points with associated uncertainty or variability
+    represented by bars extending above and below (or left and right of) each point.
+    Error bars commonly represent standar
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Scientific research presenting experimental results with measurement uncertainty
+  - Statistical analysis comparing group means with confidence intervals
+  - Quality control monitoring showing acceptable tolerance ranges around targets
+  - Clinical trials displaying treatment effects with error margins
+  es:
+  - Scientific research presenting experimental results with measurement uncertainty
+  - Statistical analysis comparing group means with confidence intervals
+  - Quality control monitoring showing acceptable tolerance ranges around targets
+  - Clinical trials displaying treatment effects with error margins
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - errorbar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - statistics
+  - science
+  features:
+  - basic
+  - uncertainty
+keywords:
+  en:
+  - errorbar
+  - basic
+  - numeric
+  - categorical
+  - statistics
+  - science
+  - uncertainty
+  es:
+  - errorbar
+  - básico
+  - numérico
+  - categórico
+  - estadística
+  - ciencia
+  - basic
+  - uncertainty
+implementations:
+  javascript:
+    chartjs: plots/errorbar-basic/implementations/javascript/chartjs.js
+    d3: plots/errorbar-basic/implementations/javascript/d3.js
+    echarts: plots/errorbar-basic/implementations/javascript/echarts.js
+    highcharts: plots/errorbar-basic/implementations/javascript/highcharts.js
+    muix: plots/errorbar-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/errorbar-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/errorbar-basic/implementations/python/altair.py
+    bokeh: plots/errorbar-basic/implementations/python/bokeh.py
+    letsplot: plots/errorbar-basic/implementations/python/letsplot.py
+    matplotlib: plots/errorbar-basic/implementations/python/matplotlib.py
+    plotly: plots/errorbar-basic/implementations/python/plotly.py
+    plotnine: plots/errorbar-basic/implementations/python/plotnine.py
+    pygal: plots/errorbar-basic/implementations/python/pygal.py
+    seaborn: plots/errorbar-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/errorbar-basic/implementations/r/ggplot2.R
+notes:
+- Error bars should have visible caps (horizontal lines at ends) to clearly mark the
+  error range
+- Use consistent error bar widths across all data points
+- Consider using different colors to distinguish between groups when comparing multiple
+  series
+source: anyplot
+anyplot_updated: 2025-12-15 20:41:31+00:00

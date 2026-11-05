@@ -1,0 +1,115 @@
+entity_type: ChartType
+id: network-basic
+name:
+  en: Basic Network Graph
+  es: Grafo de Red Básico
+description:
+  en: A network graph (node-link diagram) visualizes relationships between entities
+    as nodes connected by edges. It reveals the structure of connections, clusters,
+    and central nodes in relational data. Network graphs are essential for understanding
+    complex systems where relationships matter as much as the entities themselves,
+    making hidden patterns of connectivity visible at a glance.
+  es: A network graph (node-link diagram) visualizes relationships between entities
+    as nodes connected by edges. It reveals the structure of connections, clusters,
+    and central nodes in relational data. Network graphs are essential for understanding
+    complex systems where relationships matter as much as the entities themselves,
+    making hidden patterns of connectivity visible at a glance.
+aliases:
+  en:
+  - network-basic
+  - network basic
+  - basic network graph
+  es:
+  - network-basic
+  - network basic
+  - grafo de red básico
+use_when:
+  en:
+  - A network graph (node-link diagram) visualizes relationships between entities
+    as nodes connected by edges. It reveals the structure of connections, clusters,
+    and central nodes in relational data. Netw
+  es:
+  - A network graph (node-link diagram) visualizes relationships between entities
+    as nodes connected by edges. It reveals the structure of connections, clusters,
+    and central nodes in relational data. Netw
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing social networks to identify influential individuals, communities, and
+    information flow patterns
+  - Mapping citation networks in academic research to discover influential papers
+    and emerging research clusters
+  - Visualizing software architecture dependencies to understand module coupling and
+    identify potential refactoring targets
+  es:
+  - Analyzing social networks to identify influential individuals, communities, and
+    information flow patterns
+  - Mapping citation networks in academic research to discover influential papers
+    and emerging research clusters
+  - Visualizing software architecture dependencies to understand module coupling and
+    identify potential refactoring targets
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - network
+  data_type:
+  - network
+  - relational
+  domain:
+  - general
+  - technology
+  features:
+  - basic
+  - connectivity
+keywords:
+  en:
+  - network graph
+  - basic
+  - network
+  - relational
+  - general
+  - technology
+  - connectivity
+  es:
+  - grafo de red
+  - básico
+  - red
+  - relational
+  - general
+  - technology
+  - basic
+  - connectivity
+implementations:
+  javascript:
+    chartjs: plots/network-basic/implementations/javascript/chartjs.js
+    d3: plots/network-basic/implementations/javascript/d3.js
+    echarts: plots/network-basic/implementations/javascript/echarts.js
+    highcharts: plots/network-basic/implementations/javascript/highcharts.js
+    muix: plots/network-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/network-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/network-basic/implementations/python/altair.py
+    bokeh: plots/network-basic/implementations/python/bokeh.py
+    letsplot: plots/network-basic/implementations/python/letsplot.py
+    matplotlib: plots/network-basic/implementations/python/matplotlib.py
+    plotly: plots/network-basic/implementations/python/plotly.py
+    plotnine: plots/network-basic/implementations/python/plotnine.py
+    pygal: plots/network-basic/implementations/python/pygal.py
+    seaborn: plots/network-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/network-basic/implementations/r/ggplot2.R
+notes:
+- Use force-directed or spring layout for automatic node positioning
+- Node size can optionally encode degree (number of connections)
+- Keep the network sparse enough that individual connections remain visible
+source: anyplot
+anyplot_updated: 2026-07-24 03:46:30+00:00

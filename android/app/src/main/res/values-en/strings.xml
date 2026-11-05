@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">NEVEN</string>
+    <string name="app_tagline">Scientific Launcher</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_palette">Color palette</string>
+    <string name="settings_dark_mode">Dark mode</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_clock">Clock</string>
+    <string name="settings_show_seconds">Show seconds</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version</string>
+    
+    <!-- Settings Sections - New scientific design -->
+    <string name="settings_search_engine">Search engine</string>
+    <string name="settings_search_engine_desc">Configure default search engine</string>
+    <string name="settings_appearance_desc">Theme, palette and light/dark mode</string>
+    <string name="settings_font_size">Font size</string>
+    <string name="settings_font_size_desc">Adjust text size</string>
+    <string name="settings_home_screen">Home screen</string>
+    <string name="settings_home_screen_desc">Favorites and clock</string>
+    <string name="settings_app_drawer">App drawer</string>
+    <string name="settings_app_drawer_desc">App list layout</string>
+    <string name="settings_screen_time">Screen time</string>
+    <string name="settings_screen_time_desc">Usage statistics</string>
+    <string name="settings_language_desc">Español, English, Esperanto</string>
+    <string name="settings_about_desc">Version and information</string>
+    
+    <!-- Font Size Settings -->
+    <string name="settings_font_size_select">Select size</string>
+    <string name="settings_font_size_preview">Preview</string>
+    <string name="font_size_xs">Extra small</string>
+    <string name="font_size_s">Small</string>
+    <string name="font_size_m">Medium</string>
+    <string name="font_size_l">Large</string>
+    <string name="font_size_xl">Extra large</string>
+    <string name="font_size_xxl">Huge</string>
+    <string name="font_size_scale">Scale</string>
+    <string name="font_size_preview_title">Sample title</string>
+    <string name="font_size_preview_body">This is sample text to preview how content will look with the selected size.</string>
+    <string name="font_size_preview_label">Secondary label</string>
+    
+    <!-- Home -->
+    <string name="home_swipe_drawer">Swipe up for all apps</string>
+    <string name="home_search_hint">Search apps…</string>
+    <string name="home_no_favorites">No favorite apps</string>
+    <string name="home_add_favorite">Long press an app to add it</string>
+    
+    <!-- App Drawer -->
+    <string name="drawer_title">All Apps</string>
+    <string name="drawer_search">Search</string>
+    <string name="drawer_empty">No apps found</string>
+    
+    <!-- Notes -->
+    <string name="notes_title">Notes</string>
+    <string name="notes_new">New note</string>
+    <string name="notes_latex_hint">Write in LaTeX…</string>
+    <string name="notes_save">Save</string>
+    <string name="notes_cancel">Cancel</string>
+    <string name="notes_delete">Delete</string>
+    
+    <!-- Widgets -->
+    <string name="widgets_title">Widgets</string>
+    <string name="widgets_add">Add widget</string>
+    <string name="widgets_remove">Remove widget</string>
+    <string name="widgets_resize">Resize</string>
+    
+    <!-- Palettes -->
+    <string name="palette_clasico">Classic</string>
+    <string name="palette_oceano">Ocean</string>
+    <string name="palette_bosque">Forest</string>
+    <string name="palette_ambar">Amber</string>
+    <string name="palette_lavanda">Lavender</string>
+    <string name="palette_monocromo">Monochrome</string>
+    <string name="palette_kobenhavn">København</string>
+    
+    <!-- Context Menu -->
+    <string name="menu_add_favorite">Add to favorites</string>
+    <string name="menu_remove_favorite">Remove from favorites</string>
+    <string name="menu_app_info">App info</string>
+    
+    <!-- Favorites -->
+    <string name="favorites_added">Added to favorites</string>
+    <string name="favorites_removed">Removed from favorites</string>
+    <string name="favorites_full">Maximum favorites reached</string>
+    <string name="favorites_count">Maximum favorites</string>
+    
+    <!-- Settings Expanded -->
+    <string name="settings_theme_mode">Theme mode</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_auto">Auto</string>
+    
+    <!-- Screen Time -->
+    <string name="screen_time_permission_title">Permission required</string>
+    <string name="screen_time_permission_desc">To view usage time, NEVEN needs access to usage statistics.</string>
+    <string name="screen_time_grant_permission">Grant permission</string>
+    <string name="screen_time_refresh">Refresh</string>
+    <string name="screen_time_today">Today</string>
+    <string name="screen_time_week">Week</string>
+    <string name="screen_time_total">total time</string>
+    <string name="screen_time_top_apps">Most used apps</string>
+    
+    <!-- Wallpaper -->
+    <string name="settings_wallpaper">Wallpaper</string>
+    <string name="wallpaper_solid_color">Solid color</string>
+    <string name="wallpaper_image">Image</string>
+    <string name="wallpaper_select_image">Select image...</string>
+    <string name="wallpaper_position">Position</string>
+    <string name="wallpaper_fit">Fit</string>
+    <string name="wallpaper_fill">Fill</string>
+    <string name="wallpaper_center">Center</string>
+    <string name="wallpaper_opacity_label">λ (opacity):</string>
+    <string name="wallpaper_opacity_light">Light</string>
+    <string name="wallpaper_opacity_soft">Soft</string>
+    <string name="wallpaper_opacity_medium">Medium</string>
+    <string name="wallpaper_opacity_dark">Dark</string>
+    <string name="wallpaper_palette_tint">Palette tint</string>
+    <string name="sync_lock_screen">Apply to lock screen</string>
+    <string name="sync_lock_screen_description">Use the same wallpaper on lock screen</string>
+    <string name="wallpaper_error">Could not set wallpaper</string>
+    
+    <!-- Accessibility -->
+    <string name="a11y_clock">Clock</string>
+    <string name="a11y_app_icon">App icon</string>
+    <string name="a11y_notification_badge">%d notifications</string>
+    
+    <!-- Accent color -->
+    <string name="accent_color_title">Accent color</string>
+    <string name="accent_color_custom">Custom...</string>
+    <string name="accent_color_red">Red</string>
+    <string name="accent_color_blue">Blue</string>
+    <string name="accent_color_green">Green</string>
+    <string name="accent_color_orange">Orange</string>
+    <string name="accent_color_purple">Purple</string>
+    <string name="accent_color_teal">Teal</string>
+    <string name="accent_color_pink">Pink</string>
+    <string name="accent_color_gray">Gray</string>
+    <string name="color_picker_title">Select color</string>
+    <string name="color_picker_preview">Preview</string>
+    <string name="color_picker_apply">Apply</string>
+    
+    <!-- Font family -->
+    <string name="settings_font_family">Font type</string>
+    <string name="settings_font_family_desc">Text font</string>
+    <string name="font_family_serif">Serif</string>
+    <string name="font_family_serif_desc">Elegant, LaTeX style</string>
+    <string name="font_family_sans_serif">Sans-serif</string>
+    <string name="font_family_sans_serif_desc">Modern, minimalist</string>
+    <string name="font_family_monospace">Monospace</string>
+    <string name="font_family_monospace_desc">Technical, code</string>
+    <string name="font_family_cursive">Cursive</string>
+    <string name="font_family_cursive_desc">Artistic, fluid</string>
+    <string name="font_family_roboto">Roboto</string>
+    <string name="font_family_roboto_desc">Google, modern sans</string>
+    <string name="font_family_open_sans">Open Sans</string>
+    <string name="font_family_open_sans_desc">Clean, readable</string>
+    <string name="font_family_lora">Lora</string>
+    <string name="font_family_lora_desc">Elegant serif</string>
+    <string name="font_family_playfair">Playfair Display</string>
+    <string name="font_family_playfair_desc">Elegant headlines</string>
+    <string name="font_family_jetbrains_mono">JetBrains Mono</string>
+    <string name="font_family_jetbrains_mono_desc">Professional code</string>
+    <string name="font_family_source_code_pro">Source Code Pro</string>
+    <string name="font_family_source_code_pro_desc">Adobe, readable mono</string>
+    <string name="font_family_preview">Font preview</string>
+    
+    <!-- Markdown Viewer -->
+    <string name="markdown_viewer">Viewer</string>
+    <string name="markdown_document">Document</string>
+    <string name="markdown_empty_file">Empty file</string>
+    <string name="markdown_error_no_file">Could not open file</string>
+    <string name="markdown_error_permission">No permission to read file</string>
+    <string name="markdown_error_reading">Error reading file</string>
+    
+    <!-- Sandbox Settings -->
+    <string name="settings_sandbox">Sandbox</string>
+    <string name="settings_sandbox_desc">Isolate high telemetry apps</string>
+    <string name="sandbox_status">Sandbox Status</string>
+    <string name="sandbox_loading">Loading…</string>
+    <string name="sandbox_work_profile">Work profile</string>
+    <string name="sandbox_active">Active</string>
+    <string name="sandbox_not_configured">Not configured</string>
+    <string name="sandbox_profile_owner">Profile administrator</string>
+    <string name="sandbox_not_assigned">Not assigned</string>
+    <string name="sandbox_freeze_all">Freeze entire profile</string>
+    <string name="sandbox_freeze_all_desc">Suspends all sandbox apps</string>
+    <string name="sandbox_suggested_apps">Suggested apps</string>
+    <string name="sandbox_suggested_apps_desc">Social networks and high telemetry</string>
+    <string name="sandbox_high_telemetry">High telemetry</string>
+    <string name="sandbox_select_all">Select all</string>
+    <string name="sandbox_freeze_selected">Freeze (%1$d)</string>
+    <string name="sandbox_other_apps">Other applications</string>
+    <string name="sandbox_other_apps_count">%1$d installed apps</string>
+    <string name="sandbox_frozen">Frozen</string>
+    <string name="sandbox_info_title">What is the Sandbox?</string>
+    <string name="sandbox_info_desc">The sandbox isolates applications in a separate work profile. Files from these apps (photos, videos) are saved in separate storage and don\'t appear in your personal gallery.</string>
+    <string name="sandbox_freezing">Freezing…</string>
+    <string name="sandbox_frozen_message">apps frozen</string>
+    <string name="sandbox_error_message">Could not freeze apps</string>
+    
+    <!-- Sandbox Migration -->
+    <string name="sandbox_in_sandbox">In Sandbox</string>
+    <string name="sandbox_in_sandbox_desc">Apps isolated with separate storage</string>
+    <string name="sandbox_app_isolated">Isolated</string>
+    <string name="sandbox_remove">Restore</string>
+    <string name="sandbox_migrate">Isolate</string>
+    <string name="sandbox_migrate_title">Migrate to Sandbox</string>
+    <string name="sandbox_migrate_files_found">Files found:</string>
+    <string name="sandbox_migrate_files">files</string>
+    <string name="sandbox_migrate_actions">This will:\n1. Move files to isolated storage\n2. Install the app in sandbox\n3. Remove from main profile</string>
+    <string name="sandbox_migrate_warning">You will need to log in again</string>
+    <string name="sandbox_migrate_button">Migrate</string>
+    <string name="sandbox_migrating">Migrating…</string>
+    <string name="sandbox_migration_complete">Migration completed</string>
+    <string name="sandbox_migration_error">Migration error</string>
+    <string name="sandbox_cancel">Cancel</string>
+    
+    <!-- Sandbox ADB -->
+    <string name="sandbox_adb_required">ADB Commands</string>
+    <string name="sandbox_adb_instructions">Files have been migrated. Run these commands in your terminal with the device connected:</string>
+    <string name="sandbox_files_migrated">%1$d files migrated to sandbox</string>
+    <string name="sandbox_copy">Copy</string>
+    <string name="sandbox_copied">Copied ✓</string>
+    <string name="sandbox_done">Done</string>
+</resources>

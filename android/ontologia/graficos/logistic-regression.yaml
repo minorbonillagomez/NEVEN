@@ -1,0 +1,144 @@
+entity_type: ChartType
+id: logistic-regression
+name:
+  en: Logistic Regression Curve Plot
+  es: Logistic Regression Regresión
+description:
+  en: A logistic regression visualization showing the characteristic S-shaped (sigmoid)
+    probability curve for binary classification. The plot displays data points colored
+    by their binary class, the fitted logistic curve representing predicted probabilities,
+    confidence intervals around the curve, and a dashed decision threshold line at
+    probability 0.5. This visualization is essential for understanding how a logistic
+    model maps continuous input features to class probabilities.
+  es: A logistic regression visualization showing the characteristic S-shaped (sigmoid)
+    probability curve for binary classification. The plot displays data points colored
+    by their binary class, the fitted logistic curve representing predicted probabilities,
+    confidence intervals around the curve, and a dashed decision threshold line at
+    probability 0.5. This visualization is essential for understanding how a logistic
+    model maps continuous input features to class probabilities.
+aliases:
+  en:
+  - logistic-regression
+  - logistic regression
+  - regression logistic regression
+  es:
+  - logistic-regression
+  - logistic regression
+  - logistic regression regresión
+use_when:
+  en:
+  - A logistic regression visualization showing the characteristic S-shaped (sigmoid)
+    probability curve for binary classification. The plot displays data points colored
+    by their binary class, the fitted l
+  es:
+  - A logistic regression visualization showing the characteristic S-shaped (sigmoid)
+    probability curve for binary classification. The plot displays data points colored
+    by their binary class, the fitted l
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing credit risk scoring models where the probability of default varies
+    with income or credit score
+  - Analyzing medical diagnostic thresholds where probability of disease changes with
+    biomarker levels
+  - Understanding marketing conversion rates as a function of customer engagement
+    metrics or ad spend
+  - Demonstrating the decision boundary in binary classification problems for educational
+    purposes
+  es:
+  - Visualizing credit risk scoring models where the probability of default varies
+    with income or credit score
+  - Analyzing medical diagnostic thresholds where probability of disease changes with
+    biomarker levels
+  - Understanding marketing conversion rates as a function of customer engagement
+    metrics or ad spend
+  - Demonstrating the decision boundary in binary classification problems for educational
+    purposes
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  - line
+  - area
+  data_type:
+  - numeric
+  - categorical
+  - binary
+  domain:
+  - statistics
+  - machine-learning
+  - model-evaluation
+  features:
+  - regression
+  - probability
+  - confidence-interval
+  - threshold
+keywords:
+  en:
+  - logistic
+  - regression
+  - scatter
+  - line
+  - area
+  - numeric
+  - categorical
+  - binary
+  - statistics
+  - machine learning
+  - model-evaluation
+  - probability
+  - confidence-interval
+  - threshold
+  es:
+  - logistic
+  - regresión
+  - scatter
+  - line
+  - area
+  - numérico
+  - categórico
+  - binario
+  - estadística
+  - aprendizaje automático
+  - model-evaluation
+  - regression
+  - probability
+  - confidence-interval
+  - threshold
+implementations:
+  javascript:
+    chartjs: plots/logistic-regression/implementations/javascript/chartjs.js
+    d3: plots/logistic-regression/implementations/javascript/d3.js
+    echarts: plots/logistic-regression/implementations/javascript/echarts.js
+    highcharts: plots/logistic-regression/implementations/javascript/highcharts.js
+    muix: plots/logistic-regression/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/logistic-regression/implementations/julia/makie.jl
+  python:
+    altair: plots/logistic-regression/implementations/python/altair.py
+    bokeh: plots/logistic-regression/implementations/python/bokeh.py
+    letsplot: plots/logistic-regression/implementations/python/letsplot.py
+    matplotlib: plots/logistic-regression/implementations/python/matplotlib.py
+    plotly: plots/logistic-regression/implementations/python/plotly.py
+    plotnine: plots/logistic-regression/implementations/python/plotnine.py
+    pygal: plots/logistic-regression/implementations/python/pygal.py
+    seaborn: plots/logistic-regression/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/logistic-regression/implementations/r/ggplot2.R
+notes:
+- Data points should be jittered slightly on the y-axis (around 0 and 1) for visibility
+  when overlapping
+- Use distinct colors for the two classes (e.g., blue for class 0, orange for class
+  1)
+- The logistic curve should be smooth and prominently displayed (solid line, ~2px
+  width)
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

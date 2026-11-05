@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher Icon Colors -->
+    <color name="ic_launcher_background">#1A1A1A</color>
+    
+    <!-- Base Theme Colors -->
+    <color name="neven_red">#DC2626</color>
+    <color name="neven_dark">#1A1A1A</color>
+    <color name="neven_light">#FAF9F6</color>
+    <color name="neven_gray">#6B6B6B</color>
+    
+    <!-- Scientific Paper Theme Colors -->
+    <color name="scientific_text">#1A1A1A</color>
+    <color name="scientific_accent">#C9A227</color>
+    <color name="scientific_background">#FAFAF8</color>
+</resources>

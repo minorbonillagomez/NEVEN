@@ -1,0 +1,126 @@
+entity_type: ChartType
+id: scatter-color-mapped
+name:
+  en: Color-Mapped Scatter Plot
+  es: Diagrama de Dispersión
+description:
+  en: A scatter plot that encodes a third continuous variable using a colormap, allowing
+    visualization of three dimensions on a 2D plane. This visualization is essential
+    for exploring multivariate relationships where the third variable represents intensity,
+    magnitude, or any continuous measurement. A colorbar provides a reference scale
+    for interpreting the color values.
+  es: A scatter plot that encodes a third continuous variable using a colormap, allowing
+    visualization of three dimensions on a 2D plane. This visualization is essential
+    for exploring multivariate relationships where the third variable represents intensity,
+    magnitude, or any continuous measurement. A colorbar provides a reference scale
+    for interpreting the color values.
+aliases:
+  en:
+  - scatter-color-mapped
+  - scatter color mapped
+  - scatter plot
+  es:
+  - scatter-color-mapped
+  - scatter color mapped
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Visualizing temperature distribution across geographic coordinates
+  - Showing intensity or magnitude patterns in scientific measurements
+  - Displaying correlation strength or significance levels across data points
+  es:
+  - Visualizing temperature distribution across geographic coordinates
+  - Showing intensity or magnitude patterns in scientific measurements
+  - Displaying correlation strength or significance levels across data points
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - point
+  data_type:
+  - numeric
+  - continuous
+  - multivariate
+  domain:
+  - general
+  - science
+  features:
+  - color-mapped
+  - colorbar
+keywords:
+  en:
+  - scatter plot
+  - color
+  - mapped
+  - scatter
+  - point
+  - numeric
+  - continuous
+  - multivariate
+  - general
+  - science
+  - color-mapped
+  - colorbar
+  es:
+  - diagrama de dispersión
+  - color
+  - mapped
+  - scatter
+  - point
+  - numérico
+  - continuo
+  - multivariado
+  - general
+  - ciencia
+  - color-mapped
+  - colorbar
+implementations:
+  javascript:
+    chartjs: plots/scatter-color-mapped/implementations/javascript/chartjs.js
+    d3: plots/scatter-color-mapped/implementations/javascript/d3.js
+    echarts: plots/scatter-color-mapped/implementations/javascript/echarts.js
+    highcharts: plots/scatter-color-mapped/implementations/javascript/highcharts.js
+    muix: plots/scatter-color-mapped/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-color-mapped/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-color-mapped/implementations/python/altair.py
+    bokeh: plots/scatter-color-mapped/implementations/python/bokeh.py
+    letsplot: plots/scatter-color-mapped/implementations/python/letsplot.py
+    matplotlib: plots/scatter-color-mapped/implementations/python/matplotlib.py
+    plotly: plots/scatter-color-mapped/implementations/python/plotly.py
+    plotnine: plots/scatter-color-mapped/implementations/python/plotnine.py
+    pygal: plots/scatter-color-mapped/implementations/python/pygal.py
+    seaborn: plots/scatter-color-mapped/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-color-mapped/implementations/r/ggplot2.R
+notes:
+- Use a perceptually uniform colormap (e.g., viridis) for accurate value interpretation
+- Colorbar should have clear labels indicating the mapped variable and its units
+- Points should have moderate size to ensure color visibility
+source: anyplot
+anyplot_updated: 2026-05-08 20:35:12+00:00

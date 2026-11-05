@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: gain-curve
+name:
+  en: Cumulative Gains Chart
+  es: Gain Curve
+description:
+  en: 'A cumulative gains chart visualizes the effectiveness of a classification model
+    by showing what percentage of positive cases is captured when targeting increasing
+    percentages of the population, ranked by predicted probability. It answers the
+    question: "If I target the top X% of my predictions, what percentage of all actual
+    positives will I capture?" This plot is essential for evaluating targeting strategies
+    in marketing, risk assessment, and resource allocation scenarios.'
+  es: 'A cumulative gains chart visualizes the effectiveness of a classification model
+    by showing what percentage of positive cases is captured when targeting increasing
+    percentages of the population, ranked by predicted probability. It answers the
+    question: "If I target the top X% of my predictions, what percentage of all actual
+    positives will I capture?" This plot is essential for evaluating targeting strategies
+    in marketing, risk assessment, and resource allocation scenarios.'
+aliases:
+  en:
+  - gain-curve
+  - gain curve
+  - gain curve
+  es:
+  - gain-curve
+  - gain curve
+  - gain curve
+use_when:
+  en:
+  - A cumulative gains chart visualizes the effectiveness of a classification model
+    by showing what percentage of positive cases is captured when targeting increasing
+    percentages of the population, ranked
+  es:
+  - A cumulative gains chart visualizes the effectiveness of a classification model
+    by showing what percentage of positive cases is captured when targeting increasing
+    percentages of the population, ranked
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Marketing campaign optimization: Determine the minimum audience size needed to
+    reach a target percentage of likely responders'
+  - 'Customer churn prevention: Identify the smallest segment of at-risk customers
+    that captures most potential churners'
+  - 'Credit scoring model assessment: Evaluate how effectively a model concentrates
+    defaulters in high-risk score bands'
+  - 'Fraud detection prioritization: Calculate what fraction of investigations captures
+    most fraudulent cases'
+  es:
+  - 'Marketing campaign optimization: Determine the minimum audience size needed to
+    reach a target percentage of likely responders'
+  - 'Customer churn prevention: Identify the smallest segment of at-risk customers
+    that captures most potential churners'
+  - 'Credit scoring model assessment: Evaluate how effectively a model concentrates
+    defaulters in high-risk score bands'
+  - 'Fraud detection prioritization: Calculate what fraction of investigations captures
+    most fraudulent cases'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - binary
+  domain:
+  - statistics
+  - business
+  - marketing
+  features:
+  - basic
+  - model-evaluation
+  - cumulative
+keywords:
+  en:
+  - gain
+  - curve
+  - line
+  - numeric
+  - binary
+  - statistics
+  - business
+  - marketing
+  - basic
+  - model-evaluation
+  - cumulative
+  es:
+  - gain
+  - curve
+  - line
+  - numérico
+  - binario
+  - estadística
+  - negocios
+  - marketing
+  - basic
+  - model-evaluation
+  - cumulative
+implementations:
+  javascript:
+    chartjs: plots/gain-curve/implementations/javascript/chartjs.js
+    d3: plots/gain-curve/implementations/javascript/d3.js
+    echarts: plots/gain-curve/implementations/javascript/echarts.js
+    highcharts: plots/gain-curve/implementations/javascript/highcharts.js
+    muix: plots/gain-curve/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/gain-curve/implementations/julia/makie.jl
+  python:
+    altair: plots/gain-curve/implementations/python/altair.py
+    bokeh: plots/gain-curve/implementations/python/bokeh.py
+    letsplot: plots/gain-curve/implementations/python/letsplot.py
+    matplotlib: plots/gain-curve/implementations/python/matplotlib.py
+    plotly: plots/gain-curve/implementations/python/plotly.py
+    plotnine: plots/gain-curve/implementations/python/plotnine.py
+    pygal: plots/gain-curve/implementations/python/pygal.py
+    seaborn: plots/gain-curve/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/gain-curve/implementations/r/ggplot2.R
+notes:
+- X-axis shows percentage of population targeted (0-100%), sorted by predicted probability
+  descending
+- Y-axis shows cumulative percentage of positive cases captured (0-100%)
+- Always include a diagonal reference line representing random selection (baseline
+  model)
+source: anyplot
+anyplot_updated: 2026-10-02 15:00:51+00:00

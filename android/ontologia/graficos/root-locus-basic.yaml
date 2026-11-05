@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: root-locus-basic
+name:
+  en: Root Locus Plot for Control Systems
+  es: Root Locus Basic
+description:
+  en: A root locus plot traces how the closed-loop poles of a transfer function migrate
+    through the complex plane as a system parameter (typically gain K) varies from
+    0 to infinity. It is a fundamental tool in classical control theory for analyzing
+    system stability and designing controllers. The plot reveals critical information
+    about pole trajectories, stability boundaries, and gain margins.
+  es: A root locus plot traces how the closed-loop poles of a transfer function migrate
+    through the complex plane as a system parameter (typically gain K) varies from
+    0 to infinity. It is a fundamental tool in classical control theory for analyzing
+    system stability and designing controllers. The plot reveals critical information
+    about pole trajectories, stability boundaries, and gain margins.
+aliases:
+  en:
+  - root-locus-basic
+  - root locus basic
+  - root locus basic
+  es:
+  - root-locus-basic
+  - root locus basic
+  - root locus basic
+use_when:
+  en:
+  - A root locus plot traces how the closed-loop poles of a transfer function migrate
+    through the complex plane as a system parameter (typically gain K) varies from
+    0 to infinity. It is a fundamental tool
+  es:
+  - A root locus plot traces how the closed-loop poles of a transfer function migrate
+    through the complex plane as a system parameter (typically gain K) varies from
+    0 to infinity. It is a fundamental tool
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Designing PID controllers by selecting gain values that place poles in desired
+    locations
+  - Analyzing closed-loop stability margins as loop gain varies in feedback systems
+  - Determining breakaway and break-in points where locus branches merge or split
+    on the real axis
+  - Teaching classical control theory concepts such as pole placement, damping, and
+    natural frequency
+  es:
+  - Designing PID controllers by selecting gain values that place poles in desired
+    locations
+  - Analyzing closed-loop stability margins as loop gain varies in feedback systems
+  - Determining breakaway and break-in points where locus branches merge or split
+    on the real axis
+  - Teaching classical control theory concepts such as pole placement, damping, and
+    natural frequency
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  features:
+  - annotated
+  - 2d
+keywords:
+  en:
+  - root
+  - locus
+  - basic
+  - line
+  - scatter
+  - numeric
+  - continuous
+  - engineering
+  - annotated
+  - 2d
+  es:
+  - root
+  - locus
+  - básico
+  - line
+  - scatter
+  - numérico
+  - continuo
+  - ingeniería
+  - annotated
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/root-locus-basic/implementations/javascript/chartjs.js
+    d3: plots/root-locus-basic/implementations/javascript/d3.js
+    echarts: plots/root-locus-basic/implementations/javascript/echarts.js
+    highcharts: plots/root-locus-basic/implementations/javascript/highcharts.js
+    muix: plots/root-locus-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/root-locus-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/root-locus-basic/implementations/python/altair.py
+    bokeh: plots/root-locus-basic/implementations/python/bokeh.py
+    letsplot: plots/root-locus-basic/implementations/python/letsplot.py
+    matplotlib: plots/root-locus-basic/implementations/python/matplotlib.py
+    plotly: plots/root-locus-basic/implementations/python/plotly.py
+    plotnine: plots/root-locus-basic/implementations/python/plotnine.py
+    pygal: plots/root-locus-basic/implementations/python/pygal.py
+    seaborn: plots/root-locus-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/root-locus-basic/implementations/r/ggplot2.R
+notes:
+- Mark open-loop poles with x markers and open-loop zeros with o markers
+- Show locus branches as continuous curves with arrows indicating the direction of
+  increasing gain
+- Draw real axis segments that are part of the root locus (segments to the left of
+  an odd number of real-axis poles/zeros)
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

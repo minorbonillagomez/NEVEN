@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: smith-chart-basic
+name:
+  en: Smith Chart for RF/Impedance
+  es: Smith Chart Basic
+description:
+  en: A Smith chart is a specialized circular diagram used in RF engineering to display
+    complex impedance and reflection coefficients on a normalized polar grid. The
+    chart features constant resistance circles (centered along the horizontal axis)
+    and constant reactance arcs (curving from the right edge), enabling engineers
+    to visualize impedance matching, transmission line behavior, and antenna characteristics.
+    It reveals relationships between impedance, admittance, and reflection coefficient
+    that would be difficult to interpret in Cartesian coordinates.
+  es: A Smith chart is a specialized circular diagram used in RF engineering to display
+    complex impedance and reflection coefficients on a normalized polar grid. The
+    chart features constant resistance circles (centered along the horizontal axis)
+    and constant reactance arcs (curving from the right edge), enabling engineers
+    to visualize impedance matching, transmission line behavior, and antenna characteristics.
+    It reveals relationships between impedance, admittance, and reflection coefficient
+    that would be difficult to interpret in Cartesian coordinates.
+aliases:
+  en:
+  - smith-chart-basic
+  - smith chart basic
+  - smith chart basic
+  es:
+  - smith-chart-basic
+  - smith chart basic
+  - smith chart basic
+use_when:
+  en:
+  - A Smith chart is a specialized circular diagram used in RF engineering to display
+    complex impedance and reflection coefficients on a normalized polar grid. The
+    chart features constant resistance circl
+  es:
+  - A Smith chart is a specialized circular diagram used in RF engineering to display
+    complex impedance and reflection coefficients on a normalized polar grid. The
+    chart features constant resistance circl
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Designing impedance matching networks for RF circuits and antennas
+  - Analyzing transmission line impedance transformations along electrical length
+  - Visualizing complex S-parameters and reflection coefficients in microwave circuits
+  - Optimizing antenna feed point matching to minimize VSWR
+  es:
+  - Designing impedance matching networks for RF circuits and antennas
+  - Analyzing transmission line impedance transformations along electrical length
+  - Visualizing complex S-parameters and reflection coefficients in microwave circuits
+  - Optimizing antenna feed point matching to minimize VSWR
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - polar
+  data_type:
+  - numeric
+  - complex
+  domain:
+  - engineering
+  - technology
+  features:
+  - basic
+  - impedance
+  - rf
+keywords:
+  en:
+  - smith
+  - chart
+  - basic
+  - polar
+  - numeric
+  - complex
+  - engineering
+  - technology
+  - impedance
+  - rf
+  es:
+  - smith
+  - chart
+  - básico
+  - polar
+  - numérico
+  - complex
+  - ingeniería
+  - technology
+  - basic
+  - impedance
+  - rf
+implementations:
+  javascript:
+    chartjs: plots/smith-chart-basic/implementations/javascript/chartjs.js
+    d3: plots/smith-chart-basic/implementations/javascript/d3.js
+    echarts: plots/smith-chart-basic/implementations/javascript/echarts.js
+    highcharts: plots/smith-chart-basic/implementations/javascript/highcharts.js
+    muix: plots/smith-chart-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/smith-chart-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/smith-chart-basic/implementations/python/altair.py
+    bokeh: plots/smith-chart-basic/implementations/python/bokeh.py
+    letsplot: plots/smith-chart-basic/implementations/python/letsplot.py
+    matplotlib: plots/smith-chart-basic/implementations/python/matplotlib.py
+    plotly: plots/smith-chart-basic/implementations/python/plotly.py
+    plotnine: plots/smith-chart-basic/implementations/python/plotnine.py
+    pygal: plots/smith-chart-basic/implementations/python/pygal.py
+    seaborn: plots/smith-chart-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/smith-chart-basic/implementations/r/ggplot2.R
+notes:
+- Draw standard Smith chart grid with constant resistance circles and constant reactance
+  arcs
+- Normalize impedance values to reference impedance (Z/Z0) before plotting
+- Plot impedance locus as a connected curve showing frequency sweep trajectory
+source: anyplot
+anyplot_updated: 2026-05-20 14:28:35+00:00

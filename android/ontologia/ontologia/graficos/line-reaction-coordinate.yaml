@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: line-reaction-coordinate
+name:
+  en: Reaction Coordinate Energy Diagram
+  es: Gráfico de Líneas
+description:
+  en: A reaction coordinate diagram plots potential energy against reaction progress,
+    showing the energy landscape of a chemical transformation. The smooth curve traces
+    the path from reactants through the transition state (energy maximum) to products,
+    clearly depicting the activation energy barrier and overall enthalpy change. This
+    fundamental chemistry visualization is essential for understanding reaction kinetics
+    and thermodynamics.
+  es: A reaction coordinate diagram plots potential energy against reaction progress,
+    showing the energy landscape of a chemical transformation. The smooth curve traces
+    the path from reactants through the transition state (energy maximum) to products,
+    clearly depicting the activation energy barrier and overall enthalpy change. This
+    fundamental chemistry visualization is essential for understanding reaction kinetics
+    and thermodynamics.
+aliases:
+  en:
+  - line-reaction-coordinate
+  - line reaction coordinate
+  - line chart
+  es:
+  - line-reaction-coordinate
+  - line reaction coordinate
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Teaching activation energy and transition state theory in general chemistry courses
+  - Comparing catalyzed vs uncatalyzed reaction pathways to illustrate how catalysts
+    lower activation energy
+  - Illustrating exothermic vs endothermic reactions by showing the relative energy
+    levels of reactants and products
+  - Visualizing multi-step reaction mechanisms with intermediate species and multiple
+    energy barriers
+  es:
+  - Teaching activation energy and transition state theory in general chemistry courses
+  - Comparing catalyzed vs uncatalyzed reaction pathways to illustrate how catalysts
+    lower activation energy
+  - Illustrating exothermic vs endothermic reactions by showing the relative energy
+    levels of reactants and products
+  - Visualizing multi-step reaction mechanisms with intermediate species and multiple
+    energy barriers
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - chemistry
+  - education
+  features:
+  - annotated
+keywords:
+  en:
+  - line chart
+  - reaction
+  - coordinate
+  - line
+  - numeric
+  - continuous
+  - science
+  - chemistry
+  - education
+  - annotated
+  es:
+  - gráfico de líneas
+  - reaction
+  - coordinate
+  - line
+  - numérico
+  - continuo
+  - ciencia
+  - chemistry
+  - education
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/line-reaction-coordinate/implementations/javascript/chartjs.js
+    d3: plots/line-reaction-coordinate/implementations/javascript/d3.js
+    echarts: plots/line-reaction-coordinate/implementations/javascript/echarts.js
+    highcharts: plots/line-reaction-coordinate/implementations/javascript/highcharts.js
+    muix: plots/line-reaction-coordinate/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-reaction-coordinate/implementations/julia/makie.jl
+  python:
+    altair: plots/line-reaction-coordinate/implementations/python/altair.py
+    bokeh: plots/line-reaction-coordinate/implementations/python/bokeh.py
+    letsplot: plots/line-reaction-coordinate/implementations/python/letsplot.py
+    matplotlib: plots/line-reaction-coordinate/implementations/python/matplotlib.py
+    plotly: plots/line-reaction-coordinate/implementations/python/plotly.py
+    plotnine: plots/line-reaction-coordinate/implementations/python/plotnine.py
+    pygal: plots/line-reaction-coordinate/implementations/python/pygal.py
+    seaborn: plots/line-reaction-coordinate/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-reaction-coordinate/implementations/r/ggplot2.R
+notes:
+- Label reactants, products, and transition state directly on the plot
+- Show activation energy (Ea) with a double-headed arrow from reactant level to transition
+  state peak
+- Show enthalpy change (ΔH) with a double-headed arrow between reactant and product
+  energy levels
+source: anyplot
+anyplot_updated: '2026-06-24T09:47:32Z'

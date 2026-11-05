@@ -1,0 +1,3746 @@
+version: '1.0'
+source: anyplot
+total_charts: 325
+charts:
+- id: acf-pacf
+  name:
+    en: Autocorrelation and Partial Autocorrelation (ACF/PACF) Plot
+    es: Acf Pacf
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+  - stem
+- id: alluvial-basic
+  name:
+    en: Basic Alluvial Diagram
+    es: Alluvial Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - alluvial
+  - sankey
+- id: alluvial-opinion-flow
+  name:
+    en: Opinion Flow Diagram
+    es: Alluvial Opinion Flow
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - alluvial
+- id: andrews-curves
+  name:
+    en: Andrews Curves for Multivariate Data
+    es: Andrews Curves
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: arc-basic
+  name:
+    en: Basic Arc Diagram
+    es: Arc Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - arc
+  - network
+- id: area-basic
+  name:
+    en: Basic Area Chart
+    es: Gráfico de Área Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+- id: area-cumulative-flow
+  name:
+    en: Cumulative Flow Diagram for Workflow Analytics
+    es: Gráfico de Área
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+- id: area-elevation-profile
+  name:
+    en: Terrain Elevation Profile Along Transect
+    es: Gráfico de Área
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+  - line
+- id: area-mountain-panorama
+  name:
+    en: Mountain Panorama Profile with Labeled Peaks
+    es: Gráfico de Área
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+  - line
+- id: area-stacked
+  name:
+    en: Stacked Area Chart
+    es: Gráfico de Área Apilado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+- id: area-stacked-confidence
+  name:
+    en: Stacked Area Chart with Confidence Bands
+    es: Gráfico de Área Apilado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+- id: area-stacked-percent
+  name:
+    en: 100% Stacked Area Chart
+    es: Gráfico de Área Apilado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+- id: audiogram-clinical
+  name:
+    en: Clinical Audiogram
+    es: Audiogram Clinical
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: band-basic
+  name:
+    en: Basic Band Plot
+    es: Band Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - band
+  - area
+- id: bar-3d-categorical
+  name:
+    en: 3D Bar Chart for Categorical Comparison
+    es: Gráfico de Barras 3D
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-basic
+  name:
+    en: Basic Bar Chart
+    es: Gráfico de Barras Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-diverging
+  name:
+    en: Diverging Bar Chart
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-diverging-likert
+  name:
+    en: Likert Scale Diverging Bar Chart
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-error
+  name:
+    en: Bar Chart with Error Bars
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-feature-importance
+  name:
+    en: Feature Importance Bar Chart
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-grouped
+  name:
+    en: Grouped Bar Chart
+    es: Gráfico de Barras Agrupado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-heart-rate-zones
+  name:
+    en: Time in Heart Rate Zones Bar Chart
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-horizontal
+  name:
+    en: Horizontal Bar Chart
+    es: Gráfico de Barras Horizontal
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-pareto
+  name:
+    en: Pareto Chart with Cumulative Line
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+  - line
+- id: bar-permutation-importance
+  name:
+    en: Permutation Feature Importance Plot
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-spine
+  name:
+    en: Spine Plot for Two-Variable Proportions
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-stacked
+  name:
+    en: Stacked Bar Chart
+    es: Gráfico de Barras Apilado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+  - stacked
+- id: bar-stacked-labeled
+  name:
+    en: Stacked Bar Chart with Total Labels
+    es: Gráfico de Barras Apilado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+  - stacked
+- id: bar-stacked-percent
+  name:
+    en: 100% Stacked Bar Chart
+    es: Gráfico de Barras Apilado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: bar-tornado-sensitivity
+  name:
+    en: Tornado Diagram for Sensitivity Analysis
+    es: Gráfico de Barras
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: barcode-code128
+  name:
+    en: Code 128 Barcode
+    es: Barcode Code128
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - barcode
+- id: barcode-ean13
+  name:
+    en: EAN-13 Barcode
+    es: Barcode Ean13
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - barcode
+- id: bifurcation-basic
+  name:
+    en: Bifurcation Diagram for Dynamical Systems
+    es: Bifurcation Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - point
+- id: biplot-pca
+  name:
+    en: PCA Biplot with Scores and Loading Vectors
+    es: Biplot Pca
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - biplot
+  - scatter
+- id: bland-altman-basic
+  name:
+    en: Bland-Altman Agreement Plot
+    es: Bland Altman Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bland-altman
+  - scatter
+- id: bode-basic
+  name:
+    en: Bode Plot for Frequency Response
+    es: Bode Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - polar
+- id: box-basic
+  name:
+    en: Basic Box Plot
+    es: Diagrama de Caja Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - box
+- id: box-grouped
+  name:
+    en: Grouped Box Plot
+    es: Diagrama de Caja Agrupado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - box
+- id: box-horizontal
+  name:
+    en: Horizontal Box Plot
+    es: Diagrama de Caja Horizontal
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - box
+- id: box-notched
+  name:
+    en: Notched Box Plot
+    es: Diagrama de Caja
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - box
+- id: boxen-basic
+  name:
+    en: Basic Boxen Plot (Letter-Value Plot)
+    es: Boxen Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - boxen
+  - box
+- id: bubble-basic
+  name:
+    en: Basic Bubble Chart
+    es: Gráfico de Burbujas Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bubble
+  - scatter
+- id: bubble-map-geographic
+  name:
+    en: Bubble Map with Sized Geographic Markers
+    es: Gráfico de Burbujas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bubble
+  - map
+- id: bubble-packed
+  name:
+    en: Basic Packed Bubble Chart
+    es: Gráfico de Burbujas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bubble
+  - circlepacking
+- id: bullet-basic
+  name:
+    en: Basic Bullet Chart
+    es: Gráfico de Bala Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+  - gauge
+- id: bump-basic
+  name:
+    en: Basic Bump Chart
+    es: Bump Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bump
+- id: burndown-sprint
+  name:
+    en: Agile Sprint Burndown Chart
+    es: Burndown Sprint
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - step
+- id: calibration-beer-lambert
+  name:
+    en: Beer-Lambert Calibration Curve
+    es: Calibration Beer Lambert
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - calibration
+- id: calibration-curve
+  name:
+    en: Calibration Curve
+    es: Calibration Curve
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - calibration
+- id: campbell-basic
+  name:
+    en: Campbell Diagram
+    es: Campbell Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: candlestick-basic
+  name:
+    en: Basic Candlestick Chart
+    es: Gráfico de Velas Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - candlestick
+- id: candlestick-volume
+  name:
+    en: Stock Candlestick Chart with Volume
+    es: Gráfico de Velas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - candlestick
+  - bar
+  - subplot
+- id: cartogram-area-distortion
+  name:
+    en: Cartogram with Area Distortion by Data Value
+    es: Cartogram Area Distortion
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - map
+  - choropleth
+- id: cat-box-strip
+  name:
+    en: Box Plot with Strip Overlay
+    es: Cat Box Strip
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - box
+  - strip
+- id: chernoff-basic
+  name:
+    en: Chernoff Faces for Multivariate Data
+    es: Chernoff Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - chernoff
+  - multivariate
+  - glyph
+- id: chessboard-basic
+  name:
+    en: Chess Board Grid Visualization
+    es: Chessboard Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - grid
+- id: chessboard-pieces
+  name:
+    en: Chess Board with Pieces for Position Diagrams
+    es: Chessboard Pieces
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: chord-basic
+  name:
+    en: Basic Chord Diagram
+    es: Diagrama de Cuerdas Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - chord
+  - flow
+- id: choropleth-basic
+  name:
+    en: Choropleth Map with Regional Coloring
+    es: Mapa Coroplético Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - choropleth
+  - map
+- id: circlepacking-basic
+  name:
+    en: Circle Packing Chart
+    es: Circlepacking Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - circlepacking
+- id: circos-basic
+  name:
+    en: Circos Plot
+    es: Circos Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - circos
+  - circular
+  - chord
+- id: climograph-walter-lieth
+  name:
+    en: Walter-Lieth Climate Diagram
+    es: Climograph Walter Lieth
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+- id: coefficient-confidence
+  name:
+    en: Coefficient Plot with Confidence Intervals
+    es: Coefficient Confidence
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - point
+  - errorbar
+- id: column-stratigraphic
+  name:
+    en: Stratigraphic Column with Lithology Patterns
+    es: Column Stratigraphic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+  - column
+- id: confusion-matrix
+  name:
+    en: Confusion Matrix Heatmap
+    es: Matriz de Confusión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: contour-3d
+  name:
+    en: 3D Contour Plot
+    es: Gráfico de Contorno 3D
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - contour
+  - surface
+- id: contour-basic
+  name:
+    en: Basic Contour Plot
+    es: Gráfico de Contorno Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - contour
+- id: contour-decision-boundary
+  name:
+    en: Decision Boundary Classifier Visualization
+    es: Gráfico de Contorno
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - contour
+  - scatter
+- id: contour-density
+  name:
+    en: Density Contour Plot
+    es: Gráfico de Contorno
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - contour
+  - density
+- id: contour-filled
+  name:
+    en: Filled Contour Plot
+    es: Gráfico de Contorno
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - contour
+  - heatmap
+- id: contour-map-geographic
+  name:
+    en: Contour Lines on Geographic Map
+    es: Gráfico de Contorno
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - contour
+  - map
+- id: count-basic
+  name:
+    en: Basic Count Plot
+    es: Count Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: crossword-basic
+  name:
+    en: Crossword Puzzle Grid
+    es: Crossword Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - grid
+- id: curve-bias-variance-tradeoff
+  name:
+    en: Bias-Variance Tradeoff Curve
+    es: Curve Bias Variance Tradeoff
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: curve-dose-response
+  name:
+    en: Pharmacological Dose-Response Curve
+    es: Curve Dose Response
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: curve-oc
+  name:
+    en: Operating Characteristic (OC) Curve
+    es: Curve Oc
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: curve-power-duration
+  name:
+    en: Mean-Maximal Power Duration Curve
+    es: Curve Power Duration
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: dashboard-metrics-tiles
+  name:
+    en: Real-Time Dashboard Tiles
+    es: Dashboard Metrics Tiles
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - dashboard
+  - sparkline
+  - indicator
+- id: datamatrix-basic
+  name:
+    en: Basic Data Matrix 2D Barcode
+    es: Datamatrix Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - barcode
+- id: dendrogram-basic
+  name:
+    en: Basic Dendrogram
+    es: Dendrograma Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - dendrogram
+  - tree
+- id: dendrogram-radial
+  name:
+    en: Radial Dendrogram
+    es: Dendrograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - dendrogram
+- id: density-basic
+  name:
+    en: Basic Density Plot
+    es: Gráfico de Densidad Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - density
+- id: density-rug
+  name:
+    en: Density Plot with Rug Marks
+    es: Gráfico de Densidad
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - density
+  - rug
+- id: depth-order-book
+  name:
+    en: Order Book Depth Chart
+    es: Depth Order Book
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+  - step
+- id: diagnostic-regression-panel
+  name:
+    en: Regression Diagnostic Panel (Four-Plot Display)
+    es: Diagnostic Regression Panel Regresión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - qq
+- id: donut-basic
+  name:
+    en: Basic Donut Chart
+    es: Gráfico de Dona Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - donut
+- id: donut-nested
+  name:
+    en: Nested Donut Chart
+    es: Gráfico de Dona
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - donut
+- id: dot-matrix-proportional
+  name:
+    en: Dot Matrix Chart for Proportional Counts
+    es: Dot Matrix Proportional
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - point
+  - heatmap
+- id: drawdown-basic
+  name:
+    en: Drawdown Chart
+    es: Drawdown Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+  - line
+- id: dumbbell-basic
+  name:
+    en: Basic Dumbbell Chart
+    es: Gráfico de Mancuerna Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - dumbbell
+  - dot
+- id: ecdf-basic
+  name:
+    en: Basic ECDF Plot
+    es: Ecdf Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - ecdf
+- id: ecg-twelve-lead
+  name:
+    en: ECG/EKG 12-Lead Waveform Display
+    es: Ecg Twelve Lead
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: elbow-curve
+  name:
+    en: Elbow Curve for K-Means Clustering
+    es: Elbow Curve
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: energy-level-atomic
+  name:
+    en: Atomic Energy Level Diagram
+    es: Energy Level Atomic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: errorbar-asymmetric
+  name:
+    en: Asymmetric Error Bars Plot
+    es: Errorbar Asymmetric
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - errorbar
+  - point
+- id: errorbar-basic
+  name:
+    en: Basic Error Bar Plot
+    es: Errorbar Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - errorbar
+- id: eye-diagram-basic
+  name:
+    en: Signal Integrity Eye Diagram
+    es: Eye Diagram Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - heatmap
+- id: facet-grid
+  name:
+    en: Faceted Grid Plot
+    es: Facet Grid
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - facet
+- id: feynman-basic
+  name:
+    en: Feynman Diagram for Particle Interactions
+    es: Feynman Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - network
+- id: flamegraph-basic
+  name:
+    en: Flame Graph for Performance Profiling
+    es: Flamegraph Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+  - heatmap
+- id: flowmap-origin-destination
+  name:
+    en: Origin-Destination Flow Map
+    es: Flowmap Origin Destination
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - map
+  - arc
+- id: forest-basic
+  name:
+    en: Meta-Analysis Forest Plot
+    es: Gráfico de Bosque Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - forest
+- id: frequency-polygon-basic
+  name:
+    en: Frequency Polygon for Distribution Comparison
+    es: Frequency Polygon Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: frontier-efficient
+  name:
+    en: Efficient Frontier for Portfolio Optimization
+    es: Frontier Efficient
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - line
+- id: funnel-basic
+  name:
+    en: Basic Funnel Chart
+    es: Gráfico de Embudo Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - funnel
+- id: funnel-meta-analysis
+  name:
+    en: Meta-Analysis Funnel Plot for Publication Bias
+    es: Gráfico de Embudo
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - funnel
+- id: gain-curve
+  name:
+    en: Cumulative Gains Chart
+    es: Gain Curve
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: gantt-basic
+  name:
+    en: Basic Gantt Chart
+    es: Diagrama de Gantt Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - gantt
+  - bar
+- id: gantt-dependencies
+  name:
+    en: Gantt Chart with Dependencies
+    es: Diagrama de Gantt
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - gantt
+  - bar
+- id: gauge-activity-rings
+  name:
+    en: Activity Rings Progress Chart
+    es: Gráfico de Medidor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - gauge
+  - donut
+- id: gauge-basic
+  name:
+    en: Basic Gauge Chart
+    es: Gráfico de Medidor Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - gauge
+- id: genome-track-multi
+  name:
+    en: Genome Track Viewer
+    es: Genome Track Multi
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - area
+  - bar
+- id: heatmap-adjacency
+  name:
+    en: Network Adjacency Matrix Heatmap
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - network
+- id: heatmap-annotated
+  name:
+    en: Annotated Heatmap
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - matrix
+- id: heatmap-basic
+  name:
+    en: Basic Heatmap
+    es: Mapa de Calor Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: heatmap-calendar
+  name:
+    en: Basic Calendar Heatmap
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - calendar
+- id: heatmap-chromagram
+  name:
+    en: Music Chromagram (Pitch Class Distribution over Time)
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: heatmap-clustered
+  name:
+    en: Clustered Heatmap
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - dendrogram
+- id: heatmap-cohort-retention
+  name:
+    en: Cohort Retention Heatmap
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: heatmap-correlation
+  name:
+    en: Correlation Matrix Heatmap
+    es: Mapa de Calor Correlación
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: heatmap-geographic
+  name:
+    en: Geographic Heatmap for Spatial Density
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - map
+- id: heatmap-loss-triangle
+  name:
+    en: Actuarial Loss Development Triangle
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: heatmap-mandelbrot
+  name:
+    en: Mandelbrot Set Fractal Visualization
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: heatmap-periodic-table
+  name:
+    en: Periodic Table Property Heatmap
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - matrix
+- id: heatmap-polar
+  name:
+    en: Polar Heatmap for Cyclic Two-Dimensional Data
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - polar
+- id: heatmap-rainflow
+  name:
+    en: Rainflow Counting Matrix for Fatigue Analysis
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: heatmap-risk-matrix
+  name:
+    en: Risk Assessment Matrix (Probability vs Impact)
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: heatmap-stripes-climate
+  name:
+    en: Climate Warming Stripes
+    es: Mapa de Calor
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - bar
+- id: hexbin-basic
+  name:
+    en: Basic Hexbin Plot
+    es: Diagrama Hexagonal Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - hexbin
+  - density
+- id: hexbin-map-geographic
+  name:
+    en: Hexagonal Binning Map
+    es: Diagrama Hexagonal
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - hexbin
+- id: histogram-2d
+  name:
+    en: 2D Histogram Heatmap
+    es: Histograma 2D
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+  - heatmap
+  - density
+- id: histogram-basic
+  name:
+    en: Basic Histogram
+    es: Histograma Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+- id: histogram-capability
+  name:
+    en: Process Capability Plot with Specification Limits
+    es: Histograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+  - density
+- id: histogram-cumulative
+  name:
+    en: Cumulative Histogram
+    es: Histograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+  - distribution
+  - cumulative
+- id: histogram-density
+  name:
+    en: Density Histogram
+    es: Histograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+- id: histogram-epidemic
+  name:
+    en: Epidemic Curve (Epi Curve)
+    es: Histograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+  - bar
+- id: histogram-kde
+  name:
+    en: Histogram with KDE Overlay
+    es: Histograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+  - density
+- id: histogram-overlapping
+  name:
+    en: Overlapping Histograms
+    es: Histograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+- id: histogram-returns-distribution
+  name:
+    en: Returns Distribution Histogram
+    es: Histograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+  - density
+- id: histogram-stacked
+  name:
+    en: Stacked Histogram
+    es: Histograma Apilado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+- id: histogram-stepwise
+  name:
+    en: Step Histogram
+    es: Histograma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - histogram
+- id: hive-basic
+  name:
+    en: Basic Hive Plot
+    es: Hive Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - hive
+  - network
+  - radial
+- id: horizon-basic
+  name:
+    en: Horizon Chart
+    es: Horizon Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - horizon
+  - area
+  - line
+- id: ice-basic
+  name:
+    en: Individual Conditional Expectation (ICE) Plot
+    es: Ice Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: icicle-basic
+  name:
+    en: Basic Icicle Chart
+    es: Icicle Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - icicle
+- id: indicator-bollinger
+  name:
+    en: Bollinger Bands Indicator Chart
+    es: Indicator Bollinger
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: indicator-ema
+  name:
+    en: Exponential Moving Average (EMA) Indicator Chart
+    es: Indicator Ema
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: indicator-ichimoku
+  name:
+    en: Ichimoku Cloud Technical Indicator Chart
+    es: Indicator Ichimoku
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - candlestick
+  - line
+  - area
+- id: indicator-macd
+  name:
+    en: MACD Technical Indicator Chart
+    es: Indicator Macd
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - bar
+- id: indicator-rsi
+  name:
+    en: RSI Technical Indicator Chart
+    es: Indicator Rsi
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: indicator-sma
+  name:
+    en: Simple Moving Average (SMA) Indicator Chart
+    es: Indicator Sma
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: kagi-basic
+  name:
+    en: Basic Kagi Chart
+    es: Kagi Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - kagi
+  - line
+- id: ks-test-comparison
+  name:
+    en: Kolmogorov-Smirnov Plot for Distribution Comparison
+    es: Ks Test Comparison
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - ecdf
+- id: learning-curve-basic
+  name:
+    en: Model Learning Curve
+    es: Learning Curve Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: lift-curve
+  name:
+    en: Model Lift Chart
+    es: Lift Curve
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: lightcurve-transit
+  name:
+    en: Astronomical Light Curve
+    es: Lightcurve Transit
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: line-3d-trajectory
+  name:
+    en: 3D Line Plot for Trajectory Visualization
+    es: Gráfico de Líneas 3D
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-annotated-events
+  name:
+    en: Annotated Line Plot with Event Markers
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - timeseries
+- id: line-arrhenius
+  name:
+    en: Arrhenius Plot for Reaction Kinetics
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: line-basic
+  name:
+    en: Basic Line Plot
+    es: Gráfico de Líneas Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-confidence
+  name:
+    en: Line Plot with Confidence Interval
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - band
+- id: line-cycle-seasonal
+  name:
+    en: Cycle Plot (Seasonal Subseries)
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-filled
+  name:
+    en: Filled Line Plot
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+- id: line-growth-percentile
+  name:
+    en: Pediatric Growth Chart with Percentile Curves
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+- id: line-impurity-comparison
+  name:
+    en: Gini Impurity vs Entropy Comparison
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-load-duration
+  name:
+    en: Load Duration Curve for Energy Systems
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+- id: line-loss-training
+  name:
+    en: Training Loss Curve
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-markers
+  name:
+    en: Line Plot with Markers
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: line-multi
+  name:
+    en: Multi-Line Comparison Plot
+    es: Gráfico de Líneas Múltiple
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-parametric
+  name:
+    en: Parametric Curve Plot
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-pca-variance-cumulative
+  name:
+    en: Cumulative Explained Variance for PCA Component Selection
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-reaction-coordinate
+  name:
+    en: Reaction Coordinate Energy Diagram
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-retention-cohort
+  name:
+    en: User Retention Curve by Cohort
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-stepwise
+  name:
+    en: Step Line Plot
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - step
+- id: line-stock-comparison
+  name:
+    en: Stock Price Comparison Chart
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-stress-strain
+  name:
+    en: Engineering Stress-Strain Curve
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-styled
+  name:
+    en: Styled Line Plot
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-tanabe-sugano
+  name:
+    en: Tanabe-Sugano Diagram for Crystal Field Theory
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-timeseries
+  name:
+    en: Time Series Line Plot
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-timeseries-rolling
+  name:
+    en: Time Series with Rolling Average Overlay
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: line-training-load-pmc
+  name:
+    en: Training Load Performance Management Chart
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+  - point
+- id: line-win-probability
+  name:
+    en: Win Probability Chart
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+- id: line-yield-curve
+  name:
+    en: Yield Curve (Interest Rate Term Structure)
+    es: Gráfico de Líneas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: logistic-regression
+  name:
+    en: Logistic Regression Curve Plot
+    es: Logistic Regression Regresión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - line
+  - area
+- id: lollipop-basic
+  name:
+    en: Basic Lollipop Chart
+    es: Gráfico de Piruleta Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - lollipop
+- id: lollipop-grouped
+  name:
+    en: Grouped Lollipop Chart
+    es: Gráfico de Piruleta Agrupado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - lollipop
+  - point
+- id: ma-differential-expression
+  name:
+    en: MA Plot for Differential Expression
+    es: Ma Differential Expression
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: manhattan-gwas
+  name:
+    en: Manhattan Plot for GWAS
+    es: Manhattan Gwas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - point
+- id: map-connection-lines
+  name:
+    en: Connection Lines Map (Origin-Destination)
+    es: Mapa
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - map
+- id: map-marker-clustered
+  name:
+    en: Clustered Marker Map
+    es: Mapa
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - map
+- id: map-projections
+  name:
+    en: World Map with Different Projections
+    es: Mapa
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - map
+  - choropleth
+- id: map-route-path
+  name:
+    en: Route Path Map
+    es: Mapa
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - map
+  - line
+- id: map-tile-background
+  name:
+    en: Map with Tile Background
+    es: Mapa
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - map
+  - scatter
+- id: map-tilegrid
+  name:
+    en: Tile Grid Map for Equal-Area Geographic Comparison
+    es: Mapa
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - map
+  - heatmap
+- id: marimekko-basic
+  name:
+    en: Basic Marimekko Chart
+    es: Marimekko Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - mosaic
+- id: maze-circular
+  name:
+    en: Circular Maze Puzzle
+    es: Maze Circular
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - maze
+  - polar
+- id: maze-printable
+  name:
+    en: Printable Maze Puzzle
+    es: Maze Printable
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags: []
+- id: mohr-circle
+  name:
+    en: Mohr's Circle for Stress Analysis
+    es: Mohr Circle
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - polar
+- id: mosaic-categorical
+  name:
+    en: Mosaic Plot for Categorical Association Analysis
+    es: Mosaic Categorical
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - mosaic
+- id: network-basic
+  name:
+    en: Basic Network Graph
+    es: Grafo de Red Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - network
+- id: network-bipartite
+  name:
+    en: Bipartite Network Graph
+    es: Grafo de Red
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - network
+- id: network-directed
+  name:
+    en: Directed Network Graph
+    es: Grafo de Red
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - network
+- id: network-force-directed
+  name:
+    en: Force-Directed Graph
+    es: Grafo de Red
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - network
+- id: network-hierarchical
+  name:
+    en: Hierarchical Network Graph with Tree Layout
+    es: Grafo de Red
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - network
+  - tree
+- id: network-transport-static
+  name:
+    en: Static Transport Network Diagram
+    es: Grafo de Red
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - network
+- id: network-weighted
+  name:
+    en: Weighted Network Graph with Edge Thickness
+    es: Grafo de Red
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - network
+- id: nyquist-basic
+  name:
+    en: Nyquist Plot for Control Systems
+    es: Nyquist Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - nyquist
+  - polar
+- id: ohlc-bar
+  name:
+    en: OHLC Bar Chart
+    es: Ohlc Bar
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: parallel-basic
+  name:
+    en: Basic Parallel Coordinates Plot
+    es: Coordenadas Paralelas Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - parallel
+- id: parallel-categories-basic
+  name:
+    en: Basic Parallel Categories Plot
+    es: Coordenadas Paralelas
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - parallel-categories
+- id: parliament-basic
+  name:
+    en: Parliament Seat Chart
+    es: Parliament Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - parliament
+  - point
+- id: pdp-basic
+  name:
+    en: Partial Dependence Plot
+    es: Pdp Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: phase-diagram
+  name:
+    en: Phase Diagram (State Space Plot)
+    es: Phase Diagram
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: phase-diagram-pt
+  name:
+    en: Thermodynamic Phase Diagram (Pressure-Temperature)
+    es: Phase Diagram Pt
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+- id: piano-roll-midi
+  name:
+    en: MIDI Piano Roll Visualization
+    es: Piano Roll Midi
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - gantt
+  - bar
+- id: pictogram-basic
+  name:
+    en: Pictogram Chart (Isotype Visualization)
+    es: Pictogram Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: pie-basic
+  name:
+    en: Basic Pie Chart
+    es: Gráfico Circular Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - pie
+- id: point-and-figure-basic
+  name:
+    en: Point and Figure Chart
+    es: Point And Figure Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - point-and-figure
+- id: point-basic
+  name:
+    en: Point Estimate Plot
+    es: Point Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - point
+- id: polar-bar
+  name:
+    en: Polar Bar Chart (Wind Rose)
+    es: Gráfico Polar
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - polar
+  - bar
+- id: polar-basic
+  name:
+    en: Basic Polar Chart
+    es: Gráfico Polar Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - polar
+- id: polar-line
+  name:
+    en: Polar Line Plot
+    es: Gráfico Polar
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - polar
+  - line
+- id: polar-scatter
+  name:
+    en: Polar Scatter Plot
+    es: Gráfico Polar
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - polar
+- id: pp-basic
+  name:
+    en: Probability-Probability (P-P) Plot
+    es: Gráfico P-P Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - pp
+  - calibration
+- id: precision-recall
+  name:
+    en: Precision-Recall Curve
+    es: Precision Recall
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - curve
+  - evaluation
+- id: probability-weibull
+  name:
+    en: Weibull Probability Plot for Reliability Analysis
+    es: Probability Weibull
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: psychrometric-basic
+  name:
+    en: Psychrometric Chart for HVAC
+    es: Psychrometric Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - contour
+- id: pyramid-basic
+  name:
+    en: Basic Pyramid Chart
+    es: Pyramid Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - pyramid
+  - bar
+- id: qq-basic
+  name:
+    en: Basic Q-Q Plot
+    es: Gráfico Q-Q Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - qq
+- id: qrcode-basic
+  name:
+    en: Basic QR Code Generator
+    es: Qrcode Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - barcode
+- id: quiver-basic
+  name:
+    en: Basic Quiver Plot
+    es: Quiver Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - quiver
+  - vector
+- id: radar-basic
+  name:
+    en: Basic Radar Chart
+    es: Gráfico de Radar Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - radar
+- id: radar-innovation-timeline
+  name:
+    en: Innovation Radar with Time-Horizon Rings
+    es: Gráfico de Radar
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - radar
+  - polar
+- id: radar-multi
+  name:
+    en: Multi-Series Radar Chart
+    es: Gráfico de Radar Múltiple
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - radar
+- id: raincloud-basic
+  name:
+    en: Basic Raincloud Plot
+    es: Diagrama de Nube de Lluvia Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - raincloud
+  - violin
+  - strip
+  - box
+- id: range-interval
+  name:
+    en: Range Interval Chart
+    es: Range Interval
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+  - range
+- id: recurrence-basic
+  name:
+    en: Recurrence Plot for Nonlinear Time Series
+    es: Recurrence Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+  - matrix
+- id: renko-basic
+  name:
+    en: Basic Renko Chart
+    es: Renko Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - renko
+  - candlestick
+- id: residual-plot
+  name:
+    en: Residual Plot
+    es: Gráfico de Residuos
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: ridgeline-basic
+  name:
+    en: Basic Ridgeline Plot
+    es: Gráfico de Crestas Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - ridgeline
+  - density
+- id: roc-curve
+  name:
+    en: ROC Curve with AUC
+    es: Curva ROC
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: root-locus-basic
+  name:
+    en: Root Locus Plot for Control Systems
+    es: Root Locus Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: rose-basic
+  name:
+    en: Basic Rose Chart
+    es: Rose Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - polar
+- id: rug-basic
+  name:
+    en: Basic Rug Plot
+    es: Rug Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - rug
+- id: sankey-basic
+  name:
+    en: Basic Sankey Diagram
+    es: Diagrama de Sankey Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - sankey
+- id: scatter-3d
+  name:
+    en: 3D Scatter Plot
+    es: Diagrama de Dispersión 3D
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - 3d
+- id: scatter-annotated
+  name:
+    en: Annotated Scatter Plot with Text Labels
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-ashby-material
+  name:
+    en: Ashby Material Selection Chart
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - bubble
+- id: scatter-basic
+  name:
+    en: Basic Scatter Plot
+    es: Diagrama de Dispersión Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-categorical
+  name:
+    en: Categorical Scatter Plot
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - categorical
+- id: scatter-color-mapped
+  name:
+    en: Color-Mapped Scatter Plot
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - point
+- id: scatter-complex-plane
+  name:
+    en: Complex Plane Visualization (Argand Diagram)
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - polar
+- id: scatter-connected-temporal
+  name:
+    en: Connected Scatter Plot with Temporal Path
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - line
+- id: scatter-constellation-diagram
+  name:
+    en: Digital Modulation Constellation Diagram
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-embedding
+  name:
+    en: t-SNE and UMAP Embedding Visualization
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-hr-diagram
+  name:
+    en: Hertzsprung-Russell Diagram
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-lag
+  name:
+    en: Lag Plot for Time Series Autocorrelation Diagnosis
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-map-geographic
+  name:
+    en: Scatter Map with Geographic Points
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - map
+- id: scatter-marginal
+  name:
+    en: Scatter Plot with Marginal Distributions
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - histogram
+  - density
+- id: scatter-matrix
+  name:
+    en: Scatter Plot Matrix
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - matrix
+  - pairplot
+- id: scatter-pitch-events
+  name:
+    en: Soccer Pitch Event Map
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - map
+- id: scatter-regression-linear
+  name:
+    en: Scatter Plot with Linear Regression
+    es: Diagrama de Dispersión Regresión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-regression-lowess
+  name:
+    en: Scatter Plot with LOWESS Regression
+    es: Diagrama de Dispersión Regresión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-regression-polynomial
+  name:
+    en: Scatter Plot with Polynomial Regression
+    es: Diagrama de Dispersión Regresión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-shot-chart
+  name:
+    en: Basketball Shot Chart
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: scatter-text
+  name:
+    en: Scatter Plot with Text Labels Instead of Points
+    es: Diagrama de Dispersión
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - text
+- id: sequence-logo-basic
+  name:
+    en: Sequence Logo for Motif Visualization
+    es: Sequence Logo Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - logo
+  - bar
+- id: shap-summary
+  name:
+    en: SHAP Summary Plot
+    es: Shap Summary
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - strip
+  - swarm
+- id: shap-waterfall
+  name:
+    en: SHAP Waterfall Plot for Feature Attribution
+    es: Shap Waterfall
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - waterfall
+  - bar
+- id: silhouette-basic
+  name:
+    en: Silhouette Plot
+    es: Silhouette Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: skewt-logp-atmospheric
+  name:
+    en: Skew-T Log-P Atmospheric Diagram
+    es: Skewt Logp Atmospheric
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: slope-basic
+  name:
+    en: Basic Slope Chart (Slopegraph)
+    es: Slope Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: smith-chart-basic
+  name:
+    en: Smith Chart for RF/Impedance
+    es: Smith Chart Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - polar
+- id: sn-curve-basic
+  name:
+    en: S-N Curve (Wöhler Curve)
+    es: Sn Curve Basic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - scatter
+- id: span-basic
+  name:
+    en: Basic Span Plot (Highlighted Region)
+    es: Span Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - span
+- id: sparkline-basic
+  name:
+    en: Basic Sparkline
+    es: Minigráfico Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - sparkline
+  - line
+- id: spc-xbar-r
+  name:
+    en: Statistical Process Control Chart (X-bar/R)
+    es: Spc Xbar R
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: spectrogram-basic
+  name:
+    en: Spectrogram Time-Frequency Heatmap
+    es: Spectrogram Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: spectrogram-mel
+  name:
+    en: Mel-Spectrogram for Audio Analysis
+    es: Spectrogram Mel
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: spectrum-basic
+  name:
+    en: Frequency Spectrum Plot
+    es: Spectrum Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: spectrum-nmr
+  name:
+    en: NMR Spectrum (Nuclear Magnetic Resonance)
+    es: Spectrum Nmr
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: spiral-timeseries
+  name:
+    en: Spiral Time Series Chart
+    es: Spiral Timeseries
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - spiral
+  - polar
+- id: spirometry-flow-volume
+  name:
+    en: Spirometry Flow-Volume Loop
+    es: Spirometry Flow Volume
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - polar
+- id: star-chart-constellation
+  name:
+    en: Star Chart with Constellations
+    es: Star Chart Constellation
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+  - network
+- id: stem-basic
+  name:
+    en: Basic Stem Plot
+    es: Stem Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - stem
+- id: step-basic
+  name:
+    en: Basic Step Plot
+    es: Step Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - step
+- id: stereonet-equal-area
+  name:
+    en: Structural Geology Stereonet (Equal-Area Projection)
+    es: Stereonet Equal Area
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - polar
+  - scatter
+- id: stock-event-flags
+  name:
+    en: Stock Chart with Event Flags
+    es: Stock Event Flags
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - candlestick
+- id: streamgraph-basic
+  name:
+    en: Basic Stream Graph
+    es: Streamgraph Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - streamgraph
+  - area
+- id: streamline-basic
+  name:
+    en: Basic Streamline Plot
+    es: Streamline Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - streamline
+- id: strip-basic
+  name:
+    en: Basic Strip Plot
+    es: Diagrama de Tiras Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - strip
+- id: subplot-grid
+  name:
+    en: Subplot Grid Layout
+    es: Subplot Grid
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags: []
+- id: subplot-mosaic
+  name:
+    en: Mosaic Subplot Layout with Varying Sizes
+    es: Subplot Mosaic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - mosaic
+- id: sudoku-basic
+  name:
+    en: Basic Sudoku Grid
+    es: Sudoku Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - heatmap
+- id: sunburst-basic
+  name:
+    en: Basic Sunburst Chart
+    es: Gráfico de Explosión Solar Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - sunburst
+- id: surface-basic
+  name:
+    en: Basic 3D Surface Plot
+    es: Superficie 3D Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - surface
+- id: survival-kaplan-meier
+  name:
+    en: Kaplan-Meier Survival Plot
+    es: Survival Kaplan Meier
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - step
+  - line
+- id: swarm-basic
+  name:
+    en: Basic Swarm Plot
+    es: Diagrama de Enjambre Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - swarm
+- id: swimmer-clinical-timeline
+  name:
+    en: Swimmer Plot for Clinical Trial Timelines
+    es: Swimmer Clinical Timeline
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - bar
+- id: ternary-basic
+  name:
+    en: Basic Ternary Plot
+    es: Diagrama Ternario Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags: []
+- id: ternary-density
+  name:
+    en: Ternary Density Plot
+    es: Diagrama Ternario
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - ternary
+  - density
+  - heatmap
+- id: timeline-basic
+  name:
+    en: Event Timeline
+    es: Timeline Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: timeseries-decomposition
+  name:
+    en: Time Series Decomposition Plot
+    es: Serie Temporal
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: timeseries-forecast-uncertainty
+  name:
+    en: Time Series Forecast with Uncertainty Band
+    es: Serie Temporal
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+- id: titration-curve
+  name:
+    en: Acid-Base Titration Curve
+    es: Titration Curve
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+- id: tree-decision
+  name:
+    en: Decision Tree Visualization with Probabilities
+    es: Tree Decision
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - dendrogram
+- id: tree-phylogenetic
+  name:
+    en: Phylogenetic Tree Diagram
+    es: Tree Phylogenetic
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - dendrogram
+- id: treemap-basic
+  name:
+    en: Basic Treemap
+    es: Mapa de Árbol Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - treemap
+- id: upset-basic
+  name:
+    en: UpSet Plot for Multi-Set Intersection Analysis
+    es: Upset Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - upset
+  - bar
+- id: venn-basic
+  name:
+    en: Venn Diagram
+    es: Diagrama de Venn Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - venn
+  - set-diagram
+- id: venn-labeled-items
+  name:
+    en: Chartgeist-Style Venn Diagram with Labeled Items
+    es: Diagrama de Venn
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - venn
+  - set-diagram
+- id: violin-basic
+  name:
+    en: Basic Violin Plot
+    es: Diagrama de Violín Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - violin
+- id: violin-box
+  name:
+    en: Violin Plot with Embedded Box Plot
+    es: Diagrama de Violín
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - violin
+  - box
+- id: violin-grouped-swarm
+  name:
+    en: Grouped Violin Plot with Swarm Overlay
+    es: Diagrama de Violín Agrupado
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - violin
+  - swarm
+- id: violin-split
+  name:
+    en: Split Violin Plot
+    es: Diagrama de Violín
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - violin
+- id: violin-swarm
+  name:
+    en: Violin Plot with Overlaid Swarm Points
+    es: Diagrama de Violín
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - violin
+  - swarm
+- id: volcano-basic
+  name:
+    en: Volcano Plot for Statistical Significance
+    es: Volcano Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - scatter
+- id: voronoi-basic
+  name:
+    en: Voronoi Diagram for Spatial Partitioning
+    es: Voronoi Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - voronoi
+  - tessellation
+- id: waffle-basic
+  name:
+    en: Basic Waffle Chart
+    es: Gráfico de Waffle Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - waffle
+- id: waterfall-basic
+  name:
+    en: Basic Waterfall Chart
+    es: Gráfico de Cascada Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - waterfall
+  - bar
+- id: waveform-audio
+  name:
+    en: Audio Waveform Plot
+    es: Waveform Audio
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - line
+  - area
+- id: windbarb-basic
+  name:
+    en: Wind Barb Plot for Meteorological Data
+    es: Windbarb Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - windbarb
+  - vector
+- id: windrose-basic
+  name:
+    en: Wind Rose Chart
+    es: Windrose Basic Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - polar
+  - histogram
+- id: wireframe-3d-basic
+  name:
+    en: Basic 3D Wireframe Plot
+    es: Wireframe 3D Basic 3D
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - surface
+- id: wordcloud-basic
+  name:
+    en: Basic Word Cloud
+    es: Nube de Palabras Básico
+  implementations:
+  - javascript
+  - julia
+  - python
+  - r
+  tags:
+  - wordcloud

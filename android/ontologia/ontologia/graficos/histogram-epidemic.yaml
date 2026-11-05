@@ -1,0 +1,129 @@
+entity_type: ChartType
+id: histogram-epidemic
+name:
+  en: Epidemic Curve (Epi Curve)
+  es: Histograma
+description:
+  en: 'An epidemic curve (epi curve) is a histogram showing the number of new disease
+    cases over time, plotted by date of symptom onset. The shape of the curve reveals
+    the outbreak pattern: a sharp peak indicates a point source, successive waves
+    suggest propagated transmission, and a plateau indicates continuous exposure.
+    It is fundamental to epidemiological investigation and public health surveillance.'
+  es: 'An epidemic curve (epi curve) is a histogram showing the number of new disease
+    cases over time, plotted by date of symptom onset. The shape of the curve reveals
+    the outbreak pattern: a sharp peak indicates a point source, successive waves
+    suggest propagated transmission, and a plateau indicates continuous exposure.
+    It is fundamental to epidemiological investigation and public health surveillance.'
+aliases:
+  en:
+  - histogram-epidemic
+  - histogram epidemic
+  - histogram
+  es:
+  - histogram-epidemic
+  - histogram epidemic
+  - histograma
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Tracking disease outbreaks and identifying transmission patterns (e.g., foodborne
+    illness traced to a single event)
+  - Monitoring pandemic progression such as COVID-19 or influenza waves across regions
+  - Determining outbreak source type and estimating incubation periods from curve
+    shape
+  - Public health reporting and real-time surveillance dashboards
+  es:
+  - Tracking disease outbreaks and identifying transmission patterns (e.g., foodborne
+    illness traced to a single event)
+  - Monitoring pandemic progression such as COVID-19 or influenza waves across regions
+  - Determining outbreak source type and estimating incubation periods from curve
+    shape
+  - Public health reporting and real-time surveillance dashboards
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  - bar
+  data_type:
+  - time-series
+  - categorical
+  - discrete
+  domain:
+  - healthcare
+  - science
+  features:
+  - stacked
+  - annotated
+  - temporal
+keywords:
+  en:
+  - histogram
+  - epidemic
+  - bar
+  - time series
+  - categorical
+  - discrete
+  - healthcare
+  - science
+  - stacked
+  - annotated
+  - temporal
+  es:
+  - histograma
+  - epidemic
+  - histogram
+  - bar
+  - series temporales
+  - categórico
+  - discreto
+  - healthcare
+  - ciencia
+  - stacked
+  - annotated
+  - temporal
+implementations:
+  javascript:
+    chartjs: plots/histogram-epidemic/implementations/javascript/chartjs.js
+    d3: plots/histogram-epidemic/implementations/javascript/d3.js
+    echarts: plots/histogram-epidemic/implementations/javascript/echarts.js
+    highcharts: plots/histogram-epidemic/implementations/javascript/highcharts.js
+    muix: plots/histogram-epidemic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-epidemic/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-epidemic/implementations/python/altair.py
+    bokeh: plots/histogram-epidemic/implementations/python/bokeh.py
+    letsplot: plots/histogram-epidemic/implementations/python/letsplot.py
+    matplotlib: plots/histogram-epidemic/implementations/python/matplotlib.py
+    plotly: plots/histogram-epidemic/implementations/python/plotly.py
+    plotnine: plots/histogram-epidemic/implementations/python/plotnine.py
+    pygal: plots/histogram-epidemic/implementations/python/pygal.py
+    seaborn: plots/histogram-epidemic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-epidemic/implementations/r/ggplot2.R
+notes:
+- Use daily bins for short outbreaks (< 3 months) and weekly bins for longer epidemics
+- Stack bars by case classification (confirmed, probable, suspect) using distinct
+  colors
+- Mark key intervention events (e.g., lockdown start, vaccination campaign) with annotated
+  vertical lines
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

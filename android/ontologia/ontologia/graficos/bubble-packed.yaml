@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: bubble-packed
+name:
+  en: Basic Packed Bubble Chart
+  es: Gráfico de Burbujas
+description:
+  en: A packed bubble chart displays data as circles where size represents value,
+    and circles are packed together without overlap using physics simulation. Unlike
+    scatter or traditional bubble charts, position has no meaning - only size and
+    optional grouping matter. This visualization efficiently uses space for comparing
+    values across many categories.
+  es: A packed bubble chart displays data as circles where size represents value,
+    and circles are packed together without overlap using physics simulation. Unlike
+    scatter or traditional bubble charts, position has no meaning - only size and
+    optional grouping matter. This visualization efficiently uses space for comparing
+    values across many categories.
+aliases:
+  en:
+  - bubble-packed
+  - bubble packed
+  - bubble chart
+  es:
+  - bubble-packed
+  - bubble packed
+  - gráfico de burbujas
+use_when:
+  en:
+  - A packed bubble chart displays data as circles where size represents value, and
+    circles are packed together without overlap using physics simulation. Unlike scatter
+    or traditional bubble charts, posit
+  es:
+  - A packed bubble chart displays data as circles where size represents value, and
+    circles are packed together without overlap using physics simulation. Unlike scatter
+    or traditional bubble charts, posit
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Budget and spending visualization: comparing department expenditures where circle
+    size shows amount'
+  - 'Market share comparison: visualizing competitor sizes within an industry'
+  - 'Portfolio composition: displaying asset allocation or inventory breakdown'
+  - 'Categorical value comparison: showing values across many categories where ranking
+    and proportion matter'
+  es:
+  - 'Budget and spending visualization: comparing department expenditures where circle
+    size shows amount'
+  - 'Market share comparison: visualizing competitor sizes within an industry'
+  - 'Portfolio composition: displaying asset allocation or inventory breakdown'
+  - 'Categorical value comparison: showing values across many categories where ranking
+    and proportion matter'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bubble
+  - circlepacking
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - comparison
+  - proportional
+keywords:
+  en:
+  - bubble chart
+  - packed
+  - bubble
+  - circlepacking
+  - categorical
+  - numeric
+  - general
+  - business
+  - basic
+  - comparison
+  - proportional
+  es:
+  - gráfico de burbujas
+  - packed
+  - bubble
+  - circlepacking
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - comparación
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/bubble-packed/implementations/javascript/chartjs.js
+    d3: plots/bubble-packed/implementations/javascript/d3.js
+    echarts: plots/bubble-packed/implementations/javascript/echarts.js
+    highcharts: plots/bubble-packed/implementations/javascript/highcharts.js
+    muix: plots/bubble-packed/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bubble-packed/implementations/julia/makie.jl
+  python:
+    altair: plots/bubble-packed/implementations/python/altair.py
+    bokeh: plots/bubble-packed/implementations/python/bokeh.py
+    letsplot: plots/bubble-packed/implementations/python/letsplot.py
+    matplotlib: plots/bubble-packed/implementations/python/matplotlib.py
+    plotly: plots/bubble-packed/implementations/python/plotly.py
+    plotnine: plots/bubble-packed/implementations/python/plotnine.py
+    pygal: plots/bubble-packed/implementations/python/pygal.py
+    seaborn: plots/bubble-packed/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bubble-packed/implementations/r/ggplot2.R
+notes:
+- Scale circle sizes by area (not radius) for accurate visual perception
+- Use force simulation to pack circles without overlap
+- Labels can be placed inside circles (if large enough) or as tooltips
+source: anyplot
+anyplot_updated: 2026-05-29 22:32:39+00:00

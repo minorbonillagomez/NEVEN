@@ -3064,3 +3064,286 @@ Ninguno — solo analisis.
 | **ALTA** | Ejecutar Colibri START-HERE.bat | Usuario pendiente |
 | MEDIA | Revisar si `external/anyplot` se usa | Pendiente |
 | MEDIA | Decidir cual ontologia es oficial: `docs/` vs `src/docs/` | Pendiente |
+
+
+---
+### Sesion 2026-11-05 (~noche, final) — Reorganizacion completa del repositorio
+
+## Logro principal
+**Reorganizacion exitosa de la estructura del repositorio** — eliminadas carpetas redundantes/vacias y consolidados archivos dispersos.
+
+## Espacio liberado
+~215 MB eliminados (principalmente `build/` duplicado de 110 MB)
+
+## Acciones ejecutadas
+
+### Eliminaciones
+| Carpeta | Razon |
+|---------|-------|
+| `NEVEN/NEVEN/` | Carpeta anidada vacia |
+| `build/` (raiz) | Duplicado de `src/Build/` (artefactos CMake) |
+| `ext/` | Vacia |
+| `Install/` | Contenido movido, quedo vacia |
+| `prompts/` | Movido a src/Install/prompts/ |
+| `scripts/` | Movido a src/scripts/ontology/ |
+| `tests/` (raiz) | Movido a src/tests/ |
+| `tools/` | Movido a .agents/skills/ |
+
+### Consolidaciones
+| Origen | Destino |
+|--------|---------|
+| `Install/skills/*` | `.agents/skills/` |
+| `Install/prompts/*` | `src/Install/prompts/` |
+| `prompts/*` | `src/Install/prompts/` |
+| `scripts/*.py` | `src/scripts/ontology/` |
+| `tools/research-agent-skills` | `.agents/skills/research-agent` |
+| `tests/*` | `src/tests/` |
+
+## Estructura final del repositorio
+
+```
+F:\ANTIGRAVITY\2026\NEVEN\
+├── .agents/skills/     # 8 skills consolidados
+├── .kiro/              # Configuracion Kiro
+├── docs/               # Ontologia publica (graficos)
+├── external/           # Dependencias externas (anyplot)
+├── ontologia-fuentes/  # PDFs fuente
+└── src/                # Codigo fuente principal
+```
+
+## Skills consolidados en .agents/skills/
+1. citation-verification
+2. econometria
+3. excel-consultant
+4. metaheuristic-optimization
+5. ontology-book-processor
+6. research-agent (con sub-skills)
+7. statistical-analysis
+8. unslop-academic
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `4c80792` | docs(bitacora): actualizar CHAT.md con sesiones de formato paper arXiv |
+| `951cfcb` | refactor: reorganizar estructura de carpetas del repositorio |
+
+Ambos commits pusheados exitosamente a origin/master.
+
+## Archivos movidos (82 archivos en total)
+Ver commit `951cfcb` para lista completa de renames y moves.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir ZIP a arXiv (CC BY) | LISTO |
+| **ALTA** | Ejecutar Colibri START-HERE.bat | Usuario pendiente |
+| MEDIA | Revisar si `external/anyplot` (104 MB) se usa | Pendiente |
+| MEDIA | Decidir ontologia oficial: `docs/` vs `src/docs/ontologia/` | Pendiente |
+| BAJA | Actualizar .gitignore para nuevas rutas | Opcional |
+
+
+---
+### Sesion 2026-11-05 (~noche, exploracion) — Analisis de NEVEN Suite (PHP)
+
+## Contexto
+Usuario quiere integrar componentes de `C:\Users\Minor Bonilla G\Desktop\PHP\` al proyecto NEVEN principal. Sesion de analisis sin cambios.
+
+## Componentes identificados en PHP/
+
+| Componente | Tecnologia | Archivos | Descripcion |
+|------------|-----------|----------|-------------|
+| **NEVEM Studio** | Python + Tauri (Rust) | 20 .py | Generador de audiolibros (EPUB/PDF → M4B) |
+| **NEVEN Launcher** | Kotlin + Jetpack Compose | 94 .kt | Launcher Android con estetica cientifica |
+| **MSFT.apk** | APK precompilado | — | Microsoft Launcher (referencia) |
+| **NIAGARA.apk** | APK precompilado | — | Niagara Launcher (referencia) |
+
+## NEVEM Studio — Estructura
+
+```
+NEVEM_STUDIO/
+├── src/
+│   ├── parsers/        # epub, pdf, markdown parsers
+│   ├── tts/            # windows_tts, edge_tts, piper_tts
+│   ├── muxer/          # ffmpeg_muxer (M4B)
+│   ├── translator/     # DeepL/Argos
+│   ├── server/         # http_server (API Flask)
+│   └── pipeline.py     # Orquestador
+├── src-tauri/          # GUI Rust/Tauri v2
+└── models/             # Modelos TTS
+```
+
+**Features:** 100% offline, Edge TTS neural, M4B con capitulos navegables.
+
+## NEVEN Launcher — Estructura
+
+```
+com.neven.launcher/
+├── data/audiobook/     # Reproductor audiolibros
+├── data/sentinel/      # IA on-device (Gemini Nano)
+├── ui/home/            # Reloj cientifico (14³⁰₄₅)
+├── latex/              # Renderizado LaTeX
+└── 94 archivos .kt
+```
+
+**Features:** Tipografia Computer Modern, 7 paletas, IA local.
+
+## Preguntas pendientes de decision
+
+1. **Naming:** NEVEM Studio → NEVEN Studio?
+2. **Ubicacion:** `src/Studio/` + `src/Android/` o `studio/` + `android/` en raiz?
+3. **Git history:** Importar con historial (`git subtree`) o como nuevo?
+4. **Dependencias:** Excluir node_modules, venv, .gradle, build?
+5. **Integracion:** Sincronizacion Desktop ↔ Android?
+
+## Archivos modificados
+Ninguno — solo analisis exploratorio.
+
+## Commits realizados
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Decidir estructura para integracion NEVEN Suite | Esperando decision |
+| **ALTA** | Mover NEVEM Studio al repositorio | Pendiente |
+| **ALTA** | Mover NEVEN Launcher al repositorio | Pendiente |
+| **ALTA** | Subir ZIP a arXiv | LISTO |
+| MEDIA | Renombrar NEVEM → NEVEN para consistencia | Pendiente decision |
+| MEDIA | Definir integracion audiolibros Desktop ↔ Android | Futuro |
+
+
+---
+### Sesion 2026-11-05 (~noche, cierre) — Clarificacion vision NEVEN Suite
+
+## Discusion
+Usuario clarifco la vision de integracion:
+
+### Entendimiento validado
+
+1. **NEVEN Studio = Una sola aplicacion integrada**
+   - El TaskPane actual se expande con funcionalidad de audiolibros
+   - NO son dos aplicaciones separadas
+   - NEVEM Studio se absorbe/integra en NEVEN Studio existente
+
+2. **Arquitectura unificada**
+   ```
+   NEVEN Studio (TaskPane)
+   ├── Analisis de Datos      ← Ya existe
+   ├── Visualizaciones        ← Ya existe
+   ├── RAG/Ontologia          ← Ya existe
+   └── Generador Audiolibros  ← NUEVO (de NEVEM Studio)
+   ```
+
+3. **Sincronizacion Desktop ↔ Android**
+   - Audiolibros M4B generados en Desktop
+   - Se sincronizan con NEVEN Launcher (Android)
+   - Metodo de sync pendiente de definir
+
+4. **Naming consistente**
+   - NEVEM → NEVEN (todo bajo una marca)
+
+## Preguntas pendientes de respuesta
+
+1. ¿Generador audiolibros sera TAB en TaskPane?
+2. ¿Sincronizacion via QR/HTTP, carpeta cloud, o WiFi directo?
+3. ¿Codigo Python se integra a neven_http_server.py o servicio separado?
+4. ¿NEVEN Launcher como /android/ en el repo o externo?
+
+## Archivos modificados
+Ninguno — solo discusion de arquitectura.
+
+## Commits realizados
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Responder preguntas de arquitectura | Esperando usuario |
+| **ALTA** | Definir ubicacion del codigo en repositorio | Pendiente |
+| **ALTA** | Integrar generador audiolibros al TaskPane | Pendiente |
+| **ALTA** | Subir ZIP a arXiv | LISTO |
+| MEDIA | Definir mecanismo de sincronizacion Desktop-Android | Pendiente |
+| MEDIA | Mover NEVEN Launcher al repositorio | Pendiente |
+
+
+---
+### Sesion 2026-11-05 (~noche, planificacion) — Arquitectura NEVEN Suite definida
+
+## Decisiones de arquitectura confirmadas
+
+| Aspecto | Decision |
+|---------|----------|
+| TAB en TaskPane | Si, nuevo TAB "Audiolibros" |
+| Sincronizacion | QR + WiFi/Bluetooth (sin cloud) |
+| Servidor Python | Separado del http_server principal (puerto 5556) |
+| NEVEN Launcher | Dentro del repositorio en `/android/` |
+
+## Estructura propuesta y aprobada
+
+```
+NEVEN/
+├── src/
+│   ├── Core/                    # C++ XLL (sin cambios)
+│   ├── TaskPane/                # UI Web
+│   │   ├── taskpane.html        # + nuevo TAB Audiolibros
+│   │   └── audiobook.js         # NUEVO
+│   ├── Audiobook/               # NUEVO - motor audiolibros
+│   │   ├── server/              # Flask separado
+│   │   ├── parsers/             # EPUB, PDF, Markdown
+│   │   ├── tts/                 # Edge TTS, Windows SAPI
+│   │   ├── muxer/               # FFmpeg → M4B
+│   │   ├── sync/                # QR + WiFi/BT
+│   │   └── pipeline.py
+│   └── ...
+├── android/                     # NUEVO - NEVEN Launcher
+│   └── app/src/main/java/com/neven/launcher/
+└── ...
+```
+
+## Flujo de sincronizacion
+
+```
+DESKTOP: PDF/EPUB → Pipeline → M4B + QR Server
+                                    │
+                        WiFi/BT     │ Escanear QR
+                                    ▼
+ANDROID: QR Scanner → Download M4B → Reproductor
+```
+
+## Plan de migracion en 3 fases
+
+**Fase 1:** Mover codigo (sin cambios funcionales)
+- NEVEM_STUDIO/src/ → NEVEN/src/Audiobook/
+- PHP/NEVEN/ → NEVEN/android/
+- Excluir: node_modules, venv, .gradle, build, target
+
+**Fase 2:** Integrar TAB en TaskPane
+- Agregar TAB "Audiolibros"
+- Crear audiobook.js
+- Conectar a servidor puerto 5556
+
+**Fase 3:** Implementar sincronizacion QR
+- Servidor genera QR con IP local
+- Android escanea y descarga via WiFi
+- Fallback Bluetooth
+
+## Archivos modificados
+Ninguno — solo planificacion.
+
+## Commits realizados
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Fase 1: Mover NEVEM_STUDIO → src/Audiobook/ | Esperando aprobacion |
+| **ALTA** | Fase 1: Mover NEVEN Launcher → android/ | Esperando aprobacion |
+| **ALTA** | Subir ZIP a arXiv | LISTO |
+| MEDIA | Fase 2: Crear TAB Audiolibros en TaskPane | Post-Fase 1 |
+| MEDIA | Fase 3: Implementar sync QR + WiFi/BT | Post-Fase 2 |
+| BAJA | Renombrar NEVEM → NEVEN en codigo | Durante Fase 1 |

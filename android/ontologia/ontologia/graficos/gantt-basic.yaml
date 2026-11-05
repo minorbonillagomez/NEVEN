@@ -1,0 +1,125 @@
+entity_type: ChartType
+id: gantt-basic
+name:
+  en: Basic Gantt Chart
+  es: Diagrama de Gantt Básico
+description:
+  en: A Gantt chart is a horizontal bar chart that visualizes project schedules and
+    timelines. Each task is represented as a horizontal bar spanning from its start
+    date to end date, making it easy to see task durations, overlaps, and the overall
+    project timeline at a glance. Gantt charts are essential for project management,
+    helping teams understand task sequences and identify scheduling conflicts.
+  es: A Gantt chart is a horizontal bar chart that visualizes project schedules and
+    timelines. Each task is represented as a horizontal bar spanning from its start
+    date to end date, making it easy to see task durations, overlaps, and the overall
+    project timeline at a glance. Gantt charts are essential for project management,
+    helping teams understand task sequences and identify scheduling conflicts.
+aliases:
+  en:
+  - gantt-basic
+  - gantt basic
+  - basic gantt chart
+  es:
+  - gantt-basic
+  - gantt basic
+  - diagrama de gantt básico
+use_when:
+  en:
+  - A Gantt chart is a horizontal bar chart that visualizes project schedules and
+    timelines. Each task is represented as a horizontal bar spanning from its start
+    date to end date, making it easy to see ta
+  es:
+  - A Gantt chart is a horizontal bar chart that visualizes project schedules and
+    timelines. Each task is represented as a horizontal bar spanning from its start
+    date to end date, making it easy to see ta
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Project management and planning to track task progress and deadlines
+  - Resource allocation visualization showing when different resources are committed
+  - Manufacturing and production scheduling to coordinate sequential operations
+  - Event planning timelines to coordinate multiple parallel activities
+  es:
+  - Project management and planning to track task progress and deadlines
+  - Resource allocation visualization showing when different resources are committed
+  - Manufacturing and production scheduling to coordinate sequential operations
+  - Event planning timelines to coordinate multiple parallel activities
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - gantt
+  - bar
+  data_type:
+  - datetime
+  - categorical
+  - timeseries
+  domain:
+  - general
+  - business
+  - project-management
+  features:
+  - basic
+  - horizontal
+  - scheduling
+keywords:
+  en:
+  - gantt chart
+  - basic
+  - gantt
+  - bar
+  - datetime
+  - categorical
+  - timeseries
+  - general
+  - business
+  - project-management
+  - horizontal
+  - scheduling
+  es:
+  - diagrama de gantt
+  - básico
+  - gantt
+  - bar
+  - datetime
+  - categórico
+  - timeseries
+  - general
+  - negocios
+  - project-management
+  - basic
+  - horizontal
+  - scheduling
+implementations:
+  javascript:
+    chartjs: plots/gantt-basic/implementations/javascript/chartjs.js
+    d3: plots/gantt-basic/implementations/javascript/d3.js
+    echarts: plots/gantt-basic/implementations/javascript/echarts.js
+    highcharts: plots/gantt-basic/implementations/javascript/highcharts.js
+    muix: plots/gantt-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/gantt-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/gantt-basic/implementations/python/altair.py
+    bokeh: plots/gantt-basic/implementations/python/bokeh.py
+    letsplot: plots/gantt-basic/implementations/python/letsplot.py
+    matplotlib: plots/gantt-basic/implementations/python/matplotlib.py
+    plotly: plots/gantt-basic/implementations/python/plotly.py
+    plotnine: plots/gantt-basic/implementations/python/plotnine.py
+    pygal: plots/gantt-basic/implementations/python/pygal.py
+    seaborn: plots/gantt-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/gantt-basic/implementations/r/ggplot2.R
+notes:
+- Horizontal bars should be clearly visible on a time axis (x-axis)
+- Use clear date formatting on the x-axis (consider date range when choosing format)
+- Consider color coding by category or status for better visual grouping
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

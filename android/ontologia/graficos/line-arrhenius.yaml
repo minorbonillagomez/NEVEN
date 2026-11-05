@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: line-arrhenius
+name:
+  en: Arrhenius Plot for Reaction Kinetics
+  es: Gráfico de Líneas
+description:
+  en: An Arrhenius plot displays ln(k) versus 1/T to determine the activation energy
+    of a chemical reaction from experimental rate constant data. The Arrhenius equation
+    predicts a linear relationship on this transformed scale, where the slope equals
+    -Ea/R (activation energy divided by the gas constant). This visualization is fundamental
+    in physical chemistry and chemical engineering for characterizing reaction kinetics
+    and comparing catalytic performance.
+  es: An Arrhenius plot displays ln(k) versus 1/T to determine the activation energy
+    of a chemical reaction from experimental rate constant data. The Arrhenius equation
+    predicts a linear relationship on this transformed scale, where the slope equals
+    -Ea/R (activation energy divided by the gas constant). This visualization is fundamental
+    in physical chemistry and chemical engineering for characterizing reaction kinetics
+    and comparing catalytic performance.
+aliases:
+  en:
+  - line-arrhenius
+  - line arrhenius
+  - line chart
+  es:
+  - line-arrhenius
+  - line arrhenius
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Determining activation energy of chemical reactions from experimental rate constant
+    measurements at various temperatures
+  - Comparing reaction mechanisms and catalytic efficiency across different catalysts
+    or reaction conditions
+  - Predicting reaction rates at untested temperatures by extrapolation of the fitted
+    line
+  - Estimating shelf life of pharmaceutical products through accelerated stability
+    studies
+  es:
+  - Determining activation energy of chemical reactions from experimental rate constant
+    measurements at various temperatures
+  - Comparing reaction mechanisms and catalytic efficiency across different catalysts
+    or reaction conditions
+  - Predicting reaction rates at untested temperatures by extrapolation of the fitted
+    line
+  - Estimating shelf life of pharmaceutical products through accelerated stability
+    studies
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - science
+  - engineering
+  features:
+  - annotated
+  - regression
+  - correlation
+keywords:
+  en:
+  - line chart
+  - arrhenius
+  - line
+  - scatter
+  - numeric
+  - continuous
+  - science
+  - engineering
+  - annotated
+  - regression
+  - correlation
+  es:
+  - gráfico de líneas
+  - arrhenius
+  - line
+  - scatter
+  - numérico
+  - continuo
+  - ciencia
+  - ingeniería
+  - annotated
+  - regression
+  - correlación
+implementations:
+  javascript:
+    chartjs: plots/line-arrhenius/implementations/javascript/chartjs.js
+    d3: plots/line-arrhenius/implementations/javascript/d3.js
+    echarts: plots/line-arrhenius/implementations/javascript/echarts.js
+    highcharts: plots/line-arrhenius/implementations/javascript/highcharts.js
+    muix: plots/line-arrhenius/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-arrhenius/implementations/julia/makie.jl
+  python:
+    altair: plots/line-arrhenius/implementations/python/altair.py
+    bokeh: plots/line-arrhenius/implementations/python/bokeh.py
+    letsplot: plots/line-arrhenius/implementations/python/letsplot.py
+    matplotlib: plots/line-arrhenius/implementations/python/matplotlib.py
+    plotly: plots/line-arrhenius/implementations/python/plotly.py
+    plotnine: plots/line-arrhenius/implementations/python/plotnine.py
+    pygal: plots/line-arrhenius/implementations/python/pygal.py
+    seaborn: plots/line-arrhenius/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-arrhenius/implementations/r/ggplot2.R
+notes:
+- 'X-axis: 1/T (inverse temperature in K⁻¹), Y-axis: ln(k) (natural log of rate constant)'
+- Include a linear regression line through the data points with the R² value displayed
+- Annotate the slope with a -Ea/R label showing the extracted activation energy
+source: anyplot
+anyplot_updated: '2026-10-02T15:00:51Z'

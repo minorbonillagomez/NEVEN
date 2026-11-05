@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: indicator-sma
+name:
+  en: Simple Moving Average (SMA) Indicator Chart
+  es: Indicator Sma
+description:
+  en: A Simple Moving Average (SMA) chart displays price or value data with one or
+    more SMA overlays, typically showing short, medium, and long-term periods (e.g.,
+    20, 50, 200-day). Each SMA line smooths out price fluctuations by averaging the
+    last N data points, revealing underlying trends at different time scales. This
+    multi-period overlay is fundamental to technical analysis, helping traders identify
+    trend direction, support/resistance levels, and potential crossover signals.
+  es: A Simple Moving Average (SMA) chart displays price or value data with one or
+    more SMA overlays, typically showing short, medium, and long-term periods (e.g.,
+    20, 50, 200-day). Each SMA line smooths out price fluctuations by averaging the
+    last N data points, revealing underlying trends at different time scales. This
+    multi-period overlay is fundamental to technical analysis, helping traders identify
+    trend direction, support/resistance levels, and potential crossover signals.
+aliases:
+  en:
+  - indicator-sma
+  - indicator sma
+  - indicator sma
+  es:
+  - indicator-sma
+  - indicator sma
+  - indicator sma
+use_when:
+  en:
+  - A Simple Moving Average (SMA) chart displays price or value data with one or more
+    SMA overlays, typically showing short, medium, and long-term periods (e.g., 20,
+    50, 200-day). Each SMA line smooths ou
+  es:
+  - A Simple Moving Average (SMA) chart displays price or value data with one or more
+    SMA overlays, typically showing short, medium, and long-term periods (e.g., 20,
+    50, 200-day). Each SMA line smooths ou
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying trend direction by comparing price position relative to 50-day and
+    200-day SMAs in stock analysis
+  - Detecting golden cross (50-day crosses above 200-day) and death cross signals
+    in cryptocurrency trading
+  - Analyzing short-term momentum versus long-term trend using 20/50/200-day SMA combinations
+  - Smoothing noisy time series data to reveal underlying patterns in sensor or metrics
+    monitoring
+  es:
+  - Identifying trend direction by comparing price position relative to 50-day and
+    200-day SMAs in stock analysis
+  - Detecting golden cross (50-day crosses above 200-day) and death cross signals
+    in cryptocurrency trading
+  - Analyzing short-term momentum versus long-term trend using 20/50/200-day SMA combinations
+  - Smoothing noisy time series data to reveal underlying patterns in sensor or metrics
+    monitoring
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  - general
+  features:
+  - multi
+  - overlay
+  - trend
+  - technical-analysis
+keywords:
+  en:
+  - indicator
+  - sma
+  - line
+  - timeseries
+  - numeric
+  - finance
+  - general
+  - multi
+  - overlay
+  - trend
+  - technical-analysis
+  es:
+  - indicator
+  - sma
+  - line
+  - timeseries
+  - numérico
+  - finanzas
+  - general
+  - multi
+  - overlay
+  - trend
+  - technical-analysis
+implementations:
+  javascript:
+    chartjs: plots/indicator-sma/implementations/javascript/chartjs.js
+    d3: plots/indicator-sma/implementations/javascript/d3.js
+    echarts: plots/indicator-sma/implementations/javascript/echarts.js
+    highcharts: plots/indicator-sma/implementations/javascript/highcharts.js
+    muix: plots/indicator-sma/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/indicator-sma/implementations/julia/makie.jl
+  python:
+    altair: plots/indicator-sma/implementations/python/altair.py
+    bokeh: plots/indicator-sma/implementations/python/bokeh.py
+    letsplot: plots/indicator-sma/implementations/python/letsplot.py
+    matplotlib: plots/indicator-sma/implementations/python/matplotlib.py
+    plotly: plots/indicator-sma/implementations/python/plotly.py
+    plotnine: plots/indicator-sma/implementations/python/plotnine.py
+    pygal: plots/indicator-sma/implementations/python/pygal.py
+    seaborn: plots/indicator-sma/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/indicator-sma/implementations/r/ggplot2.R
+notes:
+- Display the price/close line prominently, typically as a solid line or with subtle
+  markers
+- Each SMA should use a distinct color with consistent styling across all implementations
+- Include a legend showing the period for each SMA (e.g., "SMA 20", "SMA 50", "SMA
+  200")
+source: anyplot
+anyplot_updated: 2026-05-19 07:52:43+00:00

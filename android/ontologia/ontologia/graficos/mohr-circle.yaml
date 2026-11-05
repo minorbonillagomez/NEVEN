@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: mohr-circle
+name:
+  en: Mohr's Circle for Stress Analysis
+  es: Mohr Circle
+description:
+  en: Mohr's Circle is a graphical method used to determine principal stresses, maximum
+    shear stress, and stress transformations from a given 2D stress state. A circle
+    is drawn on a normal stress (σ) vs. shear stress (τ) plane, with the center at
+    ((σx + σy) / 2, 0) and a radius derived from the stress components. It is an essential
+    tool in mechanical and civil engineering for visualizing how stress components
+    change under coordinate rotation.
+  es: Mohr's Circle is a graphical method used to determine principal stresses, maximum
+    shear stress, and stress transformations from a given 2D stress state. A circle
+    is drawn on a normal stress (σ) vs. shear stress (τ) plane, with the center at
+    ((σx + σy) / 2, 0) and a radius derived from the stress components. It is an essential
+    tool in mechanical and civil engineering for visualizing how stress components
+    change under coordinate rotation.
+aliases:
+  en:
+  - mohr-circle
+  - mohr circle
+  - mohr circle
+  es:
+  - mohr-circle
+  - mohr circle
+  - mohr circle
+use_when:
+  en:
+  - Mohr's Circle is a graphical method used to determine principal stresses, maximum
+    shear stress, and stress transformations from a given 2D stress state. A circle
+    is drawn on a normal stress (σ) vs. sh
+  es:
+  - Mohr's Circle is a graphical method used to determine principal stresses, maximum
+    shear stress, and stress transformations from a given 2D stress state. A circle
+    is drawn on a normal stress (σ) vs. sh
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Determining principal stresses (σ1, σ2) in structural members under combined loading
+  - Finding maximum shear stress for failure analysis and material yielding criteria
+  - Visualizing stress transformation under arbitrary rotation angles in solid mechanics
+  - Teaching mechanics of materials concepts such as stress invariants and principal
+    planes
+  es:
+  - Determining principal stresses (σ1, σ2) in structural members under combined loading
+  - Finding maximum shear stress for failure analysis and material yielding criteria
+  - Visualizing stress transformation under arbitrary rotation angles in solid mechanics
+  - Teaching mechanics of materials concepts such as stress invariants and principal
+    planes
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - polar
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - education
+  features:
+  - annotated
+  - 2d
+  - static
+keywords:
+  en:
+  - mohr
+  - circle
+  - polar
+  - numeric
+  - continuous
+  - engineering
+  - education
+  - annotated
+  - 2d
+  - static
+  es:
+  - mohr
+  - circle
+  - polar
+  - numérico
+  - continuo
+  - ingeniería
+  - education
+  - annotated
+  - 2d
+  - static
+implementations:
+  javascript:
+    chartjs: plots/mohr-circle/implementations/javascript/chartjs.js
+    d3: plots/mohr-circle/implementations/javascript/d3.js
+    echarts: plots/mohr-circle/implementations/javascript/echarts.js
+    highcharts: plots/mohr-circle/implementations/javascript/highcharts.js
+    muix: plots/mohr-circle/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/mohr-circle/implementations/julia/makie.jl
+  python:
+    altair: plots/mohr-circle/implementations/python/altair.py
+    bokeh: plots/mohr-circle/implementations/python/bokeh.py
+    letsplot: plots/mohr-circle/implementations/python/letsplot.py
+    matplotlib: plots/mohr-circle/implementations/python/matplotlib.py
+    plotly: plots/mohr-circle/implementations/python/plotly.py
+    plotnine: plots/mohr-circle/implementations/python/plotnine.py
+    pygal: plots/mohr-circle/implementations/python/pygal.py
+    seaborn: plots/mohr-circle/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/mohr-circle/implementations/r/ggplot2.R
+notes:
+- Draw the circle with center at ((σx + σy) / 2, 0) and radius √(((σx − σy) / 2)²
+  + τxy²)
+- Mark the principal stresses (σ1, σ2) where the circle intersects the horizontal
+  axis
+- Show maximum shear stress (τ_max) at the top and bottom of the circle
+source: anyplot
+anyplot_updated: '2026-05-30T08:49:44Z'

@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: curve-dose-response
+name:
+  en: Pharmacological Dose-Response Curve
+  es: Curve Dose Response
+description:
+  en: A sigmoidal dose-response curve that plots biological response against drug
+    concentration on a logarithmic x-axis, fitted using a four-parameter logistic
+    (4PL) model. This visualization is essential for determining drug potency metrics
+    such as EC50 (half-maximal effective concentration) or IC50 (half-maximal inhibitory
+    concentration), Hill slope steepness, and upper/lower response asymptotes. It
+    enables rapid visual comparison of compound efficacy and is a standard tool in
+    pharmacological analysis.
+  es: A sigmoidal dose-response curve that plots biological response against drug
+    concentration on a logarithmic x-axis, fitted using a four-parameter logistic
+    (4PL) model. This visualization is essential for determining drug potency metrics
+    such as EC50 (half-maximal effective concentration) or IC50 (half-maximal inhibitory
+    concentration), Hill slope steepness, and upper/lower response asymptotes. It
+    enables rapid visual comparison of compound efficacy and is a standard tool in
+    pharmacological analysis.
+aliases:
+  en:
+  - curve-dose-response
+  - curve dose response
+  - curve dose response
+  es:
+  - curve-dose-response
+  - curve dose response
+  - curve dose response
+use_when:
+  en:
+  - A sigmoidal dose-response curve that plots biological response against drug concentration
+    on a logarithmic x-axis, fitted using a four-parameter logistic (4PL) model. This
+    visualization is essential f
+  es:
+  - A sigmoidal dose-response curve that plots biological response against drug concentration
+    on a logarithmic x-axis, fitted using a four-parameter logistic (4PL) model. This
+    visualization is essential f
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Pharmacology: determining EC50/IC50 values to compare drug potency across compounds'
+  - 'Toxicology: establishing dose-dependent toxicity thresholds and lethal dose estimates'
+  - 'Drug discovery: screening and ranking candidate compounds by efficacy and Hill
+    slope'
+  - 'Environmental science: assessing pollutant concentration effects on biological
+    organisms'
+  es:
+  - 'Pharmacology: determining EC50/IC50 values to compare drug potency across compounds'
+  - 'Toxicology: establishing dose-dependent toxicity thresholds and lethal dose estimates'
+  - 'Drug discovery: screening and ranking candidate compounds by efficacy and Hill
+    slope'
+  - 'Environmental science: assessing pollutant concentration effects on biological
+    organisms'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - healthcare
+  - science
+  features:
+  - curve-fitting
+  - annotated
+  - comparison
+  - color-mapped
+  - confidence-interval
+keywords:
+  en:
+  - curve
+  - dose
+  - response
+  - line
+  - scatter
+  - numeric
+  - continuous
+  - healthcare
+  - science
+  - curve-fitting
+  - annotated
+  - comparison
+  - color-mapped
+  - confidence-interval
+  es:
+  - curve
+  - dose
+  - response
+  - line
+  - scatter
+  - numérico
+  - continuo
+  - healthcare
+  - ciencia
+  - curve-fitting
+  - annotated
+  - comparación
+  - color-mapped
+  - confidence-interval
+implementations:
+  javascript:
+    chartjs: plots/curve-dose-response/implementations/javascript/chartjs.js
+    d3: plots/curve-dose-response/implementations/javascript/d3.js
+    echarts: plots/curve-dose-response/implementations/javascript/echarts.js
+    highcharts: plots/curve-dose-response/implementations/javascript/highcharts.js
+    muix: plots/curve-dose-response/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/curve-dose-response/implementations/julia/makie.jl
+  python:
+    altair: plots/curve-dose-response/implementations/python/altair.py
+    bokeh: plots/curve-dose-response/implementations/python/bokeh.py
+    letsplot: plots/curve-dose-response/implementations/python/letsplot.py
+    matplotlib: plots/curve-dose-response/implementations/python/matplotlib.py
+    plotly: plots/curve-dose-response/implementations/python/plotly.py
+    plotnine: plots/curve-dose-response/implementations/python/plotnine.py
+    pygal: plots/curve-dose-response/implementations/python/pygal.py
+    seaborn: plots/curve-dose-response/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/curve-dose-response/implementations/r/ggplot2.R
+notes:
+- X-axis must use a logarithmic scale (log10 of concentration)
+- 'Fit a 4-parameter logistic (4PL) sigmoid: response = Bottom + (Top - Bottom) /
+  (1 + (EC50/concentration)^HillSlope)'
+- Mark EC50/IC50 with dashed horizontal and vertical reference lines intersecting
+  the curve at the half-maximal response
+source: anyplot
+anyplot_updated: '2026-10-02T15:00:51Z'

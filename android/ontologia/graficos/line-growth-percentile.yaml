@@ -1,0 +1,138 @@
+entity_type: ChartType
+id: line-growth-percentile
+name:
+  en: Pediatric Growth Chart with Percentile Curves
+  es: Gráfico de Líneas
+description:
+  en: A WHO/CDC-style growth chart displaying smooth percentile curves (3rd, 10th,
+    25th, 50th, 75th, 90th, 97th) as colored bands, with individual patient data points
+    overlaid and connected by a line. This chart is a standard clinical tool for monitoring
+    child development metrics such as height, weight, or BMI across age. It enables
+    quick visual assessment of whether a child's growth trajectory falls within expected
+    population ranges.
+  es: A WHO/CDC-style growth chart displaying smooth percentile curves (3rd, 10th,
+    25th, 50th, 75th, 90th, 97th) as colored bands, with individual patient data points
+    overlaid and connected by a line. This chart is a standard clinical tool for monitoring
+    child development metrics such as height, weight, or BMI across age. It enables
+    quick visual assessment of whether a child's growth trajectory falls within expected
+    population ranges.
+aliases:
+  en:
+  - line-growth-percentile
+  - line growth percentile
+  - line chart
+  es:
+  - line-growth-percentile
+  - line growth percentile
+  - gráfico de líneas
+use_when:
+  en:
+  - Showing trends over time
+  - Displaying continuous data changes
+  - Comparing multiple series
+  es:
+  - Mostrar tendencias en el tiempo
+  - Visualizar cambios en datos continuos
+  - Comparar múltiples series
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Pediatrics: tracking an individual child''s growth trajectory against population
+    reference percentiles during well-child visits'
+  - 'Public health: comparing population-level growth distributions to WHO/CDC reference
+    standards for nutritional surveillance'
+  - 'Nutrition research: identifying trends in childhood malnutrition or obesity by
+    visualizing cohort data against percentile bands'
+  - 'Medical education: teaching students how to interpret growth charts and assess
+    developmental milestones'
+  es:
+  - 'Pediatrics: tracking an individual child''s growth trajectory against population
+    reference percentiles during well-child visits'
+  - 'Public health: comparing population-level growth distributions to WHO/CDC reference
+    standards for nutritional surveillance'
+  - 'Nutrition research: identifying trends in childhood malnutrition or obesity by
+    visualizing cohort data against percentile bands'
+  - 'Medical education: teaching students how to interpret growth charts and assess
+    developmental milestones'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric|temporal
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - line
+  - area
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - healthcare
+  - science
+  features:
+  - percentile
+  - annotated
+  - color-mapped
+  - comparison
+keywords:
+  en:
+  - line chart
+  - growth
+  - percentile
+  - line
+  - area
+  - numeric
+  - continuous
+  - healthcare
+  - science
+  - annotated
+  - color-mapped
+  - comparison
+  es:
+  - gráfico de líneas
+  - growth
+  - percentile
+  - line
+  - area
+  - numérico
+  - continuo
+  - healthcare
+  - ciencia
+  - annotated
+  - color-mapped
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/line-growth-percentile/implementations/javascript/chartjs.js
+    d3: plots/line-growth-percentile/implementations/javascript/d3.js
+    echarts: plots/line-growth-percentile/implementations/javascript/echarts.js
+    highcharts: plots/line-growth-percentile/implementations/javascript/highcharts.js
+    muix: plots/line-growth-percentile/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/line-growth-percentile/implementations/julia/makie.jl
+  python:
+    altair: plots/line-growth-percentile/implementations/python/altair.py
+    bokeh: plots/line-growth-percentile/implementations/python/bokeh.py
+    letsplot: plots/line-growth-percentile/implementations/python/letsplot.py
+    matplotlib: plots/line-growth-percentile/implementations/python/matplotlib.py
+    plotly: plots/line-growth-percentile/implementations/python/plotly.py
+    plotnine: plots/line-growth-percentile/implementations/python/plotnine.py
+    pygal: plots/line-growth-percentile/implementations/python/pygal.py
+    seaborn: plots/line-growth-percentile/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/line-growth-percentile/implementations/r/ggplot2.R
+notes:
+- Percentile bands should be rendered as filled areas between adjacent percentile
+  curves with graduated color intensity (darker near extremes, lighter near median)
+- The 50th percentile (median) line should be visually emphasized (thicker or distinct
+  color)
+- 'Gender-specific coloring convention: use blue tones for boys and pink/rose tones
+  for girls (generate the chart for one gender)'
+source: anyplot
+anyplot_updated: null

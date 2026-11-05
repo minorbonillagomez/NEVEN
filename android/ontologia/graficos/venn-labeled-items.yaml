@@ -1,0 +1,140 @@
+entity_type: ChartType
+id: venn-labeled-items
+name:
+  en: Chartgeist-Style Venn Diagram with Labeled Items
+  es: Diagrama de Venn
+description:
+  en: An editorial, WIRED "Chartgeist"-style three-circle Venn diagram where pop-culture
+    items — products, people, trends, apps — are plotted as labeled points inside
+    each zone rather than represented as numeric counts. Three overlapping circles
+    define witty, opinionated categories (e.g., "Overhyped", "Actually Useful", "Secretly
+    Loved"), and each item lives in exactly one of the seven interior regions (or
+    outside all circles). Unlike a classic proportional Venn, the "data" here is categorical
+    set-membership plus a human label, making the plot ideal for commentary, taxonomy,
+    and discussion rather than quantitative analysis.
+  es: An editorial, WIRED "Chartgeist"-style three-circle Venn diagram where pop-culture
+    items — products, people, trends, apps — are plotted as labeled points inside
+    each zone rather than represented as numeric counts. Three overlapping circles
+    define witty, opinionated categories (e.g., "Overhyped", "Actually Useful", "Secretly
+    Loved"), and each item lives in exactly one of the seven interior regions (or
+    outside all circles). Unlike a classic proportional Venn, the "data" here is categorical
+    set-membership plus a human label, making the plot ideal for commentary, taxonomy,
+    and discussion rather than quantitative analysis.
+aliases:
+  en:
+  - venn-labeled-items
+  - venn labeled items
+  - venn diagram
+  es:
+  - venn-labeled-items
+  - venn labeled items
+  - diagrama de venn
+use_when:
+  en:
+  - An editorial, WIRED "Chartgeist"-style three-circle Venn diagram where pop-culture
+    items — products, people, trends, apps — are plotted as labeled points inside
+    each zone rather than represented as nu
+  es:
+  - An editorial, WIRED "Chartgeist"-style three-circle Venn diagram where pop-culture
+    items — products, people, trends, apps — are plotted as labeled points inside
+    each zone rather than represented as nu
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Editorial and magazine-style cultural commentary on tech, media, food, or sports
+    trends
+  - Team workshops classifying products, features, or ideas along three subjective
+    traits
+  - Competitive positioning and taxonomy exercises in marketing decks
+  - Teaching set theory and Venn intersections with relatable, concrete examples
+  - Year-in-review or retrospective roundups summarizing a domain's "vibes"
+  es:
+  - Editorial and magazine-style cultural commentary on tech, media, food, or sports
+    trends
+  - Team workshops classifying products, features, or ideas along three subjective
+    traits
+  - Competitive positioning and taxonomy exercises in marketing decks
+  - Teaching set theory and Venn intersections with relatable, concrete examples
+  - Year-in-review or retrospective roundups summarizing a domain's "vibes"
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - venn
+  - set-diagram
+  data_type:
+  - categorical
+  - text
+  domain:
+  - general
+  - marketing
+  - education
+  features:
+  - annotated
+  - comparison
+  - editorial
+keywords:
+  en:
+  - venn diagram
+  - labeled
+  - items
+  - venn
+  - set-diagram
+  - categorical
+  - text
+  - general
+  - marketing
+  - education
+  - annotated
+  - comparison
+  - editorial
+  es:
+  - diagrama de venn
+  - labeled
+  - items
+  - venn
+  - set-diagram
+  - categórico
+  - texto
+  - general
+  - marketing
+  - education
+  - annotated
+  - comparación
+  - editorial
+implementations:
+  javascript:
+    chartjs: plots/venn-labeled-items/implementations/javascript/chartjs.js
+    d3: plots/venn-labeled-items/implementations/javascript/d3.js
+    echarts: plots/venn-labeled-items/implementations/javascript/echarts.js
+    highcharts: plots/venn-labeled-items/implementations/javascript/highcharts.js
+    muix: plots/venn-labeled-items/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/venn-labeled-items/implementations/julia/makie.jl
+  python:
+    altair: plots/venn-labeled-items/implementations/python/altair.py
+    bokeh: plots/venn-labeled-items/implementations/python/bokeh.py
+    letsplot: plots/venn-labeled-items/implementations/python/letsplot.py
+    matplotlib: plots/venn-labeled-items/implementations/python/matplotlib.py
+    plotly: plots/venn-labeled-items/implementations/python/plotly.py
+    plotnine: plots/venn-labeled-items/implementations/python/plotnine.py
+    pygal: plots/venn-labeled-items/implementations/python/pygal.py
+    seaborn: plots/venn-labeled-items/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/venn-labeled-items/implementations/r/ggplot2.R
+notes:
+- Use the standard symmetric three-circle Venn layout with equally sized circles and
+  clear pairwise and triple overlaps
+- Apply semi-transparent fills so overlapping regions remain visible through each
+  other
+- Place item labels inside their assigned zone without overlapping neighbors; use
+  small point markers or text-only placement
+source: anyplot
+anyplot_updated: null

@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: windbarb-basic
+name:
+  en: Wind Barb Plot for Meteorological Data
+  es: Windbarb Basic Básico
+description:
+  en: A wind barb plot displays wind speed and direction at specific locations using
+    standard meteorological barb notation. Each barb consists of a staff pointing
+    in the direction from which the wind blows, with short barbs (5 knots), long barbs
+    (10 knots), and triangular pennants (50 knots) attached to indicate speed. This
+    internationally recognized symbology enables rapid interpretation of wind patterns
+    across weather maps and atmospheric data visualizations.
+  es: A wind barb plot displays wind speed and direction at specific locations using
+    standard meteorological barb notation. Each barb consists of a staff pointing
+    in the direction from which the wind blows, with short barbs (5 knots), long barbs
+    (10 knots), and triangular pennants (50 knots) attached to indicate speed. This
+    internationally recognized symbology enables rapid interpretation of wind patterns
+    across weather maps and atmospheric data visualizations.
+aliases:
+  en:
+  - windbarb-basic
+  - windbarb basic
+  - basic windbarb basic
+  es:
+  - windbarb-basic
+  - windbarb basic
+  - windbarb basic básico
+use_when:
+  en:
+  - A wind barb plot displays wind speed and direction at specific locations using
+    standard meteorological barb notation. Each barb consists of a staff pointing
+    in the direction from which the wind blows,
+  es:
+  - A wind barb plot displays wind speed and direction at specific locations using
+    standard meteorological barb notation. Each barb consists of a staff pointing
+    in the direction from which the wind blows,
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying surface wind observations across weather station networks on synoptic
+    maps
+  - Visualizing upper-air wind patterns from radiosonde or pilot balloon observations
+  - Showing wind field data from numerical weather prediction model output
+  - Presenting aviation weather information for flight planning and meteorological
+    briefings
+  es:
+  - Displaying surface wind observations across weather station networks on synoptic
+    maps
+  - Visualizing upper-air wind patterns from radiosonde or pilot balloon observations
+  - Showing wind field data from numerical weather prediction model output
+  - Presenting aviation weather information for flight planning and meteorological
+    briefings
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - windbarb
+  - vector
+  data_type:
+  - numeric
+  - spatial
+  domain:
+  - meteorology
+  - science
+  features:
+  - basic
+  - 2d
+  - flow-visualization
+keywords:
+  en:
+  - windbarb
+  - basic
+  - vector
+  - numeric
+  - spatial
+  - meteorology
+  - science
+  - 2d
+  - flow-visualization
+  es:
+  - windbarb
+  - básico
+  - vector
+  - numérico
+  - spatial
+  - meteorology
+  - ciencia
+  - basic
+  - 2d
+  - flow-visualization
+implementations:
+  javascript:
+    chartjs: plots/windbarb-basic/implementations/javascript/chartjs.js
+    d3: plots/windbarb-basic/implementations/javascript/d3.js
+    echarts: plots/windbarb-basic/implementations/javascript/echarts.js
+    highcharts: plots/windbarb-basic/implementations/javascript/highcharts.js
+    muix: plots/windbarb-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/windbarb-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/windbarb-basic/implementations/python/altair.py
+    bokeh: plots/windbarb-basic/implementations/python/bokeh.py
+    letsplot: plots/windbarb-basic/implementations/python/letsplot.py
+    matplotlib: plots/windbarb-basic/implementations/python/matplotlib.py
+    plotly: plots/windbarb-basic/implementations/python/plotly.py
+    plotnine: plots/windbarb-basic/implementations/python/plotnine.py
+    pygal: plots/windbarb-basic/implementations/python/pygal.py
+    seaborn: plots/windbarb-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/windbarb-basic/implementations/r/ggplot2.R
+notes:
+- Wind barbs point in the direction FROM which the wind blows (opposite to arrow convention)
+- 'Standard notation: half barb = 5 knots, full barb = 10 knots, pennant (triangle)
+  = 50 knots'
+- Barbs are added on the left side of the staff in the Northern Hemisphere
+source: anyplot
+anyplot_updated: 2026-10-02 15:00:51+00:00

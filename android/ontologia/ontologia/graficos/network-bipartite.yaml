@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: network-bipartite
+name:
+  en: Bipartite Network Graph
+  es: Grafo de Red
+description:
+  en: A bipartite network graph visualizes relationships between two distinct sets
+    of entities, where edges only connect nodes from different sets — never within
+    the same set. The two node groups are arranged in separate columns or rows, making
+    the two-mode structure immediately apparent. This layout is fundamental for understanding
+    cross-category relationships, revealing which entities from one set are linked
+    to which entities in the other, and exposing patterns like hubs, clusters, and
+    isolated nodes.
+  es: A bipartite network graph visualizes relationships between two distinct sets
+    of entities, where edges only connect nodes from different sets — never within
+    the same set. The two node groups are arranged in separate columns or rows, making
+    the two-mode structure immediately apparent. This layout is fundamental for understanding
+    cross-category relationships, revealing which entities from one set are linked
+    to which entities in the other, and exposing patterns like hubs, clusters, and
+    isolated nodes.
+aliases:
+  en:
+  - network-bipartite
+  - network bipartite
+  - network graph
+  es:
+  - network-bipartite
+  - network bipartite
+  - grafo de red
+use_when:
+  en:
+  - A bipartite network graph visualizes relationships between two distinct sets of
+    entities, where edges only connect nodes from different sets — never within the
+    same set. The two node groups are arrang
+  es:
+  - A bipartite network graph visualizes relationships between two distinct sets of
+    entities, where edges only connect nodes from different sets — never within the
+    same set. The two node groups are arrang
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Author-paper affiliation networks in bibliometrics showing which researchers contributed
+    to which publications
+  - User-product purchase or recommendation networks revealing consumption patterns
+    and shared preferences
+  - Gene-disease association networks in bioinformatics mapping known links between
+    genetic markers and conditions
+  - Student-course enrollment visualization displaying registration patterns across
+    academic programs
+  es:
+  - Author-paper affiliation networks in bibliometrics showing which researchers contributed
+    to which publications
+  - User-product purchase or recommendation networks revealing consumption patterns
+    and shared preferences
+  - Gene-disease association networks in bioinformatics mapping known links between
+    genetic markers and conditions
+  - Student-course enrollment visualization displaying registration patterns across
+    academic programs
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - network
+  data_type:
+  - categorical
+  - relational
+  - network
+  domain:
+  - general
+  - science
+  - research
+  features:
+  - bipartite
+  - color-mapped
+  - comparison
+keywords:
+  en:
+  - network graph
+  - bipartite
+  - network
+  - categorical
+  - relational
+  - general
+  - science
+  - research
+  - color-mapped
+  - comparison
+  es:
+  - grafo de red
+  - bipartite
+  - red
+  - categórico
+  - relational
+  - general
+  - ciencia
+  - research
+  - color-mapped
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/network-bipartite/implementations/javascript/chartjs.js
+    d3: plots/network-bipartite/implementations/javascript/d3.js
+    echarts: plots/network-bipartite/implementations/javascript/echarts.js
+    highcharts: plots/network-bipartite/implementations/javascript/highcharts.js
+    muix: plots/network-bipartite/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/network-bipartite/implementations/julia/makie.jl
+  python:
+    altair: plots/network-bipartite/implementations/python/altair.py
+    bokeh: plots/network-bipartite/implementations/python/bokeh.py
+    letsplot: plots/network-bipartite/implementations/python/letsplot.py
+    matplotlib: plots/network-bipartite/implementations/python/matplotlib.py
+    plotly: plots/network-bipartite/implementations/python/plotly.py
+    plotnine: plots/network-bipartite/implementations/python/plotnine.py
+    pygal: plots/network-bipartite/implementations/python/pygal.py
+    seaborn: plots/network-bipartite/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/network-bipartite/implementations/r/ggplot2.R
+notes:
+- Arrange the two node sets in clearly separated columns (left/right) or rows (top/bottom)
+- Color nodes by set membership to reinforce the bipartite structure
+- Node size should encode degree (number of connections) to highlight hubs
+source: anyplot
+anyplot_updated: null

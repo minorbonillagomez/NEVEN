@@ -1,0 +1,129 @@
+entity_type: ChartType
+id: learning-curve-basic
+name:
+  en: Model Learning Curve
+  es: Learning Curve Basic
+description:
+  en: A learning curve visualizes model performance (training and validation scores)
+    as a function of training set size. It is essential for diagnosing bias vs variance
+    tradeoffs, determining whether collecting more data would improve model performance,
+    and guiding model selection decisions. The plot typically shows two lines with
+    shaded confidence bands representing variability across cross-validation folds.
+  es: A learning curve visualizes model performance (training and validation scores)
+    as a function of training set size. It is essential for diagnosing bias vs variance
+    tradeoffs, determining whether collecting more data would improve model performance,
+    and guiding model selection decisions. The plot typically shows two lines with
+    shaded confidence bands representing variability across cross-validation folds.
+aliases:
+  en:
+  - learning-curve-basic
+  - learning curve basic
+  - learning curve basic
+  es:
+  - learning-curve-basic
+  - learning curve basic
+  - learning curve basic
+use_when:
+  en:
+  - A learning curve visualizes model performance (training and validation scores)
+    as a function of training set size. It is essential for diagnosing bias vs variance
+    tradeoffs, determining whether collec
+  es:
+  - A learning curve visualizes model performance (training and validation scores)
+    as a function of training set size. It is essential for diagnosing bias vs variance
+    tradeoffs, determining whether collec
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Diagnosing underfitting (high bias) when both training and validation scores are
+    low
+  - Diagnosing overfitting (high variance) when training score is high but validation
+    score is low with a large gap
+  - Determining if collecting more training data would improve model performance
+  - Judging one model's learning behavior, as a base for comparing architectures
+  es:
+  - Diagnosing underfitting (high bias) when both training and validation scores are
+    low
+  - Diagnosing overfitting (high variance) when training score is high but validation
+    score is low with a large gap
+  - Determining if collecting more training data would improve model performance
+  - Judging one model's learning behavior, as a base for comparing architectures
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - machine-learning
+  - statistics
+  - data-science
+  features:
+  - basic
+  - confidence-band
+  - comparison
+  - diagnostic
+keywords:
+  en:
+  - learning
+  - curve
+  - basic
+  - line
+  - numeric
+  - continuous
+  - machine learning
+  - statistics
+  - data-science
+  - confidence-band
+  - comparison
+  - diagnostic
+  es:
+  - learning
+  - curve
+  - básico
+  - line
+  - numérico
+  - continuo
+  - aprendizaje automático
+  - estadística
+  - data-science
+  - basic
+  - confidence-band
+  - comparación
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/learning-curve-basic/implementations/javascript/chartjs.js
+    d3: plots/learning-curve-basic/implementations/javascript/d3.js
+    echarts: plots/learning-curve-basic/implementations/javascript/echarts.js
+    highcharts: plots/learning-curve-basic/implementations/javascript/highcharts.js
+    muix: plots/learning-curve-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/learning-curve-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/learning-curve-basic/implementations/python/altair.py
+    bokeh: plots/learning-curve-basic/implementations/python/bokeh.py
+    letsplot: plots/learning-curve-basic/implementations/python/letsplot.py
+    matplotlib: plots/learning-curve-basic/implementations/python/matplotlib.py
+    plotly: plots/learning-curve-basic/implementations/python/plotly.py
+    plotnine: plots/learning-curve-basic/implementations/python/plotnine.py
+    pygal: plots/learning-curve-basic/implementations/python/pygal.py
+    seaborn: plots/learning-curve-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/learning-curve-basic/implementations/r/ggplot2.R
+notes:
+- Use shaded regions to show confidence bands (e.g., ±1 standard deviation across
+  folds)
+- Clearly label the y-axis with the metric being evaluated (accuracy, F1, MSE, etc.)
+- Include a legend distinguishing training from validation curves
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

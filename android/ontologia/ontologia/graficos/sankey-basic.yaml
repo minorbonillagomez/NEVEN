@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: sankey-basic
+name:
+  en: Basic Sankey Diagram
+  es: Diagrama de Sankey Básico
+description:
+  en: A Sankey diagram visualizes flow or transfer between nodes using links with
+    widths proportional to flow values. It excels at showing how quantities distribute
+    from sources to destinations, revealing patterns in resource allocation, process
+    flows, and system transitions. The diagram makes it easy to identify major pathways
+    and compare relative magnitudes of different flows.
+  es: A Sankey diagram visualizes flow or transfer between nodes using links with
+    widths proportional to flow values. It excels at showing how quantities distribute
+    from sources to destinations, revealing patterns in resource allocation, process
+    flows, and system transitions. The diagram makes it easy to identify major pathways
+    and compare relative magnitudes of different flows.
+aliases:
+  en:
+  - sankey-basic
+  - sankey basic
+  - basic sankey diagram
+  es:
+  - sankey-basic
+  - sankey basic
+  - diagrama de sankey básico
+use_when:
+  en:
+  - A Sankey diagram visualizes flow or transfer between nodes using links with widths
+    proportional to flow values. It excels at showing how quantities distribute from
+    sources to destinations, revealing p
+  es:
+  - A Sankey diagram visualizes flow or transfer between nodes using links with widths
+    proportional to flow values. It excels at showing how quantities distribute from
+    sources to destinations, revealing p
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing energy flows from sources (coal, gas, nuclear) through transformation
+    to end uses (heating, transport, industry)
+  - Tracking budget allocations from revenue sources through departments to specific
+    expense categories
+  - Analyzing website traffic paths from entry pages through navigation to conversion
+    or exit points
+  es:
+  - Visualizing energy flows from sources (coal, gas, nuclear) through transformation
+    to end uses (heating, transport, industry)
+  - Tracking budget allocations from revenue sources through departments to specific
+    expense categories
+  - Analyzing website traffic paths from entry pages through navigation to conversion
+    or exit points
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - sankey
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - basic
+  - flow
+  - proportional
+keywords:
+  en:
+  - sankey diagram
+  - basic
+  - sankey
+  - categorical
+  - numeric
+  - general
+  - business
+  - flow
+  - proportional
+  es:
+  - diagrama de sankey
+  - básico
+  - sankey
+  - categórico
+  - numérico
+  - general
+  - negocios
+  - basic
+  - flujo
+  - proportional
+implementations:
+  javascript:
+    d3: plots/sankey-basic/implementations/javascript/d3.js
+    echarts: plots/sankey-basic/implementations/javascript/echarts.js
+    highcharts: plots/sankey-basic/implementations/javascript/highcharts.js
+    muix: plots/sankey-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/sankey-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/sankey-basic/implementations/python/altair.py
+    bokeh: plots/sankey-basic/implementations/python/bokeh.py
+    letsplot: plots/sankey-basic/implementations/python/letsplot.py
+    matplotlib: plots/sankey-basic/implementations/python/matplotlib.py
+    plotly: plots/sankey-basic/implementations/python/plotly.py
+    plotnine: plots/sankey-basic/implementations/python/plotnine.py
+    pygal: plots/sankey-basic/implementations/python/pygal.py
+    seaborn: plots/sankey-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/sankey-basic/implementations/r/ggplot2.R
+notes:
+- Ensure no circular flows (source cannot equal target in the same link)
+- Node labels should be clearly visible and not overlap with links
+- Use distinct colors for different source categories or flow types
+source: anyplot
+anyplot_updated: 2026-07-25 11:37:13+00:00

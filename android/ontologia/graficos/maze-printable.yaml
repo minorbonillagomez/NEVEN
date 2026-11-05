@@ -1,0 +1,112 @@
+entity_type: ChartType
+id: maze-printable
+name:
+  en: Printable Maze Puzzle
+  es: Maze Printable
+description:
+  en: A rectangular maze puzzle visualization with clearly marked start and goal positions.
+    The maze is algorithmically generated to guarantee exactly one solution path from
+    start to finish. The clean black-and-white design is optimized for printing, allowing
+    users to solve the puzzle with a pen or pencil.
+  es: A rectangular maze puzzle visualization with clearly marked start and goal positions.
+    The maze is algorithmically generated to guarantee exactly one solution path from
+    start to finish. The clean black-and-white design is optimized for printing, allowing
+    users to solve the puzzle with a pen or pencil.
+aliases:
+  en:
+  - maze-printable
+  - maze printable
+  - maze printable
+  es:
+  - maze-printable
+  - maze printable
+  - maze printable
+use_when:
+  en:
+  - A rectangular maze puzzle visualization with clearly marked start and goal positions.
+    The maze is algorithmically generated to guarantee exactly one solution path from
+    start to finish. The clean black
+  es:
+  - A rectangular maze puzzle visualization with clearly marked start and goal positions.
+    The maze is algorithmically generated to guarantee exactly one solution path from
+    start to finish. The clean black
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Printable activity sheets for children's entertainment and education
+  - Puzzle books and newspapers requiring programmatically generated mazes
+  - Educational materials teaching algorithmic thinking and problem-solving
+  - Restaurant placemats and waiting room entertainment
+  es:
+  - Printable activity sheets for children's entertainment and education
+  - Puzzle books and newspapers requiring programmatically generated mazes
+  - Educational materials teaching algorithmic thinking and problem-solving
+  - Restaurant placemats and waiting room entertainment
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type: []
+  data_type:
+  - discrete
+  - matrix
+  domain:
+  - general
+  - education
+  features:
+  - basic
+  - algorithmic
+  - printable
+keywords:
+  en:
+  - maze
+  - printable
+  - discrete
+  - matrix
+  - general
+  - education
+  - basic
+  - algorithmic
+  es:
+  - maze
+  - printable
+  - discreto
+  - matrix
+  - general
+  - education
+  - basic
+  - algorithmic
+implementations:
+  javascript:
+    chartjs: plots/maze-printable/implementations/javascript/chartjs.js
+    d3: plots/maze-printable/implementations/javascript/d3.js
+    echarts: plots/maze-printable/implementations/javascript/echarts.js
+    highcharts: plots/maze-printable/implementations/javascript/highcharts.js
+    muix: plots/maze-printable/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/maze-printable/implementations/julia/makie.jl
+  python:
+    altair: plots/maze-printable/implementations/python/altair.py
+    bokeh: plots/maze-printable/implementations/python/bokeh.py
+    letsplot: plots/maze-printable/implementations/python/letsplot.py
+    matplotlib: plots/maze-printable/implementations/python/matplotlib.py
+    plotly: plots/maze-printable/implementations/python/plotly.py
+    plotnine: plots/maze-printable/implementations/python/plotnine.py
+    pygal: plots/maze-printable/implementations/python/pygal.py
+    seaborn: plots/maze-printable/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/maze-printable/implementations/r/ggplot2.R
+notes:
+- Use maze generation algorithms (DFS, Prim's, Kruskal's) that guarantee a single
+  solution
+- Start position typically marked with "S" or arrow, goal with "G" or star
+- Interior wall thickness should be consistent and print-friendly (not too thin);
+  the outer boundary may be drawn heavier
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: stereonet-equal-area
+name:
+  en: Structural Geology Stereonet (Equal-Area Projection)
+  es: Stereonet Equal Area
+description:
+  en: A Schmidt equal-area (lower-hemisphere) stereographic projection for plotting
+    geological structural data. Great circles represent planar features (bedding,
+    faults, joints) by their strike and dip, while poles to planes are plotted as
+    points showing the orientation of the normal to each plane. Density contours highlight
+    preferred orientations in clustered data. This is the standard projection used
+    in structural geology for analyzing fabric elements and kinematic indicators.
+  es: A Schmidt equal-area (lower-hemisphere) stereographic projection for plotting
+    geological structural data. Great circles represent planar features (bedding,
+    faults, joints) by their strike and dip, while poles to planes are plotted as
+    points showing the orientation of the normal to each plane. Density contours highlight
+    preferred orientations in clustered data. This is the standard projection used
+    in structural geology for analyzing fabric elements and kinematic indicators.
+aliases:
+  en:
+  - stereonet-equal-area
+  - stereonet equal area
+  - stereonet equal area
+  es:
+  - stereonet-equal-area
+  - stereonet equal area
+  - stereonet equal area
+use_when:
+  en:
+  - A Schmidt equal-area (lower-hemisphere) stereographic projection for plotting
+    geological structural data. Great circles represent planar features (bedding,
+    faults, joints) by their strike and dip, whi
+  es:
+  - A Schmidt equal-area (lower-hemisphere) stereographic projection for plotting
+    geological structural data. Great circles represent planar features (bedding,
+    faults, joints) by their strike and dip, whi
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Structural geology: mapping and analyzing fault, fracture, and bedding orientations
+    from field measurements'
+  - 'Geotechnical engineering: kinematic analysis for slope stability assessment using
+    discontinuity orientations'
+  - 'Mining geology: rock mass characterization by visualizing joint set distributions
+    and their spatial relationships'
+  es:
+  - 'Structural geology: mapping and analyzing fault, fracture, and bedding orientations
+    from field measurements'
+  - 'Geotechnical engineering: kinematic analysis for slope stability assessment using
+    discontinuity orientations'
+  - 'Mining geology: rock mass characterization by visualizing joint set distributions
+    and their spatial relationships'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - polar
+  - scatter
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - science
+  - engineering
+  features:
+  - advanced
+  - color-mapped
+  - annotated
+keywords:
+  en:
+  - stereonet
+  - equal
+  - area chart
+  - polar
+  - scatter
+  - numeric
+  - categorical
+  - science
+  - engineering
+  - advanced
+  - color-mapped
+  - annotated
+  es:
+  - stereonet
+  - equal
+  - gráfico de área
+  - polar
+  - scatter
+  - numérico
+  - categórico
+  - ciencia
+  - ingeniería
+  - advanced
+  - color-mapped
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/stereonet-equal-area/implementations/javascript/chartjs.js
+    d3: plots/stereonet-equal-area/implementations/javascript/d3.js
+    echarts: plots/stereonet-equal-area/implementations/javascript/echarts.js
+    highcharts: plots/stereonet-equal-area/implementations/javascript/highcharts.js
+    muix: plots/stereonet-equal-area/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/stereonet-equal-area/implementations/julia/makie.jl
+  python:
+    altair: plots/stereonet-equal-area/implementations/python/altair.py
+    bokeh: plots/stereonet-equal-area/implementations/python/bokeh.py
+    letsplot: plots/stereonet-equal-area/implementations/python/letsplot.py
+    matplotlib: plots/stereonet-equal-area/implementations/python/matplotlib.py
+    plotly: plots/stereonet-equal-area/implementations/python/plotly.py
+    plotnine: plots/stereonet-equal-area/implementations/python/plotnine.py
+    pygal: plots/stereonet-equal-area/implementations/python/pygal.py
+    seaborn: plots/stereonet-equal-area/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/stereonet-equal-area/implementations/r/ggplot2.R
+notes:
+- Use lower-hemisphere equal-area (Schmidt net) projection; this preserves area relationships
+  making density analysis meaningful
+- Great circles should be drawn for planes; poles (points) plotted at 90 degrees to
+  each plane
+- The primitive circle represents the horizontal plane; North is at top (0/360 degrees)
+source: anyplot
+anyplot_updated: null

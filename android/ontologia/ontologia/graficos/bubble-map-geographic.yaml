@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: bubble-map-geographic
+name:
+  en: Bubble Map with Sized Geographic Markers
+  es: Gráfico de Burbujas
+description:
+  en: A geographic bubble map where markers are sized proportionally to quantitative
+    data values at each location. Unlike scatter maps where size is optional, bubble
+    maps use marker size as the primary visual encoding to show data magnitude across
+    geographic regions. This visualization makes it immediately apparent where high
+    and low values occur spatially, enabling intuitive comparison of quantities across
+    locations.
+  es: A geographic bubble map where markers are sized proportionally to quantitative
+    data values at each location. Unlike scatter maps where size is optional, bubble
+    maps use marker size as the primary visual encoding to show data magnitude across
+    geographic regions. This visualization makes it immediately apparent where high
+    and low values occur spatially, enabling intuitive comparison of quantities across
+    locations.
+aliases:
+  en:
+  - bubble-map-geographic
+  - bubble map geographic
+  - bubble chart
+  es:
+  - bubble-map-geographic
+  - bubble map geographic
+  - gráfico de burbujas
+use_when:
+  en:
+  - A geographic bubble map where markers are sized proportionally to quantitative
+    data values at each location. Unlike scatter maps where size is optional, bubble
+    maps use marker size as the primary visu
+  es:
+  - A geographic bubble map where markers are sized proportionally to quantitative
+    data values at each location. Unlike scatter maps where size is optional, bubble
+    maps use marker size as the primary visu
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Displaying city populations on a map with bubble size representing population
+    magnitude
+  - Showing sales volume by store location with proportionally sized markers
+  - Visualizing earthquake magnitudes across a region with size indicating severity
+  - Mapping disease case counts by city or region with bubble size showing outbreak
+    intensity
+  es:
+  - Displaying city populations on a map with bubble size representing population
+    magnitude
+  - Showing sales volume by store location with proportionally sized markers
+  - Visualizing earthquake magnitudes across a region with size indicating severity
+  - Mapping disease case counts by city or region with bubble size showing outbreak
+    intensity
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - bubble
+  - map
+  data_type:
+  - numeric
+  - geospatial
+  domain:
+  - general
+  - business
+  features:
+  - proportional
+  - color-mapped
+keywords:
+  en:
+  - bubble chart
+  - map
+  - geographic
+  - bubble
+  - numeric
+  - geospatial
+  - general
+  - business
+  - proportional
+  - color-mapped
+  es:
+  - gráfico de burbujas
+  - mapa
+  - geographic
+  - bubble
+  - map
+  - numérico
+  - geoespacial
+  - general
+  - negocios
+  - proportional
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/bubble-map-geographic/implementations/javascript/chartjs.js
+    d3: plots/bubble-map-geographic/implementations/javascript/d3.js
+    echarts: plots/bubble-map-geographic/implementations/javascript/echarts.js
+    highcharts: plots/bubble-map-geographic/implementations/javascript/highcharts.js
+    muix: plots/bubble-map-geographic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bubble-map-geographic/implementations/julia/makie.jl
+  python:
+    altair: plots/bubble-map-geographic/implementations/python/altair.py
+    bokeh: plots/bubble-map-geographic/implementations/python/bokeh.py
+    letsplot: plots/bubble-map-geographic/implementations/python/letsplot.py
+    matplotlib: plots/bubble-map-geographic/implementations/python/matplotlib.py
+    plotly: plots/bubble-map-geographic/implementations/python/plotly.py
+    plotnine: plots/bubble-map-geographic/implementations/python/plotnine.py
+    pygal: plots/bubble-map-geographic/implementations/python/pygal.py
+    seaborn: plots/bubble-map-geographic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bubble-map-geographic/implementations/r/ggplot2.R
+notes:
+- Scale bubble area (not radius) proportionally to data values for accurate perception
+- Use a size legend showing the relationship between bubble size and data values
+- Apply transparency (alpha ~0.5-0.7) to handle overlapping bubbles in dense regions
+source: anyplot
+anyplot_updated: 2026-05-18 22:19:45+00:00

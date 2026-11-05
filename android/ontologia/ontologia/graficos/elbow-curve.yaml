@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: elbow-curve
+name:
+  en: Elbow Curve for K-Means Clustering
+  es: Elbow Curve
+description:
+  en: An elbow curve visualizes the relationship between the number of clusters (k)
+    and within-cluster sum of squares (inertia/distortion) in K-means clustering.
+    The plot helps identify the optimal number of clusters by finding the "elbow point"
+    where adding more clusters yields diminishing returns in reducing inertia. This
+    is a fundamental diagnostic tool for unsupervised learning parameter selection.
+  es: An elbow curve visualizes the relationship between the number of clusters (k)
+    and within-cluster sum of squares (inertia/distortion) in K-means clustering.
+    The plot helps identify the optimal number of clusters by finding the "elbow point"
+    where adding more clusters yields diminishing returns in reducing inertia. This
+    is a fundamental diagnostic tool for unsupervised learning parameter selection.
+aliases:
+  en:
+  - elbow-curve
+  - elbow curve
+  - elbow curve
+  es:
+  - elbow-curve
+  - elbow curve
+  - elbow curve
+use_when:
+  en:
+  - An elbow curve visualizes the relationship between the number of clusters (k)
+    and within-cluster sum of squares (inertia/distortion) in K-means clustering.
+    The plot helps identify the optimal number o
+  es:
+  - An elbow curve visualizes the relationship between the number of clusters (k)
+    and within-cluster sum of squares (inertia/distortion) in K-means clustering.
+    The plot helps identify the optimal number o
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Selecting the optimal number of clusters (k) in K-means clustering analysis
+  - Customer segmentation to determine natural groupings in behavioral data
+  - Image compression parameter selection for color quantization
+  - Document clustering to identify topic groupings in text corpora
+  es:
+  - Selecting the optimal number of clusters (k) in K-means clustering analysis
+  - Customer segmentation to determine natural groupings in behavioral data
+  - Image compression parameter selection for color quantization
+  - Document clustering to identify topic groupings in text corpora
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - discrete
+  domain:
+  - general
+  - statistics
+  - machine-learning
+  features:
+  - basic
+  - clustering
+  - optimization
+  - diagnostic
+keywords:
+  en:
+  - elbow
+  - curve
+  - line
+  - numeric
+  - discrete
+  - general
+  - statistics
+  - machine learning
+  - basic
+  - clustering
+  - optimization
+  - diagnostic
+  es:
+  - elbow
+  - curve
+  - line
+  - numérico
+  - discreto
+  - general
+  - estadística
+  - aprendizaje automático
+  - basic
+  - clustering
+  - optimization
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/elbow-curve/implementations/javascript/chartjs.js
+    d3: plots/elbow-curve/implementations/javascript/d3.js
+    echarts: plots/elbow-curve/implementations/javascript/echarts.js
+    highcharts: plots/elbow-curve/implementations/javascript/highcharts.js
+    muix: plots/elbow-curve/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/elbow-curve/implementations/julia/makie.jl
+  python:
+    altair: plots/elbow-curve/implementations/python/altair.py
+    bokeh: plots/elbow-curve/implementations/python/bokeh.py
+    letsplot: plots/elbow-curve/implementations/python/letsplot.py
+    matplotlib: plots/elbow-curve/implementations/python/matplotlib.py
+    plotly: plots/elbow-curve/implementations/python/plotly.py
+    plotnine: plots/elbow-curve/implementations/python/plotnine.py
+    pygal: plots/elbow-curve/implementations/python/pygal.py
+    seaborn: plots/elbow-curve/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/elbow-curve/implementations/r/ggplot2.R
+notes:
+- X-axis shows number of clusters (k), y-axis shows inertia/distortion
+- The elbow point is where the rate of decrease sharply changes
+- Consider annotating or highlighting the optimal k value
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

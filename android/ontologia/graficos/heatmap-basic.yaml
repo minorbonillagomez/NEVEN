@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: heatmap-basic
+name:
+  en: Basic Heatmap
+  es: Mapa de Calor Básico
+description:
+  en: A heatmap displaying values in a matrix format using color intensity. Each cell's
+    color represents the magnitude of the value, making it easy to identify patterns,
+    clusters, and outliers in two-dimensional data. Essential for visualizing correlations,
+    frequencies, and relationships between variables.
+  es: A heatmap displaying values in a matrix format using color intensity. Each cell's
+    color represents the magnitude of the value, making it easy to identify patterns,
+    clusters, and outliers in two-dimensional data. Essential for visualizing correlations,
+    frequencies, and relationships between variables.
+aliases:
+  en:
+  - heatmap-basic
+  - heatmap basic
+  - basic heatmap
+  es:
+  - heatmap-basic
+  - heatmap basic
+  - mapa de calor básico
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Correlation matrices between variables in statistical analysis
+  - Website click heatmaps showing user behavior patterns
+  - Gene expression analysis in bioinformatics research
+  - Performance metrics across time periods and categories
+  es:
+  - Correlation matrices between variables in statistical analysis
+  - Website click heatmaps showing user behavior patterns
+  - Gene expression analysis in bioinformatics research
+  - Performance metrics across time periods and categories
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  data_type:
+  - numeric
+  - categorical
+  - matrix
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - 2d
+  - color-mapped
+keywords:
+  en:
+  - heatmap
+  - basic
+  - numeric
+  - categorical
+  - matrix
+  - statistics
+  - general
+  - 2d
+  - color-mapped
+  es:
+  - mapa de calor
+  - básico
+  - heatmap
+  - numérico
+  - categórico
+  - matrix
+  - estadística
+  - general
+  - basic
+  - 2d
+  - color-mapped
+implementations:
+  javascript:
+    chartjs: plots/heatmap-basic/implementations/javascript/chartjs.js
+    d3: plots/heatmap-basic/implementations/javascript/d3.js
+    echarts: plots/heatmap-basic/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-basic/implementations/javascript/highcharts.js
+    muix: plots/heatmap-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-basic/implementations/python/altair.py
+    bokeh: plots/heatmap-basic/implementations/python/bokeh.py
+    letsplot: plots/heatmap-basic/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-basic/implementations/python/matplotlib.py
+    plotly: plots/heatmap-basic/implementations/python/plotly.py
+    plotnine: plots/heatmap-basic/implementations/python/plotnine.py
+    pygal: plots/heatmap-basic/implementations/python/pygal.py
+    seaborn: plots/heatmap-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-basic/implementations/r/ggplot2.R
+notes:
+- Use a diverging colormap for data with positive/negative values
+- Add value annotations in cells when readable
+- Include a colorbar legend
+source: anyplot
+anyplot_updated: 2026-05-28 22:33:35+00:00

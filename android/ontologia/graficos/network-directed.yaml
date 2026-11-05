@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: network-directed
+name:
+  en: Directed Network Graph
+  es: Grafo de Red
+description:
+  en: A directed network graph visualizes relationships between entities using nodes
+    connected by edges with arrows, indicating the direction of relationships or flow.
+    Unlike undirected graphs, directed graphs reveal asymmetric relationships such
+    as dependencies, hierarchies, or information flow. The arrows clearly communicate
+    which entity points to which, making cause-and-effect relationships and directional
+    dependencies immediately visible.
+  es: A directed network graph visualizes relationships between entities using nodes
+    connected by edges with arrows, indicating the direction of relationships or flow.
+    Unlike undirected graphs, directed graphs reveal asymmetric relationships such
+    as dependencies, hierarchies, or information flow. The arrows clearly communicate
+    which entity points to which, making cause-and-effect relationships and directional
+    dependencies immediately visible.
+aliases:
+  en:
+  - network-directed
+  - network directed
+  - network graph
+  es:
+  - network-directed
+  - network directed
+  - grafo de red
+use_when:
+  en:
+  - A directed network graph visualizes relationships between entities using nodes
+    connected by edges with arrows, indicating the direction of relationships or flow.
+    Unlike undirected graphs, directed gra
+  es:
+  - A directed network graph visualizes relationships between entities using nodes
+    connected by edges with arrows, indicating the direction of relationships or flow.
+    Unlike undirected graphs, directed gra
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Mapping software module dependencies to understand build order and identify circular
+    dependencies
+  - Visualizing citation networks where arrows show which papers cite which others
+  - Displaying organizational reporting structures or workflow approval chains
+  - Analyzing web page link structures to understand navigation patterns and page
+    authority
+  es:
+  - Mapping software module dependencies to understand build order and identify circular
+    dependencies
+  - Visualizing citation networks where arrows show which papers cite which others
+  - Displaying organizational reporting structures or workflow approval chains
+  - Analyzing web page link structures to understand navigation patterns and page
+    authority
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - network
+  data_type:
+  - network
+  - relational
+  - categorical
+  - directional
+  domain:
+  - general
+  - technology
+  - research
+  features:
+  - basic
+  - arrows
+keywords:
+  en:
+  - network graph
+  - directed
+  - network
+  - relational
+  - categorical
+  - directional
+  - general
+  - technology
+  - research
+  - basic
+  - arrows
+  es:
+  - grafo de red
+  - directed
+  - red
+  - relational
+  - categórico
+  - directional
+  - general
+  - technology
+  - research
+  - basic
+  - arrows
+implementations:
+  javascript:
+    chartjs: plots/network-directed/implementations/javascript/chartjs.js
+    d3: plots/network-directed/implementations/javascript/d3.js
+    echarts: plots/network-directed/implementations/javascript/echarts.js
+    highcharts: plots/network-directed/implementations/javascript/highcharts.js
+    muix: plots/network-directed/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/network-directed/implementations/julia/makie.jl
+  python:
+    altair: plots/network-directed/implementations/python/altair.py
+    bokeh: plots/network-directed/implementations/python/bokeh.py
+    letsplot: plots/network-directed/implementations/python/letsplot.py
+    matplotlib: plots/network-directed/implementations/python/matplotlib.py
+    plotly: plots/network-directed/implementations/python/plotly.py
+    plotnine: plots/network-directed/implementations/python/plotnine.py
+    pygal: plots/network-directed/implementations/python/pygal.py
+    seaborn: plots/network-directed/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/network-directed/implementations/r/ggplot2.R
+notes:
+- Arrows should be clearly visible and appropriately sized relative to node size
+- Consider curved edges when nodes have bidirectional connections to avoid arrow overlap
+- Node position can use force-directed layout, hierarchical layout, or circular layout
+  depending on data structure
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

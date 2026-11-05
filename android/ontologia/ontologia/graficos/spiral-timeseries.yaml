@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: spiral-timeseries
+name:
+  en: Spiral Time Series Chart
+  es: Spiral Timeseries
+description:
+  en: A time series plotted along a spiral (Archimedean or logarithmic), where each
+    full revolution represents one cycle period (e.g., one year). By wrapping temporal
+    data around a spiral, corresponding periods from different cycles align vertically,
+    making recurring seasonal or periodic patterns immediately visible. This layout
+    provides a compact alternative to long horizontal time series for cyclic data,
+    revealing periodicity and trend simultaneously.
+  es: A time series plotted along a spiral (Archimedean or logarithmic), where each
+    full revolution represents one cycle period (e.g., one year). By wrapping temporal
+    data around a spiral, corresponding periods from different cycles align vertically,
+    making recurring seasonal or periodic patterns immediately visible. This layout
+    provides a compact alternative to long horizontal time series for cyclic data,
+    revealing periodicity and trend simultaneously.
+aliases:
+  en:
+  - spiral-timeseries
+  - spiral timeseries
+  - spiral timeseries
+  es:
+  - spiral-timeseries
+  - spiral timeseries
+  - spiral timeseries
+use_when:
+  en:
+  - A time series plotted along a spiral (Archimedean or logarithmic), where each
+    full revolution represents one cycle period (e.g., one year). By wrapping temporal
+    data around a spiral, corresponding per
+  es:
+  - A time series plotted along a spiral (Archimedean or logarithmic), where each
+    full revolution represents one cycle period (e.g., one year). By wrapping temporal
+    data around a spiral, corresponding per
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing yearly temperature or weather patterns across multiple years, with
+    seasons aligned vertically
+  - Showing website traffic with weekly or monthly seasonality to identify recurring
+    peaks
+  - Displaying retail sales cycles where holiday peaks align vertically across years
+  - Analyzing biological rhythms such as circadian or seasonal patterns in activity
+    data
+  es:
+  - Visualizing yearly temperature or weather patterns across multiple years, with
+    seasons aligned vertically
+  - Showing website traffic with weekly or monthly seasonality to identify recurring
+    peaks
+  - Displaying retail sales cycles where holiday peaks align vertically across years
+  - Analyzing biological rhythms such as circadian or seasonal patterns in activity
+    data
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - spiral
+  - polar
+  data_type:
+  - time-series
+  - numeric
+  - continuous
+  domain:
+  - general
+  - science
+  - business
+  features:
+  - color-mapped
+  - temporal
+  - comparison
+keywords:
+  en:
+  - spiral
+  - time series
+  - polar
+  - numeric
+  - continuous
+  - general
+  - science
+  - business
+  - color-mapped
+  - temporal
+  - comparison
+  es:
+  - spiral
+  - serie temporal
+  - polar
+  - series temporales
+  - numérico
+  - continuo
+  - general
+  - ciencia
+  - negocios
+  - color-mapped
+  - temporal
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/spiral-timeseries/implementations/javascript/chartjs.js
+    d3: plots/spiral-timeseries/implementations/javascript/d3.js
+    echarts: plots/spiral-timeseries/implementations/javascript/echarts.js
+    highcharts: plots/spiral-timeseries/implementations/javascript/highcharts.js
+    muix: plots/spiral-timeseries/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/spiral-timeseries/implementations/julia/makie.jl
+  python:
+    altair: plots/spiral-timeseries/implementations/python/altair.py
+    bokeh: plots/spiral-timeseries/implementations/python/bokeh.py
+    letsplot: plots/spiral-timeseries/implementations/python/letsplot.py
+    matplotlib: plots/spiral-timeseries/implementations/python/matplotlib.py
+    plotly: plots/spiral-timeseries/implementations/python/plotly.py
+    plotnine: plots/spiral-timeseries/implementations/python/plotnine.py
+    pygal: plots/spiral-timeseries/implementations/python/pygal.py
+    seaborn: plots/spiral-timeseries/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/spiral-timeseries/implementations/r/ggplot2.R
+notes:
+- Each full revolution of the spiral corresponds to one cycle period
+- Color or line thickness should encode value magnitude along the spiral
+- Radial grid lines mark subdivisions within each cycle (e.g., months within a yearly
+  spiral, days within a weekly spiral)
+source: anyplot
+anyplot_updated: '2026-08-17T14:30:34Z'

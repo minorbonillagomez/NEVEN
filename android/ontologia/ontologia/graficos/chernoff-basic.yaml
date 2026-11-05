@@ -1,0 +1,130 @@
+entity_type: ChartType
+id: chernoff-basic
+name:
+  en: Chernoff Faces for Multivariate Data
+  es: Chernoff Basic Básico
+description:
+  en: Chernoff faces visualize multivariate data by mapping each variable to a facial
+    feature (eye size, mouth curvature, face width, nose length, etc.), transforming
+    each observation into a unique cartoon face. This technique leverages humans'
+    innate ability to recognize and distinguish faces, making it easier to identify
+    patterns, clusters, and outliers across multiple dimensions simultaneously.
+  es: Chernoff faces visualize multivariate data by mapping each variable to a facial
+    feature (eye size, mouth curvature, face width, nose length, etc.), transforming
+    each observation into a unique cartoon face. This technique leverages humans'
+    innate ability to recognize and distinguish faces, making it easier to identify
+    patterns, clusters, and outliers across multiple dimensions simultaneously.
+aliases:
+  en:
+  - chernoff-basic
+  - chernoff basic
+  - basic chernoff basic
+  es:
+  - chernoff-basic
+  - chernoff basic
+  - chernoff basic básico
+use_when:
+  en:
+  - 'Chernoff faces visualize multivariate data by mapping each variable to a facial
+    feature (eye size, mouth curvature, face width, nose length, etc.), transforming
+    each observation into a unique cartoon '
+  es:
+  - 'Chernoff faces visualize multivariate data by mapping each variable to a facial
+    feature (eye size, mouth curvature, face width, nose length, etc.), transforming
+    each observation into a unique cartoon '
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing financial health indicators across companies where each face represents
+    a company's performance metrics
+  - Visualizing patient health profiles in medical research where facial features
+    encode vital signs and lab results
+  - Analyzing customer segments in marketing where each face represents a customer
+    profile with demographic and behavioral attributes
+  es:
+  - Comparing financial health indicators across companies where each face represents
+    a company's performance metrics
+  - Visualizing patient health profiles in medical research where facial features
+    encode vital signs and lab results
+  - Analyzing customer segments in marketing where each face represents a customer
+    profile with demographic and behavioral attributes
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - chernoff
+  - multivariate
+  - glyph
+  data_type:
+  - numeric
+  - multivariate
+  - continuous
+  domain:
+  - general
+  - statistics
+  - research
+  features:
+  - basic
+  - comparison
+  - pattern-detection
+keywords:
+  en:
+  - chernoff
+  - basic
+  - multivariate
+  - glyph
+  - numeric
+  - continuous
+  - general
+  - statistics
+  - research
+  - comparison
+  - pattern-detection
+  es:
+  - chernoff
+  - básico
+  - multivariado
+  - glyph
+  - numérico
+  - continuo
+  - general
+  - estadística
+  - research
+  - basic
+  - comparación
+  - pattern-detection
+implementations:
+  javascript:
+    chartjs: plots/chernoff-basic/implementations/javascript/chartjs.js
+    d3: plots/chernoff-basic/implementations/javascript/d3.js
+    echarts: plots/chernoff-basic/implementations/javascript/echarts.js
+    highcharts: plots/chernoff-basic/implementations/javascript/highcharts.js
+    muix: plots/chernoff-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/chernoff-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/chernoff-basic/implementations/python/altair.py
+    bokeh: plots/chernoff-basic/implementations/python/bokeh.py
+    letsplot: plots/chernoff-basic/implementations/python/letsplot.py
+    matplotlib: plots/chernoff-basic/implementations/python/matplotlib.py
+    plotly: plots/chernoff-basic/implementations/python/plotly.py
+    plotnine: plots/chernoff-basic/implementations/python/plotnine.py
+    pygal: plots/chernoff-basic/implementations/python/pygal.py
+    seaborn: plots/chernoff-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/chernoff-basic/implementations/r/ggplot2.R
+notes:
+- Each variable should be normalized to a common scale (0-1) before mapping to facial
+  features
+- 'Common feature mappings: face width, face height, eye size, eye spacing, eyebrow
+  slant, nose length, mouth curvature, mouth width'
+- Grid layout recommended for comparing multiple faces side by side
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

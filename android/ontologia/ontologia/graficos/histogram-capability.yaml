@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: histogram-capability
+name:
+  en: Process Capability Plot with Specification Limits
+  es: Histograma
+description:
+  en: A process capability plot displays a histogram of measured process data overlaid
+    with a fitted normal distribution curve and vertical lines for specification limits
+    (LSL, USL) and target value. Capability indices (Cp, Cpk) are annotated on the
+    plot to quantify how well the process meets specifications. This is a standard
+    tool in quality engineering and Six Sigma for assessing whether a manufacturing
+    or production process is capable of consistently producing output within tolerance.
+  es: A process capability plot displays a histogram of measured process data overlaid
+    with a fitted normal distribution curve and vertical lines for specification limits
+    (LSL, USL) and target value. Capability indices (Cp, Cpk) are annotated on the
+    plot to quantify how well the process meets specifications. This is a standard
+    tool in quality engineering and Six Sigma for assessing whether a manufacturing
+    or production process is capable of consistently producing output within tolerance.
+aliases:
+  en:
+  - histogram-capability
+  - histogram capability
+  - histogram
+  es:
+  - histogram-capability
+  - histogram capability
+  - histograma
+use_when:
+  en:
+  - Showing frequency distribution of continuous data
+  - Understanding data shape (normal, skewed, bimodal)
+  - Identifying common values and outliers
+  es:
+  - Mostrar distribución de frecuencia de datos continuos
+  - Entender la forma de los datos (normal, sesgada, bimodal)
+  - Identificar valores comunes y atípicos
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Manufacturing quality control: evaluating whether machined part dimensions fall
+    within engineering tolerances'
+  - 'Pharmaceutical batch release: verifying that tablet weights or active ingredient
+    concentrations meet regulatory specifications'
+  - 'Six Sigma process improvement: measuring baseline process performance (Cp/Cpk)
+    before and after optimization'
+  - 'Semiconductor fabrication: assessing wafer thickness uniformity against specification
+    limits'
+  es:
+  - 'Manufacturing quality control: evaluating whether machined part dimensions fall
+    within engineering tolerances'
+  - 'Pharmaceutical batch release: verifying that tablet weights or active ingredient
+    concentrations meet regulatory specifications'
+  - 'Six Sigma process improvement: measuring baseline process performance (Cp/Cpk)
+    before and after optimization'
+  - 'Semiconductor fabrication: assessing wafer thickness uniformity against specification
+    limits'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types:
+  - numeric
+  recommended_rows:
+    min: 30
+    max: 100000
+tags:
+  plot_type:
+  - histogram
+  - density
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - statistics
+  features:
+  - annotated
+  - distribution
+  - comparison
+keywords:
+  en:
+  - histogram
+  - capability
+  - density
+  - numeric
+  - continuous
+  - engineering
+  - statistics
+  - annotated
+  - distribution
+  - comparison
+  es:
+  - histograma
+  - capability
+  - histogram
+  - density
+  - numérico
+  - continuo
+  - ingeniería
+  - estadística
+  - annotated
+  - distribución
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/histogram-capability/implementations/javascript/chartjs.js
+    d3: plots/histogram-capability/implementations/javascript/d3.js
+    echarts: plots/histogram-capability/implementations/javascript/echarts.js
+    highcharts: plots/histogram-capability/implementations/javascript/highcharts.js
+    muix: plots/histogram-capability/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/histogram-capability/implementations/julia/makie.jl
+  python:
+    altair: plots/histogram-capability/implementations/python/altair.py
+    bokeh: plots/histogram-capability/implementations/python/bokeh.py
+    letsplot: plots/histogram-capability/implementations/python/letsplot.py
+    matplotlib: plots/histogram-capability/implementations/python/matplotlib.py
+    plotly: plots/histogram-capability/implementations/python/plotly.py
+    plotnine: plots/histogram-capability/implementations/python/plotnine.py
+    pygal: plots/histogram-capability/implementations/python/pygal.py
+    seaborn: plots/histogram-capability/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/histogram-capability/implementations/r/ggplot2.R
+notes:
+- 'Cp and Cpk should be calculated from the data: Cp = (USL - LSL) / (6 * sigma),
+  Cpk = min((USL - mean) / (3 * sigma), (mean - LSL) / (3 * sigma))'
+- The normal distribution curve should be fitted using the sample mean and standard
+  deviation
+- LSL and USL lines should be visually distinct (e.g., red dashed) from the target
+  line (e.g., green dashed)
+source: anyplot
+anyplot_updated: null

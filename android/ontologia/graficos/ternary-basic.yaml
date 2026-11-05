@@ -1,0 +1,110 @@
+entity_type: ChartType
+id: ternary-basic
+name:
+  en: Basic Ternary Plot
+  es: Diagrama Ternario Básico
+description:
+  en: A ternary plot displays three-component compositional data on an equilateral
+    triangle where each vertex represents 100% of one component. Points inside the
+    triangle show compositions that sum to a constant total (usually 100%), with position
+    indicating relative proportions. This visualization is essential for data where
+    three variables are interdependent and constrained to sum to a fixed value.
+  es: A ternary plot displays three-component compositional data on an equilateral
+    triangle where each vertex represents 100% of one component. Points inside the
+    triangle show compositions that sum to a constant total (usually 100%), with position
+    indicating relative proportions. This visualization is essential for data where
+    three variables are interdependent and constrained to sum to a fixed value.
+aliases:
+  en:
+  - ternary-basic
+  - ternary basic
+  - basic ternary plot
+  es:
+  - ternary-basic
+  - ternary basic
+  - diagrama ternario básico
+use_when:
+  en:
+  - A ternary plot displays three-component compositional data on an equilateral triangle
+    where each vertex represents 100% of one component. Points inside the triangle
+    show compositions that sum to a con
+  es:
+  - A ternary plot displays three-component compositional data on an equilateral triangle
+    where each vertex represents 100% of one component. Points inside the triangle
+    show compositions that sum to a con
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing chemical or material compositions (e.g., alloy mixtures, cement formulations)
+  - Soil classification using sand, silt, and clay proportions
+  - Visualizing market share distribution among three competitors
+  - Studying color mixing with RGB or other three-component systems
+  es:
+  - Analyzing chemical or material compositions (e.g., alloy mixtures, cement formulations)
+  - Soil classification using sand, silt, and clay proportions
+  - Visualizing market share distribution among three competitors
+  - Studying color mixing with RGB or other three-component systems
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type: []
+  data_type:
+  - numeric
+  - compositional
+  domain:
+  - science
+  - chemistry
+  features:
+  - basic
+  - proportional
+keywords:
+  en:
+  - ternary plot
+  - basic
+  - numeric
+  - compositional
+  - science
+  - chemistry
+  - proportional
+  es:
+  - diagrama ternario
+  - básico
+  - numérico
+  - compositional
+  - ciencia
+  - chemistry
+  - basic
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/ternary-basic/implementations/javascript/chartjs.js
+    d3: plots/ternary-basic/implementations/javascript/d3.js
+    echarts: plots/ternary-basic/implementations/javascript/echarts.js
+    highcharts: plots/ternary-basic/implementations/javascript/highcharts.js
+    muix: plots/ternary-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/ternary-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/ternary-basic/implementations/python/altair.py
+    bokeh: plots/ternary-basic/implementations/python/bokeh.py
+    letsplot: plots/ternary-basic/implementations/python/letsplot.py
+    matplotlib: plots/ternary-basic/implementations/python/matplotlib.py
+    plotly: plots/ternary-basic/implementations/python/plotly.py
+    plotnine: plots/ternary-basic/implementations/python/plotnine.py
+    pygal: plots/ternary-basic/implementations/python/pygal.py
+    seaborn: plots/ternary-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/ternary-basic/implementations/r/ggplot2.R
+notes:
+- Grid lines should be drawn at regular intervals (typically 10% or 20%)
+- Each vertex should be clearly labeled with component names
+- Points should be visually distinct with appropriate marker size and color
+source: anyplot
+anyplot_updated: 2026-08-04 14:43:51+00:00

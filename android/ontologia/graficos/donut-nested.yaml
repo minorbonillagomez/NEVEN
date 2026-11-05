@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: donut-nested
+name:
+  en: Nested Donut Chart
+  es: Gráfico de Dona
+description:
+  en: A nested donut chart displays hierarchical data as multiple concentric rings,
+    where each ring represents a level of the hierarchy. Inner rings show parent categories
+    while outer rings show their subdivisions. This visualization effectively reveals
+    part-to-whole relationships across multiple levels while maintaining the familiar
+    donut format.
+  es: A nested donut chart displays hierarchical data as multiple concentric rings,
+    where each ring represents a level of the hierarchy. Inner rings show parent categories
+    while outer rings show their subdivisions. This visualization effectively reveals
+    part-to-whole relationships across multiple levels while maintaining the familiar
+    donut format.
+aliases:
+  en:
+  - donut-nested
+  - donut nested
+  - donut chart
+  es:
+  - donut-nested
+  - donut nested
+  - gráfico de dona
+use_when:
+  en:
+  - Showing part-to-whole relationships
+  - Displaying composition with few categories (≤6)
+  - Emphasizing proportions
+  es:
+  - Mostrar relaciones parte-todo
+  - Visualizar composición con pocas categorías (≤6)
+  - Enfatizar proporciones
+avoid_when:
+  en:
+  - Many categories (>6)
+  - Comparing values (use bar)
+  es:
+  - Muchas categorías (>6)
+  - Comparar valores (usar barras)
+applications:
+  en:
+  - Budget allocation showing department totals (inner) and expense categories (outer)
+  - Market share by region (inner) and product lines within each region (outer)
+  - Organization structure showing divisions and their teams
+  - Revenue breakdown by business unit and customer segments
+  es:
+  - Budget allocation showing department totals (inner) and expense categories (outer)
+  - Market share by region (inner) and product lines within each region (outer)
+  - Organization structure showing divisions and their teams
+  - Revenue breakdown by business unit and customer segments
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 2
+    max: 10
+tags:
+  plot_type:
+  - donut
+  data_type:
+  - categorical
+  - hierarchical
+  - numeric
+  domain:
+  - general
+  - business
+  features:
+  - nested
+  - multi-level
+  - proportional
+keywords:
+  en:
+  - donut chart
+  - nested
+  - donut
+  - categorical
+  - hierarchical
+  - numeric
+  - general
+  - business
+  - multi-level
+  - proportional
+  es:
+  - gráfico de dona
+  - nested
+  - donut
+  - categórico
+  - jerárquico
+  - numérico
+  - general
+  - negocios
+  - multi-level
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/donut-nested/implementations/javascript/chartjs.js
+    d3: plots/donut-nested/implementations/javascript/d3.js
+    echarts: plots/donut-nested/implementations/javascript/echarts.js
+    highcharts: plots/donut-nested/implementations/javascript/highcharts.js
+    muix: plots/donut-nested/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/donut-nested/implementations/julia/makie.jl
+  python:
+    altair: plots/donut-nested/implementations/python/altair.py
+    bokeh: plots/donut-nested/implementations/python/bokeh.py
+    letsplot: plots/donut-nested/implementations/python/letsplot.py
+    matplotlib: plots/donut-nested/implementations/python/matplotlib.py
+    plotly: plots/donut-nested/implementations/python/plotly.py
+    plotnine: plots/donut-nested/implementations/python/plotnine.py
+    pygal: plots/donut-nested/implementations/python/pygal.py
+    seaborn: plots/donut-nested/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/donut-nested/implementations/r/ggplot2.R
+notes:
+- Use consistent color families per parent category (same hue, varying lightness)
+- Align child segments with parent segment boundaries for clarity
+- Include labels on larger segments, use legend for smaller ones
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

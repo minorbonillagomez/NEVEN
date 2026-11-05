@@ -1,0 +1,124 @@
+entity_type: ChartType
+id: bar-diverging
+name:
+  en: Diverging Bar Chart
+  es: Gráfico de Barras
+description:
+  en: A diverging bar chart displays bars extending in opposite directions from a
+    central baseline, typically at zero. This visualization is ideal for comparing
+    positive and negative values, showing responses above and below a neutral point,
+    or contrasting opposing categories. Different colors distinguish positive from
+    negative values, making it easy to identify magnitude and direction at a glance.
+  es: A diverging bar chart displays bars extending in opposite directions from a
+    central baseline, typically at zero. This visualization is ideal for comparing
+    positive and negative values, showing responses above and below a neutral point,
+    or contrasting opposing categories. Different colors distinguish positive from
+    negative values, making it easy to identify magnitude and direction at a glance.
+aliases:
+  en:
+  - bar-diverging
+  - bar diverging
+  - bar chart
+  es:
+  - bar-diverging
+  - bar diverging
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Visualizing survey responses (agree/disagree, satisfied/dissatisfied scales)
+  - Displaying net promoter scores or sentiment analysis results
+  - Comparing political polling data across ideological spectrums
+  - Showing profit/loss or growth/decline metrics across categories
+  es:
+  - Visualizing survey responses (agree/disagree, satisfied/dissatisfied scales)
+  - Displaying net promoter scores or sentiment analysis results
+  - Comparing political polling data across ideological spectrums
+  - Showing profit/loss or growth/decline metrics across categories
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - numeric
+  - categorical
+  domain:
+  - general
+  - business
+  - marketing
+  features:
+  - diverging
+  - comparison
+  - centered-baseline
+keywords:
+  en:
+  - bar chart
+  - diverging
+  - bar
+  - numeric
+  - categorical
+  - general
+  - business
+  - marketing
+  - comparison
+  - centered-baseline
+  es:
+  - gráfico de barras
+  - diverging
+  - bar
+  - numérico
+  - categórico
+  - general
+  - negocios
+  - marketing
+  - comparación
+  - centered-baseline
+implementations:
+  javascript:
+    chartjs: plots/bar-diverging/implementations/javascript/chartjs.js
+    d3: plots/bar-diverging/implementations/javascript/d3.js
+    echarts: plots/bar-diverging/implementations/javascript/echarts.js
+    highcharts: plots/bar-diverging/implementations/javascript/highcharts.js
+    muix: plots/bar-diverging/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-diverging/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-diverging/implementations/python/altair.py
+    bokeh: plots/bar-diverging/implementations/python/bokeh.py
+    letsplot: plots/bar-diverging/implementations/python/letsplot.py
+    matplotlib: plots/bar-diverging/implementations/python/matplotlib.py
+    plotly: plots/bar-diverging/implementations/python/plotly.py
+    plotnine: plots/bar-diverging/implementations/python/plotnine.py
+    pygal: plots/bar-diverging/implementations/python/pygal.py
+    seaborn: plots/bar-diverging/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-diverging/implementations/r/ggplot2.R
+notes:
+- Use contrasting colors for positive and negative values (e.g., blue/red, green/orange)
+- Consider horizontal orientation for long category labels
+- Add a vertical line or clear visual indicator at the zero baseline
+source: anyplot
+anyplot_updated: 2026-05-08 08:40:23+00:00

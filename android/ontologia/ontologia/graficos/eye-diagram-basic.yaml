@@ -1,0 +1,127 @@
+entity_type: ChartType
+id: eye-diagram-basic
+name:
+  en: Signal Integrity Eye Diagram
+  es: Eye Diagram Basic
+description:
+  en: An eye diagram visualizes signal integrity by overlaying many periods of a digital
+    signal onto a single time window spanning 1-2 unit intervals (UI). The overlapping
+    traces form a characteristic eye-shaped opening whose height, width, and clarity
+    reveal signal quality metrics such as jitter, noise, and inter-symbol interference
+    (ISI). A wide-open eye indicates clean signal transmission, while a closed or
+    blurred eye signals degradation.
+  es: An eye diagram visualizes signal integrity by overlaying many periods of a digital
+    signal onto a single time window spanning 1-2 unit intervals (UI). The overlapping
+    traces form a characteristic eye-shaped opening whose height, width, and clarity
+    reveal signal quality metrics such as jitter, noise, and inter-symbol interference
+    (ISI). A wide-open eye indicates clean signal transmission, while a closed or
+    blurred eye signals degradation.
+aliases:
+  en:
+  - eye-diagram-basic
+  - eye diagram basic
+  - eye diagram basic
+  es:
+  - eye-diagram-basic
+  - eye diagram basic
+  - eye diagram basic
+use_when:
+  en:
+  - An eye diagram visualizes signal integrity by overlaying many periods of a digital
+    signal onto a single time window spanning 1-2 unit intervals (UI). The overlapping
+    traces form a characteristic eye-s
+  es:
+  - An eye diagram visualizes signal integrity by overlaying many periods of a digital
+    signal onto a single time window spanning 1-2 unit intervals (UI). The overlapping
+    traces form a characteristic eye-s
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Telecommunications engineering: characterizing high-speed serial links (PCIe,
+    USB, HDMI) for compliance testing'
+  - 'PCB design: validating signal integrity across traces, connectors, and backplanes'
+  - 'Semiconductor testing: evaluating SerDes transmitter and receiver performance'
+  - 'Fiber optics: assessing optical signal quality and link budget margins'
+  es:
+  - 'Telecommunications engineering: characterizing high-speed serial links (PCIe,
+    USB, HDMI) for compliance testing'
+  - 'PCB design: validating signal integrity across traces, connectors, and backplanes'
+  - 'Semiconductor testing: evaluating SerDes transmitter and receiver performance'
+  - 'Fiber optics: assessing optical signal quality and link budget margins'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  - heatmap
+  data_type:
+  - timeseries
+  - numeric
+  - continuous
+  domain:
+  - engineering
+  - technology
+  features:
+  - color-mapped
+  - advanced
+keywords:
+  en:
+  - eye
+  - diagram
+  - basic
+  - line
+  - heatmap
+  - timeseries
+  - numeric
+  - continuous
+  - engineering
+  - technology
+  - color-mapped
+  - advanced
+  es:
+  - eye
+  - diagram
+  - básico
+  - line
+  - heatmap
+  - timeseries
+  - numérico
+  - continuo
+  - ingeniería
+  - technology
+  - color-mapped
+  - advanced
+implementations:
+  javascript:
+    chartjs: plots/eye-diagram-basic/implementations/javascript/chartjs.js
+    d3: plots/eye-diagram-basic/implementations/javascript/d3.js
+    echarts: plots/eye-diagram-basic/implementations/javascript/echarts.js
+    highcharts: plots/eye-diagram-basic/implementations/javascript/highcharts.js
+    muix: plots/eye-diagram-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/eye-diagram-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/eye-diagram-basic/implementations/python/altair.py
+    bokeh: plots/eye-diagram-basic/implementations/python/bokeh.py
+    letsplot: plots/eye-diagram-basic/implementations/python/letsplot.py
+    matplotlib: plots/eye-diagram-basic/implementations/python/matplotlib.py
+    plotly: plots/eye-diagram-basic/implementations/python/plotly.py
+    plotnine: plots/eye-diagram-basic/implementations/python/plotnine.py
+    pygal: plots/eye-diagram-basic/implementations/python/pygal.py
+    seaborn: plots/eye-diagram-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/eye-diagram-basic/implementations/r/ggplot2.R
+notes:
+- Use color intensity (density heatmap coloring) to show where traces overlap most
+  frequently, with the dense end of the sequential colormap marking high trace density
+- Time axis should be labeled in unit intervals (UI), not absolute time
+- Voltage axis should show signal levels (e.g., 0 and 1 for NRZ)
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

@@ -1,0 +1,131 @@
+entity_type: ChartType
+id: circos-basic
+name:
+  en: Circos Plot
+  es: Circos Basic Básico
+description:
+  en: A Circos plot is a circular visualization that displays data on concentric tracks
+    arranged around a circle, with ribbons or arcs connecting related segments across
+    the circular layout. Originally designed for genomic data visualization, it excels
+    at showing relationships between segments while simultaneously displaying multiple
+    data attributes on different tracks. The circular arrangement makes efficient
+    use of space and reveals patterns in complex relational data.
+  es: A Circos plot is a circular visualization that displays data on concentric tracks
+    arranged around a circle, with ribbons or arcs connecting related segments across
+    the circular layout. Originally designed for genomic data visualization, it excels
+    at showing relationships between segments while simultaneously displaying multiple
+    data attributes on different tracks. The circular arrangement makes efficient
+    use of space and reveals patterns in complex relational data.
+aliases:
+  en:
+  - circos-basic
+  - circos basic
+  - basic circos basic
+  es:
+  - circos-basic
+  - circos basic
+  - circos basic básico
+use_when:
+  en:
+  - A Circos plot is a circular visualization that displays data on concentric tracks
+    arranged around a circle, with ribbons or arcs connecting related segments across
+    the circular layout. Originally desi
+  es:
+  - A Circos plot is a circular visualization that displays data on concentric tracks
+    arranged around a circle, with ribbons or arcs connecting related segments across
+    the circular layout. Originally desi
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Visualizing chromosomal rearrangements and genomic structural variations in bioinformatics
+  - Displaying trade flows or migration patterns between countries or regions
+  - Showing dependencies and relationships between software modules or system components
+  - Analyzing co-occurrence or correlation patterns between categorical variables
+  es:
+  - Visualizing chromosomal rearrangements and genomic structural variations in bioinformatics
+  - Displaying trade flows or migration patterns between countries or regions
+  - Showing dependencies and relationships between software modules or system components
+  - Analyzing co-occurrence or correlation patterns between categorical variables
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - circos
+  - circular
+  - chord
+  data_type:
+  - categorical
+  - numeric
+  - relational
+  domain:
+  - general
+  - science
+  - bioinformatics
+  features:
+  - basic
+  - multi-track
+  - flow-visualization
+  - proportional
+keywords:
+  en:
+  - circos
+  - basic
+  - circular
+  - chord
+  - categorical
+  - numeric
+  - relational
+  - general
+  - science
+  - bioinformatics
+  - multi-track
+  - flow-visualization
+  - proportional
+  es:
+  - circos
+  - básico
+  - circular
+  - chord
+  - categórico
+  - numérico
+  - relational
+  - general
+  - ciencia
+  - bioinformatics
+  - basic
+  - multi-track
+  - flow-visualization
+  - proportional
+implementations:
+  javascript:
+    chartjs: plots/circos-basic/implementations/javascript/chartjs.js
+    d3: plots/circos-basic/implementations/javascript/d3.js
+    echarts: plots/circos-basic/implementations/javascript/echarts.js
+    highcharts: plots/circos-basic/implementations/javascript/highcharts.js
+    muix: plots/circos-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/circos-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/circos-basic/implementations/python/altair.py
+    bokeh: plots/circos-basic/implementations/python/bokeh.py
+    letsplot: plots/circos-basic/implementations/python/letsplot.py
+    matplotlib: plots/circos-basic/implementations/python/matplotlib.py
+    plotly: plots/circos-basic/implementations/python/plotly.py
+    plotnine: plots/circos-basic/implementations/python/plotnine.py
+    pygal: plots/circos-basic/implementations/python/pygal.py
+    seaborn: plots/circos-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/circos-basic/implementations/r/ggplot2.R
+notes:
+- Segments should be arranged around the circle with gaps for visual separation
+- Ribbon width should be proportional to the connection value
+- Use distinct colors for each segment to aid identification
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

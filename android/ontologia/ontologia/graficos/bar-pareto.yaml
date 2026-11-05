@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: bar-pareto
+name:
+  en: Pareto Chart with Cumulative Line
+  es: Gráfico de Barras
+description:
+  en: A Pareto chart combining descending-sorted bars (by frequency or count) with
+    a cumulative percentage line overlay on a secondary y-axis. This visualization
+    helps identify the most significant factors in a dataset by applying the Pareto
+    principle (80/20 rule), making it one of the "7 Basic Tools of Quality" in Six
+    Sigma and quality management. It reveals which categories contribute the most
+    to an overall effect, enabling data-driven prioritization.
+  es: A Pareto chart combining descending-sorted bars (by frequency or count) with
+    a cumulative percentage line overlay on a secondary y-axis. This visualization
+    helps identify the most significant factors in a dataset by applying the Pareto
+    principle (80/20 rule), making it one of the "7 Basic Tools of Quality" in Six
+    Sigma and quality management. It reveals which categories contribute the most
+    to an overall effect, enabling data-driven prioritization.
+aliases:
+  en:
+  - bar-pareto
+  - bar pareto
+  - bar chart
+  es:
+  - bar-pareto
+  - bar pareto
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - 'Quality control: identifying the most frequent defect types in a manufacturing
+    process to prioritize corrective actions'
+  - 'Business operations: analyzing customer complaint categories to focus improvement
+    efforts on the highest-impact areas'
+  - 'Six Sigma: performing root cause analysis by ranking failure modes by frequency
+    during DMAIC projects'
+  es:
+  - 'Quality control: identifying the most frequent defect types in a manufacturing
+    process to prioritize corrective actions'
+  - 'Business operations: analyzing customer complaint categories to focus improvement
+    efforts on the highest-impact areas'
+  - 'Six Sigma: performing root cause analysis by ranking failure modes by frequency
+    during DMAIC projects'
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  - line
+  data_type:
+  - categorical
+  - numeric
+  domain:
+  - business
+  - engineering
+  features:
+  - cumulative
+  - ranking
+  - annotated
+keywords:
+  en:
+  - bar chart
+  - pareto
+  - bar
+  - line
+  - categorical
+  - numeric
+  - business
+  - engineering
+  - cumulative
+  - ranking
+  - annotated
+  es:
+  - gráfico de barras
+  - pareto
+  - bar
+  - line
+  - categórico
+  - numérico
+  - negocios
+  - ingeniería
+  - cumulative
+  - clasificación
+  - annotated
+implementations:
+  javascript:
+    chartjs: plots/bar-pareto/implementations/javascript/chartjs.js
+    d3: plots/bar-pareto/implementations/javascript/d3.js
+    echarts: plots/bar-pareto/implementations/javascript/echarts.js
+    highcharts: plots/bar-pareto/implementations/javascript/highcharts.js
+    muix: plots/bar-pareto/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-pareto/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-pareto/implementations/python/altair.py
+    bokeh: plots/bar-pareto/implementations/python/bokeh.py
+    letsplot: plots/bar-pareto/implementations/python/letsplot.py
+    matplotlib: plots/bar-pareto/implementations/python/matplotlib.py
+    plotly: plots/bar-pareto/implementations/python/plotly.py
+    plotnine: plots/bar-pareto/implementations/python/plotnine.py
+    pygal: plots/bar-pareto/implementations/python/pygal.py
+    seaborn: plots/bar-pareto/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-pareto/implementations/r/ggplot2.R
+notes:
+- Bars must be sorted in descending order by value (largest to smallest, left to right)
+- Cumulative percentage line uses a secondary y-axis (0-100%)
+- Include an 80% horizontal reference line to highlight the 80/20 threshold
+source: anyplot
+anyplot_updated: null

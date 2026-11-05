@@ -1,0 +1,133 @@
+entity_type: ChartType
+id: scatter-pitch-events
+name:
+  en: Soccer Pitch Event Map
+  es: Diagrama de Dispersión
+description:
+  en: A soccer pitch event map positions match events (passes, shots, tackles, interceptions)
+    as markers on an accurately scaled football pitch diagram. The pitch is drawn
+    with standard markings including penalty areas, center circle, goal areas, and
+    halfway line. Each event type uses distinct markers and colors, with directional
+    arrows for passes and shots. This visualization is essential for tactical match
+    analysis, scouting, and coaching in football analytics.
+  es: A soccer pitch event map positions match events (passes, shots, tackles, interceptions)
+    as markers on an accurately scaled football pitch diagram. The pitch is drawn
+    with standard markings including penalty areas, center circle, goal areas, and
+    halfway line. Each event type uses distinct markers and colors, with directional
+    arrows for passes and shots. This visualization is essential for tactical match
+    analysis, scouting, and coaching in football analytics.
+aliases:
+  en:
+  - scatter-pitch-events
+  - scatter pitch events
+  - scatter plot
+  es:
+  - scatter-pitch-events
+  - scatter pitch events
+  - diagrama de dispersión
+use_when:
+  en:
+  - Exploring relationship between two continuous variables
+  - Detecting correlations (positive, negative, none)
+  - Identifying outliers in bivariate data
+  es:
+  - Explorar relación entre dos variables continuas
+  - Detectar correlaciones (positiva, negativa, ninguna)
+  - Identificar valores atípicos en datos bivariados
+avoid_when:
+  en:
+  - Categorical variables (use bar chart)
+  - Time series (use line chart)
+  es:
+  - Variables categóricas (usar gráfico de barras)
+  - Series temporales (usar gráfico de líneas)
+applications:
+  en:
+  - Analyzing pass networks and attacking build-up patterns during a match
+  - Scouting player positioning, defensive actions, and pressing zones
+  - Visualizing shot locations with outcome encoding for expected goals (xG) analysis
+  - Post-match tactical review comparing event distributions across pitch zones
+  es:
+  - Analyzing pass networks and attacking build-up patterns during a match
+  - Scouting player positioning, defensive actions, and pressing zones
+  - Visualizing shot locations with outcome encoding for expected goals (xG) analysis
+  - Post-match tactical review comparing event distributions across pitch zones
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - numeric
+  - numeric
+  recommended_rows:
+    min: 20
+    max: 5000
+tags:
+  plot_type:
+  - scatter
+  - map
+  data_type:
+  - numeric
+  - categorical
+  - spatial
+  domain:
+  - general
+  features:
+  - annotated
+  - color-mapped
+  - 2d
+keywords:
+  en:
+  - scatter plot
+  - pitch
+  - events
+  - scatter
+  - map
+  - numeric
+  - categorical
+  - spatial
+  - general
+  - annotated
+  - color-mapped
+  - 2d
+  es:
+  - diagrama de dispersión
+  - pitch
+  - events
+  - scatter
+  - map
+  - numérico
+  - categórico
+  - spatial
+  - general
+  - annotated
+  - color-mapped
+  - 2d
+implementations:
+  javascript:
+    chartjs: plots/scatter-pitch-events/implementations/javascript/chartjs.js
+    d3: plots/scatter-pitch-events/implementations/javascript/d3.js
+    echarts: plots/scatter-pitch-events/implementations/javascript/echarts.js
+    highcharts: plots/scatter-pitch-events/implementations/javascript/highcharts.js
+    muix: plots/scatter-pitch-events/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/scatter-pitch-events/implementations/julia/makie.jl
+  python:
+    altair: plots/scatter-pitch-events/implementations/python/altair.py
+    bokeh: plots/scatter-pitch-events/implementations/python/bokeh.py
+    letsplot: plots/scatter-pitch-events/implementations/python/letsplot.py
+    matplotlib: plots/scatter-pitch-events/implementations/python/matplotlib.py
+    plotly: plots/scatter-pitch-events/implementations/python/plotly.py
+    plotnine: plots/scatter-pitch-events/implementations/python/plotnine.py
+    pygal: plots/scatter-pitch-events/implementations/python/pygal.py
+    seaborn: plots/scatter-pitch-events/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/scatter-pitch-events/implementations/r/ggplot2.R
+notes:
+- Draw an accurate pitch outline with standard FIFA dimensions (105m × 68m) including
+  penalty areas, goal areas, center circle, halfway line, corner arcs, and goal posts
+- Use distinct marker shapes and colors for each event type (e.g., circles for passes,
+  stars for shots, triangles for tackles, diamonds for interceptions)
+- Encode outcome (successful/unsuccessful) via marker fill or opacity (e.g., filled
+  vs hollow, or high vs low opacity)
+source: anyplot
+anyplot_updated: '2026-10-04T18:42:43Z'

@@ -1,0 +1,128 @@
+entity_type: ChartType
+id: bar-spine
+name:
+  en: Spine Plot for Two-Variable Proportions
+  es: Gráfico de Barras
+description:
+  en: A spine plot (spineplot) is a stacked bar chart where bar widths are proportional
+    to the marginal frequency of one categorical variable and the subdivisions within
+    each bar show the conditional distribution of a second categorical variable. All
+    bars are normalized to the same height (100%), so visual comparison focuses on
+    how the conditional proportions shift across categories. It is a one-dimensional
+    specialization of mosaic plots and excels at revealing associations between two
+    categorical variables in contingency table data.
+  es: A spine plot (spineplot) is a stacked bar chart where bar widths are proportional
+    to the marginal frequency of one categorical variable and the subdivisions within
+    each bar show the conditional distribution of a second categorical variable. All
+    bars are normalized to the same height (100%), so visual comparison focuses on
+    how the conditional proportions shift across categories. It is a one-dimensional
+    specialization of mosaic plots and excels at revealing associations between two
+    categorical variables in contingency table data.
+aliases:
+  en:
+  - bar-spine
+  - bar spine
+  - bar chart
+  es:
+  - bar-spine
+  - bar spine
+  - gráfico de barras
+use_when:
+  en:
+  - Comparing values across categories
+  - Showing rankings or distributions
+  - Displaying discrete data
+  es:
+  - Comparar valores entre categorías
+  - Mostrar rankings o distribuciones
+  - Visualizar datos discretos
+avoid_when:
+  en:
+  - Continuous data over time (use line chart)
+  - Part-to-whole relationships (use pie)
+  es:
+  - Datos continuos en el tiempo (usar líneas)
+  - Relaciones parte-todo (usar circular)
+applications:
+  en:
+  - Showing survival rates across passenger classes in the Titanic dataset
+  - Visualizing disease prevalence across demographic age groups
+  - Displaying customer churn rates segmented by subscription tier
+  - Comparing pass/fail rates across different experimental test conditions
+  es:
+  - Showing survival rates across passenger classes in the Titanic dataset
+  - Visualizing disease prevalence across demographic age groups
+  - Displaying customer churn rates segmented by subscription tier
+  - Comparing pass/fail rates across different experimental test conditions
+data_requirements:
+  min_columns: 2
+  max_columns: null
+  column_types:
+  - categorical
+  - numeric
+  recommended_rows:
+    min: 3
+    max: 30
+tags:
+  plot_type:
+  - bar
+  data_type:
+  - categorical
+  - frequency
+  domain:
+  - general
+  - statistics
+  features:
+  - stacked
+  - proportional
+  - comparison
+keywords:
+  en:
+  - bar chart
+  - spine
+  - bar
+  - categorical
+  - frequency
+  - general
+  - statistics
+  - stacked
+  - proportional
+  - comparison
+  es:
+  - gráfico de barras
+  - spine
+  - bar
+  - categórico
+  - frequency
+  - general
+  - estadística
+  - stacked
+  - proportional
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/bar-spine/implementations/javascript/chartjs.js
+    d3: plots/bar-spine/implementations/javascript/d3.js
+    echarts: plots/bar-spine/implementations/javascript/echarts.js
+    highcharts: plots/bar-spine/implementations/javascript/highcharts.js
+    muix: plots/bar-spine/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/bar-spine/implementations/julia/makie.jl
+  python:
+    altair: plots/bar-spine/implementations/python/altair.py
+    bokeh: plots/bar-spine/implementations/python/bokeh.py
+    letsplot: plots/bar-spine/implementations/python/letsplot.py
+    matplotlib: plots/bar-spine/implementations/python/matplotlib.py
+    plotly: plots/bar-spine/implementations/python/plotly.py
+    plotnine: plots/bar-spine/implementations/python/plotnine.py
+    pygal: plots/bar-spine/implementations/python/pygal.py
+    seaborn: plots/bar-spine/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/bar-spine/implementations/r/ggplot2.R
+notes:
+- Bar width must be proportional to the marginal count of each x_category
+- Segments within each bar represent conditional proportions of fill_category (heights
+  sum to 100%)
+- All bars share the same total height (normalized to 100%)
+source: anyplot
+anyplot_updated: '2026-09-27T02:41:45Z'

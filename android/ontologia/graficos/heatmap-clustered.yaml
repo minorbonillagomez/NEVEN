@@ -1,0 +1,123 @@
+entity_type: ChartType
+id: heatmap-clustered
+name:
+  en: Clustered Heatmap
+  es: Mapa de Calor
+description:
+  en: A heatmap with hierarchical clustering dendrograms on both rows and columns,
+    showing both data values and their hierarchical relationships. Rows and columns
+    are automatically reordered based on clustering results to reveal natural groupings
+    in the data. Essential for discovering patterns in high-dimensional data where
+    similar observations or variables should be visually grouped together.
+  es: A heatmap with hierarchical clustering dendrograms on both rows and columns,
+    showing both data values and their hierarchical relationships. Rows and columns
+    are automatically reordered based on clustering results to reveal natural groupings
+    in the data. Essential for discovering patterns in high-dimensional data where
+    similar observations or variables should be visually grouped together.
+aliases:
+  en:
+  - heatmap-clustered
+  - heatmap clustered
+  - heatmap
+  es:
+  - heatmap-clustered
+  - heatmap clustered
+  - mapa de calor
+use_when:
+  en:
+  - Visualizing matrix data
+  - Showing correlations between variables
+  - Displaying density patterns
+  es:
+  - Visualizar datos matriciales
+  - Mostrar correlaciones entre variables
+  - Mostrar patrones de densidad
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Gene expression analysis identifying co-expressed genes and sample clusters
+  - Customer segmentation revealing behavioral patterns and market segments
+  - Feature correlation analysis with automatic grouping of related variables
+  - Biological pathway analysis clustering related proteins or metabolites
+  es:
+  - Gene expression analysis identifying co-expressed genes and sample clusters
+  - Customer segmentation revealing behavioral patterns and market segments
+  - Feature correlation analysis with automatic grouping of related variables
+  - Biological pathway analysis clustering related proteins or metabolites
+data_requirements:
+  min_columns: 3
+  max_columns: null
+  column_types:
+  - categorical|numeric
+  - categorical|numeric
+  - numeric
+  recommended_rows:
+    min: 10
+    max: 10000
+tags:
+  plot_type:
+  - heatmap
+  - dendrogram
+  data_type:
+  - numeric
+  - hierarchical
+  domain:
+  - general
+  - science
+  - statistics
+  features:
+  - clustered
+  - hierarchical-clustering
+  - dendrograms
+keywords:
+  en:
+  - heatmap
+  - clustered
+  - dendrogram
+  - numeric
+  - hierarchical
+  - general
+  - science
+  - statistics
+  - hierarchical-clustering
+  - dendrograms
+  es:
+  - mapa de calor
+  - clustered
+  - heatmap
+  - dendrogram
+  - numérico
+  - jerárquico
+  - general
+  - ciencia
+  - estadística
+  - hierarchical-clustering
+  - dendrograms
+implementations:
+  javascript:
+    chartjs: plots/heatmap-clustered/implementations/javascript/chartjs.js
+    d3: plots/heatmap-clustered/implementations/javascript/d3.js
+    echarts: plots/heatmap-clustered/implementations/javascript/echarts.js
+    highcharts: plots/heatmap-clustered/implementations/javascript/highcharts.js
+    muix: plots/heatmap-clustered/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/heatmap-clustered/implementations/julia/makie.jl
+  python:
+    altair: plots/heatmap-clustered/implementations/python/altair.py
+    bokeh: plots/heatmap-clustered/implementations/python/bokeh.py
+    letsplot: plots/heatmap-clustered/implementations/python/letsplot.py
+    matplotlib: plots/heatmap-clustered/implementations/python/matplotlib.py
+    plotly: plots/heatmap-clustered/implementations/python/plotly.py
+    plotnine: plots/heatmap-clustered/implementations/python/plotnine.py
+    pygal: plots/heatmap-clustered/implementations/python/pygal.py
+    seaborn: plots/heatmap-clustered/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/heatmap-clustered/implementations/r/ggplot2.R
+notes:
+- Display dendrograms on both rows and columns (clustermap style)
+- Reorder rows and columns according to hierarchical clustering results
+- Use a diverging colormap for data centered around zero
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

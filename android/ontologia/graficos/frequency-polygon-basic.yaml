@@ -1,0 +1,120 @@
+entity_type: ChartType
+id: frequency-polygon-basic
+name:
+  en: Frequency Polygon for Distribution Comparison
+  es: Frequency Polygon Basic
+description:
+  en: A frequency polygon connects the midpoints of histogram bins with straight line
+    segments, creating an outline of the distribution shape. This visualization excels
+    at comparing multiple distributions simultaneously since lines overlap without
+    obscuring each other, unlike stacked or overlapping histogram bars. Frequency
+    polygons reveal differences in central tendency, spread, skewness, and modality
+    across groups with minimal visual clutter.
+  es: A frequency polygon connects the midpoints of histogram bins with straight line
+    segments, creating an outline of the distribution shape. This visualization excels
+    at comparing multiple distributions simultaneously since lines overlap without
+    obscuring each other, unlike stacked or overlapping histogram bars. Frequency
+    polygons reveal differences in central tendency, spread, skewness, and modality
+    across groups with minimal visual clutter.
+aliases:
+  en:
+  - frequency-polygon-basic
+  - frequency polygon basic
+  - frequency polygon basic
+  es:
+  - frequency-polygon-basic
+  - frequency polygon basic
+  - frequency polygon basic
+use_when:
+  en:
+  - A frequency polygon connects the midpoints of histogram bins with straight line
+    segments, creating an outline of the distribution shape. This visualization excels
+    at comparing multiple distributions s
+  es:
+  - A frequency polygon connects the midpoints of histogram bins with straight line
+    segments, creating an outline of the distribution shape. This visualization excels
+    at comparing multiple distributions s
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Comparing test score distributions across multiple classes or exam sessions
+  - Analyzing response time distributions between experimental conditions in psychology
+    research
+  - Visualizing age distributions across different customer segments or cohorts
+  es:
+  - Comparing test score distributions across multiple classes or exam sessions
+  - Analyzing response time distributions between experimental conditions in psychology
+    research
+  - Visualizing age distributions across different customer segments or cohorts
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - continuous
+  domain:
+  - statistics
+  - general
+  features:
+  - basic
+  - distribution
+  - comparison
+keywords:
+  en:
+  - frequency
+  - polygon
+  - basic
+  - line
+  - numeric
+  - continuous
+  - statistics
+  - general
+  - distribution
+  - comparison
+  es:
+  - frequency
+  - polygon
+  - básico
+  - line
+  - numérico
+  - continuo
+  - estadística
+  - general
+  - basic
+  - distribución
+  - comparación
+implementations:
+  javascript:
+    chartjs: plots/frequency-polygon-basic/implementations/javascript/chartjs.js
+    d3: plots/frequency-polygon-basic/implementations/javascript/d3.js
+    echarts: plots/frequency-polygon-basic/implementations/javascript/echarts.js
+    highcharts: plots/frequency-polygon-basic/implementations/javascript/highcharts.js
+    muix: plots/frequency-polygon-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/frequency-polygon-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/frequency-polygon-basic/implementations/python/altair.py
+    bokeh: plots/frequency-polygon-basic/implementations/python/bokeh.py
+    letsplot: plots/frequency-polygon-basic/implementations/python/letsplot.py
+    matplotlib: plots/frequency-polygon-basic/implementations/python/matplotlib.py
+    plotly: plots/frequency-polygon-basic/implementations/python/plotly.py
+    plotnine: plots/frequency-polygon-basic/implementations/python/plotnine.py
+    pygal: plots/frequency-polygon-basic/implementations/python/pygal.py
+    seaborn: plots/frequency-polygon-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/frequency-polygon-basic/implementations/r/ggplot2.R
+notes:
+- Use distinct line colors and/or styles (solid, dashed) to differentiate groups
+- Include a legend clearly identifying each group
+- Consider adding markers at data points for small datasets
+source: anyplot
+anyplot_updated: 2026-10-02 15:00:51+00:00

@@ -1,0 +1,141 @@
+entity_type: ChartType
+id: lift-curve
+name:
+  en: Model Lift Chart
+  es: Lift Curve
+description:
+  en: 'A lift curve visualizes how much better a predictive model performs compared
+    to random selection, showing the cumulative lift ratio as you target increasing
+    percentages of the population. It answers the question: "If I target the top X%
+    of predictions, how many times more responders will I capture than random targeting?"
+    This plot is essential for evaluating and comparing classification models in scenarios
+    where targeting efficiency matters.'
+  es: 'A lift curve visualizes how much better a predictive model performs compared
+    to random selection, showing the cumulative lift ratio as you target increasing
+    percentages of the population. It answers the question: "If I target the top X%
+    of predictions, how many times more responders will I capture than random targeting?"
+    This plot is essential for evaluating and comparing classification models in scenarios
+    where targeting efficiency matters.'
+aliases:
+  en:
+  - lift-curve
+  - lift curve
+  - lift curve
+  es:
+  - lift-curve
+  - lift curve
+  - lift curve
+use_when:
+  en:
+  - A lift curve visualizes how much better a predictive model performs compared to
+    random selection, showing the cumulative lift ratio as you target increasing percentages
+    of the population. It answers t
+  es:
+  - A lift curve visualizes how much better a predictive model performs compared to
+    random selection, showing the cumulative lift ratio as you target increasing percentages
+    of the population. It answers t
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - 'Marketing campaign targeting: Determine how many customers to contact for maximum
+    response rate improvement'
+  - 'Customer churn prediction: Identify high-risk customers to prioritize for retention
+    efforts'
+  - 'Fraud detection: Evaluate how effectively a model concentrates fraudulent cases
+    in top-ranked predictions'
+  - 'Direct mail optimization: Calculate the optimal mailing list size for cost-effective
+    campaigns'
+  es:
+  - 'Marketing campaign targeting: Determine how many customers to contact for maximum
+    response rate improvement'
+  - 'Customer churn prediction: Identify high-risk customers to prioritize for retention
+    efforts'
+  - 'Fraud detection: Evaluate how effectively a model concentrates fraudulent cases
+    in top-ranked predictions'
+  - 'Direct mail optimization: Calculate the optimal mailing list size for cost-effective
+    campaigns'
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - line
+  data_type:
+  - numeric
+  - categorical
+  - binary
+  domain:
+  - statistics
+  - machine-learning
+  - marketing
+  - business
+  features:
+  - basic
+  - comparison
+  - cumulative
+  - model-evaluation
+  - lift
+keywords:
+  en:
+  - lift
+  - curve
+  - line
+  - numeric
+  - categorical
+  - binary
+  - statistics
+  - machine learning
+  - marketing
+  - business
+  - basic
+  - comparison
+  - cumulative
+  - model-evaluation
+  es:
+  - lift
+  - curve
+  - line
+  - numérico
+  - categórico
+  - binario
+  - estadística
+  - aprendizaje automático
+  - marketing
+  - negocios
+  - basic
+  - comparación
+  - cumulative
+  - model-evaluation
+implementations:
+  javascript:
+    chartjs: plots/lift-curve/implementations/javascript/chartjs.js
+    d3: plots/lift-curve/implementations/javascript/d3.js
+    echarts: plots/lift-curve/implementations/javascript/echarts.js
+    highcharts: plots/lift-curve/implementations/javascript/highcharts.js
+    muix: plots/lift-curve/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/lift-curve/implementations/julia/makie.jl
+  python:
+    altair: plots/lift-curve/implementations/python/altair.py
+    bokeh: plots/lift-curve/implementations/python/bokeh.py
+    letsplot: plots/lift-curve/implementations/python/letsplot.py
+    matplotlib: plots/lift-curve/implementations/python/matplotlib.py
+    plotly: plots/lift-curve/implementations/python/plotly.py
+    plotnine: plots/lift-curve/implementations/python/plotnine.py
+    pygal: plots/lift-curve/implementations/python/pygal.py
+    seaborn: plots/lift-curve/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/lift-curve/implementations/r/ggplot2.R
+notes:
+- X-axis shows percentage of population targeted (0-100%)
+- Y-axis shows cumulative lift ratio (model response rate / baseline response rate)
+- Always include a horizontal reference line at y=1 representing random selection
+  (no lift)
+source: anyplot
+anyplot_updated: 2026-05-10 16:25:26+00:00

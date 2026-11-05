@@ -1,0 +1,132 @@
+entity_type: ChartType
+id: residual-plot
+name:
+  en: Residual Plot
+  es: Gráfico de Residuos
+description:
+  en: A residual plot displays the difference between observed and predicted values
+    (residuals) against fitted values in regression analysis. This diagnostic visualization
+    helps identify violations of regression assumptions including non-linearity, heteroscedasticity
+    (non-constant variance), and outliers. A well-fitting model shows residuals randomly
+    scattered around zero with no discernible pattern.
+  es: A residual plot displays the difference between observed and predicted values
+    (residuals) against fitted values in regression analysis. This diagnostic visualization
+    helps identify violations of regression assumptions including non-linearity, heteroscedasticity
+    (non-constant variance), and outliers. A well-fitting model shows residuals randomly
+    scattered around zero with no discernible pattern.
+aliases:
+  en:
+  - residual-plot
+  - residual plot
+  - residual plot
+  es:
+  - residual-plot
+  - residual plot
+  - gráfico de residuos
+use_when:
+  en:
+  - A residual plot displays the difference between observed and predicted values
+    (residuals) against fitted values in regression analysis. This diagnostic visualization
+    helps identify violations of regre
+  es:
+  - A residual plot displays the difference between observed and predicted values
+    (residuals) against fitted values in regression analysis. This diagnostic visualization
+    helps identify violations of regre
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Validating linear regression model assumptions by checking for random residual
+    distribution
+  - Detecting non-linear relationships that suggest the need for polynomial or transformed
+    features
+  - Identifying heteroscedasticity where prediction errors vary with fitted values
+  - Locating influential outliers and leverage points that may distort model coefficients
+  - Comparing model fit quality across different regression specifications
+  es:
+  - Validating linear regression model assumptions by checking for random residual
+    distribution
+  - Detecting non-linear relationships that suggest the need for polynomial or transformed
+    features
+  - Identifying heteroscedasticity where prediction errors vary with fitted values
+  - Locating influential outliers and leverage points that may distort model coefficients
+  - Comparing model fit quality across different regression specifications
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - scatter
+  data_type:
+  - numeric
+  - continuous
+  - regression
+  domain:
+  - statistics
+  - machine-learning
+  - econometrics
+  features:
+  - basic
+  - model-evaluation
+  - reference-line
+  - diagnostic
+keywords:
+  en:
+  - residual plot
+  - plot
+  - scatter
+  - numeric
+  - continuous
+  - regression
+  - statistics
+  - machine learning
+  - econometrics
+  - basic
+  - model-evaluation
+  - reference-line
+  - diagnostic
+  es:
+  - gráfico de residuos
+  - plot
+  - scatter
+  - numérico
+  - continuo
+  - regression
+  - estadística
+  - aprendizaje automático
+  - econometrics
+  - basic
+  - model-evaluation
+  - reference-line
+  - diagnostic
+implementations:
+  javascript:
+    chartjs: plots/residual-plot/implementations/javascript/chartjs.js
+    d3: plots/residual-plot/implementations/javascript/d3.js
+    echarts: plots/residual-plot/implementations/javascript/echarts.js
+    highcharts: plots/residual-plot/implementations/javascript/highcharts.js
+    muix: plots/residual-plot/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/residual-plot/implementations/julia/makie.jl
+  python:
+    altair: plots/residual-plot/implementations/python/altair.py
+    bokeh: plots/residual-plot/implementations/python/bokeh.py
+    letsplot: plots/residual-plot/implementations/python/letsplot.py
+    matplotlib: plots/residual-plot/implementations/python/matplotlib.py
+    plotly: plots/residual-plot/implementations/python/plotly.py
+    plotnine: plots/residual-plot/implementations/python/plotnine.py
+    pygal: plots/residual-plot/implementations/python/pygal.py
+    seaborn: plots/residual-plot/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/residual-plot/implementations/r/ggplot2.R
+notes:
+- Include a horizontal reference line at y=0 representing perfect predictions
+- Plot residuals on y-axis against fitted values on x-axis (standard residual plot)
+- Use alpha transparency for overlapping points when sample size is large
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00

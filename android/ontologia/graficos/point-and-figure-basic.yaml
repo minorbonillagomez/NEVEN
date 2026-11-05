@@ -1,0 +1,136 @@
+entity_type: ChartType
+id: point-and-figure-basic
+name:
+  en: Point and Figure Chart
+  es: Point And Figure Basic
+description:
+  en: A Point and Figure (P&F) chart is a price-action focused visualization that
+    uses columns of X's (rising prices) and O's (falling prices) to display significant
+    price movements while filtering out time and minor fluctuations. Unlike traditional
+    time-based charts, P&F charts only plot a new symbol when price moves by a defined
+    box size, and only start a new column when price reverses by a specified number
+    of boxes (typically 3). This makes it ideal for identifying clear trends, support/resistance
+    levels, and generating trading signals.
+  es: A Point and Figure (P&F) chart is a price-action focused visualization that
+    uses columns of X's (rising prices) and O's (falling prices) to display significant
+    price movements while filtering out time and minor fluctuations. Unlike traditional
+    time-based charts, P&F charts only plot a new symbol when price moves by a defined
+    box size, and only start a new column when price reverses by a specified number
+    of boxes (typically 3). This makes it ideal for identifying clear trends, support/resistance
+    levels, and generating trading signals.
+aliases:
+  en:
+  - point-and-figure-basic
+  - point and figure basic
+  - point and figure basic
+  es:
+  - point-and-figure-basic
+  - point and figure basic
+  - point and figure basic
+use_when:
+  en:
+  - A Point and Figure (P&F) chart is a price-action focused visualization that uses
+    columns of X's (rising prices) and O's (falling prices) to display significant
+    price movements while filtering out time
+  es:
+  - A Point and Figure (P&F) chart is a price-action focused visualization that uses
+    columns of X's (rising prices) and O's (falling prices) to display significant
+    price movements while filtering out time
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Identifying trend direction and strength in stock trading by observing the dominance
+    of X columns (bullish) versus O columns (bearish)
+  - Detecting support and resistance levels where price repeatedly reverses, visible
+    as horizontal price zones with multiple column reversals
+  - Calculating price targets using the traditional count methods based on column
+    widths at breakout points
+  - Filtering out market noise in volatile markets to focus on meaningful price changes
+    rather than time-based fluctuations
+  es:
+  - Identifying trend direction and strength in stock trading by observing the dominance
+    of X columns (bullish) versus O columns (bearish)
+  - Detecting support and resistance levels where price repeatedly reverses, visible
+    as horizontal price zones with multiple column reversals
+  - Calculating price targets using the traditional count methods based on column
+    widths at breakout points
+  - Filtering out market noise in volatile markets to focus on meaningful price changes
+    rather than time-based fluctuations
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - point-and-figure
+  data_type:
+  - timeseries
+  - numeric
+  domain:
+  - finance
+  - trading
+  features:
+  - basic
+  - technical-analysis
+  - noise-filtering
+  - pattern-recognition
+keywords:
+  en:
+  - point
+  - and
+  - figure
+  - basic
+  - point-and-figure
+  - timeseries
+  - numeric
+  - finance
+  - trading
+  - technical-analysis
+  - noise-filtering
+  - pattern-recognition
+  es:
+  - point
+  - and
+  - figure
+  - básico
+  - point-and-figure
+  - timeseries
+  - numérico
+  - finanzas
+  - trading
+  - basic
+  - technical-analysis
+  - noise-filtering
+  - pattern-recognition
+implementations:
+  javascript:
+    chartjs: plots/point-and-figure-basic/implementations/javascript/chartjs.js
+    d3: plots/point-and-figure-basic/implementations/javascript/d3.js
+    echarts: plots/point-and-figure-basic/implementations/javascript/echarts.js
+    highcharts: plots/point-and-figure-basic/implementations/javascript/highcharts.js
+    muix: plots/point-and-figure-basic/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/point-and-figure-basic/implementations/julia/makie.jl
+  python:
+    altair: plots/point-and-figure-basic/implementations/python/altair.py
+    bokeh: plots/point-and-figure-basic/implementations/python/bokeh.py
+    letsplot: plots/point-and-figure-basic/implementations/python/letsplot.py
+    matplotlib: plots/point-and-figure-basic/implementations/python/matplotlib.py
+    plotly: plots/point-and-figure-basic/implementations/python/plotly.py
+    plotnine: plots/point-and-figure-basic/implementations/python/plotnine.py
+    pygal: plots/point-and-figure-basic/implementations/python/pygal.py
+    seaborn: plots/point-and-figure-basic/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/point-and-figure-basic/implementations/r/ggplot2.R
+notes:
+- Use X symbols for rising price columns and O symbols for falling price columns
+- Green color for X columns (bullish) and red color for O columns (bearish) provides
+  visual distinction
+- Each column contains only X's or only O's - never mixed
+source: anyplot
+anyplot_updated: 2026-05-20 03:16:53+00:00

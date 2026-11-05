@@ -1,0 +1,119 @@
+entity_type: ChartType
+id: mosaic-categorical
+name:
+  en: Mosaic Plot for Categorical Association Analysis
+  es: Mosaic Categorical
+description:
+  en: A mosaic plot visualizes contingency tables by dividing a rectangular area into
+    smaller rectangles whose areas are proportional to cell frequencies. This statistical
+    visualization technique effectively shows relationships and associations between
+    two categorical variables, making it easy to identify patterns, dependencies,
+    and deviations from expected frequencies in cross-tabulated data.
+  es: A mosaic plot visualizes contingency tables by dividing a rectangular area into
+    smaller rectangles whose areas are proportional to cell frequencies. This statistical
+    visualization technique effectively shows relationships and associations between
+    two categorical variables, making it easy to identify patterns, dependencies,
+    and deviations from expected frequencies in cross-tabulated data.
+aliases:
+  en:
+  - mosaic-categorical
+  - mosaic categorical
+  - mosaic categorical
+  es:
+  - mosaic-categorical
+  - mosaic categorical
+  - mosaic categorical
+use_when:
+  en:
+  - A mosaic plot visualizes contingency tables by dividing a rectangular area into
+    smaller rectangles whose areas are proportional to cell frequencies. This statistical
+    visualization technique effectivel
+  es:
+  - A mosaic plot visualizes contingency tables by dividing a rectangular area into
+    smaller rectangles whose areas are proportional to cell frequencies. This statistical
+    visualization technique effectivel
+avoid_when:
+  en: []
+  es: []
+applications:
+  en:
+  - Analyzing survey response patterns across demographic groups
+  - Exploring relationships between categorical variables in social science research
+  - Visualizing contingency tables in medical studies (treatment vs outcome)
+  - Examining association between product categories and customer segments
+  es:
+  - Analyzing survey response patterns across demographic groups
+  - Exploring relationships between categorical variables in social science research
+  - Visualizing contingency tables in medical studies (treatment vs outcome)
+  - Examining association between product categories and customer segments
+data_requirements:
+  min_columns: 1
+  max_columns: null
+  column_types: []
+  recommended_rows:
+    min: 10
+    max: 1000
+tags:
+  plot_type:
+  - mosaic
+  data_type:
+  - categorical
+  - frequency
+  domain:
+  - statistics
+  - research
+  - general
+  features:
+  - basic
+  - proportional
+  - association
+keywords:
+  en:
+  - mosaic
+  - categorical
+  - frequency
+  - statistics
+  - research
+  - general
+  - basic
+  - proportional
+  - association
+  es:
+  - mosaic
+  - categorical
+  - categórico
+  - frequency
+  - estadística
+  - research
+  - general
+  - basic
+  - proportional
+  - association
+implementations:
+  javascript:
+    chartjs: plots/mosaic-categorical/implementations/javascript/chartjs.js
+    d3: plots/mosaic-categorical/implementations/javascript/d3.js
+    echarts: plots/mosaic-categorical/implementations/javascript/echarts.js
+    highcharts: plots/mosaic-categorical/implementations/javascript/highcharts.js
+    muix: plots/mosaic-categorical/implementations/javascript/muix.tsx
+  julia:
+    makie: plots/mosaic-categorical/implementations/julia/makie.jl
+  python:
+    altair: plots/mosaic-categorical/implementations/python/altair.py
+    bokeh: plots/mosaic-categorical/implementations/python/bokeh.py
+    letsplot: plots/mosaic-categorical/implementations/python/letsplot.py
+    matplotlib: plots/mosaic-categorical/implementations/python/matplotlib.py
+    plotly: plots/mosaic-categorical/implementations/python/plotly.py
+    plotnine: plots/mosaic-categorical/implementations/python/plotnine.py
+    pygal: plots/mosaic-categorical/implementations/python/pygal.py
+    seaborn: plots/mosaic-categorical/implementations/python/seaborn.py
+  r:
+    ggplot2: plots/mosaic-categorical/implementations/r/ggplot2.R
+notes:
+- Rectangle widths represent marginal proportions of the first variable
+- Rectangle heights within each column represent conditional proportions of the second
+  variable
+- Area of each rectangle is proportional to the cell frequency in the contingency
+  table
+source: anyplot
+anyplot_updated: 2026-10-04 18:42:43+00:00
