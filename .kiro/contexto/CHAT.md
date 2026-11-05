@@ -1980,3 +1980,1020 @@ Ninguno en esta sesion — pendiente decision del usuario sobre que incluir.
 | **ALTA** | Completar submission arXiv | Paper listo |
 | MEDIA | Revisar archivos eliminados de ontologia-fuentes | Verificar si intencional |
 
+
+
+---
+### Sesion 2026-08-19 (~noche, commits) — Commits ejecutados
+
+## Trabajo realizado
+
+Ejecucion de 4 commits con cambios acumulados de sesiones recientes.
+
+## Commits realizados
+
+| Hash | Descripcion | Archivos |
+|------|-------------|----------|
+| `58fd7f4` | docs(bitacora): update session logs with paper review and arXiv preparation | 2 (CHAT.md, CHAT_LARGO.md) |
+| `9a787d9` | docs(steering): add LaTeX symbol dictionary and PDF-to-RAG pipeline guides | 2 |
+| `fec0f84` | feat(taskpane): add chart classification and color palette modules | 2 |
+| `d1129ae` | test(evals): add i18n taskpane evaluation framework | 3 |
+
+## Archivos commiteados
+
+```
+.kiro/contexto/CHAT.md
+.kiro/contexto/CHAT_LARGO.md
+.kiro/steering/latex-symbol-dictionary.md
+.kiro/steering/pdf-to-rag-pipeline.md
+.kiro/evals/i18n-taskpane/datalab_functions.yaml
+.kiro/evals/i18n-taskpane/settings_subtabs.yaml
+.kiro/evals/i18n-taskpane/ui_elements.yaml
+src/TaskPane/chart-classification.js
+src/TaskPane/color-palettes.js
+```
+
+## Cambios restantes (no commiteados)
+
+| Tipo | Archivos |
+|------|----------|
+| Eliminados | `ontologia-fuentes/LIBROS.../An Introduction to Statistical Learning*` |
+| Nuevos | `scripts/*.py` (8 archivos) |
+| Nuevos | `ext/`, `prompts/`, `tools/` (directorios) |
+| Nuevo | `src/build_log.txt` |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Completar submission arXiv | Paper listo, licencia CC BY |
+| MEDIA | Decidir sobre scripts Python restantes | Esperando decision |
+| MEDIA | Verificar eliminacion de libros en ontologia-fuentes | Esperando confirmacion |
+| BAJA | Push de commits al remoto | Pendiente |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, correccion GitHub) — URL GitHub corregida
+
+## Problema
+
+La URL de GitHub en el paper estaba errada.
+
+**Antes:** `https://github.com/minor-bonilla/NEVEN`
+**Despues:** `https://github.com/minorbonillagomez/NEVEN`
+
+## Archivo modificado
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/docs/Paper/sections/06_conclusion.tex` | URL GitHub corregida (linea 33) |
+
+## Archivos regenerados
+
+| Archivo | Tamaño | Fecha |
+|---------|--------|-------|
+| `src/docs/Paper/main.pdf` | 705.6 KB | 2026-10-24 19:37:30 |
+| `src/docs/Paper/neven-arxiv-submission.zip` | 149.4 KB | 2026-10-24 19:37:31 |
+
+## Commits realizados
+
+Ninguno — directorio Paper esta en .gitignore.
+
+## Resumen de correcciones al paper en esta sesion
+
+| Item | Correccion |
+|------|------------|
+| URL tesis | `hdl.handle.net` → `kerwa.ucr.ac.cr` |
+| Año tesis | 2023 → 2026 |
+| Key BibTeX | `BonillaR4XCL2023` → `BonillaR4XCL2026` |
+| GitHub URL | `minor-bonilla` → `minorbonillagomez` |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir paquete arXiv | LISTO - todas las correcciones aplicadas |
+| MEDIA | Push de commits al remoto | Pendiente |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, final) — Evaluacion Colibri + Resumen completo de sesion
+
+## Resumen de la sesion completa
+
+Esta sesion cubrio revision del paper academico, correcciones de bibliografia, preparacion del paquete arXiv, commits al repositorio, y evaluacion de Colibri como modelo local.
+
+## Logros principales
+
+### 1. Revision del paper mejorado contra steerings
+- Verificado 100% cumplimiento con `ai-artifact-prevention.md`
+- 0 campos `note` en BibTeX
+- 0 em-dashes (`---`)
+- 0 antitesis simetricas
+- Consistencia numerica verificada (342 tests, 8 contribuciones, 4 future work)
+
+### 2. Correcciones a la bibliografia
+| Item | Antes | Despues |
+|------|-------|---------|
+| URL tesis | `hdl.handle.net/10669/104374` | `kerwa.ucr.ac.cr/items/220372b6-f386-49a5-b704-89afb50fd82a` |
+| Año tesis | 2023 | 2026 |
+| Key BibTeX | `BonillaR4XCL2023` | `BonillaR4XCL2026` |
+| GitHub URL | `github.com/minor-bonilla/NEVEN` | `github.com/minorbonillagomez/NEVEN` |
+
+### 3. Compilacion y paquete arXiv
+- PDF compilado: 705.6 KB
+- Paquete arXiv sincronizado: 149.4 KB, 16 archivos
+- Licencia recomendada: CC BY
+
+### 4. Commits ejecutados
+| Hash | Descripcion |
+|------|-------------|
+| `58fd7f4` | docs(bitacora): update session logs with paper review and arXiv preparation |
+| `9a787d9` | docs(steering): add LaTeX symbol dictionary and PDF-to-RAG pipeline guides |
+| `fec0f84` | feat(taskpane): add chart classification and color palette modules |
+| `d1129ae` | test(evals): add i18n taskpane evaluation framework |
+
+### 5. Evaluacion de Colibri (github.com/JustVugg/colibri)
+**Veredicto: SI es viable como modelo local para NEVEN**
+
+Razones:
+- API compatible con OpenAI (`http://127.0.0.1:8000/v1`)
+- Corre modelos de 700B+ con solo 8-16 GB RAM (streaming de expertos desde disco)
+- Pure C, zero deps — no requiere CUDA obligatorio
+- Windows nativo con START-HERE.bat
+- Licencia Apache 2.0 compatible con GPL v3
+
+Modelo recomendado: **Qwen3.6-35B** (23 GB download, 10-20 GB RAM, 6-10 tok/s CPU)
+
+## Archivos modificados
+
+### Paper (en .gitignore, no commiteados)
+| Archivo | Cambio |
+|---------|--------|
+| `src/docs/Paper/references.bib` | URL Kerwa + año 2026 + key BonillaR4XCL2026 |
+| `src/docs/Paper/sections/01_introduction.tex` | Cita actualizada |
+| `src/docs/Paper/sections/02_architecture.tex` | Cita actualizada |
+| `src/docs/Paper/sections/05_discussion.tex` | Cita + texto "In 2026" |
+| `src/docs/Paper/sections/06_conclusion.tex` | URL GitHub corregida |
+| `src/docs/Paper/main.pdf` | Recompilado (705.6 KB) |
+| `src/docs/Paper/neven-arxiv-submission.zip` | Regenerado (149.4 KB) |
+
+### Repositorio (commiteados)
+| Archivo | Cambio |
+|---------|--------|
+| `.kiro/contexto/CHAT.md` | Bitacora actualizada |
+| `.kiro/contexto/CHAT_LARGO.md` | Archivo historico |
+| `.kiro/steering/latex-symbol-dictionary.md` | Nuevo |
+| `.kiro/steering/pdf-to-rag-pipeline.md` | Nuevo |
+| `.kiro/evals/i18n-taskpane/*.yaml` | Nuevos (3 archivos) |
+| `src/TaskPane/chart-classification.js` | Nuevo |
+| `src/TaskPane/color-palettes.js` | Nuevo |
+
+## Problemas resueltos y causa raiz
+
+| Problema | Causa raiz | Solucion |
+|----------|------------|----------|
+| PDF no se podia escribir | Archivo abierto en visor externo | Usuario cerro el visor |
+| Paquete arXiv desincronizado | Se habia generado antes de ultimos cambios | Regenerar desde cero con `[System.IO.File]::Copy()` |
+| Citas BonillaR4XCL2023 en paper | Key antigua en references.bib | Actualizar key + todas las citas en 3 archivos |
+
+## Decisiones de diseño
+
+1. **Licencia arXiv: CC BY** — Maxima visibilidad, compatible con GPL v3 del software
+2. **Colibri como modelo local** — API OpenAI-compatible permite reusar codigo existente de `=P.ai_call()`
+
+## Cambios restantes (no commiteados)
+
+| Tipo | Archivos |
+|------|----------|
+| Eliminados | `ontologia-fuentes/LIBROS.../An Introduction to Statistical Learning*` |
+| Nuevos | `scripts/*.py` (8 archivos), `ext/`, `prompts/`, `tools/` |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir paquete arXiv con licencia CC BY | LISTO para subir |
+| **ALTA** | Push de commits al remoto | Pendiente |
+| MEDIA | Integrar Colibri como opcion de modelo local en neven-config.json | Pendiente decision |
+| MEDIA | Verificar eliminacion de libros en ontologia-fuentes | Confirmar si intencional |
+| MEDIA | Decidir sobre scripts Python restantes | Pendiente |
+| BAJA | Documentar Colibri en MANUAL_MANTENIMIENTO.md | Futuro |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, cierre) — Consulta instalacion Colibri en disco O:
+
+## Consulta
+
+Usuario pregunto si Colibri puede instalarse en el disco O: que tiene vacio.
+
+## Verificacion realizada
+
+Disco O: verificado:
+- **Espacio libre:** 500.6 GB
+- **Espacio usado:** 0.1 GB
+- **Espacio total:** 500.7 GB
+
+## Respuesta
+
+**SI, Colibri puede instalarse en disco O:** usando la opcion `--dir`:
+
+```powershell
+git clone https://github.com/JustVugg/colibri
+cd colibri
+.\START-HERE.bat --dir O:\colibri-models
+```
+
+O clonando directamente en O:\:
+```powershell
+cd O:\
+git clone https://github.com/JustVugg/colibri
+cd colibri
+.\START-HERE.bat
+```
+
+## Modelos recomendados para 500 GB
+
+| Modelo | Download | RAM | Uso |
+|--------|----------|-----|-----|
+| Qwen3.6-35B | 23 GB | 10-20 GB | Chat con thinking |
+| Qwen3-Coder-30B | 19 GB | 8-18 GB | Codigo |
+| DeepSeek V4 Flash | 167 GB | 16-32 GB | Tools |
+
+## Nota pendiente
+
+Falta confirmar si disco O: es SSD o HDD — importante porque Colibri hace streaming desde disco:
+- SSD/NVMe: 5-10 tok/s
+- HDD: 0.5-2 tok/s
+
+## Archivos modificados
+
+Ninguno — solo consulta.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir paquete arXiv | LISTO para subir |
+| **ALTA** | Push commits al remoto | Pendiente |
+| MEDIA | Confirmar tipo de disco O: (SSD/HDD) | Pendiente |
+| MEDIA | Instalar Colibri en O:\ | Pendiente decision usuario |
+| MEDIA | Integrar Colibri en neven-config.json | Futuro |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, cierre final) — Confirmacion disco NVMe para Colibri
+
+## Confirmacion
+
+Usuario confirmo que el disco O: es **NVMe** — ideal para Colibri.
+
+## Rendimiento esperado con NVMe
+
+| Modelo | RAM | Velocidad |
+|--------|-----|-----------|
+| Qwen3.6-35B | 10-20 GB | 6-10 tok/s (CPU), 30 tok/s (CUDA) |
+| Qwen3-Coder-30B | 8-18 GB | 8-10 tok/s (CPU) |
+| DeepSeek V4 Flash | 16-32 GB | 1.2-1.6 tok/s |
+
+## Plan de instalacion propuesto
+
+```powershell
+cd O:\
+git clone https://github.com/JustVugg/colibri
+cd colibri
+.\START-HERE.bat --model qwen36-35b
+```
+
+## Integracion con NEVEN
+
+Configuracion en neven-config.json:
+```json
+{
+  "ai": {
+    "provider": "openai",
+    "base_url": "http://127.0.0.1:8000/v1",
+    "api_key": "not-needed",
+    "model": "default"
+  }
+}
+```
+
+## Archivos modificados
+
+Ninguno — solo planificacion.
+
+## Commits realizados
+
+Ninguno.
+
+## Resumen completo de la sesion 2026-08-19
+
+### Logros principales
+1. ✅ Revision paper mejorado — 100% cumplimiento steerings
+2. ✅ Correccion bibliografia (URL Kerwa, año 2026, GitHub URL)
+3. ✅ PDF compilado (705.6 KB) + paquete arXiv (149.4 KB)
+4. ✅ 4 commits ejecutados (bitacora, steering, taskpane, evals)
+5. ✅ Evaluacion Colibri — viable como modelo local
+6. ✅ Confirmacion disco O: NVMe con 500 GB — ideal para Colibri
+
+### Commits de la sesion
+| Hash | Descripcion |
+|------|-------------|
+| `58fd7f4` | docs(bitacora): update session logs |
+| `9a787d9` | docs(steering): LaTeX + PDF-to-RAG guides |
+| `fec0f84` | feat(taskpane): chart classification + color palettes |
+| `d1129ae` | test(evals): i18n taskpane framework |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir paquete arXiv (licencia CC BY) | LISTO |
+| **ALTA** | Push commits al remoto | Pendiente |
+| **ALTA** | Instalar Colibri en O:\ con Qwen3.6-35B | Esperando confirmacion |
+| MEDIA | Actualizar neven-config.json para Colibri | Post-instalacion |
+| MEDIA | Documentar Colibri en MANUAL_MANTENIMIENTO.md | Futuro |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, recomendacion modelos) — Seleccion de modelos Colibri
+
+## Hardware detectado
+
+| Componente | Valor |
+|------------|-------|
+| RAM Total | 64 GB |
+| RAM Libre | 50 GB |
+| GPU | NVIDIA GeForce RTX 3050 (4 GB VRAM) |
+| GPU integrada | Intel UHD Graphics (2 GB) |
+| Disco destino | O:\ NVMe 500 GB libres |
+
+## Modelos recomendados para NEVEN
+
+| Prioridad | Modelo | Descarga | RAM | Velocidad | Uso |
+|-----------|--------|----------|-----|-----------|-----|
+| **1. Principal** | Qwen3.6-35B | 23 GB | 20 GB | 6-10 tok/s | Chat, analisis estadistico, RAG |
+| **2. Complementario** | Qwen3-Coder-30B | 19 GB | 18 GB | 8-10 tok/s | Generacion codigo R/Julia/Python |
+
+## Justificacion
+
+### Qwen3.6-35B
+- Thinking mode para razonamiento estadistico
+- Tool calling compatible con `=P.ai_call()`
+- Con 64 GB RAM corre completamente en memoria
+- RTX 3050 puede acelerar capas densas (CUDA)
+
+### Qwen3-Coder-30B
+- Especializado en codigo
+- Ideal para tab "Run Script" de NEVEN Studio
+- Mas rapido que Qwen3.6
+
+## Espacio requerido
+
+```
+Qwen3.6-35B:      23 GB
+Qwen3-Coder-30B:  19 GB
+─────────────────────────
+Total:            42 GB  (de 500 GB disponibles)
+```
+
+## Comandos de instalacion propuestos
+
+```powershell
+cd O:\
+git clone https://github.com/JustVugg/colibri
+cd colibri
+.\START-HERE.bat --model qwen36-35b --dir O:\colibri-models
+.\START-HERE.bat --model qwen3-coder-30b --dir O:\colibri-models
+```
+
+## Archivos modificados
+
+Ninguno — solo analisis y recomendacion.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir paquete arXiv | LISTO |
+| **ALTA** | Push commits al remoto | Pendiente |
+| **ALTA** | Instalar Colibri + Qwen3.6-35B + Qwen3-Coder-30B en O:\ | Esperando confirmacion |
+| MEDIA | Configurar neven-config.json para Colibri | Post-instalacion |
+| MEDIA | Documentar en MANUAL_MANTENIMIENTO.md | Futuro |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, instalacion Colibri) — Repositorio clonado
+
+## Trabajo realizado
+
+Clonado repositorio Colibri en O:\colibri exitosamente.
+
+## Verificacion
+
+```
+O:\colibri\
+├── START-HERE.bat  ✓
+├── start-here.sh   ✓
+├── Makefile        ✓
+├── c\coli          ✓
+└── ...
+```
+
+## Comandos para completar instalacion (usuario debe ejecutar manualmente)
+
+El setup de Colibri es interactivo, requiere terminal del usuario:
+
+```powershell
+# Modelo 1: Qwen3.6-35B (principal)
+cd O:\colibri
+.\START-HERE.bat --model qwen36-35b --dir O:\colibri-models
+
+# Modelo 2: Qwen3-Coder-30B (codigo)
+.\START-HERE.bat --model qwen3-coder-30b --dir O:\colibri-models
+```
+
+## Que hara el setup
+
+1. Detectar hardware (64 GB RAM, RTX 3050)
+2. Descargar modelo (23 GB) — 10-30 min
+3. Compilar engine con CUDA para RTX 3050
+4. Iniciar servidor en http://127.0.0.1:8000/v1
+
+## Archivos creados
+
+| Archivo/Directorio | Descripcion |
+|--------------------|-------------|
+| `O:\colibri\` | Repositorio Colibri clonado |
+
+## Commits realizados
+
+Ninguno — instalacion de software externo.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Ejecutar START-HERE.bat para descargar Qwen3.6-35B | Usuario debe ejecutar |
+| **ALTA** | Subir paquete arXiv | LISTO |
+| **ALTA** | Push commits al remoto | Pendiente |
+| MEDIA | Instalar segundo modelo Qwen3-Coder-30B | Despues del primero |
+| MEDIA | Configurar neven-config.json para Colibri | Post-instalacion |
+| MEDIA | Probar =P.ai_call() con modelo local | Post-instalacion |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, troubleshooting Colibri) — Servidor no iniciado
+
+## Problema reportado
+
+Usuario intento acceder a `http://127.0.0.1:8000/` y recibio ERR_CONNECTION_REFUSED.
+
+## Diagnostico
+
+- No hay procesos Colibri corriendo
+- Puerto 8000 no esta en uso
+- Directorio `O:\colibri-models` no existe — modelo no descargado
+
+## Causa raiz
+
+El usuario no ejecuto el comando `START-HERE.bat` que descarga el modelo e inicia el servidor. El repositorio esta clonado pero el setup no se completo.
+
+## Solucion
+
+Usuario debe ejecutar manualmente en terminal:
+
+```powershell
+cd O:\colibri
+.\START-HERE.bat --model qwen36-35b --dir O:\colibri-models
+```
+
+Este comando:
+1. Descarga el modelo Qwen3.6-35B (23 GB)
+2. Compila el engine
+3. Inicia el servidor en puerto 8000
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Ejecutar START-HERE.bat para descargar modelo | PENDIENTE — usuario debe ejecutar |
+| **ALTA** | Subir paquete arXiv | LISTO |
+| **ALTA** | Push commits al remoto | Pendiente |
+| MEDIA | Verificar que servidor Colibri inicia correctamente | Post-descarga |
+| MEDIA | Configurar neven-config.json | Post-instalacion |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, cierre final) — Resumen completo de sesion
+
+## Fecha y hora
+2026-08-19, sesion nocturna (~18:00 - 22:00)
+
+## Logros principales
+
+### 1. Revision del paper academico mejorado
+- Verificado 100% cumplimiento con steering `ai-artifact-prevention.md`
+- 0 campos `note` en BibTeX, 0 em-dashes, 0 antitesis simetricas
+- Consistencia numerica verificada (342 tests, 8 contribuciones, 4 future work)
+
+### 2. Correcciones a la bibliografia del paper
+| Item | Antes | Despues |
+|------|-------|---------|
+| URL tesis | `hdl.handle.net/10669/104374` | `kerwa.ucr.ac.cr/items/220372b6-f386-49a5-b704-89afb50fd82a` |
+| Año tesis | 2023 | 2026 |
+| Key BibTeX | `BonillaR4XCL2023` | `BonillaR4XCL2026` |
+| GitHub URL | `github.com/minor-bonilla/NEVEN` | `github.com/minorbonillagomez/NEVEN` |
+
+### 3. Compilacion y paquete arXiv
+- PDF compilado: 705.6 KB, 34 paginas
+- Paquete arXiv sincronizado: 149.4 KB, 16 archivos
+- Licencia recomendada: CC BY (maxima visibilidad, compatible con GPL v3)
+
+### 4. Commits ejecutados
+| Hash | Descripcion |
+|------|-------------|
+| `58fd7f4` | docs(bitacora): update session logs with paper review and arXiv preparation |
+| `9a787d9` | docs(steering): add LaTeX symbol dictionary and PDF-to-RAG pipeline guides |
+| `fec0f84` | feat(taskpane): add chart classification and color palette modules |
+| `d1129ae` | test(evals): add i18n taskpane evaluation framework |
+
+### 5. Evaluacion e instalacion de Colibri
+- Evaluado como viable para modelo local de NEVEN
+- Repositorio clonado en `O:\colibri`
+- Hardware detectado: 64 GB RAM, RTX 3050 (4GB), disco O: NVMe 500 GB
+- Modelos recomendados: Qwen3.6-35B (principal) + Qwen3-Coder-30B (codigo)
+
+### 6. Documentacion de RAGs disponibles
+- Produccion: `C:\NEVEN\docs\ontologia\` (2.1 MB)
+- Repositorio: `docs\ontologia\` (4.8 MB), `src\docs\ontologia\` (1 MB)
+- Fuentes para procesar: `ontologia-fuentes\` (608 MB)
+
+## Archivos modificados
+
+### Paper (en .gitignore, no commiteados)
+| Archivo | Cambio |
+|---------|--------|
+| `src/docs/Paper/references.bib` | URL Kerwa + año 2026 + key BonillaR4XCL2026 |
+| `src/docs/Paper/sections/01_introduction.tex` | Cita BonillaR4XCL2026 |
+| `src/docs/Paper/sections/02_architecture.tex` | Cita BonillaR4XCL2026 |
+| `src/docs/Paper/sections/05_discussion.tex` | Cita + texto "In 2026" |
+| `src/docs/Paper/sections/06_conclusion.tex` | URL GitHub corregida |
+| `src/docs/Paper/main.pdf` | Recompilado (705.6 KB) |
+| `src/docs/Paper/neven-arxiv-submission.zip` | Regenerado (149.4 KB) |
+
+### Repositorio (commiteados)
+| Archivo | Cambio |
+|---------|--------|
+| `.kiro/contexto/CHAT.md` | Bitacora actualizada |
+| `.kiro/contexto/CHAT_LARGO.md` | Archivo historico |
+| `.kiro/steering/latex-symbol-dictionary.md` | Nuevo |
+| `.kiro/steering/pdf-to-rag-pipeline.md` | Nuevo |
+| `.kiro/evals/i18n-taskpane/*.yaml` | Nuevos (3 archivos) |
+| `src/TaskPane/chart-classification.js` | Nuevo |
+| `src/TaskPane/color-palettes.js` | Nuevo |
+
+### Externo (instalacion)
+| Archivo/Directorio | Cambio |
+|--------------------|--------|
+| `O:\colibri\` | Repositorio Colibri clonado |
+
+## Causa raiz de problemas resueltos
+
+| Problema | Causa raiz | Solucion |
+|----------|------------|----------|
+| PDF no se podia escribir | Archivo abierto en visor externo | Usuario cerro el visor |
+| Paquete arXiv desincronizado | Generado antes de ultimos cambios | Regenerar con `[System.IO.File]::Copy()` |
+| Citas BonillaR4XCL2023 incorrectas | Key antigua, año y URL erroneos | Actualizar bib + 3 archivos tex |
+| Colibri ERR_CONNECTION_REFUSED | Modelo no descargado, servidor no iniciado | Usuario debe ejecutar START-HERE.bat |
+
+## Decisiones de diseño
+
+1. **Licencia arXiv: CC BY** — Maxima visibilidad y citabilidad, compatible con GPL v3 del software
+2. **Colibri como modelo local** — API OpenAI-compatible permite reusar codigo de `=P.ai_call()` sin cambios
+3. **Modelos Qwen3.6-35B + Qwen3-Coder-30B** — Balance optimo para 64 GB RAM con NVMe
+
+## Intentos fallidos
+
+| Intento | Por que fallo | Leccion |
+|---------|---------------|---------|
+| Compilar PDF con visor abierto | Windows bloquea escritura de archivos abiertos | Verificar que PDF no este abierto antes de compilar |
+| Asumir paquete arXiv sincronizado | Copy previo no actualizo archivos modificados despues | Siempre verificar timestamps antes de declarar "listo" |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Ejecutar `START-HERE.bat` en O:\colibri para descargar Qwen3.6-35B | Usuario debe ejecutar manualmente |
+| **ALTA** | Subir paquete arXiv con licencia CC BY | LISTO para subir |
+| **ALTA** | Push de 4 commits al remoto | Pendiente |
+| MEDIA | Instalar segundo modelo Qwen3-Coder-30B | Despues del primero |
+| MEDIA | Configurar neven-config.json para usar Colibri local | Post-instalacion |
+| MEDIA | Probar `=P.ai_call()` con modelo local | Post-instalacion |
+| MEDIA | Verificar archivos eliminados en ontologia-fuentes | Confirmar si intencional |
+| BAJA | Documentar Colibri en MANUAL_MANTENIMIENTO.md | Futuro |
+| BAJA | Decidir sobre scripts Python no commiteados | Futuro |
+
+## Comandos para retomar
+
+```powershell
+# Completar instalacion Colibri
+cd O:\colibri
+.\START-HERE.bat --model qwen36-35b --dir O:\colibri-models
+
+# Push de commits
+cd F:\ANTIGRAVITY\2026\NEVEN
+git push origin master
+```
+
+## Rutas de RAGs para referencia rapida
+
+| RAG | Ruta | Tamaño |
+|-----|------|--------|
+| Produccion (activo) | `C:\NEVEN\docs\ontologia\` | 2.1 MB |
+| Repositorio | `F:\ANTIGRAVITY\2026\NEVEN\docs\ontologia\` | 4.8 MB |
+| Desarrollo | `F:\ANTIGRAVITY\2026\NEVEN\src\docs\ontologia\` | 1 MB |
+| Fuentes (libros) | `F:\ANTIGRAVITY\2026\NEVEN\ontologia-fuentes\` | 608 MB |
+
+
+
+---
+### Sesion 2026-08-19 (~noche, consulta RAG) — Archivos para compartir ontologia
+
+## Fecha y hora
+2026-08-19, ~22:30 (continuacion de sesion anterior)
+
+## Consulta
+
+Usuario pregunto que archivos debe compartir para reusar el RAG y la ontologia en otro proyecto.
+
+## Analisis realizado
+
+Estructura de la ontologia de produccion (`C:\NEVEN\docs\ontologia\`):
+
+| Carpeta | Archivos | Tamaño | Descripcion |
+|---------|----------|--------|-------------|
+| `neven-core/` | 5 YAML | 156 KB | Entidades principales P1-P4 |
+| `graficos/` | 326 YAML | 1.5 MB | Ontologia de graficos anyplot |
+| `excel-functions/` | 1 JSON | 317 KB | Funciones Excel documentadas |
+| `page_index/` | 11 JSON | 52 KB | Indice de paginas |
+| `checkpoints/` | 22 JSON | 7 KB | Estados del procesador |
+
+**Total:** 368 archivos, 2.1 MB
+
+## Archivos clave para compartir
+
+```
+C:\NEVEN\docs\ontologia\
+├── neven-core/
+│   ├── neven-ontology-p1.yaml   (26 KB)
+│   ├── neven-ontology-p2.yaml   (39 KB)
+│   ├── neven-ontology-p3.yaml   (24 KB)
+│   └── neven-ontology-p4.yaml   (35 KB)
+├── graficos/                     (326 YAML)
+├── excel-functions/sidecars.json (317 KB)
+└── README.md
+```
+
+## Comando para copiar/compartir
+
+```powershell
+# Copiar a otro proyecto
+Copy-Item -Path "C:\NEVEN\docs\ontologia" -Destination "DESTINO\ontologia" -Recurse
+
+# Crear ZIP
+Compress-Archive -Path "C:\NEVEN\docs\ontologia\*" -DestinationPath "neven-ontologia-rag.zip"
+```
+
+## Dependencias para reusar
+
+Si el otro proyecto usa el mismo sistema RAG:
+- Servidor HTTP que indexe YAML (`neven_http_server.py`)
+- Formato de entidades compatible (YAML con `entity_type`, `attributes`)
+
+## Archivos modificados
+
+Ninguno — solo consulta y analisis.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes (actualizados)
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Ejecutar START-HERE.bat para descargar Qwen3.6-35B | Usuario debe ejecutar |
+| **ALTA** | Subir paquete arXiv con licencia CC BY | LISTO |
+| **ALTA** | Push de 4 commits al remoto | Pendiente |
+| MEDIA | Crear ZIP de ontologia para compartir | Si usuario lo solicita |
+| MEDIA | Configurar neven-config.json para Colibri | Post-instalacion |
+| BAJA | Documentar formato de ontologia para reusar | Futuro |
+
+
+
+---
+### Sesion 2026-11-05 (~mediodia) — Agregar coautor al paper
+
+## Contexto
+
+Usuario solicito:
+1. Verificar si econometria esta en la ontologia de produccion
+2. Agregar a Javier Trejos-Zelaya como coautor del paper
+
+## Verificacion de econometria
+
+La econometria esta en `C:\NEVEN\docs\ontologia\_archived_econometrics\` (archivada, 150 KB).
+
+Hay checkpoints de 15+ libros de econometria procesados:
+- Wooldridge (Introductory Econometrics)
+- Greene (Econometric Analysis)
+- Kleiber & Zeileis (Applied Econometrics with R)
+- Cryer & Chan (Time Series)
+- MIT courses (14.382, 14.384, 14.387)
+
+## Cambios al paper
+
+### Archivo modificado: main.tex
+
+**Antes:**
+```latex
+\author{
+    Minor Bonilla-Gómez\\[0.5ex]
+    \scriptsize\texttt{minor.bonilla@buklo.dev} $\mid$ \scriptsize\texttt{minorbonillagomez@gmail.com}\\[0.5ex]
+}
+```
+
+**Despues:**
+```latex
+\author{
+    Minor Bonilla-Gómez\thanks{\texttt{minor.bonilla@buklo.dev}}\quad
+    Javier Trejos-Zelaya\thanks{\texttt{javier.trejos@ucr.ac.cr}}
+}
+```
+
+### PDF metadata actualizado
+```latex
+pdfauthor={Minor Bonilla-Gómez, Javier Trejos-Zelaya}
+```
+
+## Archivos actualizados
+
+| Archivo | Tamaño | Fecha |
+|---------|--------|-------|
+| `src/docs/Paper/main.tex` | Modificado | 2026-11-05 |
+| `src/docs/Paper/main.pdf` | 704.1 KB | 2026-11-05 12:49:12 |
+| `src/docs/Paper/neven-arxiv-submission.zip` | 149.4 KB | 2026-11-05 12:49:13 |
+
+## Formato de autores en el paper
+
+```
+Minor Bonilla-Gómez¹  Javier Trejos-Zelaya²
+
+Notas al pie:
+¹ minor.bonilla@buklo.dev
+² javier.trejos@ucr.ac.cr
+```
+
+## Commits realizados
+
+Ninguno — directorio Paper esta en .gitignore.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir paquete arXiv actualizado | LISTO |
+| **ALTA** | Ejecutar Colibri START-HERE.bat | Usuario pendiente |
+| MEDIA | Activar ontologia econometria (mover de _archived) | Si se necesita |
+| MEDIA | Push commits anteriores | Pendiente |
+
+
+
+---
+### Sesion 2026-11-05 (~tarde) — Verificacion de estado y cierre de sesion
+
+## Contexto
+Sesion breve de verificacion tras contexto compactado. Se confirmo el estado del proyecto.
+
+## Estado verificado
+
+### Paper arXiv
+- **ZIP listo:** `neven-arxiv-submission.zip` (149 KB)
+- **PDF compilado:** `main.pdf` (704 KB)
+- **Coautores:** Minor Bonilla-Gomez + Javier Trejos-Zelaya
+- **Licencia recomendada:** CC BY
+
+### Repositorio Git
+- 4 commits pendientes de push (`58fd7f4`, `9a787d9`, `fec0f84`, `d1129ae`)
+- Archivos nuevos sin trackear: scripts de ontologia, herramientas
+
+### Colibri
+- Clonado en `O:\colibri`
+- Modelos NO descargados (usuario no ha ejecutado START-HERE.bat)
+
+## Archivos modificados
+Ninguno — solo verificacion de estado.
+
+## Commits realizados
+Ninguno.
+
+## Pendientes (sin cambios)
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Push 4 commits: `git push origin master` | Pendiente |
+| **ALTA** | Subir ZIP a arXiv con licencia CC BY | LISTO para subir |
+| **ALTA** | Ejecutar Colibri: `.\START-HERE.bat --model qwen36-35b --dir O:\colibri-models` | Usuario pendiente |
+| MEDIA | Configurar neven-config.json para Colibri (post-instalacion) | Futuro |
+| MEDIA | Decidir si trackear scripts nuevos en /scripts/ y /tools/ | Pendiente |
+| BAJA | Activar ontologia econometria si se necesita | Futuro |
+
+
+---
+### Sesion 2026-11-05 (~tarde, continuacion) — Correccion formato autores en paper
+
+## Problema reportado
+Los emails de los autores no aparecian en la primera pagina del PDF. El formato `\thanks{}` de elsarticle genera notas al pie que pueden quedar separadas del bloque de autores.
+
+## Causa raiz
+El comando `\thanks{}` en elsarticle con modo `preprint` crea footnotes que van al final de la pagina, no junto a los nombres. Ademas, el `\and` de LaTeX estandar no funciona correctamente con elsarticle.
+
+## Solucion implementada
+Cambio a formato con superindices y emails en linea:
+
+```latex
+\author{
+    Minor Bonilla-Gomez\textsuperscript{1} \quad
+    Javier Trejos-Zelaya\textsuperscript{2}\\[1ex]
+    \textsuperscript{1}\texttt{minor.bonilla@ucr.ac.cr} \quad
+    \textsuperscript{2}\texttt{javier.trejos@ucr.ac.cr}
+}
+```
+
+## Cambio adicional solicitado
+Email de Minor cambiado de `minor.bonilla@buklo.dev` a `minor.bonilla@ucr.ac.cr` (ambos autores ahora con dominio UCR).
+
+## Intentos fallidos
+1. **Formato `\and` con `\\`** — Error: `\begin{\elsarticletitlealign} ended by \end{t}`. Causa: elsarticle no soporta `\and` en modo preprint de esta forma.
+2. **Compress-Archive de PowerShell** — Fallo silencioso con array de archivos. Solucion: usar API .NET `System.IO.Compression.ZipFile` directamente.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/docs/Paper/main.tex` | Formato autores con superindices + email UCR |
+| `src/docs/Paper/main.pdf` | Recompilado (704 KB, 33 paginas) |
+| `src/docs/Paper/neven-arxiv-submission.zip` | Regenerado (748 KB, 16 archivos) |
+
+## Commits realizados
+Ninguno — directorio Paper esta en .gitignore.
+
+## Nota: Nombres de secciones actualizados
+Los archivos de secciones tienen nombres diferentes a sesiones anteriores:
+- `03_studio.tex` → `03_viewer_extensibility.tex`
+- `04_reproducibility.tex` → `04_case_studies.tex`
+- `05_evaluation.tex` → `05_discussion.tex`
+
+El ZIP ahora incluye los archivos correctos.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir ZIP a arXiv con licencia CC BY | LISTO para subir |
+| **ALTA** | Push 4 commits: `git push origin master` | Pendiente |
+| **ALTA** | Ejecutar Colibri START-HERE.bat | Usuario pendiente |
+| MEDIA | Configurar neven-config.json para Colibri | Post-instalacion |
+
+
+---
+### Sesion 2026-11-05 (~tarde, final) — Reubicacion de emails en paper
+
+## Cambio solicitado
+Usuario pidio que los emails aparezcan despues de la linea que sigue a los keywords, no junto a los nombres de los autores.
+
+## Solucion implementada
+Separar nombres y emails en el frontmatter de elsarticle:
+
+```latex
+\author{
+    Minor Bonilla-Gomez \quad Javier Trejos-Zelaya
+}
+
+% ... abstract y keywords ...
+
+\begin{keyword}
+...keywords...
+\end{keyword}
+
+\vspace{1ex}
+\noindent\texttt{minor.bonilla@ucr.ac.cr} \quad \texttt{javier.trejos@ucr.ac.cr}
+
+\end{frontmatter}
+```
+
+## Resultado visual en PDF
+```
+Minor Bonilla-Gomez    Javier Trejos-Zelaya
+
+[Abstract]
+
+Keywords: Excel add-in, open source, polyglot computing...
+-----------------------------------------------------------
+minor.bonilla@ucr.ac.cr    javier.trejos@ucr.ac.cr
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/docs/Paper/main.tex` | Emails movidos despues de keywords |
+| `src/docs/Paper/main.pdf` | Recompilado (705 KB, 34 paginas) |
+| `src/docs/Paper/neven-arxiv-submission.zip` | Regenerado (748 KB) |
+
+## Commits realizados
+Ninguno — directorio Paper en .gitignore.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir ZIP a arXiv con licencia CC BY | LISTO |
+| **ALTA** | Push 4 commits: `git push origin master` | Pendiente |
+| **ALTA** | Ejecutar Colibri START-HERE.bat | Usuario pendiente |
+
+
+---
+### Sesion 2026-11-05 (~tarde, cierre) — Formato final de autores
+
+## Problema
+El intento anterior de poner emails despues de keywords los envio a una pagina incorrecta.
+
+## Solucion final
+Emails directamente debajo de los nombres, sin superindices ni notas al pie:
+
+```latex
+\author{
+    Minor Bonilla-Gomez \quad Javier Trejos-Zelaya\\[0.5ex]
+    {\small\texttt{minor.bonilla@ucr.ac.cr} \quad \texttt{javier.trejos@ucr.ac.cr}}
+}
+```
+
+## Resultado visual
+```
+Minor Bonilla-Gomez    Javier Trejos-Zelaya
+minor.bonilla@ucr.ac.cr    javier.trejos@ucr.ac.cr
+```
+
+Simple, limpio, todo en primera pagina.
+
+## Archivos modificados
+
+| Archivo | Tamanio |
+|---------|---------|
+| `src/docs/Paper/main.tex` | Formato autores simplificado |
+| `src/docs/Paper/main.pdf` | 704 KB (33 paginas) |
+| `src/docs/Paper/neven-arxiv-submission.zip` | 748 KB |
+
+## Commits realizados
+Ninguno — Paper en .gitignore.
+
+## Intentos fallidos en esta sesion
+1. `\thanks{}` — emails en notas al pie, separados de nombres
+2. `\and` con `\\` — error de elsarticle
+3. Superindices — funciono pero innecesario
+4. Emails despues de keywords — fueron a pagina incorrecta
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir ZIP a arXiv (CC BY) | LISTO |
+| **ALTA** | Push commits: `git push origin master` | Pendiente |
+| **ALTA** | Ejecutar Colibri START-HERE.bat | Usuario pendiente |
