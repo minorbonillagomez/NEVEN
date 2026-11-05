@@ -155,6 +155,86 @@ def create_api_blueprint(upload_folder: str, output_folder: str) -> Blueprint:
             import traceback
             traceback.print_exc()
             return jsonify({'error': str(e)}), 500
+
+    @api.route('/preview-voice', methods=['POST'])
+    def preview_voice_custom():
+        """Genera una muestra de audio con texto y velocidad personalizados.
+        
+        POST body:
+        {
+            "voice": "es-MX-DaliaNeural",
+            "text": "Texto a sintetizar",
+            "speed": 0  # -50 a +50
+        }
+        
+        Returns: audio/mpeg
+        """
+        import tempfile
+        import asyncio
+        from flask import send_file
+        
+        data = request.get_json() or {}
+        voice_id = data.get('voice', 'es-MX-DaliaNeural')
+        text = data.get('text', 'Hola, esta es una muestra de mi voz.')
+        speed = int(data.get('speed', 0))
+        
+        # Limitar texto a ~200 caracteres para preview rápido
+        if len(text) > 200:
+            text = text[:200] + '...'
+        
+        try:
+            # Solo Edge TTS y Windows SAPI soportados en preview
+            if voice_id.endswith('Neural'):
+                # Edge TTS con velocidad
+                import edge_tts
+                
+                # Convertir speed a formato Edge TTS (+0%, -20%, etc)
+                rate_str = f"+{speed}%" if speed >= 0 else f"{speed}%"
+                
+                async def generate_preview():
+                    temp_file = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
+                    communicate = edge_tts.Communicate(text, voice_id, rate=rate_str)
+                    await communicate.save(temp_file.name)
+                    return temp_file.name
+                
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                audio_path = loop.run_until_complete(generate_preview())
+                loop.close()
+                
+                return send_file(audio_path, mimetype='audio/mpeg', as_attachment=False)
+            
+            elif voice_id.startswith('Microsoft'):
+                # Windows SAPI (nombre simple como "Microsoft Sabina")
+                win_tts = WindowsTTS()
+                # Buscar la voz por nombre
+                voices = win_tts.list_voices()
+                found_voice = None
+                for v in voices:
+                    if voice_id in v.get('name', ''):
+                        found_voice = v.get('id')
+                        break
+                
+                if not found_voice:
+                    return jsonify({'error': f'Voz no encontrada: {voice_id}'}), 404
+                
+                win_tts.set_voice(found_voice)
+                # Ajustar velocidad (-10 a +10 en SAPI, normalizar desde -50/+50)
+                sapi_rate = int(speed / 5)
+                win_tts.set_rate(sapi_rate)
+                
+                temp_file = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+                win_tts.synthesize_to_file(text, temp_file.name)
+                
+                return send_file(temp_file.name, mimetype='audio/wav', as_attachment=False)
+            
+            else:
+                return jsonify({'error': 'Motor de voz no soportado para preview'}), 400
+                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': str(e)}), 500
     
     # ═══════════════════════════════════════════════════════════════
     # FILE UPLOAD

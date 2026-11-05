@@ -1144,55 +1144,152 @@
 
   <!-- Tab: Audiobook / Audiolibros -->
   <div class="tab-content" id="audiobook">
-    <div class="card">
-      <div class="card-title">🎧 Generador de Audiolibros</div>
-      <p style="font-size:10px;color:var(--text-secondary);margin-bottom:12px">
-        Convierte documentos PDF y EPUB a audiolibros M4B con capítulos navegables.
+    
+    <!-- Estado del servidor (compartido) -->
+    <div id="audiobook-server-status" style="display:flex;align-items:center;gap:6px;margin:8px;padding:6px 10px;background:var(--bg-primary);border-radius:4px;border:1px solid var(--border)">
+      <span id="audiobook-server-dot" style="width:8px;height:8px;border-radius:50%;background:#888"></span>
+      <span id="audiobook-server-text" style="font-size:10px;color:var(--text-secondary)">Verificando servidor...</span>
+      <button id="btn-audiobook-start-server" class="btn btn-secondary" style="margin-left:auto;font-size:9px;padding:3px 8px;display:none">Iniciar servidor</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PASO 1: Extraer PDF/EPUB a Markdown
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="card" id="audiobook-step1-card">
+      <div class="card-title">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#d7a538;color:#1a1a1a;border-radius:50%;font-size:11px;font-weight:700;margin-right:6px">1</span>
+        Extraer a Markdown
+      </div>
+      <p class="card-desc" style="font-size:11px;color:var(--text-secondary);margin-bottom:12px">
+        Extrae el texto del documento para revisarlo antes de generar el audio.
       </p>
       
-      <!-- Estado del servidor -->
-      <div id="audiobook-server-status" style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding:6px 10px;background:var(--bg-primary);border-radius:4px;border:1px solid var(--border)">
-        <span id="audiobook-server-dot" style="width:8px;height:8px;border-radius:50%;background:#888"></span>
-        <span id="audiobook-server-text" style="font-size:10px;color:var(--text-secondary)">Verificando servidor...</span>
-        <button id="btn-audiobook-start-server" class="btn btn-secondary" style="margin-left:auto;font-size:9px;padding:3px 8px;display:none">Iniciar servidor</button>
-      </div>
-
-      <!-- Selección de archivo -->
+      <!-- Selección de archivo PDF/EPUB -->
       <div style="margin-bottom:12px">
         <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Documento fuente</label>
         <div class="controls">
-          <button class="btn btn-primary" id="btn-audiobook-select" style="background:#d7a538">
+          <button class="btn btn-primary" id="btn-audiobook-select-pdf">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
             Seleccionar PDF/EPUB
           </button>
-          <input type="file" id="audiobook-file-picker" accept=".pdf,.epub" style="display:none">
-          <span id="audiobook-filename" style="font-size:10px;color:var(--text-secondary);margin-left:8px"></span>
+          <input type="file" id="audiobook-file-picker-pdf" accept=".pdf,.epub" style="display:none">
+          <span id="audiobook-pdf-filename" style="font-size:10px;color:var(--text-secondary);margin-left:8px"></span>
+        </div>
+      </div>
+
+      <!-- Opciones de extracción -->
+      <details style="margin-bottom:12px">
+        <summary style="font-size:10px;color:var(--text-secondary);cursor:pointer">Opciones de extraccion</summary>
+        <div style="padding:8px;background:var(--bg-primary);border-radius:4px;margin-top:4px">
+          <div style="margin-bottom:8px">
+            <label style="font-size:9px;color:var(--text-secondary)">Pagina inicial:</label>
+            <input type="number" id="audiobook-start-page" value="1" min="1" style="width:60px;margin-left:4px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:10px">
+          </div>
+          <div>
+            <label style="font-size:9px;color:var(--text-secondary)">Paginas a excluir (ej: 1,2,300-310):</label>
+            <input type="text" id="audiobook-exclude-pages" placeholder="1,2" style="width:100%;max-width:200px;margin-top:2px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:10px">
+          </div>
+        </div>
+      </details>
+
+      <!-- Botón extraer -->
+      <div class="controls">
+        <button class="btn btn-primary" id="btn-audiobook-extract" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Extraer Markdown
+        </button>
+      </div>
+    </div>
+
+    <!-- Resultado Paso 1: Markdown generado -->
+    <div class="card" id="audiobook-md-result-card" style="display:none">
+      <div class="card-title">Markdown extraido</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div>
+          <div id="audiobook-md-filename" style="font-size:11px;font-weight:600;color:var(--text-primary)"></div>
+          <div id="audiobook-md-stats" style="font-size:9px;color:var(--text-secondary)"></div>
+        </div>
+      </div>
+      <p style="font-size:9px;color:var(--text-muted);margin-bottom:8px;font-style:italic">
+        Descarga el archivo, revisalo en tu editor favorito, corrige errores y luego subelo en el Paso 2.
+      </p>
+      <div class="controls">
+        <button class="btn btn-primary" id="btn-audiobook-download-md">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar .md
+        </button>
+        <button class="btn btn-secondary" id="btn-audiobook-preview-md">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Vista previa
+        </button>
+        <button class="btn btn-secondary" id="btn-audiobook-use-directly" title="Usar sin editar">
+          Usar directo en Paso 2
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PASO 2: Markdown a Audiolibro M4B
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="card" id="audiobook-step2-card">
+      <div class="card-title">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#d7a538;color:#1a1a1a;border-radius:50%;font-size:11px;font-weight:700;margin-right:6px">2</span>
+        Generar Audiolibro
+      </div>
+      <p class="card-desc" style="font-size:11px;color:var(--text-secondary);margin-bottom:12px">
+        Sube el Markdown revisado y genera el audiolibro M4B.
+      </p>
+      
+      <!-- Selección de archivo Markdown -->
+      <div style="margin-bottom:12px">
+        <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Archivo Markdown</label>
+        <div class="controls">
+          <button class="btn btn-primary" id="btn-audiobook-select-md">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Cargar Markdown
+          </button>
+          <input type="file" id="audiobook-file-picker-md" accept=".md,.txt" style="display:none">
+          <span id="audiobook-md-selected" style="font-size:10px;color:var(--text-secondary);margin-left:8px"></span>
         </div>
       </div>
 
       <!-- Configuración de voz -->
       <div style="margin-bottom:12px">
         <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Voz</label>
-        <select id="audiobook-voice" style="width:100%;max-width:300px;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:6px 10px;font-size:11px">
-          <optgroup label="Edge TTS (Neural)">
-            <option value="es-MX-DaliaNeural" selected>🇲🇽 Dalia (México, femenina)</option>
-            <option value="es-MX-JorgeNeural">🇲🇽 Jorge (México, masculina)</option>
-            <option value="es-ES-ElviraNeural">🇪🇸 Elvira (España, femenina)</option>
-            <option value="es-ES-AlvaroNeural">🇪🇸 Álvaro (España, masculina)</option>
-            <option value="es-AR-ElenaNeural">🇦🇷 Elena (Argentina, femenina)</option>
-            <option value="es-CO-SalomeNeural">🇨🇴 Salomé (Colombia, femenina)</option>
-          </optgroup>
-          <optgroup label="Windows SAPI">
-            <option value="Microsoft Sabina">Sabina (ES-MX)</option>
-            <option value="Microsoft Raul">Raúl (ES-MX)</option>
-          </optgroup>
-        </select>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="audiobook-voice" style="flex:1;max-width:250px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:11px">
+            <optgroup label="Edge TTS (Neural)">
+              <option value="es-MX-DaliaNeural" selected>Dalia (Mexico, femenina)</option>
+              <option value="es-MX-JorgeNeural">Jorge (Mexico, masculina)</option>
+              <option value="es-ES-ElviraNeural">Elvira (Espana, femenina)</option>
+              <option value="es-ES-AlvaroNeural">Alvaro (Espana, masculina)</option>
+              <option value="es-AR-ElenaNeural">Elena (Argentina, femenina)</option>
+              <option value="es-CO-SalomeNeural">Salome (Colombia, femenina)</option>
+            </optgroup>
+            <optgroup label="Ingles">
+              <option value="en-US-JennyNeural">Jenny (US, femenina)</option>
+              <option value="en-US-GuyNeural">Guy (US, masculina)</option>
+              <option value="en-GB-SoniaNeural">Sonia (UK, femenina)</option>
+            </optgroup>
+            <optgroup label="Windows SAPI (Offline)">
+              <option value="Microsoft Sabina">Sabina (ES-MX)</option>
+              <option value="Microsoft Raul">Raul (ES-MX)</option>
+            </optgroup>
+          </select>
+          <button id="btn-audiobook-preview-voice" class="btn btn-secondary" title="Escuchar muestra de 5 segundos" style="padding:6px 10px;display:flex;align-items:center;gap:4px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            <span id="audiobook-preview-text">Probar</span>
+          </button>
+        </div>
+        <!-- Reproductor de muestra (oculto) -->
+        <audio id="audiobook-voice-preview" style="display:none"></audio>
       </div>
 
       <!-- Velocidad -->
       <div style="margin-bottom:12px">
         <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Velocidad: <span id="audiobook-speed-value">0%</span></label>
-        <input type="range" id="audiobook-speed" min="-50" max="50" value="0" style="width:100%;max-width:300px">
+        <input type="range" id="audiobook-speed" min="-50" max="50" value="0" style="width:100%;max-width:300px;accent-color:#d7a538">
       </div>
 
       <!-- Opciones avanzadas -->
@@ -1201,34 +1298,30 @@
         <div style="padding:8px;background:var(--bg-primary);border-radius:4px;margin-top:4px">
           <div style="margin-bottom:8px">
             <label style="font-size:9px;color:var(--text-secondary)">
-              <input type="checkbox" id="audiobook-translate"> Traducir al español (si está en otro idioma)
-            </label>
-          </div>
-          <div style="margin-bottom:8px">
-            <label style="font-size:9px;color:var(--text-secondary)">
-              <input type="checkbox" id="audiobook-save-md" checked> Guardar archivo Markdown
+              <input type="checkbox" id="audiobook-translate"> Traducir al espanol (si esta en otro idioma)
             </label>
           </div>
           <div>
-            <label style="font-size:9px;color:var(--text-secondary)">Páginas a excluir (ej: 1,2,5-10):</label>
-            <input type="text" id="audiobook-exclude-pages" placeholder="1,2" style="width:100%;max-width:200px;margin-top:2px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:4px 8px;font-size:10px">
+            <label style="font-size:9px;color:var(--text-secondary)">
+              <input type="checkbox" id="audiobook-offline"> Usar motor offline (sin internet)
+            </label>
           </div>
         </div>
       </details>
 
-      <!-- Botón de conversión -->
+      <!-- Botón generar -->
       <div class="controls">
-        <button class="btn btn-primary" id="btn-audiobook-convert" disabled style="background:#27ae60">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21"/></svg>
-          Convertir a Audiolibro
+        <button class="btn btn-primary" id="btn-audiobook-generate" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21"/></svg>
+          Generar Audiolibro
         </button>
         <button class="btn btn-secondary" id="btn-audiobook-cancel" style="display:none">Cancelar</button>
       </div>
     </div>
 
-    <!-- Progreso -->
+    <!-- Progreso (compartido) -->
     <div class="card" id="audiobook-progress-card" style="display:none">
-      <div class="card-title">Progreso</div>
+      <div class="card-title" id="audiobook-progress-title">Progreso</div>
       <div style="margin-bottom:8px">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:4px">
           <span id="audiobook-progress-stage">Iniciando...</span>
@@ -1241,9 +1334,9 @@
       <div id="audiobook-progress-detail" style="font-size:9px;color:var(--text-muted)"></div>
     </div>
 
-    <!-- Resultado -->
+    <!-- Resultado Final: M4B generado -->
     <div class="card" id="audiobook-result-card" style="display:none">
-      <div class="card-title">✅ Audiolibro generado</div>
+      <div class="card-title">Audiolibro generado</div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
         <img id="audiobook-cover" src="" alt="Portada" style="width:60px;height:80px;object-fit:cover;border-radius:4px;background:#333">
         <div>
@@ -1254,27 +1347,39 @@
         </div>
       </div>
       <div class="controls">
-        <button class="btn btn-primary" id="btn-audiobook-download" style="background:#3498db">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <button class="btn btn-primary" id="btn-audiobook-download-m4b">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Descargar M4B
         </button>
-        <button class="btn btn-secondary" id="btn-audiobook-qr" title="Transferir al móvil">
+        <button class="btn btn-secondary" id="btn-audiobook-qr" title="Transferir al movil">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          QR para móvil
+          QR movil
         </button>
         <button class="btn btn-secondary" id="btn-audiobook-new">Nuevo</button>
       </div>
     </div>
 
-    <!-- QR Modal -->
+    <!-- Modal: Vista previa Markdown -->
+    <div id="audiobook-preview-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:1000;overflow:auto">
+      <div style="max-width:800px;margin:20px auto;background:var(--bg-secondary);border-radius:8px;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg-primary);border-bottom:1px solid var(--border)">
+          <span style="font-size:12px;font-weight:600;color:var(--text-primary)">Vista previa del Markdown</span>
+          <button onclick="document.getElementById('audiobook-preview-modal').style.display='none'" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:18px">&times;</button>
+        </div>
+        <div id="audiobook-preview-content" style="padding:16px;max-height:70vh;overflow:auto;font-family:monospace;font-size:11px;color:var(--text-primary);white-space:pre-wrap;line-height:1.5"></div>
+      </div>
+    </div>
+
+    <!-- Modal: QR para transferencia -->
     <div id="audiobook-qr-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center">
       <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;text-align:center;max-width:300px">
         <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px">Escanea con NEVEN Launcher</div>
         <div id="audiobook-qr-code" style="background:#fff;padding:16px;border-radius:4px;display:inline-block"></div>
-        <div style="font-size:10px;color:var(--text-secondary);margin-top:12px">El audiolibro se transferirá via WiFi</div>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:12px">El audiolibro se transferira via WiFi</div>
         <button onclick="document.getElementById('audiobook-qr-modal').style.display='none'" class="btn btn-secondary" style="margin-top:12px">Cerrar</button>
       </div>
     </div>
+
   </div><!-- /tab audiobook -->
 
   <!-- Tab: Settings / Configuracion -->

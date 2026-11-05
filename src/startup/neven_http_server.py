@@ -1213,6 +1213,11 @@ class NEVENHandler(BaseHTTPRequestHandler):
         elif path == 'api/ontology/delete-book':
             self._handle_ontology_delete_book(body)
         # ══════════════════════════════════════════════════════════════════════
+        # Audiobook Server — Start external server on port 5556
+        # ══════════════════════════════════════════════════════════════════════
+        elif path == 'api/audiobook/start':
+            self._handle_audiobook_start()
+        # ══════════════════════════════════════════════════════════════════════
         else:
             self._send_error_json(f"Unknown endpoint: /{path}", 404)
 
@@ -2305,6 +2310,60 @@ class NEVENHandler(BaseHTTPRequestHandler):
 
         self._send_json({"status": "ok", "message": "Shutdown initiated"})
         threading.Thread(target=_shutdown_server, daemon=True).start()
+
+    def _handle_audiobook_start(self):
+        """POST /api/audiobook/start — Inicia el servidor de audiobook en puerto 5556.
+
+        Ejecuta neven_audiobook_server.py como proceso separado (detached).
+        El cliente debe verificar /api/health en puerto 5556 para confirmar que inició.
+        """
+        import subprocess
+        import os
+
+        audiobook_server = r"C:\NEVEN\Audiobook\neven_audiobook_server.py"
+        print(f"[AUDIOBOOK] Checking server at: {audiobook_server}")
+        
+        if not os.path.exists(audiobook_server):
+            print(f"[AUDIOBOOK] Server not found!")
+            self._send_error_json(f"Servidor no encontrado: {audiobook_server}", 404)
+            return
+
+        try:
+            # Verificar si ya está corriendo
+            import socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex(('127.0.0.1', 5556))
+            sock.close()
+            
+            if result == 0:
+                # Ya está corriendo
+                print("[AUDIOBOOK] Server already running")
+                self._send_json({"status": "ok", "message": "Server already running", "port": 5556})
+                return
+
+            # Iniciar como proceso separado (no bloquea, no se cierra con el padre)
+            # CREATE_NEW_PROCESS_GROUP + DETACHED_PROCESS en Windows
+            DETACHED_PROCESS = 0x00000008
+            CREATE_NEW_PROCESS_GROUP = 0x00000200
+            
+            print("[AUDIOBOOK] Starting server...")
+            subprocess.Popen(
+                ["python", audiobook_server],
+                cwd=r"C:\NEVEN\Audiobook",
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+            )
+
+            print("[AUDIOBOOK] Server started on port 5556")
+            self._send_json({"status": "ok", "message": "Server starting", "port": 5556})
+
+        except Exception as e:
+            print(f"[AUDIOBOOK] Error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            self._send_error_json(f"Error al iniciar servidor: {str(e)}", 500)
 
     def _handle_ai_context(self, body: dict):
         """POST /api/ai/context — recibe contexto de Excel para el Tab IA.

@@ -2,1232 +2,9 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-08-19 (sesion actual)
-
+> **Ultima actualizacion:** 2026-08-19
 ---
-### Sesion 2026-08-19 (~tarde) — Integración NEVEN Audiobook + TAB en TaskPane
-
-## Contexto
-Continuación de la Fase 2 de integración de NEVEN Suite. Se completó la funcionalidad del TAB Audiobook en NEVEN Studio TaskPane.
-
-## Trabajo realizado
-
-### 1. Creación de audiobook.js
-- Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\audiobook.js`
-- Funcionalidades:
-  - Verificación de estado del servidor (puerto 5556)
-  - Selección de archivos PDF/EPUB
-  - Conversión a audiolibros M4B
-  - Polling de progreso
-  - Descarga de resultados
-  - Generación de QR para transferencia móvil
-  - API pública: `window.NEVENAudiobook`
-
-### 2. Creación de neven_audiobook_server.py
-- Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\neven_audiobook_server.py`
-- Puerto: 5556 (separado del servidor principal 5555)
-- Endpoints implementados:
-  - `GET /api/health` - Estado del servidor
-  - `GET /api/system` - Info del sistema
-  - `GET /api/download/<filename>` - Descarga de M4B
-  - `GET /api/qr` - Generación de código QR
-  - `GET /download` - Página móvil para descarga
-- CORS habilitado para TaskPane
-- Registra blueprint de API existente (`api/routes.py`)
-
-### 3. Corrección del TAB HTML en taskpane.html
-- Corregido bug en modal QR (display:none duplicado → display:flex)
-- Agregado script `audiobook.js` después de `ayuda.js`
-
-### 4. Script de inicio batch
-- Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\start_audiobook_server.bat`
-- Verifica Python e instala dependencias si faltan
-- Inicia servidor en puerto 5556
-
-## Archivos copiados a producción
-- `C:\NEVEN\Audiobook\` — Módulo completo (26 archivos Python)
-- `C:\NEVEN\TaskPane\audiobook.js` — Handler JavaScript
-- `C:\NEVEN\TaskPane\taskpane.html` — HTML actualizado
-
-## Arquitectura de comunicación
-```
-TaskPane (audiobook.js)
-    ↓ fetch()
-http://localhost:5556/api/...
-    ↓
-neven_audiobook_server.py (Flask + CORS)
-    ↓ blueprint
-api/routes.py → pipeline.py → TTS engines
-```
-
-## Pendientes Fase 2
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Probar TAB en Excel con servidor activo | Pendiente |
-| MEDIA | Verificar endpoint /api/generate funciona | Pendiente |
-| MEDIA | Probar generación de QR | Pendiente |
-
-## Pendientes Fase 3 (Sincronización Android)
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Implementar sync WiFi/Bluetooth | Pendiente |
-| ALTA | Integrar NEVEN Launcher (android/) | Pendiente |
-| MEDIA | Documentar flujo QR → Descarga → NEVEN Launcher | Pendiente |
-
-## Commits realizados
-- `2acf811` — feat(audiobook): completar Fase 2 - TAB Audiobook en TaskPane
-
-## Correcciones técnicas importantes
-
-### Bug del modal QR (CSS)
-- **Síntoma:** Modal QR siempre visible
-- **Causa raíz:** El HTML tenía `style="display:none;...;display:flex"` — el segundo valor sobrescribía el primero
-- **Fix:** Eliminar el `display:flex` duplicado; el JS lo agrega al mostrar el modal
-
-### Endpoint de polling incorrecto
-- **Síntoma:** audiobook.js no obtenía el estado del job
-- **Causa raíz:** El código usaba `/api/status/<id>` pero el API usa `/api/job/<id>`
-- **Fix:** Corregido el endpoint en `startProgressPolling()`
-
-### Campo de respuesta del API
-- **Síntoma:** El resultado no mostraba la URL de descarga
-- **Causa raíz:** El API devuelve `output_path` (ruta local) no `download_url`
-- **Fix:** Construir `download_url` a partir de `output_path` en `showResult()`
-
-## Decisiones de diseño
-
-1. **Puerto separado 5556** — Mantener el servidor de audiobook separado del servidor principal (5555) para:
-   - Independencia de ciclo de vida
-   - Facilidad de debugging
-   - Posible ejecución standalone
-
-2. **CORS habilitado** — flask-cors necesario porque el TaskPane corre en contexto de Office.js con origen diferente
-
-3. **Página /download optimizada para móvil** — Diseñada para escaneo QR → descarga inmediata sin navegación
-
----
-### Sesion 2026-08-20 (~mañana) — Análisis de componentes para instalador usuario final
-
-## Contexto
-Planificación del instalador de NEVEN para distribución a usuarios finales.
-
-## Análisis de componentes en C:\NEVEN
-
-### Componentes Core (obligatorios)
-
-| Componente | Tamaño | Descripción |
-|------------|--------|-------------|
-| NEVEN64.xll | 2.4 MB | Add-in XLL principal |
-| NEVENRibbon.dll | 0.3 MB | COM Add-in para Ribbon |
-| ControlR.exe | 1.5 MB | Motor R embebido |
-| ControlJulia.exe | 1.3 MB | Motor Julia embebido |
-| ControlPython.exe | 1.2 MB | Motor Python embebido |
-| functions/ | 0.9 MB | Funciones R/Julia/Python |
-| startup/ | 1.6 MB | Scripts de inicio |
-| TaskPane/ | 2.5 MB | UI web (NEVEN Studio) |
-| neven-config.json | 4 KB | Configuración |
-| manifest.xml | 5 KB | Office Web Add-in |
-
-### Componentes opcionales
-
-| Componente | Tamaño | Descripción |
-|------------|--------|-------------|
-| neven_julia.dll | 1,070 MB | Sysimage Julia (elimina cold start 2-3 min) |
-| examples/ | 24 MB | Ejemplos para usuarios |
-| docs/ | 2.6 MB | Documentación |
-| ontology/ | 28 MB | RAG knowledge base para asistente IA |
-
-### Tamaños totales
-
-- **Instalación completa:** ~3.3 GB
-- **Sin Julia sysimage:** ~200 MB
-- **Core mínimo:** ~12 MB
-
-## Preguntas pendientes para decidir
-
-1. **¿Julia sysimage incluida?** — 1 GB extra vs 2-3 min cold start
-2. **¿Ejemplos y docs?** — 27 MB, útil para usuarios nuevos
-3. **¿Ontología RAG?** — 28 MB para asistente IA
-4. **¿Office Web Add-in preconfigurado?** — manifest.xml + catálogo
-5. **¿Dependencias externas?** — R/Julia/Python: ¿prerequisito o bundled?
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Decidir estructura del instalador (modular vs opciones) | Esperando decisión |
-| **ALTA** | Definir qué componentes son obligatorios vs opcionales | Esperando decisión |
-| MEDIA | Crear script de empaquetado para Dist/ | Pendiente |
-| MEDIA | Documentar prerequisitos (R, Julia, Python) | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~mañana, continuación) — Decisión: Instalador sin sysimage
-
-## Decisión del usuario
-**Instalador completo SIN Julia sysimage** — Tamaño final: ~66 MB (vs 3.3 GB con sysimage)
-
-El usuario acepta el cold start de Julia (2-3 min primera vez) a cambio de un instalador manejable.
-
-## Análisis del directorio Dist actual
-
-Comparación `F:\ANTIGRAVITY\2026\NEVEN\src\Install\Dist` vs componentes requeridos:
-
-| Componente | Estado |
-|------------|--------|
-| NEVEN64.xll | ✓ Presente |
-| NEVENRibbon.dll | ✓ Presente |
-| ControlR.exe | ✓ Presente |
-| ControlJulia.exe | ✓ Presente |
-| ControlPython.exe | ✓ Presente |
-| neven-config.json | ✓ Presente |
-| neven-languages.json | ✓ Presente |
-| functions/ | ✓ Presente |
-| startup/ | ✓ Presente |
-| TaskPane/ | ✓ Presente (como taskpane/) |
-| examples/ | ✓ Presente |
-| docs/ | ✓ Presente |
-| **manifest.xml** | ✗ FALTA |
-| **ontology/** | ✗ FALTA |
-
-## Componentes faltantes en Dist
-
-1. **manifest.xml** — Office Web Add-in para TaskPane integrado en Excel
-2. **ontology/** — Knowledge base RAG para asistente IA (~28 MB)
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Copiar manifest.xml a Dist | Pendiente |
-| **ALTA** | Copiar ontology/ a Dist | Pendiente |
-| **ALTA** | Crear script de empaquetado (sync producción → Dist) | Pendiente |
-| MEDIA | Actualizar instalador para registrar Office Add-in | Pendiente |
-| MEDIA | Verificar que binarios en Dist están actualizados | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~mañana, final) — Implementación completa del instalador
-
-## Decisión clave
-**Instalador SIN Julia sysimage** — 62 MB vs 3.3 GB. Usuario acepta cold start de 2-3 min.
-
-## Tareas completadas
-
-### 1. Copiar componentes faltantes a Dist
-- Copiado `manifest.xml` (Office Web Add-in)
-- Copiado `ontology/` (28 MB, RAG knowledge base)
-- Eliminado `data/` (113 MB de archivos temporales de desarrollo)
-- Eliminado `notebooks/` (vacío)
-- Eliminados archivos `.bak` de TaskPane
-
-### 2. Crear script Sync-Dist.ps1
-Nuevo script que sincroniza automáticamente C:\NEVEN → Dist/
-
-**Incluye:**
-- Binarios: NEVEN64.xll, NEVENRibbon.dll, Control*.exe
-- Config: neven-config.json, neven-languages.json, manifest.xml
-- Directorios: functions, startup, TaskPane, examples, docs, ontology, prompts, libreria
-
-**Excluye:**
-- `neven_julia.dll` (1 GB sysimage)
-- `data/` (DBs y archivos temporales)
-- `notebooks/` (vacío, usuarios crean propios)
-- `*.log`, `*.tmp`, `*.bak`, `__pycache__`, etc.
-
-### 3. Actualizar instalador para Office Add-in
-Mejorada función `Register-TaskPaneManifest`:
-- Intenta crear SMB share primero
-- **Fallback:** usa `\\localhost\C$\NEVEN\catalog` (no requiere admin)
-- Registra catálogo en `HKCU:\Software\Microsoft\Office\16.0\Wef\TrustedCatalogs`
-
-## Archivos modificados/creados
-
-| Archivo | Cambio |
-|---------|--------|
-| `F:\...\src\Install\Sync-Dist.ps1` | NUEVO — script de sincronización |
-| `F:\...\src\Install\Install-NEVEN.ps1` | Mejorado fallback para catálogo Office Add-in |
-| `F:\...\src\Install\Dist\*` | Sincronizado con producción |
-
-## Commits realizados
-
-| Hash | Descripción |
-|------|-------------|
-| `f78b7fd` | feat(installer): add Sync-Dist.ps1 and improve Office Add-in registration |
-
-## Tamaño final de Dist
-
-```
-=== DIST FINAL ===
-Archivos: 1017
-Tamaño:   61.89 MB
-
-Componentes:
-  docs/                    2.58 MB
-  examples/               23.62 MB
-  functions/               0.94 MB
-  ontology/               28.21 MB
-  prompts/                 0.02 MB
-  startup/                 1.05 MB
-  TaskPane/                2.39 MB
-  NEVEN64.xll              2.43 MB
-  NEVENRibbon.dll          0.30 MB
-  ControlR.exe             1.49 MB
-  ControlJulia.exe         1.27 MB
-  ControlPython.exe        1.22 MB
-```
-
-## Intento fallido
-
-**Sync-Dist.ps1 con caracteres Unicode** — PowerShell falló al parsear símbolos como `→` y `╔`. 
-**Solución:** Reescribir con ASCII puro (`-->`, `[OK]`, `===`).
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Crear ZIP del instalador para distribución | Pendiente |
-| **ALTA** | Probar instalador en máquina limpia | Pendiente |
-| MEDIA | Documentar prerequisitos (R 4.4+, Julia 1.12+, Python 3.10+) | Pendiente |
-| MEDIA | Agregar verificación de versiones mínimas de dependencias | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~mañana, cierre) — Discusión sobre instalador ejecutable
-
-## Pregunta del usuario
-¿Es posible crear un ejecutable (.exe) que realice todos los pasos de instalación, incluido el registro del manifest?
-
-## Opciones analizadas
-
-| Opción | Complejidad | Descripción |
-|--------|-------------|-------------|
-| **ps2exe** | Baja | Convierte PowerShell a .exe — ya existe Install-NEVEN.exe |
-| **NSIS** | Media | Instalador profesional con wizard visual |
-| **Inno Setup** | Media | Popular, bien documentado |
-| **WiX** | Alta | MSI estándar para enterprise/GPO |
-
-## Estado actual
-Ya existe `F:\ANTIGRAVITY\2026\NEVEN\src\Install\Install-NEVEN.exe` — probablemente generado con ps2exe.
-
-El script `Install-NEVEN.ps1` actualizado ya incluye:
-- ✅ Copia de todos los archivos
-- ✅ Registro del Ribbon COM (regsvr32)
-- ✅ Registro del catálogo manifest (Office Add-in)
-- ✅ Ubicación confiable de Excel
-
-## Decisión pendiente
-Elegir entre:
-1. Regenerar Install-NEVEN.exe con ps2exe (rápido)
-2. Crear instalador profesional con NSIS/Inno Setup (más trabajo, mejor UX)
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Decidir enfoque de instalador (ps2exe vs NSIS) | Esperando decisión |
-| **ALTA** | Regenerar/crear instalador ejecutable | Pendiente |
-| **ALTA** | Empaquetar Dist + instalador en ZIP/autoextract | Pendiente |
-| MEDIA | Probar instalador en máquina limpia | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~mediodía) — Decisión: Instalador NSIS con wizard
-
-## Decisión del usuario
-**Usar NSIS** para crear instalador profesional con wizard visual e iconos personalizados.
-
-## Recursos disponibles
-- **Icono:** `NEVEN_studio.ico` (3.7 KB) en `C:\NEVEN\` y `Dist\`
-- **NSIS:** No instalado — descargar de https://nsis.sourceforge.io/Download
-
-## Plan del instalador NSIS
-
-El script `NEVEN-Setup.nsi` incluirá:
-- Wizard: Welcome → License → Directory → Install → Finish
-- Icono personalizado (NEVEN_studio.ico)
-- Copia de archivos de Dist/ a C:\NEVEN\
-- Registro COM del Ribbon (regsvr32)
-- Registro del catálogo Office Add-in
-- Acceso directo en Escritorio y Menú Inicio
-- Desinstalador automático
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Instalar NSIS en máquina de desarrollo | Pendiente (usuario) |
-| **ALTA** | Crear script NEVEN-Setup.nsi | Pendiente |
-| **ALTA** | Compilar y probar instalador | Pendiente |
-| MEDIA | Agregar archivo LICENSE.txt para wizard | Pendiente |
-| MEDIA | Probar en máquina limpia | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~tarde) — Instalador NSIS creado exitosamente
-
-## Logro principal
-**Creado instalador profesional NSIS** — `NEVEN-Setup.exe` (23.7 MB)
-
-## Proceso de desarrollo
-
-### 1. Instalación de NSIS
-Usuario instaló NSIS v3.13 en `C:\Program Files (x86)\NSIS`
-
-### 2. Creación del script NEVEN-Setup.nsi
-Script completo con:
-- Wizard MUI2 (Modern UI): Welcome → License → Directory → Install → Finish
-- Icono personalizado: `NEVEN_studio.ico`
-- Idiomas: Español e Inglés
-- Secciones: Core, Ribbon COM, Office Add-in, Trusted Location, Shortcuts
-
-### 3. Errores encontrados y soluciones
-
-| Error | Causa | Solución |
-|-------|-------|----------|
-| `macro "_If" requires 4 parameters` | LogicLib.nsh mal usado | Reemplazar `${If}` con `StrCmp` nativo |
-| `unknown variable "AtLeastWin10"` | Falta WinVer.nsh | Eliminar verificación de Windows (no crítica) |
-| `unknown variable "mui.ComponentsPage"` | Sin página de componentes | Eliminar `MUI_FUNCTION_DESCRIPTION_*` |
-| Archivos backup inflando Dist | Backups innecesarios | Eliminar `*.backup*`, `backups/` |
-
-### 4. Limpieza de Dist
-- Eliminados archivos de backup (13 MB)
-- Dist final: 994 archivos, 44.9 MB
-- Comprimido a 23.7 MB en el instalador
-
-## Archivos creados/modificados
-
-| Archivo | Cambio |
-|---------|--------|
-| `F:\...\src\Install\NEVEN-Setup.nsi` | NUEVO — script NSIS completo |
-| `F:\...\src\Install\NEVEN-Setup.exe` | NUEVO — instalador compilado (23.7 MB) |
-| `F:\...\src\Install\Dist\` | Limpiado de backups |
-
-## Commits realizados
-
-| Hash | Descripción |
-|------|-------------|
-| `3ff2a6c` | feat(installer): add NSIS installer with professional wizard |
-
-## Funcionalidades del instalador
-
-1. **Wizard profesional** con icono NEVEN
-2. **Licencia GPL v3** mostrada al usuario
-3. **Selección de directorio** (default: C:\NEVEN)
-4. **Copia de archivos** (~45 MB descomprimidos)
-5. **Registro COM** del Ribbon (regsvr32)
-6. **Registro Office Add-in** para TaskPane (catálogo localhost)
-7. **Ubicación confiable** de Excel
-8. **Accesos directos** (Desktop + Menú Inicio)
-9. **Desinstalador automático** incluido
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Probar instalador en máquina limpia o VM | Pendiente |
-| **ALTA** | Verificar que todas las funcionalidades se activan | Pendiente |
-| MEDIA | Agregar página de componentes opcionales (ejemplos, docs) | Futuro |
-| MEDIA | Crear imagen de header personalizada para wizard | Futuro |
-| BAJA | Firmar digitalmente el instalador | Futuro |
-
-
----
-### Sesion 2026-08-20 (~tarde, continuación) — Fix encoding licencia
-
-## Problema
-En el wizard del instalador, "Gómez" aparecía como "GÃ³mez" — caracteres basura.
-
-## Causa raíz
-NSIS lee archivos de texto como ANSI (Windows-1252), pero `license.txt` estaba guardado como UTF-8. El carácter "ó" (UTF-8: 0xC3 0xB3) se interpreta como "Ã³" en ANSI.
-
-## Solución
-Convertir `license.txt` a ASCII puro, reemplazando caracteres acentuados:
-- ó → o
-- á → a  
-- é → e
-- í → i
-- ú → u
-- ñ → n
-
-## Archivo modificado
-`F:\ANTIGRAVITY\2026\NEVEN\src\Install\license.txt` — convertido a ANSI/ASCII
-
-## Resultado
-"Minor Bonilla-Gomez" (sin tilde, pero legible)
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Verificar instalador corregido | En prueba |
-| **ALTA** | Probar instalación completa | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~tarde, branding) — Imágenes NEVEN en wizard
-
-## Mejora implementada
-Agregadas imágenes de marca NEVEN al wizard del instalador.
-
-## Proceso
-
-### 1. Imagen fuente
-`F:\ANTIGRAVITY\2026\NEVEN\src\iconos\NEvEN.jpg` (1024x572 px, 24.8 KB)
-
-### 2. Conversión a BMP para NSIS
-NSIS requiere formato BMP con dimensiones específicas:
-
-| Archivo | Dimensiones | Uso |
-|---------|-------------|-----|
-| `wizard.bmp` | 164x314 px | Panel izquierdo en Welcome/Finish |
-| `header.bmp` | 150x57 px | Header derecho en otras páginas |
-
-### 3. Script de conversión
-Usado System.Drawing de .NET para:
-- Escalar imagen manteniendo aspecto
-- Centrar en canvas blanco
-- Guardar como BMP
-
-## Archivos creados/modificados
-
-| Archivo | Cambio |
-|---------|--------|
-| `F:\...\src\Install\Dist\wizard.bmp` | NUEVO — 201 KB |
-| `F:\...\src\Install\Dist\header.bmp` | NUEVO — 33 KB |
-| `F:\...\src\Install\NEVEN-Setup.nsi` | Actualizado para usar imágenes custom |
-| `F:\...\src\Install\NEVEN-Setup.exe` | Recompilado (23.69 MB) |
-
-## Configuración NSIS actualizada
-```nsi
-!define MUI_HEADERIMAGE_BITMAP "Dist\header.bmp"
-!define MUI_HEADERIMAGE_RIGHT
-!define MUI_WELCOMEFINISHPAGE_BITMAP "Dist\wizard.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "Dist\wizard.bmp"
-```
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Verificar imágenes en wizard | En prueba |
-| **ALTA** | Probar instalación completa | Pendiente |
-| MEDIA | Commit de cambios del instalador | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~tarde, final) — Wizard luce genial + consulta modo oscuro
-
-## Resultado
-✅ Usuario confirma que el wizard con imágenes NEVEN "luce genial"
-
-## Consulta: Modo oscuro en licencia
-Usuario preguntó si es posible que el acuerdo de licencia tenga fondo negro y letra blanca tipo consola.
-
-### Limitación NSIS
-El control RichEdit de MUI2 no permite cambiar colores directamente.
-
-### Opciones propuestas
-
-| Opción | Complejidad | Descripción |
-|--------|-------------|-------------|
-| **RTF con colores** | Baja | Convertir license.txt a license.rtf con formato oscuro embebido |
-| NsDialogs plugin | Alta | Página custom con control personalizado |
-| nsWebView + HTML | Media | Mostrar HTML con CSS oscuro |
-
-**Recomendación:** Opción RTF (más práctica)
-
-## Estado del instalador
-
-- ✅ Wizard con imágenes NEVEN
-- ✅ Licencia legible (sin caracteres basura)
-- ⏳ Modo oscuro en licencia (pendiente decisión)
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| MEDIA | Implementar licencia RTF modo oscuro | Esperando confirmación usuario |
-| **ALTA** | Probar instalación completa | Pendiente |
-| **ALTA** | Commit de todos los cambios del instalador | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~tarde) — Licencia modo oscuro implementada
-
-## Implementación
-Convertida licencia a RTF con estilo "modo oscuro" tipo terminal.
-
-## Formato RTF aplicado
-```rtf
-{\colortbl;\red30\green30\blue30;\red220\green220\blue220;}
-\cbpat1  (fondo gris oscuro #1E1E1E)
-\cf2     (texto gris claro #DCDCDC)
-\f0\fmodern Consolas (fuente monoespaciada)
-\fs18    (tamaño 9pt)
-```
-
-## Archivos modificados
-
-| Archivo | Cambio |
-|---------|--------|
-| `F:\...\src\Install\license.rtf` | NUEVO — licencia en formato RTF modo oscuro |
-| `F:\...\src\Install\NEVEN-Setup.nsi` | Cambiado de license.txt a license.rtf |
-| `F:\...\src\Install\NEVEN-Setup.exe` | Recompilado (23.69 MB) |
-
-## Resultado visual esperado
-- Fondo: Gris oscuro (#1E1E1E)
-- Texto: Blanco/gris claro (#DCDCDC)  
-- Fuente: Consolas (monoespaciada, tipo terminal)
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Verificar licencia modo oscuro en wizard | En prueba |
-| **ALTA** | Commit de todos los cambios del instalador | Pendiente |
-| **ALTA** | Probar instalación completa | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~tarde) — Intento modo oscuro con highlight
-
-## Segundo intento
-Cambiado de `\cbpat1` a `\highlight1` para aplicar fondo oscuro al texto.
-
-```rtf
-\cf2\highlight1  (texto claro con highlight oscuro)
-```
-
-## Estado
-Esperando verificación del usuario.
-
-## Limitaciones conocidas de NSIS RichEdit
-- `\cbpat` (fondo de documento) no funciona
-- `\highlight` (fondo de texto) puede funcionar
-- Si no funciona, alternativas: plugin nsRichEdit o aceptar estilo estándar
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Verificar si highlight funciona | Esperando prueba |
-
-
----
-### Sesion 2026-08-20 (~tarde) — Modo oscuro NO funciona en NSIS
-
-## Resultado
-**NEGATIVO** — El control RichEdit de NSIS no soporta colores de fondo.
-
-## Intentos fallidos
-
-| Intento | Código RTF | Resultado |
-|---------|------------|-----------|
-| 1 | `\cbpat1` (fondo documento) | No funciona |
-| 2 | `\highlight1` (fondo texto) | No funciona |
-
-## Causa raíz
-El control RichEdit usado por NSIS MUI2 tiene limitaciones severas. No renderiza propiedades de fondo de RTF.
-
-## Opciones propuestas
-
-| Opción | Descripción |
-|--------|-------------|
-| **1. Estilo estándar** | Fondo blanco, fuente Consolas — look técnico sin modo oscuro |
-| 2. Plugin NsDialogs | Página custom con control propio — más complejo |
-| 3. Dejar como está | Licencia funcional aunque no sea modo oscuro |
-
-## Decisión pendiente
-Usuario debe elegir si:
-- Revertir a RTF limpio con fuente Consolas (opción 1)
-- Dejar como está
-- Explorar plugin (más trabajo)
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| MEDIA | Decidir estilo final de licencia | Esperando decisión |
-| **ALTA** | Commit de cambios del instalador | Pendiente |
-| **ALTA** | Probar instalación completa | Pendiente |
-
----
-### Sesion 2026-08-20 (~tarde, final) — Reversion a RTF limpio con Consolas
-
-## Contexto
-Usuario confirmo que modo oscuro no funcionaba en NSIS RichEdit. Decidio revertir a RTF limpio con fuente Consolas.
-
-## Cambios realizados
-
-### 1. license.rtf — Estilo limpio
-```rtf
-{\rtf1\ansi\ansicpg1252\deff0
-{\fonttbl{\f0\fmodern\fcharset0 Consolas;}}
-{\colortbl;\red0\green0\blue0;}
-\f0\fs18\cf1
-NEVEN Software License Agreement
-...
-```
-- Fuente: Consolas (monoespaciada, tipo terminal)
-- Tamaño: 9pt (\fs18)
-- Fondo: Blanco (por defecto)
-- Texto: Negro
-
-### 2. NEVEN-Setup.exe — Recompilado
-- Tamaño: 23.69 MB
-- Incluye: wizard.bmp, header.bmp, license.rtf
-
-## Resultado final del instalador
-
-| Componente | Estado |
-|------------|--------|
-| Wizard con branding | ✅ wizard.bmp (164x314) y header.bmp (150x57) |
-| Licencia Consolas | ✅ RTF limpio, fuente monoespaciada |
-| Registros COM Ribbon | ✅ regsvr32 NEVENRibbon.dll |
-| Office Add-in catalog | ✅ \\localhost\C$\NEVEN\catalog |
-| Excel Trusted Location | ✅ Registry HKCU |
-
-## Archivos en src/Install/
-
-| Archivo | Descripcion |
-|---------|-------------|
-| `NEVEN-Setup.nsi` | Script NSIS principal |
-| `NEVEN-Setup.exe` | Instalador compilado (23.69 MB) |
-| `license.txt` | Licencia plain text (encoding ANSI) |
-| `license.rtf` | Licencia RTF con Consolas |
-| `Sync-Dist.ps1` | Script sincronizacion C:\NEVEN → Dist/ |
-| `Dist/wizard.bmp` | Imagen wizard izquierda |
-| `Dist/header.bmp` | Imagen header derecha |
-
-## Commits pendientes
-
-Los siguientes cambios NO estan commiteados:
-- `src/Install/NEVEN-Setup.nsi` (modificado)
-- `src/Install/license.txt` (modificado)
-- `src/Install/license.rtf` (nuevo)
-
-Las imagenes wizard.bmp y header.bmp estan en Dist/ que probablemente esta en .gitignore.
-
-## Por que modo oscuro fallo
-
-| Intento | Codigo RTF | Resultado |
-|---------|------------|-----------|
-| `\cbpat1` | Fondo de documento | NSIS RichEdit no lo renderiza |
-| `\highlight1` | Fondo de texto | NSIS RichEdit no lo renderiza |
-
-**Limitacion tecnica:** El control RichEdit de Windows que usa NSIS MUI2 tiene soporte limitado de RTF. Solo renderiza fuentes, colores de texto, y formato basico. Los atributos de fondo se ignoran.
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Commit de cambios del instalador (NSIS, license) | Pendiente |
-| **ALTA** | Test en maquina limpia/VM | Pendiente |
-| **ALTA** | Verificar Office Add-in registration funciona | Pendiente |
-| MEDIA | Documentar instalador en MANUAL_MANTENIMIENTO.md | Futuro |
-
-## Notas para proxima sesion
-
-1. **Commit sugerido:**
-   ```
-   git add src/Install/NEVEN-Setup.nsi src/Install/license.txt src/Install/license.rtf
-   git commit -m "feat(installer): add professional NSIS wizard with branding"
-   ```
-
-2. **Test del instalador:**
-   - Ejecutar `NEVEN-Setup.exe` en VM limpia
-   - Verificar que NEVENRibbon.dll se registra
-   - Verificar que Excel reconoce Trusted Location
-   - Verificar que Office Add-in aparece en catalog
-
-3. **Archivos excluidos del Dist:**
-   - `data/` (113 MB de archivos temporales)
-   - `notebooks/` (directorio vacio)
-   - `neven_julia.dll` (~415 MB sysimage)
-
----
-### Sesion 2026-08-20 (~noche) — Archivo de CHAT.md a CHAT_LARGO.md
-
-## Trabajo realizado
-
-Sesion breve de mantenimiento del archivo de bitacora.
-
-### 1. Archivo de historial
-- Movidas las primeras 10839 lineas de CHAT.md a CHAT_LARGO.md
-- CHAT.md reducido de 14802 a 3967 lineas
-- Agregado separador con timestamp en CHAT_LARGO.md
-
-### 2. Verificacion de estado del repositorio
-Cambios pendientes de commit identificados:
-- `src/Install/NEVEN-Setup.nsi` (modificado)
-- `src/Install/license.txt` (modificado)
-- `src/Install/license.rtf` (nuevo)
-- `.kiro/contexto/CHAT.md` (modificado)
-
-## Archivos modificados
-
-| Archivo | Cambio |
-|---------|--------|
-| `F:\..\.kiro\contexto\CHAT.md` | Reducido a 3967 lineas |
-| `F:\..\.kiro\contexto\CHAT_LARGO.md` | +10839 lineas archivadas |
-
-## Commits realizados
-Ninguno.
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Commit de cambios del instalador NSIS | Pendiente |
-| **ALTA** | Test de NEVEN-Setup.exe en VM limpia | Pendiente |
-| MEDIA | Verificar Office Add-in registration | Pendiente |
-
----
-### Sesion 2026-08-20 (~noche, continuacion) — Segunda ronda de archivo
-
-## Trabajo realizado
-
-Continuacion del mantenimiento del archivo de bitacora.
-
-### Archivo adicional
-- Movidas 3328 lineas adicionales de CHAT.md a CHAT_LARGO.md
-- CHAT.md reducido de 3967 a 681 lineas
-- Total archivado en esta sesion: 14167 lineas (10839 + 3328)
-
-## Archivos modificados
-
-| Archivo | Cambio |
-|---------|--------|
-| `F:\..\.kiro\contexto\CHAT.md` | Reducido a 681 lineas |
-| `F:\..\.kiro\contexto\CHAT_LARGO.md` | +3328 lineas archivadas |
-
-## Commits realizados
-Ninguno.
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Commit de cambios del instalador NSIS | Pendiente |
-| **ALTA** | Test de NEVEN-Setup.exe en VM limpia | Pendiente |
-| MEDIA | Verificar Office Add-in registration | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~noche, final) — Consulta estructura de documentacion
-
-## Consulta realizada
-
-Usuario pregunto donde estan los documentos como el paper y Docusaurus.
-
-## Estructura de documentacion identificada
-
-| Tipo | Ruta | Contenido |
-|------|------|-----------|
-| **Paper academico** | `src/docs/Paper/` | main.tex, Informe.md, references.bib, secciones LaTeX |
-| **Docusaurus** | `src/docs/Docusaurus/` | 17+ archivos .md organizados por capitulo |
-| **Docs produccion** | `docs/` | COMO_AGREGAR_LIBROS.md y ontologia/ |
-| **Docs desarrollo** | `src/docs/` | Arquitectura, API, Mantenimiento, Estado, etc. |
-
-## Archivos clave del paper
-
-- `src/docs/Paper/main.tex` — documento LaTeX principal
-- `src/docs/Paper/main.pdf` — PDF compilado
-- `src/docs/Paper/Informe.md` — version Markdown
-- `src/docs/Paper/references.bib` — bibliografia BibTeX
-- `src/docs/Paper/sections/` — secciones individuales
-
-## Archivos clave de Docusaurus
-
-- `src/docs/Docusaurus/00-portada.md` a `17-identidad-marca.md`
-- `src/docs/Docusaurus/sidebars.js` — configuracion de navegacion
-
-## Archivos modificados
-Ninguno (solo consulta).
-
-## Commits realizados
-Ninguno.
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Commit de cambios del instalador NSIS | Pendiente |
-| **ALTA** | Test de NEVEN-Setup.exe en VM limpia | Pendiente |
-| MEDIA | Verificar Office Add-in registration | Pendiente |
-
-
----
-### Sesion 2026-08-20 (~noche) — Analisis de gaps en documentacion
-
-## Trabajo realizado
-
-Revision exhaustiva de CHAT_LARGO.md (45776 lineas, 226 sesiones) para identificar funcionalidades implementadas que no estan documentadas en Paper ni Docusaurus.
-
-## Hallazgos principales
-
-### Estadisticas de CHAT_LARGO.md
-
-| Componente | Menciones |
-|------------|-----------|
-| NEVEN Studio/TaskPane | 1538 |
-| Ontologia/RAG | 1126 |
-| Chart Gallery | 258 |
-| Python integration | 123 |
-| Office Add-in | 95 |
-| i18n | 93 |
-| Simulacion Monte Carlo | 11 |
-
-### Gap de documentacion identificado
-
-| Funcionalidad | En CHAT_LARGO | En Docusaurus | Gap |
-|--------------|---------------|---------------|-----|
-| **Chart Gallery** | 258 menciones | 0 | CRITICO |
-| **Quick Plots** | Extenso | 0 | CRITICO |
-| **Ontologia anyplot (325 graficos)** | Extenso | 0 | CRITICO |
-| **i18n (ES/EN)** | 93 menciones | 8 | Parcial |
-| **Office Add-in integrado** | 95 menciones | 2 | Parcial |
-| **Excepciones Sandbox** | Detallado | 0 | MEDIO |
-| **EVALS framework** | Implementado | 0 | MEDIO |
-
-### Lo que SI esta documentado en Docusaurus
-
-- NEVEN Studio Standalone (Cap 13)
-- Data Lab con familias AD, RG, DS, TM
-- Run Script
-- Funciones R y Julia
-- Arquitectura general
-- Instalacion
-- Ontologias y RAG (Cap 14-15)
-
-## Recomendacion para Docusaurus
-
-1. **Nuevo capitulo: Chart Gallery** (~18-neven-chart-gallery.md)
-   - Que es (325 graficos de anyplot)
-   - Tabs Estandar vs Avanzados
-   - Flujo "Usar mis datos"
-   - Ejecucion backend R/Python/Julia
-
-2. **Nuevo capitulo: Quick Plots** (~19-graficos-rapidos.md)
-   - Interfaz de graficos inmediatos
-   - Tipos soportados
-   - Integracion con datos de Excel
-
-3. **Actualizar Cap 13** (NEVEN Studio)
-   - Agregar seccion sobre i18n (cambiar idioma)
-   - Mencionar Office Add-in como alternativa
-
-## Nota sobre Informe.md
-
-El archivo `src/docs/Paper/Informe.md` abierto en el editor es un **reporte de auditoria forense** del paper (detecta "huellas de IA"), NO el paper mismo. El paper real esta en `main.tex` con secciones en `sections/*.tex`.
-
-## Archivos revisados (no modificados)
-
-- `F:\..\.kiro\contexto\CHAT_LARGO.md` — 45776 lineas, 1.6 MB
-- `F:\...\src\docs\Docusaurus\*.md` — 23 archivos
-- `F:\...\src\docs\Paper\sections\*.tex` — 9 archivos
-
-## Commits realizados
-Ninguno.
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Crear 18-neven-chart-gallery.md en Docusaurus | Pendiente |
-| **ALTA** | Crear 19-graficos-rapidos.md en Docusaurus | Pendiente |
-| **ALTA** | Actualizar Cap 13 con i18n y Office Add-in | Pendiente |
-| **ALTA** | Commit de cambios del instalador NSIS | Pendiente |
-| MEDIA | Decidir si actualizar Paper o reescribirlo | Pendiente decision |
-| MEDIA | Documentar EVALS framework | Pendiente |
-
-
----
-### Sesion 2026-08-21 (~madrugada) — Creacion de 4 capitulos nuevos para Docusaurus
-
-## Trabajo realizado
-
-Creacion de documentacion completa para funcionalidades que estaban implementadas pero NO documentadas.
-
-## Analisis previo
-
-Revision de CHAT_LARGO.md (45776 lineas, 226 sesiones) para identificar gaps:
-
-| Funcionalidad | Menciones en CHAT_LARGO | En Docusaurus antes | Gap |
-|--------------|-------------------------|---------------------|-----|
-| Chart Gallery | 258 | 0 | CRITICO |
-| Quick Plots | Extenso | 0 | CRITICO |
-| i18n | 93 | 8 | Parcial |
-| Office Add-in | 95 | 2 | Parcial |
-
-## Capitulos creados
-
-| # | Archivo | Lineas | Tamaño | Contenido |
-|---|---------|--------|--------|-----------|
-| 18 | `18-chart-gallery.md` | 341 | 10 KB | 325 graficos anyplot, tabs, "Usar mis datos", backend |
-| 19 | `19-graficos-rapidos.md` | 363 | 9.4 KB | Quick Plots, tipos, deteccion automatica |
-| 20 | `20-internacionalizacion.md` | 407 | 9.2 KB | Sistema i18n ES/EN, como agregar idiomas |
-| 21 | `21-office-addin.md` | 395 | 9.5 KB | TaskPane integrado, manifest.xml, Office.js |
-
-**Total:** ~1,500 lineas de documentacion nueva (~38 KB)
-
-## Archivos creados/modificados
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/docs/Docusaurus/18-chart-gallery.md` | NUEVO |
-| `src/docs/Docusaurus/19-graficos-rapidos.md` | NUEVO |
-| `src/docs/Docusaurus/20-internacionalizacion.md` | NUEVO |
-| `src/docs/Docusaurus/21-office-addin.md` | NUEVO |
-| `src/docs/Docusaurus/sidebars.js` | Actualizado con nuevos IDs |
-
-## Estructura de cada capitulo
-
-Todos siguen el formato estandar de Docusaurus:
-- Front matter con id, title, sidebar_label, sidebar_position
-- Secciones numeradas (18.1, 18.2, etc.)
-- Tablas comparativas
-- Ejemplos de codigo
-- Troubleshooting
-- Footer con fecha y creditos
-
-## sidebars.js actualizado
-
-```javascript
-const sidebars = {
-  docs: [
-    // ... capitulos existentes ...
-    'identidad-marca',
-    'chart-gallery',        // NUEVO
-    'graficos-rapidos',     // NUEVO
-    'internacionalizacion', // NUEVO
-    'office-addin',         // NUEVO
-    'evolucion-arquitectura',
-    'metricas-proyecto',
-    'bert-vs-neven',
-  ],
-};
-```
-
-## Commits realizados
-Ninguno — cambios pendientes de commit.
-
-## Nota sobre Informe.md
-
-El archivo `src/docs/Paper/Informe.md` abierto en el editor es un **reporte de auditoria forense** (detecta "huellas de IA" en el paper), NO el paper academico. El paper real esta en `main.tex`.
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Commit de 4 capitulos Docusaurus nuevos | Pendiente |
-| **ALTA** | Commit de cambios del instalador NSIS | Pendiente |
-| MEDIA | Actualizar Cap 13 con referencias a nuevos capitulos | Pendiente |
-| MEDIA | Revisar si el Paper necesita actualizacion | Pendiente |
-| BAJA | Agregar screenshots a los capitulos | Futuro |
-
-
----
-### Sesion 2026-08-21 (~madrugada) — Commits Docusaurus + NSIS + Analisis del Paper
-
-## Commits realizados
-
-| Hash | Descripcion |
-|------|-------------|
-| `dc069e1` | docs(docusaurus): add 4 new chapters for Chart Gallery, Quick Plots, i18n, and Office Add-in |
-| `268270c` | feat(installer): add professional NSIS wizard with branding |
-
-## Detalles del commit Docusaurus
-
-5 archivos, 1511 inserciones:
-- `18-chart-gallery.md` — 341 lineas, 10 KB
-- `19-graficos-rapidos.md` — 363 lineas, 9.4 KB
-- `20-internacionalizacion.md` — 407 lineas, 9.2 KB
-- `21-office-addin.md` — 395 lineas, 9.5 KB
-- `sidebars.js` — actualizado con nuevos IDs
-
-## Detalles del commit NSIS
-
-3 archivos, 719 inserciones:
-- `NEVEN-Setup.nsi` — script principal
-- `license.txt` — licencia ANSI
-- `license.rtf` — licencia con Consolas
-
-## Analisis del Paper academico
-
-Revision completa de las 6 secciones del paper (`src/docs/Paper/sections/*.tex`).
-
-### Lo que el paper YA cubre bien
-
-| Funcionalidad | Seccion |
-|--------------|---------|
-| Arquitectura 4 capas | Sec 2 |
-| Named Pipes + Protobuf | Sec 2.4 |
-| Security Sandbox | Sec 2.5 |
-| WebView2 Viewer | Sec 2.6, 3.1 |
-| Extensibilidad usuario | Sec 3.2 |
-| Pluto.jl notebooks | Sec 3.3 |
-| Quarto reports | Sec 3.4 |
-| Comparacion alternativas | Sec 5 |
-
-### Lo que el paper menciona como "en desarrollo" pero YA esta completo
-
-| Item | En Paper | Estado Real |
-|------|----------|-------------|
-| NEVEN Studio | "under development" | COMPLETADO con 8+ tabs |
-| AI Assistant | "preliminary support" | COMPLETADO con perfiles |
-| DuckDB | Mencionado vagamente | COMPLETADO como Data Studio |
-
-### GAPS - Funcionalidades NO cubiertas en el paper
-
-| Funcionalidad | Importancia |
-|---------------|-------------|
-| Chart Gallery (325 graficos anyplot) | ALTA |
-| Quick Plots | MEDIA |
-| Sistema i18n (ES/EN) | MEDIA |
-| Office Add-in (TaskPane integrado) | ALTA |
-| Tab Settings (perfiles AI/DB) | MEDIA |
-| EVALS framework (129 tests) | MEDIA |
-
-## Opciones de actualizacion propuestas
-
-| Opcion | Descripcion | Esfuerzo |
-|--------|-------------|----------|
-| **A** | Actualizar solo "under development" → "completado" | ~1 hora |
-| **B** | Agregar subseccion 3.5/3.6 con Chart Gallery, i18n, Office Add-in | ~3-4 horas |
-| **C** | Revision mayor de secciones completas | ~1-2 dias |
-
-**Recomendacion:** Opcion B (actualizacion moderada)
-
-## Archivos revisados (no modificados)
-
-- `src/docs/Paper/main.tex`
-- `src/docs/Paper/sections/00_abstract.tex`
-- `src/docs/Paper/sections/01_introduction.tex`
-- `src/docs/Paper/sections/02_architecture.tex`
-- `src/docs/Paper/sections/03_viewer_extensibility.tex`
-- `src/docs/Paper/sections/05_discussion.tex`
-- `src/docs/Paper/sections/06_conclusion.tex`
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Decidir opcion de actualizacion del paper (A, B, o C) | Esperando decision |
-| **ALTA** | Implementar actualizacion elegida | Pendiente |
-| MEDIA | Actualizar metricas de tests en Sec 5 (verificar numero actual) | Pendiente |
-| MEDIA | Actualizar CHAT.md con archivo de sesiones anteriores | Pendiente |
-| BAJA | Push de commits al remoto | Pendiente |
-
-
----
-### Sesion 2026-08-21 (~madrugada, continuacion) — Plan revision mayor del Paper
-
-## Contexto
-
-Usuario decidio **Opcion C: Revision mayor** del paper academico para reflejar el estado actual del sistema.
-
-## Steering y Skills activados
-
-1. **`ai-artifact-prevention.md`** — Reglas para evitar huellas de IA detectables:
-   - Eliminar campos `note` de BibTeX
-   - Reducir em-dashes a ≤15 por paper
-   - Evitar antitesis simetricas ("student...engineer")
-   - Verificar consistencia numerica
-
-2. **`scientific-writing` skill** — Workflow completo de escritura cientifica:
-   - No fabricacion de datos/citas
-   - Evidence binding (claims → sources)
-   - Verificacion de consistencia
-
-## Metricas VERIFICADAS del proyecto
-
-| Metrica | Valor | Fuente |
-|---------|-------|--------|
-| Tests totales | 342 | `src/tests/*.cc` (TEST + TEST_F) |
-| Funciones R con sidecar | 29 | `C:\NEVEN\functions\*.json` |
-| Archivos R | 63 | `C:\NEVEN\functions\*.R` |
-| Graficos anyplot | 325 | `external/anyplot/plots/` |
-| Idiomas i18n | 2 | `es.js`, `en.js` |
-| Tabs NEVEN Studio | 9 | `taskpane.html` |
-| Capitulos Docusaurus | 26 | `src/docs/Docusaurus/*.md` |
-
-**Nota:** El paper actual dice 342 tests, lo cual COINCIDE con la realidad.
-
-## Tabs de NEVEN Studio (verificados)
-
-1. data-studio
-2. data-lab
-3. ai
-4. econometria
-5. presentaciones
-6. run-script
-7. excel-analysis
-8. settings
-9. ayuda
-
-## Plan de revision propuesto
-
-### Fase 1: Actualizar secciones existentes
-
-| Seccion | Cambios |
-|---------|---------|
-| Abstract | Agregar NEVEN Studio, Chart Gallery, i18n |
-| Sec 1 (Intro) | Actualizar contribuciones |
-| Sec 2 (Architecture) | Agregar Office Add-in |
-| Sec 3 (Viewer/Ext) | Nueva subseccion 3.5: NEVEN Studio |
-| Sec 5 (Discussion) | Actualizar metricas |
-| Sec 6 (Conclusion) | "under development" → "implemented" |
-
-### Fase 2: Nueva subseccion 3.5
-
-"NEVEN Studio: Integrated Development Environment"
-- 9 tabs implementados
-- Chart Gallery (325 graficos)
-- Sistema i18n
-- Office Add-in vs Standalone
-- Perfiles AI multiples
-
-### Fase 3: ai-artifact-prevention
-
-- Eliminar campos `note` de references.bib
-- Reducir em-dashes
-- Verificar numeros
-
-### Fase 4: Verificacion
-
-- Checklist pre-publicacion
-- Consistencia numerica
-
-## Archivos del paper revisados
-
-- `src/docs/Paper/main.tex`
-- `src/docs/Paper/sections/00_abstract.tex`
-- `src/docs/Paper/sections/01_introduction.tex`
-- `src/docs/Paper/sections/02_architecture.tex`
-- `src/docs/Paper/sections/03_viewer_extensibility.tex`
-- `src/docs/Paper/sections/05_discussion.tex`
-- `src/docs/Paper/sections/06_conclusion.tex`
-
-## Commits realizados
-Ninguno en esta parte de la sesion — solo planificacion.
-
-## Pendientes
-
-| Prioridad | Tarea | Estado |
-|-----------|-------|--------|
-| **ALTA** | Ejecutar Fase 1: Actualizar secciones existentes | Pendiente |
-| **ALTA** | Ejecutar Fase 2: Crear subseccion 3.5 NEVEN Studio | Pendiente |
-| **ALTA** | Ejecutar Fase 3: Aplicar ai-artifact-prevention | Pendiente |
-| MEDIA | Verificar references.bib (eliminar campos note) | Pendiente |
-| MEDIA | Contar em-dashes actuales en el paper | Pendiente |
-| BAJA | Push de commits anteriores al remoto | Pendiente |
-
-
-
----
-### Sesion 2026-08-19 (~tarde) — Continuacion analisis Paper para revision mayor
+### Sesion 2026-08-19 (~tarde) â€” Continuacion analisis Paper para revision mayor
 
 ## Contexto
 
@@ -1240,19 +17,19 @@ Sesion retomada desde contexto compactado. El objetivo es ejecutar la **Opcion C
 Estructura real confirmada:
 ```
 src/docs/Paper/
-├── sections/
-│   ├── 00_abstract.tex
-│   ├── 01_introduction.tex
-│   ├── 02_architecture.tex        # (no 03_architecture)
-│   ├── 03_viewer_extensibility.tex
-│   ├── 04_case_studies.tex
-│   ├── 05_discussion.tex
-│   └── 06_conclusion.tex
-├── main.tex
-├── references.bib
-├── redactor-academico.md
-├── requerimientos-publicacion-q1-neven.md
-└── auditor-forense-ia.md
+â”œâ”€â”€ sections/
+â”‚   â”œâ”€â”€ 00_abstract.tex
+â”‚   â”œâ”€â”€ 01_introduction.tex
+â”‚   â”œâ”€â”€ 02_architecture.tex        # (no 03_architecture)
+â”‚   â”œâ”€â”€ 03_viewer_extensibility.tex
+â”‚   â”œâ”€â”€ 04_case_studies.tex
+â”‚   â”œâ”€â”€ 05_discussion.tex
+â”‚   â””â”€â”€ 06_conclusion.tex
+â”œâ”€â”€ main.tex
+â”œâ”€â”€ references.bib
+â”œâ”€â”€ redactor-academico.md
+â”œâ”€â”€ requerimientos-publicacion-q1-neven.md
+â””â”€â”€ auditor-forense-ia.md
 ```
 
 ### 2. Lectura completa de todas las secciones del paper
@@ -1271,7 +48,7 @@ Revisadas las 7 secciones principales para identificar discrepancias vs estado a
 
 ### 3. Analisis de references.bib
 
-**Buena noticia:** El archivo references.bib esta LIMPIO — NO tiene campos `note` que eliminar.
+**Buena noticia:** El archivo references.bib esta LIMPIO â€” NO tiene campos `note` que eliminar.
 - 45 referencias totales
 - Ninguna con campo `note`
 - Cumple con `ai-artifact-prevention`
@@ -1303,20 +80,20 @@ Revisadas las 7 secciones principales para identificar discrepancias vs estado a
 | Quick Plots | Implementado | Agregar en Sec 3 |
 | Sistema i18n (2 idiomas) | Implementado | Mencionar en Sec 5 |
 | Office Add-in | Implementado | Agregar en Sec 3 |
-| 9 tabs NEVEN Studio | Implementado | Nueva §3.5 |
+| 9 tabs NEVEN Studio | Implementado | Nueva Â§3.5 |
 
 ## Plan de ejecucion confirmado
 
 | Fase | Descripcion | Archivos |
 |------|-------------|----------|
-| 1 | Actualizar secciones existentes | 00→06_*.tex |
-| 2 | Agregar §3.5 NEVEN Studio | 03_viewer_extensibility.tex |
+| 1 | Actualizar secciones existentes | 00â†’06_*.tex |
+| 2 | Agregar Â§3.5 NEVEN Studio | 03_viewer_extensibility.tex |
 | 3 | Aplicar ai-artifact-prevention | Todos + references.bib |
 | 4 | Verificar consistencia numerica | Cross-check |
 
 ## Em-dashes pendientes de contar
 
-Necesario grep para contar `---` y patrones como `---enabling`, `---ensuring` para reducir a ≤15.
+Necesario grep para contar `---` y patrones como `---enabling`, `---ensuring` para reducir a â‰¤15.
 
 ## Archivos revisados (lectura completa)
 
@@ -1331,31 +108,31 @@ Necesario grep para contar `---` y patrones como `---enabling`, `---ensuring` pa
 
 ## Commits realizados
 
-Ninguno — sesion de analisis y planificacion.
+Ninguno â€” sesion de analisis y planificacion.
 
 ## Pendientes
 
 | Prioridad | Tarea | Estado |
 |-----------|-------|--------|
 | **ALTA** | Ejecutar Fase 1: Actualizar Abstract y secciones | Proximo paso |
-| **ALTA** | Ejecutar Fase 2: Crear §3.5 NEVEN Studio (~200-300 palabras) | Pendiente |
-| **ALTA** | Ejecutar Fase 3: Contar/reducir em-dashes a ≤15 | Pendiente |
-| **ALTA** | Actualizar Tabla 2 (12→26 chapters) | Pendiente |
+| **ALTA** | Ejecutar Fase 2: Crear Â§3.5 NEVEN Studio (~200-300 palabras) | Pendiente |
+| **ALTA** | Ejecutar Fase 3: Contar/reducir em-dashes a â‰¤15 | Pendiente |
+| **ALTA** | Actualizar Tabla 2 (12â†’26 chapters) | Pendiente |
 | MEDIA | Verificar claim "95 documented functions" | Pendiente |
 | MEDIA | Push commits anteriores (dc069e1, 268270c) | Pendiente |
 | BAJA | Agregar screenshots a Docusaurus | Futuro |
 
 ## Notas para proxima sesion
 
-1. **Comenzar con Fase 1** — modificar 00_abstract.tex primero
+1. **Comenzar con Fase 1** â€” modificar 00_abstract.tex primero
 2. **Patron em-dash a buscar:** `---` seguido de `-ing` participle
-3. **references.bib OK** — no requiere limpieza de campos `note`
+3. **references.bib OK** â€” no requiere limpieza de campos `note`
 4. **NEVEN Studio tab names:** data-studio, data-lab, ai, econometria, presentaciones, run-script, excel-analysis, settings, ayuda
 
 
 
 ---
-### Sesion 2026-08-19 (~noche) — Revision mayor del Paper completada
+### Sesion 2026-08-19 (~noche) â€” Revision mayor del Paper completada
 
 ## Contexto
 
@@ -1379,7 +156,7 @@ Cambios principales:
 
 ### 3. Actualizacion de Architecture (02_architecture.tex)
 
-- Corregido em-dash "---no compilation" → "No compilation, ... are required"
+- Corregido em-dash "---no compilation" â†’ "No compilation, ... are required"
 
 ### 4. Nueva subseccion 3.5: NEVEN Studio (03_viewer_extensibility.tex)
 
@@ -1391,13 +168,13 @@ Agregada subseccion completa (~400 palabras) con:
 
 ### 5. Actualizacion de Case Studies (04_case_studies.tex)
 
-- Corregido em-dash "---equivalent to" → "This is equivalent to"
+- Corregido em-dash "---equivalent to" â†’ "This is equivalent to"
 
 ### 6. Actualizacion de Discussion (05_discussion.tex)
 
 - Tabla de metricas actualizada:
-  - User-facing chapters: 12 → 26
-  - Documented functions: 95 → 29 (con JSON sidecars)
+  - User-facing chapters: 12 â†’ 26
+  - Documented functions: 95 â†’ 29 (con JSON sidecars)
 - Tabla de comparacion actualizada con nueva fila "Integrated IDE"
 
 ### 7. Actualizacion de Conclusion (06_conclusion.tex)
@@ -1411,9 +188,9 @@ Agregada subseccion completa (~400 palabras) con:
 
 | Metrica | Antes | Despues | Limite | Estado |
 |---------|-------|---------|--------|--------|
-| Em-dashes totales | ~15 | 3 | ≤15 | ✅ OK |
-| Campos note en BibTeX | 0 | 0 | 0 | ✅ OK |
-| Antitesis simetricas | 0 | 0 | ≤1 | ✅ OK |
+| Em-dashes totales | ~15 | 3 | â‰¤15 | âœ… OK |
+| Campos note en BibTeX | 0 | 0 | 0 | âœ… OK |
+| Antitesis simetricas | 0 | 0 | â‰¤1 | âœ… OK |
 
 ## Compilacion exitosa
 
@@ -1439,7 +216,7 @@ Warnings: Solo "Command \showhyphens has changed" (menor)
 
 ## Commits realizados
 
-**Ninguno** — El directorio `src/docs/Paper/` esta en `.gitignore` (documento privado).
+**Ninguno** â€” El directorio `src/docs/Paper/` esta en `.gitignore` (documento privado).
 
 Los cambios se guardan localmente pero no se commitean al repositorio.
 
@@ -1464,7 +241,7 @@ El paper academico es intencional que no este trackeado:
 
 
 ---
-### Sesion 2026-08-19 (~noche, cierre) — Limpieza de archivos temporales del Paper
+### Sesion 2026-08-19 (~noche, cierre) â€” Limpieza de archivos temporales del Paper
 
 ## Trabajo realizado
 
@@ -1491,24 +268,24 @@ Limpieza de 12 archivos temporales e innecesarios del directorio `src/docs/Paper
 
 ```
 src/docs/Paper/
-├── main.tex              ← Documento principal
-├── main.pdf              ← PDF compilado (37 pag, 784 KB)
-├── references.bib        ← Bibliografia (45 refs)
-├── latexmkrc             ← Config de latexmk
-├── sections/             ← 9 archivos .tex
-├── figures/              ← Figuras del paper
-├── arxiv-submission/     ← Paquete para arXiv
-├── neven-arxiv-submission.zip  ← ZIP para arXiv (puede estar desactualizado)
-├── Informe.md            ← Reporte de auditoria forense
-├── auditor-forense-ia.md ← Spec del auditor
-├── redactor-academico.md ← Reglas anti-IA
-├── requerimientos-publicacion-arxiv-neven.md
-└── requerimientos-publicacion-q1-neven.md
+â”œâ”€â”€ main.tex              â† Documento principal
+â”œâ”€â”€ main.pdf              â† PDF compilado (37 pag, 784 KB)
+â”œâ”€â”€ references.bib        â† Bibliografia (45 refs)
+â”œâ”€â”€ latexmkrc             â† Config de latexmk
+â”œâ”€â”€ sections/             â† 9 archivos .tex
+â”œâ”€â”€ figures/              â† Figuras del paper
+â”œâ”€â”€ arxiv-submission/     â† Paquete para arXiv
+â”œâ”€â”€ neven-arxiv-submission.zip  â† ZIP para arXiv (puede estar desactualizado)
+â”œâ”€â”€ Informe.md            â† Reporte de auditoria forense
+â”œâ”€â”€ auditor-forense-ia.md â† Spec del auditor
+â”œâ”€â”€ redactor-academico.md â† Reglas anti-IA
+â”œâ”€â”€ requerimientos-publicacion-arxiv-neven.md
+â””â”€â”€ requerimientos-publicacion-q1-neven.md
 ```
 
 ## Commits realizados
 
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Pendientes
 
@@ -1521,7 +298,7 @@ Ninguno — directorio Paper esta en .gitignore.
 
 
 ---
-### Sesion 2026-08-19 (~noche, final) — Paquete arXiv generado
+### Sesion 2026-08-19 (~noche, final) â€” Paquete arXiv generado
 
 ## Trabajo realizado
 
@@ -1558,24 +335,24 @@ Generacion del paquete completo para submission a arXiv, incluyendo compilacion 
 
 **Contenido (16 archivos):**
 ```
-├── main.tex
-├── main.bbl
-├── references.bib
-├── figures/
-│   ├── architecture_diagram.pdf
-│   ├── architecture_diagram.tex
-│   ├── dashboard_screenshot.pdf
-│   └── dashboard_screenshot.tex
-└── sections/
-    ├── 00_abstract.tex
-    ├── 01_introduction.tex
-    ├── 02_architecture.tex
-    ├── 03_viewer_extensibility.tex
-    ├── 04_case_studies.tex
-    ├── 05_discussion.tex
-    ├── 06_conclusion.tex
-    ├── architecture_diagram.pdf
-    └── architecture_diagram.tex
+â”œâ”€â”€ main.tex
+â”œâ”€â”€ main.bbl
+â”œâ”€â”€ references.bib
+â”œâ”€â”€ figures/
+â”‚   â”œâ”€â”€ architecture_diagram.pdf
+â”‚   â”œâ”€â”€ architecture_diagram.tex
+â”‚   â”œâ”€â”€ dashboard_screenshot.pdf
+â”‚   â””â”€â”€ dashboard_screenshot.tex
+â””â”€â”€ sections/
+    â”œâ”€â”€ 00_abstract.tex
+    â”œâ”€â”€ 01_introduction.tex
+    â”œâ”€â”€ 02_architecture.tex
+    â”œâ”€â”€ 03_viewer_extensibility.tex
+    â”œâ”€â”€ 04_case_studies.tex
+    â”œâ”€â”€ 05_discussion.tex
+    â”œâ”€â”€ 06_conclusion.tex
+    â”œâ”€â”€ architecture_diagram.pdf
+    â””â”€â”€ architecture_diagram.tex
 ```
 
 ## Verificacion
@@ -1586,14 +363,14 @@ Generacion del paquete completo para submission a arXiv, incluyendo compilacion 
 
 ## PDFs finales
 
-| Archivo | Ubicacion | Tamaño | Paginas |
+| Archivo | Ubicacion | TamaÃ±o | Paginas |
 |---------|-----------|--------|---------|
 | Paper principal | `src/docs/Paper/main.pdf` | 781 KB | 36 |
 | Test arxiv | `arxiv-submission/main.pdf` | 725 KB | 36 |
 
 ## Commits realizados
 
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Pendientes
 
@@ -1606,7 +383,7 @@ Ninguno — directorio Paper esta en .gitignore.
 
 
 ---
-### Sesion 2026-08-19 (~tarde) — Revision del paper mejorado contra steerings
+### Sesion 2026-08-19 (~tarde) â€” Revision del paper mejorado contra steerings
 
 ## Contexto
 
@@ -1624,36 +401,36 @@ Analisis completo de todas las secciones contra las reglas de prevencion de arte
 | `00_main_preamble_guide.tex` | NUEVO | Preamble completo para arXiv |
 | `01_introduction.tex` | ~85 | 8 contribuciones listadas |
 | `02_architecture.tex` | ~250 | 4 capas, Python resilience engineering |
-| `03_viewer_extensibility.tex` | ~280 | §3.5 NEVEN Studio con Table tab:studio_tabs |
+| `03_viewer_extensibility.tex` | ~280 | Â§3.5 NEVEN Studio con Table tab:studio_tabs |
 | `04_case_studies.tex` | ~300 | TipoOutput, FILTRO, German Credit |
 | `05_discussion.tex` | ~250 | Tabla comparacion, 342 tests breakdown |
 | `06_conclusion.tex` | ~130 | 4 future work directions |
-| `references.bib` | 45 refs | LIMPIO — 0 campos note |
+| `references.bib` | 45 refs | LIMPIO â€” 0 campos note |
 
 ### Verificaciones realizadas
 
 | Criterio (ai-artifact-prevention) | Resultado |
 |-----------------------------------|-----------|
-| Campos `note` en BibTeX | **0** ✅ |
-| Em-dashes (`---`) | **0** ✅ Excelente |
-| `\paragraph{}` con punto final | **0** ✅ |
-| Tricolons "no X, no Y, no Z" | **0** ✅ |
-| Antitesis simetricas (student...engineer) | **0** ✅ |
-| "Not only...but also" | **0** ✅ |
-| Vocabulario slop IA (delve, tapestry, pivotal, etc.) | **0** ✅ |
-| Enfasis vacio (crucially, importantly, notably) | **0** ✅ |
+| Campos `note` en BibTeX | **0** âœ… |
+| Em-dashes (`---`) | **0** âœ… Excelente |
+| `\paragraph{}` con punto final | **0** âœ… |
+| Tricolons "no X, no Y, no Z" | **0** âœ… |
+| Antitesis simetricas (student...engineer) | **0** âœ… |
+| "Not only...but also" | **0** âœ… |
+| Vocabulario slop IA (delve, tapestry, pivotal, etc.) | **0** âœ… |
+| Enfasis vacio (crucially, importantly, notably) | **0** âœ… |
 
 ### Verificacion de consistencia numerica
 
 | Claim | Verificacion |
 |-------|--------------|
-| 342 tests totales | ✅ Sec 5.2: 133+34+32+16+14+17+96=342 (explicito en texto) |
-| 8 contribuciones (Intro) | ✅ Lista numerada 1-8 |
-| 4 future directions (Conclusion) | ✅ 4 \paragraph{} numerados |
-| 70 R + 70 Julia + 200+ functions | ✅ Consistente en Abstract/Intro/Sec 3 |
-| 26 chapters documentacion | ✅ Mencionado en Conclusion |
-| 9 modulos NEVEN Studio | ✅ Table tab:studio_tabs lista exactamente 9 |
-| 11 content formats | ✅ Table tab:viewer_formats lista exactamente 11 |
+| 342 tests totales | âœ… Sec 5.2: 133+34+32+16+14+17+96=342 (explicito en texto) |
+| 8 contribuciones (Intro) | âœ… Lista numerada 1-8 |
+| 4 future directions (Conclusion) | âœ… 4 \paragraph{} numerados |
+| 70 R + 70 Julia + 200+ functions | âœ… Consistente en Abstract/Intro/Sec 3 |
+| 26 chapters documentacion | âœ… Mencionado en Conclusion |
+| 9 modulos NEVEN Studio | âœ… Table tab:studio_tabs lista exactamente 9 |
+| 11 content formats | âœ… Table tab:viewer_formats lista exactamente 11 |
 
 ## Veredicto
 
@@ -1675,7 +452,7 @@ No se detectaron artefactos tipicos de generacion IA. El paper esta listo para a
 
 ## Commits realizados
 
-Ninguno — sesion de revision sin modificaciones.
+Ninguno â€” sesion de revision sin modificaciones.
 
 ## Pendientes
 
@@ -1689,7 +466,7 @@ Ninguno — sesion de revision sin modificaciones.
 
 
 ---
-### Sesion 2026-08-19 (~tarde, continuacion) — Compilacion del Paper mejorado
+### Sesion 2026-08-19 (~tarde, continuacion) â€” Compilacion del Paper mejorado
 
 ## Contexto
 
@@ -1722,11 +499,11 @@ Tras cerrar el PDF, la compilacion completo sin errores.
 
 ## Archivos modificados
 
-Ninguno — solo compilacion (archivos temporales .aux, .bbl, .log regenerados).
+Ninguno â€” solo compilacion (archivos temporales .aux, .bbl, .log regenerados).
 
 ## Commits realizados
 
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Intento fallido
 
@@ -1738,14 +515,14 @@ Ninguno — directorio Paper esta en .gitignore.
 
 | Prioridad | Tarea | Estado |
 |-----------|-------|--------|
-| **ALTA** | Regenerar paquete arXiv (neven-arxiv-submission.zip) | Pendiente — usuario no confirmo |
+| **ALTA** | Regenerar paquete arXiv (neven-arxiv-submission.zip) | Pendiente â€” usuario no confirmo |
 | MEDIA | Backup del directorio Paper | Recomendado |
 | BAJA | Verificar que el PDF abre correctamente | Usuario puede verificar |
 
 
 
 ---
-### Sesion 2026-08-19 (~tarde, final) — Paquete arXiv regenerado
+### Sesion 2026-08-19 (~tarde, final) â€” Paquete arXiv regenerado
 
 ## Contexto
 
@@ -1777,23 +554,23 @@ Generado `neven-arxiv-submission.zip` con Compress-Archive.
 
 ```
 neven-arxiv-submission.zip
-├── main.tex
-├── main.bbl
-├── references.bib
-├── figures/
-│   ├── architecture_diagram.pdf
-│   ├── architecture_diagram.tex
-│   ├── dashboard_screenshot.pdf
-│   └── dashboard_screenshot.tex
-└── sections/
-    ├── 00_abstract.tex
-    ├── 00_main_preamble_guide.tex
-    ├── 01_introduction.tex
-    ├── 02_architecture.tex
-    ├── 03_viewer_extensibility.tex
-    ├── 04_case_studies.tex
-    ├── 05_discussion.tex
-    └── 06_conclusion.tex
+â”œâ”€â”€ main.tex
+â”œâ”€â”€ main.bbl
+â”œâ”€â”€ references.bib
+â”œâ”€â”€ figures/
+â”‚   â”œâ”€â”€ architecture_diagram.pdf
+â”‚   â”œâ”€â”€ architecture_diagram.tex
+â”‚   â”œâ”€â”€ dashboard_screenshot.pdf
+â”‚   â””â”€â”€ dashboard_screenshot.tex
+â””â”€â”€ sections/
+    â”œâ”€â”€ 00_abstract.tex
+    â”œâ”€â”€ 00_main_preamble_guide.tex
+    â”œâ”€â”€ 01_introduction.tex
+    â”œâ”€â”€ 02_architecture.tex
+    â”œâ”€â”€ 03_viewer_extensibility.tex
+    â”œâ”€â”€ 04_case_studies.tex
+    â”œâ”€â”€ 05_discussion.tex
+    â””â”€â”€ 06_conclusion.tex
 ```
 
 ## Archivos generados/actualizados
@@ -1806,13 +583,13 @@ neven-arxiv-submission.zip
 
 ## Commits realizados
 
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Resumen de la sesion completa
 
-1. **Revision del paper mejorado** — 100% cumplimiento con ai-artifact-prevention
-2. **Compilacion exitosa** — main.pdf (714 KB, 34 paginas)
-3. **Paquete arXiv** — neven-arxiv-submission.zip (149 KB, 16 archivos)
+1. **Revision del paper mejorado** â€” 100% cumplimiento con ai-artifact-prevention
+2. **Compilacion exitosa** â€” main.pdf (714 KB, 34 paginas)
+3. **Paquete arXiv** â€” neven-arxiv-submission.zip (149 KB, 16 archivos)
 
 ## Pendientes
 
@@ -1825,7 +602,7 @@ Ninguno — directorio Paper esta en .gitignore.
 
 
 ---
-### Sesion 2026-08-19 (~noche) — Correccion bibliografia tesis de maestria
+### Sesion 2026-08-19 (~noche) â€” Correccion bibliografia tesis de maestria
 
 ## Contexto
 
@@ -1856,27 +633,27 @@ El usuario realizo cambios manuales a los archivos LaTeX y solicito corregir la 
 Todas las citas `\citep{BonillaR4XCL2023}` actualizadas a `\citep{BonillaR4XCL2026}`:
 - `01_introduction.tex` (linea 38)
 - `02_architecture.tex` (linea 25)
-- `05_discussion.tex` (linea 41) — tambien corregido "In 2023" → "In 2026"
+- `05_discussion.tex` (linea 41) â€” tambien corregido "In 2023" â†’ "In 2026"
 
 ## Archivos modificados
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/docs/Paper/references.bib` | URL Kerwa + año 2026 + key BonillaR4XCL2026 |
+| `src/docs/Paper/references.bib` | URL Kerwa + aÃ±o 2026 + key BonillaR4XCL2026 |
 | `src/docs/Paper/sections/01_introduction.tex` | Cita actualizada |
 | `src/docs/Paper/sections/02_architecture.tex` | Cita actualizada |
 | `src/docs/Paper/sections/05_discussion.tex` | Cita + texto "In 2026" |
 
 ## Archivos generados
 
-| Archivo | Tamaño | Descripcion |
+| Archivo | TamaÃ±o | Descripcion |
 |---------|--------|-------------|
 | `src/docs/Paper/main.pdf` | 705 KB | PDF recompilado |
 | `src/docs/Paper/neven-arxiv-submission.zip` | 149 KB | Paquete arXiv actualizado |
 
 ## Commits realizados
 
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Datos de la tesis (referencia correcta)
 
@@ -1884,7 +661,7 @@ Ninguno — directorio Paper esta en .gitignore.
 - **Titulo:** Rompiendo barreras en el analisis de datos: R4XCL un puente de integracion entre R y Excel
 - **Universidad:** Universidad de Costa Rica
 - **Tipo:** Tesis de Maestria en Matematica Aplicada
-- **Año:** 2026
+- **AÃ±o:** 2026
 - **URL:** https://kerwa.ucr.ac.cr/items/220372b6-f386-49a5-b704-89afb50fd82a
 
 ## Pendientes
@@ -1897,7 +674,7 @@ Ninguno — directorio Paper esta en .gitignore.
 
 
 ---
-### Sesion 2026-08-19 (~noche, continuacion) — Sincronizacion paquete arXiv
+### Sesion 2026-08-19 (~noche, continuacion) â€” Sincronizacion paquete arXiv
 
 ## Contexto
 
@@ -1932,7 +709,7 @@ Confirmado que el .bbl contiene la cita correcta:
 
 ## Archivos generados
 
-| Archivo | Tamaño | Fecha |
+| Archivo | TamaÃ±o | Fecha |
 |---------|--------|-------|
 | `src/docs/Paper/main.pdf` | 705.6 KB | 2026-10-24 19:11:54 |
 | `src/docs/Paper/neven-arxiv-submission.zip` | 149.4 KB | 2026-10-24 19:11:55 |
@@ -1941,29 +718,29 @@ Confirmado que el .bbl contiene la cita correcta:
 
 ```
 neven-arxiv-submission.zip
-├── main.tex (4.4 KB)
-├── main.bbl (12 KB)
-├── references.bib (12.5 KB)
-├── figures/
-│   ├── architecture_diagram.pdf (66 KB)
-│   ├── architecture_diagram.tex (4 KB)
-│   ├── dashboard_screenshot.pdf (47 KB)
-│   └── dashboard_screenshot.tex (5 KB)
-└── sections/
-    ├── 00_abstract.tex (2.7 KB)
-    ├── 00_main_preamble_guide.tex (2 KB)
-    ├── 01_introduction.tex (7.6 KB)
-    ├── 02_architecture.tex (16 KB)
-    ├── 03_viewer_extensibility.tex (14 KB)
-    ├── 04_case_studies.tex (15 KB)
-    ├── 05_discussion.tex (11 KB)
-    ├── 06_conclusion.tex (4.6 KB)
-    └── architecture_diagram.tex (4 KB)
+â”œâ”€â”€ main.tex (4.4 KB)
+â”œâ”€â”€ main.bbl (12 KB)
+â”œâ”€â”€ references.bib (12.5 KB)
+â”œâ”€â”€ figures/
+â”‚   â”œâ”€â”€ architecture_diagram.pdf (66 KB)
+â”‚   â”œâ”€â”€ architecture_diagram.tex (4 KB)
+â”‚   â”œâ”€â”€ dashboard_screenshot.pdf (47 KB)
+â”‚   â””â”€â”€ dashboard_screenshot.tex (5 KB)
+â””â”€â”€ sections/
+    â”œâ”€â”€ 00_abstract.tex (2.7 KB)
+    â”œâ”€â”€ 00_main_preamble_guide.tex (2 KB)
+    â”œâ”€â”€ 01_introduction.tex (7.6 KB)
+    â”œâ”€â”€ 02_architecture.tex (16 KB)
+    â”œâ”€â”€ 03_viewer_extensibility.tex (14 KB)
+    â”œâ”€â”€ 04_case_studies.tex (15 KB)
+    â”œâ”€â”€ 05_discussion.tex (11 KB)
+    â”œâ”€â”€ 06_conclusion.tex (4.6 KB)
+    â””â”€â”€ architecture_diagram.tex (4 KB)
 ```
 
 ## Commits realizados
 
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Leccion aprendida
 
@@ -1979,7 +756,7 @@ Ninguno — directorio Paper esta en .gitignore.
 
 
 ---
-### Sesion 2026-08-19 (~noche, cierre) — Consulta licencia arXiv
+### Sesion 2026-08-19 (~noche, cierre) â€” Consulta licencia arXiv
 
 ## Consulta
 
@@ -1987,14 +764,14 @@ Usuario pregunto cual licencia usar para la submission a arXiv.
 
 ## Recomendacion
 
-**CC BY (Creative Commons Attribution)** — seleccionada como la mejor opcion.
+**CC BY (Creative Commons Attribution)** â€” seleccionada como la mejor opcion.
 
 ## Justificacion
 
 | Factor | Razon |
 |--------|-------|
 | Consistencia | El software NEVEN usa GPL v3 (open source). CC BY es el equivalente "open access" para papers. |
-| Impacto | Maximiza citabilidad — otros pueden usar, adaptar, traducir el trabajo con atribucion. |
+| Impacto | Maximiza citabilidad â€” otros pueden usar, adaptar, traducir el trabajo con atribucion. |
 | Compatibilidad | La mayoria de journals Q1/Q2 aceptan preprints arXiv con CC BY. |
 | Estandar | Es la licencia mas comun en papers de CS/Software Engineering. |
 
@@ -2007,7 +784,7 @@ Usuario pregunto cual licencia usar para la submission a arXiv.
 
 ## Archivos modificados
 
-Ninguno — solo consulta.
+Ninguno â€” solo consulta.
 
 ## Commits realizados
 
@@ -2017,10 +794,10 @@ Ninguno.
 
 | Item | Estado |
 |------|--------|
-| PDF compilado | ✅ 705.6 KB |
-| Paquete ZIP | ✅ 149.4 KB, 16 archivos |
-| Bibliografia corregida | ✅ Kerwa UCR, año 2026 |
-| Licencia elegida | ✅ CC BY |
+| PDF compilado | âœ… 705.6 KB |
+| Paquete ZIP | âœ… 149.4 KB, 16 archivos |
+| Bibliografia corregida | âœ… Kerwa UCR, aÃ±o 2026 |
+| Licencia elegida | âœ… CC BY |
 
 ## Pendientes
 
@@ -2032,7 +809,7 @@ Ninguno.
 
 
 ---
-### Sesion 2026-08-19 (~noche, revision commits) — Estado del repositorio
+### Sesion 2026-08-19 (~noche, revision commits) â€” Estado del repositorio
 
 ## Consulta
 
@@ -2062,11 +839,11 @@ Usuario solicito revisar si hay commits pendientes.
 
 ### Nota importante
 
-El directorio `src/docs/Paper/` esta en `.gitignore` — los cambios del paper (PDF, arXiv, bibliografia) NO se commitean al repositorio. Esto es intencional para mantener el paper como documento privado.
+El directorio `src/docs/Paper/` esta en `.gitignore` â€” los cambios del paper (PDF, arXiv, bibliografia) NO se commitean al repositorio. Esto es intencional para mantener el paper como documento privado.
 
 ## Commits realizados
 
-Ninguno en esta sesion — pendiente decision del usuario sobre que incluir.
+Ninguno en esta sesion â€” pendiente decision del usuario sobre que incluir.
 
 ## Commits sugeridos
 
@@ -2086,7 +863,7 @@ Ninguno en esta sesion — pendiente decision del usuario sobre que incluir.
 
 
 ---
-### Sesion 2026-08-19 (~noche, commits) — Commits ejecutados
+### Sesion 2026-08-19 (~noche, commits) â€” Commits ejecutados
 
 ## Trabajo realizado
 
@@ -2136,7 +913,7 @@ src/TaskPane/color-palettes.js
 
 
 ---
-### Sesion 2026-08-19 (~noche, correccion GitHub) — URL GitHub corregida
+### Sesion 2026-08-19 (~noche, correccion GitHub) â€” URL GitHub corregida
 
 ## Problema
 
@@ -2153,23 +930,23 @@ La URL de GitHub en el paper estaba errada.
 
 ## Archivos regenerados
 
-| Archivo | Tamaño | Fecha |
+| Archivo | TamaÃ±o | Fecha |
 |---------|--------|-------|
 | `src/docs/Paper/main.pdf` | 705.6 KB | 2026-10-24 19:37:30 |
 | `src/docs/Paper/neven-arxiv-submission.zip` | 149.4 KB | 2026-10-24 19:37:31 |
 
 ## Commits realizados
 
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Resumen de correcciones al paper en esta sesion
 
 | Item | Correccion |
 |------|------------|
-| URL tesis | `hdl.handle.net` → `kerwa.ucr.ac.cr` |
-| Año tesis | 2023 → 2026 |
-| Key BibTeX | `BonillaR4XCL2023` → `BonillaR4XCL2026` |
-| GitHub URL | `minor-bonilla` → `minorbonillagomez` |
+| URL tesis | `hdl.handle.net` â†’ `kerwa.ucr.ac.cr` |
+| AÃ±o tesis | 2023 â†’ 2026 |
+| Key BibTeX | `BonillaR4XCL2023` â†’ `BonillaR4XCL2026` |
+| GitHub URL | `minor-bonilla` â†’ `minorbonillagomez` |
 
 ## Pendientes
 
@@ -2181,7 +958,7 @@ Ninguno — directorio Paper esta en .gitignore.
 
 
 ---
-### Sesion 2026-08-19 (~noche, final) — Evaluacion Colibri + Resumen completo de sesion
+### Sesion 2026-08-19 (~noche, final) â€” Evaluacion Colibri + Resumen completo de sesion
 
 ## Resumen de la sesion completa
 
@@ -2200,7 +977,7 @@ Esta sesion cubrio revision del paper academico, correcciones de bibliografia, p
 | Item | Antes | Despues |
 |------|-------|---------|
 | URL tesis | `hdl.handle.net/10669/104374` | `kerwa.ucr.ac.cr/items/220372b6-f386-49a5-b704-89afb50fd82a` |
-| Año tesis | 2023 | 2026 |
+| AÃ±o tesis | 2023 | 2026 |
 | Key BibTeX | `BonillaR4XCL2023` | `BonillaR4XCL2026` |
 | GitHub URL | `github.com/minor-bonilla/NEVEN` | `github.com/minorbonillagomez/NEVEN` |
 
@@ -2223,7 +1000,7 @@ Esta sesion cubrio revision del paper academico, correcciones de bibliografia, p
 Razones:
 - API compatible con OpenAI (`http://127.0.0.1:8000/v1`)
 - Corre modelos de 700B+ con solo 8-16 GB RAM (streaming de expertos desde disco)
-- Pure C, zero deps — no requiere CUDA obligatorio
+- Pure C, zero deps â€” no requiere CUDA obligatorio
 - Windows nativo con START-HERE.bat
 - Licencia Apache 2.0 compatible con GPL v3
 
@@ -2234,7 +1011,7 @@ Modelo recomendado: **Qwen3.6-35B** (23 GB download, 10-20 GB RAM, 6-10 tok/s CP
 ### Paper (en .gitignore, no commiteados)
 | Archivo | Cambio |
 |---------|--------|
-| `src/docs/Paper/references.bib` | URL Kerwa + año 2026 + key BonillaR4XCL2026 |
+| `src/docs/Paper/references.bib` | URL Kerwa + aÃ±o 2026 + key BonillaR4XCL2026 |
 | `src/docs/Paper/sections/01_introduction.tex` | Cita actualizada |
 | `src/docs/Paper/sections/02_architecture.tex` | Cita actualizada |
 | `src/docs/Paper/sections/05_discussion.tex` | Cita + texto "In 2026" |
@@ -2261,10 +1038,10 @@ Modelo recomendado: **Qwen3.6-35B** (23 GB download, 10-20 GB RAM, 6-10 tok/s CP
 | Paquete arXiv desincronizado | Se habia generado antes de ultimos cambios | Regenerar desde cero con `[System.IO.File]::Copy()` |
 | Citas BonillaR4XCL2023 en paper | Key antigua en references.bib | Actualizar key + todas las citas en 3 archivos |
 
-## Decisiones de diseño
+## Decisiones de diseÃ±o
 
-1. **Licencia arXiv: CC BY** — Maxima visibilidad, compatible con GPL v3 del software
-2. **Colibri como modelo local** — API OpenAI-compatible permite reusar codigo existente de `=P.ai_call()`
+1. **Licencia arXiv: CC BY** â€” Maxima visibilidad, compatible con GPL v3 del software
+2. **Colibri como modelo local** â€” API OpenAI-compatible permite reusar codigo existente de `=P.ai_call()`
 
 ## Cambios restantes (no commiteados)
 
@@ -2287,7 +1064,7 @@ Modelo recomendado: **Qwen3.6-35B** (23 GB download, 10-20 GB RAM, 6-10 tok/s CP
 
 
 ---
-### Sesion 2026-08-19 (~noche, cierre) — Consulta instalacion Colibri en disco O:
+### Sesion 2026-08-19 (~noche, cierre) â€” Consulta instalacion Colibri en disco O:
 
 ## Consulta
 
@@ -2328,13 +1105,13 @@ cd colibri
 
 ## Nota pendiente
 
-Falta confirmar si disco O: es SSD o HDD — importante porque Colibri hace streaming desde disco:
+Falta confirmar si disco O: es SSD o HDD â€” importante porque Colibri hace streaming desde disco:
 - SSD/NVMe: 5-10 tok/s
 - HDD: 0.5-2 tok/s
 
 ## Archivos modificados
 
-Ninguno — solo consulta.
+Ninguno â€” solo consulta.
 
 ## Commits realizados
 
@@ -2353,11 +1130,11 @@ Ninguno.
 
 
 ---
-### Sesion 2026-08-19 (~noche, cierre final) — Confirmacion disco NVMe para Colibri
+### Sesion 2026-08-19 (~noche, cierre final) â€” Confirmacion disco NVMe para Colibri
 
 ## Confirmacion
 
-Usuario confirmo que el disco O: es **NVMe** — ideal para Colibri.
+Usuario confirmo que el disco O: es **NVMe** â€” ideal para Colibri.
 
 ## Rendimiento esperado con NVMe
 
@@ -2392,7 +1169,7 @@ Configuracion en neven-config.json:
 
 ## Archivos modificados
 
-Ninguno — solo planificacion.
+Ninguno â€” solo planificacion.
 
 ## Commits realizados
 
@@ -2401,12 +1178,12 @@ Ninguno.
 ## Resumen completo de la sesion 2026-08-19
 
 ### Logros principales
-1. ✅ Revision paper mejorado — 100% cumplimiento steerings
-2. ✅ Correccion bibliografia (URL Kerwa, año 2026, GitHub URL)
-3. ✅ PDF compilado (705.6 KB) + paquete arXiv (149.4 KB)
-4. ✅ 4 commits ejecutados (bitacora, steering, taskpane, evals)
-5. ✅ Evaluacion Colibri — viable como modelo local
-6. ✅ Confirmacion disco O: NVMe con 500 GB — ideal para Colibri
+1. âœ… Revision paper mejorado â€” 100% cumplimiento steerings
+2. âœ… Correccion bibliografia (URL Kerwa, aÃ±o 2026, GitHub URL)
+3. âœ… PDF compilado (705.6 KB) + paquete arXiv (149.4 KB)
+4. âœ… 4 commits ejecutados (bitacora, steering, taskpane, evals)
+5. âœ… Evaluacion Colibri â€” viable como modelo local
+6. âœ… Confirmacion disco O: NVMe con 500 GB â€” ideal para Colibri
 
 ### Commits de la sesion
 | Hash | Descripcion |
@@ -2429,7 +1206,7 @@ Ninguno.
 
 
 ---
-### Sesion 2026-08-19 (~noche, recomendacion modelos) — Seleccion de modelos Colibri
+### Sesion 2026-08-19 (~noche, recomendacion modelos) â€” Seleccion de modelos Colibri
 
 ## Hardware detectado
 
@@ -2466,7 +1243,7 @@ Ninguno.
 ```
 Qwen3.6-35B:      23 GB
 Qwen3-Coder-30B:  19 GB
-─────────────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Total:            42 GB  (de 500 GB disponibles)
 ```
 
@@ -2482,7 +1259,7 @@ cd colibri
 
 ## Archivos modificados
 
-Ninguno — solo analisis y recomendacion.
+Ninguno â€” solo analisis y recomendacion.
 
 ## Commits realizados
 
@@ -2501,7 +1278,7 @@ Ninguno.
 
 
 ---
-### Sesion 2026-08-19 (~noche, instalacion Colibri) — Repositorio clonado
+### Sesion 2026-08-19 (~noche, instalacion Colibri) â€” Repositorio clonado
 
 ## Trabajo realizado
 
@@ -2511,11 +1288,11 @@ Clonado repositorio Colibri en O:\colibri exitosamente.
 
 ```
 O:\colibri\
-├── START-HERE.bat  ✓
-├── start-here.sh   ✓
-├── Makefile        ✓
-├── c\coli          ✓
-└── ...
+â”œâ”€â”€ START-HERE.bat  âœ“
+â”œâ”€â”€ start-here.sh   âœ“
+â”œâ”€â”€ Makefile        âœ“
+â”œâ”€â”€ c\coli          âœ“
+â””â”€â”€ ...
 ```
 
 ## Comandos para completar instalacion (usuario debe ejecutar manualmente)
@@ -2534,7 +1311,7 @@ cd O:\colibri
 ## Que hara el setup
 
 1. Detectar hardware (64 GB RAM, RTX 3050)
-2. Descargar modelo (23 GB) — 10-30 min
+2. Descargar modelo (23 GB) â€” 10-30 min
 3. Compilar engine con CUDA para RTX 3050
 4. Iniciar servidor en http://127.0.0.1:8000/v1
 
@@ -2546,7 +1323,7 @@ cd O:\colibri
 
 ## Commits realizados
 
-Ninguno — instalacion de software externo.
+Ninguno â€” instalacion de software externo.
 
 ## Pendientes
 
@@ -2562,7 +1339,7 @@ Ninguno — instalacion de software externo.
 
 
 ---
-### Sesion 2026-08-19 (~noche, troubleshooting Colibri) — Servidor no iniciado
+### Sesion 2026-08-19 (~noche, troubleshooting Colibri) â€” Servidor no iniciado
 
 ## Problema reportado
 
@@ -2572,7 +1349,7 @@ Usuario intento acceder a `http://127.0.0.1:8000/` y recibio ERR_CONNECTION_REFU
 
 - No hay procesos Colibri corriendo
 - Puerto 8000 no esta en uso
-- Directorio `O:\colibri-models` no existe — modelo no descargado
+- Directorio `O:\colibri-models` no existe â€” modelo no descargado
 
 ## Causa raiz
 
@@ -2604,7 +1381,7 @@ Ninguno.
 
 | Prioridad | Tarea | Estado |
 |-----------|-------|--------|
-| **ALTA** | Ejecutar START-HERE.bat para descargar modelo | PENDIENTE — usuario debe ejecutar |
+| **ALTA** | Ejecutar START-HERE.bat para descargar modelo | PENDIENTE â€” usuario debe ejecutar |
 | **ALTA** | Subir paquete arXiv | LISTO |
 | **ALTA** | Push commits al remoto | Pendiente |
 | MEDIA | Verificar que servidor Colibri inicia correctamente | Post-descarga |
@@ -2613,7 +1390,7 @@ Ninguno.
 
 
 ---
-### Sesion 2026-08-19 (~noche, cierre final) — Resumen completo de sesion
+### Sesion 2026-08-19 (~noche, cierre final) â€” Resumen completo de sesion
 
 ## Fecha y hora
 2026-08-19, sesion nocturna (~18:00 - 22:00)
@@ -2629,7 +1406,7 @@ Ninguno.
 | Item | Antes | Despues |
 |------|-------|---------|
 | URL tesis | `hdl.handle.net/10669/104374` | `kerwa.ucr.ac.cr/items/220372b6-f386-49a5-b704-89afb50fd82a` |
-| Año tesis | 2023 | 2026 |
+| AÃ±o tesis | 2023 | 2026 |
 | Key BibTeX | `BonillaR4XCL2023` | `BonillaR4XCL2026` |
 | GitHub URL | `github.com/minor-bonilla/NEVEN` | `github.com/minorbonillagomez/NEVEN` |
 
@@ -2662,7 +1439,7 @@ Ninguno.
 ### Paper (en .gitignore, no commiteados)
 | Archivo | Cambio |
 |---------|--------|
-| `src/docs/Paper/references.bib` | URL Kerwa + año 2026 + key BonillaR4XCL2026 |
+| `src/docs/Paper/references.bib` | URL Kerwa + aÃ±o 2026 + key BonillaR4XCL2026 |
 | `src/docs/Paper/sections/01_introduction.tex` | Cita BonillaR4XCL2026 |
 | `src/docs/Paper/sections/02_architecture.tex` | Cita BonillaR4XCL2026 |
 | `src/docs/Paper/sections/05_discussion.tex` | Cita + texto "In 2026" |
@@ -2692,14 +1469,14 @@ Ninguno.
 |----------|------------|----------|
 | PDF no se podia escribir | Archivo abierto en visor externo | Usuario cerro el visor |
 | Paquete arXiv desincronizado | Generado antes de ultimos cambios | Regenerar con `[System.IO.File]::Copy()` |
-| Citas BonillaR4XCL2023 incorrectas | Key antigua, año y URL erroneos | Actualizar bib + 3 archivos tex |
+| Citas BonillaR4XCL2023 incorrectas | Key antigua, aÃ±o y URL erroneos | Actualizar bib + 3 archivos tex |
 | Colibri ERR_CONNECTION_REFUSED | Modelo no descargado, servidor no iniciado | Usuario debe ejecutar START-HERE.bat |
 
-## Decisiones de diseño
+## Decisiones de diseÃ±o
 
-1. **Licencia arXiv: CC BY** — Maxima visibilidad y citabilidad, compatible con GPL v3 del software
-2. **Colibri como modelo local** — API OpenAI-compatible permite reusar codigo de `=P.ai_call()` sin cambios
-3. **Modelos Qwen3.6-35B + Qwen3-Coder-30B** — Balance optimo para 64 GB RAM con NVMe
+1. **Licencia arXiv: CC BY** â€” Maxima visibilidad y citabilidad, compatible con GPL v3 del software
+2. **Colibri como modelo local** â€” API OpenAI-compatible permite reusar codigo de `=P.ai_call()` sin cambios
+3. **Modelos Qwen3.6-35B + Qwen3-Coder-30B** â€” Balance optimo para 64 GB RAM con NVMe
 
 ## Intentos fallidos
 
@@ -2736,7 +1513,7 @@ git push origin master
 
 ## Rutas de RAGs para referencia rapida
 
-| RAG | Ruta | Tamaño |
+| RAG | Ruta | TamaÃ±o |
 |-----|------|--------|
 | Produccion (activo) | `C:\NEVEN\docs\ontologia\` | 2.1 MB |
 | Repositorio | `F:\ANTIGRAVITY\2026\NEVEN\docs\ontologia\` | 4.8 MB |
@@ -2746,7 +1523,7 @@ git push origin master
 
 
 ---
-### Sesion 2026-08-19 (~noche, consulta RAG) — Archivos para compartir ontologia
+### Sesion 2026-08-19 (~noche, consulta RAG) â€” Archivos para compartir ontologia
 
 ## Fecha y hora
 2026-08-19, ~22:30 (continuacion de sesion anterior)
@@ -2759,7 +1536,7 @@ Usuario pregunto que archivos debe compartir para reusar el RAG y la ontologia e
 
 Estructura de la ontologia de produccion (`C:\NEVEN\docs\ontologia\`):
 
-| Carpeta | Archivos | Tamaño | Descripcion |
+| Carpeta | Archivos | TamaÃ±o | Descripcion |
 |---------|----------|--------|-------------|
 | `neven-core/` | 5 YAML | 156 KB | Entidades principales P1-P4 |
 | `graficos/` | 326 YAML | 1.5 MB | Ontologia de graficos anyplot |
@@ -2773,14 +1550,14 @@ Estructura de la ontologia de produccion (`C:\NEVEN\docs\ontologia\`):
 
 ```
 C:\NEVEN\docs\ontologia\
-├── neven-core/
-│   ├── neven-ontology-p1.yaml   (26 KB)
-│   ├── neven-ontology-p2.yaml   (39 KB)
-│   ├── neven-ontology-p3.yaml   (24 KB)
-│   └── neven-ontology-p4.yaml   (35 KB)
-├── graficos/                     (326 YAML)
-├── excel-functions/sidecars.json (317 KB)
-└── README.md
+â”œâ”€â”€ neven-core/
+â”‚   â”œâ”€â”€ neven-ontology-p1.yaml   (26 KB)
+â”‚   â”œâ”€â”€ neven-ontology-p2.yaml   (39 KB)
+â”‚   â”œâ”€â”€ neven-ontology-p3.yaml   (24 KB)
+â”‚   â””â”€â”€ neven-ontology-p4.yaml   (35 KB)
+â”œâ”€â”€ graficos/                     (326 YAML)
+â”œâ”€â”€ excel-functions/sidecars.json (317 KB)
+â””â”€â”€ README.md
 ```
 
 ## Comando para copiar/compartir
@@ -2801,7 +1578,7 @@ Si el otro proyecto usa el mismo sistema RAG:
 
 ## Archivos modificados
 
-Ninguno — solo consulta y analisis.
+Ninguno â€” solo consulta y analisis.
 
 ## Commits realizados
 
@@ -2821,7 +1598,7 @@ Ninguno.
 
 
 ---
-### Sesion 2026-11-05 (~mediodia) — Agregar coautor al paper
+### Sesion 2026-11-05 (~mediodia) â€” Agregar coautor al paper
 
 ## Contexto
 
@@ -2847,7 +1624,7 @@ Hay checkpoints de 15+ libros de econometria procesados:
 **Antes:**
 ```latex
 \author{
-    Minor Bonilla-Gómez\\[0.5ex]
+    Minor Bonilla-GÃ³mez\\[0.5ex]
     \scriptsize\texttt{minor.bonilla@buklo.dev} $\mid$ \scriptsize\texttt{minorbonillagomez@gmail.com}\\[0.5ex]
 }
 ```
@@ -2855,19 +1632,19 @@ Hay checkpoints de 15+ libros de econometria procesados:
 **Despues:**
 ```latex
 \author{
-    Minor Bonilla-Gómez\thanks{\texttt{minor.bonilla@buklo.dev}}\quad
+    Minor Bonilla-GÃ³mez\thanks{\texttt{minor.bonilla@buklo.dev}}\quad
     Javier Trejos-Zelaya\thanks{\texttt{javier.trejos@ucr.ac.cr}}
 }
 ```
 
 ### PDF metadata actualizado
 ```latex
-pdfauthor={Minor Bonilla-Gómez, Javier Trejos-Zelaya}
+pdfauthor={Minor Bonilla-GÃ³mez, Javier Trejos-Zelaya}
 ```
 
 ## Archivos actualizados
 
-| Archivo | Tamaño | Fecha |
+| Archivo | TamaÃ±o | Fecha |
 |---------|--------|-------|
 | `src/docs/Paper/main.tex` | Modificado | 2026-11-05 |
 | `src/docs/Paper/main.pdf` | 704.1 KB | 2026-11-05 12:49:12 |
@@ -2876,16 +1653,16 @@ pdfauthor={Minor Bonilla-Gómez, Javier Trejos-Zelaya}
 ## Formato de autores en el paper
 
 ```
-Minor Bonilla-Gómez¹  Javier Trejos-Zelaya²
+Minor Bonilla-GÃ³mezÂ¹  Javier Trejos-ZelayaÂ²
 
 Notas al pie:
-¹ minor.bonilla@buklo.dev
-² javier.trejos@ucr.ac.cr
+Â¹ minor.bonilla@buklo.dev
+Â² javier.trejos@ucr.ac.cr
 ```
 
 ## Commits realizados
 
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Pendientes
 
@@ -2899,7 +1676,7 @@ Ninguno — directorio Paper esta en .gitignore.
 
 
 ---
-### Sesion 2026-11-05 (~tarde) — Verificacion de estado y cierre de sesion
+### Sesion 2026-11-05 (~tarde) â€” Verificacion de estado y cierre de sesion
 
 ## Contexto
 Sesion breve de verificacion tras contexto compactado. Se confirmo el estado del proyecto.
@@ -2921,7 +1698,7 @@ Sesion breve de verificacion tras contexto compactado. Se confirmo el estado del
 - Modelos NO descargados (usuario no ha ejecutado START-HERE.bat)
 
 ## Archivos modificados
-Ninguno — solo verificacion de estado.
+Ninguno â€” solo verificacion de estado.
 
 ## Commits realizados
 Ninguno.
@@ -2939,7 +1716,7 @@ Ninguno.
 
 
 ---
-### Sesion 2026-11-05 (~tarde, continuacion) — Correccion formato autores en paper
+### Sesion 2026-11-05 (~tarde, continuacion) â€” Correccion formato autores en paper
 
 ## Problema reportado
 Los emails de los autores no aparecian en la primera pagina del PDF. El formato `\thanks{}` de elsarticle genera notas al pie que pueden quedar separadas del bloque de autores.
@@ -2963,8 +1740,8 @@ Cambio a formato con superindices y emails en linea:
 Email de Minor cambiado de `minor.bonilla@buklo.dev` a `minor.bonilla@ucr.ac.cr` (ambos autores ahora con dominio UCR).
 
 ## Intentos fallidos
-1. **Formato `\and` con `\\`** — Error: `\begin{\elsarticletitlealign} ended by \end{t}`. Causa: elsarticle no soporta `\and` en modo preprint de esta forma.
-2. **Compress-Archive de PowerShell** — Fallo silencioso con array de archivos. Solucion: usar API .NET `System.IO.Compression.ZipFile` directamente.
+1. **Formato `\and` con `\\`** â€” Error: `\begin{\elsarticletitlealign} ended by \end{t}`. Causa: elsarticle no soporta `\and` en modo preprint de esta forma.
+2. **Compress-Archive de PowerShell** â€” Fallo silencioso con array de archivos. Solucion: usar API .NET `System.IO.Compression.ZipFile` directamente.
 
 ## Archivos modificados
 
@@ -2975,13 +1752,13 @@ Email de Minor cambiado de `minor.bonilla@buklo.dev` a `minor.bonilla@ucr.ac.cr`
 | `src/docs/Paper/neven-arxiv-submission.zip` | Regenerado (748 KB, 16 archivos) |
 
 ## Commits realizados
-Ninguno — directorio Paper esta en .gitignore.
+Ninguno â€” directorio Paper esta en .gitignore.
 
 ## Nota: Nombres de secciones actualizados
 Los archivos de secciones tienen nombres diferentes a sesiones anteriores:
-- `03_studio.tex` → `03_viewer_extensibility.tex`
-- `04_reproducibility.tex` → `04_case_studies.tex`
-- `05_evaluation.tex` → `05_discussion.tex`
+- `03_studio.tex` â†’ `03_viewer_extensibility.tex`
+- `04_reproducibility.tex` â†’ `04_case_studies.tex`
+- `05_evaluation.tex` â†’ `05_discussion.tex`
 
 El ZIP ahora incluye los archivos correctos.
 
@@ -2996,7 +1773,7 @@ El ZIP ahora incluye los archivos correctos.
 
 
 ---
-### Sesion 2026-11-05 (~tarde, final) — Reubicacion de emails en paper
+### Sesion 2026-11-05 (~tarde, final) â€” Reubicacion de emails en paper
 
 ## Cambio solicitado
 Usuario pidio que los emails aparezcan despues de la linea que sigue a los keywords, no junto a los nombres de los autores.
@@ -3041,7 +1818,7 @@ minor.bonilla@ucr.ac.cr    javier.trejos@ucr.ac.cr
 | `src/docs/Paper/neven-arxiv-submission.zip` | Regenerado (748 KB) |
 
 ## Commits realizados
-Ninguno — directorio Paper en .gitignore.
+Ninguno â€” directorio Paper en .gitignore.
 
 ## Pendientes
 
@@ -3053,7 +1830,7 @@ Ninguno — directorio Paper en .gitignore.
 
 
 ---
-### Sesion 2026-11-05 (~tarde, cierre) — Formato final de autores
+### Sesion 2026-11-05 (~tarde, cierre) â€” Formato final de autores
 
 ## Problema
 El intento anterior de poner emails despues de keywords los envio a una pagina incorrecta.
@@ -3085,13 +1862,13 @@ Simple, limpio, todo en primera pagina.
 | `src/docs/Paper/neven-arxiv-submission.zip` | 748 KB |
 
 ## Commits realizados
-Ninguno — Paper en .gitignore.
+Ninguno â€” Paper en .gitignore.
 
 ## Intentos fallidos en esta sesion
-1. `\thanks{}` — emails en notas al pie, separados de nombres
-2. `\and` con `\\` — error de elsarticle
-3. Superindices — funciono pero innecesario
-4. Emails despues de keywords — fueron a pagina incorrecta
+1. `\thanks{}` â€” emails en notas al pie, separados de nombres
+2. `\and` con `\\` â€” error de elsarticle
+3. Superindices â€” funciono pero innecesario
+4. Emails despues de keywords â€” fueron a pagina incorrecta
 
 ## Pendientes
 
@@ -3103,7 +1880,7 @@ Ninguno — Paper en .gitignore.
 
 
 ---
-### Sesion 2026-11-05 (~noche) — Commit/push y analisis de estructura de carpetas
+### Sesion 2026-11-05 (~noche) â€” Commit/push y analisis de estructura de carpetas
 
 ## Logros
 
@@ -3120,7 +1897,7 @@ Se identificaron multiples problemas de organizacion:
 | `NEVEN/NEVEN/Build/Common` | Anidada y vacia |
 | `build/` (raiz) | Duplicado de `src/Build/` (110 MB) |
 | `ext/` | Vacia |
-| `Install/` (raiz) | Confusa — contiene prompts/skills pero instalador esta en `src/Install/` |
+| `Install/` (raiz) | Confusa â€” contiene prompts/skills pero instalador esta en `src/Install/` |
 
 **Carpetas dispersas:**
 | Carpeta | Contenido |
@@ -3131,10 +1908,10 @@ Se identificaron multiples problemas de organizacion:
 | `tests/` (raiz) | 2 archivos (tests principales en `src/tests/`) |
 
 **Tamanos detectados:**
-- `src/` — 507 MB (codigo fuente principal)
-- `ontologia-fuentes/` — 608 MB (PDFs fuente)
-- `external/anyplot` — 104 MB (dependencia externa)
-- `build/` — 110 MB (artefactos CMake duplicados)
+- `src/` â€” 507 MB (codigo fuente principal)
+- `ontologia-fuentes/` â€” 608 MB (PDFs fuente)
+- `external/anyplot` â€” 104 MB (dependencia externa)
+- `build/` â€” 110 MB (artefactos CMake duplicados)
 
 ## Propuesta de reorganizacion (pendiente aprobacion)
 
@@ -3143,14 +1920,14 @@ Se identificaron multiples problemas de organizacion:
 | ELIMINAR | `NEVEN/` | Vacia |
 | ELIMINAR | `build/` (raiz) | Duplicado de src/Build |
 | ELIMINAR | `ext/` | Vacia |
-| MOVER | `Install/skills/` → `.agents/skills/` | Consolidar |
-| MOVER | `Install/prompts/` → `src/Install/prompts/` | Consolidar |
-| MOVER | `scripts/*.py` → `src/scripts/` | Consolidar |
-| MOVER | `tools/` → `.agents/` | Consolidar |
-| MOVER | `tests/` (raiz) → `src/tests/` | Consolidar |
+| MOVER | `Install/skills/` â†’ `.agents/skills/` | Consolidar |
+| MOVER | `Install/prompts/` â†’ `src/Install/prompts/` | Consolidar |
+| MOVER | `scripts/*.py` â†’ `src/scripts/` | Consolidar |
+| MOVER | `tools/` â†’ `.agents/` | Consolidar |
+| MOVER | `tests/` (raiz) â†’ `src/tests/` | Consolidar |
 
 ## Archivos modificados
-Ninguno — solo analisis.
+Ninguno â€” solo analisis.
 
 ## Commits realizados
 
@@ -3170,10 +1947,10 @@ Ninguno — solo analisis.
 
 
 ---
-### Sesion 2026-11-05 (~noche, final) — Reorganizacion completa del repositorio
+### Sesion 2026-11-05 (~noche, final) â€” Reorganizacion completa del repositorio
 
 ## Logro principal
-**Reorganizacion exitosa de la estructura del repositorio** — eliminadas carpetas redundantes/vacias y consolidados archivos dispersos.
+**Reorganizacion exitosa de la estructura del repositorio** â€” eliminadas carpetas redundantes/vacias y consolidados archivos dispersos.
 
 ## Espacio liberado
 ~215 MB eliminados (principalmente `build/` duplicado de 110 MB)
@@ -3206,12 +1983,12 @@ Ninguno — solo analisis.
 
 ```
 F:\ANTIGRAVITY\2026\NEVEN\
-├── .agents/skills/     # 8 skills consolidados
-├── .kiro/              # Configuracion Kiro
-├── docs/               # Ontologia publica (graficos)
-├── external/           # Dependencias externas (anyplot)
-├── ontologia-fuentes/  # PDFs fuente
-└── src/                # Codigo fuente principal
+â”œâ”€â”€ .agents/skills/     # 8 skills consolidados
+â”œâ”€â”€ .kiro/              # Configuracion Kiro
+â”œâ”€â”€ docs/               # Ontologia publica (graficos)
+â”œâ”€â”€ external/           # Dependencias externas (anyplot)
+â”œâ”€â”€ ontologia-fuentes/  # PDFs fuente
+â””â”€â”€ src/                # Codigo fuente principal
 ```
 
 ## Skills consolidados en .agents/skills/
@@ -3248,7 +2025,7 @@ Ver commit `951cfcb` para lista completa de renames y moves.
 
 
 ---
-### Sesion 2026-11-05 (~noche, exploracion) — Analisis de NEVEN Suite (PHP)
+### Sesion 2026-11-05 (~noche, exploracion) â€” Analisis de NEVEN Suite (PHP)
 
 ## Contexto
 Usuario quiere integrar componentes de `C:\Users\Minor Bonilla G\Desktop\PHP\` al proyecto NEVEN principal. Sesion de analisis sin cambios.
@@ -3257,51 +2034,51 @@ Usuario quiere integrar componentes de `C:\Users\Minor Bonilla G\Desktop\PHP\` a
 
 | Componente | Tecnologia | Archivos | Descripcion |
 |------------|-----------|----------|-------------|
-| **NEVEM Studio** | Python + Tauri (Rust) | 20 .py | Generador de audiolibros (EPUB/PDF → M4B) |
+| **NEVEM Studio** | Python + Tauri (Rust) | 20 .py | Generador de audiolibros (EPUB/PDF â†’ M4B) |
 | **NEVEN Launcher** | Kotlin + Jetpack Compose | 94 .kt | Launcher Android con estetica cientifica |
-| **MSFT.apk** | APK precompilado | — | Microsoft Launcher (referencia) |
-| **NIAGARA.apk** | APK precompilado | — | Niagara Launcher (referencia) |
+| **MSFT.apk** | APK precompilado | â€” | Microsoft Launcher (referencia) |
+| **NIAGARA.apk** | APK precompilado | â€” | Niagara Launcher (referencia) |
 
-## NEVEM Studio — Estructura
+## NEVEM Studio â€” Estructura
 
 ```
 NEVEM_STUDIO/
-├── src/
-│   ├── parsers/        # epub, pdf, markdown parsers
-│   ├── tts/            # windows_tts, edge_tts, piper_tts
-│   ├── muxer/          # ffmpeg_muxer (M4B)
-│   ├── translator/     # DeepL/Argos
-│   ├── server/         # http_server (API Flask)
-│   └── pipeline.py     # Orquestador
-├── src-tauri/          # GUI Rust/Tauri v2
-└── models/             # Modelos TTS
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ parsers/        # epub, pdf, markdown parsers
+â”‚   â”œâ”€â”€ tts/            # windows_tts, edge_tts, piper_tts
+â”‚   â”œâ”€â”€ muxer/          # ffmpeg_muxer (M4B)
+â”‚   â”œâ”€â”€ translator/     # DeepL/Argos
+â”‚   â”œâ”€â”€ server/         # http_server (API Flask)
+â”‚   â””â”€â”€ pipeline.py     # Orquestador
+â”œâ”€â”€ src-tauri/          # GUI Rust/Tauri v2
+â””â”€â”€ models/             # Modelos TTS
 ```
 
 **Features:** 100% offline, Edge TTS neural, M4B con capitulos navegables.
 
-## NEVEN Launcher — Estructura
+## NEVEN Launcher â€” Estructura
 
 ```
 com.neven.launcher/
-├── data/audiobook/     # Reproductor audiolibros
-├── data/sentinel/      # IA on-device (Gemini Nano)
-├── ui/home/            # Reloj cientifico (14³⁰₄₅)
-├── latex/              # Renderizado LaTeX
-└── 94 archivos .kt
+â”œâ”€â”€ data/audiobook/     # Reproductor audiolibros
+â”œâ”€â”€ data/sentinel/      # IA on-device (Gemini Nano)
+â”œâ”€â”€ ui/home/            # Reloj cientifico (14Â³â°â‚„â‚…)
+â”œâ”€â”€ latex/              # Renderizado LaTeX
+â””â”€â”€ 94 archivos .kt
 ```
 
 **Features:** Tipografia Computer Modern, 7 paletas, IA local.
 
 ## Preguntas pendientes de decision
 
-1. **Naming:** NEVEM Studio → NEVEN Studio?
+1. **Naming:** NEVEM Studio â†’ NEVEN Studio?
 2. **Ubicacion:** `src/Studio/` + `src/Android/` o `studio/` + `android/` en raiz?
 3. **Git history:** Importar con historial (`git subtree`) o como nuevo?
 4. **Dependencias:** Excluir node_modules, venv, .gradle, build?
-5. **Integracion:** Sincronizacion Desktop ↔ Android?
+5. **Integracion:** Sincronizacion Desktop â†” Android?
 
 ## Archivos modificados
-Ninguno — solo analisis exploratorio.
+Ninguno â€” solo analisis exploratorio.
 
 ## Commits realizados
 Ninguno.
@@ -3314,12 +2091,12 @@ Ninguno.
 | **ALTA** | Mover NEVEM Studio al repositorio | Pendiente |
 | **ALTA** | Mover NEVEN Launcher al repositorio | Pendiente |
 | **ALTA** | Subir ZIP a arXiv | LISTO |
-| MEDIA | Renombrar NEVEM → NEVEN para consistencia | Pendiente decision |
-| MEDIA | Definir integracion audiolibros Desktop ↔ Android | Futuro |
+| MEDIA | Renombrar NEVEM â†’ NEVEN para consistencia | Pendiente decision |
+| MEDIA | Definir integracion audiolibros Desktop â†” Android | Futuro |
 
 
 ---
-### Sesion 2026-11-05 (~noche, cierre) — Clarificacion vision NEVEN Suite
+### Sesion 2026-11-05 (~noche, cierre) â€” Clarificacion vision NEVEN Suite
 
 ## Discusion
 Usuario clarifco la vision de integracion:
@@ -3334,29 +2111,29 @@ Usuario clarifco la vision de integracion:
 2. **Arquitectura unificada**
    ```
    NEVEN Studio (TaskPane)
-   ├── Analisis de Datos      ← Ya existe
-   ├── Visualizaciones        ← Ya existe
-   ├── RAG/Ontologia          ← Ya existe
-   └── Generador Audiolibros  ← NUEVO (de NEVEM Studio)
+   â”œâ”€â”€ Analisis de Datos      â† Ya existe
+   â”œâ”€â”€ Visualizaciones        â† Ya existe
+   â”œâ”€â”€ RAG/Ontologia          â† Ya existe
+   â””â”€â”€ Generador Audiolibros  â† NUEVO (de NEVEM Studio)
    ```
 
-3. **Sincronizacion Desktop ↔ Android**
+3. **Sincronizacion Desktop â†” Android**
    - Audiolibros M4B generados en Desktop
    - Se sincronizan con NEVEN Launcher (Android)
    - Metodo de sync pendiente de definir
 
 4. **Naming consistente**
-   - NEVEM → NEVEN (todo bajo una marca)
+   - NEVEM â†’ NEVEN (todo bajo una marca)
 
 ## Preguntas pendientes de respuesta
 
-1. ¿Generador audiolibros sera TAB en TaskPane?
-2. ¿Sincronizacion via QR/HTTP, carpeta cloud, o WiFi directo?
-3. ¿Codigo Python se integra a neven_http_server.py o servicio separado?
-4. ¿NEVEN Launcher como /android/ en el repo o externo?
+1. Â¿Generador audiolibros sera TAB en TaskPane?
+2. Â¿Sincronizacion via QR/HTTP, carpeta cloud, o WiFi directo?
+3. Â¿Codigo Python se integra a neven_http_server.py o servicio separado?
+4. Â¿NEVEN Launcher como /android/ en el repo o externo?
 
 ## Archivos modificados
-Ninguno — solo discusion de arquitectura.
+Ninguno â€” solo discusion de arquitectura.
 
 ## Commits realizados
 Ninguno.
@@ -3374,7 +2151,7 @@ Ninguno.
 
 
 ---
-### Sesion 2026-11-05 (~noche, planificacion) — Arquitectura NEVEN Suite definida
+### Sesion 2026-11-05 (~noche, planificacion) â€” Arquitectura NEVEN Suite definida
 
 ## Decisiones de arquitectura confirmadas
 
@@ -3389,39 +2166,39 @@ Ninguno.
 
 ```
 NEVEN/
-├── src/
-│   ├── Core/                    # C++ XLL (sin cambios)
-│   ├── TaskPane/                # UI Web
-│   │   ├── taskpane.html        # + nuevo TAB Audiolibros
-│   │   └── audiobook.js         # NUEVO
-│   ├── Audiobook/               # NUEVO - motor audiolibros
-│   │   ├── server/              # Flask separado
-│   │   ├── parsers/             # EPUB, PDF, Markdown
-│   │   ├── tts/                 # Edge TTS, Windows SAPI
-│   │   ├── muxer/               # FFmpeg → M4B
-│   │   ├── sync/                # QR + WiFi/BT
-│   │   └── pipeline.py
-│   └── ...
-├── android/                     # NUEVO - NEVEN Launcher
-│   └── app/src/main/java/com/neven/launcher/
-└── ...
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ Core/                    # C++ XLL (sin cambios)
+â”‚   â”œâ”€â”€ TaskPane/                # UI Web
+â”‚   â”‚   â”œâ”€â”€ taskpane.html        # + nuevo TAB Audiolibros
+â”‚   â”‚   â””â”€â”€ audiobook.js         # NUEVO
+â”‚   â”œâ”€â”€ Audiobook/               # NUEVO - motor audiolibros
+â”‚   â”‚   â”œâ”€â”€ server/              # Flask separado
+â”‚   â”‚   â”œâ”€â”€ parsers/             # EPUB, PDF, Markdown
+â”‚   â”‚   â”œâ”€â”€ tts/                 # Edge TTS, Windows SAPI
+â”‚   â”‚   â”œâ”€â”€ muxer/               # FFmpeg â†’ M4B
+â”‚   â”‚   â”œâ”€â”€ sync/                # QR + WiFi/BT
+â”‚   â”‚   â””â”€â”€ pipeline.py
+â”‚   â””â”€â”€ ...
+â”œâ”€â”€ android/                     # NUEVO - NEVEN Launcher
+â”‚   â””â”€â”€ app/src/main/java/com/neven/launcher/
+â””â”€â”€ ...
 ```
 
 ## Flujo de sincronizacion
 
 ```
-DESKTOP: PDF/EPUB → Pipeline → M4B + QR Server
-                                    │
-                        WiFi/BT     │ Escanear QR
-                                    ▼
-ANDROID: QR Scanner → Download M4B → Reproductor
+DESKTOP: PDF/EPUB â†’ Pipeline â†’ M4B + QR Server
+                                    â”‚
+                        WiFi/BT     â”‚ Escanear QR
+                                    â–¼
+ANDROID: QR Scanner â†’ Download M4B â†’ Reproductor
 ```
 
 ## Plan de migracion en 3 fases
 
 **Fase 1:** Mover codigo (sin cambios funcionales)
-- NEVEM_STUDIO/src/ → NEVEN/src/Audiobook/
-- PHP/NEVEN/ → NEVEN/android/
+- NEVEM_STUDIO/src/ â†’ NEVEN/src/Audiobook/
+- PHP/NEVEN/ â†’ NEVEN/android/
 - Excluir: node_modules, venv, .gradle, build, target
 
 **Fase 2:** Integrar TAB en TaskPane
@@ -3435,7 +2212,7 @@ ANDROID: QR Scanner → Download M4B → Reproductor
 - Fallback Bluetooth
 
 ## Archivos modificados
-Ninguno — solo planificacion.
+Ninguno â€” solo planificacion.
 
 ## Commits realizados
 Ninguno.
@@ -3444,16 +2221,16 @@ Ninguno.
 
 | Prioridad | Tarea | Estado |
 |-----------|-------|--------|
-| **ALTA** | Fase 1: Mover NEVEM_STUDIO → src/Audiobook/ | Esperando aprobacion |
-| **ALTA** | Fase 1: Mover NEVEN Launcher → android/ | Esperando aprobacion |
+| **ALTA** | Fase 1: Mover NEVEM_STUDIO â†’ src/Audiobook/ | Esperando aprobacion |
+| **ALTA** | Fase 1: Mover NEVEN Launcher â†’ android/ | Esperando aprobacion |
 | **ALTA** | Subir ZIP a arXiv | LISTO |
 | MEDIA | Fase 2: Crear TAB Audiolibros en TaskPane | Post-Fase 1 |
 | MEDIA | Fase 3: Implementar sync QR + WiFi/BT | Post-Fase 2 |
-| BAJA | Renombrar NEVEM → NEVEN en codigo | Durante Fase 1 |
+| BAJA | Renombrar NEVEM â†’ NEVEN en codigo | Durante Fase 1 |
 
 
 ---
-### Sesion 2026-11-05 (~noche, implementacion) — Fase 1 completada: NEVEN Suite integrada
+### Sesion 2026-11-05 (~noche, implementacion) â€” Fase 1 completada: NEVEN Suite integrada
 
 ## Logro principal
 **Fase 1 completada:** Codigo de NEVEM Studio y NEVEN Launcher movido al repositorio principal.
@@ -3463,31 +2240,31 @@ Ninguno.
 ### src/Audiobook/ (26 archivos Python)
 ```
 src/Audiobook/
-├── parsers/           # epub_parser.py, pdf_parser.py, markdown_parser.py
-├── tts/               # edge_tts_engine.py, windows_tts.py, piper_tts.py, base.py
-├── muxer/             # ffmpeg_muxer.py
-├── server/            # http_server.py
-├── translator/        # translator.py
-├── api/               # routes.py
-├── pipeline.py        # Orquestador principal
-├── requirements.txt   # Dependencias Python
-├── run.bat, install_deps.bat, download_model.bat
-└── README.md
+â”œâ”€â”€ parsers/           # epub_parser.py, pdf_parser.py, markdown_parser.py
+â”œâ”€â”€ tts/               # edge_tts_engine.py, windows_tts.py, piper_tts.py, base.py
+â”œâ”€â”€ muxer/             # ffmpeg_muxer.py
+â”œâ”€â”€ server/            # http_server.py
+â”œâ”€â”€ translator/        # translator.py
+â”œâ”€â”€ api/               # routes.py
+â”œâ”€â”€ pipeline.py        # Orquestador principal
+â”œâ”€â”€ requirements.txt   # Dependencias Python
+â”œâ”€â”€ run.bat, install_deps.bat, download_model.bat
+â””â”€â”€ README.md
 ```
 
 ### android/ (94 archivos Kotlin + 955 total)
 ```
 android/
-├── app/src/main/java/com/neven/launcher/
-│   ├── data/audiobook/    # Reproductor audiolibros
-│   ├── data/sentinel/     # IA on-device (Gemini Nano)
-│   ├── ui/home/           # Reloj cientifico
-│   ├── ui/audiobook/      # UI reproductor
-│   ├── ui/settings/       # Configuracion
-│   └── ...                # 15+ pantallas
-├── gradle/, docs/, screenshots/, ontologia/
-├── build.gradle.kts, settings.gradle.kts
-└── README.md, ROADMAP.md, SETUP.md
+â”œâ”€â”€ app/src/main/java/com/neven/launcher/
+â”‚   â”œâ”€â”€ data/audiobook/    # Reproductor audiolibros
+â”‚   â”œâ”€â”€ data/sentinel/     # IA on-device (Gemini Nano)
+â”‚   â”œâ”€â”€ ui/home/           # Reloj cientifico
+â”‚   â”œâ”€â”€ ui/audiobook/      # UI reproductor
+â”‚   â”œâ”€â”€ ui/settings/       # Configuracion
+â”‚   â””â”€â”€ ...                # 15+ pantallas
+â”œâ”€â”€ gradle/, docs/, screenshots/, ontologia/
+â”œâ”€â”€ build.gradle.kts, settings.gradle.kts
+â””â”€â”€ README.md, ROADMAP.md, SETUP.md
 ```
 
 ## Limpieza realizada
@@ -3512,16 +2289,16 @@ Push exitoso: `951cfcb..745ad96 master -> master` (16.13 MB)
 
 ```
 NEVEN/
-├── .agents/skills/      # 8 skills consolidados
-├── .kiro/               # Configuracion Kiro
-├── android/             # NUEVO - NEVEN Launcher (Kotlin)
-├── docs/                # Ontologia graficos
-├── ontologia-fuentes/   # PDFs fuente
-└── src/
-    ├── Audiobook/       # NUEVO - Generador audiolibros (Python)
-    ├── Core/            # C++ XLL
-    ├── TaskPane/        # UI Web
-    └── ...
+â”œâ”€â”€ .agents/skills/      # 8 skills consolidados
+â”œâ”€â”€ .kiro/               # Configuracion Kiro
+â”œâ”€â”€ android/             # NUEVO - NEVEN Launcher (Kotlin)
+â”œâ”€â”€ docs/                # Ontologia graficos
+â”œâ”€â”€ ontologia-fuentes/   # PDFs fuente
+â””â”€â”€ src/
+    â”œâ”€â”€ Audiobook/       # NUEVO - Generador audiolibros (Python)
+    â”œâ”€â”€ Core/            # C++ XLL
+    â”œâ”€â”€ TaskPane/        # UI Web
+    â””â”€â”€ ...
 ```
 
 ## Pendientes
@@ -3533,5 +2310,768 @@ NEVEN/
 | **ALTA** | Fase 2: Conectar a servidor puerto 5556 | Proximo |
 | **ALTA** | Subir ZIP a arXiv | LISTO |
 | MEDIA | Fase 3: Implementar sync QR + WiFi/BT | Post-Fase 2 |
-| MEDIA | Renombrar referencias NEVEM → NEVEN en codigo | Durante Fase 2 |
+| MEDIA | Renombrar referencias NEVEM â†’ NEVEN en codigo | Durante Fase 2 |
 | BAJA | Actualizar .gitignore para android/ | Opcional |
+
+
+---
+### Sesion 2026-08-19 (~noche) — Mantenimiento de bitacora CHAT.md
+
+## Contexto
+Sesion de mantenimiento para reducir el tamano de CHAT.md moviendo historial antiguo a CHAT_LARGO.md.
+
+## Trabajo realizado
+
+### 1. Migracion de historial
+- Movidas lineas 1-1228 de CHAT.md a CHAT_LARGO.md
+- CHAT.md reducido de 3538 a 2314 lineas
+- CHAT_LARGO.md aumento de 45776 a 47008 lineas
+- Agregado header estandar a CHAT.md
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\..\.kiro\contexto\CHAT.md` | Reducido, header agregado |
+| `F:\..\.kiro\contexto\CHAT_LARGO.md` | +1228 lineas archivadas |
+
+## Problema de encoding detectado
+
+**Sintoma:** Caracteres como guiones largos (—) y simbolos de arbol aparecen corruptos
+**Causa:** El contenido UTF-8 se leyo/escribio con encoding incorrecto durante la migracion PowerShell
+**Estado:** Funcional pero con caracteres corruptos en algunas secciones antiguas
+
+## Commits realizados
+Ninguno (cambios locales pendientes).
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| BAJA | Corregir caracteres UTF-8 corruptos en CHAT.md | Opcional |
+| **ALTA** | Continuar con Fase 3 (sync Android) cuando usuario lo indique | Pendiente |
+
+
+---
+### Sesion 2026-08-19 (~noche) — Analisis para Fase 3: Sincronizacion Desktop-Android
+
+## Contexto
+Revision del estado actual del proyecto Android (NEVEN Launcher) para planificar la Fase 3 de integracion de audiolibros.
+
+## Analisis realizado
+
+### Estado del proyecto Android
+
+**Estructura del codigo:**
+```
+android/app/src/main/java/com/neven/launcher/
+├── data/audiobook/
+│   ├── AudiobookDao.kt
+│   ├── AudiobookDatabase.kt
+│   ├── AudiobookModels.kt
+│   └── AudiobookRepository.kt
+├── ui/audiobook/
+│   ├── AudiobookActivity.kt
+│   ├── AudiobookLibraryScreen.kt
+│   ├── AudiobookPlayerScreen.kt
+│   ├── AudiobookViewModel.kt
+│   └── ShareFragmentScreen.kt
+└── ...
+```
+
+### Lo que YA existe:
+
+**Desktop (NEVEN Audiobook Server - puerto 5556):**
+- Servidor HTTP Flask con CORS
+- `/api/qr` - genera QR como imagen PNG
+- `/download` - pagina movil para descarga
+- `/api/download/<filename>` - descarga directa M4B
+
+**Android (NEVEN Launcher):**
+- Reproductor de audiolibros completo (ExoPlayer/Media3)
+- Biblioteca con portadas verticales y progreso
+- Importacion de M4B via Storage Access Framework (SAF)
+- Parseo nativo de capitulos M4B (atomo "chpl")
+- Sistema de notas sincronizadas con JSON
+- Compartir fragmentos como MP3
+
+### Lo que FALTA para Fase 3:
+
+| Componente | Estado |
+|------------|--------|
+| Escaner QR en Android | NO implementado |
+| Cliente HTTP para descarga WiFi | NO implementado |
+| Boton "Descargar desde PC" | Solo placeholder en UI |
+
+## Documentacion revisada
+
+- `android/README.md` - Descripcion del launcher
+- `android/REQ AudioLibros.md` - SRS completo del sistema dual PC/Movil
+- `android/app/.../AudiobookRepository.kt` - Implementacion de importacion
+- `android/app/.../AudiobookLibraryScreen.kt` - UI de biblioteca
+
+## Archivos modificados
+Ninguno (solo analisis).
+
+## Commits realizados
+Ninguno.
+
+## Plan para Fase 3
+
+### Tecnologias a usar:
+- **CameraX** - Preview de camara
+- **ML Kit Barcode Scanner** - Lectura de QR
+- **OkHttp/Ktor** - Cliente HTTP para descarga
+
+### Archivos a crear:
+1. `ui/audiobook/QrScannerScreen.kt` - UI de escaner
+2. `data/audiobook/WifiDownloadManager.kt` - Gestor de descargas
+3. Modificar `AudiobookLibraryScreen.kt` - Agregar boton
+
+## Pendientes Fase 3
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Agregar dependencias CameraX + ML Kit al build.gradle | Pendiente |
+| **ALTA** | Crear QrScannerScreen.kt con preview de camara | Pendiente |
+| **ALTA** | Crear WifiDownloadManager.kt para descargas HTTP | Pendiente |
+| MEDIA | Integrar escaner en AudiobookLibraryScreen | Pendiente |
+| MEDIA | Notificacion de progreso de descarga | Pendiente |
+| BAJA | Animacion de transicion al escanear | Futuro |
+
+
+---
+### Sesion 2026-08-19 (~noche, continuacion) — Explicacion tecnica Fase 3
+
+## Contexto
+Sesion de explicacion de los 3 componentes principales para la sincronizacion QR/WiFi.
+
+## Explicacion proporcionada
+
+### 1. Dependencias (CameraX + ML Kit)
+- CameraX: API moderna de camara Android, maneja ciclo de vida automaticamente
+- ML Kit Barcode Scanner: Detecta QR en tiempo real con machine learning
+- Se agregan en `android/app/build.gradle.kts`
+
+### 2. QrScannerScreen.kt
+- Pantalla Compose con preview de camara
+- ML Kit analiza cada frame buscando QR
+- Al detectar URL, la pasa al WifiDownloadManager
+- Incluye overlay con marco de enfoque
+
+### 3. WifiDownloadManager.kt
+- Clase que maneja descarga HTTP del M4B
+- Recibe URL del QR, descarga con progreso
+- Guarda en almacenamiento interno
+- Llama a AudiobookRepository.importAudiobook()
+
+## Flujo completo documentado
+```
+PC: Convierte PDF→M4B → Muestra QR
+Android: Escanea QR → Descarga via WiFi → Importa a biblioteca
+```
+
+## Archivos modificados
+Ninguno.
+
+## Commits realizados
+Ninguno.
+
+## Pendientes
+Sin cambios respecto a sesion anterior.
+
+
+---
+### Sesion 2026-08-19 (~noche, final) — Decisión: Pipeline de 2 pasos para audiolibros
+
+## Contexto
+Usuario solicita separar el proceso de conversión en dos pasos independientes para permitir revisión humana del contenido antes de generar audio.
+
+## Decisión de diseño
+
+**Flujo anterior (1 paso):**
+```
+PDF/EPUB → M4B (automático, sin revisión)
+```
+
+**Flujo nuevo (2 pasos):**
+```
+PASO 1: PDF/EPUB → Markdown (usuario descarga y revisa)
+PASO 2: Markdown revisado → M4B (usuario sube el MD corregido)
+```
+
+## Justificación
+
+1. **PDFs tienen ruido** — pies de página, encabezados, índices, bibliografía
+2. **Errores de OCR** — el usuario puede corregirlos antes de sintetizar
+3. **Control de calidad** — evita 10h de audio con errores corregibles en 5min de edición
+4. **Flexibilidad** — el usuario decide qué incluir/excluir
+
+## Estado del backend
+
+Los endpoints ya existen en `api/routes.py`:
+
+| Endpoint | Función | Estado |
+|----------|---------|--------|
+| `POST /api/extract` | PDF/EPUB → MD | ✅ Existe |
+| `GET /api/markdown/<filename>` | Descargar MD | ✅ Existe |
+| `POST /api/markdown/upload` | Subir MD revisado | ✅ Existe |
+| `POST /api/generate-from-markdown` | MD → M4B | ✅ Existe |
+
+## Cambios necesarios en frontend
+
+La UI actual (`audiobook.js` + `taskpane.html`) asume un solo paso.
+Necesita rediseñarse con 2 cards separados:
+
+**Card 1: Extraer a Markdown**
+- Selector de PDF/EPUB
+- Campo "páginas a excluir"
+- Botón "Extraer Markdown"
+- Botones "Descargar MD" y "Vista previa"
+
+**Card 2: Generar Audiolibro**
+- Selector de archivo MD
+- Selector de voz y velocidad
+- Botón "Generar M4B"
+- Botones "Descargar M4B" y "QR móvil"
+
+## Archivos modificados
+Ninguno (solo decisión de diseño).
+
+## Commits realizados
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Rediseñar HTML del TAB Audiobook (2 cards) | Pendiente |
+| **ALTA** | Actualizar audiobook.js para flujo de 2 pasos | Pendiente |
+| MEDIA | Agregar vista previa del Markdown en el TAB | Pendiente |
+| MEDIA | Validar que el MD tenga estructura de capítulos | Pendiente |
+
+### Sesion 2026-08-19 (~noche, breve) — Pipeline Audiobook 2 pasos copiado a produccion
+
+## Contexto
+
+Sesion corta retomada desde contexto compactado. El trabajo principal (reescribir el pipeline de Audiobook de 1 paso a 2 pasos) ya estaba hecho en sesion anterior.
+
+## Trabajo realizado
+
+### 1. Copia de archivos a produccion
+
+Archivos del pipeline de 2 pasos ya escritos en el repositorio fueron copiados a produccion:
+
+```powershell
+[System.IO.File]::Copy('F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\taskpane.html', 'C:\NEVEN\TaskPane\taskpane.html', $true)
+[System.IO.File]::Copy('F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\audiobook.js', 'C:\NEVEN\TaskPane\audiobook.js', $true)
+```
+
+## Arquitectura del pipeline de 2 pasos (recordatorio)
+
+**Decision de diseno:** Separar PDF→M4B en dos pasos independientes para permitir revision humana del texto extraido antes de generar audio.
+
+| Paso | Input | Output | Proposito |
+|------|-------|--------|-----------|
+| 1. Extraer | PDF/EPUB | Markdown (.md) | Usuario revisa/corrige texto |
+| 2. Generar | Markdown revisado | M4B (audiobook) | TTS sobre texto limpio |
+
+**Por que esta decision:**
+- PDFs academicos tienen formulas, tablas, footnotes que el OCR puede malinterpretar
+- Un M4B mal generado es costoso (tiempo de TTS, almacenamiento)
+- El usuario puede agregar pausas, corregir nombres propios, eliminar secciones
+
+## Archivos modificados (sesion anterior, ya en repo)
+
+| Archivo | Descripcion |
+|---------|-------------|
+| `src/TaskPane/taskpane.html` | Tab Audiobook con 2 cards (Paso 1: Extraer, Paso 2: Generar) |
+| `src/TaskPane/audiobook.js` | Logica v2.0 para flujo de 2 pasos |
+
+## Archivos copiados a produccion
+
+| Origen | Destino |
+|--------|---------|
+| `F:\...\src\TaskPane\taskpane.html` | `C:\NEVEN\TaskPane\taskpane.html` |
+| `F:\...\src\TaskPane\audiobook.js` | `C:\NEVEN\TaskPane\audiobook.js` |
+
+## Commits realizados
+
+Ninguno esta sesion — los archivos fueron escritos en sesion anterior.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar flujo de 2 pasos en Excel (servidor audiobook puerto 5556) | Pendiente |
+| **ALTA** | Commit de cambios de audiobook pipeline | Pendiente |
+| MEDIA | Fase 3: QR Scanner Android (CameraX + ML Kit) | Proximo |
+| MEDIA | Crear QrScannerScreen.kt, WifiDownloadManager.kt | Proximo |
+| BAJA | Push de commits anteriores del proyecto | Pendiente |
+
+## Notas para proxima sesion
+
+1. **Servidor audiobook:** Puerto 5556, iniciar con `start_audiobook_server.bat`
+2. **Endpoints relevantes:**
+   - `POST /api/upload` — Subir PDF/EPUB
+   - `POST /api/extract` — Extraer a Markdown
+   - `GET /api/markdown/<filename>` — Descargar MD
+   - `POST /api/markdown/upload` — Subir MD revisado
+   - `POST /api/generate-from-markdown` — Generar M4B
+3. **Fase 3 Android:** Archivos a crear en `android/app/src/main/java/.../`
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche, breve) — Error TaskPane resuelto: servidor HTTP no corria
+
+## Problema reportado
+
+Error en Excel al abrir NEVEN Studio:
+```
+ERROR DEL COMPLEMENTO
+No pudimos cargar el complemento. Compruebe que tiene conectividad de red y/o Internet.
+```
+
+## Causa raiz
+
+El servidor HTTP de NEVEN (`neven_http_server.py`) no estaba corriendo. El TaskPane (Office Add-in) necesita conectarse a `http://127.0.0.1:5555` para cargar su contenido.
+
+**Diagnostico:**
+```powershell
+Get-NetTCPConnection -LocalPort 5555  # → Exit Code 1 (puerto no en uso)
+```
+
+## Solucion aplicada
+
+Iniciar el servidor HTTP manualmente:
+```powershell
+python C:\NEVEN\startup\neven_http_server.py
+```
+
+**Verificacion:**
+```
+[NEVEN.HTTP] INFO: Standalone server running on http://127.0.0.1:5555
+```
+
+## Nota importante del log
+
+```
+[NEVEN.HTTP] INFO: No cert configured — running HTTP (Task Pane may require HTTPS)
+```
+
+El servidor corre en HTTP plano. Si Excel sigue rechazando la conexion, puede requerir HTTPS con certificado SSL.
+
+## Archivos modificados
+
+Ninguno — solo se inicio un proceso.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Verificar si TaskPane cargo correctamente tras "Reintentar" | Pendiente |
+| **ALTA** | Si falla: configurar certificado SSL para HTTPS | Condicional |
+| MEDIA | Automatizar inicio del servidor HTTP al cargar Excel | Recomendado |
+| MEDIA | Probar flujo de 2 pasos de Audiobook | Pendiente |
+| BAJA | Fase 3: QR Scanner Android | Proximo |
+
+## Notas para proxima sesion
+
+1. **Comando para iniciar servidor:** `python C:\NEVEN\startup\neven_http_server.py`
+2. **Puerto:** 5555 (verificar con `Get-NetTCPConnection -LocalPort 5555`)
+3. **Si requiere HTTPS:** Revisar documentacion de certificados en `docs/` o generar self-signed cert
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche) — Consistencia de diseño Tab Audiobook
+
+## Trabajo realizado
+
+### 1. Revision de consistencia de diseño
+
+Comparado el Tab Audiobook con otros tabs (DataLab, Presentaciones) para verificar que sigue el mismo patron de diseño de NEVEN Studio.
+
+**Elementos verificados OK:**
+- Clase `.card` y `.card-title` — correcto
+- Clase `.controls` para grupos de botones — correcto
+- Clases `.btn .btn-primary` y `.btn .btn-secondary` — correcto
+- Variables CSS (`var(--bg-primary)`, `var(--text-secondary)`) — parcialmente
+- Labels con `font-size:9px;font-weight:600;text-transform:uppercase` — correcto
+- `<details>` para opciones avanzadas — correcto
+
+### 2. Correcciones aplicadas
+
+| Elemento | Antes | Despues | Motivo |
+|----------|-------|---------|--------|
+| Parrafos descriptivos | `font-size:10px` | `font-size:11px` + clase `.card-desc` | Consistente con otros tabs |
+| Input `audiobook-start-page` | `border:1px solid #444` | `border:1px solid var(--border)` | Usar variable CSS |
+| Input `audiobook-exclude-pages` | `border:1px solid #444` | `border:1px solid var(--border)` | Usar variable CSS |
+| Select `audiobook-voice` | `border:1px solid #444` | `border:1px solid var(--border)` | Usar variable CSS |
+
+### 3. Caracteristica unica (intencional)
+
+Los badges numericos (1) y (2) en los card-titles del Tab Audiobook son intencionales para indicar el flujo de 2 pasos. Mantienen el estilo dorado/verde del sistema pero son visualmente distintivos para guiar al usuario.
+
+## Archivos modificados
+
+| Archivo | Descripcion |
+|---------|-------------|
+| `C:\NEVEN\TaskPane\taskpane.html` | 5 correcciones de estilos inline |
+| `F:\...\src\TaskPane\taskpane.html` | Sincronizado desde produccion |
+
+## Commits realizados
+
+Ninguno — cambios menores de estilo, pendiente de agrupar con otros cambios.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar Tab Audiobook en Excel (refrescar TaskPane) | Pendiente |
+| **ALTA** | Commit de cambios audiobook pipeline + estilos | Pendiente |
+| MEDIA | Verificar servidor audiobook puerto 5556 | Pendiente |
+| MEDIA | Fase 3: QR Scanner Android | Proximo |
+| BAJA | Push de commits pendientes | Pendiente |
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche) — Correccion colores de botones Tab Audiobook
+
+## Problema reportado
+
+El usuario reporto que los botones del Tab Audiobook usaban colores azul (#3498db) y verde (#27ae60) en lugar del dorado (#d7a538) del sistema de diseno de NEVEN Studio.
+
+## Causa raiz
+
+Los botones tenian estilos inline que sobreescribian la clase CSS `.btn-primary`:
+- `style="background:#3498db"` — azul para "Extraer Markdown" y "Descargar M4B"
+- `style="background:#27ae60"` — verde para "Descargar .md" y "Cargar Markdown"
+
+El CSS ya define `.btn-primary { background: var(--accent); }` donde `--accent: #d7a538` (dorado).
+
+## Solucion aplicada
+
+Eliminar todos los estilos inline de color en los botones para que hereden el estilo de la clase CSS:
+
+| Boton | Antes | Despues |
+|-------|-------|---------|
+| Seleccionar PDF/EPUB | `style="background:#d7a538"` | Sin style |
+| Extraer Markdown | `background:#3498db` (azul) | Sin style |
+| Descargar .md | `background:#27ae60` (verde) | Sin style |
+| Cargar Markdown | `background:#27ae60` (verde) | Sin style |
+| Generar Audiolibro | `style="background:#d7a538"` | Sin style |
+| Descargar M4B | `background:#3498db` (azul) | Sin style |
+
+Tambien se corrigieron los iconos SVG para usar `stroke="#1a1a1a"` (texto oscuro sobre fondo dorado) en lugar de `stroke="#fff"`.
+
+## Archivos modificados
+
+| Archivo | Descripcion |
+|---------|-------------|
+| `C:\NEVEN\TaskPane\taskpane.html` | 6 botones corregidos |
+| `F:\...\src\TaskPane\taskpane.html` | Sincronizado |
+
+## Commits realizados
+
+Ninguno — pendiente de agrupar con otros cambios del pipeline audiobook.
+
+## Leccion aprendida
+
+**No usar estilos inline para colores de botones.** El sistema de diseno de NEVEN Studio define los colores en CSS via variables (`var(--accent)`). Los estilos inline rompen la consistencia y dificultan el mantenimiento.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Refrescar TaskPane y verificar botones dorados | Pendiente |
+| **ALTA** | Commit cambios audiobook (pipeline + estilos) | Pendiente |
+| MEDIA | Iniciar servidor audiobook (puerto 5556) para probar flujo | Pendiente |
+| MEDIA | Fase 3: QR Scanner Android | Proximo |
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche) — Correccion badge verde y slider azul
+
+## Problema reportado
+
+Aun quedaban elementos con colores incorrectos en el Tab Audiobook:
+1. El badge numerico "2" del Paso 2 era verde (#27ae60)
+2. El slider de velocidad usaba el color azul por defecto del navegador
+
+## Solucion aplicada
+
+| Elemento | Antes | Despues |
+|----------|-------|---------|
+| Badge "2" fondo | `background:#27ae60` (verde) | `background:#d7a538` (dorado) |
+| Badge "2" texto | `color:#fff` (blanco) | `color:#1a1a1a` (oscuro) |
+| Slider velocidad | Sin estilo | `accent-color:#d7a538` (dorado) |
+
+## Archivos modificados
+
+| Archivo | Descripcion |
+|---------|-------------|
+| `C:\NEVEN\TaskPane\taskpane.html` | Badge y slider corregidos |
+| `F:\...\src\TaskPane\taskpane.html` | Sincronizado |
+
+## Commits realizados
+
+Ninguno — pendiente de agrupar.
+
+## Nota tecnica
+
+La propiedad CSS `accent-color` es la forma moderna de colorear inputs nativos (range, checkbox, radio) sin necesidad de CSS complejo. Tiene buen soporte en navegadores modernos y Edge/WebView2.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Refrescar TaskPane y verificar consistencia visual completa | Pendiente |
+| **ALTA** | Commit de todos los cambios audiobook | Pendiente |
+| MEDIA | Probar flujo de 2 pasos con servidor audiobook | Pendiente |
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche) — Boton "Iniciar Servidor" audiobook implementado
+
+## Trabajo realizado
+
+### 1. Nuevo endpoint en servidor HTTP principal
+
+Agregado `POST /api/audiobook/start` en `neven_http_server.py` que inicia el servidor de audiobook como proceso separado.
+
+**Logica implementada:**
+1. Verificar si el archivo `neven_audiobook_server.py` existe
+2. Verificar si el puerto 5556 ya esta en uso (servidor ya corriendo)
+3. Si no esta corriendo, iniciar como proceso detached con `subprocess.Popen`
+4. Usar flags `DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP` para que sobreviva al proceso padre
+
+### 2. Correccion de dependencia faltante
+
+**Problema:** El servidor de audiobook fallaba silenciosamente al iniciar.
+
+**Causa raiz:** El modulo `flask-cors` no estaba instalado. El servidor de audiobook usa:
+```python
+from flask_cors import CORS
+```
+
+**Solucion:**
+```powershell
+pip install flask-cors
+```
+
+### 3. Flujo completo funcionando
+
+1. Usuario hace clic en "Iniciar Servidor" en Tab Audiobook
+2. `audiobook.js` llama a `POST http://localhost:5555/api/audiobook/start`
+3. Servidor principal (5555) inicia `neven_audiobook_server.py` en puerto 5556
+4. `audiobook.js` verifica `/api/health` en puerto 5556
+5. Indicador cambia a verde "Servidor activo v1.0.0"
+
+## Archivos modificados
+
+| Archivo | Descripcion |
+|---------|-------------|
+| `C:\NEVEN\startup\neven_http_server.py` | Nuevo endpoint `/api/audiobook/start` |
+| `F:\...\src\startup\neven_http_server.py` | Sincronizado |
+
+## Codigo agregado
+
+```python
+def _handle_audiobook_start(self):
+    """POST /api/audiobook/start — Inicia el servidor de audiobook en puerto 5556."""
+    audiobook_server = r"C:\NEVEN\Audiobook\neven_audiobook_server.py"
+    
+    # Verificar si ya esta corriendo
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = sock.connect_ex(('127.0.0.1', 5556))
+    sock.close()
+    if result == 0:
+        return {"status": "ok", "message": "Server already running"}
+    
+    # Iniciar como proceso separado
+    DETACHED_PROCESS = 0x00000008
+    CREATE_NEW_PROCESS_GROUP = 0x00000200
+    subprocess.Popen(
+        ["python", audiobook_server],
+        cwd=r"C:\NEVEN\Audiobook",
+        creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    )
+```
+
+## Commits realizados
+
+Ninguno — pendiente de agrupar con otros cambios de audiobook.
+
+## Intentos fallidos
+
+1. **Primer intento:** Error 500 sin mensaje — el servidor viejo estaba en memoria, no habia cargado el nuevo codigo.
+2. **Segundo intento:** Servidor audiobook no iniciaba — faltaba `flask-cors`.
+
+## Dependencias instaladas
+
+- `flask-cors` v6.0.5 — requerido por `neven_audiobook_server.py`
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar boton "Iniciar Servidor" desde Excel | Listo para probar |
+| **ALTA** | Commit todos los cambios de audiobook | Pendiente |
+| MEDIA | Probar flujo completo PDF -> MD -> M4B | Pendiente |
+| BAJA | Fase 3: QR Scanner Android | Proximo |
+
+## Notas para proxima sesion
+
+1. El servidor de audiobook requiere `flask` y `flask-cors`
+2. Puerto 5555 = servidor principal NEVEN
+3. Puerto 5556 = servidor audiobook (separado)
+4. Los procesos se inician con `DETACHED_PROCESS` para que sobrevivan al cierre de Excel
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche) — Preview de voz en Tab Audiobook
+
+## Trabajo realizado
+
+### 1. Boton "Probar" para muestras de voz
+
+Agregado un boton junto al selector de voz que reproduce una muestra de ~5 segundos usando Edge TTS.
+
+**Componentes implementados:**
+
+| Componente | Archivo | Descripcion |
+|------------|---------|-------------|
+| Boton HTML | `taskpane.html` | Boton con icono de audio junto al dropdown |
+| Elemento audio oculto | `taskpane.html` | `<audio id="audiobook-voice-preview">` |
+| Funcion JS | `audiobook.js` | `previewVoice()` que llama al API y reproduce |
+| Endpoint API | `api/routes.py` | `POST /api/preview-voice` |
+
+### 2. Endpoint POST /api/preview-voice
+
+```python
+@api.route('/preview-voice', methods=['POST'])
+def preview_voice_custom():
+    # Body: { voice, text, speed }
+    # Genera audio con Edge TTS y lo devuelve como audio/mpeg
+```
+
+**Caracteristicas:**
+- Acepta voz, texto personalizado y velocidad (-50 a +50)
+- Limita texto a 200 caracteres para preview rapido
+- Soporta Edge TTS (Neural) y Windows SAPI (offline)
+- Devuelve audio/mpeg directamente para reproduccion inmediata
+
+### 3. Texto de muestra segun idioma
+
+La funcion JS detecta el idioma de la voz seleccionada:
+- **es-***: "Hola, esta es una muestra de mi voz..."
+- **en-***: "Hello, this is a sample of my voice..."
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.html` | Boton "Probar" + elemento audio |
+| `C:\NEVEN\TaskPane\audiobook.js` | Funcion `previewVoice()` + event listener |
+| `C:\NEVEN\Audiobook\api\routes.py` | Endpoint `POST /api/preview-voice` |
+| `F:\...\src\TaskPane\*` | Sincronizados |
+| `F:\...\src\Audiobook\api\routes.py` | Sincronizado |
+
+## Prueba del endpoint
+
+```powershell
+POST http://localhost:5556/api/preview-voice
+Body: {"voice":"es-MX-DaliaNeural","text":"Hola prueba","speed":0}
+
+Response: 200 OK
+Content-Type: audio/mpeg
+Content-Length: 15264 bytes
+```
+
+## Commits realizados
+
+Ninguno — pendiente de agrupar con otros cambios de audiobook.
+
+## Decisiones de diseno
+
+1. **Texto fijo de muestra** — En lugar de permitir texto libre, se usa un texto predefinido corto que muestra las caracteristicas de la voz. Esto es mas rapido y consistente.
+
+2. **Endpoint POST en lugar de GET** — Aunque el endpoint existente usaba GET con voice_id en URL, el nuevo usa POST para soportar parametros adicionales (texto, velocidad).
+
+3. **Audio element oculto** — Se usa un `<audio>` oculto en lugar de Web Audio API para simplicidad y compatibilidad con WebView2.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar boton "Probar" en Excel | Listo para probar |
+| **ALTA** | Commit todos los cambios de audiobook | Pendiente |
+| MEDIA | Probar flujo completo PDF -> MD -> M4B | Pendiente |
+| BAJA | Agregar indicador visual durante carga de audio | Opcional |
+
+## Notas para proxima sesion
+
+1. El servidor de audiobook debe estar corriendo para que el preview funcione
+2. Edge TTS requiere conexion a internet
+3. Para voces offline (Microsoft Sabina/Raul), se usa Windows SAPI
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche, cierre) — Confirmacion de funcionalidad
+
+## Confirmacion del usuario
+
+El usuario confirmo que el preview de voz funciona correctamente en Excel.
+
+## Resumen de features implementadas hoy (Tab Audiobook)
+
+| Feature | Estado |
+|---------|--------|
+| Pipeline de 2 pasos (PDF→MD→M4B) | ✅ Implementado |
+| Consistencia visual (colores dorados) | ✅ Corregido |
+| Boton "Iniciar Servidor" funcional | ✅ Implementado |
+| Preview de voz (boton "Probar") | ✅ Funcionando |
+
+## Archivos modificados (pendientes de commit)
+
+| Archivo | Cambio principal |
+|---------|------------------|
+| `src/TaskPane/taskpane.html` | Pipeline 2 pasos + boton preview + estilos |
+| `src/TaskPane/audiobook.js` | Logica v2.0 + previewVoice() |
+| `src/startup/neven_http_server.py` | Endpoint /api/audiobook/start |
+| `src/Audiobook/api/routes.py` | Endpoint POST /api/preview-voice |
+
+## Commits realizados
+
+Ninguno esta sesion — todos los cambios estan pendientes de commit.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Commit de todos los cambios de audiobook | Pendiente |
+| **ALTA** | Probar flujo completo PDF -> MD -> M4B | Pendiente |
+| MEDIA | Fase 3: QR Scanner Android | Proximo |
+| BAJA | Push de commits pendientes | Pendiente |
+
+
+
+---
