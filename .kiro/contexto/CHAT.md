@@ -2997,3 +2997,70 @@ Ninguno — Paper en .gitignore.
 | **ALTA** | Subir ZIP a arXiv (CC BY) | LISTO |
 | **ALTA** | Push commits: `git push origin master` | Pendiente |
 | **ALTA** | Ejecutar Colibri START-HERE.bat | Usuario pendiente |
+
+
+---
+### Sesion 2026-11-05 (~noche) — Commit/push y analisis de estructura de carpetas
+
+## Logros
+
+### 1. Commit y push exitoso
+- Commit `4c80792`: docs(bitacora): actualizar CHAT.md con sesiones de formato paper arXiv
+- Push completado: `93e4153..4c80792 master -> master`
+
+### 2. Analisis de estructura del repositorio
+Se identificaron multiples problemas de organizacion:
+
+**Carpetas redundantes/vacias:**
+| Carpeta | Problema |
+|---------|----------|
+| `NEVEN/NEVEN/Build/Common` | Anidada y vacia |
+| `build/` (raiz) | Duplicado de `src/Build/` (110 MB) |
+| `ext/` | Vacia |
+| `Install/` (raiz) | Confusa — contiene prompts/skills pero instalador esta en `src/Install/` |
+
+**Carpetas dispersas:**
+| Carpeta | Contenido |
+|---------|-----------|
+| `prompts/` (raiz) | 1 archivo suelto |
+| `scripts/` (raiz) | 14 scripts de ontologia sin trackear |
+| `tools/` (raiz) | Skills de research-agent |
+| `tests/` (raiz) | 2 archivos (tests principales en `src/tests/`) |
+
+**Tamanos detectados:**
+- `src/` — 507 MB (codigo fuente principal)
+- `ontologia-fuentes/` — 608 MB (PDFs fuente)
+- `external/anyplot` — 104 MB (dependencia externa)
+- `build/` — 110 MB (artefactos CMake duplicados)
+
+## Propuesta de reorganizacion (pendiente aprobacion)
+
+| Accion | Carpeta | Razon |
+|--------|---------|-------|
+| ELIMINAR | `NEVEN/` | Vacia |
+| ELIMINAR | `build/` (raiz) | Duplicado de src/Build |
+| ELIMINAR | `ext/` | Vacia |
+| MOVER | `Install/skills/` → `.agents/skills/` | Consolidar |
+| MOVER | `Install/prompts/` → `src/Install/prompts/` | Consolidar |
+| MOVER | `scripts/*.py` → `src/scripts/` | Consolidar |
+| MOVER | `tools/` → `.agents/` | Consolidar |
+| MOVER | `tests/` (raiz) → `src/tests/` | Consolidar |
+
+## Archivos modificados
+Ninguno — solo analisis.
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `4c80792` | docs(bitacora): actualizar CHAT.md con sesiones de formato paper arXiv |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Subir ZIP a arXiv (CC BY) | LISTO |
+| **ALTA** | Ejecutar reorganizacion de carpetas (con aprobacion) | Esperando decision |
+| **ALTA** | Ejecutar Colibri START-HERE.bat | Usuario pendiente |
+| MEDIA | Revisar si `external/anyplot` se usa | Pendiente |
+| MEDIA | Decidir cual ontologia es oficial: `docs/` vs `src/docs/` | Pendiente |

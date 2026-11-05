@@ -1,0 +1,251 @@
+﻿Versi├│n de MSBuild 17.14.60+43b635718 para .NET Framework
+
+  NEVEN_Core_Objects.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\Core\NEVEN_Core_Objects.dir\Release\NEVEN_Core_Objects.lib
+  libprotobuf.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\_deps\protobuf-build\Release\libprotobuf.lib
+  PB.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\PB\Release\PB.lib
+  ControlJulia.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\ControlJulia\Release\ControlJulia.exe
+  ControlPython.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\ControlPython\Release\ControlPython.exe
+  ControlR.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\ControlR\Release\ControlR.exe
+  module_functions.cc
+  windows_api_functions.cc
+  ConfigService.cc
+  WindowManager.cc
+  debug_functions.cc
+  LogService.cc
+  DiscoveryService.cc
+  EnvService.cc
+  QuartoService.cc
+  child_process_log.cc
+  json11.cpp
+  InputSanitizer.cc
+  SandboxVerifier.cc
+  SecurityService.cc
+  MessageValidator.cc
+  SafePipeHandle.cc
+  pipe.cc
+  message_utilities.cc
+  REPLBridge.cc
+  ViewerManager.cc
+  Generando c├│digo...
+  Compilando...
+  ViewerWindow.cc
+  PlutoManager.cc
+  ContentPipeline.cc
+  PostMessageBridge.cc
+  NotebookLibrary.cc
+  NotebookExporter.cc
+  PresentationBuilder.cc
+  MenuService.cc
+  CrashHandler.cc
+  REPLManager.cc
+  REPLLanguageAccessor.cc
+  DiagnosticRouter.cc
+  NevenStartupConfig.cc
+  NevenStatusBarReporter.cc
+  NevenWatchdogTimer.cc
+  NevenProgressiveRegistrar.cc
+  NevenProgressiveRegisterExport.cc
+  NevenBackgroundConnector.cc
+  NevenInitOrchestrator.cc
+  Generando c├│digo...
+  Common.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\Common\Release\Common.lib
+     Creando biblioteca F:/ANTIGRAVITY/2026/NEVEN/src/Build/Core/Release/NEVEN64.lib y objeto F:/ANTIGRAVITY/2026/NEVEN/src/Build/Core/Release/NEVEN64.exp
+  NEVEN_Core.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\Core\Release\NEVEN64.dll
+  Packaging: NEVEN64.xll -> Dist/NEVEN64.xll
+  Packaging: ControlR.exe -^> Dist/	Packaging: ControlJulia.exe -^> Dist/	Packaging: ControlPython.exe -^> Dist/	Packaging: copying config templates to Dist/	Packaging: copying startup scripts to Dist/startup/	Packaging: CreadorPresentaciones -^> Dist/taskpane/presentaciones/
+  NEVENRibbon.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\Ribbon\Release\NEVENRibbon.dll
+  Packaging: NEVENRibbon.dll ÔåÆ Dist/
+  gtest-all.cc
+  gmock-all.cc
+  Generando c├│digo...
+  gmock.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\lib\Release\gmock.lib
+  gtest-all.cc
+  gmock-all.cc
+  gmock_main.cc
+  Generando c├│digo...
+  gmock_main.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\lib\Release\gmock_main.lib
+  gtest-all.cc
+  gtest.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\lib\Release\gtest.lib
+  gtest_main.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\lib\Release\gtest_main.lib
+  any_lite.cc
+  arena.cc
+  arenastring.cc
+  arenaz_sampler.cc
+  extension_set.cc
+  generated_enum_util.cc
+  generated_message_tctable_lite.cc
+  generated_message_util.cc
+  implicit_weak_message.cc
+  inlined_string_field.cc
+  coded_stream.cc
+  io_win32.cc
+  strtod.cc
+  zero_copy_stream.cc
+  zero_copy_stream_impl.cc
+  zero_copy_stream_impl_lite.cc
+  map.cc
+  message_lite.cc
+  parse_context.cc
+  repeated_field.cc
+  repeated_ptr_field.cc
+  bytestream.cc
+  common.cc
+  int128.cc
+  status.cc
+  statusor.cc
+  stringpiece.cc
+  stringprintf.cc
+  structurally_valid.cc
+  strutil.cc
+  time.cc
+  wire_format_lite.cc
+  libprotobuf-lite.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\_deps\protobuf-build\Release\libprotobuf-lite.lib
+  code_generator.cc
+  command_line_interface.cc
+  padding_optimizer.cc
+  parse_function_generator.cc
+  csharp_doc_comment.cc
+  csharp_enum.cc
+  csharp_enum_field.cc
+  csharp_field_base.cc
+  csharp_generator.cc
+  csharp_helpers.cc
+  csharp_map_field.cc
+  csharp_message.cc
+  csharp_message_field.cc
+  csharp_primitive_field.cc
+  csharp_reflection_class.cc
+  csharp_repeated_enum_field.cc
+  csharp_repeated_message_field.cc
+  csharp_repeated_primitive_field.cc
+  csharp_source_generator_base.cc
+  csharp_wrapper_field.cc
+  context.cc
+  doc_comment.cc
+  enum_field_lite.cc
+  enum_lite.cc
+  extension_lite.cc
+  generator_factory.cc
+  kotlin_generator.cc
+  map_field_lite.cc
+  message_builder.cc
+  message_builder_lite.cc
+  message_field_lite.cc
+  message_lite.cc
+F:\ANTIGRAVITY\2026\NEVEN\src\Build\_deps\protobuf-src\src\google\protobuf\compiler\java\context.cc(1,1): error C1083: No se puede abrir el archivo generado por el compilador: 'F:\ANTIGRAVITY\2026\NEVEN\src\Build\_deps\protobuf-build\libprotoc.dir\Release\context.obj': Permission denied [F:\ANTIGRAVITY\2026\NEVEN\src\Build\_deps\protobuf-build\libprotoc.vcxproj]
+  name_resolver.cc
+cl : l├¡nea de comandos  error D8040: error al crear o comunicar con proceso secundario [F:\ANTIGRAVITY\2026\NEVEN\src\Build\_deps\protobuf-build\libprotoc.vcxproj]
+  Building Custom Rule F:/ANTIGRAVITY/2026/NEVEN/src/tests/CMakeLists.txt
+  mock_engine_backend.cc
+  mock_engine_backend.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\tests\Release\mock_engine_backend.exe
+  Building Custom Rule F:/ANTIGRAVITY/2026/NEVEN/src/Build/_deps/rapidcheck-src/CMakeLists.txt
+  BeforeMinimalTestCase.cpp
+  Check.cpp
+  Classify.cpp
+  GenerationFailure.cpp
+  Log.cpp
+  Random.cpp
+  Show.cpp
+  Any.cpp
+  Assertions.cpp
+  Base64.cpp
+  Configuration.cpp
+  DefaultTestListener.cpp
+  FrequencyMap.cpp
+  ImplicitParam.cpp
+  LogTestListener.cpp
+  MapParser.cpp
+  MulticastTestListener.cpp
+  ParseException.cpp
+  Platform.cpp
+  Property.cpp
+  Generando c├│digo...
+  Compilando...
+  PropertyContext.cpp
+  ReproduceListener.cpp
+  Results.cpp
+  Serialization.cpp
+  StringSerialization.cpp
+  TestMetadata.cpp
+  TestParams.cpp
+  Testing.cpp
+  Numeric.cpp
+  Text.cpp
+  ExecHandler.cpp
+  GenerationHandler.cpp
+  Recipe.cpp
+  ScaleInteger.cpp
+  Generando c├│digo...
+  rapidcheck.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\_deps\rapidcheck-build\Release\rapidcheck.lib
+  Building Custom Rule F:/ANTIGRAVITY/2026/NEVEN/src/tests/CMakeLists.txt
+  common_tests.cc
+  raii_xloper_tests.cc
+  callback_dispatcher_tests.cc
+  discovery_tests.cc
+  security_tests.cc
+  sandbox_tests.cc
+  python_sandbox_pbt.cc
+  config_service_tests.cc
+  type_conversion_tests.cc
+  callback_behavior_tests.cc
+  basic_functions_tests.cc
+  com_object_map_tests.cc
+  language_service_tests.cc
+  integration_tests.cc
+  reliability_tests.cc
+  reliability_pbt.cc
+  webview2_pbt.cc
+  e2e_tests.cc
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(4813,18): warning C4244: '=': conversi├│n de 'wchar_t' a 'char'; posible p├®rdida de datos [F:\ANTIGRAVITY\2026\NEVEN\src\Build\tests\rj2xcl_tests.vcxproj]
+  (compilando archivo de origen "../../tests/e2e_tests.cc")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(4813,18):
+      el contexto de creaci├│n de instancias de la plantilla (el m├ís antiguo primero) es
+          F:\ANTIGRAVITY\2026\NEVEN\src\tests\e2e_tests.cc(58,66):
+          Vea la referencia a la creaci├│n de una instancia de la funci├│n plantilla "std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,0>(_Iter,_Iter,const _Alloc &)" que se est├í compilando
+          with
+          [
+              _Elem=wchar_t,
+              _Iter=std::_String_iterator<std::_String_val<std::_Simple_types<wchar_t>>>,
+              _Alloc=std::allocator<char>
+          ]
+              F:\ANTIGRAVITY\2026\NEVEN\src\tests\e2e_tests.cc(57,9):
+              vea la primera referencia a ÔÇ£std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_stringÔÇØ en ÔÇ£rj2xcl::E2ETest_FuncTemplatesUseNevenPrefix_Test::TestBodyÔÇØ
+          C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xstring(812,17):
+          Vea la referencia a la creaci├│n de una instancia de la funci├│n plantilla "void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct_from_iter<wchar_t*,wchar_t*,_Size_type>(_Iter,const _Sent,_Size)" que se est├í compilando
+          with
+          [
+              _Size_type=unsigned __int64,
+              _Iter=wchar_t *,
+              _Sent=wchar_t *,
+              _Size=unsigned __int64
+          ]
+          C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xstring(968,18):
+          Vea la referencia a la creaci├│n de una instancia de la funci├│n plantilla "_OutIt *std::_Copy_n_unchecked4<wchar_t*,_Size,char*>(_InIt,_SizeTy,_OutIt)" que se est├í compilando
+          with
+          [
+              _OutIt=char *,
+              _Size=unsigned __int64,
+              _InIt=wchar_t *,
+              _SizeTy=unsigned __int64
+          ]
+  
+  new_functions_tests.cc
+  viewer_professional_tests.cc
+  Generando c├│digo...
+  Compilando...
+  build_verification_tests.cc
+  repo_hygiene_tests.cc
+  input_sanitizer_pbt.cc
+  input_sanitizer_tests.cc
+  sandbox_path_pbt.cc
+  sandbox_blocklist_pbt.cc
+  protobuf_ipc_pbt.cc
+  pipe_lifecycle_tests.cc
+  r_library_tests.cc
+  env_lookup_pbt.cc
+  python_reactivation_exploration_pbt.cc
+  python_reactivation_preservation_pbt.cc
+  Generando c├│digo...
+     Creando biblioteca F:/ANTIGRAVITY/2026/NEVEN/src/Build/tests/Release/rj2xcl_tests.lib y objeto F:/ANTIGRAVITY/2026/NEVEN/src/Build/tests/Release/rj2xcl_tests.exp
+  rj2xcl_tests.vcxproj -> F:\ANTIGRAVITY\2026\NEVEN\src\Build\tests\Release\rj2xcl_tests.exe
+
