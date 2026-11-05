@@ -74,6 +74,37 @@ api/routes.py → pipeline.py → TTS engines
 | ALTA | Integrar NEVEN Launcher (android/) | Pendiente |
 | MEDIA | Documentar flujo QR → Descarga → NEVEN Launcher | Pendiente |
 
+## Commits realizados
+- `2acf811` — feat(audiobook): completar Fase 2 - TAB Audiobook en TaskPane
+
+## Correcciones técnicas importantes
+
+### Bug del modal QR (CSS)
+- **Síntoma:** Modal QR siempre visible
+- **Causa raíz:** El HTML tenía `style="display:none;...;display:flex"` — el segundo valor sobrescribía el primero
+- **Fix:** Eliminar el `display:flex` duplicado; el JS lo agrega al mostrar el modal
+
+### Endpoint de polling incorrecto
+- **Síntoma:** audiobook.js no obtenía el estado del job
+- **Causa raíz:** El código usaba `/api/status/<id>` pero el API usa `/api/job/<id>`
+- **Fix:** Corregido el endpoint en `startProgressPolling()`
+
+### Campo de respuesta del API
+- **Síntoma:** El resultado no mostraba la URL de descarga
+- **Causa raíz:** El API devuelve `output_path` (ruta local) no `download_url`
+- **Fix:** Construir `download_url` a partir de `output_path` en `showResult()`
+
+## Decisiones de diseño
+
+1. **Puerto separado 5556** — Mantener el servidor de audiobook separado del servidor principal (5555) para:
+   - Independencia de ciclo de vida
+   - Facilidad de debugging
+   - Posible ejecución standalone
+
+2. **CORS habilitado** — flask-cors necesario porque el TaskPane corre en contexto de Office.js con origen diferente
+
+3. **Página /download optimizada para móvil** — Diseñada para escaneo QR → descarga inmediata sin navegación
+
 ---
 ### Sesion 2026-08-20 (~mañana) — Análisis de componentes para instalador usuario final
 
