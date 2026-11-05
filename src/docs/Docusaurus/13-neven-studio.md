@@ -591,6 +591,121 @@ Los toggles R/Julia/Python se movieron del Ribbon al TaskPane para simplificar l
 
 ---
 
+## 13.16 Tab Audiolibros — Conversión de Documentos a Audio
+
+**Disponible desde:** Agosto 2026
+
+El Tab Audiolibros permite convertir documentos PDF en audiolibros M4B de alta calidad utilizando Edge TTS. El proceso es de dos pasos para permitir revisión y edición del contenido antes de la síntesis de voz.
+
+### Flujo de trabajo
+
+```
+Paso 1: PDF → Markdown
+  1. Cargar archivo PDF (arrastrar o clic en "Subir PDF")
+  2. Clic "1) Convertir a Markdown"
+  3. Revisar y editar el contenido en el editor de texto
+  4. (Opcional) Guardar el Markdown editado
+
+Paso 2: Markdown → M4B
+  1. Seleccionar voz (40+ voces en 8 regiones)
+  2. Ajustar velocidad de lectura (0.5x - 2.0x)
+  3. Probar la voz con texto personalizado (botón "Probar")
+  4. Clic "2) Generar Audiolibro (M4B)"
+  5. Esperar procesamiento (muestra progreso por capítulo)
+  6. Descargar el archivo M4B resultante
+```
+
+### Por qué dos pasos
+
+El pipeline de dos pasos tiene beneficios importantes:
+
+| Beneficio | Descripción |
+|:---|:---|
+| **Control de calidad** | El usuario revisa el Markdown antes de sintetizar |
+| **Corrección de errores OCR** | PDFs escaneados pueden tener errores que se corrigen en el Markdown |
+| **Edición de contenido** | Se pueden eliminar índices, notas al pie, o secciones no deseadas |
+| **Reutilización** | El Markdown se puede guardar y regenerar el audio con diferentes voces |
+
+### Voces disponibles
+
+El selector incluye 40+ voces organizadas por región con banderas emoji:
+
+| Región | Voces | Notas |
+|:---|:---|:---|
+| 🇺🇸 USA | 12 voces | Jenny, Guy, Aria, Eric, etc. |
+| 🇬🇧 UK | 4 voces | Sonia, Ryan, Libby, Mia |
+| 🇦🇺 Australia | 4 voces | Natasha, William, Freya, Kim |
+| 🇮🇪 Irlanda | 2 voces | Emily, Connor |
+| 🇮🇳 India | 3 voces | Neerja, Prabhat, Aarav |
+| 🇪🇸 España | 4 voces | Elvira, Álvaro, etc. |
+| 🇲🇽 México | 2 voces | Dalia, Jorge |
+| 🇨🇴 Colombia | 2 voces | Salomé, Gonzalo |
+| 🇦🇷 Argentina | 2 voces | Elena, Tomas |
+| 🇨🇱 Chile | 2 voces | Catalina, Lorenzo |
+| 🇨🇷 Costa Rica | 2 voces | María, Juan |
+| 🇵🇪 Perú | 2 voces | Camila, Alex |
+| 🇻🇪 Venezuela | 2 voces | Paola, Sebastián |
+
+### Preview de voz
+
+El botón "Probar" permite escuchar una muestra de 5 segundos de la voz seleccionada:
+
+```
+1. Seleccionar voz del dropdown
+2. (Opcional) Escribir texto personalizado en el campo
+3. Clic "Probar"
+4. Se reproduce un audio de muestra en el navegador
+```
+
+### Servidor de Audiolibros
+
+El módulo de audiolibros usa un servidor Python separado en el puerto 5556.
+
+**Iniciar el servidor:**
+```
+Opción 1: Botón "Iniciar Servidor" en el Tab Audiolibros
+Opción 2: Manualmente: python C:\NEVEN\Audiobook\server.py
+```
+
+**Verificar estado:**
+El indicador junto a "Iniciar Servidor" muestra:
+- 🟢 Verde: Servidor activo
+- 🔴 Rojo: Servidor detenido
+
+### Requisitos técnicos
+
+| Componente | Requisito |
+|:---|:---|
+| Python | 3.10+ con pip |
+| Dependencias | edge-tts, pydub, flask, flask-cors |
+| FFmpeg | Requerido por pydub para generar M4B |
+| Puerto | 5556 (configurable) |
+
+### Archivos generados
+
+| Archivo | Ubicación | Descripción |
+|:---|:---|:---|
+| `*.md` | Mismo directorio del PDF | Markdown extraído |
+| `*.m4b` | Mismo directorio del PDF | Audiolibro final |
+| Chunks temporales | `%TEMP%\audiobook\` | Se eliminan automáticamente |
+
+### Troubleshooting
+
+**El servidor no inicia:**
+- Verificar que Python esté instalado
+- Instalar dependencias: `pip install edge-tts pydub flask flask-cors`
+- Verificar que el puerto 5556 no esté en uso
+
+**El preview de voz no funciona:**
+- Verificar conexión a internet (Edge TTS requiere conexión)
+- Verificar que el navegador permita reproducción de audio
+
+**El M4B no se genera:**
+- Verificar que FFmpeg esté instalado y en el PATH
+- Verificar espacio en disco suficiente
+
+---
+
 *Documentación actualizada: Agosto 2026*
 
 *NEVEN Studio Standalone — Julio 2026*

@@ -1186,5 +1186,131 @@ La integración de MarkItDown demuestra:
 
 ---
 
+## ACTUALIZACIÓN — 19 de agosto de 2026 (NEVEN v2.8)
+
+### 2.22 Tab Audiolibros — Pipeline PDF→Markdown→M4B con Edge TTS
+
+Se implementó un módulo completo para convertir documentos PDF en audiolibros M4B de alta calidad usando Edge TTS (síntesis de voz de Microsoft Edge).
+
+**Arquitectura del sistema:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Tab Audiolibros (UI)                         │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────────┐ │
+│  │  Subir PDF      │ │ Selector Voz    │ │  Controles          │ │
+│  │  [archivo.pdf]  │ │ 40+ voces       │ │  [Probar] [Generar] │ │
+│  │                 │ │ 8 regiones      │ │  velocidad: 1.0x    │ │
+│  └────────┬────────┘ └────────┬────────┘ └──────────┬──────────┘ │
+└───────────┼───────────────────┼─────────────────────┼────────────┘
+            │                   │                     │
+            ▼                   ▼                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Servidor Audiobook                          │
+│                   (Puerto 5556 - Flask)                          │
+│                                                                  │
+│  POST /api/pdf-to-markdown    →  MarkItDown extraction          │
+│  POST /api/markdown-to-m4b    →  Edge TTS + pydub → M4B         │
+│  POST /api/preview-voice      →  Edge TTS (5 segundos)          │
+│  GET  /api/voices             →  Lista de voces disponibles     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Decisión arquitectónica — Pipeline de 2 pasos:**
+
+| Alternativa | Descripción | Desventaja |
+|:---|:---|:---|
+| PDF → M4B directo | Un solo paso automático | Sin control de calidad; errores OCR se propagan |
+| **PDF → MD → M4B** | Dos pasos con revisión humana | El usuario puede editar el Markdown antes de sintetizar |
+
+El pipeline de 2 pasos fue elegido deliberadamente porque:
+
+1. **Corrección de errores OCR**: PDFs escaneados tienen errores que se pueden corregir en Markdown
+2. **Edición de contenido**: El usuario puede eliminar índices, notas al pie, secciones irrelevantes
+3. **Reutilización**: El Markdown se puede guardar y regenerar el audio con diferentes voces/velocidades
+
+**Voces disponibles (40+):**
+
+El módulo incluye voces organizadas por región con banderas emoji para fácil identificación:
+
+| Región | Voces | Idioma |
+|:---|:---|:---|
+| 🇺🇸 USA | Jenny, Guy, Aria, Davis, Eric, Jason, Michelle, Monica, Nancy, Sara, Steffan, Tony | en-US |
+| 🇬🇧 UK | Sonia, Ryan, Libby, Mia | en-GB |
+| 🇦🇺 Australia | Natasha, William, Freya, Kim | en-AU |
+| 🇮🇪 Irlanda | Emily, Connor | en-IE |
+| 🇮🇳 India | Neerja, Prabhat, Aarav | en-IN |
+| 🇪🇸 España | Elvira, Álvaro, Abril, Arnau | es-ES |
+| 🇲🇽 México | Dalia, Jorge | es-MX |
+| 🇨🇴 Colombia | Salomé, Gonzalo | es-CO |
+| 🇦🇷 Argentina | Elena, Tomas | es-AR |
+| 🇨🇱 Chile | Catalina, Lorenzo | es-CL |
+| 🇨🇷 Costa Rica | María, Juan | es-CR |
+| 🇵🇪 Perú | Camila, Alex | es-PE |
+| 🇻🇪 Venezuela | Paola, Sebastián | es-VE |
+
+**Feature: Preview de voz:**
+
+El botón "Probar" permite escuchar una muestra de 5 segundos de la voz seleccionada antes de generar el audiolibro completo. Esto ahorra tiempo al usuario (no genera 200MB para descubrir que no le gusta la voz).
+
+Implementación:
+- POST `/api/preview-voice` con texto personalizable y velocidad
+- Retorna audio blob que se reproduce en el navegador
+- No almacena archivos (todo en memoria)
+
+**Servidor separado en puerto 5556:**
+
+El módulo usa un servidor Flask independiente porque:
+
+1. **Aislamiento**: Un error en la síntesis TTS no afecta al servidor principal (5555)
+2. **Recursos**: La generación de audio es CPU-intensiva; proceso separado
+3. **Mantenimiento**: Se puede actualizar el módulo de audiolibros sin reiniciar NEVEN completo
+
+El botón "Iniciar Servidor" en la UI envía POST `/api/audiobook/start` al servidor principal (5555), que lanza `Audiobook/server.py` como subproceso.
+
+**Contribución técnica:**
+
+- **Nuevo caso de uso**: Ningún add-in de Excel o plataforma similar ofrece generación de audiolibros
+- **Integración con ecosistema**: Reutiliza MarkItDown (ya integrado para RAG) como extractor de PDF
+- **Cobertura latinoamericana**: 7 países hispanohablantes con voces nativas (no solo español genérico)
+
+**Relevancia académica:**
+
+El módulo demuestra la extensibilidad de la arquitectura de NEVEN:
+
+1. **Microservicio**: El servidor de audiolibros es independiente, con su propia API REST
+2. **Reutilización**: MarkItDown se usa tanto para RAG como para audiolibros
+3. **UI progresiva**: El feedback de progreso por capítulo mejora UX en operaciones largas
+
+### Actualización de tabla comparativa con BERT
+
+| Capacidad | BERT (2017-2018) | NEVEN (Ago 2026) | Innovación |
+|:---|:---|:---|:---|
+| *(anteriores)* | — | — | — |
+| Generación de audiolibros | No | PDF → MD → M4B con 40+ voces | **Innovación** |
+| Preview de voz | No | Edge TTS en tiempo real | **Innovación** |
+| Soporte multilenguaje TTS | No | EN (5 regiones) + ES (7 países) | **Innovación** |
+
+**Resumen actualizado:** De 24 capacidades comparadas, 22 son innovaciones sobre BERT.
+
+### Actualización de hitos
+
+| Fase | Estado | Descripción |
+|:---|:---|:---|
+| *(todos los anteriores)* | ✅ | Ver versiones anteriores |
+| **Tab Audiolibros (UI)** | ✅ | Pipeline 2 pasos, selector de voces, preview |
+| **Servidor Audiobook** | ✅ | Flask en puerto 5556, independiente del principal |
+| **40+ voces Edge TTS** | ✅ | USA, UK, AU, IE, IN + 7 países hispanohablantes |
+| **Preview de voz** | ✅ | 5 segundos de muestra antes de generar |
+| Estudio de usuarios | ⏳ Pendiente | Recomendado para la defensa |
+| Benchmarks | ⏳ Pendiente | Datos cuantitativos de rendimiento |
+
+---
+
+*Actualización: 19 de agosto de 2026*
+*NEVEN v2.8 — Tab Audiolibros*
+
+---
+
 *Actualización: 20 de agosto de 2026*
 *NEVEN v2.6 — RAG con Ontología como Metaheurística*

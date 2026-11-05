@@ -3075,3 +3075,191 @@ Ninguno esta sesion — todos los cambios estan pendientes de commit.
 
 
 ---
+
+### Sesion 2026-08-19 (~noche, commit) — Commit de cambios audiobook
+
+## Commit realizado
+
+```
+f444dc7 feat(audiobook): Pipeline 2 pasos + preview de voz + iniciar servidor
+```
+
+**Archivos incluidos en el commit:**
+- `src/TaskPane/taskpane.html` — UI del pipeline de 2 pasos
+- `src/TaskPane/audiobook.js` — Logica v2.0 + preview de voz
+- `src/startup/neven_http_server.py` — Endpoint /api/audiobook/start
+- `src/Audiobook/api/routes.py` — Endpoint /api/preview-voice
+- `.kiro/contexto/CHAT.md` — Bitacora actualizada
+- `.kiro/contexto/CHAT_LARGO.md` — Historial archivado
+
+**Estadisticas:** 6 files changed, 16657 insertions(+), 15373 deletions(-)
+
+## Estado del repositorio
+
+```
+f444dc7 (HEAD -> master) feat(audiobook): Pipeline 2 pasos + preview de voz + iniciar servidor
+1b01f40 (origin/master) docs: actualizar CHAT.md con detalles tecnicos de Fase 2 audiobook
+2acf811 feat(audiobook): completar Fase 2 - TAB Audiobook en TaskPane
+```
+
+**Push completado:** Commit sincronizado con origin/master.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| MEDIA | Probar flujo completo PDF -> MD -> M4B | Pendiente |
+| MEDIA | Fase 3: QR Scanner Android | Proximo |
+
+
+
+---
+
+### Sesion 2026-08-19 (~noche) — Expansion de voces en Tab Audiobook
+
+## Trabajo realizado
+
+### 1. Expansion del selector de voces
+
+El selector de voces ahora incluye muchas mas opciones organizadas por region:
+
+**Español - Latinoamérica (19 voces):**
+| Pais | Voces |
+|------|-------|
+| 🇲🇽 Mexico | Dalia (F), Jorge (M) |
+| 🇦🇷 Argentina | Elena (F), Tomas (M) |
+| 🇨🇱 Chile | Catalina (F), Lorenzo (M) |
+| 🇨🇷 Costa Rica | Maria (F), Juan (M) |
+| 🇨🇴 Colombia | Salome (F), Gonzalo (M) |
+| 🇵🇪 Peru | Camila (F), Alex (M) |
+| 🇻🇪 Venezuela | Paola (F), Sebastian (M) |
+| 🇪🇨 Ecuador | Andrea (F) |
+| 🇨🇺 Cuba | Belkys (F) |
+| 🇵🇷 Puerto Rico | Karina (F) |
+| 🇺🇸 US Latino | Paloma (F), Alonso (M) |
+
+**Español - España (3 voces):**
+- Elvira (F), Alvaro (M), Ximena (F)
+
+**Ingles - Estados Unidos (10 voces):**
+- Jenny, Aria, Emma, Michelle, Ava (F)
+- Guy, Eric, Brian, Christopher, Andrew (M)
+
+**Ingles - Reino Unido (4 voces):**
+- Sonia, Libby (F), Ryan, Thomas (M)
+
+**Ingles - Otros (6 voces):**
+- Australia, Canada, Irlanda, India
+
+**Offline (2 voces):**
+- Microsoft Sabina, Microsoft Raul (Windows SAPI)
+
+### 2. Organizacion por optgroup
+
+Las voces estan organizadas en grupos logicos:
+1. Español - Latinoamerica
+2. Español - España
+3. Ingles - Estados Unidos
+4. Ingles - Reino Unido
+5. Ingles - Otros
+6. Windows SAPI (Offline)
+
+### 3. Banderas emoji
+
+Cada voz incluye la bandera del pais para identificacion visual rapida.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\TaskPane\taskpane.html` | Selector de voces expandido |
+| `F:\...\src\TaskPane\taskpane.html` | Sincronizado |
+
+## Commits realizados
+
+Ninguno — pendiente de agrupar con otros cambios.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| MEDIA | Commit de expansion de voces | Pendiente |
+| MEDIA | Fase 3: QR Scanner Android | Proximo |
+| BAJA | Agregar voces en portugues (Brasil) | Opcional |
+
+
+
+---
+
+
+---
+
+### Sesion 2026-08-19 (~noche) — Documentación del Módulo Audiolibros
+
+## Contexto
+
+Continuación de la sesión donde se completó el módulo de Audiolibros (Tab Audiolibros en NEVEN Studio). El commit f444dc7 ya fue pusheado con:
+- Pipeline 2 pasos: PDF → Markdown → M4B
+- 40+ voces Edge TTS organizadas por región
+- Preview de voz de 5 segundos
+- Servidor Flask separado en puerto 5556
+- Botón "Iniciar Servidor" desde el Tab
+
+## Trabajo realizado
+
+### 1. Actualización de documentación Docusaurus
+
+Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\docs\Docusaurus\13-neven-studio.md`
+
+Agregada sección **13.16 Tab Audiolibros — Conversión de Documentos a Audio** con:
+- Flujo de trabajo completo (2 pasos)
+- Tabla de voces disponibles por región (40+)
+- Instrucciones para preview de voz
+- Requisitos técnicos (Python, FFmpeg, dependencias)
+- Troubleshooting
+
+### 2. Actualización de Evaluacion_comercial.md
+
+Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\docs\Evaluaciones\Evaluacion_comercial.md`
+
+Agregada fortaleza comercial **#17 Tab Audiolibros — Conversión de Documentos a Audio M4B**:
+- Relevancia comercial: caso de uso nuevo, ningún competidor lo ofrece
+- Cobertura latinoamericana completa (7 países hispanohablantes)
+- Pipeline de 2 pasos permite corrección de errores OCR
+
+### 3. Actualización de Evaluacion_doctoral.md
+
+Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\docs\Evaluaciones\Evaluacion_doctoral.md`
+
+Agregada contribución técnica **2.22 Tab Audiolibros — Pipeline PDF→Markdown→M4B con Edge TTS**:
+- Diagrama de arquitectura
+- Decisión de pipeline 2 pasos vs 1 paso
+- Tabla de 40+ voces con regiones
+- Feature de preview de voz
+- Justificación de servidor separado (puerto 5556)
+- Actualización de tabla comparativa con BERT (22 de 24 innovaciones)
+- Actualización de hitos
+
+## Archivos modificados
+
+| Archivo | Ubicación producción | Ubicación repo |
+|---------|---------------------|----------------|
+| 13-neven-studio.md | N/A | `src/docs/Docusaurus/` |
+| Evaluacion_comercial.md | N/A | `src/docs/Evaluaciones/` |
+| Evaluacion_doctoral.md | N/A | `src/docs/Evaluaciones/` |
+
+## Estado actual
+
+- ✅ Módulo Audiolibros completamente funcional
+- ✅ Documentación de usuario (Docusaurus) actualizada
+- ✅ Documentación comercial actualizada
+- ✅ Documentación doctoral actualizada
+- ⏳ Pendiente: commit de cambios de documentación
+
+## Próximos pasos
+
+1. Commit de los cambios de documentación
+2. Copiar archivos de producción al repo (si hay cambios pendientes)
+3. Verificar que la documentación Docusaurus se renderiza correctamente
+
+---
