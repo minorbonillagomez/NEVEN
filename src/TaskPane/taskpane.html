@@ -365,6 +365,7 @@
     <div class="tab" data-tab="econometria" data-i18n="tabs.econometria">Econometría</div>
     <div class="tab" data-tab="presentaciones" data-i18n="tabs.presentaciones">Presentaciones</div>
     <div class="tab" data-tab="run-script" data-i18n="tabs.runScript">Run Script</div>
+    <div class="tab" data-tab="audiobook" data-i18n="tabs.audiobook">🎧 Audiolibros</div>
     <!-- TODO: Retomar Tab Excel cuando se resuelva el problema de pipes single-instance
          El pipe de R de Excel solo permite una conexión, bloqueando al servidor HTTP.
          Opciones: (1) start_studio.py con pipes dedicados, (2) fallback Office.js
@@ -1140,6 +1141,141 @@
     </div>
 
   </div><!-- /tab ayuda -->
+
+  <!-- Tab: Audiobook / Audiolibros -->
+  <div class="tab-content" id="audiobook">
+    <div class="card">
+      <div class="card-title">🎧 Generador de Audiolibros</div>
+      <p style="font-size:10px;color:var(--text-secondary);margin-bottom:12px">
+        Convierte documentos PDF y EPUB a audiolibros M4B con capítulos navegables.
+      </p>
+      
+      <!-- Estado del servidor -->
+      <div id="audiobook-server-status" style="display:flex;align-items:center;gap:6px;margin-bottom:12px;padding:6px 10px;background:var(--bg-primary);border-radius:4px;border:1px solid var(--border)">
+        <span id="audiobook-server-dot" style="width:8px;height:8px;border-radius:50%;background:#888"></span>
+        <span id="audiobook-server-text" style="font-size:10px;color:var(--text-secondary)">Verificando servidor...</span>
+        <button id="btn-audiobook-start-server" class="btn btn-secondary" style="margin-left:auto;font-size:9px;padding:3px 8px;display:none">Iniciar servidor</button>
+      </div>
+
+      <!-- Selección de archivo -->
+      <div style="margin-bottom:12px">
+        <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Documento fuente</label>
+        <div class="controls">
+          <button class="btn btn-primary" id="btn-audiobook-select" style="background:#d7a538">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            Seleccionar PDF/EPUB
+          </button>
+          <input type="file" id="audiobook-file-picker" accept=".pdf,.epub" style="display:none">
+          <span id="audiobook-filename" style="font-size:10px;color:var(--text-secondary);margin-left:8px"></span>
+        </div>
+      </div>
+
+      <!-- Configuración de voz -->
+      <div style="margin-bottom:12px">
+        <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Voz</label>
+        <select id="audiobook-voice" style="width:100%;max-width:300px;background:var(--bg-primary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:6px 10px;font-size:11px">
+          <optgroup label="Edge TTS (Neural)">
+            <option value="es-MX-DaliaNeural" selected>🇲🇽 Dalia (México, femenina)</option>
+            <option value="es-MX-JorgeNeural">🇲🇽 Jorge (México, masculina)</option>
+            <option value="es-ES-ElviraNeural">🇪🇸 Elvira (España, femenina)</option>
+            <option value="es-ES-AlvaroNeural">🇪🇸 Álvaro (España, masculina)</option>
+            <option value="es-AR-ElenaNeural">🇦🇷 Elena (Argentina, femenina)</option>
+            <option value="es-CO-SalomeNeural">🇨🇴 Salomé (Colombia, femenina)</option>
+          </optgroup>
+          <optgroup label="Windows SAPI">
+            <option value="Microsoft Sabina">Sabina (ES-MX)</option>
+            <option value="Microsoft Raul">Raúl (ES-MX)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Velocidad -->
+      <div style="margin-bottom:12px">
+        <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Velocidad: <span id="audiobook-speed-value">0%</span></label>
+        <input type="range" id="audiobook-speed" min="-50" max="50" value="0" style="width:100%;max-width:300px">
+      </div>
+
+      <!-- Opciones avanzadas -->
+      <details style="margin-bottom:12px">
+        <summary style="font-size:10px;color:var(--text-secondary);cursor:pointer">Opciones avanzadas</summary>
+        <div style="padding:8px;background:var(--bg-primary);border-radius:4px;margin-top:4px">
+          <div style="margin-bottom:8px">
+            <label style="font-size:9px;color:var(--text-secondary)">
+              <input type="checkbox" id="audiobook-translate"> Traducir al español (si está en otro idioma)
+            </label>
+          </div>
+          <div style="margin-bottom:8px">
+            <label style="font-size:9px;color:var(--text-secondary)">
+              <input type="checkbox" id="audiobook-save-md" checked> Guardar archivo Markdown
+            </label>
+          </div>
+          <div>
+            <label style="font-size:9px;color:var(--text-secondary)">Páginas a excluir (ej: 1,2,5-10):</label>
+            <input type="text" id="audiobook-exclude-pages" placeholder="1,2" style="width:100%;max-width:200px;margin-top:2px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid #444;border-radius:4px;padding:4px 8px;font-size:10px">
+          </div>
+        </div>
+      </details>
+
+      <!-- Botón de conversión -->
+      <div class="controls">
+        <button class="btn btn-primary" id="btn-audiobook-convert" disabled style="background:#27ae60">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21"/></svg>
+          Convertir a Audiolibro
+        </button>
+        <button class="btn btn-secondary" id="btn-audiobook-cancel" style="display:none">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Progreso -->
+    <div class="card" id="audiobook-progress-card" style="display:none">
+      <div class="card-title">Progreso</div>
+      <div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-secondary);margin-bottom:4px">
+          <span id="audiobook-progress-stage">Iniciando...</span>
+          <span id="audiobook-progress-percent">0%</span>
+        </div>
+        <div style="background:var(--bg-primary);border-radius:4px;height:8px;overflow:hidden">
+          <div id="audiobook-progress-bar" style="background:#27ae60;height:100%;width:0%;transition:width 0.3s"></div>
+        </div>
+      </div>
+      <div id="audiobook-progress-detail" style="font-size:9px;color:var(--text-muted)"></div>
+    </div>
+
+    <!-- Resultado -->
+    <div class="card" id="audiobook-result-card" style="display:none">
+      <div class="card-title">✅ Audiolibro generado</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <img id="audiobook-cover" src="" alt="Portada" style="width:60px;height:80px;object-fit:cover;border-radius:4px;background:#333">
+        <div>
+          <div id="audiobook-result-title" style="font-size:12px;font-weight:600;color:var(--text-primary)"></div>
+          <div id="audiobook-result-author" style="font-size:10px;color:var(--text-secondary)"></div>
+          <div id="audiobook-result-chapters" style="font-size:9px;color:var(--text-muted);margin-top:4px"></div>
+          <div id="audiobook-result-duration" style="font-size:9px;color:var(--text-muted)"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-primary" id="btn-audiobook-download" style="background:#3498db">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar M4B
+        </button>
+        <button class="btn btn-secondary" id="btn-audiobook-qr" title="Transferir al móvil">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          QR para móvil
+        </button>
+        <button class="btn btn-secondary" id="btn-audiobook-new">Nuevo</button>
+      </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div id="audiobook-qr-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center">
+      <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;text-align:center;max-width:300px">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px">Escanea con NEVEN Launcher</div>
+        <div id="audiobook-qr-code" style="background:#fff;padding:16px;border-radius:4px;display:inline-block"></div>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:12px">El audiolibro se transferirá via WiFi</div>
+        <button onclick="document.getElementById('audiobook-qr-modal').style.display='none'" class="btn btn-secondary" style="margin-top:12px">Cerrar</button>
+      </div>
+    </div>
+  </div><!-- /tab audiobook -->
 
   <!-- Tab: Settings / Configuracion -->
   <div class="tab-content" id="settings">
@@ -6698,6 +6834,9 @@ window._renderCreateFunctionBlock = function(jsonStr) {
 
 <!-- Diccionario de Funciones - archivo separado para evitar cache -->
 <script src="ayuda.js?v=20260819202000"></script>
+
+<!-- Audiobook / Audiolibros - Generador de M4B -->
+<script src="audiobook.js?v=20260819"></script>
 
 <!-- =============================================================================
      Tab Excel Analysis - Handlers

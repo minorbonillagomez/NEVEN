@@ -2,7 +2,79 @@
 
 > **Proposito:** Registro de sesiones de trabajo recientes.
 > Para historial anterior, ver CHAT_LARGO.md en este mismo directorio.
-> **Ultima actualizacion:** 2026-10-22 (sesion actual)
+> **Ultima actualizacion:** 2026-08-19 (sesion actual)
+
+---
+### Sesion 2026-08-19 (~tarde) — Integración NEVEN Audiobook + TAB en TaskPane
+
+## Contexto
+Continuación de la Fase 2 de integración de NEVEN Suite. Se completó la funcionalidad del TAB Audiobook en NEVEN Studio TaskPane.
+
+## Trabajo realizado
+
+### 1. Creación de audiobook.js
+- Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\audiobook.js`
+- Funcionalidades:
+  - Verificación de estado del servidor (puerto 5556)
+  - Selección de archivos PDF/EPUB
+  - Conversión a audiolibros M4B
+  - Polling de progreso
+  - Descarga de resultados
+  - Generación de QR para transferencia móvil
+  - API pública: `window.NEVENAudiobook`
+
+### 2. Creación de neven_audiobook_server.py
+- Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\neven_audiobook_server.py`
+- Puerto: 5556 (separado del servidor principal 5555)
+- Endpoints implementados:
+  - `GET /api/health` - Estado del servidor
+  - `GET /api/system` - Info del sistema
+  - `GET /api/download/<filename>` - Descarga de M4B
+  - `GET /api/qr` - Generación de código QR
+  - `GET /download` - Página móvil para descarga
+- CORS habilitado para TaskPane
+- Registra blueprint de API existente (`api/routes.py`)
+
+### 3. Corrección del TAB HTML en taskpane.html
+- Corregido bug en modal QR (display:none duplicado → display:flex)
+- Agregado script `audiobook.js` después de `ayuda.js`
+
+### 4. Script de inicio batch
+- Archivo: `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\start_audiobook_server.bat`
+- Verifica Python e instala dependencias si faltan
+- Inicia servidor en puerto 5556
+
+## Archivos copiados a producción
+- `C:\NEVEN\Audiobook\` — Módulo completo (26 archivos Python)
+- `C:\NEVEN\TaskPane\audiobook.js` — Handler JavaScript
+- `C:\NEVEN\TaskPane\taskpane.html` — HTML actualizado
+
+## Arquitectura de comunicación
+```
+TaskPane (audiobook.js)
+    ↓ fetch()
+http://localhost:5556/api/...
+    ↓
+neven_audiobook_server.py (Flask + CORS)
+    ↓ blueprint
+api/routes.py → pipeline.py → TTS engines
+```
+
+## Pendientes Fase 2
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Probar TAB en Excel con servidor activo | Pendiente |
+| MEDIA | Verificar endpoint /api/generate funciona | Pendiente |
+| MEDIA | Probar generación de QR | Pendiente |
+
+## Pendientes Fase 3 (Sincronización Android)
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Implementar sync WiFi/Bluetooth | Pendiente |
+| ALTA | Integrar NEVEN Launcher (android/) | Pendiente |
+| MEDIA | Documentar flujo QR → Descarga → NEVEN Launcher | Pendiente |
+
+---
 ### Sesion 2026-08-20 (~mañana) — Análisis de componentes para instalador usuario final
 
 ## Contexto
@@ -3347,3 +3419,88 @@ Ninguno.
 | MEDIA | Fase 2: Crear TAB Audiolibros en TaskPane | Post-Fase 1 |
 | MEDIA | Fase 3: Implementar sync QR + WiFi/BT | Post-Fase 2 |
 | BAJA | Renombrar NEVEM → NEVEN en codigo | Durante Fase 1 |
+
+
+---
+### Sesion 2026-11-05 (~noche, implementacion) — Fase 1 completada: NEVEN Suite integrada
+
+## Logro principal
+**Fase 1 completada:** Codigo de NEVEM Studio y NEVEN Launcher movido al repositorio principal.
+
+## Archivos creados
+
+### src/Audiobook/ (26 archivos Python)
+```
+src/Audiobook/
+├── parsers/           # epub_parser.py, pdf_parser.py, markdown_parser.py
+├── tts/               # edge_tts_engine.py, windows_tts.py, piper_tts.py, base.py
+├── muxer/             # ffmpeg_muxer.py
+├── server/            # http_server.py
+├── translator/        # translator.py
+├── api/               # routes.py
+├── pipeline.py        # Orquestador principal
+├── requirements.txt   # Dependencias Python
+├── run.bat, install_deps.bat, download_model.bat
+└── README.md
+```
+
+### android/ (94 archivos Kotlin + 955 total)
+```
+android/
+├── app/src/main/java/com/neven/launcher/
+│   ├── data/audiobook/    # Reproductor audiolibros
+│   ├── data/sentinel/     # IA on-device (Gemini Nano)
+│   ├── ui/home/           # Reloj cientifico
+│   ├── ui/audiobook/      # UI reproductor
+│   ├── ui/settings/       # Configuracion
+│   └── ...                # 15+ pantallas
+├── gradle/, docs/, screenshots/, ontologia/
+├── build.gradle.kts, settings.gradle.kts
+└── README.md, ROADMAP.md, SETUP.md
+```
+
+## Limpieza realizada
+- Eliminado `android/app/build/` (archivos generados)
+- Eliminado `android/app/src/src/` (duplicado accidental)
+- Eliminados logs: build_errors.txt, full_build.log, kotlin_*.txt, local.properties
+
+## Commits realizados
+
+| Hash | Descripcion |
+|------|-------------|
+| `745ad96` | feat: agregar NEVEN Audiobook y NEVEN Launcher Android (Fase 1) |
+
+Push exitoso: `951cfcb..745ad96 master -> master` (16.13 MB)
+
+## Problema resuelto durante copia
+- **Problema:** Copy-Item recursivo creo `app/src/src/` (doble anidamiento)
+- **Causa:** Al copiar `src/` dentro de `app/`, se creo estructura duplicada
+- **Solucion:** Eliminar carpeta duplicada manualmente
+
+## Estructura final del repositorio
+
+```
+NEVEN/
+├── .agents/skills/      # 8 skills consolidados
+├── .kiro/               # Configuracion Kiro
+├── android/             # NUEVO - NEVEN Launcher (Kotlin)
+├── docs/                # Ontologia graficos
+├── ontologia-fuentes/   # PDFs fuente
+└── src/
+    ├── Audiobook/       # NUEVO - Generador audiolibros (Python)
+    ├── Core/            # C++ XLL
+    ├── TaskPane/        # UI Web
+    └── ...
+```
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Fase 2: Agregar TAB Audiolibros en TaskPane | Proximo |
+| **ALTA** | Fase 2: Crear audiobook.js con UI | Proximo |
+| **ALTA** | Fase 2: Conectar a servidor puerto 5556 | Proximo |
+| **ALTA** | Subir ZIP a arXiv | LISTO |
+| MEDIA | Fase 3: Implementar sync QR + WiFi/BT | Post-Fase 2 |
+| MEDIA | Renombrar referencias NEVEM → NEVEN en codigo | Durante Fase 2 |
+| BAJA | Actualizar .gitignore para android/ | Opcional |
