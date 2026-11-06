@@ -184,9 +184,64 @@ class EdgeTTS(TTSEngine):
         return output_files
     
     def synthesize_chapter(self, chapter_text: str, output_path: str,
-                           progress_callback: Optional[Callable[[float], None]] = None) -> bool:
-        """Sintetiza un capítulo completo"""
+                           progress_callback: Optional[Callable[[float], None]] = None,
+                           use_markdown_ssml: bool = True) -> bool:
+        """
+        Sintetiza un capítulo completo.
+        
+        Args:
+            chapter_text: Texto del capítulo (puede contener Markdown)
+            output_path: Ruta del archivo de salida
+            progress_callback: Callback de progreso
+            use_markdown_ssml: Si True, convierte headers Markdown a pausas SSML
+        
+        Returns:
+            True si la síntesis fue exitosa
+        """
+        if use_markdown_ssml and self._has_markdown_headers(chapter_text):
+            # Usar conversión Markdown → SSML para pausas semánticas
+            return self.synthesize_markdown(chapter_text, output_path, progress_callback)
+        
         return self.synthesize(chapter_text, output_path, progress_callback)
+    
+    def _has_markdown_headers(self, text: str) -> bool:
+        """Detecta si el texto contiene headers Markdown"""
+        import re
+        return bool(re.search(r'^#{1,6}\s+', text, re.MULTILINE))
+    
+    def synthesize_markdown(self, markdown_text: str, output_path: str,
+                            progress_callback: Optional[Callable[[float], None]] = None) -> bool:
+        """
+        Sintetiza texto Markdown con pausas y énfasis semánticos.
+        
+        Convierte elementos Markdown a SSML:
+        - # Título principal → Pausa larga (1.5s)
+        - ## Título secundario → Pausa media (1s)
+        - ### Subtítulo → Pausa normal (0.5s)
+        - #### Elemento destacado → Énfasis + pitch elevado
+        - **negrita** → Énfasis fuerte
+        - *cursiva* → Énfasis suave
+        """
+        try:
+            from .markdown_to_ssml import markdown_to_ssml, SSMLConfig
+            
+            # Generar SSML con pausas semánticas
+            ssml = markdown_to_ssml(
+                markdown_text,
+                voice_id=self._current_voice_id,
+                config=SSMLConfig()
+            )
+            
+            # Sintetizar usando SSML
+            return self.synthesize_ssml(ssml, output_path, progress_callback)
+            
+        except ImportError:
+            print("[EdgeTTS] Warning: markdown_to_ssml no disponible, usando síntesis plain")
+            return self.synthesize(markdown_text, output_path, progress_callback)
+        except Exception as e:
+            print(f"[EdgeTTS] Error en síntesis Markdown: {e}")
+            # Fallback a síntesis plain
+            return self.synthesize(markdown_text, output_path, progress_callback)
     
     def get_current_voice(self) -> Optional[TTSVoice]:
         """Retorna la voz actual"""

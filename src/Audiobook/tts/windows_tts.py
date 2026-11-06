@@ -337,14 +337,52 @@ class WindowsTTS(TTSEngine):
         return output_files
     
     def synthesize_chapter(self, chapter_text: str, output_path: str,
-                           progress_callback: Optional[Callable[[float], None]] = None) -> bool:
+                           progress_callback: Optional[Callable[[float], None]] = None,
+                           use_markdown_ssml: bool = True) -> bool:
         """
-        Sintetiza un capítulo completo con chunking inteligente
+        Sintetiza un capítulo completo con chunking inteligente.
+        
+        Args:
+            chapter_text: Texto del capítulo (puede contener Markdown)
+            output_path: Ruta del archivo de salida
+            progress_callback: Callback de progreso
+            use_markdown_ssml: Si True, convierte headers Markdown a pausas
+        
+        Returns:
+            True si la síntesis fue exitosa
         """
         word_count = len(chapter_text.split())
         print(f"   [{word_count} palabras, {len(chapter_text)} caracteres]")
         
+        # Si tiene headers Markdown, convertir a texto plano con pausas
+        if use_markdown_ssml and self._has_markdown_headers(chapter_text):
+            chapter_text = self._convert_markdown_to_pauses(chapter_text)
+        
         return self.synthesize(chapter_text, output_path, progress_callback)
+    
+    def _has_markdown_headers(self, text: str) -> bool:
+        """Detecta si el texto contiene headers Markdown"""
+        import re
+        return bool(re.search(r'^#{1,6}\s+', text, re.MULTILINE))
+    
+    def _convert_markdown_to_pauses(self, markdown_text: str) -> str:
+        """
+        Convierte elementos Markdown a pausas usando puntuación.
+        Windows SAPI no soporta SSML completo, pero respeta puntuación.
+        
+        - # → ... (pausa larga)
+        - ## → .. (pausa media)
+        - ### → . (pausa normal)
+        - #### → ¡! (énfasis)
+        """
+        try:
+            from .markdown_to_ssml import markdown_to_plain_with_pauses
+            return markdown_to_plain_with_pauses(markdown_text)
+        except ImportError:
+            # Fallback: eliminar headers sin pausas
+            import re
+            text = re.sub(r'^#+\s*', '', markdown_text, flags=re.MULTILINE)
+            return text
     
     def get_current_voice(self) -> Optional[TTSVoice]:
         """Retorna la voz actual"""
