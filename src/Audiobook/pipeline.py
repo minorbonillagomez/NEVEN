@@ -20,6 +20,12 @@ if _src_dir not in sys.path:
 from parsers.epub_parser import EpubParser
 from parsers.pdf_parser import PdfParser
 from parsers.markdown_parser import MarkdownParser
+try:
+    from parsers.marker_parser import MarkerParser, is_marker_available
+    MARKER_AVAILABLE = is_marker_available()
+except ImportError:
+    MARKER_AVAILABLE = False
+    MarkerParser = None
 from tts.windows_tts import WindowsTTS
 from tts.edge_tts_engine import EdgeTTS
 from muxer.ffmpeg_muxer import FFmpegMuxer, ChapterMarker
@@ -44,7 +50,8 @@ class PipelineConfig:
     start_page: int = 1  # 1-indexed, first page to include
     exclude_pages: Optional[str] = None  # Comma-separated ranges like '1,2,5-10,45'
     # Parser options
-    use_markitdown: bool = False  # MarkItDown genera tablas en PDFs complejos, mejor usar PyMuPDF
+    use_marker: bool = True  # Marker para mejor detección de layout (excluye headers/footers)
+    use_markitdown: bool = False  # MarkItDown como fallback
     save_markdown: bool = True  # Save .md file alongside .m4b
 
 
@@ -102,29 +109,55 @@ class NevemPipeline:
         self.tts.set_rate(config.speech_rate)
     
     def _get_parser(self, file_path: str):
-        """Retorna el parser apropiado según la extensión y configuración"""
+        """Retorna el parser apropiado según la extensión y configuración.
+        
+        Jerarquía de parsers para PDF:
+        1. Marker (si use_marker=True y está disponible) - mejor para layout complejo
+        2. MarkItDown (si use_markitdown=True) - bueno para estructura
+        3. PyMuPDF (fallback) - rápido pero incluye headers/footers
+        """
         ext = os.path.splitext(file_path)[1].lower()
         
-        # Use MarkItDown parser if enabled (default)
-        if self.config.use_markitdown and ext in ['.pdf', '.epub']:
-            print(f"[Parser] Usando MarkItDown para mejor estructura")
-            return MarkdownParser(
-                file_path,
-                start_page=self.config.start_page,
-                exclude_pages=self.config.exclude_pages
-            )
-        
-        # Fallback to legacy parsers
-        if ext == '.epub':
-            return EpubParser(file_path)
-        elif ext == '.pdf':
+        # Para PDFs, usar la jerarquía de parsers
+        if ext == '.pdf':
+            # Opción 1: Marker (mejor calidad, excluye headers/footers)
+            if self.config.use_marker and MARKER_AVAILABLE:
+                print(f"[Parser] Usando Marker (detección avanzada de layout)")
+                return MarkerParser(
+                    file_path,
+                    start_page=self.config.start_page,
+                    exclude_pages=self.config.exclude_pages
+                )
+            
+            # Opción 2: MarkItDown (buena estructura)
+            if self.config.use_markitdown:
+                print(f"[Parser] Usando MarkItDown para mejor estructura")
+                return MarkdownParser(
+                    file_path,
+                    start_page=self.config.start_page,
+                    exclude_pages=self.config.exclude_pages
+                )
+            
+            # Opción 3: PyMuPDF (fallback rápido)
+            print(f"[Parser] Usando PyMuPDF (fallback)")
             return PdfParser(
                 file_path, 
                 start_page=self.config.start_page,
                 exclude_pages=self.config.exclude_pages
             )
-        else:
-            raise ValueError(f"Formato no soportado: {ext}")
+        
+        # Para EPUBs
+        if ext == '.epub':
+            if self.config.use_markitdown:
+                print(f"[Parser] Usando MarkItDown para EPUB")
+                return MarkdownParser(
+                    file_path,
+                    start_page=self.config.start_page,
+                    exclude_pages=self.config.exclude_pages
+                )
+            return EpubParser(file_path)
+        
+        raise ValueError(f"Formato no soportado: {ext}")
     
     def run(self, progress_callback: Optional[Callable[[str, float], None]] = None) -> PipelineResult:
         """
