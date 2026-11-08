@@ -12,10 +12,12 @@ import androidx.lifecycle.viewModelScope
 import com.neven.launcher.data.audiobook.*
 import com.neven.launcher.services.AudiobookPlayerService
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel para la pantalla de audiolibros.
@@ -58,6 +60,12 @@ class AudiobookViewModel(
     // Job para polling de posición del reproductor
     private var positionPollingJob: Job? = null
     
+    // Job para guardado periódico de posición
+    private var positionSaveJob: Job? = null
+    
+    // Intervalo de guardado periódico (30 segundos)
+    private val POSITION_SAVE_INTERVAL_MS = 30_000L
+    
     // Settings
     val settings: Flow<AudiobookSettings?> = repository.getSettings()
     
@@ -81,6 +89,24 @@ class AudiobookViewModel(
                 
                 serviceBound = playerService != null
                 android.util.Log.d("AudiobookViewModel", "Service connected: $serviceBound, retries: $retries")
+                
+                // Registrar callback para guardar posición cuando el servicio se destruya
+                playerService?.setOnDestroyCallback { audiobookId, positionMs ->
+                    android.util.Log.d("AudiobookViewModel", "Service onDestroy callback: saving position $positionMs for $audiobookId")
+                    viewModelScope.launch(Dispatchers.IO) {
+                        if (audiobookId != null && positionMs > 0) {
+                            try {
+                                repository.updatePlaybackPosition(
+                                    audiobookId,
+                                    positionMs,
+                                    _playerState.value.currentChapterIndex
+                                )
+                            } catch (e: Exception) {
+                                android.util.Log.e("AudiobookViewModel", "Error saving position in onDestroy", e)
+                            }
+                        }
+                    }
+                }
                 
                 // Observar estado del reproductor y iniciar polling de posición
                 playerService?.let { svc ->
@@ -149,6 +175,9 @@ class AudiobookViewModel(
                 delay(300) // Polling cada 300ms para actualización fluida
             }
         }
+        
+        // Iniciar guardado periódico
+        startPeriodicPositionSave()
     }
     
     /**
@@ -157,6 +186,33 @@ class AudiobookViewModel(
     private fun stopPositionPolling() {
         positionPollingJob?.cancel()
         positionPollingJob = null
+        stopPeriodicPositionSave()
+    }
+    
+    /**
+     * Inicia guardado periódico de posición cada 30 segundos.
+     * Esto garantiza que si la app crashea o se cierra forzosamente,
+     * la posición de escucha se preserva.
+     */
+    private fun startPeriodicPositionSave() {
+        if (positionSaveJob?.isActive == true) return
+        
+        positionSaveJob = viewModelScope.launch {
+            while (isActive) {
+                delay(POSITION_SAVE_INTERVAL_MS)
+                saveCurrentPosition()
+            }
+        }
+        android.util.Log.d("AudiobookViewModel", "Periodic position save started (every ${POSITION_SAVE_INTERVAL_MS/1000}s)")
+    }
+    
+    /**
+     * Detiene el guardado periódico de posición.
+     */
+    private fun stopPeriodicPositionSave() {
+        positionSaveJob?.cancel()
+        positionSaveJob = null
+        android.util.Log.d("AudiobookViewModel", "Periodic position save stopped")
     }
     
     init {
@@ -201,17 +257,24 @@ class AudiobookViewModel(
     
     /**
      * Guarda la posición actual de reproducción en la base de datos.
+     * Se ejecuta en Dispatchers.IO para no bloquear el hilo principal.
      */
     private suspend fun saveCurrentPosition() {
-        _currentAudiobook.value?.let { book ->
-            val currentPosition = playerService?.getCurrentPosition() ?: _playerState.value.currentPositionMs
-            if (currentPosition > 0) {
-                repository.updatePlaybackPosition(
-                    book.id,
-                    currentPosition,
-                    _playerState.value.currentChapterIndex
-                )
-                android.util.Log.d("AudiobookViewModel", "Position saved: $currentPosition for book: ${book.id}")
+        withContext(Dispatchers.IO) {
+            _currentAudiobook.value?.let { book ->
+                val currentPosition = playerService?.getCurrentPosition() ?: _playerState.value.currentPositionMs
+                if (currentPosition > 0) {
+                    try {
+                        repository.updatePlaybackPosition(
+                            book.id,
+                            currentPosition,
+                            _playerState.value.currentChapterIndex
+                        )
+                        android.util.Log.d("AudiobookViewModel", "Position saved: $currentPosition for book: ${book.id}")
+                    } catch (e: Exception) {
+                        android.util.Log.e("AudiobookViewModel", "Error saving position", e)
+                    }
+                }
             }
         }
     }
@@ -337,7 +400,17 @@ class AudiobookViewModel(
             android.util.Log.w("AudiobookViewModel", "Service is null! Trying to get instance again...")
             playerService = AudiobookPlayerService.getInstance()
         }
+        
+        // Guardar posición ANTES de pausar (si estaba reproduciendo)
+        val wasPlaying = playerService?.isPlaying() == true
         playerService?.togglePlayPause()
+        
+        // Si pasó de playing a paused, guardar posición
+        if (wasPlaying) {
+            viewModelScope.launch {
+                saveCurrentPosition()
+            }
+        }
     }
     
     fun seekTo(positionMs: Long) {
