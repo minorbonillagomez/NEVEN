@@ -1,6 +1,10 @@
 """
-NEVEM Studio - FFmpeg M4B Muxer
-Crea archivos .m4b con capítulos y portada
+NEVEN Studio - FFmpeg M4A Muxer
+Crea archivos .m4a con capítulos y portada (compatible con estéreos de carro)
+
+Nota: M4A y M4B son el mismo formato (AAC en contenedor MP4).
+Usamos .m4a porque tiene mejor compatibilidad con reproductores de auto,
+mientras que .m4b a veces es ignorado por ser extensión "audiobook" de Apple.
 """
 
 import os
@@ -12,10 +16,15 @@ from typing import Optional
 
 @dataclass
 class ChapterMarker:
-    """Marcador de capítulo para el archivo .m4b"""
+    """Marcador de capítulo para el archivo de audio"""
     title: str
     start_ms: int
     end_ms: int
+
+
+# Extensión predeterminada para audiolibros
+# Usamos .m4a en lugar de .m4b para mejor compatibilidad con reproductores de auto
+DEFAULT_AUDIOBOOK_EXTENSION = ".m4a"
 
 
 class FFmpegMuxer:
@@ -144,7 +153,7 @@ class FFmpegMuxer:
         
         return metadata_path
     
-    def create_m4b(
+    def create_m4a(
         self,
         audio_path: str,
         output_path: str,
@@ -156,11 +165,11 @@ class FFmpegMuxer:
         bitrate: str = "64k"
     ) -> bool:
         """
-        Crea un archivo .m4b con metadatos y capítulos
+        Crea un archivo .m4a con metadatos y capítulos
         
         Args:
             audio_path: Ruta al archivo de audio fuente (WAV o M4A)
-            output_path: Ruta de salida .m4b
+            output_path: Ruta de salida .m4a
             title: Título del libro
             author: Autor del libro
             chapters: Lista de marcadores de capítulo
@@ -250,17 +259,17 @@ class FFmpegMuxer:
         narrator: Optional[str] = None
     ) -> bool:
         """
-        Crea .m4b a partir de archivos de audio por capítulo
+        Crea .m4a a partir de archivos de audio por capítulo
         
         Args:
             chapter_audio_files: Lista de tuplas (ruta_audio, titulo_capitulo)
-            output_path: Ruta de salida .m4b
+            output_path: Ruta de salida .m4a
             ... otros metadatos
         """
         
         # Concatenar todos los audios primero
         audio_paths = [c[0] for c in chapter_audio_files]
-        concat_path = output_path.replace('.m4b', '_concat.wav')
+        concat_path = output_path.replace('.m4a', '_concat.wav').replace('.m4b', '_concat.wav')
         
         if not self.concatenate_audio(audio_paths, concat_path):
             print("Error concatenando audios")
@@ -282,8 +291,8 @@ class FFmpegMuxer:
             current_position += duration
         
         try:
-            # Crear M4B final
-            return self.create_m4b(
+            # Crear M4A final
+            return self.create_m4a(
                 audio_path=concat_path,
                 output_path=output_path,
                 title=title,
@@ -296,6 +305,11 @@ class FFmpegMuxer:
             # Limpiar archivo concatenado
             if os.path.exists(concat_path):
                 os.remove(concat_path)
+    
+    # Alias para compatibilidad hacia atrás
+    def create_m4b(self, *args, **kwargs) -> bool:
+        """Alias de create_m4a para compatibilidad con código existente"""
+        return self.create_m4a(*args, **kwargs)
 
 
 if __name__ == "__main__":

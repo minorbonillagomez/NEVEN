@@ -1,6 +1,9 @@
 """
-NEVEM Studio - Main Pipeline
+NEVEN Studio - Main Pipeline
 Orquesta el flujo completo: Parse → TTS → Mux → Output
+
+Nota: Genera archivos .m4a (no .m4b) para mejor compatibilidad con estéreos de carro.
+M4A y M4B son el mismo formato; solo difiere la extensión.
 """
 
 import os
@@ -28,7 +31,7 @@ except ImportError:
     MarkerParser = None
 from tts.windows_tts import WindowsTTS
 from tts.edge_tts_engine import EdgeTTS
-from muxer.ffmpeg_muxer import FFmpegMuxer, ChapterMarker
+from muxer.ffmpeg_muxer import FFmpegMuxer, ChapterMarker, DEFAULT_AUDIOBOOK_EXTENSION
 
 
 @dataclass
@@ -52,7 +55,7 @@ class PipelineConfig:
     # Parser options
     use_marker: bool = True  # Marker para mejor detección de layout (excluye headers/footers)
     use_markitdown: bool = False  # MarkItDown como fallback
-    save_markdown: bool = True  # Save .md file alongside .m4b
+    save_markdown: bool = True  # Save .md file alongside audiobook
 
 
 @dataclass
@@ -305,20 +308,20 @@ class NevemPipeline:
             
             # === FASE 3: MUXING ===
             if progress_callback:
-                progress_callback("Creando archivo M4B", 0.85)
+                progress_callback("Creando archivo M4A", 0.85)
             
             print(f"\n[Mux] Empaquetando audiolibro...")
             
-            # Nombre de archivo de salida
+            # Nombre de archivo de salida - usar .m4a para compatibilidad con autos
             safe_title = "".join(c for c in metadata.title if c.isalnum() or c in ' -_').strip()
-            output_filename = f"{safe_title}.m4b"
+            output_filename = f"{safe_title}{DEFAULT_AUDIOBOOK_EXTENSION}"
             output_path = os.path.join(self.config.output_dir, output_filename)
             
             # Si el archivo ya existe, agregar timestamp para evitar conflicto
             if os.path.exists(output_path):
                 from datetime import datetime
                 timestamp = datetime.now().strftime("%H%M%S")
-                output_filename = f"{safe_title}_{timestamp}.m4b"
+                output_filename = f"{safe_title}_{timestamp}{DEFAULT_AUDIOBOOK_EXTENSION}"
                 output_path = os.path.join(self.config.output_dir, output_filename)
             
             success = self.muxer.create_from_chapter_audio(
@@ -339,7 +342,7 @@ class NevemPipeline:
                     chapters_count=len(chapter_audio_files),
                     total_words=stats['total_words'],
                     duration_seconds=0,
-                    error_message="Error creando archivo M4B"
+                    error_message="Error creando archivo M4A"
                 )
             
             # === FASE 4: GUARDAR MARKDOWN Y LIMPIEZA ===
@@ -458,7 +461,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  %(prog)s libro.epub                           # Genera M4B con voz Dalia
+  %(prog)s libro.epub                           # Genera M4A con voz Dalia
   %(prog)s libro.pdf --voice es-ES-AlvaroNeural # Usa voz espanola
   %(prog)s libro.epub --offline                 # Usa Piper (sin internet)
   %(prog)s libro.pdf --serve                    # Genera y sirve por HTTP
@@ -466,6 +469,9 @@ Ejemplos:
   %(prog)s book.pdf --translate --from en --to es   # Traduce ingles a espanol
   %(prog)s libro.pdf --start-page 5             # Comienza desde pagina 5
   %(prog)s libro.pdf --exclude-pages 1,2,10-12  # Excluye paginas especificas
+
+Nota: Los audiolibros se generan como .m4a (compatible con estereos de carro).
+      M4A y M4B son el mismo formato, solo difiere la extension.
         """
     )
     
