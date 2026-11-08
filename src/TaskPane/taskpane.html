@@ -1259,22 +1259,61 @@
         <label style="font-size:9px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Voz</label>
         <div style="display:flex;gap:8px;align-items:center">
           <select id="audiobook-voice" style="flex:1;max-width:250px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:11px">
-            <optgroup label="Edge TTS (Neural)">
-              <option value="es-MX-DaliaNeural" selected>Dalia (Mexico, femenina)</option>
-              <option value="es-MX-JorgeNeural">Jorge (Mexico, masculina)</option>
-              <option value="es-ES-ElviraNeural">Elvira (Espana, femenina)</option>
-              <option value="es-ES-AlvaroNeural">Alvaro (Espana, masculina)</option>
-              <option value="es-AR-ElenaNeural">Elena (Argentina, femenina)</option>
-              <option value="es-CO-SalomeNeural">Salome (Colombia, femenina)</option>
+            <optgroup label="Español - Latinoamérica">
+              <option value="es-MX-DaliaNeural" selected>🇲🇽 Dalia (México, femenina)</option>
+              <option value="es-MX-JorgeNeural">🇲🇽 Jorge (México, masculina)</option>
+              <option value="es-AR-ElenaNeural">🇦🇷 Elena (Argentina, femenina)</option>
+              <option value="es-AR-TomasNeural">🇦🇷 Tomás (Argentina, masculina)</option>
+              <option value="es-CO-SalomeNeural">🇨🇴 Salomé (Colombia, femenina)</option>
+              <option value="es-CO-GonzaloNeural">🇨🇴 Gonzalo (Colombia, masculina)</option>
+              <option value="es-CL-CatalinaNeural">🇨🇱 Catalina (Chile, femenina)</option>
+              <option value="es-CL-LorenzoNeural">🇨🇱 Lorenzo (Chile, masculina)</option>
+              <option value="es-PE-CamilaNeural">🇵🇪 Camila (Perú, femenina)</option>
+              <option value="es-PE-AlexNeural">🇵🇪 Alex (Perú, masculina)</option>
+              <option value="es-VE-PaolaNeural">🇻🇪 Paola (Venezuela, femenina)</option>
+              <option value="es-VE-SebastianNeural">🇻🇪 Sebastián (Venezuela, masculina)</option>
+              <option value="es-CR-MariaNeural">🇨🇷 María (Costa Rica, femenina)</option>
+              <option value="es-CR-JuanNeural">🇨🇷 Juan (Costa Rica, masculina)</option>
+              <option value="es-EC-AndreaNeural">🇪🇨 Andrea (Ecuador, femenina)</option>
+              <option value="es-CU-BelkysNeural">🇨🇺 Belkys (Cuba, femenina)</option>
+              <option value="es-PR-KarinaNeural">🇵🇷 Karina (Puerto Rico, femenina)</option>
+              <option value="es-US-PalomaNeural">🇺🇸 Paloma (US Latino, femenina)</option>
+              <option value="es-US-AlonsoNeural">🇺🇸 Alonso (US Latino, masculina)</option>
             </optgroup>
-            <optgroup label="Ingles">
-              <option value="en-US-JennyNeural">Jenny (US, femenina)</option>
-              <option value="en-US-GuyNeural">Guy (US, masculina)</option>
-              <option value="en-GB-SoniaNeural">Sonia (UK, femenina)</option>
+            <optgroup label="Español - España">
+              <option value="es-ES-ElviraNeural">🇪🇸 Elvira (España, femenina)</option>
+              <option value="es-ES-AlvaroNeural">🇪🇸 Álvaro (España, masculina)</option>
+              <option value="es-ES-XimenaNeural">🇪🇸 Ximena (España, femenina)</option>
+            </optgroup>
+            <optgroup label="Inglés - Estados Unidos">
+              <option value="en-US-JennyNeural">🇺🇸 Jenny (US, femenina)</option>
+              <option value="en-US-GuyNeural">🇺🇸 Guy (US, masculina)</option>
+              <option value="en-US-AriaNeural">🇺🇸 Aria (US, femenina)</option>
+              <option value="en-US-EricNeural">🇺🇸 Eric (US, masculina)</option>
+              <option value="en-US-EmmaNeural">🇺🇸 Emma (US, femenina)</option>
+              <option value="en-US-BrianNeural">🇺🇸 Brian (US, masculina)</option>
+              <option value="en-US-MichelleNeural">🇺🇸 Michelle (US, femenina)</option>
+              <option value="en-US-ChristopherNeural">🇺🇸 Christopher (US, masculina)</option>
+              <option value="en-US-AvaNeural">🇺🇸 Ava (US, femenina)</option>
+              <option value="en-US-AndrewNeural">🇺🇸 Andrew (US, masculina)</option>
+            </optgroup>
+            <optgroup label="Inglés - Reino Unido">
+              <option value="en-GB-SoniaNeural">🇬🇧 Sonia (UK, femenina)</option>
+              <option value="en-GB-RyanNeural">🇬🇧 Ryan (UK, masculina)</option>
+              <option value="en-GB-LibbyNeural">🇬🇧 Libby (UK, femenina)</option>
+              <option value="en-GB-ThomasNeural">🇬🇧 Thomas (UK, masculina)</option>
+            </optgroup>
+            <optgroup label="Inglés - Otros">
+              <option value="en-AU-NatashaNeural">🇦🇺 Natasha (Australia, femenina)</option>
+              <option value="en-AU-WilliamMultilingualNeural">🇦🇺 William (Australia, masculina)</option>
+              <option value="en-CA-ClaraNeural">🇨🇦 Clara (Canadá, femenina)</option>
+              <option value="en-CA-LiamNeural">🇨🇦 Liam (Canadá, masculina)</option>
+              <option value="en-IE-EmilyNeural">🇮🇪 Emily (Irlanda, femenina)</option>
+              <option value="en-IN-NeerjaNeural">🇮🇳 Neerja (India, femenina)</option>
             </optgroup>
             <optgroup label="Windows SAPI (Offline)">
-              <option value="Microsoft Sabina">Sabina (ES-MX)</option>
-              <option value="Microsoft Raul">Raul (ES-MX)</option>
+              <option value="Microsoft Sabina">💻 Sabina (ES-MX, offline)</option>
+              <option value="Microsoft Raul">💻 Raúl (ES-MX, offline)</option>
             </optgroup>
           </select>
           <button id="btn-audiobook-preview-voice" class="btn btn-secondary" title="Escuchar muestra de 5 segundos" style="padding:6px 10px;display:flex;align-items:center;gap:4px">
