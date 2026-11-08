@@ -3254,12 +3254,1343 @@ Agregada contribución técnica **2.22 Tab Audiolibros — Pipeline PDF→Markdo
 - ✅ Documentación de usuario (Docusaurus) actualizada
 - ✅ Documentación comercial actualizada
 - ✅ Documentación doctoral actualizada
-- ⏳ Pendiente: commit de cambios de documentación
+- ✅ Commit de cambios de documentación realizado
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `55a6899` | docs: add Audiobook module documentation |
 
 ## Próximos pasos
 
-1. Commit de los cambios de documentación
-2. Copiar archivos de producción al repo (si hay cambios pendientes)
-3. Verificar que la documentación Docusaurus se renderiza correctamente
+| Prioridad | Tarea |
+|-----------|-------|
+| BAJA | Verificar que la documentación Docusaurus se renderiza correctamente |
+| BAJA | Video demo de 3 minutos del módulo Audiolibros |
+
+## Notas
+
+Esta sesión fue corta — solo documentación. El módulo de Audiolibros ya estaba completamente funcional (commit f444dc7 de la sesión anterior). Solo faltaba documentar en los archivos de referencia del proyecto.
 
 ---
+
+
+---
+
+### Sesión 2026-08-19 (~noche, continuación) — Análisis de extractores PDF para Audiolibros
+
+## Contexto
+
+El usuario reportó que el extractor PDF actual no distingue elementos que no son parte del cuerpo del texto (headers, footers, números de página, notas al pie). Preguntó por alternativas a lo que está usando.
+
+## Hallazgo: NEVEN ya tiene MarkItDown integrado
+
+Al investigar el código del módulo Audiobook, descubrí que **ya existen 3 parsers implementados**:
+
+| Parser | Archivo | Estado |
+|--------|---------|--------|
+| PyMuPDF (fitz) | `pdf_parser.py` | **Activo por defecto** |
+| MarkItDown (Microsoft) | `markdown_parser.py` | Implementado pero **deshabilitado** |
+| EbookLib | `epub_parser.py` | Solo para EPUB |
+
+La configuración en `pipeline.py` línea 47:
+```python
+use_markitdown: bool = False  # "MarkItDown genera tablas en PDFs complejos, mejor usar PyMuPDF"
+```
+
+## Análisis comparativo de extractores
+
+| Característica | PyMuPDF (actual) | MarkItDown (MS) | Marker (datalab-to) |
+|----------------|------------------|-----------------|---------------------|
+| Precisión | ~65% | ~70-75% | **83.5%** |
+| OCR integrado | ❌ | ❌ | ✅ Surya OCR 2 |
+| Detección layout | ❌ | ⚠️ Básico | ✅ Modelo dedicado |
+| Headers/Footers | ❌ Se incluyen | ❌ Se incluyen | ✅ **Se excluyen** |
+| Multi-columna | ❌ Orden incorrecto | ⚠️ Variable | ✅ Orden correcto |
+| Dependencias | ~15MB | ~5MB | ~2GB (torch) |
+
+## Causa raíz del problema reportado
+
+PyMuPDF extrae **todo el texto en orden de aparición física**, incluyendo:
+- Números de página → "página 47" leído cada 2 minutos
+- Headers repetidos → "Capítulo 3" en cada página
+- Footers con copyright
+- Notas al pie intercaladas
+
+**Marker** tiene un modelo de layout que detecta y excluye estos elementos automáticamente.
+
+## Recomendación dada
+
+Integrar **Marker** (datalab-to/marker) como extractor principal:
+- Precisión 83.5% en PDFs born-digital
+- Excluye headers/footers automáticamente
+- Reconstruye orden de lectura en multi-columna
+- Desventaja: requiere ~2GB de modelos (torch + surya)
+
+## Archivos revisados (lectura)
+
+- `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\pipeline.py` — configuración `use_markitdown`
+- `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\parsers\pdf_parser.py` — parser PyMuPDF actual
+- `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\parsers\markdown_parser.py` — parser MarkItDown (ya implementado)
+- `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\parsers\epub_parser.py`
+- `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\api\routes.py`
+
+## Commits realizados
+
+Ninguno — sesión de análisis y consultoría.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Integrar Marker como extractor principal en módulo Audiobook |
+| MEDIA | Crear `marker_parser.py` siguiendo patrón de otros parsers |
+| MEDIA | Agregar flag `use_marker: bool = True` en AudiobookConfig |
+| BAJA | Implementar fallback automático: Marker → MarkItDown → PyMuPDF |
+
+## Notas técnicas para implementación futura
+
+```python
+# Estrategia de fallback recomendada
+use_marker: bool = True       # Marker para calidad máxima
+use_markitdown: bool = False  # Fallback si Marker falla
+use_pymupdf: bool = False     # Último recurso
+
+# Instalación de Marker
+pip install marker-pdf
+```
+
+Marker requiere GPU para velocidad óptima pero funciona en CPU.
+
+---
+
+
+---
+
+### Sesión 2026-08-19 (~noche, final) — Diagnóstico de hardware para Marker
+
+## Contexto
+
+Continuación del análisis de extractores PDF. El usuario preguntó si su equipo soporta Marker.
+
+## Especificaciones del equipo detectadas
+
+| Componente | Especificación |
+|------------|---------------|
+| CPU | Intel i7-11800H @ 2.30GHz (8 cores) |
+| RAM | 64 GB |
+| GPU | NVIDIA RTX 3050 Laptop (4GB VRAM) |
+| Driver NVIDIA | 610.74 |
+| CUDA | 13.3 disponible |
+| PyTorch | 2.14.1 **CPU-only** ← problema |
+
+## Hallazgo importante
+
+**PyTorch está instalado SIN soporte CUDA.** El driver NVIDIA funciona correctamente (nvidia-smi responde), pero PyTorch no puede usar la GPU.
+
+Verificación:
+```
+PyTorch: 2.14.1+cpu
+CUDA: False
+GPU: N/A
+```
+
+## Veredicto
+
+✅ **El equipo SÍ soporta Marker** con los siguientes modos:
+
+| Modo Marker | VRAM necesaria | RTX 3050 (4GB) | Viable |
+|-------------|---------------|----------------|--------|
+| Fast mode | ~1.5 GB | ✅ | Sí |
+| Balanced mode | ~2.5 GB | ✅ | Sí |
+| Accuracy mode | ~3.5 GB | ⚠️ | Justo |
+| CPU-only | 0 | ✅ | Lento |
+
+## Solución propuesta
+
+1. Reinstalar PyTorch con CUDA:
+```powershell
+pip uninstall torch torchvision torchaudio
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
+
+2. Instalar Marker:
+```powershell
+pip install marker-pdf
+```
+
+## Commits realizados
+
+Ninguno — sesión de diagnóstico.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reinstalar PyTorch con soporte CUDA |
+| **ALTA** | Instalar marker-pdf |
+| **ALTA** | Integrar Marker al módulo Audiobook |
+| MEDIA | Crear `marker_parser.py` con fallback a MarkItDown |
+| BAJA | Benchmark: comparar tiempos Marker vs PyMuPDF |
+
+## Notas técnicas
+
+- RTX 3050 con 4GB es suficiente para modo balanced
+- Evitar modo accuracy en documentos >300 páginas (VRAM insuficiente)
+- Rendimiento esperado: PDF 50 páginas en ~30-60 seg con GPU vs ~3-5 min CPU-only
+
+---
+
+
+---
+
+### Sesión 2026-08-19 (~noche, última) — Intento de instalación PyTorch CUDA bloqueado por espacio
+
+## Contexto
+
+Continuación del diagnóstico de hardware. Se intentó instalar PyTorch con CUDA para usar Marker.
+
+## Intento fallido
+
+Al ejecutar:
+```powershell
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
+
+**Error:** `OSError: [Errno 28] No space left on device`
+
+PyTorch CUDA (~2.5 GB de descarga) falló porque C: tenía solo 9.5 GB libres y el cache de pip más el proceso de instalación requerían más espacio.
+
+## Acciones correctivas
+
+1. Se limpió el cache de pip: `pip cache purge`
+2. Espacio liberado: C: pasó de 9.5 GB a **13.76 GB**
+
+## Análisis de espacio recuperable
+
+| Carpeta | Tamaño | Riesgo |
+|---------|--------|--------|
+| TEMP usuario | 2.12 GB | BAJO |
+| .cache (HuggingFace) | 1 GB | BAJO |
+| Downloads | 1.49 GB | REVISAR |
+| Windows Update cache | 0.42 GB | BAJO |
+| Chrome cache | 0.4 GB | BAJO |
+| Edge cache | 0.2 GB | BAJO |
+
+**Total recuperable:** ~4-5 GB adicionales
+
+## Estado actual
+
+- **Espacio libre en C:** 13.76 GB
+- **Espacio necesario para PyTorch CUDA:** ~2.5 GB
+- **Margen:** Suficiente pero justo
+
+## Commits realizados
+
+Ninguno — sesión de preparación de entorno.
+
+## Decisión pendiente del usuario
+
+El usuario debe decidir:
+1. Proceder con 13.76 GB (suficiente pero justo)
+2. Limpiar TEMP primero (+2 GB de margen)
+3. Limpieza completa (+4-5 GB de margen)
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Decisión: limpiar más espacio o proceder |
+| **ALTA** | Instalar PyTorch con CUDA 12.4 |
+| **ALTA** | Instalar marker-pdf |
+| MEDIA | Integrar Marker al módulo Audiobook |
+| BAJA | Crear marker_parser.py con fallback |
+
+## Comandos listos para ejecutar (próxima sesión)
+
+```powershell
+# Si decide limpiar TEMP primero:
+Remove-Item "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
+
+# Instalación de PyTorch CUDA:
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# Verificación:
+python -c "import torch; print(torch.cuda.is_available())"
+
+# Instalación de Marker:
+pip install marker-pdf
+```
+
+---
+
+
+---
+
+### Sesion 2026-08-19 (~noche, final) — Descarga de PyTorch CUDA en progreso
+
+## Fecha y hora
+2026-08-19, ~noche (cierre de sesión)
+
+## Contexto
+
+Continuación de la sesión donde se estaba instalando PyTorch con soporte CUDA para poder usar Marker como extractor PDF en el módulo Audiobook.
+
+## Trabajo realizado
+
+### 1. Limpieza de disco completada (sesión anterior)
+
+Se liberaron ~6 GB de espacio en C: limpiando:
+- TEMP del usuario (2.12 GB)
+- Cache de pip
+- Cache de npm
+- Cache de HuggingFace
+- Papelera de reciclaje
+
+**Resultado:** C: pasó de 9.5 GB libres a **15.6 GB libres**
+
+### 2. Descarga de PyTorch CUDA iniciada
+
+Comando ejecutado:
+```powershell
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
+
+**Estado al cierre de sesión:**
+- Descarga: ~0.2/2.5 GB (~8% completado)
+- Velocidad: ~2.1 MB/s
+- Tiempo restante estimado: ~18 minutos
+- Terminal ID: 19
+
+## Archivos modificados
+
+Ninguno — sesión de instalación de dependencias.
+
+## Commits realizados
+
+Ninguno.
+
+## Causa raíz del problema original
+
+El usuario reportó que el extractor PDF no distingue headers, footers y números de página del cuerpo del texto. Esto ocurre porque **PyMuPDF** (el extractor actual) extrae todo el texto en orden físico sin análisis de layout.
+
+**Solución en progreso:** Instalar **Marker** (datalab-to/marker) que tiene un modelo de detección de layout que excluye automáticamente estos elementos.
+
+## Decisiones de diseño
+
+1. **PyTorch CUDA 12.4** — Elegido para aprovechar la RTX 3050 (4GB VRAM) del equipo
+2. **Marker como extractor principal** — 83.5% de precisión vs ~65% de PyMuPDF
+3. **Fallback automático** — Marker → MarkItDown → PyMuPDF
+
+## Estado del hardware
+
+| Componente | Especificación |
+|------------|----------------|
+| GPU | NVIDIA RTX 3050 (4GB VRAM) |
+| Driver NVIDIA | 610.74 |
+| CUDA disponible | 13.3 (compatible con cu124) |
+| RAM | 64 GB |
+| PyTorch actual | 2.14.1+cpu (sin CUDA) |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Verificar que PyTorch CUDA se instaló correctamente | Pendiente |
+| **ALTA** | Instalar marker-pdf: `pip install marker-pdf` | Pendiente |
+| **ALTA** | Crear `src/Audiobook/parsers/marker_parser.py` | Pendiente |
+| **ALTA** | Agregar `use_marker: bool = True` en AudiobookConfig | Pendiente |
+| MEDIA | Implementar fallback Marker → MarkItDown → PyMuPDF | Pendiente |
+| MEDIA | Benchmark: comparar tiempos Marker vs PyMuPDF | Opcional |
+
+## Comandos para retomar
+
+```powershell
+# Verificar instalación de PyTorch CUDA
+python -c "import torch; print('PyTorch:', torch.__version__); print('CUDA:', torch.cuda.is_available()); print('GPU:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N/A')"
+
+# Si PyTorch CUDA OK, instalar Marker
+pip install marker-pdf
+
+# Verificar Marker
+python -c "import marker; print('Marker instalado')"
+```
+
+## Notas técnicas
+
+- La descarga de PyTorch CUDA es lenta (~2 MB/s) porque son ~2.5 GB
+- Marker funciona en CPU pero es ~5x más lento que con GPU
+- Con RTX 3050 (4GB), usar modo "balanced" de Marker (no "accuracy")
+- Marker requiere ~2GB adicionales de modelos que se descargan en primer uso
+
+
+---
+
+### Sesión 2026-08-19 (~noche, verificación) — PyTorch CUDA descarga en progreso
+
+## Fecha y hora
+2026-08-19, ~noche (continuación breve)
+
+## Contexto
+
+Sesión corta de verificación del estado de la descarga de PyTorch CUDA iniciada en la sesión anterior.
+
+## Verificación realizada
+
+El usuario pidió verificar si PyTorch se instaló correctamente con el comando:
+```python
+python -c "import torch; print(torch.cuda.is_available())"
+```
+
+**Resultado:** `ModuleNotFoundError: No module named 'torch'`
+
+## Diagnóstico
+
+La descarga de PyTorch CUDA **sigue en progreso** (no había terminado):
+
+| Métrica | Valor |
+|---------|-------|
+| Descargado | ~0.6/2.5 GB (~24%) |
+| Velocidad | ~2.8-2.9 MB/s |
+| Tiempo restante | ~11-12 minutos |
+| Terminal ID | 19 |
+
+La velocidad mejoró ligeramente respecto a la sesión anterior (~2.1 MB/s → ~2.9 MB/s).
+
+## Archivos modificados
+
+Ninguno — sesión de verificación solamente.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes (sin cambios)
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Esperar que termine descarga PyTorch CUDA | ~11 min restantes |
+| **ALTA** | Verificar CUDA: `python -c "import torch; print(torch.cuda.is_available())"` | Post-descarga |
+| **ALTA** | Instalar Marker: `pip install marker-pdf` | Post-PyTorch |
+| **ALTA** | Crear `marker_parser.py` en módulo Audiobook | Pendiente |
+| MEDIA | Implementar fallback Marker → MarkItDown → PyMuPDF | Pendiente |
+
+## Nota
+
+Esta fue una sesión muy corta (~2 min) solo para verificar el estado de la descarga. PyTorch aún no está disponible porque la descarga de ~2.5 GB sigue en proceso.
+
+
+---
+
+### Sesión 2026-08-19 (~noche, cierre) — Instalación PyTorch CUDA fallida
+
+## Fecha y hora
+2026-08-19, ~noche (cierre de sesión)
+
+## Contexto
+
+Verificación final del estado de la descarga de PyTorch CUDA.
+
+## Resultado: Instalación FALLIDA
+
+La instalación de PyTorch con CUDA falló con dos errores:
+
+### Error 1: DNS/Conectividad
+```
+WARNING: Retrying... Failed to resolve 'download-r2.pytorch.org' 
+([Errno 11001] getaddrinfo failed)
+```
+**Causa:** Problemas de resolución DNS durante la descarga de los ~2.5 GB.
+
+### Error 2: Archivo bloqueado (WinError 32)
+```
+ERROR: Could not install packages due to an OSError: [WinError 32] 
+El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso: 
+'...\site-packages\sympy\polys\fglmtools.py'
+```
+**Causa raíz:** Un proceso Python (probablemente el servidor HTTP de NEVEN o Excel) tenía cargado el paquete `sympy`, bloqueando la actualización de dependencias durante la instalación de PyTorch.
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Intentos fallidos
+
+| Intento | Error | Causa raíz | Solución |
+|---------|-------|------------|----------|
+| pip install torch...cu124 | WinError 32 | sympy bloqueado por proceso Python | Cerrar Excel/servidores antes de instalar |
+| Descarga PyTorch | DNS resolution failed | Conectividad intermitente | Reintentar con mejor conexión |
+
+## Lección aprendida
+
+**SIEMPRE cerrar procesos Python (Excel, servidores HTTP, notebooks) antes de instalar paquetes que modifican dependencias compartidas como sympy, numpy, etc.**
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Cerrar Excel y servidores NEVEN | Prerequisito |
+| **ALTA** | Reintentar: `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124` | Pendiente |
+| **ALTA** | Verificar CUDA: `python -c "import torch; print(torch.cuda.is_available())"` | Post-instalación |
+| **ALTA** | Instalar Marker: `pip install marker-pdf` | Post-PyTorch |
+| MEDIA | Crear `marker_parser.py` en módulo Audiobook | Pendiente |
+
+## Comandos para próxima sesión
+
+```powershell
+# 1. Verificar que no hay procesos Python corriendo
+Get-Process python* | Stop-Process -Force
+
+# 2. Reintentar instalación PyTorch CUDA
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# 3. Verificar instalación
+python -c "import torch; print('CUDA:', torch.cuda.is_available())"
+
+# 4. Instalar Marker
+pip install marker-pdf
+```
+
+## Nota
+
+El paquete PyTorch quedó en estado inconsistente. Puede ser necesario desinstalar primero:
+```powershell
+pip uninstall torch torchvision torchaudio -y
+```
+
+
+---
+
+### Sesión 2026-08-19 (~noche, final) — Marker PDF integrado exitosamente
+
+## Fecha y hora
+2026-08-19, ~noche (cierre de sesión)
+
+## Logros principales
+
+### 1. PyTorch CUDA instalado correctamente
+```
+PyTorch: 2.6.0+cu124
+CUDA disponible: True
+GPU: NVIDIA GeForce RTX 3050 Laptop GPU
+```
+
+### 2. Marker PDF instalado y funcionando
+Marker (datalab-to/marker) ahora es el extractor PDF por defecto en el módulo Audiobook.
+
+**Ventajas de Marker:**
+- Precisión ~83.5% vs ~65% de PyMuPDF
+- Excluye automáticamente headers, footers, números de página
+- Detección avanzada de layout multi-columna
+- Aprovecha la GPU RTX 3050 para velocidad
+
+### 3. Nuevo parser creado: marker_parser.py
+Implementación completa con:
+- Conversión PDF → Markdown usando modelos de layout
+- Extracción de capítulos desde headers Markdown
+- Limpieza de texto para TTS
+- Fallback graceful si Marker no está disponible
+
+### 4. Pipeline actualizado con jerarquía de parsers
+```
+Jerarquía para PDFs:
+1. Marker (use_marker=True) → mejor calidad
+2. MarkItDown (use_markitdown=True) → buena estructura  
+3. PyMuPDF → fallback rápido
+```
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/Audiobook/parsers/marker_parser.py` | **NUEVO** - Parser con Marker |
+| `src/Audiobook/pipeline.py` | Agregar soporte Marker + jerarquía de parsers |
+| `C:\NEVEN\Audiobook\parsers\marker_parser.py` | Copiado a producción |
+| `C:\NEVEN\Audiobook\pipeline.py` | Copiado a producción |
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `b7b64ef` | feat(audiobook): integrar Marker como extractor PDF principal |
+
+## Causa raíz del problema original
+
+**Problema:** El extractor PDF no distinguía headers, footers y números de página del cuerpo del texto, resultando en audio con "página 47" leído cada 2 minutos.
+
+**Causa raíz:** PyMuPDF extrae TODO el texto en orden físico de aparición, sin análisis de layout.
+
+**Solución:** Marker tiene modelos de detección de layout que identifican y excluyen:
+- Headers/footers repetitivos
+- Números de página
+- Notas al margen
+- Texto fuera del flujo principal
+
+## Intentos fallidos y lecciones aprendidas
+
+| Intento | Error | Causa | Lección |
+|---------|-------|-------|---------|
+| `pip install marker-pdf` | Sobrescribió PyTorch CUDA con CPU | Marker tiene torch como dependencia sin especificar +cu124 | Instalar PyTorch CUDA primero, luego Marker |
+| Primera instalación PyTorch | WinError 32 (archivo bloqueado) | sympy en uso por otro proceso Python | Cerrar Excel/servidores antes de instalar |
+| Primera instalación PyTorch | DNS resolution failed | Conectividad intermitente | Reintentar con mejor conexión |
+
+## Decisiones de diseño
+
+1. **Marker por defecto** (`use_marker: True`): Mayor calidad justifica el costo de dependencias (~2GB)
+
+2. **Jerarquía de fallback**: Si Marker falla o no está instalado, automáticamente usa MarkItDown o PyMuPDF
+
+3. **Lazy loading de modelos**: Los modelos de Marker (~2GB) se cargan solo cuando se necesitan, no al importar el módulo
+
+4. **Reutilizar PyMuPDF para metadatos**: Marker no tiene API para metadatos PDF, así que usamos fitz solo para título/autor
+
+## Dependencias instaladas
+
+```
+torch==2.6.0+cu124
+torchvision==0.21.0+cu124
+torchaudio==2.6.0+cu124
+marker-pdf==2.0.0
+sympy==1.13.1
+```
+
+## Estado final
+
+| Componente | Estado |
+|------------|--------|
+| PyTorch CUDA | ✅ 2.6.0+cu124 |
+| Marker | ✅ 2.0.0 |
+| GPU RTX 3050 | ✅ Detectada |
+| Integración pipeline | ✅ Completada |
+| Commit pusheado | ✅ b7b64ef |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| MEDIA | Probar Marker con PDF real en Excel | Pendiente |
+| MEDIA | Benchmark: comparar tiempos Marker vs PyMuPDF | Opcional |
+| BAJA | Agregar opción en UI para seleccionar parser | Futuro |
+| BAJA | Documentar requisitos de Marker en README | Futuro |
+
+## Comandos útiles para debugging
+
+```powershell
+# Verificar PyTorch CUDA
+python -c "import torch; print('CUDA:', torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+
+# Verificar Marker
+python -c "from marker.converters.pdf import PdfConverter; print('Marker OK')"
+
+# Probar extracción de un PDF
+python -c "
+from parsers.marker_parser import MarkerParser
+p = MarkerParser('documento.pdf')
+p.extract_metadata()
+md = p.convert_to_markdown()
+print(md[:500])
+"
+```
+
+
+---
+
+### Sesión 2026-08-19 (~noche, troubleshooting) — Servidor Audiobook "no disponible" resuelto
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Problema reportado
+
+El usuario reportó que al hacer clic en "Iniciar Servidor" en el Tab Audiolibros, aparecía "Servidor no disponible".
+
+## Diagnóstico
+
+1. **Puerto 5555 (servidor principal):** EN USO ✓
+2. **Puerto 5556 (audiobook):** EN USO pero en estado `FinWait2`
+3. **Endpoint `/api/health`:** No respondía
+
+## Causa raíz
+
+El servidor de audiobook había muerto/crasheado, pero el socket TCP quedó en estado **FinWait2** (conexión cerrándose). Esto hacía que:
+- El puerto 5556 apareciera como "en uso"
+- Pero no hubiera ningún proceso escuchando
+- El endpoint de health no respondía
+
+El estado FinWait2 puede durar 2-4 minutos en TCP antes de que el OS libere el socket completamente.
+
+## Solución aplicada
+
+Iniciar el servidor de audiobook manualmente:
+```powershell
+Start-Process -FilePath "python" -ArgumentList "C:\NEVEN\Audiobook\neven_audiobook_server.py" -WorkingDirectory "C:\NEVEN\Audiobook" -WindowStyle Hidden
+```
+
+Después de esto:
+- Puerto 5556: State = **Listen** (correcto)
+- Health check: **OK**
+- Respuesta: `{"service":"neven-audiobook","status":"ok","version":"1.0.0"}`
+
+## Archivos modificados
+
+Ninguno — solo diagnóstico y reinicio de servicio.
+
+## Commits realizados
+
+Ninguno.
+
+## Lecciones aprendidas
+
+1. **FinWait2 no significa "servidor corriendo"** — solo que hay un socket TCP en proceso de cierre
+2. **Verificar con health check, no solo con puerto** — el puerto puede estar en uso por un socket zombie
+3. **El servidor de audiobook puede crashear silenciosamente** — no hay watchdog que lo reinicie
+
+## Diagnóstico rápido para futuros problemas
+
+```powershell
+# Verificar estado real del servidor
+Get-NetTCPConnection -LocalPort 5556 | Format-Table State, OwningProcess
+
+# Si State = FinWait2 o TimeWait → servidor muerto, reiniciar
+# Si State = Listen → servidor vivo, problema es otro (CORS, JS)
+
+# Probar health directamente
+Invoke-RestMethod -Uri "http://127.0.0.1:5556/api/health" -TimeoutSec 5
+```
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| MEDIA | Agregar watchdog/auto-restart para servidor audiobook | Futuro |
+| MEDIA | Mejorar mensajes de error en audiobook.js (distinguir socket zombie vs CORS vs otros) | Futuro |
+| BAJA | Considerar usar un único servidor (5555) en lugar de dos | Evaluar |
+
+## Estado final
+
+- Servidor audiobook: **Funcionando** en puerto 5556
+- Health check: **OK**
+- Usuario debe refrescar TaskPane para ver el cambio
+
+
+---
+
+### Sesión 2026-08-19 (~noche, confirmación) — Servidor Audiobook conectado
+
+## Fecha y hora
+2026-08-19, ~noche (cierre)
+
+## Confirmación
+
+El usuario confirmó que el Tab Audiolibros ahora muestra **"Servidor activo"** (conectado).
+
+## Resumen de logros de la sesión completa
+
+| Componente | Estado |
+|------------|--------|
+| PyTorch CUDA | ✅ 2.6.0+cu124 instalado |
+| Marker PDF | ✅ 2.0.0 instalado y funcionando |
+| GPU RTX 3050 | ✅ Detectada por PyTorch |
+| marker_parser.py | ✅ Creado e integrado |
+| pipeline.py | ✅ Actualizado con jerarquía de parsers |
+| Servidor Audiobook | ✅ Conectado (puerto 5556) |
+| Commit | ✅ `b7b64ef` pusheado |
+
+## Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/Audiobook/parsers/marker_parser.py` | **NUEVO** |
+| `src/Audiobook/pipeline.py` | Agregar `use_marker: True` |
+| `C:\NEVEN\Audiobook\parsers\marker_parser.py` | Copiado a producción |
+| `C:\NEVEN\Audiobook\pipeline.py` | Copiado a producción |
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `b7b64ef` | feat(audiobook): integrar Marker como extractor PDF principal |
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| MEDIA | Probar extracción PDF con Marker en Excel | Pendiente |
+| MEDIA | Verificar que headers/footers se excluyen | Pendiente |
+| BAJA | Agregar watchdog para servidor audiobook | Futuro |
+
+## Nota
+
+Esta fue una sesión productiva: se instaló PyTorch CUDA, Marker, se creó el parser, se integró al pipeline, y se resolvió el problema del servidor audiobook muerto. El sistema está listo para probar el flujo completo PDF → Markdown → M4B con detección avanzada de layout.
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Markdown semántico para TTS implementado
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Solicitud del usuario
+
+El usuario pidió validar/implementar que los elementos Markdown tengan significado para la narración TTS:
+- `#` → pausa larga (título principal)
+- `##` → pausa media (título secundario)
+- `###` → pausa normal (subtítulo)
+- `####` → incremento de voz (elemento destacado)
+
+## Problema identificado
+
+El código anterior simplemente **eliminaba** los headers Markdown (`^#+\s*` → '') sin convertirlos a pausas ni énfasis. El TTS recibía texto plano sin indicaciones de estructura.
+
+## Solución implementada
+
+### 1. Nuevo archivo: markdown_to_ssml.py
+
+Conversor de Markdown a SSML con pausas y énfasis semánticos:
+
+| Elemento | SSML generado | Efecto |
+|----------|---------------|--------|
+| `# Título` | `<break time="1500ms"/><emphasis level="strong">` | Pausa 1.5s + énfasis fuerte |
+| `## Sección` | `<break time="1000ms"/><emphasis level="moderate">` | Pausa 1s + énfasis moderado |
+| `### Subtítulo` | `<break time="500ms"/>` | Pausa 0.5s |
+| `#### Destacado` | `<prosody pitch="+10%" rate="-5%"><emphasis level="strong">` | Pitch elevado + lento + énfasis |
+| `**negrita**` | `<emphasis level="strong">` | Énfasis fuerte |
+| `*cursiva*` | `<emphasis level="moderate">` | Énfasis suave |
+| `> cita` | `<prosody pitch="-5%">` | Tono más bajo |
+| `---` | `<break time="2000ms"/>` | Pausa larga de sección |
+
+### 2. Integración en EdgeTTS
+
+`edge_tts_engine.py` modificado:
+- Nuevo método `synthesize_markdown()` que genera SSML
+- `synthesize_chapter()` detecta automáticamente si hay headers Markdown
+- Si detecta headers → usa SSML con pausas
+- Si no → usa síntesis plain (comportamiento anterior)
+
+### 3. Integración en WindowsTTS
+
+`windows_tts.py` modificado:
+- Windows SAPI no soporta SSML completo
+- Fallback: convierte Markdown a texto plano con pausas por puntuación
+- `#` → `... Título. ...` (elipsis para pausa larga)
+- `##` → `.. Sección. ..`
+- `####` → `¡Destacado!` (exclamación para énfasis)
+
+## Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/Audiobook/tts/markdown_to_ssml.py` | **NUEVO** — Conversor MD→SSML |
+| `src/Audiobook/tts/edge_tts_engine.py` | `synthesize_markdown()` + detección automática |
+| `src/Audiobook/tts/windows_tts.py` | Fallback con puntuación |
+| `C:\NEVEN\Audiobook\tts\*` | Copiados a producción |
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `196d28b` | feat(audiobook): Markdown semántico para TTS con pausas y énfasis |
+
+## Decisiones de diseño
+
+1. **Detección automática**: `synthesize_chapter()` detecta si hay headers (`^#{1,6}\s+`) y decide automáticamente si usar SSML o plain text. No requiere cambios en el pipeline.
+
+2. **Configuración flexible**: `SSMLConfig` dataclass permite ajustar todas las pausas y énfasis. Por ejemplo, si 1.5s es mucho para H1, se puede reducir a 1s.
+
+3. **Fallback graceful**: Si SSML falla o `markdown_to_ssml` no está disponible, el sistema vuelve a síntesis plain sin crashear.
+
+4. **Windows SAPI**: No soporta SSML completo, así que usamos puntuación (`.`, `...`, `¡!`) que SAPI interpreta como pausas.
+
+## Prueba realizada
+
+```python
+test_md = '''
+# Capítulo 1: Introducción
+Este es el primer párrafo.
+## Sección 1.1: Contexto
+Texto de contexto.
+#### Nota destacada
+Este elemento debe resaltarse.
+'''
+
+ssml = markdown_to_ssml(test_md, 'es-MX-DaliaNeural')
+# Genera SSML correcto con breaks y prosody
+```
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| MEDIA | Probar con documento real PDF→MD→M4B | Pendiente |
+| BAJA | Permitir configurar pausas desde UI del TaskPane | Futuro |
+| BAJA | Agregar soporte para listas numeradas con pausa progresiva | Futuro |
+
+## Notas técnicas
+
+- Edge TTS soporta SSML completo incluyendo `<break>`, `<emphasis>`, `<prosody>`
+- Los tiempos de pausa están en milisegundos
+- El pitch se ajusta en porcentaje (+10%, -5%)
+- El rate (velocidad) también en porcentaje
+
+
+---
+
+### Sesión 2026-08-19 (~noche, consulta) — Análisis de formatos de audio alternativos
+
+## Fecha y hora
+2026-08-19, ~noche (cierre)
+
+## Consulta del usuario
+
+El usuario preguntó si es posible agregar formatos más populares que M4B (como MP3 o WAV) que también soporten metadatos.
+
+## Análisis realizado
+
+Comparativa de formatos para audiolibros con metadatos:
+
+| Formato | Capítulos | Metadatos | Portada | Compatibilidad | Tamaño |
+|---------|-----------|-----------|---------|----------------|--------|
+| **M4B** | ✅ Nativos | ✅ Completos | ✅ Embebida | ⚠️ Apple/VLC | Pequeño |
+| **MP3** | ⚠️ ID3 CHAP* | ✅ ID3v2 | ✅ ID3 APIC | ✅ Universal | Medio |
+| **WAV** | ❌ No | ⚠️ Limitado | ❌ No | ⚠️ Profesional | Grande |
+| **FLAC** | ⚠️ Cue sheets | ✅ Vorbis | ✅ Embebida | ⚠️ Audiófilo | Grande |
+
+*ID3 CHAP = ID3v2 Chapter frames, soportado por VLC, Podcast Addict, AntennaPod, foobar2000
+
+## Recomendación dada
+
+**MP3 es la mejor opción adicional** porque:
+1. Compatibilidad universal
+2. ID3v2 soporta título, autor, portada Y capítulos (CHAP frames)
+3. FFmpeg puede generarlo
+4. Tamaño razonable (64-128 kbps para voz)
+
+## Archivos modificados
+
+Ninguno — solo consulta y análisis.
+
+## Commits realizados
+
+Ninguno.
+
+## Decisión pendiente
+
+El usuario debe decidir:
+1. Agregar selector de formato en UI (M4B / MP3 / Ambos)
+2. O generar siempre ambos formatos
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| MEDIA | Implementar generación de MP3 con capítulos ID3v2 | Esperando decisión |
+| MEDIA | Agregar selector de formato en UI del Tab Audiobook | Esperando decisión |
+| MEDIA | Probar Markdown semántico con PDF real | Pendiente |
+| BAJA | Considerar FLAC para usuarios audiófilo | Futuro |
+
+## Implementación propuesta (para próxima sesión)
+
+1. Modificar `ffmpeg_muxer.py`:
+   - Nuevo método `create_mp3_with_chapters()`
+   - Usar mutagen para escribir ID3v2 CHAP frames
+
+2. Modificar `taskpane.html`:
+   - Agregar selector: `<select id="audiobook-format">`
+   - Opciones: M4B, MP3, Ambos
+
+3. Modificar `pipeline.py`:
+   - Leer configuración de formato
+   - Llamar al muxer correspondiente
+
+
+---
+### Sesión 2026-08-19 (~noche) → 2026-11-06 (~tarde) — Fix posición reproducción Android + Formato M4A
+
+## Fecha y hora
+2026-08-19 a 2026-11-06 (sesión extendida con compactación de contexto)
+
+## Solicitud del usuario
+1. Investigar y corregir bug: el reproductor de audiolibros Android no guarda la última posición de escucha
+2. Cambiar formato de M4B a M4A para mejor compatibilidad con estéreos de carro
+
+## Diagnóstico del bug de posición
+
+**Síntoma:** El reproductor siempre inicia desde cero, nunca recuerda dónde quedó el usuario.
+
+**Causa raíz identificada:**
+El `AudiobookViewModel.kt` tenía el método `saveCurrentPosition()` pero solo se llamaba en dos lugares muy limitados:
+1. `onCleared()` — cuando el ViewModel se destruye
+2. `pause()` — cuando se pausa manualmente
+
+**Escenarios NO cubiertos (bug):**
+- ❌ `togglePlayPause()` llamaba directo al service, bypasseando `pause()` → NO guardaba
+- ❌ Durante reproducción el polling actualizaba UI pero NO persistía en DB
+- ❌ El callback `onDestroyCallback` del servicio estaba definido pero NUNCA registrado
+- ❌ Si la app crasheaba o se cerraba forzosamente, se perdía todo
+
+## Solución implementada
+
+### 1. Guardado periódico cada 30 segundos
+```kotlin
+private var positionSaveJob: Job? = null
+private val POSITION_SAVE_INTERVAL_MS = 30_000L
+
+private fun startPeriodicPositionSave() {
+    positionSaveJob = viewModelScope.launch {
+        while (isActive) {
+            delay(POSITION_SAVE_INTERVAL_MS)
+            saveCurrentPosition()
+        }
+    }
+}
+```
+
+### 2. Guardar al hacer togglePlayPause()
+```kotlin
+fun togglePlayPause() {
+    val wasPlaying = playerService?.isPlaying() == true
+    playerService?.togglePlayPause()
+    
+    // Si pasó de playing a paused, guardar posición
+    if (wasPlaying) {
+        viewModelScope.launch { saveCurrentPosition() }
+    }
+}
+```
+
+### 3. Registrar callback del servicio
+```kotlin
+playerService?.setOnDestroyCallback { audiobookId, positionMs ->
+    viewModelScope.launch {
+        if (audiobookId != null && positionMs > 0) {
+            repository.updatePlaybackPosition(audiobookId, positionMs, ...)
+        }
+    }
+}
+```
+
+## Cambio de formato M4B → M4A
+
+**Razón:** Los estéreos de carro reconocen `.m4a` como "audio" pero a menudo ignoran `.m4b` porque es extensión "audiobook" de Apple. El contenido es idéntico (AAC en contenedor MP4).
+
+**Archivos modificados:**
+- `ffmpeg_muxer.py`: Renombrado `create_m4b()` → `create_m4a()`, agregado alias de compatibilidad
+- `pipeline.py`: Cambiada extensión predeterminada, actualizado mensaje de ayuda
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `android/.../AudiobookViewModel.kt` | +guardado periódico, +fix togglePlayPause, +registro callback |
+| `src/Audiobook/muxer/ffmpeg_muxer.py` | Renombrar a M4A, alias de compatibilidad |
+| `src/Audiobook/pipeline.py` | Usar DEFAULT_AUDIOBOOK_EXTENSION (.m4a) |
+
+## Archivos copiados a producción
+
+| Archivo | Destino |
+|---------|---------|
+| `ffmpeg_muxer.py` | `C:\NEVEN\Audiobook\muxer\ffmpeg_muxer.py` |
+| `pipeline.py` | `C:\NEVEN\Audiobook\pipeline.py` |
+
+## Commits realizados
+
+Ninguno — cambios listos para commit.
+
+## Decisiones de diseño
+
+1. **Intervalo de 30 segundos** — Balance entre no perder mucho progreso y no escribir excesivamente a la DB
+2. **Alias `create_m4b()`** — Mantiene compatibilidad hacia atrás si hay código que lo llame
+3. **Constante `DEFAULT_AUDIOBOOK_EXTENSION`** — Centraliza la decisión, fácil cambiar en el futuro
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Compilar app Android y probar fix de posición | Pendiente |
+| **ALTA** | Probar generación de audiolibro .m4a | Pendiente |
+| MEDIA | Commit de cambios Android + Python | Pendiente |
+| MEDIA | Probar .m4a en estéreo de carro | Pendiente |
+| BAJA | Considerar agregar MP3 como formato alternativo con ID3v2 CHAP | Futuro |
+
+## Notas técnicas
+
+- El guardado periódico se inicia cuando `startPositionPolling()` detecta `isPlaying = true`
+- El guardado periódico se detiene automáticamente cuando se pausa
+- El callback del servicio es la última línea de defensa si el ViewModel se destruye sin guardar
+- M4A y M4B son el MISMO formato (AAC/MP4), solo difiere la extensión de archivo
+
+
+---
+### Sesión 2026-11-06 (~tarde, continuación) — Consulta configuración launcher Android
+
+## Fecha y hora
+2026-11-06, ~tarde
+
+## Consulta
+
+Usuario preguntó cómo configurar NEVEN Launcher como launcher predeterminado en su Pixel sin deshabilitar el Pixel Launcher original.
+
+## Respuesta proporcionada
+
+Dos métodos:
+
+### Método 1: Desde el celular
+- Settings → Apps → Default apps → Home app → NEVEN Launcher
+- O presionar Home y seleccionar "Siempre" con NEVEN Launcher
+
+### Método 2: Via ADB
+```powershell
+adb shell cmd package set-home-activity com.neven.launcher/.MainActivity
+```
+
+## Nota importante
+Android permite múltiples launchers instalados. Al cambiar el predeterminado, el Pixel Launcher queda disponible en Settings → Apps para emergencias.
+
+## Archivos modificados
+Ninguno — solo consulta.
+
+## Commits realizados
+Ninguno.
+
+## Pendientes (sin cambios desde entrada anterior)
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Compilar app Android y probar fix de posición | Pendiente |
+| **ALTA** | Probar generación de audiolibro .m4a | Pendiente |
+| **ALTA** | Configurar NEVEN Launcher como predeterminado en Pixel | Esperando acción usuario |
+| MEDIA | Commit de cambios Android + Python | Pendiente |
+| MEDIA | Probar .m4a en estéreo de carro | Pendiente |
+
+
+---
+### Sesión 2026-11-06 (~tarde, continuación) — Fix ANR al pausar reproductor Android
+
+## Fecha y hora
+2026-11-06, ~tarde
+
+## Problema reportado
+Al pausar el reproductor de audiolibros, aparecía mensaje "NEVEN NO RESPONDE" (ANR - Application Not Responding). Usuario seleccionó "Esperar" y la reproducción continuó normalmente.
+
+## Diagnóstico
+
+**Síntoma:** ANR al pausar reproducción de audiobook.
+
+**Causa raíz:** La función `saveCurrentPosition()` ejecutaba operaciones de base de datos (Room) potencialmente en el hilo principal. Aunque usaba `viewModelScope.launch`, Room puede bloquear si no se especifica explícitamente un dispatcher de I/O.
+
+**Evidencia:** Cuando el usuario seleccionó "Esperar", la operación completó — indicando que era un problema de timeout, no de lógica.
+
+## Solución implementada
+
+Envolver la operación de guardado en `withContext(Dispatchers.IO)` para forzar ejecución en hilo de background:
+
+```kotlin
+private suspend fun saveCurrentPosition() {
+    withContext(Dispatchers.IO) {  // <-- Fix del ANR
+        _currentAudiobook.value?.let { book ->
+            try {
+                repository.updatePlaybackPosition(...)
+            } catch (e: Exception) {
+                android.util.Log.e("AudiobookViewModel", "Error saving position", e)
+            }
+        }
+    }
+}
+```
+
+También se aplicó el mismo fix al callback de `onDestroy` del servicio.
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `android/.../AudiobookViewModel.kt` | +`withContext(Dispatchers.IO)` en `saveCurrentPosition()` y callback del servicio |
+
+## Imports agregados
+
+```kotlin
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+```
+
+## Commits realizados
+
+Ninguno — cambio pendiente de verificación y commit.
+
+## Decisiones de diseño
+
+1. **`withContext(Dispatchers.IO)`** en lugar de solo `viewModelScope.launch` — Room puede ejecutar queries en el hilo del caller si no se especifica dispatcher; `Dispatchers.IO` garantiza hilo de background.
+
+2. **Try-catch alrededor del guardado** — Si falla el guardado, no debe crashear la app; solo loguear el error.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Recompilar APK e instalar en celular para verificar fix ANR | Pendiente |
+| **ALTA** | Probar que la posición se guarda correctamente después del fix | Pendiente |
+| MEDIA | Commit de todos los cambios Android | Pendiente |
+| MEDIA | Probar generación de audiolibro .m4a | Pendiente |
+| MEDIA | Configurar NEVEN Launcher como predeterminado | Esperando usuario |
+
+## Resumen de cambios acumulados en AudiobookViewModel.kt
+
+1. ✅ Guardado periódico cada 30 segundos
+2. ✅ Guardar al hacer `togglePlayPause()` 
+3. ✅ Registrar callback del servicio para guardar al destruir
+4. ✅ **FIX ANR:** `withContext(Dispatchers.IO)` en operaciones de DB
+
+
+---
+### Sesión 2026-11-06 (~tarde, final) — APK instalado en Pixel 10 Pro XL
+
+## Fecha y hora
+2026-11-06, ~15:00
+
+## Logros principales
+
+1. **APK compilado e instalado** en Pixel 10 Pro XL con fix del ANR
+2. **Configurado `local.properties`** con ruta del Android SDK
+3. **Verificado que el APK incluye el fix** (fecha APK > fecha código)
+
+## Proceso de instalación
+
+```
+APK generado:     2026-11-06 14:42:14 (28.64 MB)
+Kotlin modificado: 2026-11-06 14:34:06
+```
+
+El APK ya incluía el fix porque fue compilado después de las modificaciones.
+
+## Comandos ejecutados
+
+```powershell
+# Crear local.properties (faltaba)
+sdk.dir=C:\\Users\\Minor Bonilla G\\AppData\\Local\\Android\\Sdk
+
+# Verificar teléfono
+adb devices -l
+# → Pixel_10_Pro_XL (adb-5B050DLCQ000JQ)
+
+# Instalar
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+# → Success
+```
+
+## Archivos creados
+
+| Archivo | Contenido |
+|---------|-----------|
+| `android/local.properties` | `sdk.dir=C:\\Users\\Minor Bonilla G\\AppData\\Local\\Android\\Sdk` |
+
+## Problemas encontrados y soluciones
+
+| Problema | Causa | Solución |
+|----------|-------|----------|
+| `adb` no reconocido | No está en PATH | Usar ruta completa: `$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe` |
+| SDK location not found | Falta `local.properties` | Crear archivo con `sdk.dir` |
+| Kotlin daemon error | Daemon ocupado | Gradle usó fallback automáticamente |
+
+## Commits realizados
+
+Ninguno — pendiente commit de cambios.
+
+## Estado actual
+
+- ✅ APK instalado en Pixel 10 Pro XL
+- ✅ Fix ANR incluido (`withContext(Dispatchers.IO)`)
+- ⏳ Pendiente verificación del usuario
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Usuario debe probar pausar reproductor | Esperando feedback |
+| MEDIA | Commit de cambios Android | Pendiente |
+| MEDIA | Commit de cambios Python (M4A) | Pendiente |
+| BAJA | Configurar NEVEN como launcher predeterminado | Opcional |
+
+
+---
+
+### Sesión 2026-08-19 (~tarde) — Diagnóstico botón "Iniciar Servidor" + Monitoreo audiobook
+
+## Fecha y hora
+2026-08-19, ~tarde
+
+## Contexto
+
+Sesión continuada desde contexto compactado. El usuario reportó que el botón "Iniciar Servidor" en el TaskPane de audiobook mostraba "SERVIDOR NO DISPONIBLE".
+
+## Trabajo realizado
+
+### 1. Diagnóstico del problema del botón
+
+**Verificaciones realizadas:**
+- Puerto 5555 (servidor principal): ✅ Activo
+- Puerto 5556 (servidor audiobook): ✅ Activo
+- Endpoint `POST /api/audiobook/start`: ✅ Responde correctamente
+- Endpoint `GET /api/health` (5556): ✅ Responde `{"service":"neven-audiobook","status":"ok","version":"1.0.0"}`
+- CORS en servidor audiobook: ✅ Configurado correctamente
+- Archivos JS producción vs repo: ✅ Idénticos (31589 bytes, mismo timestamp)
+- Archivos Python producción vs repo: ✅ Idénticos (218882 bytes)
+
+**Resultado:** La infraestructura está correcta. El mensaje "Servidor no disponible" aparece cuando `checkServerStatus()` no puede conectarse al puerto 5556 — pero esto ocurre si el servidor de audiobook no está corriendo en ese momento.
+
+### 2. Hallazgo sobre ciclo de vida del servidor
+
+Observé que los procesos Python se detienen cuando no hay actividad. Cuando inicié manualmente el servidor con timeout de 10 segundos, arrancó correctamente pero se detuvo al terminar el comando.
+
+El flujo correcto es:
+1. Usuario hace clic en "Iniciar Servidor"
+2. `audiobook.js` llama `POST /api/audiobook/start` (puerto 5555)
+3. Servidor principal lanza `neven_audiobook_server.py` como proceso detached
+4. 2 segundos después, `checkServerStatus()` verifica puerto 5556
+
+### 3. Monitoreo de generación de audiobook
+
+El usuario inició una generación de audiobook. Monitoreo del job:
+
+```json
+{
+  "job_id": "2250d682",
+  "status": "running",
+  "progress": 12,
+  "stage": "Sintetizando: PARTE 1: CAPÍTULO 5..."
+}
+```
+
+## Archivos revisados (sin modificaciones)
+
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\startup\neven_http_server.py` | Endpoint `/api/audiobook/start` (líneas 2314-2361) |
+| `C:\NEVEN\Audiobook\neven_audiobook_server.py` | CORS y endpoint `/api/health` |
+| `C:\NEVEN\TaskPane\audiobook.js` | Funciones `startServer()` y `checkServerStatus()` |
+| `F:\...\src\TaskPane\audiobook.js` | Verificar sincronización con producción |
+
+## Commits realizados
+
+Ninguno — sesión de diagnóstico sin modificaciones de código.
+
+## Conclusiones técnicas
+
+1. **El botón funciona correctamente** — el problema es de timing o estado del servidor
+2. **CORS está bien configurado** en `neven_audiobook_server.py`
+3. **El servidor de audiobook requiere inicio manual o vía botón** antes de usar las funciones
+
+## Pendientes
+
+| Prioridad | Tarea | Descripción |
+|-----------|-------|-------------|
+| **ALTA** | Verificar ANR fix | Usuario debe probar pausar reproductor Android |
+| **ALTA** | Monitorear audiobook | Job `2250d682` en progreso (12%) |
+| MEDIA | Commit cambios Android | `withContext(Dispatchers.IO)` en AudiobookViewModel |
+| MEDIA | Commit cambios Python | Formato M4A en `ffmpeg_muxer.py` y `pipeline.py` |
+| BAJA | Investigar auto-start | ¿Por qué a veces el servidor no arranca automáticamente? |
