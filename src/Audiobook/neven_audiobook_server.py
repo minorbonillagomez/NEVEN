@@ -88,22 +88,43 @@ def create_app(upload_folder: str = None, output_folder: str = None) -> Flask:
             'version': VERSION
         })
     
-    @app.route('/api/download/<filename>')
+    @app.route('/api/download/<path:filename>')
     def download_file(filename):
-        """Descarga un archivo M4B generado"""
-        from flask import send_file
-        from werkzeug.utils import secure_filename
+        """Descarga un archivo M4B generado.
         
-        safe_filename = secure_filename(filename)
-        file_path = os.path.join(output_folder, safe_filename)
+        Nota: Usamos <path:filename> para permitir nombres con espacios y caracteres especiales.
+        La validacion de seguridad se hace verificando que el archivo existe en output_folder
+        y que la ruta resuelta no escapa del directorio (path traversal protection).
+        """
+        from flask import send_file
+        from urllib.parse import unquote
+        
+        # Decodificar nombre URL-encoded
+        decoded_filename = unquote(filename)
+        
+        # Construir ruta y verificar que no escape del directorio
+        file_path = os.path.normpath(os.path.join(output_folder, decoded_filename))
+        
+        # Proteccion contra path traversal
+        if not file_path.startswith(os.path.normpath(output_folder)):
+            return jsonify({'error': 'Acceso no permitido'}), 403
         
         if not os.path.exists(file_path):
-            return jsonify({'error': 'Archivo no encontrado'}), 404
+            # Intentar buscar por nombre parcial (sin extension o con variaciones)
+            base_name = os.path.splitext(decoded_filename)[0]
+            matches = [f for f in os.listdir(output_folder) if f.startswith(base_name)]
+            if matches:
+                file_path = os.path.join(output_folder, matches[0])
+                decoded_filename = matches[0]
+            else:
+                print(f"[DOWNLOAD] Archivo no encontrado: {decoded_filename}")
+                print(f"[DOWNLOAD] Buscado en: {file_path}")
+                return jsonify({'error': 'Archivo no encontrado', 'requested': decoded_filename}), 404
         
         return send_file(
             file_path,
             as_attachment=True,
-            download_name=safe_filename,
+            download_name=decoded_filename,
             mimetype='audio/mp4'
         )
     

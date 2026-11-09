@@ -4594,3 +4594,3178 @@ Ninguno — sesión de diagnóstico sin modificaciones de código.
 | MEDIA | Commit cambios Android | `withContext(Dispatchers.IO)` en AudiobookViewModel |
 | MEDIA | Commit cambios Python | Formato M4A en `ffmpeg_muxer.py` y `pipeline.py` |
 | BAJA | Investigar auto-start | ¿Por qué a veces el servidor no arranca automáticamente? |
+
+
+---
+
+### Sesión 2026-08-19 (~tarde, continuación) — Commits y push de cambios pendientes
+
+## Fecha y hora
+2026-08-19, ~tarde
+
+## Logros principales
+
+1. **Commits organizados por funcionalidad** — 4 commits separados para mantener historial limpio
+2. **Push exitoso a GitHub** — Todos los cambios subidos a `master`
+3. **Monitoreo de job de audiobook** — Job `2250d682` al 12%, sintetizando Capítulo 5
+
+## Commits realizados
+
+| Hash | Descripción |
+|------|-------------|
+| `e202705` | fix(android): resolve ANR when pausing audiobook playback |
+| `3fd9cfb` | feat(audiobook): change output format from M4B to M4A |
+| `e546b69` | feat(taskpane): UI improvements for audiobook module |
+| `fbd895d` | docs: update session log with ANR fix and M4A format changes |
+
+## Archivos commiteados
+
+| Archivo | Commit |
+|---------|--------|
+| `android/app/src/main/java/com/neven/launcher/ui/audiobook/AudiobookViewModel.kt` | e202705 |
+| `src/Audiobook/muxer/ffmpeg_muxer.py` | 3fd9cfb |
+| `src/Audiobook/pipeline.py` | 3fd9cfb |
+| `src/TaskPane/taskpane.html` | e546b69 |
+| `.kiro/contexto/CHAT.md` | fbd895d |
+
+## Estado del repositorio
+
+```
+196d28b (origin/master anterior) feat(audiobook): Markdown semántico para TTS
+   ↓
+e202705 fix(android): resolve ANR when pausing audiobook playback
+3fd9cfb feat(audiobook): change output format from M4B to M4A
+e546b69 feat(taskpane): UI improvements for audiobook module
+fbd895d (HEAD -> master, origin/master) docs: update session log
+```
+
+## Job de audiobook en progreso
+
+- **Job ID:** `2250d682`
+- **Estado:** running
+- **Progreso:** 12%
+- **Etapa:** Sintetizando: PARTE 1: CAPÍTULO 5...
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Verificar ANR fix en Android | Usuario debe probar pausar reproductor |
+| **ALTA** | Completar generación audiobook | Job en progreso |
+| BAJA | Verificar formato M4A en car stereo | Cuando se genere el archivo |
+
+
+---
+
+### Sesión 2026-08-19 (~tarde, breve) — Verificación disponibilidad REA
+
+## Fecha y hora
+2026-08-19, ~tarde
+
+## Consulta
+
+Usuario preguntó si REA (Reverse Engineering Assistant) está disponible.
+
+## Respuesta
+
+**Sí, REA está disponible** como herramientas diferidas en el namespace `rea::*` con 200+ herramientas:
+
+- Análisis de binarios (EXE, DLL, ELF, Mach-O)
+- Android (APK, ADB, clases Java/Kotlin)
+- iOS/macOS (Swift, Objective-C)
+- Web/JavaScript (bundles, sources)
+- Frida (instrumentación dinámica)
+- Depuración (GDB, Rizin)
+
+## Cambios realizados
+
+Ninguno — sesión informativa.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| — | Usuario no especificó qué quiere analizar con REA |
+
+
+---
+
+### Sesión 2026-08-19 (~tarde) — Diagnóstico Dell XPS 15 9510 (problema monitor/USB-C)
+
+## Fecha y hora
+2026-08-19, ~tarde
+
+## Contexto
+
+Usuario reportó problema con Dell XPS 15 9510: el monitor se apaga repentinamente sin forma de recuperarlo, aparentemente relacionado con puertos USB-C.
+
+## Diagnóstico realizado (solo lectura, sin cambios)
+
+### Sistema confirmado
+- Modelo: Dell XPS 15 9510
+- GPU Intel UHD: Driver v32.0.101.7088 (Junio 2026) ✅
+- GPU NVIDIA RTX 3050: Driver v32.0.16.1074 (Julio 2026) ✅
+- Thunderbolt Controller: Intel 9A21 — Status OK ✅
+
+### Problema detectado
+**39 dispositivos USB en estado "Unknown"**, incluyendo:
+- "Error de solicitud de descriptor de configuración"
+- "Error de restablecimiento de puerto"
+- Múltiples concentradores USB genéricos fallando
+
+Esto es consistente con bug conocido de XPS 15 9510 donde el controlador Thunderbolt/USB-C pierde sincronización con DisplayPort.
+
+### Causas probables identificadas
+1. Firmware Thunderbolt desactualizado
+2. Power Management suspende USB-C y no puede despertar
+3. Conflicto GPU switching (Intel ↔ NVIDIA) con DisplayPort over USB-C
+
+## Opciones de solución propuestas (pendiente decisión del usuario)
+
+| Opción | Descripción | Riesgo |
+|--------|-------------|--------|
+| A | Actualizar firmware Thunderbolt (Dell Command Update) | Bajo |
+| B | Desactivar suspensión selectiva USB | Bajo |
+| C | Forzar GPU dedicada para display externo | Medio |
+| D | Reinstalar driver Thunderbolt | Medio |
+
+## Cambios realizados
+
+**Ninguno** — Usuario solicitó explícitamente no realizar cambios sin discutirlos primero.
+
+## Nota importante
+
+REA (Reverse Engineering Assistant) NO es la herramienta adecuada para diagnóstico de hardware. Se usaron comandos de sistema (WMI, Get-PnpDevice, powercfg) para el diagnóstico.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe elegir opción de solución (A/B/C/D) |
+| MEDIA | Ejecutar solución elegida |
+| BAJA | Documentar resultado para futura referencia |
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Fix aplicado: Dell XPS 15 9510 monitor/USB-C
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Problema
+Dell XPS 15 9510 apaga el monitor repentinamente sin forma de recuperarlo, relacionado con puertos USB-C/Thunderbolt.
+
+## Causa raíz identificada
+1. **39 dispositivos USB en estado "Unknown"** — errores de descriptor y restablecimiento de puerto
+2. **Driver Thunderbolt desactualizado** — versión 1.41.1335.0 de Junio 2022 (4 años viejo)
+3. **Power Management agresivo** — Windows suspende puertos USB-C/Thunderbolt y no puede despertarlos
+
+## Cambios aplicados (bajo riesgo)
+
+| Cambio | Configuración | Efecto |
+|--------|---------------|--------|
+| D3Cold desactivado | Thunderbolt Controller 9A21 | Evita estado de bajo consumo profundo |
+| D3Cold desactivado | Thunderbolt HSA Component | Evita estado de bajo consumo profundo |
+| ASPM desactivado | PCI Express Link State | Evita suspensión de enlaces PCIe |
+| Suspensión selectiva USB | Plan de energía actual | Evita que Windows apague puertos USB |
+| EnhancedPowerManagement | Concentradores USB raíz | Desactiva power management en hubs |
+
+## Comandos ejecutados
+
+```powershell
+# Thunderbolt - desactivar D3Cold
+Set-ItemProperty -Path "HKLM:\SYSTEM\...\Device Parameters" -Name "D3ColdSupported" -Value 0
+
+# PCI Express - desactivar ASPM
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PCIEXPRESS ASPM 0
+powercfg /SETDCVALUEINDEX SCHEME_CURRENT SUB_PCIEXPRESS ASPM 0
+
+# USB - desactivar suspensión selectiva
+powercfg /SETACVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
+```
+
+## Estado del sistema
+
+| Componente | Versión | Estado |
+|------------|---------|--------|
+| BIOS | 1.48.0 (Jul 2026) | ✅ Actualizado |
+| Intel UHD Driver | 32.0.101.7088 (Jun 2026) | ✅ Actualizado |
+| NVIDIA RTX 3050 Driver | 32.0.16.1074 (Jul 2026) | ✅ Actualizado |
+| Thunderbolt Driver | 1.41.1335.0 (Jun 2022) | ⚠️ Desactualizado |
+| Dell Command Update | 5.7.2 | ✅ Disponible |
+
+## Archivos del sistema modificados
+
+- Registro de Windows: claves de power management para Thunderbolt y USB
+- Plan de energía activo: configuración ASPM y suspensión selectiva
+
+## Archivos del proyecto NEVEN modificados
+
+Ninguno — esta sesión fue de mantenimiento del hardware.
+
+## Pendientes
+
+| Prioridad | Tarea | Descripción |
+|-----------|-------|-------------|
+| **ALTA** | Actualizar Thunderbolt driver | Driver de 2022 es causa probable del problema. Ejecutar Dell Command Update |
+| **ALTA** | Reiniciar Windows | Los cambios de power management requieren reinicio para tomar efecto completo |
+| MEDIA | Monitorear comportamiento | Verificar si el problema persiste después de los cambios |
+| BAJA | Documentar solución | Si funciona, agregar a notas de mantenimiento del equipo |
+
+## Nota
+
+Los cambios aplicados son reversibles y de bajo riesgo. Si el problema persiste, la siguiente acción es actualizar el driver Thunderbolt vía Dell Command Update.
+
+
+---
+
+### Sesión 2026-08-19 (~noche, continuación) — Dell Command Update ejecutado
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Acciones realizadas
+
+### Dell Command Update
+Ejecutado `dcu-cli /applyUpdates` para buscar e instalar actualizaciones.
+
+**Resultado del scan:**
+```
+Number of applicable updates for the current system configuration: 0
+No updates available.
+```
+
+Dell Command Update confirma que el sistema está completamente actualizado según su catálogo.
+
+### Verificación de versiones
+
+| Componente | Versión | Fecha | Estado |
+|------------|---------|-------|--------|
+| BIOS | 1.48.0 | Jul 2026 | ✅ Actualizado |
+| Intel UHD | 32.0.101.7088 | Jun 2026 | ✅ Actualizado |
+| NVIDIA RTX 3050 | 32.0.16.1074 | Jul 2026 | ✅ Actualizado |
+| Thunderbolt | 1.41.1335.0 | Jun 2022 | ⚠️ Dell no ofrece versión más nueva |
+
+### Conclusión sobre driver Thunderbolt
+
+El driver de Thunderbolt v1.41.1335.0 (2022) es la versión más reciente que Dell ofrece para el XPS 15 9510. No hay actualización disponible vía Dell Command Update.
+
+## Cambios aplicados (resumen completo de la sesión)
+
+1. ✅ D3Cold desactivado en Thunderbolt Controller y HSA
+2. ✅ ASPM (Link State Power Management) desactivado
+3. ✅ Suspensión selectiva USB desactivada en plan de energía
+4. ✅ Dell Command Update ejecutado (sin actualizaciones pendientes)
+
+## Pendientes
+
+| Prioridad | Tarea | Descripción |
+|-----------|-------|-------------|
+| **ALTA** | Reiniciar Windows | Los cambios de power management requieren reinicio |
+| MEDIA | Monitorear comportamiento | Verificar si el problema del monitor persiste |
+| BAJA | Considerar driver Intel directo | Si persiste, buscar driver Thunderbolt directamente en Intel |
+
+
+---
+
+### Sesión 2026-08-19 (~noche, cierre) — Reinicio pendiente por usuario
+
+## Fecha y hora
+2026-08-19, ~noche (cierre de sesión)
+
+## Estado final
+
+Usuario confirmó que aplicará el reinicio manualmente.
+
+## Cambios del sistema aplicados (resumen consolidado)
+
+| Cambio | Registro/Comando | Efecto |
+|--------|------------------|--------|
+| D3Cold Thunderbolt Controller | `HKLM:\...\D3ColdSupported = 0` | Evita suspensión profunda |
+| D3Cold Thunderbolt HSA | `HKLM:\...\D3ColdSupported = 0` | Evita suspensión profunda |
+| ASPM PCI Express | `powercfg SUB_PCIEXPRESS ASPM 0` | Evita suspensión de enlaces PCIe |
+| Suspensión selectiva USB | `powercfg 2a737441... 0` | Evita que Windows apague puertos USB |
+
+## Próximos pasos (para el usuario)
+
+1. **Reiniciar Windows** — Cambios toman efecto completo
+2. **Monitorear** — Observar si el problema del monitor/USB-C persiste
+3. **Reportar** — Si persiste, explorar opciones adicionales:
+   - Forzar GPU dedicada para displays externos
+   - Driver Thunderbolt directo de Intel
+   - Deshabilitar Optimus (GPU switching)
+
+## Archivos NEVEN modificados
+
+Ninguno en esta sesión — solo configuración del sistema operativo.
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Revisión exhaustiva del sistema Dell XPS 15 9510
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Revisión exhaustiva realizada
+
+### Estado general: BUENO
+
+| Área | Estado |
+|------|--------|
+| Memoria | ✅ 31% usado (20GB/64GB) |
+| Drivers GPU | ✅ Actualizados (Jun-Jul 2026) |
+| BIOS | ✅ v1.48.0 (Jul 2026) |
+| Servicios críticos | ✅ Todos corriendo |
+
+### Problemas encontrados
+
+#### 1. Apagado inesperado confirmado
+```
+Event 41 (Kernel-Power) CRÍTICO:
+"Se reinició el sistema sin apagarlo limpiamente"
+Último cierre inesperado: 06/11/2026 04:42:23 p.m.
+```
+Esto confirma el problema del monitor/USB-C reportado por el usuario.
+
+#### 2. Errores de DCOM - GamingServices
+4 eventos de error al iniciar servicio GamingServices.
+Solución: Reinstalar desde Microsoft Store.
+
+#### 3. Errores de Bluetooth
+OnePlus Open tiene problemas de conexión AVRCP (CM_PROB_FAILED_START).
+Solución: Re-emparejar dispositivo.
+
+#### 4. Actualizaciones de Windows pendientes
+- Realtek MTD Driver Update (10.0.26200.21387)
+- Microsoft AudioProcessingObject Driver (1.0.4.55794)
+
+#### 5. Tareas programadas con errores
+- OneDrive Per-Machine Standalone Update
+- Office Feature Updates
+
+#### 6. Dispositivos fantasma
+~200 dispositivos en estado PHANTOM (normal - dispositivos desconectados).
+
+## Cambios aplicados en esta sesión
+
+Ninguno adicional — solo diagnóstico.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar Windows (cambios power management) |
+| **ALTA** | Instalar 2 actualizaciones de drivers de audio |
+| MEDIA | Reparar Gaming Services |
+| MEDIA | Re-emparejar OnePlus Open (Bluetooth) |
+| BAJA | Limpiar dispositivos fantasma acumulados |
+
+
+---
+
+### Sesión 2026-08-19 (~noche, limpieza) — Eliminación dispositivos OnePlus + Windows Update
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Acciones realizadas
+
+### 1. Eliminación de dispositivos OnePlus
+
+Usuario indicó que ya no usa OnePlus Open, sino Pixel 10 Pro XL.
+
+**Dispositivos eliminados (8 total):**
+- OnePlus Open Transporte AVRCP (x3)
+- OnePlus Open (x2)
+- OnePlus Open Hands-Free HF
+- OnePlus Open A2DP SNK
+- OnePlus Open Hands-Free HF Audio
+
+**Comando usado:**
+```powershell
+pnputil /remove-device <InstanceId>
+```
+
+### 2. Windows Update activado
+
+Ejecutado `UsoClient.exe StartInteractiveScan` para iniciar la instalación de:
+- Realtek MTD Driver Update (10.0.26200.21387)
+- Microsoft AudioProcessingObject Driver (1.0.4.55794)
+
+Las actualizaciones se instalarán en segundo plano.
+
+## Resumen consolidado de cambios en el sistema (sesión completa)
+
+| Cambio | Estado |
+|--------|--------|
+| D3Cold Thunderbolt desactivado | ✅ Aplicado |
+| ASPM PCI Express desactivado | ✅ Aplicado |
+| Suspensión selectiva USB desactivada | ✅ Aplicado |
+| Dell Command Update verificado | ✅ Sin actualizaciones |
+| Dispositivos OnePlus eliminados | ✅ 8 dispositivos |
+| Windows Update activado | ✅ En progreso |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar Windows — aplica todos los cambios |
+| MEDIA | Verificar que actualizaciones de audio se instalaron |
+| BAJA | Monitorear si problema de monitor/USB-C persiste post-reinicio |
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Tercera revisión exhaustiva del sistema
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Tercera revisión realizada
+
+### Estado general: BUENO
+
+| Área | Estado |
+|------|--------|
+| Firewall | ✅ Activo (Domain, Private, Public) |
+| Certificados | ✅ 68 raíz, ninguno expirando |
+| Seguridad | ✅ Windows Defender activo |
+| Red | ✅ Conectividad OK |
+
+### Problemas encontrados
+
+#### 1. Entradas PATH inválidas (6)
+```
+C:\Rtools\bin
+c:\Users\Minor Bonilla G\AppData\Local\Programs\cursor\resources\app\bin
+C:\Program Files (x86)\Common Files\Oracle\Java\javapath
+C:\Users\Minor Bonilla G\AppData\Local\Programs\Ollama
+C:\Users\Minor Bonilla G\.dotnet\tools
+C:\Users\Minor Bonilla G\AppData\Local\Programs\Antigravity\bin
+```
+Impacto: Bajo, ralentiza resolución de comandos.
+
+#### 2. Caché Gradle grande
+`C:\Users\Minor Bonilla G\.gradle` : 6.17 GB
+
+#### 3. Docker no corriendo
+Instalado pero no activo (normal si no se usa).
+
+#### 4. Sin puntos de restauración/backup
+No hay Windows Backup configurado.
+
+### Procesos normales observados
+- Kiro usando CPU esperado (~400-460 sec acumulados)
+- Excel, WhatsApp, Edge con handles normales
+
+## Cambios realizados
+
+Ninguno en esta revisión — solo diagnóstico.
+
+## Pendientes actualizados
+
+| Prioridad | Tarea | Descripción |
+|-----------|-------|-------------|
+| **ALTA** | Reiniciar Windows | Aplica cambios de power management |
+| MEDIA | Limpiar PATH | Eliminar 6 entradas inválidas |
+| MEDIA | Limpiar caché Gradle | Recuperar ~6 GB |
+| BAJA | Crear punto de restauración | Antes de cambios mayores |
+| BAJA | Configurar backup | Protección de datos |
+
+
+---
+
+### Sesión 2026-08-19 (~noche, final) — Mejoras aplicadas al sistema
+
+## Fecha y hora
+2026-08-19, ~noche (cierre)
+
+## Mejoras aplicadas
+
+### 1. Limpieza de caché Gradle
+```
+Eliminados:
+- transforms-*
+- build-cache-*
+- jars-*
+```
+Tamaño original: ~6.17 GB (espacio recuperado parcialmente)
+
+### 2. Verificación PATH de usuario
+PATH de usuario ya estaba limpio — no requirió cambios.
+
+## Tareas que requieren permisos de Administrador
+
+### PATH de sistema (3 entradas inválidas)
+```
+C:\Rtools\bin
+c:\Users\Minor Bonilla G\AppData\Local\Programs\cursor\resources\app\bin
+C:\Program Files (x86)\Common Files\Oracle\Java\javapath
+```
+
+### Punto de restauración
+Error: "Acceso denegado" — requiere ejecutar como Administrador.
+
+## Resumen consolidado de TODA la sesión de mantenimiento
+
+### Cambios aplicados exitosamente
+| Cambio | Estado |
+|--------|--------|
+| D3Cold Thunderbolt desactivado | ✅ |
+| ASPM PCI Express desactivado | ✅ |
+| Suspensión selectiva USB desactivada | ✅ |
+| Dispositivos OnePlus eliminados (8) | ✅ |
+| Windows Update activado | ✅ |
+| Caché Gradle limpiado | ✅ |
+
+### Pendientes que requieren admin
+| Tarea | Razón |
+|-------|-------|
+| Limpiar PATH de sistema | Requiere elevación |
+| Crear punto de restauración | Requiere elevación |
+
+## Archivos NEVEN modificados
+
+Ninguno — sesión de mantenimiento del sistema operativo.
+
+## Pendientes finales
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar Windows |
+| MEDIA | Ejecutar limpieza PATH como admin |
+| MEDIA | Crear punto de restauración como admin |
+| BAJA | Verificar problema monitor/USB-C post-reinicio |
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Script de mantenimiento generado
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Script creado
+
+**Archivo:** `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1`
+
+### Funcionalidad del script
+
+1. **Crear punto de restauración** — Backup antes de cualquier cambio
+2. **Limpiar PATH de sistema** — Elimina 3 entradas inválidas:
+   - `C:\Rtools\bin`
+   - `cursor\resources\app\bin`
+   - `Oracle\Java\javapath`
+3. **Backup de PATH** — Guarda copia en `%TEMP%`
+
+### Cómo ejecutar
+
+```powershell
+Start-Process powershell -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -File 'C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1'"
+```
+
+O: Clic derecho > "Ejecutar con PowerShell como administrador"
+
+## Archivos creados
+
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1` | Script de mantenimiento (requiere admin) |
+
+## Resumen completo de la sesión de mantenimiento Dell XPS 15 9510
+
+### Cambios aplicados (sin admin)
+- ✅ D3Cold Thunderbolt desactivado
+- ✅ ASPM desactivado  
+- ✅ Suspensión selectiva USB desactivada
+- ✅ Dispositivos OnePlus eliminados (8)
+- ✅ Windows Update activado
+- ✅ Caché Gradle limpiado
+
+### Pendientes (con admin)
+- ⏳ Ejecutar `Fix-SystemPath-Admin.ps1`
+- ⏳ Reiniciar Windows
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ejecutar script como admin |
+| **ALTA** | Reiniciar Windows |
+| MEDIA | Verificar problema monitor/USB-C post-reinicio |
+
+
+---
+
+### Sesión 2026-08-19 (~noche, cierre) — Script admin no ejecutado
+
+## Fecha y hora
+2026-08-19, ~noche (cierre de sesión)
+
+## Intento de ejecución
+
+Se intentó ejecutar `Fix-SystemPath-Admin.ps1` con `Start-Process -Verb RunAs`, pero la ventana de UAC no fue confirmada o no se vio.
+
+**Verificación post-intento:**
+- Rtools en PATH: ⚠️ Sigue presente
+- Cursor en PATH: ⚠️ Sigue presente
+- Oracle Java en PATH: ⚠️ Sigue presente
+
+## Instrucciones pendientes para el usuario
+
+Para completar el mantenimiento, ejecutar manualmente:
+
+1. Abrir PowerShell como Administrador (`Win + X` > Terminal Admin)
+2. Ejecutar:
+   ```powershell
+   & 'C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1'
+   ```
+3. Reiniciar Windows
+
+## Archivos disponibles
+
+| Archivo | Estado |
+|---------|--------|
+| `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1` | ✅ Creado, pendiente ejecución |
+
+## Resumen de toda la sesión de mantenimiento
+
+### ✅ Completado
+- Power management Thunderbolt/USB-C configurado
+- Dispositivos OnePlus eliminados (8)
+- Windows Update activado
+- Caché Gradle parcialmente limpiado
+- Script de admin creado
+
+### ⏳ Pendiente (requiere acción manual)
+- Ejecutar script como admin
+- Reiniciar Windows
+- Verificar problema monitor/USB-C
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ejecutar script admin manualmente |
+| **ALTA** | Reiniciar Windows |
+| MEDIA | Verificar monitor/USB-C post-reinicio |
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Revisión de Registro de Windows
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Revisión del registro realizada
+
+### ✅ Áreas sin problemas
+| Área | Estado |
+|------|--------|
+| Servicios | ✅ Todos con ejecutables válidos |
+| Extensiones de archivo | ✅ Handlers OK |
+| Componentes COM | ✅ DLLs válidas |
+| Shell Extensions | ✅ 32 registradas |
+
+### ⚠️ Entradas problemáticas encontradas
+
+#### Entradas de inicio huérfanas (2)
+- `Microsoft.Lists` → OneDrive versión vieja (se autocorrige)
+- `Docker Desktop` → Ejecutable no encontrado (Docker no corriendo)
+
+#### Entradas de desinstalación huérfanas (3)
+- Google Cloud SDK
+- Microsoft Visual Studio Installer  
+- AnyDesk
+
+## Cambios realizados
+
+Ninguno — solo diagnóstico. Usuario debe decidir si limpiar.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ejecutar script admin (`Fix-SystemPath-Admin.ps1`) |
+| **ALTA** | Reiniciar Windows |
+| MEDIA | Limpiar entradas de desinstalación huérfanas (opcional) |
+| BAJA | Entrada Docker Desktop se resuelve al iniciar Docker |
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Limpieza de registro completada
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Limpieza realizada
+
+### ✅ Completado
+| Tarea | Estado |
+|-------|--------|
+| Docker Desktop eliminado del inicio automático | ✅ |
+| Verificación post-limpieza | ✅ |
+
+### ⚠️ Requiere admin
+Las entradas de desinstalación huérfanas (Google Cloud SDK, Visual Studio Installer, AnyDesk) están en HKLM y requieren permisos de administrador.
+
+## Resumen consolidado de TODA la sesión de mantenimiento Dell XPS 15 9510
+
+### ✅ Completado (sin admin)
+- Power management Thunderbolt/USB-C configurado
+- Dispositivos OnePlus eliminados (8)
+- Windows Update activado
+- Caché Gradle parcialmente limpiado
+- Docker Desktop eliminado del inicio
+- Script de admin creado
+
+### ⏳ Pendiente (requiere admin)
+- Ejecutar `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1`
+- Limpiar PATH de sistema (3 entradas)
+- Limpiar entradas desinstalación HKLM (3 entradas)
+- Crear punto de restauración
+- **REINICIAR WINDOWS**
+
+## Archivos creados
+
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1` | Script de mantenimiento admin |
+
+## Pendientes finales
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ejecutar script admin |
+| **ALTA** | Reiniciar Windows |
+| MEDIA | Verificar problema monitor/USB-C post-reinicio |
+| BAJA | Limpiar entradas desinstalación HKLM |
+
+
+---
+
+### Sesión 2026-08-19 (~noche, cierre final) — Script admin no confirmado en UAC
+
+## Fecha y hora
+2026-08-19, ~noche (cierre)
+
+## Intento de ejecución
+
+Se ejecutó `Start-Process -Verb RunAs` para el script admin, pero la ventana de UAC no fue confirmada (posiblemente apareció detrás de otras ventanas).
+
+**Verificación:**
+- Rtools en PATH: ⚠️ Sigue presente
+- Cursor en PATH: ⚠️ Sigue presente  
+- Oracle Java en PATH: ⚠️ Sigue presente
+
+## Instrucciones para el usuario (PENDIENTE)
+
+El script debe ejecutarse manualmente desde una terminal de administrador:
+
+```powershell
+# 1. Abrir: Win + X > Terminal (Administrador)
+# 2. Ejecutar:
+& 'C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1'
+```
+
+## Resumen final de la sesión de mantenimiento
+
+### ✅ Completado exitosamente
+| Tarea | Estado |
+|-------|--------|
+| Power management Thunderbolt/USB-C | ✅ |
+| Dispositivos OnePlus eliminados (8) | ✅ |
+| Windows Update activado | ✅ |
+| Caché Gradle limpiado | ✅ |
+| Docker Desktop del inicio | ✅ |
+| Script admin creado | ✅ |
+
+### ⏳ Pendiente (acción manual requerida)
+| Tarea | Cómo |
+|-------|------|
+| Ejecutar script admin | Terminal Admin + comando arriba |
+| Reiniciar Windows | Después de ejecutar script |
+| Verificar monitor/USB-C | Post-reinicio |
+
+## Archivos creados/modificados
+
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1` | Script de mantenimiento (pendiente ejecutar) |
+| `.kiro/contexto/CHAT.md` | Bitácora actualizada |
+
+## Commits de la sesión (proyecto NEVEN)
+
+| Hash | Descripción |
+|------|-------------|
+| `e202705` | fix(android): resolve ANR when pausing audiobook playback |
+| `3fd9cfb` | feat(audiobook): change output format from M4B to M4A |
+| `e546b69` | feat(taskpane): UI improvements for audiobook module |
+| `fbd895d` | docs: update session log |
+
+## Problema original
+
+Dell XPS 15 9510 apagaba el monitor sin recuperación, relacionado con USB-C/Thunderbolt.
+
+**Causa raíz identificada:** Power management agresivo + driver Thunderbolt (v1.41.1335.0 de 2022) + 39 dispositivos USB en estado "Unknown".
+
+**Solución aplicada:** Desactivar D3Cold, ASPM, y suspensión selectiva USB.
+
+## Pendientes finales
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ejecutar script admin manualmente |
+| **ALTA** | Reiniciar Windows |
+| MEDIA | Verificar si problema monitor/USB-C se resolvió |
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Script admin corregido
+
+## Fecha y hora
+2026-08-19, ~noche
+
+## Problema encontrado
+
+El script `Fix-SystemPath-Admin.ps1` tenía error de sintaxis:
+```
+Token '}' inesperado en la expresión o la instrucción.
+```
+
+**Causa:** Caracteres Unicode/emojis (✅, ⚠️, ❌, ╔, ═) causaban problemas de codificación en PowerShell.
+
+## Corrección aplicada
+
+Reescrito el script usando solo caracteres ASCII:
+- `✅` → `[OK]`
+- `⚠️` → `[WARN]`
+- `❌` → `[X]`
+- `╔══╗` → `====`
+
+## Archivo modificado
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1` | Reescrito con ASCII puro |
+
+## Pendiente inmediato
+
+Usuario debe ejecutar en terminal admin:
+```powershell
+& 'C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1'
+```
+
+Luego reiniciar Windows.
+
+
+---
+
+### Sesión 2026-08-19 (~noche) — Script admin ejecutado exitosamente
+
+## Fecha y hora
+2026-08-19, ~noche (cierre final)
+
+## Resultado del script admin
+
+### ✅ Completado
+| Tarea | Estado |
+|-------|--------|
+| Backup de PATH | ✅ `C:\Users\Minor Bonilla G\AppData\Local\Temp\PATH_backup_20261107_205039.txt` |
+| Rtools eliminado del PATH | ✅ |
+| Cursor eliminado del PATH | ✅ |
+
+### ⚠️ No eliminado (esperado)
+| Entrada | Razón |
+|---------|-------|
+| Oracle Java (`java8path`) | La carpeta SÍ existe en disco — es instalación real |
+
+## Resumen completo de la sesión de mantenimiento Dell XPS 15 9510
+
+### Cambios aplicados exitosamente
+1. ✅ D3Cold Thunderbolt desactivado
+2. ✅ ASPM PCI Express desactivado
+3. ✅ Suspensión selectiva USB desactivada
+4. ✅ Dispositivos OnePlus eliminados (8)
+5. ✅ Windows Update activado
+6. ✅ Caché Gradle limpiado
+7. ✅ Docker Desktop eliminado del inicio
+8. ✅ PATH de sistema limpiado (Rtools, Cursor)
+9. ✅ Backup de PATH creado
+
+### Commits de NEVEN (proyecto)
+| Hash | Descripción |
+|------|-------------|
+| `e202705` | fix(android): resolve ANR when pausing audiobook playback |
+| `3fd9cfb` | feat(audiobook): change output format from M4B to M4A |
+| `e546b69` | feat(taskpane): UI improvements for audiobook module |
+| `fbd895d` | docs: update session log |
+
+### Archivos creados/modificados (sistema)
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1` | Script de mantenimiento (ejecutado) |
+| `C:\Users\...\Temp\PATH_backup_20261107_205039.txt` | Backup del PATH original |
+
+## Problema original y solución
+
+**Problema:** Dell XPS 15 9510 apagaba monitor sin recuperación (USB-C/Thunderbolt).
+
+**Causa raíz:** Power management agresivo suspendía puertos Thunderbolt/USB-C.
+
+**Solución aplicada:** Desactivar D3Cold, ASPM, y suspensión selectiva USB.
+
+## Pendiente final
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | **REINICIAR WINDOWS** |
+| MEDIA | Verificar si problema monitor/USB-C se resolvió post-reinicio |
+
+
+---
+
+### Sesión 2026-11-08 (~mañana) — Diagnóstico profundo: problema persiste post-reinicio
+
+## Fecha y hora
+2026-11-08, mañana
+
+## Situación reportada por usuario
+
+Después del reinicio:
+- Logo Dell apareció normal
+- Al cargar Windows, la pantalla se apagó de nuevo
+- Después de varias horas, al levantar la tapa el monitor inició
+
+**Conclusión:** El problema NO fue corregido con los cambios de power management.
+
+## Análisis exhaustivo realizado
+
+### Hallazgos críticos
+
+#### 1. BLUESCREEN detectado (03/11/2026)
+```
+Error: 0x00000101 (CLOCK_WATCHDOG_TIMEOUT)
+Minidump: C:\WINDOWS\Minidump\110326-25203-01.dmp
+BugcheckCode: 257
+```
+Este error indica que un procesador NO respondió — típico de driver de video colgado.
+
+#### 2. Modern Standby activo
+```
+Modo de espera: S0 Low Power Idle (Red conectada)
+S1, S2, S3: NO DISPONIBLES
+```
+El sistema usa Modern Standby en lugar de suspensión tradicional S3.
+
+#### 3. Patrón de apagados inesperados
+- 07/11/2026 11:58 PM
+- 07/11/2026 11:56 PM  
+- 07/11/2026 10:20 PM
+- 06/11/2026 07:42 PM
+- 06/11/2026 07:37 PM
+
+**5+ eventos Kernel-Power Event 41** en 2 días.
+
+#### 4. Configuración de hardware
+- Intel UHD Graphics (integrada)
+- NVIDIA RTX 3050 Laptop GPU (dedicada)
+- Hybrid Graphics / Optimus activo
+- Panel interno: SDC414D (34x21cm, 3456x2160)
+
+### Causa raíz identificada
+
+**MODERN STANDBY + HYBRID GRAPHICS** es la combinación problemática conocida en Dell XPS 15 9510.
+
+Con Modern Standby:
+- El sistema nunca entra en suspensión real (S3)
+- La pantalla se apaga pero el sistema sigue activo
+- Los drivers de video pueden fallar al despertar
+- El switching Intel/NVIDIA agrava el problema
+
+## Soluciones propuestas (pendiente decisión del usuario)
+
+| Opción | Descripción | Riesgo | Efectividad |
+|--------|-------------|--------|-------------|
+| A | Desactivar Panel Self-Refresh Intel | Bajo | Media |
+| B | Forzar GPU NVIDIA para todo | Medio | Alta |
+| C | Desactivar Modern Standby via registro | Medio | Alta |
+| D | Actualizar BIOS | Bajo | Variable |
+| E | Configurar "No hacer nada" al cerrar tapa | Bajo | Paliativo |
+
+**Recomendación:** Opción C + E
+
+## Cambios realizados
+
+Ninguno — esperando decisión del usuario.
+
+## Estado actual del sistema
+
+| Componente | Estado |
+|------------|--------|
+| Thunderbolt Controller | ✅ OK |
+| Intel UHD Graphics | ✅ Driver actualizado |
+| NVIDIA RTX 3050 | ✅ Driver actualizado |
+| Panel interno | ✅ Detectado |
+| Modern Standby | ⚠️ Activo (problema) |
+| Hybrid Graphics | ⚠️ Activo (contribuye al problema) |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe decidir qué solución aplicar |
+| ALTA | Aplicar solución elegida |
+| MEDIA | Monitorear comportamiento post-fix |
+
+
+---
+
+### Sesión 2026-11-08 — RESUMEN FINAL: Diagnóstico Dell XPS 15 9510 + Mantenimiento NEVEN
+
+## Fecha y hora
+2026-11-08, ~mañana (cierre de sesión extendida desde 2026-11-07)
+
+## Contexto de la sesión
+
+Sesión extendida que cubrió:
+1. Fixes de Android audiobook player (ANR + formato M4A)
+2. Mantenimiento exhaustivo del sistema Dell XPS 15 9510
+3. Diagnóstico profundo del problema de monitor que se apaga
+
+---
+
+## PARTE 1: Cambios en proyecto NEVEN
+
+### Commits realizados y pusheados
+
+| Hash | Descripción |
+|------|-------------|
+| `e202705` | fix(android): resolve ANR when pausing audiobook playback |
+| `3fd9cfb` | feat(audiobook): change output format from M4B to M4A |
+| `e546b69` | feat(taskpane): UI improvements for audiobook module |
+| `fbd895d` | docs: update session log with ANR fix and M4A format changes |
+
+### Archivos NEVEN modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `android/app/.../AudiobookViewModel.kt` | `withContext(Dispatchers.IO)` para DB operations |
+| `src/Audiobook/muxer/ffmpeg_muxer.py` | Renombrar `create_m4b()` → `create_m4a()` |
+| `src/Audiobook/pipeline.py` | `DEFAULT_AUDIOBOOK_EXTENSION = ".m4a"` |
+| `src/TaskPane/taskpane.html` | UI improvements |
+| `android/local.properties` | Creado con SDK path |
+
+### Causa raíz del ANR en Android
+El método `saveCurrentPosition()` llamaba operaciones de Room DB sin dispatcher IO, bloqueando el main thread. Solución: envolver en `withContext(Dispatchers.IO)`.
+
+### APK instalado
+- Pixel 10 Pro XL via ADB
+- Ruta: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+---
+
+## PARTE 2: Mantenimiento del sistema Dell XPS 15 9510
+
+### Problema original
+Monitor se apaga repentinamente sin forma de recuperarlo, relacionado con puertos USB-C/Thunderbolt.
+
+### Cambios aplicados al sistema
+
+| Cambio | Estado |
+|--------|--------|
+| D3Cold Thunderbolt desactivado | ✅ |
+| ASPM PCI Express desactivado | ✅ |
+| Suspensión selectiva USB desactivada | ✅ |
+| Dispositivos OnePlus eliminados (8) | ✅ |
+| Docker Desktop eliminado del inicio | ✅ |
+| PATH sistema limpiado (Rtools, Cursor) | ✅ |
+| Backup PATH creado | ✅ |
+| Caché Gradle limpiado | ✅ |
+| Windows Update activado | ✅ |
+
+### Archivos del sistema creados
+
+| Archivo | Propósito |
+|---------|-----------|
+| `C:\NEVEN\scripts\Fix-SystemPath-Admin.ps1` | Script de mantenimiento admin |
+| `C:\Users\...\Temp\PATH_backup_20261107_205039.txt` | Backup del PATH original |
+
+### El problema PERSISTE después del reinicio
+
+Después de aplicar todos los cambios de power management, el problema continúa:
+- Logo Dell aparece normal
+- Al cargar Windows, pantalla se apaga
+- Varias horas después, al levantar tapa se recupera
+
+---
+
+## PARTE 3: Diagnóstico profundo — Causa raíz REAL identificada
+
+### Hallazgos críticos
+
+1. **Modern Standby activo (S0 Low Power Idle)**
+   - El sistema NUNCA entra en suspensión real (S3)
+   - S1, S2, S3 NO disponibles en este equipo
+   
+2. **BSOD detectado (03/11/2026)**
+   - Error: `0x00000101 (CLOCK_WATCHDOG_TIMEOUT)`
+   - BugcheckCode: 257
+   - CPU no respondió — típico de driver de video colgado
+
+3. **Patrón de 5+ apagados inesperados en 2 días**
+   - Kernel-Power Event 41 repetido
+   - Todos ocurren cuando la pantalla intenta apagarse/encenderse
+
+4. **Hybrid Graphics (Intel + NVIDIA)**
+   - El switching entre GPUs falla al despertar la pantalla
+   - Combinación problemática conocida en XPS 15 9510
+
+### Causa raíz REAL
+
+**MODERN STANDBY + HYBRID GRAPHICS** es la combinación que causa el problema. No es solo power management de USB/Thunderbolt.
+
+---
+
+## Intentos que NO resolvieron el problema
+
+| Intento | Por qué no funcionó |
+|---------|---------------------|
+| Desactivar D3Cold Thunderbolt | El problema es Modern Standby, no Thunderbolt power |
+| Desactivar ASPM | Ayuda pero no es la causa raíz |
+| Desactivar suspensión selectiva USB | No relacionado con el problema real |
+| Dell Command Update | Sistema ya actualizado según Dell |
+
+---
+
+## Soluciones propuestas (pendiente decisión del usuario)
+
+| Opción | Descripción | Riesgo | Efectividad |
+|--------|-------------|--------|-------------|
+| **A** | Desactivar Panel Self-Refresh Intel | Bajo | Media |
+| **B** | Forzar GPU NVIDIA para todo | Medio | Alta |
+| **C** | Desactivar Modern Standby via registro | Medio | Alta |
+| **D** | Actualizar BIOS | Bajo | Variable |
+| **E** | Configurar "No hacer nada" al cerrar tapa | Bajo | Paliativo |
+
+**Recomendación:** Opción C + E (desactivar Modern Standby + configurar tapa)
+
+---
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Descripción |
+|-----------|-------|-------------|
+| **ALTA** | Aplicar solución Modern Standby | Usuario debe decidir entre opciones C+E |
+| **ALTA** | Verificar fix ANR Android | Usuario debe probar pausar reproductor |
+| MEDIA | Verificar formato M4A | Probar en car stereo |
+| MEDIA | Monitorear estabilidad post-fix | Si se aplica solución |
+| BAJA | Limpiar entradas desinstalación HKLM | Google Cloud SDK, VS Installer, AnyDesk |
+
+---
+
+## Notas importantes para futuras sesiones
+
+1. **Modern Standby es el problema** — No perder tiempo con USB/Thunderbolt power management
+2. **El BSOD CLOCK_WATCHDOG_TIMEOUT** indica driver de video colgando durante wake
+3. **Hybrid Graphics** agrava el problema — considerar forzar una sola GPU
+4. **REA no sirve para diagnóstico de hardware** — es para ingeniería inversa de software
+5. **Scripts admin necesitan UAC confirmado** — la ventana puede aparecer detrás de otras
+
+## Estado del sistema al cierre
+
+- Monitor funcionando (se recuperó al levantar tapa)
+- Problema NO resuelto, solo identificada causa raíz
+- Solución pendiente de aplicar
+
+
+---
+
+### Sesión 2026-11-08 (~mañana, cierre) — Decisión de solución Dell XPS 15 9510
+
+## Fecha y hora
+2026-11-08, ~mañana (cierre de sesión)
+
+## Resumen breve
+
+Sesión de discusión sobre qué solución aplicar para el problema del monitor.
+
+## Decisión del usuario
+
+El usuario eligió aplicar **opciones B + C + E**:
+
+| Opción | Descripción |
+|--------|-------------|
+| **B** | Forzar GPU NVIDIA para todo (desactivar Hybrid Graphics/Optimus) |
+| **C** | Desactivar Modern Standby via registro |
+| **E** | Configurar "No hacer nada" al cerrar tapa |
+
+## Cambios realizados
+
+**Ninguno** — La sesión terminó antes de aplicar los cambios. El usuario confirmó que le gustan las opciones B + C + E pero no confirmó explícitamente "proceder".
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Descripción |
+|-----------|-------|-------------|
+| **ALTA** | Aplicar Opción B | Forzar GPU NVIDIA (NVIDIA Control Panel o registro) |
+| **ALTA** | Aplicar Opción C | Desactivar Modern Standby via registro (`PlatformAoAcOverride`) |
+| **ALTA** | Aplicar Opción E | `powercfg` para configurar tapa = "No hacer nada" |
+| **ALTA** | Reiniciar y verificar | Confirmar que el problema se resolvió |
+| MEDIA | Verificar fix ANR Android | Usuario debe probar pausar reproductor |
+| MEDIA | Verificar formato M4A | Probar en car stereo |
+
+## Nota importante
+
+**Impacto de Opción B (forzar NVIDIA):**
+- Batería durará ~30-40% menos
+- Pero elimina el problema de switching Intel/NVIDIA que causa cuelgues
+- Es reversible via NVIDIA Control Panel
+
+## Comandos a ejecutar en próxima sesión
+
+```powershell
+# Opción C: Desactivar Modern Standby
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Power" /v PlatformAoAcOverride /t REG_DWORD /d 0 /f
+
+# Opción E: Tapa = No hacer nada (AC y DC)
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_BUTTONS LIDACTION 0
+powercfg /SETDCVALUEINDEX SCHEME_CURRENT SUB_BUTTONS LIDACTION 0
+powercfg /SETACTIVE SCHEME_CURRENT
+
+# Opción B: Forzar NVIDIA (via NVIDIA Control Panel o registro)
+# Abrir: NVIDIA Control Panel > Manage 3D Settings > Preferred graphics processor > High-performance NVIDIA processor
+```
+
+## Estado al cierre
+
+- Usuario confirmó preferencia por B + C + E
+- Cambios NO aplicados aún
+- Esperando próxima sesión para ejecutar
+
+
+---
+
+### Sesión 2026-11-08 (~mañana, nota adicional) — Confirmación BIOS actualizado
+
+## Fecha y hora
+2026-11-08, ~mañana
+
+## Discusión breve
+
+Usuario confirmó que el BIOS se actualiza automáticamente vía Dell Command Update, por lo que no debería estar desactualizado.
+
+**Confirmado:**
+- BIOS: v1.48.0 (Julio 2026) — actualizado
+- Dell Command Update: Sin actualizaciones pendientes
+
+## Conclusión
+
+El problema **NO es falta de actualizaciones**. Es un defecto de diseño inherente en la combinación Modern Standby + Hybrid Graphics de la XPS 15 9510, incluso con firmware actualizado.
+
+## Cambios realizados
+
+Ninguno — sesión de discusión.
+
+## Plan confirmado para próxima sesión
+
+Aplicar opciones **B + C + E**:
+1. **B**: Forzar GPU NVIDIA (evita switching problemático)
+2. **C**: Desactivar Modern Standby (fuerza hibernación real)
+3. **E**: Tapa = "No hacer nada" (evita trigger)
+
+Usuario aún no confirmó "procede" para ejecutar los cambios.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe confirmar "procede" para aplicar B + C + E |
+| **ALTA** | Ejecutar los 3 cambios |
+| **ALTA** | Reiniciar y verificar |
+
+
+---
+
+### Sesión 2026-11-08 (~mañana, discusión Opción A) — Explicación Panel Self-Refresh
+
+## Fecha y hora
+2026-11-08, ~mañana
+
+## Discusión
+
+Usuario preguntó sobre las implicaciones de la **Opción A: Desactivar Intel Panel Self-Refresh (PSR)**.
+
+### Qué es PSR
+Tecnología de ahorro de energía Intel que permite al panel LCD mantener la imagen desde un buffer interno mientras la GPU está en bajo consumo.
+
+### Problema con PSR
+En laptops con Hybrid Graphics (Intel + NVIDIA), PSR puede causar:
+- Pantalla que no despierta correctamente
+- Panel que se queda negro después de idle
+- Conflictos con switching Intel/NVIDIA
+
+### Implicaciones de desactivar PSR
+
+| Aspecto | Efecto |
+|---------|--------|
+| Batería | ~5-10% más consumo |
+| Estabilidad | Mejor (display más estable) |
+| Riesgo | Muy bajo |
+
+### Recomendación
+Opción A es un buen **complemento** a B+C+E, no un reemplazo.
+
+**Paquete completo sugerido: A + B + C + E**
+
+## Cambios realizados
+
+Ninguno — sesión de discusión.
+
+## Decisión pendiente
+
+Usuario no confirmó si quiere incluir A en el paquete de cambios.
+
+## Plan actual
+
+| Opción | Descripción | Incluir? |
+|--------|-------------|----------|
+| A | Desactivar Panel Self-Refresh | ¿? (usuario decidiendo) |
+| B | Forzar GPU NVIDIA | ✅ Confirmado |
+| C | Desactivar Modern Standby | ✅ Confirmado |
+| E | Tapa = "No hacer nada" | ✅ Confirmado |
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe confirmar si incluir Opción A |
+| **ALTA** | Usuario debe decir "procede" para aplicar cambios |
+| **ALTA** | Ejecutar cambios y reiniciar |
+
+
+---
+### Sesión 2026-08-19 (~noche tardía) — Intento de aplicar fixes de display (A+B+C+E)
+
+## Contexto
+
+Continuación de la sesión de diagnóstico del Dell XPS 15 9510. Usuario confirmó aplicar opciones A+B+C+E para resolver el problema de pantalla que se apaga y no despierta.
+
+## Trabajo realizado
+
+### 1. Creación del script Fix-Display-Admin.ps1
+
+Ubicación: `C:\NEVEN\scripts\Fix-Display-Admin.ps1`
+
+El script incluye:
+- **Opción A:** Deshabilitar Intel Panel Self-Refresh (PSR) via registry
+- **Opción C:** Deshabilitar Modern Standby (`PlatformAoAcOverride = 0`)
+- **Opción E:** Lid action = "Do nothing" via powercfg
+
+### 2. Intento de ejecución via UAC
+
+Se intentó ejecutar el script usando `Start-Process -Verb RunAs` para elevar privilegios. El prompt UAC apareció pero **no fue confirmado por el usuario**, por lo que los cambios no se aplicaron.
+
+### 3. Verificación del estado actual
+
+Verificación ejecutada al final de sesión:
+
+| Opción | Descripción | Estado |
+|--------|-------------|--------|
+| A | Intel PSR deshabilitado | ❌ NO APLICADO |
+| B | NVIDIA GPU forzada | ⚠️ Requiere NVIDIA Control Panel manual |
+| C | Modern Standby deshabilitado | ❌ NO APLICADO |
+| E | Lid action = Do nothing | ❌ NO APLICADO |
+
+## Causa raíz identificada (sesión anterior)
+
+El problema de display se debe a la combinación de:
+1. **Modern Standby (S0 Low Power Idle)** activo — S1/S2/S3 no disponibles
+2. **Hybrid Graphics (Intel + NVIDIA)** con Optimus switching
+3. **Intel Panel Self-Refresh** conflictando con GPU switching
+
+Evidencia:
+- BSOD `0x00000101 (CLOCK_WATCHDOG_TIMEOUT)` detectado 03/11/2026
+- 5+ eventos Kernel-Power Event 41 en 2 días (unexpected shutdowns)
+- Minidump: `C:\WINDOWS\Minidump\110326-25203-01.dmp`
+
+## Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `C:\NEVEN\scripts\Fix-Display-Admin.ps1` | Script para aplicar A+C+E (requiere admin) |
+
+## Commits realizados
+
+Ninguno — sesión de diagnóstico y configuración de sistema.
+
+## Intentos fallidos
+
+| Intento | Por qué falló | Lección |
+|---------|---------------|---------|
+| Ejecución via UAC desde Kiro | El prompt UAC requiere confirmación manual del usuario; no se confirmó | Scripts admin deben ejecutarse manualmente desde terminal elevada |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Comando/Acción |
+|-----------|-------|----------------|
+| **ALTA** | Ejecutar script admin manualmente | `& 'C:\NEVEN\scripts\Fix-Display-Admin.ps1'` en PowerShell Admin |
+| **ALTA** | Configurar NVIDIA Control Panel | Manage 3D Settings → Preferred graphics processor → High-performance NVIDIA |
+| **ALTA** | Reiniciar Windows | Requerido para que Modern Standby surta efecto |
+| **ALTA** | Verificar que display funcione post-reinicio | Cerrar tapa, esperar, abrir — debe despertar |
+| MEDIA | Verificar ANR fix en Android (audiolibros) | Pausar/resumir libro en app NEVEN |
+| MEDIA | Probar formato M4A en auto | Copiar audiolibro a USB, probar en estéreo del carro |
+
+## Notas para próxima sesión
+
+1. **No intentar UAC desde Kiro** — siempre pedir al usuario que ejecute manualmente
+2. **Verificar post-reinicio** con el comando:
+   ```powershell
+   $psr = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0001" -Name "Disable_PanelSelfRefresh" -EA SilentlyContinue
+   $ms = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "PlatformAoAcOverride" -EA SilentlyContinue
+   Write-Host "PSR: $($psr.Disable_PanelSelfRefresh) | ModernStandby: $($ms.PlatformAoAcOverride)"
+   # Esperado: PSR: 1 | ModernStandby: 0
+   ```
+3. **BIOS está actualizado** (v1.48.0 julio 2026) — no es causa del problema
+
+
+---
+### Sesión 2026-08-19 (~noche tardía 2) — Fixes de display A y C aplicados exitosamente
+
+## Contexto
+
+Usuario ejecutó manualmente el script `Fix-Display-Admin.ps1` desde PowerShell Admin.
+
+## Trabajo realizado
+
+### 1. Verificación de fixes aplicados
+
+Verificación post-ejecución del script:
+
+| Opción | Descripción | Estado |
+|--------|-------------|--------|
+| **A** | Intel PSR deshabilitado | ✅ **APLICADO** |
+| **C** | Modern Standby deshabilitado | ✅ **APLICADO** |
+| **E** | Lid action = Do nothing | ⛔ No disponible |
+
+### 2. Investigación de Opción E (Lid Action)
+
+Se descubrió que la configuración de "lid action" **no está expuesta** en el esquema de energía de este Dell XPS 15 9510:
+- El subgrupo `SUB_BUTTONS` existe pero no contiene el GUID de lid action (`5ca83367-6e45-459f-a27b-476b1d01c936`)
+- Intentar unhide con `powercfg -attributes` no funcionó
+- Probablemente Dell lo deshabilita via BIOS/firmware
+
+**Conclusión:** Opción E no es aplicable en este hardware, pero A y C son las más importantes para el problema.
+
+## Cambios de registry aplicados
+
+| Clave | Valor | Efecto |
+|-------|-------|--------|
+| `HKLM:\...\Class\{4d36e968...}\0001\Disable_PanelSelfRefresh` | `1` | Deshabilita Intel PSR |
+| `HKLM:\...\Control\Power\PlatformAoAcOverride` | `0` | Deshabilita Modern Standby, habilita S3 |
+
+## Commits realizados
+
+Ninguno — sesión de configuración de sistema.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Notas |
+|-----------|-------|-------|
+| **ALTA** | Configurar NVIDIA Control Panel | Manage 3D Settings → High-performance NVIDIA processor |
+| **ALTA** | Reiniciar Windows | Requerido para Modern Standby → S3 |
+| **ALTA** | Verificar display post-reinicio | Cerrar tapa, esperar, abrir — debe despertar |
+| MEDIA | Verificar ANR fix en Android | Pausar/resumir libro en app NEVEN |
+| MEDIA | Probar M4A en estéreo del carro | Formato cambiado de M4B a M4A |
+
+## Notas técnicas
+
+1. **Modern Standby ahora deshabilitado** — después de reiniciar, `powercfg /a` debería mostrar S3 disponible
+2. **Intel PSR deshabilitado** — puede aumentar consumo de batería ~5-10%, pero mejora estabilidad del display
+3. **Lid action no disponible** — Dell XPS 15 9510 no expone esta configuración; no es crítica para el fix
+
+
+---
+### Sesión 2026-08-19 (~mañana siguiente) — Diagnóstico profundo: problema de display persiste
+
+## Contexto
+
+Usuario reportó que después de aplicar fixes A+C (PSR1 + Modern Standby), el problema persiste: logo Dell aparece, pero al cargar Windows la pantalla se apaga. Requirió varios intentos de abrir la tapa para que encendiera.
+
+## Diagnóstico realizado
+
+### 1. Verificación de fixes anteriores
+
+Confirmado que los fixes A y C están aplicados:
+- `Disable_PanelSelfRefresh: 1` ✅
+- `PlatformAoAcOverride: 0` ✅
+
+### 2. Descubrimiento crítico: S3 no disponible a nivel firmware
+
+```
+powercfg /a muestra:
+- Modo de espera (S3): "El firmware del sistema no admite este estado"
+- Modo de espera (S0 Low Power Idle): "El firmware del sistema no admite"
+```
+
+**Conclusión:** El BIOS de Dell tiene S3 deshabilitado a nivel firmware. El registry override `PlatformAoAcOverride=0` no puede habilitar S3 si el hardware no lo soporta.
+
+### 3. Causa raíz encontrada: múltiples tecnologías Intel Power Saving
+
+Al inspeccionar el registro de Intel Graphics, se descubrió que hay **múltiples tecnologías de ahorro de energía** además de PSR1:
+
+| Tecnología | Valor encontrado | Problema |
+|------------|------------------|----------|
+| `Disable_PanelSelfRefresh` | 1 | ✅ Ya deshabilitado |
+| `PSR2Disable` | **0** | ❌ PSR versión 2 ACTIVO |
+| `Psr2DrrsEnable` | **1** | ❌ Dynamic Refresh Rate ACTIVO |
+| `Dpst6_3ApplyExtraDimming` | **1** | ❌ Extra dimming ACTIVO |
+| `FeatureTestControl` | 37440 | ❌ DPST master habilitado |
+
+**El logo Dell aparece porque el BIOS usa el display directamente. Cuando Windows carga, el driver Intel activa PSR2/DRRS/DPST y el panel se apaga.**
+
+### 4. Información del sistema
+
+- Panel activo: Dell XPS 15 SDC414D Display (interno)
+- Driver Intel: 32.0.101.7088 (junio 2026)
+- Múltiples monitores externos detectados como "Unknown" (desconectados)
+- 10+ procesos de Dell corriendo (TechHub, SupportAssist, etc.)
+
+## Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `C:\NEVEN\scripts\Fix-Intel-Display-Admin.ps1` | Script que deshabilita PSR1, PSR2, DRRS, DPST |
+
+## Commits realizados
+
+Ninguno — sesión de diagnóstico.
+
+## Solución propuesta
+
+Nuevo script `Fix-Intel-Display-Admin.ps1` que deshabilita TODAS las tecnologías de power saving de Intel:
+
+1. **PSR1** — `Disable_PanelSelfRefresh = 1`
+2. **PSR2** — `PSR2Disable = 1` (NUEVO)
+3. **DRRS** — `Psr2DrrsEnable = 0` (NUEVO)
+4. **DPST Extra Dimming** — `Dpst6_3ApplyExtraDimming = 0` (NUEVO)
+5. **DPST Master** — `FeatureTestControl |= 0x8000` (NUEVO)
+
+## Intentos/Aprendizajes
+
+| Intento | Resultado | Aprendizaje |
+|---------|-----------|-------------|
+| Solo PSR1 deshabilitado | Insuficiente | Intel tiene múltiples tecnologías (PSR1, PSR2, DRRS, DPST) |
+| Modern Standby override | No habilita S3 | El BIOS de Dell no soporta S3 a nivel firmware |
+| Lid action | No disponible | Dell XPS 15 9510 no expone esta configuración |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Comando/Acción |
+|-----------|-------|----------------|
+| **ALTA** | Ejecutar nuevo script Intel | `& 'C:\NEVEN\scripts\Fix-Intel-Display-Admin.ps1'` en PowerShell Admin |
+| **ALTA** | Reiniciar después del script | El script ofrece reiniciar automáticamente |
+| **ALTA** | Verificar display post-reinicio | Cerrar tapa, esperar, abrir — debe despertar |
+| MEDIA | Si persiste: deshabilitar Dell TechHub | Muchos procesos Dell pueden interferir |
+| MEDIA | Si persiste: actualizar driver Intel manualmente | Probar versión anterior del driver |
+| BAJA | Verificar ANR fix en Android | Pausar/resumir libro en app NEVEN |
+
+## Notas técnicas
+
+1. **PSR2 es más agresivo que PSR1** — puede apagar el panel más frecuentemente
+2. **DRRS cambia refresh rate dinámicamente** — puede confundir al panel
+3. **DPST dimming puede llevar brillo a 0** — efectivamente "apaga" la pantalla
+4. **FeatureTestControl bit 0x8000** — master disable para DPST
+5. **El path del driver Intel es `0001`** — verificado que no es `0000` (que sería otro dispositivo)
+
+## Comando de verificación post-fix
+
+```powershell
+$p = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0001"
+$v = Get-ItemProperty -Path $p
+Write-Host "PSR1: $($v.Disable_PanelSelfRefresh) | PSR2: $($v.PSR2Disable) | DRRS: $($v.Psr2DrrsEnable) | DPST: $($v.Dpst6_3ApplyExtraDimming)"
+# Esperado: PSR1: 1 | PSR2: 1 | DRRS: 0 | DPST: 0
+```
+
+
+---
+### Sesión 2026-08-19 (~mañana, continuación) — Fix de encoding en script PowerShell
+
+## Contexto
+
+Usuario intentó ejecutar `Fix-Intel-Display-Admin.ps1` pero falló con error de parsing debido a caracteres especiales (¿) en el script.
+
+## Problema
+
+```
+En C:\NEVEN\scripts\Fix-Intel-Display-Admin.ps1: 105 Carácter: 39
++ Write-Host "¿Reiniciar ahora? (S/N): " -NoNewline
+Falta la cadena en el terminador: ".
+```
+
+**Causa:** El carácter `¿` (signo de interrogación invertido español) causó problemas de encoding al escribir el archivo.
+
+## Solución
+
+Reescribí el script eliminando caracteres especiales:
+- `¿Reiniciar ahora?` → `Reiniciar ahora?`
+- `\n` en strings → líneas separadas con `Write-Host ""`
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\scripts\Fix-Intel-Display-Admin.ps1` | Reescrito sin caracteres especiales |
+
+## Commits realizados
+
+Ninguno — corrección de script local.
+
+## Intentos fallidos
+
+| Intento | Por qué falló | Lección |
+|---------|---------------|---------|
+| Script con `¿` y backtick-n | Encoding UTF-8 con caracteres especiales causa parsing errors en PowerShell | Usar solo ASCII en scripts PS1, evitar `¿`, `ñ`, `á`, etc. |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe ejecutar `& 'C:\NEVEN\scripts\Fix-Intel-Display-Admin.ps1'` |
+| **ALTA** | Reiniciar después del script |
+| **ALTA** | Verificar que display funcione post-reinicio |
+
+
+---
+### Sesión 2026-08-19 (~mañana, continuación) — Diagnóstico térmico confirmado
+
+## Contexto
+
+Usuario reportó que el problema persiste después de aplicar todos los fixes de software. Observación clave: **"cuando la máquina está caliente la pantalla no enciende, cuando enfría el problema se corrige"**.
+
+## Diagnóstico térmico
+
+### Hallazgos
+
+1. **Intel Dynamic Tuning (DPTF)** está activo con múltiples "participants":
+   - Intel Dynamic Tuning Manager
+   - Intel Dynamic Tuning Power Participant
+   - Intel Dynamic Tuning Processor Participant
+   - 9+ Generic Participants
+
+2. **Servicio esifsvc** (Intel DTT) corriendo en estado Auto:
+   ```
+   PathName: C:\WINDOWS\System32\DriverStore\FileRepository\dptf_cpu.inf_amd64_...\esif_uf.exe
+   ```
+
+3. **DPTF drivers cargados:**
+   - dptf_acpi.sys
+   - dptf_cpu.sys
+   - esif_lf.sys
+
+4. **Temperatura GPU NVIDIA al momento del diagnóstico:** 52°C (normal, pero la máquina estaba encendida hace poco)
+
+### Conclusión
+
+**El problema NO es de drivers de display.** Intel DPTF está apagando el panel LCD como medida de protección térmica cuando detecta temperatura alta. Esto es comportamiento diseñado para proteger el hardware.
+
+Los fixes aplicados anteriormente (PSR, Modern Standby, etc.) no pueden resolver un problema de hardware/térmica.
+
+## Causa raíz
+
+La Dell XPS 15 9510 (fabricada ~2021-2022, tiene ~3-5 años) probablemente tiene:
+- Ventiladores con polvo acumulado
+- Pasta térmica seca/degradada
+- Disipación térmica reducida
+
+Cuando el sistema está caliente, DPTF activa protección térmica que incluye apagar el panel.
+
+## Soluciones propuestas
+
+| Opción | Tipo | Descripción | Riesgo |
+|--------|------|-------------|--------|
+| **BIOS Cool mode** | Software | F2 → Thermal Management → Cool | Bajo (reduce rendimiento) |
+| **Limpiar ventiladores** | Física | Aire comprimido | Ninguno |
+| **Cambiar pasta térmica** | Física | Servicio técnico estándar | Bajo |
+| **Cooling pad** | Física | Soporte con ventiladores | Ninguno |
+| **Deshabilitar DPTF** | Software | Detener servicio esifsvc | **ALTO** (sobrecalentamiento) |
+
+## Archivos creados
+
+Ninguno — sesión de diagnóstico.
+
+## Commits realizados
+
+Ninguno — sesión de diagnóstico.
+
+## Intentos/Aprendizajes
+
+| Intento | Resultado | Aprendizaje |
+|---------|-----------|-------------|
+| PSR1 deshabilitado | No resolvió | Problema no es PSR |
+| PSR2/DRRS/DPST deshabilitados | No resolvió | Problema no es power saving de display |
+| Modern Standby deshabilitado | No resolvió | Problema no es sleep state |
+| Observación térmica del usuario | **Diagnóstico correcto** | El comportamiento correlaciona con temperatura |
+
+## Próximos pasos recomendados
+
+| Prioridad | Acción | Detalle |
+|-----------|--------|---------|
+| **ALTA** | Probar BIOS Cool mode | F2 → Thermal Management → Cool |
+| **ALTA** | Limpiar ventiladores | Aire comprimido, inspección visual |
+| **MEDIA** | Considerar cambio de pasta térmica | Servicio técnico o DIY si hay experiencia |
+| **BAJA** | Cooling pad como solución temporal | Mientras se hace mantenimiento físico |
+
+## Notas técnicas
+
+1. **DPTF no debe deshabilitarse** — puede causar daño físico por sobrecalentamiento
+2. **Dell no tiene Power Manager instalado** — solo Command | Update
+3. **La correlación caliente/frío es diagnóstica** — confirma problema térmico
+4. **El logo Dell aparece porque el BIOS no tiene el mismo throttling térmico** — solo Windows/DPTF lo implementa
+
+
+---
+### Sesión 2026-08-19 (~9:00-10:30am) — RESUMEN FINAL: Diagnóstico problema display Dell XPS 15 9510
+
+## Contexto
+
+Continuación de sesión de diagnóstico del problema de pantalla que se apaga al iniciar Windows. Usuario había aplicado fixes de software (PSR1, Modern Standby) pero el problema persistía.
+
+## Logros principales
+
+1. **Aplicación exitosa de fixes de registry:**
+   - `Disable_PanelSelfRefresh = 1` (Intel PSR1)
+   - `PlatformAoAcOverride = 0` (Modern Standby)
+   - `PSR2Disable = 1` (Intel PSR2)
+   - `Psr2DrrsEnable = 0` (DRRS)
+   - `Dpst6_3ApplyExtraDimming = 0` (DPST)
+
+2. **Diagnóstico definitivo:** El problema es **TÉRMICO**, no de software.
+
+3. **Identificación de Intel DPTF** como el sistema que apaga el display como protección térmica.
+
+## Causa raíz
+
+**El problema NO es de drivers ni configuración de Windows.**
+
+Intel Dynamic Platform and Thermal Framework (DPTF) está apagando el panel LCD cuando detecta temperatura alta. La observación clave del usuario lo confirmó: "cuando la máquina está caliente la pantalla no enciende, cuando enfría el problema se corrige".
+
+La Dell XPS 15 9510 tiene ~3-5 años y probablemente necesita:
+- Limpieza de ventiladores (polvo acumulado)
+- Reemplazo de pasta térmica (degradada con el tiempo)
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `C:\NEVEN\scripts\Fix-Intel-Display-Admin.ps1` | Creado/corregido (fix de encoding UTF-8 → ASCII) |
+| `F:\ANTIGRAVITY\2026\NEVEN\.kiro\contexto\CHAT.md` | Actualizado con diagnóstico |
+
+## Commits realizados
+
+Ninguno — sesión de diagnóstico de hardware, no de código.
+
+## Decisiones de diseño
+
+| Decisión | Razón |
+|----------|-------|
+| No deshabilitar DPTF | Riesgo de daño físico por sobrecalentamiento |
+| Recomendar solución física | El problema es de hardware, no software |
+| Documentar todos los intentos | Evitar repetir fixes de software en futuro |
+
+## Intentos fallidos
+
+| Intento | Por qué no funcionó |
+|---------|---------------------|
+| Deshabilitar PSR1 | Problema no es Panel Self-Refresh |
+| Deshabilitar PSR2/DRRS/DPST | Problema no es power saving de Intel |
+| Deshabilitar Modern Standby | BIOS no soporta S3, además problema es térmico |
+| Lid action = Do nothing | No disponible en este modelo Dell |
+
+## Hallazgos técnicos importantes
+
+1. **S3 no disponible a nivel firmware** — `powercfg /a` muestra que el BIOS de Dell no soporta S3
+2. **14 DPTF participants activos** — Intel DTT gestiona agresivamente la térmica
+3. **GPU NVIDIA a 52°C** en idle — temperatura normal pero indica sistema caliente
+4. **Dell Power Manager NO instalado** — solo Dell Command | Update disponible
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Cambiar perfil BIOS a "Cool" | F2 al reiniciar → Thermal Management → Cool |
+| **ALTA** | Limpiar ventiladores | Aire comprimido, inspección visual |
+| **ALTA** | Considerar cambio de pasta térmica | Servicio técnico o DIY |
+| MEDIA | Verificar ANR fix en Android (audiolibros) | Pausar/resumir libro en app NEVEN |
+| MEDIA | Probar formato M4A en estéreo del carro | Formato cambiado de M4B a M4A |
+| BAJA | Considerar cooling pad | Solución temporal mientras se hace mantenimiento |
+
+## Nota para futuras sesiones
+
+**El problema de display de esta Dell XPS 15 9510 es de HARDWARE (térmica), no de software.** No invertir más tiempo en fixes de registry/drivers. La solución es mantenimiento físico: limpieza de ventiladores y/o cambio de pasta térmica.
+
+
+---
+### Sesión 2026-08-19 (~10:30am) — Instrucciones cambio BIOS para perfil térmico
+
+## Contexto
+
+Usuario solicitó el procedimiento para cambiar el perfil térmico en el BIOS de la Dell XPS 15 9510.
+
+## Logros principales
+
+Documenté el procedimiento paso a paso para cambiar el perfil térmico en BIOS:
+
+1. Reiniciar → F2 para entrar al BIOS
+2. Navegar a Power Management → Thermal Management
+3. Cambiar de "Optimized" a **"Cool"**
+4. F10 para guardar y salir
+
+## Archivos modificados
+
+Ninguno — sesión informativa.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe aplicar cambio de BIOS a perfil "Cool" |
+| **ALTA** | Verificar si el problema de display se resuelve con perfil Cool |
+| **ALTA** | Si persiste: limpieza física de ventiladores/pasta térmica |
+| MEDIA | Verificar ANR fix en Android (audiolibros) |
+| MEDIA | Probar formato M4A en estéreo del carro |
+
+
+---
+### Sesión 2026-08-19 (~11:00am) — Discusión sobre impacto de perfil térmico Cool
+
+## Contexto
+
+Usuario expresó preocupación por perder potencia con el perfil "Cool" del BIOS.
+
+## Discusión
+
+Expliqué el impacto real del perfil "Cool":
+- Para desarrollo de software (uso principal): impacto ~0-5%
+- Para compilación: ~5-10% más lento
+- Para renderizado/gaming: ~15-20% reducción
+
+**Punto clave:** Actualmente ya está perdiendo productividad porque el display se apaga cuando la máquina se calienta, lo cual es peor que una reducción controlada.
+
+## Recomendación final
+
+| Plazo | Acción | Resultado |
+|-------|--------|-----------|
+| Corto (hoy) | Perfil "Cool" en BIOS | Poder trabajar sin interrupciones |
+| Largo (próximos días) | Limpieza ventiladores + pasta térmica | Restaurar enfriamiento original |
+| Después | Volver a "Optimized" | Rendimiento completo restaurado |
+
+## Archivos modificados
+
+Ninguno — sesión de discusión.
+
+## Commits realizados
+
+Ninguno.
+
+## Decisión pendiente
+
+Usuario debe decidir si:
+1. Aplica perfil "Cool" como solución temporal
+2. Lleva laptop a servicio técnico para limpieza/pasta térmica
+3. Hace la limpieza DIY (si tiene experiencia)
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Decidir estrategia térmica (Cool vs limpieza física) |
+| **ALTA** | Aplicar solución elegida |
+| MEDIA | Verificar ANR fix en Android (audiolibros) |
+| MEDIA | Probar formato M4A en estéreo del carro |
+
+
+---
+### Sesión 2026-08-19 (~11:30am) — Diagnóstico servidor de audiolibros
+
+## Contexto
+
+Usuario reportó que el botón "Iniciar Servidor" en el tab de Audiobook de NEVEN Studio no funcionaba.
+
+## Diagnóstico realizado
+
+### Hallazgos
+
+1. **Servidor de audiobook YA ESTÁ corriendo** en puerto 5556 (PID 29368)
+2. **Health check responde correctamente:**
+   ```json
+   {"service":"neven-audiobook","status":"ok","version":"1.0.0"}
+   ```
+3. **Endpoint `/api/audiobook/start`** en servidor principal (5555) funciona:
+   ```json
+   {"status": "ok", "message": "Server already running", "port": 5556}
+   ```
+4. **CORS configurado correctamente** (`Access-Control-Allow-Origin: *`)
+5. **Archivos audiobook.js idénticos** entre repo y producción
+
+### Problema identificado
+
+El frontend no detecta que el servidor está corriendo. El `catch` en `checkServerStatus()` estaba vacío, silenciando errores.
+
+## Trabajo realizado
+
+Mejoré el logging en `audiobook.js` para diagnosticar el problema:
+
+1. Agregué `console.log` y `console.warn` en `checkServerStatus()` y `startServer()`
+2. Agregué múltiples reintentos de verificación después de iniciar (2s, 4s, 6s)
+3. Agregué manejo de errores más explícito con `showToast()`
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\audiobook.js` | Mejorado logging y manejo de errores |
+| `C:\NEVEN\TaskPane\audiobook.js` | Copiado desde repo |
+
+## Commits realizados
+
+Ninguno — cambios pendientes de verificación.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe abrir DevTools (F12) en TaskPane y reportar errores de consola |
+| **ALTA** | Verificar si el problema es de comunicación TaskPane → localhost:5556 |
+| **ALTA** | Decidir estrategia térmica Dell (Cool vs limpieza física) |
+| MEDIA | Verificar ANR fix en Android (audiolibros) |
+| MEDIA | Probar formato M4A en estéreo del carro |
+| MEDIA | Commit de cambios a audiobook.js si funcionan |
+
+## Notas técnicas
+
+1. **El servidor de audiobook funciona** — verificado con curl
+2. **El endpoint de inicio funciona** — verificado con curl
+3. **El problema está en el frontend** — probablemente comunicación TaskPane → localhost
+4. **Office Add-ins tienen restricciones de sandbox** — pueden bloquear fetch a localhost
+
+
+---
+### Sesión 2026-08-19 (~6:00pm) — Fix descarga de audiolibros con nombres con espacios
+
+## Contexto
+
+Usuario generó su primer audiolibro exitosamente pero al tratar de descargarlo recibía error "archivo no encontrado".
+
+## Causa raíz
+
+El endpoint `/api/download/<filename>` en `neven_audiobook_server.py` usaba `secure_filename()` de Werkzeug, que **elimina espacios y caracteres especiales** de los nombres de archivo.
+
+Cuando el frontend pedía:
+```
+Miguel de Cervantes - El Ingenioso hidalgo Don Quijote de La Mancha.m4b
+```
+
+El servidor buscaba:
+```
+Miguel_de_Cervantes_-_El_Ingenioso_hidalgo_Don_Quijote_de_La_Mancha.m4b
+```
+
+Y obviamente no lo encontraba.
+
+## Solución implementada
+
+Reescribí el endpoint de descarga:
+
+1. **Cambié la ruta** de `<filename>` a `<path:filename>` para permitir caracteres especiales
+2. **Eliminé `secure_filename()`** y usé `urllib.parse.unquote()` para decodificar URL
+3. **Agregué protección contra path traversal** verificando que la ruta resuelta no escape de `output_folder`
+4. **Agregué búsqueda parcial** como fallback si no encuentra el archivo exacto
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\neven_audiobook_server.py` | Reescrito endpoint `/api/download` |
+| `C:\NEVEN\Audiobook\neven_audiobook_server.py` | Copiado desde repo |
+
+## Verificación
+
+```
+ANTES:
+- 85f2886a_RMD_Andres_Porras_Lara.m4b → 200 OK
+- Miguel de Cervantes - El Ingenioso... → 404 NOT FOUND
+
+DESPUÉS:
+- 85f2886a_RMD_Andres_Porras_Lara.m4b → 200 OK  
+- Miguel de Cervantes - El Ingenioso... → 200 OK (147 MB)
+```
+
+## Commits realizados
+
+Ninguno — pendiente de commit.
+
+## Decisiones de diseño
+
+| Decisión | Razón |
+|----------|-------|
+| No usar `secure_filename()` | Elimina espacios que son válidos en nombres de archivos |
+| Usar `<path:filename>` | Flask permite caracteres especiales con este converter |
+| Path traversal manual | Más control que `secure_filename()`, permite espacios |
+| Búsqueda parcial fallback | Robustez si el nombre tiene pequeñas variaciones |
+
+## Audiolibros encontrados en producción
+
+```
+C:\NEVEN\output\
+├── 85f2886a_RMD_Andres_Porras_Lara.m4b (1 MB)
+├── Miguel de Cervantes - El Ingenioso hidalgo Don Quijote de La Mancha.m4b (147 MB)
+└── Miguel de Cervantes - El Ingenioso hidalgo Don Quijote de La Mancha_172807.m4b
+```
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Commit cambios a neven_audiobook_server.py y audiobook.js |
+| **ALTA** | Verificar que el usuario puede descargar el audiolibro |
+| **ALTA** | Decidir estrategia térmica Dell (Cool vs limpieza física) |
+| MEDIA | Verificar ANR fix en Android (audiolibros) |
+| MEDIA | Probar formato M4A en estéreo del carro |
+| BAJA | Agregar tests para endpoint de descarga |
+
+## Notas técnicas
+
+1. **`secure_filename()` es demasiado agresivo** para nombres de audiolibros que típicamente incluyen autor y título
+2. **Flask `<path:filename>`** permite `/` en el nombre, por eso agregamos protección path traversal manual
+3. **El servidor se reinició** correctamente en puerto 5556 después del fix
+
+
+---
+### Sesión 2026-08-19 (~7:00pm) — Rediagnóstico: problema es FREEZE del sistema, no display
+
+## Contexto
+
+Usuario reportó que el problema de pantalla ocurre también con la máquina fría, descartando la hipótesis térmica anterior.
+
+## Nuevo diagnóstico
+
+### Hallazgo clave: NO es problema de display, es FREEZE del sistema
+
+Análisis de Event ID 41 (Kernel-Power) reveló:
+
+| Fecha | BugcheckCode | LongPowerButtonPress | ConnectedStandby | LidState |
+|-------|--------------|---------------------|------------------|----------|
+| 07/11 23:58 | 0 | **true** | false | 1 (abierta) |
+| 07/11 23:56 | 0 | **true** | false | 1 (abierta) |
+| 07/11 22:20 | 0 | false | **true** | 0 (cerrada) |
+| 06/11 19:42 | 0 | - | - | - |
+
+**Interpretación:**
+- `BugcheckCode: 0` = No hubo BSOD, el sistema simplemente se congeló
+- `LongPowerButtonPressDetected: true` = Usuario tuvo que forzar apagado porque sistema no respondía
+- `ConnectedStandbyInProgress: true` = Modern Standby activo durante algunos freezes
+
+### BSOD real encontrado (03/11/2026)
+
+```
+BugCheck: 0x00000101 (CLOCK_WATCHDOG_TIMEOUT)
+Minidump: C:\WINDOWS\Minidump\110326-25203-01.dmp
+```
+
+**CLOCK_WATCHDOG_TIMEOUT** significa que un thread de CPU no respondió dentro del tiempo esperado. Esto es problema de hardware o driver de bajo nivel.
+
+### Causas probables (ordenadas por probabilidad)
+
+1. **Driver GPU híbrido (Intel+NVIDIA switching)** — Alta
+2. **Modern Standby buggy en firmware Dell** — Alta  
+3. **Problema de hardware (CPU/motherboard)** — Media-Baja
+
+## Verificaciones realizadas
+
+| Componente | Estado | Errores |
+|------------|--------|---------|
+| Driver Intel UHD | OK, v32.0.101.7088 | Ninguno |
+| Driver NVIDIA RTX | OK, v32.0.16.1074 | Ninguno |
+| RAM | 64 GB (2x32GB PSD432G32002S @ 3200MHz) | Sin errores |
+| Disco | OK | Sin errores NTFS/Storage |
+| TPM | Error menor (Event 17) | No crítico |
+
+## Por qué la hipótesis térmica era incorrecta
+
+La correlación caliente/frío que observó el usuario probablemente era coincidencia o:
+- Caliente = más tiempo encendida = más probabilidad de freeze
+- El freeze ocurre en transiciones de estado de energía (Modern Standby) independiente de temperatura
+
+## Archivos modificados
+
+Ninguno — sesión de diagnóstico.
+
+## Commits realizados
+
+Ninguno.
+
+## Soluciones propuestas
+
+| Opción | Descripción | Riesgo |
+|--------|-------------|--------|
+| **A** | DDU + reinstalar drivers GPU frescos | Bajo |
+| **B** | BIOS: Deshabilitar Optimus/Hybrid Graphics | Medio |
+| **C** | Deshabilitar NVIDIA temporalmente (solo Intel) | Bajo |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe decidir qué opción probar (A/B/C) |
+| **ALTA** | Si elige A: descargar DDU y drivers de Dell Support |
+| **ALTA** | Si elige C: Device Manager → deshabilitar NVIDIA RTX 3050 |
+| **ALTA** | Commit cambios pendientes (audiobook server, audiobook.js) |
+| MEDIA | Verificar ANR fix en Android (audiolibros) |
+| MEDIA | Probar formato M4A en estéreo del carro |
+
+## Notas técnicas
+
+1. **6 crashes en 4 días** — problema activo y frecuente
+2. **El display no "se apaga"** — el sistema entero se congela, el display deja de recibir señal
+3. **CLOCK_WATCHDOG_TIMEOUT** es típico de problemas de GPU driver o switching híbrido
+4. **Modern Standby (S0 Low Power Idle)** sigue siendo sospechoso aunque deshabilitamos registry
+5. **El BIOS puede estar ignorando el registry override** — necesita verificación en BIOS settings
+
+
+---
+### Sesión 2026-08-19 (~7:30pm) — Discusión de opciones para resolver freezes
+
+## Contexto
+
+Sesión de discusión sobre las opciones para resolver el problema de freezes del sistema Dell XPS 15 9510.
+
+## Opciones presentadas
+
+| Opción | Descripción | Pros | Contras |
+|--------|-------------|------|---------|
+| **A** | DDU + reinstalar drivers GPU | Solución limpia | Toma 30-45 min, modo seguro |
+| **B** | Deshabilitar Hybrid Graphics en BIOS | Elimina switching GPU | Pierde ventaja de batería |
+| **C** | Deshabilitar NVIDIA temporalmente | Diagnóstico rápido (2 min) | Sin aceleración RTX 3050 |
+
+## Recomendación
+
+Empezar con **Opción C** como prueba diagnóstica:
+- Si no se congela con solo Intel → problema es switching GPU o driver NVIDIA
+- Si sigue congelándose → problema más profundo (firmware, Modern Standby, hardware)
+
+## Preguntas pendientes para el usuario
+
+1. ¿Usa GPU NVIDIA para algo específico? (ML, gaming, renderizado)
+2. ¿Los freezes ocurren en momento específico? (cerrar tapa, despertar, uso normal)
+3. ¿Qué tan urgente es resolver esto?
+
+## Archivos modificados
+
+Ninguno — sesión de discusión.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe responder preguntas y elegir opción |
+| **ALTA** | Ejecutar opción elegida (probablemente C primero) |
+| **ALTA** | Commit cambios pendientes (audiobook server, audiobook.js) |
+| MEDIA | Verificar descarga de audiolibros funciona |
+| MEDIA | Verificar ANR fix en Android |
+
+
+---
+### Sesión 2026-08-19 (~8:00pm) — Decisión: Opción A (DDU + reinstalar drivers)
+
+## Contexto
+
+Usuario decidió ir con Opción A porque usa la GPU NVIDIA para procesar modelos locales (ML/inference con CUDA). Deshabilitar la NVIDIA (Opción C) le haría perder esa capacidad.
+
+## Decisión
+
+**Opción A: DDU + reinstalar drivers GPU** seleccionada.
+
+## Procedimiento documentado
+
+### Paso 1: Descargar antes de empezar
+- DDU: https://www.wagnardsoft.com/display-driver-uninstaller-DDU-
+- Drivers de Dell Support para XPS 15 9510:
+  - Intel UHD Graphics
+  - NVIDIA GeForce RTX 3050
+
+### Paso 2: DDU en Modo Seguro
+1. Descomprimir DDU en C:\DDU
+2. `msconfig` → Boot → Safe boot → Minimal → Reiniciar
+3. Ejecutar DDU
+4. Clean NVIDIA (sin reiniciar)
+5. Clean Intel (con reiniciar)
+
+### Paso 3: Instalar drivers frescos
+1. Instalar Intel UHD primero
+2. Instalar NVIDIA GeForce segundo
+3. Reiniciar
+
+### Tiempo estimado: 30-45 minutos
+
+## Archivos modificados
+
+Ninguno — sesión de planificación.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe descargar DDU y drivers de Dell |
+| **ALTA** | Ejecutar procedimiento DDU |
+| **ALTA** | Verificar si freezes se resuelven post-reinstalación |
+| **ALTA** | Commit cambios pendientes (audiobook server, audiobook.js) |
+| MEDIA | Verificar descarga de audiolibros funciona |
+| MEDIA | Verificar ANR fix en Android |
+
+## Nota importante
+
+El usuario usa la NVIDIA RTX 3050 para **modelos locales de ML** — no es opcional deshabilitarla. La solución debe mantener la GPU funcional.
+
+
+---
+### Sesión 2026-08-19 (~8:30pm) — Kit completo DDU documentado
+
+## Contexto
+
+Usuario solicitó ayuda con los links y procedimiento completo para DDU + reinstalación de drivers.
+
+## Logros principales
+
+Documenté el procedimiento completo paso a paso:
+
+### Links proporcionados
+
+| Recurso | URL |
+|---------|-----|
+| DDU oficial | https://www.wagnardsoft.com/display-driver-uninstaller-ddu |
+| Drivers Dell XPS 15 9510 | https://www.dell.com/support/home/product-support/product/xps-15-9510-laptop/drivers |
+
+### Procedimiento documentado
+
+1. **Preparación:** Descargar DDU + drivers Intel + NVIDIA de Dell
+2. **Modo Seguro:** `msconfig` → Boot → Safe boot → Minimal
+3. **DDU:** Limpiar NVIDIA (sin reiniciar) → Limpiar Intel (con reiniciar)
+4. **Salir Modo Seguro:** `msconfig` → desmarcar Safe boot
+5. **Instalar:** Intel primero, NVIDIA segundo, reiniciar después de cada uno
+
+### Verificación post-instalación
+
+```powershell
+Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion, Status
+```
+
+## Archivos modificados
+
+Ninguno — sesión de documentación/ayuda.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe ejecutar procedimiento DDU completo |
+| **ALTA** | Verificar si freezes se resuelven post-reinstalación |
+| **ALTA** | Commit cambios pendientes (audiobook server, audiobook.js) |
+| MEDIA | Verificar descarga de audiolibros funciona |
+| MEDIA | Verificar ANR fix en Android |
+
+## Notas
+
+- DDU versión actual: 18.1.6.2 (octubre 2026)
+- Service Tag de la laptop está en la parte inferior del equipo
+- Drivers deben descargarse de Dell (no de Intel/NVIDIA directamente) para compatibilidad con XPS 15 9510
+
+
+---
+### Sesión 2026-08-19 (~9:00pm) — Confirmación driver Intel
+
+## Contexto
+
+Usuario encontró el driver Intel en Dell Support y preguntó si era el correcto.
+
+## Confirmación
+
+**"Intel UHD/Iris Xe Graphics Driver"** ✅ es el driver correcto para el XPS 15 9510.
+
+El procesador Intel de 11ª generación tiene gráficos integrados Intel UHD, y Dell empaqueta los drivers UHD + Iris Xe juntos.
+
+## Checklist actualizado
+
+- ✅ Driver Intel UHD/Iris Xe — encontrado
+- ⏳ Driver NVIDIA GeForce RTX 3050 — pendiente
+- ⏳ DDU — pendiente descargar
+
+## Archivos modificados
+
+Ninguno — sesión de confirmación.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes inmediatos
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Descargar driver NVIDIA RTX 3050 de Dell |
+| **ALTA** | Descargar DDU de wagnardsoft.com |
+| **ALTA** | Ejecutar procedimiento DDU completo |
+
+
+---
+### Sesión 2026-08-19 (~9:15pm) — Verificación modelo GPU NVIDIA
+
+## Contexto
+
+Usuario encontró driver "NVIDIA GeForce RTX 3050 Ti/A1000/A2000" pero necesitábamos verificar el modelo exacto de su GPU.
+
+## Verificación
+
+Comando ejecutado:
+```powershell
+Get-WmiObject Win32_VideoController | Where-Object { $_.Name -match 'NVIDIA' }
+```
+
+Resultado: **NVIDIA GeForce RTX 3050 Laptop GPU** (sin Ti)
+
+## Recomendación
+
+- El driver "RTX 3050 Ti" podría funcionar (misma familia), pero es mejor buscar uno específico para "RTX 3050"
+- Buscar en Dell: "NVIDIA GeForce RTX 3050 Graphics Driver" o "RTX 3050/3060"
+
+## Checklist actualizado
+
+- ✅ Driver Intel UHD/Iris Xe — encontrado
+- ⚠️ Driver NVIDIA RTX 3050 — usuario encontró versión Ti, verificando si hay versión correcta
+- ⏳ DDU — pendiente descargar
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes inmediatos
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Usuario debe buscar driver "RTX 3050" (sin Ti) en Dell, o usar el Ti si no hay otro |
+| **ALTA** | Descargar DDU |
+| **ALTA** | Ejecutar procedimiento completo |
+
+
+---
+### Sesión 2026-08-19 (~9:30pm) — Confirmación driver NVIDIA
+
+## Contexto
+
+Usuario mostró captura de pantalla de Dell Support mostrando el único driver NVIDIA disponible.
+
+## Confirmación
+
+El driver **"NVIDIA GeForce RTX 3050 Ti/A1000/A2000 and Quadro T1200 Graphics Driver"** (16 Oct 2026, Recommended) es válido para el RTX 3050 Laptop GPU.
+
+Dell empaqueta drivers compatibles para toda la familia RTX 3050/3050 Ti en el mismo instalador. El driver detecta automáticamente el modelo específico.
+
+## Checklist final
+
+- ✅ Intel UHD/Iris Xe Graphics Driver — confirmado
+- ✅ NVIDIA GeForce RTX 3050 Ti/A1000/A2000 — confirmado (válido para 3050)
+- ⏳ DDU — pendiente descargar
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes inmediatos
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Descargar DDU de wagnardsoft.com |
+| **ALTA** | Ejecutar procedimiento DDU completo |
+| **ALTA** | Verificar si freezes se resuelven |
+
+
+---
+### Sesión 2026-08-19 (~9:45pm) — Todo listo para DDU
+
+## Contexto
+
+Usuario confirmó que tiene todo descargado y listo.
+
+## Confirmación
+
+- ✅ DDU (~1.31 MB) — tamaño correcto confirmado
+- ✅ Driver Intel UHD/Iris Xe — descargado
+- ✅ Driver NVIDIA RTX 3050 Ti — descargado
+
+## Instrucciones proporcionadas
+
+Siguiente paso: Entrar a Modo Seguro via `msconfig` → Boot → Safe boot → Minimal → Reiniciar
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes inmediatos
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Reiniciar a Modo Seguro |
+| **ALTA** | Ejecutar DDU (NVIDIA primero sin reiniciar, Intel con reiniciar) |
+| **ALTA** | Salir de Modo Seguro (desmarcar Safe boot) |
+| **ALTA** | Instalar Intel primero, NVIDIA segundo |
+| **ALTA** | Verificar si freezes se resuelven |
+
+
+---
+### Sesión 2026-08-19 (~tarde/noche completa) — RESUMEN FINAL DE SESIÓN
+
+## Fecha y hora
+2026-08-19, aproximadamente 5:00pm - 10:00pm
+
+## Logros principales
+
+### 1. Fix descarga de audiolibros con espacios en nombre
+- **Problema:** El endpoint `/api/download/<filename>` usaba `secure_filename()` de Werkzeug que eliminaba espacios
+- **Causa raíz:** `secure_filename("Miguel de Cervantes - El Ingenioso...")` → `"Miguel_de_Cervantes_-_El_Ingenioso..."` y el archivo no se encontraba
+- **Solución:** Reescribí endpoint usando `<path:filename>` + `urllib.parse.unquote()` + protección manual contra path traversal
+- **Resultado:** Audiolibros con nombres como "Miguel de Cervantes - El Ingenioso hidalgo Don Quijote de La Mancha.m4b" ahora descargan correctamente (200 OK, 147 MB)
+
+### 2. Mejora de logging en audiobook.js
+- Agregué `console.log` y `console.warn` en `checkServerStatus()` y `startServer()` para facilitar debug
+- Agregué múltiples reintentos de verificación (2s, 4s, 6s) después de iniciar servidor
+
+### 3. Rediagnóstico completo problema Dell XPS 15 9510
+- **Diagnóstico inicial (incorrecto):** Problema de display/térmico
+- **Diagnóstico final (correcto):** El sistema completo se CONGELA, no solo el display
+- **Evidencia:** 6 crashes (Event ID 41) en 4 días, BSOD 0x00000101 (CLOCK_WATCHDOG_TIMEOUT)
+- **Causa probable:** Driver GPU híbrido (Intel/NVIDIA switching) o Modern Standby buggy
+
+### 4. Documentación completa procedimiento DDU
+- Links de descarga: DDU, Intel UHD/Iris Xe, NVIDIA RTX 3050
+- Procedimiento paso a paso para Modo Seguro + DDU + reinstalación
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\neven_audiobook_server.py` | Reescrito endpoint `/api/download` para soportar nombres con espacios |
+| `C:\NEVEN\Audiobook\neven_audiobook_server.py` | Copiado desde repo |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\audiobook.js` | Mejorado logging en checkServerStatus() y startServer() |
+| `C:\NEVEN\TaskPane\audiobook.js` | Copiado desde repo |
+
+## Commits realizados
+
+Ninguno — cambios pendientes de commit.
+
+## Decisiones de diseño importantes
+
+| Decisión | Razón |
+|----------|-------|
+| No usar `secure_filename()` para descargas | Elimina espacios válidos en nombres de audiolibros |
+| Usar `<path:filename>` en Flask | Permite caracteres especiales en URL |
+| Path traversal manual vs secure_filename | Más control, permite espacios, sigue siendo seguro |
+| Recomendar DDU para freezes de GPU | Es la solución estándar para problemas de driver híbrido Intel/NVIDIA |
+
+## Intentos fallidos / Aprendizajes
+
+| Intento | Por qué falló | Lección |
+|---------|---------------|---------|
+| Hipótesis térmica (calor apaga display) | El freeze ocurre también con máquina fría | Correlación ≠ causalidad; verificar con datos de Event Log |
+| Deshabilitar PSR/DPST/Modern Standby | No resolvió el problema | El problema es más profundo (driver corruption o hardware) |
+| Script PowerShell con caracteres especiales (¿) | Error de parsing UTF-8 | Usar solo ASCII en scripts PS1 |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Ejecutar DDU + reinstalar drivers | Usuario tiene todo descargado; decidir ruta A (ambos) o B (solo NVIDIA) |
+| **ALTA** | Commit cambios audiobook | neven_audiobook_server.py + audiobook.js |
+| **ALTA** | Verificar descarga audiolibros funciona | Probar descargar "Don Quijote" desde TaskPane |
+| MEDIA | Verificar ANR fix en Android | Pausar/resumir libro en app NEVEN |
+| MEDIA | Probar formato M4A en estéreo del carro | Formato cambiado de M4B a M4A en sesión anterior |
+| BAJA | Agregar tests para endpoint de descarga | Probar nombres con espacios, caracteres especiales, path traversal |
+
+## Estado del usuario al cerrar sesión
+
+Usuario tiene DDU + drivers Intel + NVIDIA descargados y listos. Expresó preocupación por quedarse sin display al desinstalar ambas GPUs. Se ofreció alternativa conservadora (solo NVIDIA primero). Pendiente decisión A (ambos) o B (solo NVIDIA).
+
+## Notas técnicas importantes
+
+1. **GPU del usuario:** NVIDIA GeForce RTX 3050 Laptop GPU (sin Ti) — usa para ML local
+2. **Driver Dell "RTX 3050 Ti/A1000"** es válido para RTX 3050 (misma familia)
+3. **Windows tiene driver VGA básico** — no se queda sin display al limpiar GPUs
+4. **Event ID 41 con BugcheckCode: 0** = freeze sin BSOD, no crash de kernel
+5. **LongPowerButtonPressDetected: true** = usuario forzó apagado porque sistema no respondía
+
+
+---
+### Sesión 2026-08-19 (~10:30pm) — DIAGNÓSTICO CONFIRMADO: Driver Intel es el problema
+
+## Contexto
+
+Usuario ejecutó procedimiento DDU y reportó hallazgo crítico.
+
+## Hallazgo definitivo
+
+| Escenario | ¿Funciona tapa? |
+|-----------|-----------------|
+| Modo Seguro (sin drivers GPU) | ✅ **SÍ funciona** |
+| Driver Intel instalado | ❌ **NO funciona** |
+
+**CONCLUSIÓN: El problema es el driver Intel UHD, NO NVIDIA.**
+
+El driver Intel tiene alguna característica de power management o configuración de panel que congela el display al cerrar/abrir la tapa.
+
+## Implicaciones
+
+1. Los fixes de registry (PSR, PSR2, DPST, Modern Standby) **no son suficientes** — el driver los ignora o hay otras características problemáticas
+2. La solución puede ser:
+   - Driver Intel más viejo (versión anterior)
+   - Deshabilitar Intel UHD completamente (usar solo NVIDIA)
+   - BIOS: Forzar "Discrete Graphics Only" si existe la opción
+
+## Opciones propuestas
+
+| Opción | Descripción | Pros | Contras |
+|--------|-------------|------|---------|
+| 1 | Driver Intel anterior | Mantiene híbrido, mejor batería | Puede no existir versión estable |
+| 2 | Deshabilitar Intel en Device Manager | Rápido, reversible | Pierde ahorro de batería |
+| 3 | BIOS: dGPU Only | Solución limpia | Puede no estar disponible |
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes inmediatos
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Decidir opción: driver viejo, deshabilitar Intel, o BIOS dGPU Only |
+| **ALTA** | Ejecutar opción elegida |
+| **ALTA** | Verificar que el problema se resuelve |
+| **ALTA** | Commit cambios pendientes de audiobook |
+
+## Notas técnicas
+
+- Este hallazgo **descarta definitivamente** que sea problema de NVIDIA, Modern Standby, térmica, o hardware
+- El driver Intel UHD v32.0.101.7088 tiene un bug con el manejo de lid open/close
+- En Modo Seguro Windows usa driver VGA genérico de Microsoft, que no tiene el bug
+
+
+---
+### Sesión 2026-08-19 (~5:00pm - 11:00pm) — RESUMEN FINAL COMPLETO
+
+## Fecha y hora
+2026-08-19, aproximadamente 5:00pm - 11:00pm (sesión extendida)
+
+## Logros principales
+
+### 1. Fix descarga de audiolibros con nombres con espacios ✅
+- **Problema:** Audiolibros como "Miguel de Cervantes - El Ingenioso hidalgo Don Quijote de La Mancha.m4b" no se podían descargar (404)
+- **Causa raíz:** `secure_filename()` de Werkzeug elimina espacios: "Miguel de Cervantes" → "Miguel_de_Cervantes", y el archivo no se encontraba
+- **Solución:** Reescribí endpoint `/api/download/<path:filename>` usando `urllib.parse.unquote()` + protección manual contra path traversal
+- **Verificación:** curl confirma 200 OK para archivo de 147 MB
+
+### 2. Mejora de logging en audiobook.js ✅
+- Agregué `console.log`/`console.warn` para facilitar debug de conexión con servidor
+- Agregué reintentos múltiples (2s, 4s, 6s) después de iniciar servidor
+
+### 3. DIAGNÓSTICO DEFINITIVO del problema Dell XPS 15 9510 ✅
+- **Síntoma:** Pantalla se apaga al cerrar/abrir tapa, no despierta
+- **Diagnóstico inicial (incorrecto):** Problema térmico
+- **Diagnóstico intermedio (parcial):** Freezes del sistema (6 Event ID 41 en 4 días)
+- **DIAGNÓSTICO FINAL (correcto):** **EL DRIVER INTEL UHD ES EL PROBLEMA**
+  - En Modo Seguro (sin drivers): ✅ Tapa funciona perfectamente
+  - Con driver Intel instalado: ❌ Problema regresa
+  - El driver Intel v32.0.101.7088 tiene bug con lid open/close
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\neven_audiobook_server.py` | Reescrito endpoint `/api/download` |
+| `C:\NEVEN\Audiobook\neven_audiobook_server.py` | Copiado desde repo |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\audiobook.js` | Mejorado logging |
+| `C:\NEVEN\TaskPane\audiobook.js` | Copiado desde repo |
+| `C:\NEVEN\scripts\Fix-Intel-Display-Admin.ps1` | Creado (fixes de registry) |
+
+## Commits realizados
+
+**NINGUNO** — cambios pendientes de commit para próxima sesión:
+- neven_audiobook_server.py (fix descarga)
+- audiobook.js (mejora logging)
+
+## Decisiones de diseño importantes
+
+| Decisión | Razón |
+|----------|-------|
+| No usar `secure_filename()` para descargas | Elimina espacios válidos en nombres de audiolibros |
+| Usar `<path:filename>` + unquote() | Permite caracteres especiales manteniendo seguridad |
+| Path traversal manual | `os.path.normpath()` + verificar que ruta no escape de output_folder |
+| Usuario ejecutó DDU en Modo Seguro | Necesario para diagnóstico limpio |
+
+## Intentos fallidos y por qué fallaron
+
+| Intento | Por qué falló | Lección |
+|---------|---------------|---------|
+| Hipótesis térmica | Problema ocurre también con máquina fría | Correlación temporal ≠ causalidad |
+| Deshabilitar PSR/PSR2/DPST/Modern Standby | Driver Intel ignora algunos registry settings | El driver tiene más control que el registry |
+| Script PS1 con caracteres especiales (¿) | PowerShell no maneja bien UTF-8 con ¿ | Usar solo ASCII en scripts PowerShell |
+| Atribuir problema a NVIDIA | Modo Seguro sin NVIDIA tampoco tiene el problema | Proceso de eliminación incompleto |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Resolver problema Intel | Opciones: (1) Driver Intel más viejo, (2) Deshabilitar Intel en Device Manager, (3) BIOS dGPU Only |
+| **ALTA** | Commit cambios audiobook | `git add` + `git commit` de neven_audiobook_server.py y audiobook.js |
+| **ALTA** | Verificar descarga audiolibros | Probar descargar Don Quijote desde TaskPane |
+| MEDIA | Instalar driver NVIDIA | Usuario hizo DDU pero solo reinstalamos Intel; NVIDIA pendiente |
+| MEDIA | Verificar ANR fix Android | Pausar/resumir libro en app NEVEN |
+| MEDIA | Probar M4A en estéreo carro | Formato cambiado de M4B a M4A |
+| BAJA | Tests endpoint descarga | Probar nombres con espacios, path traversal |
+
+## Estado al cerrar sesión
+
+- Usuario ejecutó DDU completo exitosamente
+- Reinstalamos driver Intel → problema regresó
+- **CONFIRMADO: Driver Intel UHD v32.0.101.7088 tiene bug con lid open/close**
+- Usuario debe decidir entre: driver viejo, deshabilitar Intel, o BIOS dGPU Only
+- Driver NVIDIA pendiente de reinstalar
+
+## Notas técnicas importantes
+
+1. **Modo Seguro usa driver VGA genérico de Microsoft** — no tiene el bug
+2. **El problema NO es:** térmica, NVIDIA, Modern Standby, PSR, hardware
+3. **El problema SÍ es:** Driver Intel UHD específicamente
+4. **Versión problemática:** 32.0.101.7088 (junio 2026)
+5. **GPU del usuario:** RTX 3050 Laptop (usa para ML local) — no puede prescindir de ella
+
+
+---
+### Sesión 2026-08-19 (~11:15pm) — Decisión: Desinstalar Intel, usar solo NVIDIA
+
+## Contexto
+
+Continuación breve de sesión. Usuario decidió estrategia final para resolver problema de display.
+
+## Decisión tomada
+
+**Desinstalar driver Intel UHD y usar solo NVIDIA RTX 3050.**
+
+Dado que confirmamos que el problema es el driver Intel, la solución más limpia es eliminarlo completamente.
+
+## Trade-offs aceptados
+
+| Aspecto | Antes (Intel+NVIDIA) | Después (Solo NVIDIA) |
+|---------|----------------------|----------------------|
+| Batería | ~8-10 horas | ~4-5 horas |
+| Estabilidad lid | ❌ Problema | ✅ Debería funcionar |
+| ML/CUDA | ✅ | ✅ |
+| Rendimiento | Igual | Igual |
+
+**Usuario acepta menor duración de batería a cambio de estabilidad.**
+
+## Procedimiento acordado
+
+1. Device Manager → Display adapters
+2. Click derecho Intel UHD → Uninstall device
+3. Marcar "Delete the driver software"
+4. Reiniciar
+5. Instalar driver NVIDIA RTX 3050
+6. Reiniciar
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ejecutar desinstalación Intel + instalación NVIDIA |
+| **ALTA** | Verificar que problema de lid se resuelve |
+| **ALTA** | Commit cambios audiobook (neven_audiobook_server.py, audiobook.js) |
+| MEDIA | Verificar descarga audiolibros funciona |
+| MEDIA | Verificar ANR fix Android |
+| BAJA | Considerar buscar driver Intel más viejo en el futuro si quiere recuperar batería |
+
+## Notas
+
+- Usuario aún no ha instalado NVIDIA después del DDU
+- El plan es: desinstalar Intel → instalar solo NVIDIA → probar
+- Si funciona, problema resuelto con costo de batería
+- En el futuro podría probar driver Intel más viejo para recuperar híbrido
+
+
+---
+### Sesión 2026-08-19 (~11:30pm) — Plan final: DDU Intel + Solo NVIDIA
+
+## Contexto
+
+Breve continuación. Usuario confirmó que prefiere usar DDU para limpieza profunda de Intel en lugar de Device Manager.
+
+## Plan acordado
+
+1. Modo Seguro (`msconfig` → Boot → Safe boot → Minimal)
+2. DDU → GPU → Intel → "Limpiar y reiniciar"
+3. Salir de Modo Seguro (desmarcar Safe boot)
+4. Instalar NVIDIA RTX 3050
+5. **NO instalar Intel**
+6. Probar tapa
+
+## Archivos modificados
+
+Ninguno — sesión de planificación.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ejecutar DDU Intel + instalar solo NVIDIA |
+| **ALTA** | Verificar problema de lid resuelto |
+| **ALTA** | Commit cambios audiobook |
+| MEDIA | Verificar descarga audiolibros |
+| MEDIA | Verificar ANR fix Android |
+
+## Nota
+
+DDU es preferible a Device Manager porque limpia registry, driver store, y archivos residuales completamente.
+
+
+---
+### Sesión 2026-08-19 (~11:45pm) — Confirmación adicional: Modo Seguro funciona perfecto
+
+## Contexto
+
+Usuario confirmó observación adicional que refuerza el diagnóstico.
+
+## Confirmación
+
+**En Modo Seguro la pantalla inicia sin problemas** — otra prueba de que el driver Intel UHD es el culpable.
+
+| Modo | Driver | ¿Funciona? |
+|------|--------|------------|
+| Modo Seguro | VGA básico Microsoft | ✅ Sí |
+| Modo Normal + Intel | Intel UHD v32.0.101.7088 | ❌ No |
+
+Windows en Modo Seguro no carga drivers de GPU, usa driver genérico mínimo. Por eso funciona.
+
+## Implicación
+
+Una vez que se limpie Intel con DDU y solo quede NVIDIA, el sistema debería funcionar como en Modo Seguro pero con aceleración gráfica completa de la RTX 3050.
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Ejecutar DDU Intel + instalar solo NVIDIA |
+| **ALTA** | Verificar problema de lid resuelto |
+| **ALTA** | Commit cambios audiobook |
+
+
+---
+### Sesión 2026-08-19 (~12:00am) — Verificación post-instalación: Intel sigue presente
+
+## Contexto
+
+Usuario instaló driver NVIDIA y solicitó verificación.
+
+## Hallazgo
+
+**Intel sigue presente** a pesar del DDU:
+
+| GPU | Estado | Driver |
+|-----|--------|--------|
+| Intel UHD Graphics | ❌ Presente | 32.0.101.7088 |
+| NVIDIA RTX 3050 | ✅ OK | 32.0.16.1074 |
+
+Posibles causas:
+- Windows Update reinstalado automáticamente
+- El instalador de NVIDIA incluye Intel (poco probable)
+- DDU no se ejecutó correctamente
+
+## Opciones propuestas
+
+1. **Deshabilitar Intel en Device Manager** — rápido, reversible
+2. **DDU de nuevo** — más limpio, toma más tiempo
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno.
+
+## Pendientes inmediatos
+
+| Prioridad | Tarea |
+|-----------|-------|
+| **ALTA** | Deshabilitar o desinstalar Intel |
+| **ALTA** | Probar tapa después de deshabilitar |
+
+
+---
+### Sesión 2026-08-19 (~5:00pm - 12:00am) — RESUMEN COMPLETO DE SESIÓN EXTENDIDA
+
+## Fecha y hora
+2026-08-19, aproximadamente 5:00pm - 12:00am (sesión de ~7 horas)
+
+## Logros principales
+
+### 1. Fix descarga de audiolibros con nombres con espacios ✅
+- **Síntoma:** Audiolibros como "Miguel de Cervantes - El Ingenioso hidalgo Don Quijote de La Mancha.m4b" devolvían 404
+- **Causa raíz:** `secure_filename()` de Werkzeug convierte espacios a underscores, así que el servidor buscaba archivo con nombre diferente al real
+- **Solución:** Reescribí endpoint `/api/download/<path:filename>` usando `urllib.parse.unquote()` + protección manual contra path traversal en lugar de `secure_filename()`
+- **Verificación:** curl confirma 200 OK para archivo de 147 MB con espacios en nombre
+
+### 2. Mejora de logging en audiobook.js ✅
+- Agregué `console.log`/`console.warn` en `checkServerStatus()` y `startServer()` para facilitar debug
+- Agregué reintentos múltiples (2s, 4s, 6s) después de iniciar servidor
+
+### 3. DIAGNÓSTICO DEFINITIVO problema Dell XPS 15 9510 ✅
+- **Síntoma inicial:** Pantalla se apaga al cerrar/abrir tapa, no despierta
+- **Hipótesis descartadas:**
+  - ❌ Problema térmico (ocurre también con máquina fría)
+  - ❌ NVIDIA (funciona en Modo Seguro sin ella)
+  - ❌ Modern Standby (deshabilitado, problema persiste)
+  - ❌ PSR/DPST (deshabilitados via registry, problema persiste)
+- **CAUSA RAÍZ CONFIRMADA:** Driver Intel UHD v32.0.101.7088 tiene bug con lid open/close
+- **Prueba definitiva:** En Modo Seguro (sin drivers GPU) la tapa funciona perfectamente; con Intel instalado el problema regresa inmediatamente
+
+### 4. Procedimiento DDU documentado y ejecutado
+- Usuario ejecutó DDU en Modo Seguro
+- Confirmó que sin drivers GPU el sistema funciona perfecto
+- Reinstalamos Intel → problema regresó (confirmación del diagnóstico)
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\neven_audiobook_server.py` | Reescrito endpoint `/api/download` para soportar nombres con espacios |
+| `C:\NEVEN\Audiobook\neven_audiobook_server.py` | Copiado desde repo |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\audiobook.js` | Mejorado logging en checkServerStatus() y startServer() |
+| `C:\NEVEN\TaskPane\audiobook.js` | Copiado desde repo |
+| `C:\NEVEN\scripts\Fix-Intel-Display-Admin.ps1` | Creado (fixes de registry que resultaron insuficientes) |
+
+## Commits realizados
+
+**NINGUNO** — cambios pendientes de commit:
+- `neven_audiobook_server.py` (fix descarga con espacios)
+- `audiobook.js` (mejora logging)
+
+## Decisiones de diseño importantes
+
+| Decisión | Razón |
+|----------|-------|
+| No usar `secure_filename()` para descargas | Elimina espacios válidos en nombres de audiolibros (autor - título) |
+| Usar `<path:filename>` + unquote() | Permite caracteres especiales manteniendo seguridad con validación manual |
+| Path traversal manual con `os.path.normpath()` | Verifica que ruta no escape de output_folder |
+| Desinstalar Intel en lugar de buscar fix de registry | Los fixes de registry (PSR, DPST, etc.) no funcionaron; el driver tiene bugs más profundos |
+
+## Intentos fallidos y por qué fallaron
+
+| Intento | Por qué falló | Lección |
+|---------|---------------|---------|
+| Hipótesis térmica | Problema ocurre también con máquina fría | Correlación temporal ≠ causalidad |
+| Deshabilitar PSR/PSR2/DPST via registry | Driver Intel ignora algunos settings o tiene bugs en otras áreas | Los fixes de registry son limitados |
+| Deshabilitar Modern Standby via registry | BIOS de Dell no soporta S3 de todos modos | Verificar `powercfg /a` antes de asumir que un fix de sleep funciona |
+| Script PS1 con caracteres ¿ | PowerShell no maneja bien UTF-8 con caracteres especiales | Usar solo ASCII en scripts PowerShell |
+| DDU para limpiar Intel | Windows o NVIDIA reinstalaron Intel automáticamente | Deshabilitar Windows Update de drivers o usar Device Manager para deshabilitar |
+
+## Estado actual del sistema Dell XPS 15 9510
+
+```
+Intel UHD Graphics: PRESENTE (debería estar deshabilitado/removido)
+NVIDIA RTX 3050: OK, driver v32.0.16.1074
+```
+
+**Acción pendiente:** Deshabilitar Intel en Device Manager o DDU de nuevo
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Deshabilitar Intel UHD en Device Manager | Device Manager → Display adapters → Intel → Disable device |
+| **ALTA** | Probar tapa después de deshabilitar Intel | Cerrar/abrir tapa, verificar que funciona |
+| **ALTA** | Commit cambios audiobook | `git add` neven_audiobook_server.py + audiobook.js |
+| **ALTA** | Verificar descarga audiolibros funciona | Probar descargar "Don Quijote" desde TaskPane |
+| MEDIA | Verificar ANR fix Android | Pausar/resumir libro en app NEVEN |
+| MEDIA | Probar M4A en estéreo carro | Formato cambiado de M4B a M4A en sesión anterior |
+| BAJA | Considerar driver Intel más viejo | Si en el futuro quiere recuperar batería híbrida |
+| BAJA | Evitar reinstalación automática de Intel | Configurar Windows Update para no instalar drivers automáticamente |
+
+## Notas técnicas importantes para futuras sesiones
+
+1. **Driver Intel UHD v32.0.101.7088 tiene bug con lid open/close** — confirmado con prueba A/B en Modo Seguro
+2. **El problema NO es:** térmica, NVIDIA, Modern Standby, PSR, DPST, hardware
+3. **Solo NVIDIA es viable** — costo: menor batería (~4-5h vs ~8-10h)
+4. **Modo Seguro usa driver VGA genérico de Microsoft** — útil para diagnóstico
+5. **Windows puede reinstalar drivers automáticamente** — verificar después de DDU
+6. **`secure_filename()` es demasiado agresivo** para nombres de archivos con espacios (autor - título)
+
+
+---
+### Sesión 2026-08-19 (~12:15am) — ¡PROBLEMA DE DISPLAY RESUELTO!
+
+## Contexto
+
+Continuación breve. Usuario deshabilitó Intel y probó la tapa.
+
+## Resultado
+
+**¡ÉXITO!** Al cerrar y abrir la tapa, la pantalla funciona correctamente.
+
+Nuevo tema: La máquina no se duerme al cerrar la tapa — esto es porque configuramos "Lid action = Do nothing" anteriormente como parte de los fixes.
+
+## Estado actual
+
+| Componente | Estado |
+|------------|--------|
+| Intel UHD Graphics | Deshabilitado ✅ |
+| NVIDIA RTX 3050 | Funcionando ✅ |
+| Pantalla al cerrar/abrir tapa | **FUNCIONA** ✅ |
+| Suspensión al cerrar tapa | No configurada (Do nothing) |
+
+## Próximo paso
+
+Usuario debe decidir si quiere que la máquina se suspenda al cerrar la tapa:
+- Panel de Control → Opciones de energía → "Elegir el comportamiento de cerrar la tapa"
+- Cambiar a "Suspender" si desea ese comportamiento
+
+## Archivos modificados
+
+Ninguno.
+
+## Commits realizados
+
+Ninguno — pendientes de sesiones anteriores.
+
+## Pendientes
+
+| Prioridad | Tarea |
+|-----------|-------|
+| MEDIA | Configurar lid action a "Suspender" si el usuario lo desea |
+| **ALTA** | Commit cambios audiobook |
+| MEDIA | Verificar descarga audiolibros |
+
+
+---
+### Sesión 2026-08-20 (~12:30am) — CIERRE DE SESIÓN: Problema Dell XPS 15 RESUELTO
+
+## Fecha y hora
+2026-08-20, aproximadamente 12:30am (cierre de sesión extendida que inició 2026-08-19 ~5pm)
+
+## Logros principales
+
+### 1. ¡PROBLEMA DE DISPLAY DELL XPS 15 9510 RESUELTO! ✅
+- **Síntoma:** Pantalla se apagaba al cerrar/abrir tapa y no despertaba
+- **Causa raíz:** Driver Intel UHD Graphics v32.0.101.7088 tiene bug con lid open/close
+- **Solución aplicada:** Deshabilitar Intel UHD en Device Manager, usar solo NVIDIA RTX 3050
+- **Resultado:** Al cerrar y abrir la tapa, **la pantalla funciona correctamente**
+
+### 2. Fix descarga audiolibros con espacios ✅
+- **Causa raíz:** `secure_filename()` eliminaba espacios de nombres de archivos
+- **Solución:** Endpoint reescrito con `<path:filename>` + `unquote()` + path traversal manual
+
+## Diagnóstico que llevó a la solución
+
+| Prueba | Resultado | Conclusión |
+|--------|-----------|------------|
+| Modo Seguro (sin drivers GPU) | ✅ Tapa funciona | Problema es de driver |
+| Con Intel instalado | ❌ Problema regresa | Intel es el culpable |
+| Intel deshabilitado + solo NVIDIA | ✅ **FUNCIONA** | Solución confirmada |
+
+## Estado final del sistema
+
+| Componente | Estado |
+|------------|--------|
+| Intel UHD Graphics | **Deshabilitado** |
+| NVIDIA RTX 3050 | Funcionando (v32.0.16.1074) |
+| Pantalla al cerrar/abrir tapa | **FUNCIONA** ✅ |
+| Suspensión al cerrar tapa | No configurada (Do nothing) |
+
+## Archivos modificados en esta sesión
+
+| Archivo | Cambio |
+|---------|--------|
+| `F:\ANTIGRAVITY\2026\NEVEN\src\Audiobook\neven_audiobook_server.py` | Fix endpoint descarga |
+| `C:\NEVEN\Audiobook\neven_audiobook_server.py` | Copiado |
+| `F:\ANTIGRAVITY\2026\NEVEN\src\TaskPane\audiobook.js` | Mejorado logging |
+| `C:\NEVEN\TaskPane\audiobook.js` | Copiado |
+
+## Commits realizados
+
+**NINGUNO** — pendientes:
+- neven_audiobook_server.py (fix descarga)
+- audiobook.js (mejora logging)
+
+## Decisiones de diseño importantes
+
+| Decisión | Razón |
+|----------|-------|
+| Deshabilitar Intel en lugar de buscar driver viejo | Solución más rápida y confiable; driver viejo podría tener otros bugs |
+| Aceptar menor batería (~4-5h vs ~8-10h) | Trade-off aceptable por estabilidad |
+| No configurar lid action a "Suspender" todavía | Usuario debe decidir si quiere suspensión automática |
+
+## Intentos fallidos durante la sesión
+
+| Intento | Por qué falló |
+|---------|---------------|
+| Fixes de registry (PSR, PSR2, DPST, Modern Standby) | Driver Intel ignora o tiene bugs más profundos |
+| DDU para eliminar Intel permanentemente | Windows reinstalado automáticamente |
+| Hipótesis térmica | Problema ocurre también con máquina fría |
+
+## Pendientes para próxima sesión
+
+| Prioridad | Tarea | Detalle |
+|-----------|-------|---------|
+| **ALTA** | Commit cambios audiobook | `git add` + `git commit` de neven_audiobook_server.py y audiobook.js |
+| **ALTA** | Verificar descarga audiolibros | Probar descargar "Don Quijote" desde TaskPane |
+| MEDIA | Configurar lid action | Si usuario quiere suspensión al cerrar tapa: Panel de Control → Opciones de energía |
+| MEDIA | Evitar reinstalación Intel | Configurar Windows Update para no instalar drivers GPU automáticamente |
+| MEDIA | Verificar ANR fix Android | Pausar/resumir libro en app NEVEN |
+| MEDIA | Probar M4A en estéreo carro | Formato cambiado de M4B a M4A |
+| BAJA | Documentar solución Dell | Para referencia futura si problema reaparece |
+
+## Resumen ejecutivo
+
+**Sesión exitosa de ~7 horas.** Se diagnosticó y resolvió el problema de display del Dell XPS 15 9510 que había persistido por días. La causa raíz era el driver Intel UHD Graphics. La solución fue deshabilitarlo y usar solo la GPU NVIDIA. También se corrigió un bug en el servidor de audiolibros que impedía descargar archivos con espacios en el nombre.
+
+---
+### Sesion 2026-08-19 (~madrugada) — Fix audiobook download + Diagnostico display Dell XPS
+
+## Contexto
+
+Sesion de ~7 horas resolviendo dos problemas: bug de descarga de audiolibros y problema de pantalla al cerrar/abrir tapa.
+
+## Problema 1: Descarga de audiolibros (RESUELTO)
+
+### Sintoma
+Al intentar descargar audiolibro generado, el servidor retorna 404 "file not found" aunque el archivo existe.
+
+### Causa raiz
+`secure_filename()` de Werkzeug elimina espacios y caracteres especiales:
+- Nombre real: `Miguel de Cervantes - El Ingenioso hidalgo Don Quijote de La Mancha.m4b`
+- secure_filename(): `Miguel_de_Cervantes_-_El_Ingenioso_hidalgo_Don_Quijote_de_La_Mancha.m4b`
+- Resultado: 404 porque el archivo con guiones bajos no existe
+
+### Solucion
+Reescribir endpoint `/api/download/<path:filename>`:
+- Usar `<path:filename>` en vez de `<filename>` (permite /)
+- Reemplazar `secure_filename()` con `unquote()` + validacion manual de path traversal
+- Verificar que ruta normalizada este dentro de OUTPUT_DIR
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `src/Audiobook/neven_audiobook_server.py` | Endpoint reescrito (+35 -7 lineas) |
+| `src/TaskPane/audiobook.js` | Logging mejorado en checkServerStatus/startServer |
+| `C:\NEVEN\Audiobook\neven_audiobook_server.py` | Copia a produccion |
+| `C:\NEVEN\TaskPane\audiobook.js` | Copia a produccion |
+
+### Verificacion
+Archivo de 147MB descarga exitosamente (HTTP 200).
+
+## Problema 2: Pantalla Dell XPS 15 9510 (RESUELTO)
+
+### Sintoma
+Al cerrar y abrir la tapa del laptop, la pantalla no enciende. Solo se recupera con reinicio forzado (boton power).
+
+### Diagnostico
+1. Hipotesis termica descartada (ocurre con maquina fria)
+2. Safe Mode: problema NO ocurre → driver culpable
+3. Safe Mode + instalar Intel UHD: problema REAPARECE
+4. Conclusion: **Intel UHD Graphics driver v32.0.101.7088 tiene bug con lid open/close**
+
+### Solucion
+- Deshabilitar Intel UHD Graphics en Device Manager
+- Usar solo NVIDIA RTX 3050 como GPU activa
+- Trade-off: menor duracion de bateria (~4-5h vs ~8-10h hibrido)
+
+### Herramientas usadas
+- DDU (Display Driver Uninstaller) de wagnardsoft.com
+- Event Viewer para analizar crashes (Event ID 41)
+
+### Estado actual GPUs
+| GPU | Driver | Estado |
+|-----|--------|--------|
+| Intel UHD Graphics | v32.0.101.7088 | DESHABILITADO |
+| NVIDIA RTX 3050 Ti | v32.0.16.1074 | OK (activo) |
+
+### Nota: Comportamiento de tapa
+La accion de cerrar tapa esta configurada como "No hacer nada" (no suspende). Si usuario quiere suspender, configurar en:
+Panel de Control → Opciones de energia → "Elegir el comportamiento de cerrar la tapa"
+
+## Commits pendientes
+
+Los cambios de audiobook NO estaban commiteados al cerrar sesion.
+
+## Pendientes
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| **ALTA** | Commit cambios audiobook (este) | Proximo |
+| MEDIA | Verificar descarga desde TaskPane real | Pendiente |
+| MEDIA | Prevenir reinstalacion auto de Intel driver | Pendiente |
+| BAJA | Restaurar Intel si encuentran driver estable | Futuro |
+

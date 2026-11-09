@@ -89,9 +89,12 @@
         
         updateButtonStates();
         return true;
+      } else {
+        console.warn('[Audiobook] Server responded with status:', response.status);
       }
     } catch (e) {
-      // Servidor no disponible
+      // Servidor no disponible - log para debug
+      console.warn('[Audiobook] checkServerStatus error:', e.message || e);
     }
     
     state.serverOnline = false;
@@ -112,17 +115,30 @@
     text.textContent = 'Iniciando servidor...';
     
     try {
+      console.log('[Audiobook] Attempting to start server via 5555...');
       const response = await fetch('http://localhost:5555/api/audiobook/start', {
         method: 'POST'
       });
       
+      console.log('[Audiobook] Start response status:', response.status);
+      
       if (response.ok) {
+        const data = await response.json();
+        console.log('[Audiobook] Start response:', data);
         showToast('Iniciando servidor de audiobook...');
+        // Esperar más tiempo y verificar varias veces
         setTimeout(checkServerStatus, 2000);
+        setTimeout(checkServerStatus, 4000);
+        setTimeout(checkServerStatus, 6000);
         return;
+      } else {
+        const errorText = await response.text();
+        console.error('[Audiobook] Start failed:', response.status, errorText);
+        showToast('Error al iniciar: ' + response.status);
       }
     } catch (e) {
-      console.log('[Audiobook] No se pudo iniciar via servidor principal');
+      console.error('[Audiobook] No se pudo iniciar via servidor principal:', e.message || e);
+      showToast('Error de conexion con servidor principal');
     }
     
     showToast('Ejecuta: python neven_audiobook_server.py en C:\\NEVEN\\Audiobook');
