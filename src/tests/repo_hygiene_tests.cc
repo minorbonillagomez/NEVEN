@@ -81,8 +81,10 @@ protected:
 
 // --- CI Permissions Tests (Requirement 6.1) ---
 
+// The workflow lives in .github/ at the repository root, one level above
+// CMAKE_SOURCE_DIR (src/), because GitHub only reads .github/ from the root.
 TEST_F(RepoHygieneTests, CIWorkflowHasPermissionsBlock) {
-    std::string content = ReadProjectFile(".github/workflows/build-and-test.yml");
+    std::string content = ReadProjectFile("../.github/workflows/build-and-test.yml");
     ASSERT_FALSE(content.empty())
         << "Could not read .github/workflows/build-and-test.yml";
 
@@ -92,7 +94,7 @@ TEST_F(RepoHygieneTests, CIWorkflowHasPermissionsBlock) {
 }
 
 TEST_F(RepoHygieneTests, CIWorkflowHasContentsReadPermission) {
-    std::string content = ReadProjectFile(".github/workflows/build-and-test.yml");
+    std::string content = ReadProjectFile("../.github/workflows/build-and-test.yml");
     ASSERT_FALSE(content.empty())
         << "Could not read .github/workflows/build-and-test.yml";
 

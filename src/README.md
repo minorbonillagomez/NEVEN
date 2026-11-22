@@ -16,7 +16,7 @@ Minor Bonilla-Gomez
 # Let's start: 
 ## NEvƎИ — Open Source Polyglot Infrastructure for Excel
 
-[![Build](https://img.shields.io/badge/build-CMake_3.15+-blue)](CMakeLists.txt) [![Tests](https://img.shields.io/badge/tests-228_passing-brightgreen)]() [![License](https://img.shields.io/badge/license-GPL_v3-green)](LICENSE) [![C++](https://img.shields.io/badge/C++-17-orange)](CMakeLists.txt) [![Quality](https://img.shields.io/badge/quality-8.9%2F10-brightgreen)]()
+[![Build and Test](https://github.com/minorbonillagomez/NEVEN/actions/workflows/build-and-test.yml/badge.svg?branch=master)](https://github.com/minorbonillagomez/NEVEN/actions/workflows/build-and-test.yml) [![Tests](https://img.shields.io/badge/tests-228_passing-brightgreen)]() [![License](https://img.shields.io/badge/license-GPL_v3-green)](LICENSE) [![C++](https://img.shields.io/badge/C++-17-orange)](CMakeLists.txt) [![Quality](https://img.shields.io/badge/quality-8.9%2F10-brightgreen)]()
 
 > **NEvƎИ** transforms Microsoft Excel into an auditable data science environment by integrating **R**, **Julia**, and **Python** as embedded scripting engines. Execute statistical models, machine learning, and interactive visualizations directly from Excel cells — with full transparency and reproducibility.
 

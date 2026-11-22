@@ -195,7 +195,7 @@ New to the project? Here are some self-contained tasks to get started:
 
 ## Reporting Bugs {#reporting-bugs}
 
-Use the [Bug Report issue template](.github/ISSUE_TEMPLATE/bug_report.md). Please include:
+Use the [Bug Report issue template](../.github/ISSUE_TEMPLATE/bug_report.md). Please include:
 - NEVEN version
 - Windows version and Excel version (32-bit or 64-bit)
 - R/Julia version (if relevant)
@@ -207,7 +207,7 @@ Use the [Bug Report issue template](.github/ISSUE_TEMPLATE/bug_report.md). Pleas
 
 ## Proposing Features {#proposing-features}
 
-Open a [Feature Request](.github/ISSUE_TEMPLATE/feature_request.md) describing:
+Open a [Feature Request](../.github/ISSUE_TEMPLATE/feature_request.md) describing:
 - The problem you want to solve
 - Your proposed solution
 - Alternatives you considered
