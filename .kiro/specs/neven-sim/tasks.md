@@ -1,5 +1,29 @@
 # NEVEN-SIM: Implementation Tasks
 
+> ## ESTADO: CONGELADO TEMPORALMENTE — 2026-11-21
+>
+> Decisión del proyecto, ítem `C-10` del plan de auditoría. Las **109 tareas de este documento
+> quedan fuera del cómputo de deuda técnica** mientras siga congelado.
+>
+> **Motivo.** El objetivo de NEVEN-SIM era construir una alternativa a Oracle Crystal Ball. Eso no
+> es un módulo: es una línea de producto (ajuste de distribuciones, entradas correlacionadas,
+> gráficos de tornado, análisis de sensibilidad, optimización). Mantenerlo abierto ponía 109 tareas
+> a competir por atención con los arreglos P0 de la auditoría.
+>
+> **Condición de salida.** Retomar cuando estén cerrados los pendientes de las fases 0 a 2 del plan
+> (`.agents/tasks/auditoria-neven/plan-de-trabajo.md`, §7).
+>
+> **Al retomar, NO continuar por estas tareas sin responder antes: ¿hace falta un XLL separado?**
+> El diseño de este mismo documento (Task 2) define `SimBridge` como un *relay* que llama a
+> `NEVEN.r()` y `NEVEN.j()` mediante `Excel12(xlUDF, ...)`, y `FitService` / `MonteCarloService`
+> delegan en `fitdistrplus` (R) y en Julia. **El cálculo nunca fue C++ nativo.** La alternativa
+> (opción C de la deliberación) es implementar la capacidad como funciones de la librería R/Julia,
+> sin segundo XLL: el paper ya demuestra el mecanismo con `=J.MonteCarlo()`
+> (`src/docs/Paper/sections/03_viewer_extensibility.tex:101-116`).
+>
+> **Build.** `BUILD_NEVEN_SIM` permanece en `OFF` (`src/CMakeLists.txt:117`). No se retira nada del
+> árbol: el prototipo compila y su `NEVEN-SIM.xll` desplegado lleva Control Flow Guard.
+
 ## Phase 1 — MVP
 
 ### Task 1: Project Scaffolding & Build System

@@ -266,6 +266,13 @@ C:\NEVEN\
 
 ## Módulo NEVEN-SIM: Simulación Monte Carlo (Julio 2026)
 
+> **ESTADO: CONGELADO TEMPORALMENTE (2026-11-21).** Módulo **experimental**: no forma parte de la
+> narrativa del producto ni de las capacidades entregadas. `BUILD_NEVEN_SIM=OFF` por defecto
+> (`src/CMakeLists.txt:117`), de modo que `NEVEN-SIM.xll` no se construye salvo activación
+> explícita. El motivo, la condición de salida y la vía prevista al retomar están en
+> `.kiro/specs/neven-sim/tasks.md`. **Lo que sigue describe el diseño previsto, no funcionalidad
+> disponible.**
+
 NEVEN-SIM es un **XLL separado** (`NEVEN-SIM.xll`) que carga junto a NEVEN64.xll y proporciona simulación estocástica, análisis de riesgo y exploración reactiva de escenarios.
 
 ### Arquitectura NEVEN-SIM
