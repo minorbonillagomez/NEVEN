@@ -79,17 +79,18 @@ jobs:
         $R_HOME = (& R.exe RHOME | Select-Object -First 1).Trim()
         if (-not $R_HOME) { throw "Could not determine R_HOME: 'R.exe RHOME' returned nothing" }
         Write-Host "R_HOME = $R_HOME"
-        # Diagnostics: this job has never configured. With -G absent CMake chose
-        # "Unix Makefiles"; with -G set it reports it cannot find any instance of
-        # Visual Studio, on a runner that has it and where the Unit Tests job
-        # builds with it. The suspicion is that 'Install R' puts Rtools ahead on
-        # PATH and its bundled MinGW cmake is the one running. Print which cmake
-        # is resolved so the next change is informed rather than another guess.
-        Write-Host "cmake resolved to: $((Get-Command cmake).Source)"
-        Write-Host "cmake version    : $((& cmake --version | Select-Object -First 1))"
-        Write-Host "--- all cmake on PATH ---"
-        Get-Command cmake -All | ForEach-Object { Write-Host "  $($_.Source)" }
-        cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G "Visual Studio 17 2022" -A x64 -DR_HOME="$R_HOME"
+        # Use the runner's CMake, not whatever comes first on PATH. 'Install R'
+        # installs Rtools and puts its bin ahead of the runner's CMake, so plain
+        # 'cmake' resolved to C:\rtools44\...\mingw32.static.posix\bin\cmake.exe,
+        # a MinGW build that defaults to "Unix Makefiles" and cannot query a
+        # Visual Studio installation at all. That is why this job never got past
+        # configuration, while Unit Tests builds fine: it does not install R.
+        $cmakeExe = Get-Command cmake -All |
+                    Where-Object { $_.Source -notmatch 'rtools' } |
+                    Select-Object -First 1 -ExpandProperty Source
+        if (-not $cmakeExe) { throw "No non-Rtools cmake found on PATH" }
+        Write-Host "Using cmake: $cmakeExe"
+        & $cmakeExe -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G "Visual Studio 17 2022" -A x64 -DR_HOME="$R_HOME"
 
     - name: Build All
       run: cmake --build ${{ env.BUILD_DIR }} --config Release --parallel
