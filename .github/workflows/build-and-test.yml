@@ -79,11 +79,16 @@ jobs:
         $R_HOME = (& R.exe RHOME | Select-Object -First 1).Trim()
         if (-not $R_HOME) { throw "Could not determine R_HOME: 'R.exe RHOME' returned nothing" }
         Write-Host "R_HOME = $R_HOME"
-        # Name the generator instead of letting CMake guess. 'Install R' puts
-        # Rtools on PATH, which ships make and a MinGW toolchain, and CMake then
-        # picks "Unix Makefiles" over Visual Studio: -A x64 becomes invalid and
-        # no cl.exe is found. The Unit Tests job gets away without -G precisely
-        # because it does not install R.
+        # Diagnostics: this job has never configured. With -G absent CMake chose
+        # "Unix Makefiles"; with -G set it reports it cannot find any instance of
+        # Visual Studio, on a runner that has it and where the Unit Tests job
+        # builds with it. The suspicion is that 'Install R' puts Rtools ahead on
+        # PATH and its bundled MinGW cmake is the one running. Print which cmake
+        # is resolved so the next change is informed rather than another guess.
+        Write-Host "cmake resolved to: $((Get-Command cmake).Source)"
+        Write-Host "cmake version    : $((& cmake --version | Select-Object -First 1))"
+        Write-Host "--- all cmake on PATH ---"
+        Get-Command cmake -All | ForEach-Object { Write-Host "  $($_.Source)" }
         cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G "Visual Studio 17 2022" -A x64 -DR_HOME="$R_HOME"
 
     - name: Build All
