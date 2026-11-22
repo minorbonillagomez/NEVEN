@@ -50,9 +50,16 @@ jobs:
       run: |
         echo "::notice::NEVEN unit tests completed for ${{ matrix.config }}"
 
-  # --- Full Build (requires R -- runs on master only) ---
-  full-build:
-    name: Full Build (Release)
+  # --- Owned build (runs on master only) ---
+  # Builds every target NEVEN itself owns. The language engines (R, Julia,
+  # Python) are deliberately absent: NEVEN provides the connections to all
+  # three, and the user chooses which ones to install. Installing them in CI
+  # would assert that they ship with NEVEN, which is the opposite of the
+  # intended contract. The engine bridges (ControlR, ControlJulia,
+  # ControlPython) are therefore not built here; their compilation against the
+  # real SDKs belongs to a job that declares which engine it is testing.
+  owned-build:
+    name: Build NEVEN targets (Release)
     runs-on: windows-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: unit-tests
@@ -61,67 +68,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Install R first and set up MSVC last. setup-r brings Rtools and rewrites
-    # PATH; running it after setup-msbuild displaced the toolchain environment,
-    # which is why CMake could not find Visual Studio in this job while the
-    # Unit Tests job, which never installs R, finds it without help.
-    - name: Install R
-      uses: r-lib/actions/setup-r@v2
-      with:
-        r-version: '4.4.1'
-
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
 
     - name: Configure CMake
-      run: |
-        # Call R.exe by its full name. In PowerShell 'r' is a built-in alias for
-        # Invoke-History, so both '& R RHOME' and '(Get-Command R).Source' resolve
-        # to the alias rather than the interpreter: the first fails with "Cannot
-        # locate the history for command line RHOME", the second returns an empty
-        # Source. That alias is the reason this job never got past configuration.
-        $R_HOME = (& R.exe RHOME | Select-Object -First 1).Trim()
-        if (-not $R_HOME) { throw "Could not determine R_HOME: 'R.exe RHOME' returned nothing" }
-        Write-Host "R_HOME = $R_HOME"
-        # Use the runner's CMake, not whatever comes first on PATH. 'Install R'
-        # installs Rtools and puts its bin ahead of the runner's CMake, so plain
-        # 'cmake' resolved to C:\rtools44\...\mingw32.static.posix\bin\cmake.exe,
-        # a MinGW build that defaults to "Unix Makefiles" and cannot query a
-        # Visual Studio installation at all. That is why this job never got past
-        # configuration, while Unit Tests builds fine: it does not install R.
-        $cmakeExe = Get-Command cmake -All |
-                    Where-Object { $_.Source -notmatch 'rtools' } |
-                    Select-Object -First 1 -ExpandProperty Source
-        if (-not $cmakeExe) { throw "No non-Rtools cmake found on PATH" }
-        Write-Host "Using cmake: $cmakeExe"
-        # Hand the same cmake to the later steps. 'Build All' also calls cmake,
-        # and plain 'cmake' resolves to Rtools' 3.30.4, which does not know the
-        # generator this tree gets configured with and fails with "could not
-        # create CMAKE_GENERATOR".
-        "CMAKE_EXE=$cmakeExe" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-        # Do not hardcode the Visual Studio version. The runner image moved to
-        # Visual Studio 18 (vswhere reported C:\Program Files\Microsoft Visual
-        # Studio\18\Enterprise), so "Visual Studio 17 2022" no longer exists
-        # there: that is why CMake reported it could not find any instance, and
-        # why it fell back to "Unix Makefiles" when no generator was given.
-        # Ask this CMake which Visual Studio generators it supports and take the
-        # newest, so a future image bump does not break the job again.
-        $vsGen = & $cmakeExe --help |
-                 Select-String -Pattern 'Visual Studio \d+ \d+' -AllMatches |
-                 ForEach-Object { $_.Matches } |
-                 ForEach-Object { $_.Value } |
-                 Sort-Object -Unique |
-                 Sort-Object { [int]($_ -replace '^Visual Studio (\d+).*', '$1') } |
-                 Select-Object -Last 1
-        if (-not $vsGen) { throw "No Visual Studio generator offered by $cmakeExe" }
-        Write-Host "Using generator: $vsGen"
-        & $cmakeExe -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G "$vsGen" -A x64 "-DR_HOME=$R_HOME"
+      run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -A x64 -DSKIP_LANGUAGE_TARGETS=ON
 
-    - name: Build All
-      # Block scalar on purpose: a plain scalar starting with '&' is a YAML
-      # anchor, not text, and breaks the file.
-      run: |
-        & "$env:CMAKE_EXE" --build ${{ env.BUILD_DIR }} --config Release --parallel
+    - name: Build
+      run: cmake --build ${{ env.BUILD_DIR }} --config Release --parallel
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
@@ -130,5 +84,4 @@ jobs:
         path: |
           ${{ env.BUILD_DIR }}/Core/Release/NEVEN64.dll
           ${{ env.BUILD_DIR }}/Ribbon/Release/NEVENRibbon.dll
-          ${{ env.BUILD_DIR }}/ControlR/Release/ControlR.exe
         retention-days: 30
