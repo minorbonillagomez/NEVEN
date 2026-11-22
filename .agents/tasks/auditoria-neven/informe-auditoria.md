@@ -17,6 +17,26 @@ que puede cerrarse citándolo.
 
 ---
 
+> ## Fe de errata — 2026-11-22
+>
+> **Este informe afirmaba que «el CI no existe». Era falso.** El CI sí existía: corría en la rama
+> `main` y llevaba un mes fallando en todas las ejecuciones. Evidencia: run
+> [36640534455](https://github.com/minorbonillagomez/NEVEN/actions/runs/36640534455), rama `main`,
+> `FAILURE` en «Run Unit Tests» con `rj2xcl_tests_NOT_BUILT (Not Run)`.
+>
+> **Causa del error:** la auditoría se hizo sobre `master` y no detectó que el repositorio tenía
+> **dos historias sin antepasado común**. `main` era entonces la rama por defecto en GitHub, tenía
+> `.github/` en la raíz y por tanto CI activo; `master` tenía el workflow bajo `src/` y ningún CI.
+> El enunciado correcto es: **`master` no tenía CI**.
+>
+> Esto no invalida el ítem `B-01` del plan, pero sí redefine su alcance: era «dar CI a `master`»,
+> no «resucitar un CI muerto». `B-01` se ejecutó y `master` tiene ahora CI operativo (run
+> [44984615668](https://github.com/minorbonillagomez/NEVEN/actions/runs/44984615668): 368 de 369
+> tests en verde). `main` quedó archivada como `archive/pre-reorg-2026-09-29`.
+>
+> Los párrafos afectados (§1 foco 2, la tabla de §1 en la fila `MEJ4-01`, y §4.2 punto 2) se
+> corrigieron en el cuerpo del documento.
+
 ## 1. Resumen
 
 NEVEN funciona y hace cosas que ningún add-in comparable hace: ejecuta R, Julia y Python desde
@@ -31,7 +51,8 @@ Los problemas no están donde el proyecto los vigila. Están en tres sitios:
    5555 ofrece ejecución de código R/Julia/Python y escritura de ficheros a quien llegue a él,
    sin token y con `Access-Control-Allow-Origin: *`. El sandbox de 133 tests no cubre ese camino.
 2. **Nada verifica el proyecto de forma automática.** El workflow de CI vive en `src\.github\`,
-   que GitHub no lee, de modo que el CI no existe; 410 funciones de test en Python no tienen
+   que GitHub no lee, de modo que `master` no tiene CI (en `main` sí lo había, fallando desde hace
+   un mes: ver la fe de errata al inicio); 410 funciones de test en Python no tienen
    runner declarado; diez subsistemas C++ no tienen ningún test; el build compila con `/W1`.
 3. **La documentación describe un proyecto que ya no es este.** El layout real cambió en el
    commit `951cfcb` y 22 referencias documentales siguen apuntando al árbol anterior, entre ellas
@@ -60,7 +81,7 @@ señala el solape.
 | ID | Qué | Por qué importa |
 |---|---|---|
 | `SEC-01` | API local del 5555 sin autenticación, CORS comodín, endpoints de ejecución | Convierte "visitar una página" o "tener una cuenta local" en ejecución de código en la sesión de Excel del usuario |
-| `MEJ4-01` | `src\.github\` no está en la raíz: el CI no existe para GitHub | Corregir solo el filtro de rama (`COD-19`) no habría cambiado nada. Media jornada de arreglo y habilita todo lo demás |
+| `MEJ4-01` | `src\.github\` no está en la raíz: `master` no tiene CI (`main` sí lo tenía, y fallaba) | Corregir solo el filtro de rama (`COD-19`) no habría cambiado nada. Media jornada de arreglo y habilita todo lo demás |
 | `PROD-01` | Tres servicios reclaman el puerto 5556; el de audiolibros pierde | Es la causa de que el pendiente arrastrado de la descarga de audiolibros nunca se pudiera probar |
 | `SEC-08` | Integridad de scripts *fail-open* y **0** ficheros `.sha256` para 92 scripts desplegados | `INV-CMN-02` está violada en los datos aunque se cumpla en la lógica |
 | `SEC-11` | `NEVEN64.xll` se distribuye sin Control Flow Guard | `INV-BLD-02` incumplida en el artefacto mientras el test que la protege pasa, porque lee el `CMakeLists.txt` y no el binario |
@@ -395,8 +416,9 @@ Tests reales: **369 en 47 suites**, de los que **133 (36 %) están en `sandbox_t
 
 1. **`COD-01`** — `xlAutoOpen` ejecuta todo el arranque sin guarda de excepciones en la frontera C
    del XLL. Una excepción al leer la configuración mata Excel sin diagnóstico.
-2. **`COD-19` + `COD-22` + `COD-23`** — nada protege el código automáticamente: el CI no se
-   dispara (y además no se lee, `MEJ4-01`), 410 funciones de test Python no tienen runner, y diez
+2. **`COD-19` + `COD-22` + `COD-23`** — nada protege el código de `master` automáticamente: su CI no
+   se dispara porque el workflow no se lee desde ahí (`MEJ4-01`; en `main` sí se leía y fallaba),
+   410 funciones de test Python no tienen runner, y diez
    subsistemas C++ no tienen un solo test.
 3. **`COD-36` + `COD-37`** — cuatro copias divergentes del servidor HTTP en el repositorio, y la
    canónica es un monolito de 4.901 líneas con un `do_GET` de 400 y 65 endpoints despachados por
