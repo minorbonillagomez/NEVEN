@@ -79,7 +79,12 @@ jobs:
         $R_HOME = (& R.exe RHOME | Select-Object -First 1).Trim()
         if (-not $R_HOME) { throw "Could not determine R_HOME: 'R.exe RHOME' returned nothing" }
         Write-Host "R_HOME = $R_HOME"
-        cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -A x64 -DR_HOME="$R_HOME"
+        # Name the generator instead of letting CMake guess. 'Install R' puts
+        # Rtools on PATH, which ships make and a MinGW toolchain, and CMake then
+        # picks "Unix Makefiles" over Visual Studio: -A x64 becomes invalid and
+        # no cl.exe is found. The Unit Tests job gets away without -G precisely
+        # because it does not install R.
+        cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G "Visual Studio 17 2022" -A x64 -DR_HOME="$R_HOME"
 
     - name: Build All
       run: cmake --build ${{ env.BUILD_DIR }} --config Release --parallel
