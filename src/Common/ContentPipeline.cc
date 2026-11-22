@@ -339,16 +339,20 @@ std::string ContentPipeline::ConvertWithPandoc(const std::string& file_path,
         return "Error: invalid format argument - " + format_validation.error_message;
     }
 
+    // Check the caller's input before our own dependencies. Whether Pandoc is
+    // installed says nothing about whether the file exists, and reporting the
+    // missing dependency first sends the user to fix the wrong problem: someone
+    // who mistyped a filename gets told to install Quarto. GetFileAttributesA is
+    // also a single syscall, against FindPandoc walking the PATH.
+    DWORD attrs = GetFileAttributesA(file_path.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        return "Error: file not found — " + file_path;
+    }
+
     // Find pandoc
     std::string pandoc_path = FindPandoc();
     if (pandoc_path.empty()) {
         return "Error: Pandoc not found — install Quarto or add pandoc to PATH";
-    }
-
-    // Check file exists
-    DWORD attrs = GetFileAttributesA(file_path.c_str());
-    if (attrs == INVALID_FILE_ATTRIBUTES) {
-        return "Error: file not found — " + file_path;
     }
 
     // Create pipes for stdout and stderr
