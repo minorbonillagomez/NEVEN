@@ -61,13 +61,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup MSVC
-      uses: microsoft/setup-msbuild@v2
-
+    # Install R first and set up MSVC last. setup-r brings Rtools and rewrites
+    # PATH; running it after setup-msbuild displaced the toolchain environment,
+    # which is why CMake could not find Visual Studio in this job while the
+    # Unit Tests job, which never installs R, finds it without help.
     - name: Install R
       uses: r-lib/actions/setup-r@v2
       with:
         r-version: '4.4.1'
+
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v2
 
     - name: Configure CMake
       run: |
@@ -90,7 +94,23 @@ jobs:
                     Select-Object -First 1 -ExpandProperty Source
         if (-not $cmakeExe) { throw "No non-Rtools cmake found on PATH" }
         Write-Host "Using cmake: $cmakeExe"
-        & $cmakeExe -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G "Visual Studio 17 2022" -A x64 -DR_HOME="$R_HOME"
+        # Point CMake at the Visual Studio instance explicitly. Asking vswhere
+        # also records in the log whether VS is detectable at all, so a further
+        # failure here distinguishes "VS is missing" from "CMake cannot see it".
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $vsPath = ""
+        if (Test-Path $vswhere) {
+          $vsPath = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+          Write-Host "vswhere reports VS at: $vsPath"
+        } else {
+          Write-Host "vswhere not found at $vswhere"
+        }
+        $genInstance = if ($vsPath) { "-DCMAKE_GENERATOR_INSTANCE=$vsPath" } else { "" }
+        $cmakeArgs = @('-S', '${{ env.SOURCE_DIR }}', '-B', '${{ env.BUILD_DIR }}',
+                       '-G', 'Visual Studio 17 2022', '-A', 'x64', "-DR_HOME=$R_HOME")
+        if ($genInstance) { $cmakeArgs += $genInstance }
+        Write-Host "cmake args: $cmakeArgs"
+        & $cmakeExe @cmakeArgs
 
     - name: Build All
       run: cmake --build ${{ env.BUILD_DIR }} --config Release --parallel
