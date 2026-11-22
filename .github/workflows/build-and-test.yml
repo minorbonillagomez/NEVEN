@@ -94,23 +94,23 @@ jobs:
                     Select-Object -First 1 -ExpandProperty Source
         if (-not $cmakeExe) { throw "No non-Rtools cmake found on PATH" }
         Write-Host "Using cmake: $cmakeExe"
-        # Point CMake at the Visual Studio instance explicitly. Asking vswhere
-        # also records in the log whether VS is detectable at all, so a further
-        # failure here distinguishes "VS is missing" from "CMake cannot see it".
-        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-        $vsPath = ""
-        if (Test-Path $vswhere) {
-          $vsPath = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-          Write-Host "vswhere reports VS at: $vsPath"
-        } else {
-          Write-Host "vswhere not found at $vswhere"
-        }
-        $genInstance = if ($vsPath) { "-DCMAKE_GENERATOR_INSTANCE=$vsPath" } else { "" }
-        $cmakeArgs = @('-S', '${{ env.SOURCE_DIR }}', '-B', '${{ env.BUILD_DIR }}',
-                       '-G', 'Visual Studio 17 2022', '-A', 'x64', "-DR_HOME=$R_HOME")
-        if ($genInstance) { $cmakeArgs += $genInstance }
-        Write-Host "cmake args: $cmakeArgs"
-        & $cmakeExe @cmakeArgs
+        # Do not hardcode the Visual Studio version. The runner image moved to
+        # Visual Studio 18 (vswhere reported C:\Program Files\Microsoft Visual
+        # Studio\18\Enterprise), so "Visual Studio 17 2022" no longer exists
+        # there: that is why CMake reported it could not find any instance, and
+        # why it fell back to "Unix Makefiles" when no generator was given.
+        # Ask this CMake which Visual Studio generators it supports and take the
+        # newest, so a future image bump does not break the job again.
+        $vsGen = & $cmakeExe --help |
+                 Select-String -Pattern 'Visual Studio \d+ \d+' -AllMatches |
+                 ForEach-Object { $_.Matches } |
+                 ForEach-Object { $_.Value } |
+                 Sort-Object -Unique |
+                 Sort-Object { [int]($_ -replace '^Visual Studio (\d+).*', '$1') } |
+                 Select-Object -Last 1
+        if (-not $vsGen) { throw "No Visual Studio generator offered by $cmakeExe" }
+        Write-Host "Using generator: $vsGen"
+        & $cmakeExe -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G "$vsGen" -A x64 "-DR_HOME=$R_HOME"
 
     - name: Build All
       run: cmake --build ${{ env.BUILD_DIR }} --config Release --parallel
