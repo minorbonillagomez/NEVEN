@@ -71,11 +71,13 @@ jobs:
 
     - name: Configure CMake
       run: |
-        # Ask R where it lives. Deriving this from (Get-Command R).Source broke on
-        # the runner: .Source came back empty and Split-Path had nothing to bind,
-        # which is why this job never got past configuration.
-        $R_HOME = (& R RHOME | Select-Object -First 1).Trim()
-        if (-not $R_HOME) { throw "Could not determine R_HOME: 'R RHOME' returned nothing" }
+        # Call R.exe by its full name. In PowerShell 'r' is a built-in alias for
+        # Invoke-History, so both '& R RHOME' and '(Get-Command R).Source' resolve
+        # to the alias rather than the interpreter: the first fails with "Cannot
+        # locate the history for command line RHOME", the second returns an empty
+        # Source. That alias is the reason this job never got past configuration.
+        $R_HOME = (& R.exe RHOME | Select-Object -First 1).Trim()
+        if (-not $R_HOME) { throw "Could not determine R_HOME: 'R.exe RHOME' returned nothing" }
         Write-Host "R_HOME = $R_HOME"
         cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -A x64 -DR_HOME="$R_HOME"
 
