@@ -1088,7 +1088,11 @@ function Install-TaskPaneCert {
             -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1")
 
         # Export PFX
-        $pfxPassword = ConvertTo-SecureString -String "neven2026" -Force -AsPlainText
+        # One-shot password: the certificate is self-signed for localhost and the
+        # private key is extracted via .NET below, so this password is never needed
+        # again and protects no secret. Randomised to keep credential-looking
+        # literals out of the repository.
+        $pfxPassword = ConvertTo-SecureString -String ([guid]::NewGuid()) -Force -AsPlainText
         $pfxPath = Join-Path $certDir 'localhost.pfx'
         Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password $pfxPassword | Out-Null
 

@@ -39,7 +39,12 @@ try {
         -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1")
 
     # Export PFX
-    $pfxPassword = ConvertTo-SecureString -String "neven2026" -Force -AsPlainText
+    # One-shot password. The PFX is an intermediate artifact that is converted to
+    # PEM below; the certificate is self-signed for localhost and generated on this
+    # machine, so this password protects no secret. It is randomised so that the
+    # repository carries no literal that looks like a credential.
+    $pfxPlain = [guid]::NewGuid().ToString()
+    $pfxPassword = ConvertTo-SecureString -String $pfxPlain -Force -AsPlainText
     Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password $pfxPassword | Out-Null
 
     # Export CRT (public key)
@@ -52,8 +57,12 @@ try {
     # For key, use openssl if available, otherwise leave PFX
     $openssl = Get-Command openssl -ErrorAction SilentlyContinue
     if ($openssl) {
-        & openssl pkcs12 -in $pfxPath -nocerts -out $keyPath -nodes -passin pass:neven2026 2>$null
-        & openssl pkcs12 -in $pfxPath -clcerts -nokeys -out $certPath -passin pass:neven2026 2>$null
+        # Passed through the environment rather than the command line: 'pass:' would
+        # be visible to any process listing while openssl runs.
+        $env:NEVEN_PFX_PASS = $pfxPlain
+        & openssl pkcs12 -in $pfxPath -nocerts -out $keyPath -nodes -passin env:NEVEN_PFX_PASS 2>$null
+        & openssl pkcs12 -in $pfxPath -clcerts -nokeys -out $certPath -passin env:NEVEN_PFX_PASS 2>$null
+        Remove-Item Env:\NEVEN_PFX_PASS -ErrorAction SilentlyContinue
         Write-Host "[NEVEN] PEM files generated with OpenSSL" -ForegroundColor Green
     } else {
         # Alternative: export key via .NET
