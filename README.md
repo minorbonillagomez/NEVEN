@@ -2,6 +2,110 @@
 
 [![NEVEN Build and Test](https://github.com/minorbonillagomez/NEVEN/actions/workflows/build-and-test.yml/badge.svg?branch=master)](https://github.com/minorbonillagomez/NEVEN/actions/workflows/build-and-test.yml)
 
+*English below · [Español más abajo](#neven-español)*
+
+---
+
+**A Microsoft Excel add-in that runs R, Julia and Python from spreadsheet cells.**
+
+NEVEN is an XLL add-in written in C++17 that embeds three scripting engines in separate processes
+and exposes them as native Excel functions. A cell can call an R model, a Julia simulation or a
+Python script and receive the result as a value, a table or an interactive chart.
+
+```excel
+=NEVEN.r("lm(mpg ~ wt, data = mtcars)")
+=NEVEN.j("using Statistics; mean(rand(10_000))")
+=NEVEN.P("import numpy as np; np.linalg.svd(A)")
+```
+
+## Architecture
+
+Four layers, with the language engines isolated in child processes so that a failure inside a
+language does not bring Excel down.
+
+| Component | Role |
+|---|---|
+| `NEVEN64.xll` | Main add-in loaded by Excel. Registers the functions and orchestrates the rest |
+| `ControlR.exe` | Embeds R 4.4.1 |
+| `ControlJulia.exe` | Embeds Julia 1.12.6 |
+| `ControlPython.exe` | Embeds Python 3.13 (Stable ABI) |
+| `NEVENRibbon.dll` | Native Excel ribbon tab (COM add-in) |
+| TaskPane | Nine-module web interface served locally |
+
+The XLL talks to the language processes over **Windows Named Pipes with Protocol Buffers**. The
+result viewer is **WebView2**, and it integrates **Pluto.jl** reactive notebooks and **Quarto**
+documents.
+
+## Repository layout
+
+The project lives under `src/`. The rest of the root is support material.
+
+```
+src/              Source: Core, ControlR, ControlJulia, ControlPython,
+                  Common, PB, Ribbon, NEVEN-SIM, TaskPane, libreria, tests, docs
+docs/             Project ontologies
+android/          Android client (NEVEN Launcher)
+external/         Third-party dependencies
+.github/          Continuous integration
+.kiro/            Specifications, ontology and development log
+```
+
+## Building
+
+Requirements: **Visual Studio 2022** with the C++ toolset, **CMake 3.15+**, and the R, Julia and
+Python runtimes for whichever engines you want. Protocol Buffers v21.12 and GoogleTest v1.14.0 are
+fetched through `FetchContent`.
+
+```powershell
+cmake -S src -B src/Build -DCMAKE_BUILD_TYPE=Release
+cmake --build src/Build --config Release
+```
+
+The production install directory is `C:\NEVEN\`.
+
+## Tests
+
+**369 automated tests across 47 suites**, 133 of which cover the execution sandbox. They run
+without Excel, R or Julia present, thanks to mock headers and a test Excel bridge.
+
+```powershell
+ctest --test-dir src/Build -C Release --output-on-failure
+```
+
+## Function library
+
+- **R:** 93 definitions across 63 `.R` files (the `R4XCL` package), with JSON descriptors that feed
+  the Excel function wizard.
+- **Julia:** `J4XCL` modules, with a precompiled system image that removes the cold start.
+
+## Documentation
+
+| Document | Contents |
+|---|---|
+| `src/docs/Arquitectura/Arquitectura.md` | Detailed architecture |
+| `src/docs/MANUAL_MANTENIMIENTO.md` | Build, deployment and diagnostics |
+| `src/docs/TROUBLESHOOTING.md` | Known issues |
+| `docs/ontologia/` | Project ontology: technical invariants per component |
+
+## Module status
+
+**NEVEN-SIM**, the Monte Carlo simulation module, is **frozen** and disabled in the build
+(`BUILD_NEVEN_SIM=OFF`). Its original scope was larger than a module's and it is pending a
+rethink. The reason and the condition for resuming it are recorded in
+`.kiro/specs/neven-sim/tasks.md`.
+
+## Provenance
+
+Master's thesis work by **Minor Bonilla Gómez**, Universidad de Costa Rica. The paper describing
+the system is in `src/docs/Paper/`.
+
+License: see `src/LICENSE`.
+
+---
+---
+
+# NEVEN (Español)
+
 **Add-in de Microsoft Excel que ejecuta R, Julia y Python desde celdas de hoja de cálculo.**
 
 NEVEN es un add-in XLL escrito en C++17 que embebe tres motores de scripting en procesos
@@ -50,8 +154,8 @@ external/         Dependencias de terceros
 ## Construcción
 
 Requisitos: **Visual Studio 2022** con herramientas de C++, **CMake 3.15+**, y los runtimes de R,
-Julia y Python si se quieren los motores correspondientes. Protocol Buffers v21.12 y GoogleTest
-v1.14.0 se descargan vía `FetchContent`.
+Julia y Python según los motores que se quieran. Protocol Buffers v21.12 y GoogleTest v1.14.0 se
+descargan vía `FetchContent`.
 
 ```powershell
 cmake -S src -B src/Build -DCMAKE_BUILD_TYPE=Release
