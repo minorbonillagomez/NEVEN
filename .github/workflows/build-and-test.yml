@@ -94,6 +94,11 @@ jobs:
                     Select-Object -First 1 -ExpandProperty Source
         if (-not $cmakeExe) { throw "No non-Rtools cmake found on PATH" }
         Write-Host "Using cmake: $cmakeExe"
+        # Hand the same cmake to the later steps. 'Build All' also calls cmake,
+        # and plain 'cmake' resolves to Rtools' 3.30.4, which does not know the
+        # generator this tree gets configured with and fails with "could not
+        # create CMAKE_GENERATOR".
+        "CMAKE_EXE=$cmakeExe" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
         # Do not hardcode the Visual Studio version. The runner image moved to
         # Visual Studio 18 (vswhere reported C:\Program Files\Microsoft Visual
         # Studio\18\Enterprise), so "Visual Studio 17 2022" no longer exists
@@ -113,7 +118,10 @@ jobs:
         & $cmakeExe -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -G "$vsGen" -A x64 "-DR_HOME=$R_HOME"
 
     - name: Build All
-      run: cmake --build ${{ env.BUILD_DIR }} --config Release --parallel
+      # Block scalar on purpose: a plain scalar starting with '&' is a YAML
+      # anchor, not text, and breaks the file.
+      run: |
+        & "$env:CMAKE_EXE" --build ${{ env.BUILD_DIR }} --config Release --parallel
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
