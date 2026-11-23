@@ -34,6 +34,14 @@ $ErrorActionPreference = 'Continue'
 # (e.g., the extracted ZIP folder), not where NEVEN was actually installed.
 $NEVENHome = 'C:\NEVEN'
 
+# El instalador endurece la DACL de $NEVENHome (INV-INS-05): los ficheros que
+# NEVEN ejecuta solo los puede escribir Administradores y SYSTEM. Sin elevacion,
+# el borrado diferido falla fichero a fichero y la consola ya habria dicho que el
+# directorio se iba a eliminar, asi que se avisa antes.
+$script:IsElevated = ([Security.Principal.WindowsPrincipal] `
+    [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator)
+
 # Auto-detect Excel versions if not embedded by installer
 $ExcelVersions = @()
 foreach ($ver in @('15.0','16.0')) {
@@ -48,6 +56,13 @@ Write-Host '  ============================================' -ForegroundColor Cya
 Write-Host ''
 Write-Host "  This will remove NEVEN from: $NEVENHome" -ForegroundColor White
 Write-Host ''
+if (-not $script:IsElevated) {
+    Write-Host '  [!!] Esta consola no esta elevada. Los ficheros que NEVEN ejecuta solo los' -ForegroundColor Yellow
+    Write-Host "       puede borrar un administrador, asi que $NEVENHome puede quedarse." -ForegroundColor Yellow
+    Write-Host '       Para retirarlo del todo, vuelva a ejecutar este desinstalador desde' -ForegroundColor Yellow
+    Write-Host '       PowerShell como administrador.' -ForegroundColor Yellow
+    Write-Host ''
+}
 
 # Confirmation
 if (-not $Silent) {
@@ -201,7 +216,13 @@ Write-Host '  ============================================' -ForegroundColor Gre
 foreach ($item in $removed) {
     Write-Host "   [OK] Removed: $item" -ForegroundColor Green
 }
-Write-Host "   [OK] NEVEN directory will be removed: $NEVENHome" -ForegroundColor Green
+if ($script:IsElevated) {
+    Write-Host "   [OK] NEVEN directory will be removed: $NEVENHome" -ForegroundColor Green
+} else {
+    Write-Host "   [!!] Se intentara borrar $NEVENHome, pero sin elevacion los ficheros" -ForegroundColor Yellow
+    Write-Host '        endurecidos se quedaran. Compruebelo despues y, si siguen ahi,' -ForegroundColor Yellow
+    Write-Host '        ejecute este desinstalador como administrador.' -ForegroundColor Yellow
+}
 Write-Host ''
 Write-Host '  NEVEN has been uninstalled.' -ForegroundColor White
 Write-Host ''
