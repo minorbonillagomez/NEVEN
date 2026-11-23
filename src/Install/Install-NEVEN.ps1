@@ -2241,6 +2241,103 @@ function Update-NEVENConfig {
 }
 
 # ============================================================
+#  Install Directory Permissions
+# ============================================================
+
+function Get-InstallPermissionsScript {
+    <#
+      Devuelve la ruta de Set-InstallPermissions.ps1 junto al instalador, o cadena
+      vacia si no esta. No se calla su ausencia: sin ese script el directorio queda
+      con la DACL heredada de C:\ y el usuario tiene que saberlo.
+    #>
+    [OutputType([string])]
+    param()
+    $path = Join-Path $PSScriptRoot 'Set-InstallPermissions.ps1'
+    if (Test-Path $path) { return $path }
+    return ''
+}
+
+function Invoke-InstallPermissions {
+    <#
+      Corre Set-InstallPermissions.ps1 como proceso hijo y devuelve su codigo de
+      salida y su salida completa: 0 sin hallazgos, 1 con hallazgos de ACL, 2 si
+      alguna operacion de permisos fallo.
+    #>
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)][string]$ScriptPath,
+        [Parameter(Mandatory)][string]$TargetDir,
+        [switch]$Probe
+    )
+    $psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $ScriptPath,
+                   '-InstallDir', $TargetDir)
+    if ($Probe) { $arguments += '-Probe' }
+    $output = ''
+    $code = 0
+    try {
+        $output = (& $psExe @arguments 2>&1 |
+                   ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.ToString() } else { $_ } } |
+                   Out-String)
+        $code = $LASTEXITCODE
+    } catch {
+        $output = $_.Exception.Message
+        $code = -1
+    }
+    return @{ ExitCode = $code; Output = $output }
+}
+
+function Write-PermissionsOutput {
+    <#
+      Imprime y registra en install.log lo que dijo el script de permisos: el motivo
+      medido y la exposicion residual quedan en el log, que es lo que hace el
+      endurecimiento verificable despues de instalar.
+    #>
+    [OutputType([void])]
+    param([Parameter(Mandatory)][string]$Output)
+    foreach ($line in ($Output -split "`r?`n")) {
+        if ($line.Trim().Length -eq 0) { continue }
+        Write-Host $line -ForegroundColor Gray
+        Write-Log "permissions: $($line.Trim())"
+    }
+}
+
+function Confirm-PermissionRisk {
+    <#
+      Pregunta si continuar sin el endurecimiento. Devuelve $true solo con una
+      aceptacion explicita, que queda registrada en install.log con su motivo y su
+      codigo. En modo -Silent no hay a quien preguntar, asi que no se continua.
+    #>
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)][int]$ExitCode,
+        [Parameter(Mandatory)][string]$Stage,
+        [Parameter(Mandatory)][string]$Consequence
+    )
+    Write-Host ''
+    Write-Host "  Los permisos del directorio no se pudieron endurecer (codigo $ExitCode)." -ForegroundColor Yellow
+    Write-Host '  Sin ese endurecimiento, cualquier usuario autenticado de esta maquina puede' -ForegroundColor Yellow
+    Write-Host '  sustituir un fichero que NEVEN ejecuta (startup\*.py, functions\*.R,' -ForegroundColor Yellow
+    Write-Host '  TaskPane\*, los ejecutables de los motores) y esperar a que NEVEN lo ejecute.' -ForegroundColor Yellow
+    Write-Host '  Causas habituales: la consola no esta elevada, o el destino esta en un sistema' -ForegroundColor Yellow
+    Write-Host '  de ficheros que no guarda permisos (FAT32, exFAT, una unidad de red).' -ForegroundColor Yellow
+    Write-Host "  $Consequence" -ForegroundColor Yellow
+    if ($Silent) {
+        Write-Host '  Modo -Silent: no hay forma de pedirle que acepte el riesgo, asi que se aborta.' -ForegroundColor Red
+        Write-Log "Hardening failed with code $ExitCode ($Stage) in silent mode: aborting, no explicit risk acceptance is possible" -Level ERROR
+        return $false
+    }
+    $answer = Read-Host '  Desea continuar sin el endurecimiento, aceptando ese riesgo? (s/N)'
+    if ($answer -match '^[SsYy]') {
+        Write-Log "User explicitly accepted the residual risk at $Stage (hardening exit code $ExitCode)" -Level WARN
+        $script:HasWarnings = $true
+        return $true
+    }
+    Write-Log "User declined to continue without the hardening at $Stage (exit code $ExitCode)" -Level ERROR
+    return $false
+}
+
+# ============================================================
 #  Main Execution Flow
 # ============================================================
 
@@ -2334,6 +2431,35 @@ if (-not (Test-Path $choices.InstallDir)) {
     New-Item -Path $choices.InstallDir -ItemType Directory -Force | Out-Null
 }
 Initialize-LogFile -Path $logPath
+
+# --- Permisos: sondeo antes de desplegar ---
+# Se mide aqui, con el log ya abierto y antes de que la fase 3 copie el primer
+# fichero: si el endurecimiento no es posible y el usuario no acepta el riesgo,
+# abortar no deja ninguna instalacion a medias.
+$script:PermissionRiskAccepted = $false
+$permScript = Get-InstallPermissionsScript
+if (-not $permScript) {
+    Write-Host '  [!!] Set-InstallPermissions.ps1 no esta junto al instalador: el directorio' -ForegroundColor Yellow
+    Write-Host '       conservara la DACL heredada de C:\ y quedara modificable por cualquier' -ForegroundColor Yellow
+    Write-Host '       usuario autenticado de esta maquina.' -ForegroundColor Yellow
+    Write-Log 'Set-InstallPermissions.ps1 not found next to the installer - the install directory will keep its inherited DACL' -Level WARN
+    $script:HasWarnings = $true
+} else {
+    Write-Host '  Comprobando si se pueden endurecer los permisos del directorio...' -ForegroundColor White
+    $permProbe = Invoke-InstallPermissions -ScriptPath $permScript -TargetDir $choices.InstallDir -Probe
+    Write-Log "Permissions probe exit code: $($permProbe.ExitCode)"
+    Write-PermissionsOutput -Output $permProbe.Output
+    if ($permProbe.ExitCode -ne 0) {
+        $accepted = Confirm-PermissionRisk -ExitCode $permProbe.ExitCode -Stage 'the probe before deploying' `
+            -Consequence 'Todavia no se ha copiado nada: si responde que no, la instalacion se aborta sin dejar nada a medias.'
+        if (-not $accepted) {
+            Write-Host '  Instalacion abortada: los permisos del directorio no se pudieron endurecer.' -ForegroundColor Red
+            Close-LogFile
+            Exit-Installer 1
+        }
+        $script:PermissionRiskAccepted = $true
+    }
+}
 
 Write-Log 'Installation started'
 Write-Log "Install directory: $($choices.InstallDir)"
@@ -2664,6 +2790,37 @@ $uninstallCmd = Join-Path $PSScriptRoot 'Uninstall-NEVEN.cmd'
 if (Test-Path $uninstallCmd) {
     Copy-Item $uninstallCmd (Join-Path $choices.InstallDir 'Uninstall-NEVEN.cmd') -Force
     Write-Log 'Copied Uninstall-NEVEN.cmd to install directory'
+}
+
+# --- Phase 8: Install Directory Permissions ---
+# Va aqui y no en la fase 7: endurecer quita a los usuarios la escritura sobre la
+# raiz, y New-Uninstaller acaba de escribir Uninstall-NEVEN.ps1 dentro de $INSTDIR.
+if ($permScript) {
+    Write-Host ''
+    Write-Host '  Phase 8: Hardening install directory permissions...' -ForegroundColor White
+    # El script se despliega para que el usuario pueda volver a auditar la
+    # instalacion: Set-InstallPermissions.ps1 -InstallDir <dir> -AuditOnly.
+    Copy-Item $permScript (Join-Path $choices.InstallDir 'Set-InstallPermissions.ps1') -Force -ErrorAction SilentlyContinue
+    $permResult = Invoke-InstallPermissions -ScriptPath $permScript -TargetDir $choices.InstallDir
+    Write-Log "Permissions hardening exit code: $($permResult.ExitCode)"
+    Write-PermissionsOutput -Output $permResult.Output
+    if ($permResult.ExitCode -eq 0) {
+        Write-Host '   [OK] Solo Administradores y SYSTEM pueden modificar lo que NEVEN ejecuta' -ForegroundColor Green
+    } elseif ($script:PermissionRiskAccepted) {
+        # El riesgo ya se acepto en el sondeo: se registra, pero no se vuelve a preguntar.
+        Write-Host '   [!!] El endurecimiento sigue incompleto; usted acepto este riesgo antes de desplegar' -ForegroundColor Yellow
+        Write-Log "Hardening still incomplete (exit code $($permResult.ExitCode)); the user had already accepted this risk before deploying" -Level WARN
+        $script:HasWarnings = $true
+    } else {
+        $uninstallPs1 = Join-Path $choices.InstallDir 'Uninstall-NEVEN.ps1'
+        $accepted = Confirm-PermissionRisk -ExitCode $permResult.ExitCode -Stage 'the final hardening' `
+            -Consequence "Si responde que no, NEVEN queda instalado y registrado pero sin endurecer: ejecute $uninstallPs1 para retirar lo copiado."
+        if (-not $accepted) {
+            Write-Host "  Retire la instalacion con: $uninstallPs1" -ForegroundColor Red
+            Close-LogFile
+            Exit-Installer 1
+        }
+    }
 }
 
 # Close log
