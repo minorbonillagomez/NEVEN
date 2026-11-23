@@ -102,6 +102,18 @@ Section "NEVEN Core" SecCore
     ; -ConfigureOnly mas adelante. La deteccion de esta instalacion NO usa
     ; esta copia: ver la seccion de deteccion al final.
     File "Install-NEVEN.ps1"
+
+    ; El directorio por defecto es C:\NEVEN, y un directorio creado bajo C:\
+    ; hereda de la raiz el ACE "NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M)":
+    ; comprobado con icacls sobre una instalacion real, los ficheros de dentro
+    ; quedan modificables por cualquier usuario autenticado. Este script es el
+    ; que el instalador le dice al usuario que ejecute (y que puede acabar
+    ; corriendo elevado), asi que se le quita la herencia y se deja en lectura
+    ; y ejecucion para los usuarios: escribirlo solo Administradores y SYSTEM.
+    ; SIDs conocidos, no nombres, porque los grupos estan localizados.
+    nsExec::ExecToLog '"$SYSDIR\icacls.exe" "$INSTDIR\Install-NEVEN.ps1" /inheritance:r /grant:r "*S-1-5-32-544:(F)" "*S-1-5-18:(F)" "*S-1-5-11:(RX)"'
+    Pop $0
+    DetailPrint "DACL de Install-NEVEN.ps1: codigo $0"
     
     ; Directories
     SetOutPath "$INSTDIR\functions"
@@ -196,7 +208,7 @@ Section "NEVEN Core" SecCore
     StrCmp $0 "0" engine_detection_done 0
     DetailPrint "La deteccion de motores no se completo: neven-config.json conserva los valores de la plantilla"
     IfSilent engine_detection_done 0
-    MessageBox MB_OK|MB_ICONEXCLAMATION "No se pudo detectar R, Julia ni Python (codigo $0).$\r$\n$\r$\nNEVEN quedo instalado, pero neven-config.json conserva los valores de la plantilla: un motor que usted tenga instalado puede aparecer como desactivado.$\r$\n$\r$\nPara redetectar, ejecute en PowerShell:$\r$\n    $INSTDIR\Install-NEVEN.ps1 -ConfigureOnly$\r$\n$\r$\nTambien puede activarlos en NEVEN Studio > Settings > Motores. En ambos casos reinicie Excel."
+    MessageBox MB_OK|MB_ICONEXCLAMATION "No se pudo detectar R, Julia ni Python (codigo $0).$\r$\n$\r$\nNEVEN quedo instalado, pero neven-config.json conserva los valores de la plantilla: un motor que usted tenga instalado puede aparecer como desactivado.$\r$\n$\r$\nPara redetectar, ejecute en PowerShell:$\r$\n    $INSTDIR\Install-NEVEN.ps1 -ConfigureOnly$\r$\n$\r$\nSi instalo NEVEN en una carpeta donde su usuario no puede escribir, abra PowerShell como administrador.$\r$\n$\r$\nTambien puede activarlos en NEVEN Studio > Settings > Motores. En ambos casos reinicie Excel."
 engine_detection_done:
 
 SectionEnd

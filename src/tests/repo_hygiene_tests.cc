@@ -6,6 +6,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -92,6 +93,53 @@ protected:
         }
         _pclose(pipe);
         return output;
+    }
+
+    /**
+     * @brief Looks for the GetIDsOfNames entry of a Ribbon callback.
+     * @param header Contents of Ribbon/ribbon_connect.h.
+     * @param name Callback name as written in ribbon_ui.xml.
+     * @return true when some L"name" literal is followed, close by, by the
+     *         assignment of DispIds::name.
+     *
+     * The alignment of those lines varies, so the two halves are matched
+     * inside a window instead of as one exact string.
+     */
+    bool HasGetIDsOfNamesEntry(const std::string& header,
+                               const std::string& name) {
+        const std::string literal = "L\"" + name + "\"";
+        const std::string assignment = "DispIds::" + name;
+        size_t pos = 0;
+        while ((pos = header.find(literal, pos)) != std::string::npos) {
+            size_t window_end = std::min(header.size(), pos + literal.size() + 120);
+            if (header.substr(pos, window_end - pos).find(assignment) !=
+                std::string::npos) {
+                return true;
+            }
+            pos += literal.size();
+        }
+        return false;
+    }
+
+    /**
+     * @brief Extracts every onAction/getPressed callback name from ribbon_ui.xml.
+     * @param xml Contents of Ribbon/ribbon_ui.xml.
+     * @return Callback names in the order they appear, duplicates included.
+     */
+    std::vector<std::string> ExtractRibbonCallbacks(const std::string& xml) {
+        std::vector<std::string> names;
+        for (const std::string& attribute : {std::string("onAction=\""),
+                                             std::string("getPressed=\"")}) {
+            size_t pos = 0;
+            while ((pos = xml.find(attribute, pos)) != std::string::npos) {
+                size_t start = pos + attribute.size();
+                size_t end = xml.find('"', start);
+                if (end == std::string::npos) break;
+                names.push_back(xml.substr(start, end - start));
+                pos = end;
+            }
+        }
+        return names;
     }
 
     /**
@@ -301,6 +349,40 @@ TEST_F(RepoHygieneTests, DeadCode_NevenWebviewDir_DefinedOnce) {
         << ".neven_webview_dir() must be defined in exactly one .R file (Req 13.3). "
         << "Found " << definition_count << " definitions. "
         << (definition_count > 0 ? "Last found in: " + defining_file : "Not found in any file.");
+}
+
+// --- Ribbon wiring contract test (INV-RIBBON-01) ---
+
+TEST_F(RepoHygieneTests, RibbonCallbacksAreWiredInTheThreePlaces) {
+    // INV-RIBBON-01: every onAction/getPressed of ribbon_ui.xml needs an entry
+    // in the DispIds enum, one in GetIDsOfNames and a case in Invoke(). A
+    // missing leg leaves the button visible and inert, with no message, which
+    // is the failure this component keeps hitting. The Ribbon itself cannot be
+    // exercised here (it is a COM add-in driven by Excel and INV-TEST-03 keeps
+    // the suite free of Excel), but this wiring is a property of the two files.
+    std::string xml = ReadProjectFile("Ribbon/ribbon_ui.xml");
+    ASSERT_FALSE(xml.empty()) << "Could not read Ribbon/ribbon_ui.xml";
+    std::string header = ReadProjectFile("Ribbon/ribbon_connect.h");
+    ASSERT_FALSE(header.empty()) << "Could not read Ribbon/ribbon_connect.h";
+
+    size_t enum_end = header.find("} DispIds;");
+    ASSERT_NE(enum_end, std::string::npos)
+        << "ribbon_connect.h must declare the DispIds enum (INV-RIBBON-01)";
+    std::string enum_block = header.substr(0, enum_end);
+
+    auto callbacks = ExtractRibbonCallbacks(xml);
+    ASSERT_FALSE(callbacks.empty())
+        << "ribbon_ui.xml declares no onAction/getPressed callback";
+
+    for (const std::string& name : callbacks) {
+        EXPECT_NE(enum_block.find(name), std::string::npos)
+            << name << " is used in ribbon_ui.xml but is not a DispIds value "
+                       "(INV-RIBBON-01)";
+        EXPECT_TRUE(HasGetIDsOfNamesEntry(header, name))
+            << name << " has no entry in GetIDsOfNames (INV-RIBBON-01)";
+        EXPECT_NE(header.find("case DispIds::" + name + ":"), std::string::npos)
+            << name << " has no case in Invoke (INV-RIBBON-01)";
+    }
 }
 
 // --- Config and packaging contract tests (INV-BLD-04, INV-INS-01) ---

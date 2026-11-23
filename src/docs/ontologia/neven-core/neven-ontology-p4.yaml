@@ -384,8 +384,35 @@ componentes:
         - "neven-languages.json"        # descriptores de funciones por lenguaje
         - "packages-manifest.json"      # manifiesto de paquetes
         - "Build-Installers.ps1"        # genera .exe desde los .ps1
+        - "Check-NSISSyntax.ps1"        # compila NEVEN-Setup.nsi con un Dist/ de relleno
         - "functions/*.json"            # sidecars pre-instalados
         - "README.md"
+
+    permisos_script_desplegado:
+      descripcion: >
+        NEVEN-Setup.nsi despliega Install-NEVEN.ps1 en $INSTDIR para que el usuario
+        pueda volver a correr -ConfigureOnly, y el aviso de deteccion fallida le dice
+        que lo ejecute. El directorio por defecto es C:\NEVEN y hereda de la raiz del
+        disco el ACE 'NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M)', de modo que
+        los ficheros de dentro quedan modificables por cualquier usuario autenticado.
+        Por eso el instalador le quita la herencia a ese script y lo deja en F para
+        Administradores y SYSTEM y en RX para los usuarios, con SIDs conocidos
+        (S-1-5-32-544, S-1-5-18, S-1-5-11) porque los nombres de grupo estan
+        localizados. La deteccion de la propia instalacion no usa esa copia: corre
+        desde $PLUGINSDIR, escribible solo por el proceso del instalador.
+        neven-config.json conserva su DACL heredada a proposito: el servidor HTTP y
+        -ConfigureOnly lo reescriben desde la sesion del usuario, sin elevar.
+      como_verificar: 'icacls C:\NEVEN\Install-NEVEN.ps1   # sin (I), Usuarios solo (RX)'
+
+    verificacion_sintaxis_nsis:
+      descripcion: >
+        makensis aborta en la pagina de bienvenida cuando Dist/ no esta poblado
+        (Error while loading icon from "Dist\NEVEN_studio.ico"), asi que sin
+        empaquetado no llega a parsear las secciones del final (deteccion de motores,
+        permisos del script desplegado). Check-NSISSyntax.ps1 copia el .nsi real a un
+        temporal, genera ahi un Dist/ de relleno con un icono y dos BMP validos y
+        compila el script completo. No produce un instalador utilizable.
+      como_verificar: 'powershell -NoProfile -File src\Install\Check-NSISSyntax.ps1   # exit 0'
 
     config_template:
       descripcion: >

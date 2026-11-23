@@ -153,8 +153,11 @@ componentes:
           3. Case correspondiente en Invoke()
           Si falta alguno, el boton aparece pero no funciona (silencioso).
         como_verificar: >
-          Extraer todos los onAction/getPressed del XML y verificar que cada
-          uno existe en GetIDsOfNames Y en el enum DispIds de ribbon_connect.h
+          ctest --test-dir src/Build -C Release -R RepoHygiene
+          (RepoHygieneTests.RibbonCallbacksAreWiredInTheThreePlaces extrae cada
+          onAction/getPressed de ribbon_ui.xml y exige las tres patas en
+          ribbon_connect.h: valor en DispIds, entrada en GetIDsOfNames y case en
+          Invoke).
 
       - id: INV-RIBBON-02
         descripcion: >

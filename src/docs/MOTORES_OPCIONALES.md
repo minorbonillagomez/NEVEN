@@ -153,13 +153,45 @@ Las tres copias versionadas del servidor HTTP (`src/TaskPane`, `src/startup`,
 `src/ControlPython/startup`) exponen el mismo contrato de motores y
 `test_the_three_copies_expose_the_same_engine_contract` lo verifica (`G-TP-05`).
 
-Resultados de la ultima ejecucion: `ctest -C Release -R EngineMatrix` 53/53 passed;
-la suite completa `ctest --test-dir src/Build -C Release --timeout 120` 425/425 passed;
-`python -m pytest src/tests/test_engine_availability.py -q` 47 passed;
-`node --check src/TaskPane/taskpane.js` sin errores y `Install-NEVEN.ps1` parsea sin
-errores. `makensis NEVEN-Setup.nsi` sigue abortando en la linea 62 porque `Dist/` no
-esta poblado (linea base, no un fallo de este cambio); el bloque de deteccion se
-comprobo compilandolo por separado.
+El modo `-ConfigureOnly` ya no se comprueba solo a mano:
+`python -m pytest src/tests/test_configure_only.py -q` lo ejecuta sobre una copia de la
+plantilla en un directorio temporal y afirma lo que no depende de los motores que haya en
+el equipo (`INV-TEST-03`): los tres `enabled` son booleanos, ningun `home` apunta a un
+directorio inexistente, un `home` escrito a mano no se pierde, y
+`preferences.auto_start_engines` sale del `enabled` persistido.
+
+El `.nsi` tambien se puede comprobar entero: `powershell -File src\Install\Check-NSISSyntax.ps1`
+copia `NEVEN-Setup.nsi` a un temporal con un `Dist/` de relleno (un icono y dos BMP
+validos) y lo compila con `makensis`. Sin eso, `makensis` aborta en la linea 62 por
+`Dist\NEVEN_studio.ico` y nunca llega a las secciones del final.
+
+Del Ribbon se comprueba su cableado, que es lo que falla en silencio:
+`RepoHygieneTests.RibbonCallbacksAreWiredInTheThreePlaces` extrae cada
+`onAction`/`getPressed` de `ribbon_ui.xml` y exige las tres patas de `INV-RIBBON-01`
+(valor en `DispIds`, entrada en `GetIDsOfNames`, `case` en `Invoke`). Un boton nuevo sin
+cablear ya no pasa la suite.
+
+Resultados de la ultima ejecucion: `ctest --output-on-failure -C Release --timeout 120`
+425/425 passed; `python -m pytest src/tests/test_engine_availability.py -q` 50 passed;
+`python -m pytest src/tests/test_configure_only.py -q` 6 passed;
+`node --check src/TaskPane/taskpane.js` sin errores; `Install-NEVEN.ps1` parsea sin
+errores; `Check-NSISSyntax.ps1` exit 0.
+
+## Cierre de los hallazgos no bloqueantes de la revision
+
+La revision semantica de `8e34a27` aprobo la rama y dejo ocho hallazgos no bloqueantes.
+Esta es la decision tomada para cada uno, con donde quedo el cambio.
+
+| # | Hallazgo | Estado |
+|---|---|---|
+| 1 | `preferences.auto_start_engines` ganaba sobre `enabled` y ningun camino del instalador la refrescaba | **Resuelto.** `languages_from_engine_config` la usa solo para recortar los motores habilitados, y `Update-NEVENConfig` la reescribe desde el `enabled` persistido. Tests: `test_auto_start_engines_cannot_enable_a_disabled_engine`, `test_auto_start_engines_ignores_an_engine_without_section`, `test_auto_start_engines_that_names_nothing_enabled_is_empty`, `test_auto_start_engines_is_derived_from_enabled` |
+| 2 | El instalador borraba un `home` escrito a mano | **Resuelto.** Se conserva mientras su directorio exista; se vacia solo cuando ya no existe. Test: `test_a_manual_home_is_not_silently_lost`, `test_home_is_either_empty_or_an_existing_directory` |
+| 3 | `home` de una version inadecuada sin validar | **Resuelto.** `Get-EngineStatus` publica `Path` solo cuando el motor es `Available` (version suficiente), y `Update-NEVENConfig` vacia un `home` que apunte a la instalacion que la deteccion acaba de rechazar por version |
+| 4 | El aviso de `runScript` culpaba al motor con el servidor caido | **Resuelto.** `ENGINE_INFO_UNREACHABLE` separa "no se pudo leer el estado" de "el motor no esta": el aviso nombra el servidor de Studio y no remite a Settings > Motores |
+| 5 | El selector de lenguaje solo anotaba "no instalado" | **Resuelto.** `annotateScriptLangOptions` anota tambien `(desactivado)` |
+| 6 | La copia de `Install-NEVEN.ps1` en `$INSTDIR` y el consejo de ejecutarla | **Resuelto, con el problema reformulado.** La ACL efectiva medida en una instalacion real (`icacls C:\NEVEN`) muestra `NT AUTHORITY\Authenticated Users:(I)(OI)(CI)(IO)(M)` heredado de `C:\`: los ficheros de `$INSTDIR` son modificables por cualquier usuario autenticado, asi que `-ConfigureOnly` **no** necesita elevacion para reescribir el config (lo que el hallazgo temia), pero el script desplegado era manipulable por cualquier usuario y el instalador invita a ejecutarlo. El `.nsi` le quita la herencia a ese fichero y lo deja en RX para los usuarios; el aviso ahora menciona la elevacion solo para el caso de una carpeta protegida. Detalle en P4 `install_scripts.permisos_script_desplegado` |
+| 7 | La tabla de las 8 combinaciones prometia mas de lo que hay | **Resuelto en la documentacion.** Nota 1: las familias por prefijo (`NEVEN.R`, `NEVEN.J`, `NEVEN.P`, `.Call`, `.Exec`) dan `#¿NOMBRE?` sin motivo, con la razon y lo que el usuario puede hacer en su lugar. No se registran stubs: desplazaria las claves de `BCALL`/`BEXEC` e `INV-CORE-01` prohibe registrar fuera de `xlAutoOpen` |
+| 8 | Sin cobertura automatica del Ribbon, de `-ConfigureOnly` ni del bloque NSIS | **Resuelto.** `src/tests/test_configure_only.py` ejecuta `-ConfigureOnly`; `src/Install/Check-NSISSyntax.ps1` compila el `.nsi` completo con un `Dist/` de relleno, asi que `makensis` ya pasa de la linea 62; y `RepoHygieneTests.RibbonCallbacksAreWiredInTheThreePlaces` comprueba las tres patas de `INV-RIBBON-01` para cada `onAction`/`getPressed` de `ribbon_ui.xml`. Lo que sigue sin automatizar es el comportamiento del Ribbon en ejecucion: `NEVENRibbon.dll` solo recibe sus callbacks desde Excel via `IDTExtensibility2` e `INV-TEST-03` exige que la suite corra sin Excel, asi que ahi la comprobacion es manual |
 
 ## Invariantes relacionadas
 
