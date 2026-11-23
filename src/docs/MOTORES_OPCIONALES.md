@@ -84,14 +84,36 @@ de los tests `EngineMatrix/EngineSubsetTest.*`.
 
 | # | R | Julia | Python | Formulas de Excel | `NEVEN.Status` | Ribbon | TaskPane | Instalador |
 |---|---|---|---|---|---|---|---|---|
-| 0 | no | no | no | Toda formula de motor devuelve el texto del motor que le toca, con motivo y enlace. `NEVEN.Status` y las funciones sin motor siguen registradas | `0/3 motores conectados`, nombra los tres con su sitio oficial | **Motores** lista los tres como ausentes; **Pluto** responde nombrando Julia y su enlace | Los tres puntos en rojo o gris con su motivo; el selector de lenguaje conserva las tres opciones anotadas `(no instalado)` | `Engines enabled: none` + una linea por motor con su enlace |
-| 1 | si | no | no | R responde; Julia y Python devuelven su propio motivo y enlace | `[R] OK`; Julia y Python ausentes con su URL | **Motores** muestra R conectado; **Pluto** nombra Julia | R conectado; Julia y Python con su estado y enlace | `Engines enabled: R` |
-| 2 | no | si | no | Julia responde; R y Python devuelven su propio motivo | `[J] OK`; R y Python ausentes con su URL | **Motores** muestra Julia conectado; **Pluto** arranca | Julia conectado; R y Python con su estado | `Engines enabled: Julia` |
-| 3 | si | si | no | R y Julia responden; Python devuelve su motivo | `[R] OK`, `[J] OK`; Python ausente con su URL | **Motores** muestra R y Julia; **Pluto** arranca | R y Julia conectados; Python con su estado | `Engines enabled: R, Julia` |
-| 4 | no | no | si | Python responde; R y Julia devuelven su motivo | `[P] OK`; R y Julia ausentes con su URL | **Motores** muestra Python; **Pluto** nombra Julia | Python conectado; R y Julia con su estado | `Engines enabled: Python` |
-| 5 | si | no | si | R y Python responden; Julia devuelve su motivo | `[R] OK`, `[P] OK`; Julia ausente con su URL | **Motores** muestra R y Python; **Pluto** nombra Julia | R y Python conectados; Julia con su estado | `Engines enabled: R, Python` |
-| 6 | no | si | si | Julia y Python responden; R devuelve su motivo | `[J] OK`, `[P] OK`; R ausente con su URL | **Motores** muestra Julia y Python; **Pluto** arranca | Julia y Python conectados; R con su estado | `Engines enabled: Julia, Python` |
+| 0 | no | no | no | Las formulas estaticas devuelven el texto del motor que les toca, con motivo y enlace; las familias por prefijo dan `#¿NOMBRE?` (nota 1). `NEVEN.Status` y las funciones sin motor siguen registradas | `0/3 motores conectados`, nombra los tres con su sitio oficial | **Motores** lista los tres como ausentes; **Pluto** responde nombrando Julia y su enlace | Los tres puntos en rojo o gris con su motivo; el selector de lenguaje conserva las tres opciones anotadas `(no instalado)` o `(desactivado)` | `Engines enabled: none` + una linea por motor con su enlace |
+| 1 | si | no | no | R responde; Julia y Python devuelven su propio motivo y enlace en las estaticas (nota 1) | `[R] OK`; Julia y Python ausentes con su URL | **Motores** muestra R conectado; **Pluto** nombra Julia | R conectado; Julia y Python con su estado y enlace | `Engines enabled: R` |
+| 2 | no | si | no | Julia responde; R y Python devuelven su propio motivo en las estaticas (nota 1) | `[J] OK`; R y Python ausentes con su URL | **Motores** muestra Julia conectado; **Pluto** arranca | Julia conectado; R y Python con su estado | `Engines enabled: Julia` |
+| 3 | si | si | no | R y Julia responden; Python devuelve su motivo en las estaticas (nota 1) | `[R] OK`, `[J] OK`; Python ausente con su URL | **Motores** muestra R y Julia; **Pluto** arranca | R y Julia conectados; Python con su estado | `Engines enabled: R, Julia` |
+| 4 | no | no | si | Python responde; R y Julia devuelven su motivo en las estaticas (nota 1) | `[P] OK`; R y Julia ausentes con su URL | **Motores** muestra Python; **Pluto** nombra Julia | Python conectado; R y Julia con su estado | `Engines enabled: Python` |
+| 5 | si | no | si | R y Python responden; Julia devuelve su motivo en las estaticas (nota 1) | `[R] OK`, `[P] OK`; Julia ausente con su URL | **Motores** muestra R y Python; **Pluto** nombra Julia | R y Python conectados; Julia con su estado | `Engines enabled: R, Python` |
+| 6 | no | si | si | Julia y Python responden; R devuelve su motivo en las estaticas (nota 1) | `[J] OK`, `[P] OK`; R ausente con su URL | **Motores** muestra Julia y Python; **Pluto** arranca | Julia y Python conectados; R con su estado | `Engines enabled: Julia, Python` |
 | 7 | si | si | si | Las tres familias responden: 100% de la herramienta | `3/3 motores conectados` | Todos los botones operativos | Los tres puntos en verde, sin anotaciones | `Engines enabled: R, Julia, Python` |
+
+### Nota 1: que familias de funciones llevan el motivo y cual no
+
+No todas las funciones de Excel que dependen de un motor pueden devolver texto cuando
+el motor falta, porque no todas estan registradas en ese caso.
+
+| Familia | Sin el motor | Por que |
+|---|---|---|
+| `NevenX.R`, `NevenX.J`, `NevenX.P`, `NEVEN.Chart.R`, `NEVEN.Chart.J`, `NEVEN.Chart.P`, `NEVEN.Pluto.Data`, `NEVEN.Status`, `NEVEN.Pluto.Start` | Devuelven el motivo del motor que les toca y su enlace oficial | Se registran siempre en `xlAutoOpen` y resuelven el motor por nombre con `CallLanguageByName`, que ante un servicio ausente escribe `EngineUnavailableMessage` en `err` |
+| `NEVEN.R`, `NEVEN.J`, `NEVEN.P` y las derivadas por prefijo (`NEVEN.<prefix>.Call`, `.Exec`) | Excel devuelve `#¿NOMBRE?`, sin motivo | La fase 2 de `RegisterBasicFunctions` itera `LanguageManager::GetServices()`, que solo contiene motores configurados, asi que esos nombres no existen en el libro (`excel_api_functions.cc` L126-182) |
+
+Es la linea base del producto, no una regresion de los motores opcionales: la decision
+esta en `plan.md` L11-15 y catalogada como `PROD-10` en `investigacion.md` §3.2. Rellenar
+huecos en el vector de `GetServices()` desplazaria las claves numericas de `BCALL`/`BEXEC`,
+que son posiciones de ese vector, y `INV-CORE-01` prohibe registrar funciones fuera de
+`xlAutoOpen`, asi que no se puede registrar el nombre mas tarde, cuando ya se sabe que
+hace falta.
+
+Consecuencia practica para el usuario: un libro escrito con `=NEVEN.J("...")` abierto en
+un equipo sin Julia muestra `#¿NOMBRE?` en esas celdas. Para ver el motivo hay que usar
+`NEVEN.Status`, el boton **Motores** del Ribbon, o la forma estatica equivalente
+(`=NevenX.J("...")`), que si lo dice.
 
 La columna TaskPane describe lo que se ve cuando NEVEN Studio esta corriendo, y Studio
 necesita Python. En las filas 0 a 3 (sin Python) el estado de los motores se consulta
