@@ -20,6 +20,14 @@
                   imageMso="Refresh"
                   screentip="Recargar funciones de usuario"
                   supertip="Recarga todos los archivos .R, .jl y .py de C:\NEVEN\functions\ sin reiniciar Excel." />
+
+          <button id="btnEngineStatus"
+                  label="Motores"
+                  size="large"
+                  onAction="OnEngineStatusCommand"
+                  imageMso="ServerConnection"
+                  screentip="Estado de los motores"
+                  supertip="Muestra que motores estan disponibles y el sitio oficial de los que falten. Los motores son opcionales y NEVEN no los instala: se activan en NEVEN Studio &gt; Settings &gt; Motores (requiere reiniciar Excel)." />
         </group>
 
         <!-- Grupo: Analisis -->

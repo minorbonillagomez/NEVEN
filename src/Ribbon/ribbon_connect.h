@@ -857,7 +857,7 @@ public:
                        missing, missing, missing, missing, missing, missing, missing, missing,
                        missing, missing, missing, missing, missing, missing, missing, 1033, &result);
 
-          MessageBoxA(NULL, "Funciones recargadas para R, Julia y Python.\nNuevas funciones disponibles sin reiniciar Excel.",
+          MessageBoxA(NULL, "Funciones recargadas en los motores disponibles.\nNuevas funciones disponibles sin reiniciar Excel.",
                       "NEVEN - Actualizar", MB_OK | MB_ICONINFORMATION);
       }
       return S_OK;
@@ -1097,7 +1097,7 @@ public:
 
       if (status == 0) {
           MessageBoxA(NULL,
-              "NEVEN ya esta activo.\nLos motores R, Julia y Python estan disponibles.",
+              "NEVEN ya esta activo.\nPulse Motores para ver cuales estan disponibles.",
               "NEVEN", MB_OK | MB_ICONINFORMATION);
           return S_OK;
       }
@@ -1115,7 +1115,7 @@ public:
                   reinterpret_cast<ULONG_PTR>(m_pApplication.p),
                   reinterpret_cast<ULONG_PTR>(this));
               MessageBoxA(NULL,
-                  "NEVEN activado correctamente.\nR, Julia y Python estan disponibles.",
+                  "NEVEN activado correctamente.\nPulse Motores para ver cuales estan disponibles.",
                   "NEVEN", MB_OK | MB_ICONINFORMATION);
           } else {
               MessageBoxA(NULL,
