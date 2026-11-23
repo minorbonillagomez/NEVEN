@@ -102,7 +102,13 @@ Un motor declarado y habilitado pero sin conexion viva no se confunde con un mot
 ausente: la celda dice `not connected`, `NEVEN.Status` dice `activado, sin conectar` y
 el TaskPane dice `Habilitado, sin conectar`. Los otros dos estados tienen su propio
 texto: `DESACTIVADO en neven-config.json` / `Desactivado` y `NO INSTALADO` /
-`No instalado`.
+`No instalado`. El selector de lenguaje de Run Script anota las dos situaciones que
+hacen que el motor no responda, `(no instalado)` y `(desactivado)`, sin quitar la opcion.
+
+Un quinto caso no es un estado de motor: que el servidor de NEVEN Studio no responda.
+Entonces `/api/engines/config` no se puede leer y no se sabe nada de ningun motor, asi
+que el TaskPane dice `Servidor no disponible` y el aviso de Run Script nombra el servidor
+en vez de culpar al motor y en vez de remitir a Settings > Motores, que tampoco cargaria.
 
 ## Como se comprobo cada fila
 

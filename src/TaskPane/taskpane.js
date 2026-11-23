@@ -1155,6 +1155,12 @@ const ENGINE_LABELS = { r: 'R', python: 'Python', julia: 'Julia' };
 // Los motores son opcionales: lo que falta se informa, nunca se oculta.
 let ENGINE_INFO = {};
 
+// Verdadero mientras no se haya podido leer /api/engines/config. Sin esa
+// lectura no se sabe nada de ningun motor, y lo que falla es el servidor de
+// NEVEN Studio, no el motor: los mensajes tienen que decir eso y no culpar al
+// motor ni remitir a una pantalla que tampoco va a cargar.
+let ENGINE_INFO_UNREACHABLE = true;
+
 // Anota las opciones del selector de lenguaje sin quitar ninguna: el usuario
 // tiene que poder ver que el motor existe y por que no esta disponible.
 function annotateScriptLangOptions() {
@@ -1163,9 +1169,15 @@ function annotateScriptLangOptions() {
   Array.prototype.forEach.call(select.options, opt => {
     const label = ENGINE_LABELS[opt.value] || opt.value;
     const info = ENGINE_INFO[opt.value];
-    opt.textContent = (info && info.installed === false)
-      ? label + ' (no instalado)'
-      : label;
+    if (info && info.installed === false) {
+      opt.textContent = label + ' (no instalado)';
+    } else if (info && info.enabled === false) {
+      // Instalado y desactivado en neven-config.json: el selector lo decia
+      // limpio mientras el toast decia "Desactivado".
+      opt.textContent = label + ' (desactivado)';
+    } else {
+      opt.textContent = label;
+    }
   });
 }
 
@@ -1179,6 +1191,7 @@ async function refreshEngineStatus() {
     const resp = await fetch(API_BASE + '/api/engines/config');
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     ENGINE_INFO = await resp.json();
+    ENGINE_INFO_UNREACHABLE = false;
     ['r', 'python', 'julia'].forEach(lang => {
       const info = ENGINE_INFO[lang] || {};
       const dot = document.getElementById(`engine-status-${lang}`);
@@ -1190,6 +1203,7 @@ async function refreshEngineStatus() {
     annotateScriptLangOptions();
   } catch (err) {
     // Server unreachable — mark all as unavailable and log for debugging
+    ENGINE_INFO_UNREACHABLE = true;
     ['r', 'python', 'julia'].forEach(lang => {
       const dot = document.getElementById(`engine-status-${lang}`);
       if (dot) {
@@ -1216,10 +1230,15 @@ async function runScript() {
   const code = document.getElementById('script-input').value.trim();
   if (!code) return;
   const info = ENGINE_INFO[lang];
-  // Informar el motivo antes de ejecutar, con el mismo vocabulario que
-  // NEVEN.Status: no instalado, desactivado en el config, o sin informacion
-  // porque el estado todavia no se ha leido. NEVEN no instala motores.
-  if (!info || (!info.running && (info.installed === false || info.enabled === false))) {
+  // El estado de los motores no se pudo leer: el problema es el servidor de
+  // Studio, no el motor, y Settings > Motores tampoco cargaria.
+  if (ENGINE_INFO_UNREACHABLE) {
+    showToast('No se pudo leer el estado de los motores: el servidor de NEVEN Studio no responde. Reinicielo y vuelva a intentarlo.');
+  } else if (!info || (!info.running && (info.installed === false || info.enabled === false))) {
+    // Informar el motivo antes de ejecutar, con el mismo vocabulario que
+    // NEVEN.Status: no instalado, desactivado en el config, o sin informacion
+    // del motor pedido aunque el servidor haya respondido. NEVEN no instala
+    // motores.
     const label = ENGINE_LABELS[lang] || lang;
     let text = label + ': ' + engineStatusText(info) + '. NEVEN no instala motores.';
     if (info && info.url) {
@@ -4739,6 +4758,7 @@ async function loadEnginesStatus() {
     const resp = await fetch(API_BASE + '/api/engines/config');
     if (!resp.ok) throw new Error('Error ' + resp.status);
     ENGINE_INFO = await resp.json();
+    ENGINE_INFO_UNREACHABLE = false;
     annotateScriptLangOptions();
     
     for (const eng of engines) {
@@ -4786,9 +4806,10 @@ async function loadEnginesStatus() {
     
   } catch (e) {
     console.error('[Engines] Error cargando estado:', e);
+    ENGINE_INFO_UNREACHABLE = true;
     for (const eng of engines) {
       const status = document.getElementById('engine-' + eng + '-status');
-      if (status) status.textContent = 'Error';
+      if (status) status.textContent = 'Servidor no disponible';
     }
   }
 }
