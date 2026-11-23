@@ -172,6 +172,11 @@ componentes:
       Servidor HTTP que corre dentro de ControlPython.exe en un daemon thread.
       Sirve la UI del Task Pane (taskpane.html) y expone endpoints REST para
       DuckDB, DataLab, agente IA, scripts R/Python/Julia, y gestion de archivos.
+      Es el UNICO escritor en caliente de NEVEN.<Lang>.enabled en neven-config.json
+      (POST /api/engines/config, desde NEVEN Studio > Settings > Motores). El Ribbon
+      NO escribe enabled: su boton Motores solo muestra la salida de NEVEN.Status.
+      El instalador tambien escribe enabled, pero en frio (Install-NEVEN.ps1, tambien
+      con -ConfigureOnly). El cambio surte efecto al reiniciar Excel (INV-CMN-01).
 
     fuentes:
       repo:
@@ -179,6 +184,16 @@ componentes:
         - "ControlPython/startup/datalab_handler.py"     # logica DataLab
         - "TaskPane/start_studio.py"                     # punto de entrada, singleton
         - "TaskPane/pipe_client.py"                      # cliente Named Pipe
+      copias_versionadas_del_servidor:
+        descripcion: >
+          Hay TRES copias versionadas de neven_http_server.py y las tres se mantienen
+          sincronizadas (G-TP-05). Un cambio en una sola deja el comportamiento
+          dependiendo de cual se ejecute segun el arranque.
+        rutas:
+          - "ControlPython/startup/neven_http_server.py"  # la que ejecuta start_studio.py
+          - "startup/neven_http_server.py"                # la que copia el instalador a C:/NEVEN/startup/
+          - "TaskPane/neven_http_server.py"
+        como_verificar: 'python -m pytest src/tests/test_engine_availability.py -q  # test_the_three_copies_expose_the_same_engine_contract'
 
     produccion:
       neven_http_server: "C:/NEVEN/startup/neven_http_server.py"
@@ -212,7 +227,8 @@ componentes:
         "/taskpane.html":         "UI principal desde staticDir"
         "/assets/*":              "Archivos estaticos CSS/JS/iconos"
         "/api/datalab/catalog":   "Escanea functions/*.json, retorna catalogo lang->family->cards"
-        "/api/engines":           "Sondea Named Pipes via win32file.CreateFile"
+        "/api/engines":           "Sondea Named Pipes via win32file.CreateFile (forma booleana {r, python, julia}: la consume taskpane.html y el Ribbon)"
+        "/api/engines/config":    "Estado declarado de cada motor: {enabled, installed, home, running, url} leido de neven-config.json"
         "/api/functions":         "Lista funciones registradas por lenguaje"
         "/api/bridge/pull":       "Lee bridge/{key}.json (datos de Excel via NEVEN.IA.Contexto)"
         "/api/ai/config":         "Lee seccion AI de neven-config.json"
@@ -233,6 +249,7 @@ componentes:
         "/api/ai/chat":           "Proxea mensaje al LLM (LM Studio, Ollama, OpenAI, Azure)"
         "/api/ai/context":        "Recibe contexto de =NEVEN.IA.Contexto() desde Excel"
         "/api/functions/create":  "Guarda nueva funcion .R/.py/.jl en functions_dir"
+        "/api/engines/config":    "Escribe NEVEN.<Lang>.enabled en neven-config.json (UTF-8 sin BOM) y devuelve warnings por motor habilitado sin instalacion"
 
     flujo_datalab_run:
       descripcion: "POST /api/datalab/run — flujo completo de ejecucion"

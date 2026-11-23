@@ -192,13 +192,18 @@ componentes:
 
       - id: INV-BLD-04
         descripcion: >
-          Addin/CMakeLists.txt copia Install/neven-config.json (no el template) a Dist/.
+          Addin/CMakeLists.txt copia Install/neven-config.template.json a
+          Dist/neven-config.json, es decir el build empaqueta el template y lo renombra.
           Desde la correccion de seguridad (2026-08-19), Install/neven-config.json
-          fue reemplazado por Install/neven-config.template.json y removido del repo.
-          El build.ps1 -Package copiara el template. El instalador debe renombrarlo.
+          fue reemplazado por Install/neven-config.template.json y removido del repo;
+          la referencia al fichero inexistente quedo corregida al cerrar la tarea de
+          motores opcionales, de modo que el empaquetado ya no depende de un fichero
+          que no esta versionado. El instalador sobrescribe los valores de motores
+          sobre esa copia con el resultado de la deteccion.
         como_verificar: >
           Get-Item 'Install/neven-config.json'  # debe NO existir en el repo
           Get-Item 'Install/neven-config.template.json'  # debe existir
+          ctest --test-dir src/Build -C Release -R RepoHygiene  # AddinPackagesTheConfigTemplate
 
     errores:
       - sintoma: "CMake configuration failed — error al resolver FetchContent"
@@ -394,8 +399,21 @@ componentes:
         auto_load_xll: "true — XLL carga automaticamente al abrir Excel"
         motores_default:
           R: "enabled: true"
-          Julia: "enabled: false  (usuario activa desde Ribbon)"
-          Python: "enabled: false (usuario activa desde Ribbon)"
+          Julia: "enabled: false  (valor del template; el instalador lo reescribe)"
+          Python: "enabled: false (valor del template; el instalador lo reescribe)"
+          nota: >
+            Estos son los valores del template versionado, no el resultado de una
+            instalacion. El instalador escribe los tres enabled a partir de la
+            deteccion de motores (Get-EngineStatus) y solo escribe home para los
+            motores detectados. En modo actualizacion se conserva un enabled: false
+            puesto por el usuario. Install-NEVEN.ps1 -ConfigureOnly redetecta y
+            reescribe los tres enabled sin reinstalar nada (pisa un enabled: false
+            previo a proposito, porque el usuario pide reconfigurar). El otro camino
+            para cambiarlos en caliente es NEVEN Studio > Settings > Motores, que
+            escribe via POST /api/engines/config (P2 studio_backend). En ambos casos
+            el cambio surte efecto al reiniciar Excel (INV-CMN-01).
+            Detalle de las 8 combinaciones en docs/MOTORES_OPCIONALES.md.
+          como_verificar: 'ctest --test-dir src/Build -C Release -R RepoHygiene  # ConfigTemplateDeclaresEnabledForTheThreeEngines'
       credenciales_en_template:
         apiKey: "TU_AZURE_OPENAI_API_KEY_AQUI  — placeholder"
         endpoint: "TU_AZURE_OPENAI_ENDPOINT_AQUI — placeholder"
