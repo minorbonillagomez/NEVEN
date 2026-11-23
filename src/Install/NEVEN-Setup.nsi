@@ -45,11 +45,11 @@ VIAddVersionKey "LegalCopyright" "Copyright (C) 2026 ${PUBLISHER}"
 
 ; Welcome Page
 !define MUI_WELCOMEPAGE_TITLE "Bienvenido al instalador de NEVEN"
-!define MUI_WELCOMEPAGE_TEXT "Este asistente instalara NEVEN ${VERSION} en su computadora.$\r$\n$\r$\nNEVEN es un add-in para Microsoft Excel que integra R, Julia y Python como motores de scripting embebidos.$\r$\n$\r$\nRequisitos:$\r$\n  - Windows 10/11 (64-bit)$\r$\n  - Microsoft Excel 2016 o superior$\r$\n  - R 4.4+ (opcional)$\r$\n  - Julia 1.12+ (opcional)$\r$\n  - Python 3.10+ (opcional)$\r$\n$\r$\nHaga clic en Siguiente para continuar."
+!define MUI_WELCOMEPAGE_TEXT "Este asistente instalara NEVEN ${VERSION} en su computadora.$\r$\n$\r$\nNEVEN es un add-in para Microsoft Excel que integra R, Julia y Python como motores de scripting embebidos.$\r$\n$\r$\nRequisitos:$\r$\n  - Windows 10/11 (64-bit)$\r$\n  - Microsoft Excel 2016 o superior$\r$\n$\r$\nLos tres motores son opcionales y los instala usted: NEVEN no descarga ni instala R, Julia ni Python. Al final de la instalacion se le informara cuales fueron detectados y se le daran los enlaces oficiales de descarga de los que falten.$\r$\n  - R 4.4+ (opcional)$\r$\n  - Julia 1.12+ (opcional)$\r$\n  - Python 3.10+ (opcional)$\r$\n$\r$\nHaga clic en Siguiente para continuar."
 
 ; Finish Page
 !define MUI_FINISHPAGE_TITLE "Instalacion completada"
-!define MUI_FINISHPAGE_TEXT "NEVEN ${VERSION} se ha instalado correctamente.$\r$\n$\r$\nPara comenzar:$\r$\n1. Abra Microsoft Excel$\r$\n2. La pestana NEVEN aparecera en el Ribbon$\r$\n3. Haga clic en 'Activar NEVEN' para iniciar los motores$\r$\n$\r$\nPara usar NEVEN Studio (TaskPane integrado):$\r$\n1. Vaya a Insertar > Complementos > Mis complementos$\r$\n2. Seleccione NEVEN Studio"
+!define MUI_FINISHPAGE_TEXT "NEVEN ${VERSION} se ha instalado correctamente.$\r$\n$\r$\nPara comenzar:$\r$\n1. Abra Microsoft Excel$\r$\n2. La pestana NEVEN aparecera en el Ribbon$\r$\n3. El boton Motores le muestra que motores se detectaron y los enlaces oficiales de los que falten$\r$\n$\r$\nSi instala R, Julia o Python despues, activelos en NEVEN Studio > Settings > Motores y reinicie Excel.$\r$\n$\r$\nPara usar NEVEN Studio (TaskPane integrado):$\r$\n1. Vaya a Insertar > Complementos > Mis complementos$\r$\n2. Seleccione NEVEN Studio"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\NEVEN Studio.vbs"
 !define MUI_FINISHPAGE_RUN_TEXT "Iniciar servidor NEVEN Studio"
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\docs\README.md"
@@ -97,6 +97,9 @@ Section "NEVEN Core" SecCore
     File "Dist\packages-manifest.json"
     File "Dist\NEVEN_studio.ico"
     File "Dist\NEVEN Studio.vbs"
+    
+    ; Engine detection script (used below in -ConfigureOnly mode)
+    File "Install-NEVEN.ps1"
     
     ; Directories
     SetOutPath "$INSTDIR\functions"
@@ -164,6 +167,14 @@ Section "NEVEN Core" SecCore
     IntFmt $0 "0x%08X" $0
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NEVEN" \
                       "EstimatedSize" "$0"
+
+    ; Detect the engines and write the result into neven-config.json.
+    ; -ConfigureOnly only detects and patches: it deploys nothing, registers
+    ; nothing and never runs a third-party installer.
+    DetailPrint "Detectando motores (R, Julia, Python)..."
+    nsExec::ExecToLog 'powershell -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\Install-NEVEN.ps1" -ConfigureOnly -Silent -InstallDir "$INSTDIR"'
+    Pop $0
+    DetailPrint "Deteccion de motores: codigo $0"
 
 SectionEnd
 
@@ -258,6 +269,7 @@ Section "Uninstall"
     Delete "$INSTDIR\packages-manifest.json"
     Delete "$INSTDIR\NEVEN_studio.ico"
     Delete "$INSTDIR\NEVEN Studio.vbs"
+    Delete "$INSTDIR\Install-NEVEN.ps1"
     Delete "$INSTDIR\Uninstall-NEVEN.exe"
     
     ; Remove directories (only if empty or system-created)
