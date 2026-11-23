@@ -6,6 +6,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -66,6 +67,31 @@ protected:
         if (block.compare(value, 4, "true") == 0) return "true";
         if (block.compare(value, 5, "false") == 0) return "false";
         return "";
+    }
+
+    /**
+     * @brief Runs `git ls-files` over the project source directory.
+     * @param pathspec Pathspec relative to CMAKE_SOURCE_DIR.
+     * @return Everything git printed on stdout, or an empty string when git
+     *         could not be run or tracks nothing under @p pathspec.
+     *
+     * Used instead of a filesystem check for artifacts that .gitignore
+     * excludes: those are recreated by any local run of the tools (pytest
+     * leaves __pycache__ behind) without the repository being dirty, so only
+     * git can tell a versioned artifact from a local one.
+     */
+    std::string GitListFiles(const std::string& pathspec) {
+        std::string command = "git -C \"" + std::string(CMAKE_SOURCE_DIR) +
+                              "\" ls-files -- \"" + pathspec + "\" 2>nul";
+        FILE* pipe = _popen(command.c_str(), "r");
+        if (!pipe) return "";
+        std::string output;
+        char buffer[512];
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+            output += buffer;
+        }
+        _pclose(pipe);
+        return output;
     }
 
     /**
@@ -220,11 +246,28 @@ TEST_F(RepoHygieneTests, DeadCode_JuliaInterface07_DoesNotExist) {
            "must be removed (Req 13.1)";
 }
 
-TEST_F(RepoHygieneTests, DeadCode_PycacheDirectory_DoesNotExist) {
-    // Requirement 13.2: startup/__pycache__/ must not exist
-    fs::path pycache = fs::path(CMAKE_SOURCE_DIR) / "startup" / "__pycache__";
-    EXPECT_FALSE(fs::exists(pycache))
-        << "Dead code directory startup/__pycache__/ must be removed (Req 13.2)";
+TEST_F(RepoHygieneTests, DeadCode_PycacheDirectory_IsNotVersioned) {
+    // Requirement 13.2: startup/__pycache__/ must not be in the repository.
+    //
+    // The question is asked to git, not to the filesystem: __pycache__/ and
+    // *.pyc are in .gitignore, so running pytest over src/tests recreates
+    // those directories without the tree becoming dirty. A filesystem check
+    // turned that local artifact into a test failure (pytest followed by
+    // ctest on the same tree reported 424/425), which says nothing about the
+    // repository.
+    const std::string tracked_file = GitListFiles("CMakeLists.txt");
+    if (tracked_file.empty()) {
+        GTEST_SKIP() << "git is not available or " << CMAKE_SOURCE_DIR
+                     << " is not a checkout: nothing to verify about what the "
+                        "repository tracks";
+    }
+
+    EXPECT_EQ(GitListFiles("startup/__pycache__"), "")
+        << "startup/__pycache__/ must not be versioned (Req 13.2); "
+           "it is listed in .gitignore, so reaching the index needs a forced "
+           "git add";
+    EXPECT_EQ(GitListFiles("*.pyc"), "")
+        << "no compiled Python artifact may be versioned (Req 13.2)";
 }
 
 TEST_F(RepoHygieneTests, DeadCode_NevenWebviewDir_DefinedOnce) {
