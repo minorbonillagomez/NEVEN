@@ -12,6 +12,7 @@ Este directorio contiene todo lo necesario para construir y distribuir el instal
 | `Uninstall-NEVEN.ps1` | Script de desinstalación |
 | `Uninstall-NEVEN.exe` | Desinstalador ejecutable |
 | `Uninstall-NEVEN.cmd` | Wrapper para el desinstalador |
+| `Set-InstallPermissions.ps1` | Endurece y audita los permisos del directorio instalado (`-AuditOnly`, `-Probe`) |
 | `Build-Installers.ps1` | Genera los .exe a partir de los .ps1 |
 | `Dist/` | Artefactos compilados para distribución |
 | `neven-config.json` | Plantilla de configuración por defecto |

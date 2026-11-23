@@ -385,31 +385,71 @@ componentes:
         - "packages-manifest.json"      # manifiesto de paquetes
         - "Build-Installers.ps1"        # genera .exe desde los .ps1
         - "Check-NSISSyntax.ps1"        # compila NEVEN-Setup.nsi con un Dist/ de relleno
+        - "Set-InstallPermissions.ps1"  # endurece y audita la DACL de la instalacion
         - "functions/*.json"            # sidecars pre-instalados
         - "README.md"
 
-    permisos_script_desplegado:
+    permisos_instalacion:
       descripcion: >
-        NEVEN-Setup.nsi despliega Install-NEVEN.ps1 en $INSTDIR para que el usuario
-        pueda volver a correr -ConfigureOnly, y el aviso de deteccion fallida le dice
-        que lo ejecute. El directorio por defecto es C:\NEVEN y hereda de la raiz del
-        disco el ACE 'NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M)', de modo que
-        los ficheros de dentro quedan modificables por cualquier usuario autenticado.
-        Por eso el instalador le quita la herencia a ese script y lo deja en F para
-        Administradores y SYSTEM y en RX para los usuarios, con SIDs conocidos
-        (S-1-5-32-544, S-1-5-18, S-1-5-11) porque los nombres de grupo estan
-        localizados. La deteccion de la propia instalacion no usa esa copia: corre
-        desde $PLUGINSDIR, escribible solo por el proceso del instalador.
-        neven-config.json conserva su DACL heredada a proposito: el servidor HTTP y
-        -ConfigureOnly lo reescriben desde la sesion del usuario, sin elevar.
-      como_verificar: 'icacls C:\NEVEN\Install-NEVEN.ps1   # sin (I), Usuarios solo (RX)'
+        El directorio por defecto es C:\NEVEN y hereda de la raiz del disco el ACE
+        'NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M)', de modo que todo lo de
+        dentro queda modificable por cualquier usuario autenticado, incluido lo que
+        NEVEN ejecuta sin que el usuario lo invoque (startup\*.py, functions\*.R,
+        TaskPane\*, los ejecutables de los motores). Set-InstallPermissions.ps1
+        declara dos clases de ruta y las aplica con icacls usando SIDs conocidos,
+        porque los nombres de grupo estan localizados. Los dos instaladores lo
+        llaman en dos puntos: un sondeo (-Probe) antes de copiar el primer fichero y
+        la aplicacion cuando ya no queda nada por escribir en $INSTDIR.
+      clase_codigo:
+        que_cubre: >
+          La raiz y, por herencia desde ella, lo que NEVEN ejecuta o carga: los .xll,
+          .dll y .exe, los arboles startup\, TaskPane\, libreria\, ontology\, docs\,
+          examples\, catalog\, scripts\ y certs\, y los .ps1 y .json desplegados.
+        ace: 'S-1-5-32-544 y S-1-5-18 con (OI)(CI)(F); S-1-5-11 con (OI)(CI)(RX); S-1-3-0 con (OI)(CI)(IO)(F); S-1-5-11 con (AD) solo en la raiz, sin propagar'
+        por_que_ad_y_no_wd: >
+          El (AD) de la raiz deja crear subdirectorios en tiempo de ejecucion
+          (os.makedirs). No se concede (WD): anadir ficheros al directorio de los
+          ejecutables es plantado de DLL junto a ControlR.exe.
+        ace_explicitos_previos: >
+          /inheritance:r se lleva los ACE heredados, pero no los explicitos, asi que
+          un $INSTDIR que ya existia podia traer una concesion escrita a mano. El
+          script la quita antes de aplicar el modelo, con /remove:g. Solo quita.
+      clase_datos:
+        directorios: 'functions, prompts, logs, temp, graphics, notebooks, data, workspace, webview2-data, crashes, user-charts, bridge -> S-1-5-11 con (OI)(CI)(M)'
+        ficheros: 'neven-config.json, neven-config.json.bak, install.log, packages-status-cache.json, neven.log -> S-1-5-11 con (RX,W)'
+        por_que: >
+          El servidor HTTP, el FileWatchService, Studio > Settings > Motores y
+          -ConfigureOnly escriben ahi desde la sesion del usuario, sin elevar. Los
+          ficheros reciben (RX,W) y no (M): se escriben en sitio y no necesitan
+          DELETE, asi que tambien ahi el cambio restringe.
+      exposicion_residual:
+        - 'functions\ y prompts\ siguen escribibles por cualquier usuario autenticado, y NEVEN carga functions\*.R en R dentro de Excel. Cerrarlo exige una decision de producto sobre /api/functions/create, /api/script/save y el FileWatchService.'
+        - 'neven-config.json sigue escribible: es el fichero por el que se puede apagar el sandbox, y el que reescriben Studio > Settings > Motores y -ConfigureOnly.'
+        - 'certs\localhost.key deja de ser escribible, pero sigue siendo legible por usuarios autenticados: el servidor HTTP lo lee sin elevar.'
+        - 'studio.pid y neven_julia.version ya no se pueden crear en la raiz desde una sesion sin privilegios, asi que generar la sysimage de Julia despues de instalar necesita una consola elevada.'
+        - 'Desinstalar sin elevacion ya no borra los ficheros endurecidos; los dos desinstaladores de PowerShell lo avisan antes de pedir confirmacion.'
+      si_no_se_puede_aplicar: >
+        Se muestra el motivo medido y la exposicion residual, y solo se continua con
+        una aceptacion explicita del usuario, que queda registrada en install.log con
+        su motivo y su codigo. Si el usuario no acepta en el sondeo, se aborta sin
+        haber copiado nada; si no acepta en la aplicacion final, el mensaje dice que
+        los ficheros estan copiados pero NEVEN no quedo activado en Excel y remite al
+        desinstalador de $INSTDIR. En modo desatendido (-Silent, IfSilent) no hay a
+        quien preguntar, asi que se aborta y el motivo queda en install.log y en la
+        ventana de detalles.
+      configure_only: >
+        -ConfigureOnly no toca permisos ni pide elevacion: sale en Exit-Installer 0
+        antes del sondeo y de la fase de permisos. Reconfigurar motores tiene que
+        seguir funcionando sin administrador.
+      como_verificar: 'powershell -NoProfile -File C:\NEVEN\Set-InstallPermissions.ps1 -InstallDir C:\NEVEN -AuditOnly   # exit 0, sin hallazgos'
+      como_verificar_tests: 'python -m pytest src/tests/test_install_permissions.py src/tests/test_configure_only.py -v'
 
     verificacion_sintaxis_nsis:
       descripcion: >
         makensis aborta en la pagina de bienvenida cuando Dist/ no esta poblado
         (Error while loading icon from "Dist\NEVEN_studio.ico"), asi que sin
         empaquetado no llega a parsear las secciones del final (deteccion de motores,
-        permisos del script desplegado). Check-NSISSyntax.ps1 copia el .nsi real a un
+        permisos de la instalacion). Check-NSISSyntax.ps1 copia el .nsi real a un
         temporal, genera ahi un Dist/ de relleno con un icono y dos BMP validos y
         compila el script completo. No produce un instalador utilizable.
       como_verificar: 'powershell -NoProfile -File src\Install\Check-NSISSyntax.ps1   # exit 0'
@@ -562,6 +602,22 @@ componentes:
         como_verificar: >
           $b = [System.IO.File]::ReadAllBytes('C:/NEVEN/neven-config.json')
           $b[0..2]  # no debe ser 239 187 191 (EF BB BF = BOM)
+
+      - id: INV-INS-05
+        descripcion: >
+          Los ficheros que NEVEN ejecuta en $INSTDIR no son modificables por usuarios
+          sin privilegios, y toda operacion de permisos comprueba su codigo de salida.
+          El modelo de las dos clases esta en install_scripts.permisos_instalacion.
+          Un endurecimiento que no se pudo aplicar es visible: se dice el motivo
+          medido, se registra en install.log y solo se continua con una aceptacion
+          explicita del usuario; en modo desatendido se aborta. Las clases se miden
+          con Get-Acl, no con el texto de icacls, porque los nombres de grupo estan
+          localizados.
+        como_verificar: >
+          powershell -NoProfile -File C:/NEVEN/Set-InstallPermissions.ps1 -InstallDir C:/NEVEN -AuditOnly
+          # exit 0; exit 1 con hallazgos de ACL; exit 2 si alguna operacion fallo
+          ctest --output-on-failure -C Release -R RepoHygiene
+          # InstallerChecksEveryPermissionOperationExitCode y ConfigureOnlyDoesNotTouchPermissions
 
     errores:
       - sintoma: "regsvr32 fallo con codigo de error"

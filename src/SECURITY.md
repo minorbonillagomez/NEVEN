@@ -102,6 +102,41 @@ El codigo C++ se compila con:
 - `/NXCOMPAT` — DEP
 - `/CETCOMPAT` — Control-flow Enforcement Technology
 
+### 6. Permisos del directorio de instalacion
+
+Un directorio creado bajo `C:\` hereda de la raiz del disco el ACE
+`NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M)`. Sin endurecer, cualquier
+usuario autenticado de la maquina puede sustituir un fichero que NEVEN ejecuta
+por su cuenta (`startup\*.py`, `functions\*.R`, `TaskPane\*`, los ejecutables de
+los motores) y esperar a que NEVEN lo ejecute. `Set-InstallPermissions.ps1`
+declara dos clases de ruta y las aplica con SIDs conocidos, porque los nombres de
+grupo estan localizados:
+
+| Clase | Que cubre | Permisos de los usuarios autenticados |
+|-------|-----------|----------------------------------------|
+| Codigo | La raiz y, por herencia, lo que NEVEN ejecuta o carga | Leer y ejecutar. Crear subdirectorios en la raiz, no ficheros |
+| Datos | `functions\`, `prompts\`, `logs\`, `temp\`, `graphics\`, `notebooks\`, `data\`, `workspace\`, `webview2-data\`, `crashes\`, `user-charts\`, `bridge\` | Modificar: ahi escriben el servidor HTTP y el FileWatchService sin elevar |
+| Datos | `neven-config.json`, `neven-config.json.bak`, `install.log`, `packages-status-cache.json`, `neven.log` | Leer, ejecutar y escribir; sin borrar |
+
+Los dos instaladores llaman al script en dos puntos: un sondeo antes de copiar el
+primer fichero y la aplicacion cuando ya no queda nada por escribir. Cada
+operacion comprueba su codigo de salida, y un endurecimiento que no se pudo
+aplicar se dice con su motivo y queda en `install.log`: solo se continua con una
+aceptacion explicita del usuario, y en modo desatendido se aborta.
+
+Para medir la DACL de una instalacion cuando quiera:
+
+```powershell
+powershell -NoProfile -File C:\NEVEN\Set-InstallPermissions.ps1 -InstallDir C:\NEVEN -AuditOnly
+# exit 0 sin hallazgos, 1 con hallazgos de ACL, 2 si alguna operacion fallo
+```
+
+Exposicion residual, que el propio script imprime: `functions\` y `prompts\`
+siguen escribibles y NEVEN carga `functions\*.R` en R dentro de Excel;
+`neven-config.json` sigue escribible, y es el fichero por el que se puede apagar
+el sandbox; `certs\localhost.key` deja de ser escribible pero sigue siendo
+legible; y desinstalar sin elevacion ya no borra los ficheros endurecidos.
+
 ---
 
 ## Mejores Practicas para Usuarios
