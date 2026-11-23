@@ -3,6 +3,7 @@ add_executable(rj2xcl_tests
     raii_xloper_tests.cc
     callback_dispatcher_tests.cc
     discovery_tests.cc
+    engine_matrix_tests.cc
     security_tests.cc
     sandbox_tests.cc
     python_sandbox_pbt.cc

@@ -28,11 +28,25 @@ TEST(DiscoveryServiceTest, FindJuliaDoesNotCrash) {
 
 TEST(DiscoveryServiceTest, GetBestVersionOverrides) {
     auto& discovery = DiscoveryService::Instance();
-    
-    // Test manual home override
-    auto best = discovery.GetBestVersion("R", "", "C:\\Manual\\R");
-    EXPECT_EQ(best.home_path, "C:\\Manual\\R");
+
+    // A home override that exists as a directory is honoured as-is
+    char temp_path[MAX_PATH] = {};
+    ASSERT_GT(GetTempPathA(MAX_PATH, temp_path), 0u);
+    std::string valid_home = std::string(temp_path) + "neven_discovery_override";
+    ASSERT_TRUE(CreateDirectoryA(valid_home.c_str(), nullptr) || GetLastError() == ERROR_ALREADY_EXISTS);
+
+    auto best = discovery.GetBestVersion("R", "", valid_home);
+    EXPECT_EQ(best.home_path, valid_home);
     EXPECT_EQ(best.version, "Override");
+
+    RemoveDirectoryA(valid_home.c_str());
+
+    // An override that does not exist must NOT be reported as an installation:
+    // a home left over from packaging or from an uninstalled engine would
+    // otherwise make an absent engine look present.
+    auto stale = discovery.GetBestVersion("R", "", "C:\\Manual\\R");
+    EXPECT_NE(stale.home_path, "C:\\Manual\\R");
+    EXPECT_NE(stale.version, "Override");
 
     // Test tag matching (if any versions found)
     auto installs = discovery.FindR();
