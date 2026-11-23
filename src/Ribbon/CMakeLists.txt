@@ -5,15 +5,17 @@ project(NEVENRibbon)
 # MIDL compile the IDL to generate type library
 set(IDL_FILE ${CMAKE_CURRENT_SOURCE_DIR}/RJ2XCLRibbon.idl)
 set(TLB_FILE ${CMAKE_CURRENT_BINARY_DIR}/NEVENRibbon.tlb)
-set(IDL_H ${CMAKE_CURRENT_BINARY_DIR}/NEVENRibbon_i.h)
-set(IDL_C ${CMAKE_CURRENT_BINARY_DIR}/NEVENRibbon_i.c)
+# Los nombres de los generados son los que incluyen ribbon.cc y
+# ribbon_connect.cc (#include "RJ2XCLRibbon_i.h"), igual que el .vcxproj legado.
+set(IDL_H ${CMAKE_CURRENT_BINARY_DIR}/RJ2XCLRibbon_i.h)
+set(IDL_C ${CMAKE_CURRENT_BINARY_DIR}/RJ2XCLRibbon_i.c)
 
 add_custom_command(
     OUTPUT ${TLB_FILE} ${IDL_H} ${IDL_C}
     COMMAND midl /nologo /W1 /char signed /env x64 /Oicf
             /out "${CMAKE_CURRENT_BINARY_DIR}"
-            /h "NEVENRibbon_i.h"
-            /iid "NEVENRibbon_i.c"
+            /h "RJ2XCLRibbon_i.h"
+            /iid "RJ2XCLRibbon_i.c"
             /tlb "NEVENRibbon.tlb"
             "${IDL_FILE}"
     # Copy .tlb to source dir so the .rc file can find it
