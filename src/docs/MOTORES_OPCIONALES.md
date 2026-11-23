@@ -24,7 +24,8 @@ Sitios oficiales (las mismas tres URL en `Common/engine_availability.h`,
 |---|---|---|---|
 | `neven-languages.json` | Catalogo de conexiones que NEVEN sabe hablar (nombre, prefijo, ejecutable del puente). No lleva `enabled`: no es una decision, es la oferta. | Nadie en caliente; se despliega con el producto | `LanguageManager::ConfigureLanguages`, el instalador |
 | `neven-config.json`, `NEVEN.<Lang>.enabled` | Decision del usuario sobre cada motor | El servidor HTTP (unico escritor en caliente) y el instalador (`Install-NEVEN.ps1`, tambien con `-ConfigureOnly`) | `LanguageService` (C++), el servidor HTTP, `start_studio.py` |
-| `neven-config.json`, `NEVEN.<Lang>.home` | Instalacion concreta a usar; si el directorio no existe, se ignora y se vuelve a la deteccion automatica | El instalador: lo escribe para los motores detectados y lo vacia para los que no detecta, para que un `home` de una version vieja no tape la deteccion | `DiscoveryService::GetBestVersion` |
+| `neven-config.json`, `NEVEN.<Lang>.home` | Instalacion concreta a usar; si el directorio no existe, se ignora y se vuelve a la deteccion automatica | El instalador: lo escribe para los motores que detecta con version suficiente; conserva un valor escrito a mano mientras su directorio exista; lo vacia cuando el directorio ya no existe o cuando apunta a la version que la deteccion acaba de rechazar por ser inferior al minimo | `DiscoveryService::GetBestVersion` |
+| `neven-config.json`, `preferences.auto_start_engines` | Recorte de los motores habilitados que arranca NEVEN Studio. No puede habilitar un motor con `enabled: false` | El servidor HTTP y el instalador, los dos desde el `enabled` persistido | `start_studio.languages_from_engine_config` |
 | `neven-config.json`, `Standalone.languages` | Lista de motores que arranca NEVEN Studio en modo standalone. Tiene prioridad sobre `enabled`, asi que una lista heredada o editada a mano puede arrancar un motor que el XLL considera desactivado. El `neven-config.template.json` no la trae | Nadie en caliente; solo edicion manual | `start_studio.resolve_languages` |
 | `neven-config.template.json` | Plantilla publica en el repo (`R` habilitado, `Julia` y `Python` no). El build la copia a `Dist/neven-config.json`; el instalador la sobrescribe con la deteccion | El build (`Addin/CMakeLists.txt`) | El instalador |
 
@@ -40,11 +41,18 @@ del instalador que no encontro el motor. Los mensajes dicen donde esta escrito e
 valor y como cambiarlo.
 
 `start_studio.py` resuelve los motores a arrancar en este orden: el argumento
-`--languages`, `Standalone.languages`, `preferences.auto_start_engines` y, por ultimo,
-`enabled`. Las tres primeras capas ganan sobre `enabled`, de modo que un
-`Standalone.languages` heredado puede dejar un motor corriendo en Studio que el XLL
-reporta como desactivado. Para que las dos vistas coincidan, basta no declarar
+`--languages`, `Standalone.languages` y, por ultimo, `enabled` recortado por
+`preferences.auto_start_engines`. Las dos primeras capas ganan sobre `enabled`, de modo
+que un `Standalone.languages` heredado puede dejar un motor corriendo en Studio que el
+XLL reporta como desactivado. Para que las dos vistas coincidan, basta no declarar
 `Standalone.languages` y dejar la decision en `enabled`.
+
+`preferences.auto_start_engines` no es una cuarta decision: solo puede recortar la lista
+de motores habilitados, nunca ampliarla. Un motor con `enabled: false` no arranca aunque
+siga nombrado en una lista guardada antes en Studio, y un motor que el instalador acaba
+de habilitar no se queda fuera por una lista vieja, porque `Update-NEVENConfig` reescribe
+`auto_start_engines` desde el `enabled` ya persistido en la misma pasada. Las dos vias que
+escriben `enabled` (el servidor HTTP y el instalador) escriben tambien esa lista.
 
 Cambiar motores no obliga a reinstalar. Hay dos caminos:
 

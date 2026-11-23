@@ -176,7 +176,10 @@ componentes:
       (POST /api/engines/config, desde NEVEN Studio > Settings > Motores). El Ribbon
       NO escribe enabled: su boton Motores solo muestra la salida de NEVEN.Status.
       El instalador tambien escribe enabled, pero en frio (Install-NEVEN.ps1, tambien
-      con -ConfigureOnly). El cambio surte efecto al reiniciar Excel (INV-CMN-01).
+      con -ConfigureOnly). Los dos escritores derivan preferences.auto_start_engines
+      del enabled persistido: esa lista solo recorta los motores que arranca
+      start_studio.py y nunca habilita uno con enabled: false.
+      El cambio surte efecto al reiniciar Excel (INV-CMN-01).
 
     fuentes:
       repo:

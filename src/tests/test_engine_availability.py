@@ -288,6 +288,37 @@ def test_resolve_languages_prefers_auto_start_engines(studio):
     assert studio.resolve_languages(config, None) == {"julia"}
 
 
+def test_auto_start_engines_cannot_enable_a_disabled_engine(studio):
+    # auto_start_engines solo puede recortar la lista de 'enabled', nunca
+    # ampliarla: una lista guardada en Studio no debe reactivar un motor que
+    # el instalador acaba de desactivar porque no esta en el equipo.
+    config = {
+        "preferences": {"auto_start_engines": ["r", "julia", "python"]},
+        "NEVEN": {
+            "R": {"enabled": True},
+            "Julia": {"enabled": False},
+            "Python": {"enabled": False},
+        },
+    }
+    assert studio.resolve_languages(config, None) == {"r"}
+
+
+def test_auto_start_engines_ignores_an_engine_without_section(studio):
+    config = {
+        "preferences": {"auto_start_engines": ["r", "julia"]},
+        "NEVEN": {"R": {"enabled": True}},
+    }
+    assert studio.resolve_languages(config, None) == {"r"}
+
+
+def test_auto_start_engines_that_names_nothing_enabled_is_empty(studio):
+    config = {
+        "preferences": {"auto_start_engines": ["julia"]},
+        "NEVEN": {"R": {"enabled": True}, "Julia": {"enabled": False}},
+    }
+    assert studio.resolve_languages(config, None) == set()
+
+
 def test_resolve_languages_without_any_enabled_engine_is_empty(studio):
     config = {
         "NEVEN": {

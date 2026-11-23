@@ -1796,18 +1796,25 @@ function Get-EngineStatus {
     foreach ($e in $engines) {
         $info = $e.Info
         $found = [bool]($info -and $info.Found)
+        $available = [bool]($found -and $info.Adequate)
         $version = ''
         $path    = ''
-        if ($found) {
-            $version = $info.Version
-            $path    = $info.Path
-        }
+        if ($found) { $version = $info.Version }
+        # 'Path' es lo que se escribe en NEVEN.<Lang>.home, y ese valor entra
+        # en DiscoveryService::GetBestVersion como override de prioridad 1000
+        # sin que LanguageService vuelva a comprobar la version. Una version
+        # por debajo del minimo (Found pero no Adequate) no se escribe: si el
+        # usuario habilita ese motor desde Studio, el override no debe saltarse
+        # el chequeo de version que acaba de rechazarlo.
+        $rejected = ''
+        if ($available) { $path = $info.Path } elseif ($found) { $rejected = $info.Path }
         $status += [PSCustomObject]@{
-            Name      = $e.Name
-            Url       = $e.Url
-            Available = [bool]($found -and $info.Adequate)
-            Version   = $version
-            Path      = $path
+            Name         = $e.Name
+            Url          = $e.Url
+            Available    = $available
+            Version      = $version
+            Path         = $path
+            RejectedPath = $rejected
         }
     }
     return $status
@@ -2164,12 +2171,25 @@ function Update-NEVENConfig {
             if ($engine.Path) {
                 Set-ConfigValue -Node $node -Name 'home' -Value $engine.Path
             } elseif ($node.home) {
-                # Un 'home' de una instalacion anterior sigue ganando como
-                # override con prioridad 1000 en DiscoveryService, asi que
-                # tapa la deteccion automatica mientras el directorio exista.
-                # Si este motor no se detecto, ese valor ya no describe nada.
-                Set-ConfigValue -Node $node -Name 'home' -Value ''
-                Write-Log "Config: $($engine.Name) home cleared (engine not detected)"
+                # Un 'home' escrito a mano es la unica via para apuntar a un
+                # motor que la deteccion no inspecciona, asi que se conserva
+                # mientras el directorio exista. Solo se vacia cuando ya no
+                # existe: ahi deja de describir una instalacion y lo unico
+                # que hace es tapar la deteccion automatica con un override
+                # de prioridad 1000 en DiscoveryService.
+                $homeValue = [string]$node.home
+                $rejected  = [string]$engine.RejectedPath
+                if ($rejected -and ($homeValue.TrimEnd('\') -ieq $rejected.TrimEnd('\'))) {
+                    # Es la instalacion que la deteccion acaba de rechazar por
+                    # version: dejarla en 'home' la colaria como override.
+                    Set-ConfigValue -Node $node -Name 'home' -Value ''
+                    Write-Log "Config: $($engine.Name) home cleared ('$homeValue' is version $($engine.Version), below the minimum)"
+                } elseif (Test-Path -LiteralPath $homeValue -PathType Container) {
+                    Write-Log "Config: $($engine.Name) home kept ('$homeValue' exists but was not detected by this installer)"
+                } else {
+                    Set-ConfigValue -Node $node -Name 'home' -Value ''
+                    Write-Log "Config: $($engine.Name) home cleared (directory '$homeValue' no longer exists)"
+                }
             }
             if ($IsUpdate -and ($node.enabled -eq $false)) {
                 Write-Log "Config: $($engine.Name) keeps enabled = false (user decision preserved on update)"
@@ -2178,6 +2198,22 @@ function Update-NEVENConfig {
             }
             Write-Log "Config: $($engine.Name) enabled = $($node.enabled), home = '$($node.home)'"
         }
+
+        # preferences.auto_start_engines gana sobre 'enabled' al arrancar
+        # NEVEN Studio (start_studio.resolve_languages), asi que el instalador
+        # la reescribe desde el 'enabled' ya persistido. Sin esto, una lista
+        # guardada antes en Studio congelaba la eleccion frente a la deteccion
+        # y un motor recien habilitado no arrancaba en Studio.
+        $autoStart = @()
+        foreach ($pair in @(@{ Name = 'R'; Id = 'r' }, @{ Name = 'Julia'; Id = 'julia' }, @{ Name = 'Python'; Id = 'python' })) {
+            $node = $config.NEVEN.($pair.Name)
+            if ($node -and ($node.enabled -ne $false)) { $autoStart += $pair.Id }
+        }
+        if (-not $config.PSObject.Properties['preferences']) {
+            $config | Add-Member -MemberType NoteProperty -Name 'preferences' -Value ([PSCustomObject]@{})
+        }
+        Set-ConfigValue -Node $config.preferences -Name 'auto_start_engines' -Value $autoStart
+        Write-Log "Config: preferences.auto_start_engines = [$($autoStart -join ', ')]"
 
         # Patch AI / LM Studio configuration
         if ($config.AI) {

@@ -244,12 +244,18 @@ def load_config(path: str) -> dict:
 def languages_from_engine_config(config: dict) -> list[str]:
     """Return the engines the user decided to run, read from *config*.
 
+    ``NEVEN.<Lang>.enabled`` is the decision: a section with
+    ``"enabled": false`` is skipped and a section that is absent altogether
+    means the engine is not declared, so it is not started (same rule the XLL
+    applies in ``language_service.cc``).
+
     ``preferences.auto_start_engines`` is what NEVEN Studio writes when the
-    user saves the engine settings, so it wins.  When it is absent, the
-    ``NEVEN.<Lang>.enabled`` flags written by the installer are used instead:
-    a section with ``"enabled": false`` is skipped and a section that is
-    absent altogether means the engine is not declared, so it is not started
-    (same rule the XLL applies in ``language_service.cc``).
+    user saves the engine settings, and it can only narrow that set, never
+    widen it.  An engine that is disabled in ``enabled`` is never started
+    because a stale ``auto_start_engines`` still names it, and an engine the
+    installer has just enabled is not blocked by a list written before it
+    existed — the installer rewrites ``auto_start_engines`` from ``enabled``
+    in the same pass (``Install-NEVEN.ps1::Update-NEVENConfig``).
 
     Parameters
     ----------
@@ -261,12 +267,6 @@ def languages_from_engine_config(config: dict) -> list[str]:
     list[str]
         Language identifiers, possibly empty.  Not validated here.
     """
-    preferences = config.get("preferences")
-    if isinstance(preferences, dict):
-        auto_start = preferences.get("auto_start_engines")
-        if isinstance(auto_start, list):
-            return [str(x).strip().lower() for x in auto_start if str(x).strip()]
-
     neven = config.get("NEVEN")
     if not isinstance(neven, dict):
         return []
@@ -276,6 +276,13 @@ def languages_from_engine_config(config: dict) -> list[str]:
         section = neven.get(section_name)
         if isinstance(section, dict) and section.get("enabled", True) is not False:
             enabled.append(lang)
+
+    preferences = config.get("preferences")
+    if isinstance(preferences, dict):
+        auto_start = preferences.get("auto_start_engines")
+        if isinstance(auto_start, list):
+            wanted = {str(x).strip().lower() for x in auto_start if str(x).strip()}
+            return [lang for lang in enabled if lang in wanted]
     return enabled
 
 

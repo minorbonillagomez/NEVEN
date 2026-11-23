@@ -404,10 +404,18 @@ componentes:
           nota: >
             Estos son los valores del template versionado, no el resultado de una
             instalacion. El instalador escribe los tres enabled a partir de la
-            deteccion de motores (Get-EngineStatus), escribe home para los motores
-            detectados y vacia el home de los que no detecta: un home de una version
-            vieja que todavia exista gana como override con prioridad 1000 en
-            DiscoveryService::GetBestVersion y taparia la deteccion automatica.
+            deteccion de motores (Get-EngineStatus) y escribe home solo para los
+            motores que detecta con version suficiente (Found y Adequate): ese valor
+            entra como override con prioridad 1000 en
+            DiscoveryService::GetBestVersion y LanguageService no revalida la version
+            despues, asi que un motor por debajo del minimo no debe quedar en home.
+            Un home escrito a mano se conserva mientras su directorio exista (es la
+            unica via para apuntar a una instalacion que Find-R/Find-Julia/Find-Python
+            no inspeccionan); se vacia cuando el directorio ya no existe o cuando es
+            la instalacion que la deteccion acaba de rechazar por version.
+            El instalador reescribe tambien preferences.auto_start_engines desde el
+            enabled persistido, porque start_studio.resolve_languages recorta con esa
+            lista los motores que arranca NEVEN Studio.
             En modo actualizacion se conserva un enabled: false
             puesto por el usuario. Install-NEVEN.ps1 -ConfigureOnly redetecta y
             reescribe los tres enabled sin reinstalar nada (pisa un enabled: false
