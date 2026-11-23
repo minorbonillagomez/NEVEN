@@ -83,6 +83,30 @@ Section "NEVEN Core" SecCore
     SectionIn RO  ; Required section
     
     SetOutPath "$INSTDIR"
+
+    ; Sondeo de permisos antes de copiar el primer fichero. El directorio por
+    ; defecto es C:\NEVEN, y un directorio creado bajo C:\ hereda de la raiz del
+    ; disco el ACE "NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M)": sin
+    ; endurecer, cualquier usuario autenticado puede sustituir un fichero que
+    ; NEVEN ejecuta. Si aqui no se puede endurecer, abortar no deja nada a medias.
+    ; El script corre desde $PLUGINSDIR, escribible solo por este proceso.
+    InitPluginsDir
+    File "/oname=$PLUGINSDIR\Set-InstallPermissions.ps1" "Set-InstallPermissions.ps1"
+
+    DetailPrint "Comprobando si se pueden endurecer los permisos de $INSTDIR..."
+    nsExec::ExecToLog '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\Set-InstallPermissions.ps1" -InstallDir "$INSTDIR" -Probe'
+    Pop $0
+    DetailPrint "Sondeo de permisos: codigo $0"
+    StrCmp $0 "0" permissions_probe_done 0
+    StrCpy $9 "1"  ; el riesgo queda pendiente de aceptacion explicita
+    DetailPrint "Los permisos de $INSTDIR no se pueden endurecer (codigo $0)"
+    IfSilent 0 permissions_probe_ask
+    DetailPrint "Modo silencioso: no hay forma de pedir que acepte el riesgo, se aborta"
+    Abort "Los permisos de $INSTDIR no se pueden endurecer (codigo $0) y una instalacion silenciosa no puede pedir su confirmacion. Ejecute el instalador de forma interactiva, o elija un destino en un disco NTFS, o ejecutelo como administrador."
+permissions_probe_ask:
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "Los permisos de $INSTDIR no se pueden endurecer (codigo $0).$\r$\n$\r$\nSin ese endurecimiento, cualquier usuario autenticado de esta maquina puede sustituir un fichero que NEVEN ejecuta (startup\*.py, functions\*.R, TaskPane\*, los ejecutables de los motores) y esperar a que NEVEN lo ejecute.$\r$\n$\r$\nCausas habituales: el destino esta en un sistema de ficheros que no guarda permisos (FAT32, exFAT, una unidad de red), o este proceso no tiene permiso para cambiarlos.$\r$\n$\r$\nTodavia no se ha copiado nada: si cancela, no quedara ninguna instalacion a medias.$\r$\n$\r$\nDesea continuar sin el endurecimiento, aceptando ese riesgo?" IDOK permissions_probe_done
+    Abort "Instalacion cancelada: los permisos de $INSTDIR no se pudieron endurecer."
+permissions_probe_done:
     
     ; Core binaries
     File "Dist\NEVEN64.xll"
@@ -103,17 +127,10 @@ Section "NEVEN Core" SecCore
     ; esta copia: ver la seccion de deteccion al final.
     File "Install-NEVEN.ps1"
 
-    ; El directorio por defecto es C:\NEVEN, y un directorio creado bajo C:\
-    ; hereda de la raiz el ACE "NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M)":
-    ; comprobado con icacls sobre una instalacion real, los ficheros de dentro
-    ; quedan modificables por cualquier usuario autenticado. Este script es el
-    ; que el instalador le dice al usuario que ejecute (y que puede acabar
-    ; corriendo elevado), asi que se le quita la herencia y se deja en lectura
-    ; y ejecucion para los usuarios: escribirlo solo Administradores y SYSTEM.
-    ; SIDs conocidos, no nombres, porque los grupos estan localizados.
-    nsExec::ExecToLog '"$SYSDIR\icacls.exe" "$INSTDIR\Install-NEVEN.ps1" /inheritance:r /grant:r "*S-1-5-32-544:(F)" "*S-1-5-18:(F)" "*S-1-5-11:(RX)"'
-    Pop $0
-    DetailPrint "DACL de Install-NEVEN.ps1: codigo $0"
+    ; El script de permisos se despliega para que el usuario pueda auditar la
+    ; instalacion cuando quiera:
+    ;   Set-InstallPermissions.ps1 -InstallDir C:\NEVEN -AuditOnly
+    File "Set-InstallPermissions.ps1"
     
     ; Directories
     SetOutPath "$INSTDIR\functions"
@@ -211,6 +228,28 @@ Section "NEVEN Core" SecCore
     MessageBox MB_OK|MB_ICONEXCLAMATION "No se pudo detectar R, Julia ni Python (codigo $0).$\r$\n$\r$\nNEVEN quedo instalado, pero neven-config.json conserva los valores de la plantilla: un motor que usted tenga instalado puede aparecer como desactivado.$\r$\n$\r$\nPara redetectar, ejecute en PowerShell:$\r$\n    $INSTDIR\Install-NEVEN.ps1 -ConfigureOnly$\r$\n$\r$\nSi instalo NEVEN en una carpeta donde su usuario no puede escribir, abra PowerShell como administrador.$\r$\n$\r$\nTambien puede activarlos en NEVEN Studio > Settings > Motores. En ambos casos reinicie Excel."
 engine_detection_done:
 
+    ; Aplicacion de los permisos, al final de la seccion: ya no queda nada por
+    ; escribir en $INSTDIR. El script declara que rutas quedan de solo lectura y
+    ; cuales conservan la escritura, y comprueba el codigo de salida de cada
+    ; operacion: un endurecimiento fallido se informa, no se omite en silencio.
+    DetailPrint "Endureciendo los permisos de $INSTDIR..."
+    nsExec::ExecToLog '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\Set-InstallPermissions.ps1" -InstallDir "$INSTDIR"'
+    Pop $0
+    DetailPrint "Endurecimiento de permisos: codigo $0"
+    Delete "$PLUGINSDIR\Set-InstallPermissions.ps1"
+
+    StrCmp $0 "0" permissions_done 0
+    DetailPrint "Los permisos de $INSTDIR no quedaron endurecidos (codigo $0)"
+    ; Si el riesgo ya se acepto en el sondeo, no se vuelve a preguntar.
+    StrCmp $9 "1" permissions_done 0
+    IfSilent 0 permissions_ask
+    DetailPrint "Modo silencioso: no hay forma de pedir que acepte el riesgo, se aborta"
+    Abort "Los permisos de $INSTDIR no quedaron endurecidos (codigo $0). NEVEN quedo copiado pero sin activar en Excel: ejecute $INSTDIR\Uninstall-NEVEN.exe para retirarlo, o reinstale de forma interactiva para decidir si acepta el riesgo."
+permissions_ask:
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "Los permisos de $INSTDIR no quedaron endurecidos (codigo $0).$\r$\n$\r$\nSin ese endurecimiento, cualquier usuario autenticado de esta maquina puede sustituir un fichero que NEVEN ejecuta (startup\*.py, functions\*.R, TaskPane\*, los ejecutables de los motores) y esperar a que NEVEN lo ejecute.$\r$\n$\r$\nEl detalle de lo que se midio esta en la ventana de detalles de esta instalacion. Para volver a medirlo:$\r$\n    $INSTDIR\Set-InstallPermissions.ps1 -InstallDir $INSTDIR -AuditOnly$\r$\n$\r$\nSi cancela, los ficheros ya estan copiados pero NEVEN no quedara activado en Excel: ejecute $INSTDIR\Uninstall-NEVEN.exe para retirar lo copiado.$\r$\n$\r$\nDesea continuar sin el endurecimiento, aceptando ese riesgo?" IDOK permissions_done
+    Abort "Instalacion cancelada: los permisos de $INSTDIR no quedaron endurecidos."
+permissions_done:
+
 SectionEnd
 
 Section "Registro COM Ribbon" SecRibbon
@@ -305,6 +344,7 @@ Section "Uninstall"
     Delete "$INSTDIR\NEVEN_studio.ico"
     Delete "$INSTDIR\NEVEN Studio.vbs"
     Delete "$INSTDIR\Install-NEVEN.ps1"
+    Delete "$INSTDIR\Set-InstallPermissions.ps1"
     Delete "$INSTDIR\Uninstall-NEVEN.exe"
     
     ; Remove directories (only if empty or system-created)

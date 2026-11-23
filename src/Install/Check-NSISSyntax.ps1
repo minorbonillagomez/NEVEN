@@ -6,8 +6,8 @@
     makensis aborta en la pagina de bienvenida de NEVEN-Setup.nsi cuando Dist/
     no esta poblado ("Error while loading icon from Dist\NEVEN_studio.ico"), asi
     que nunca llega a parsear las secciones del final: el bloque de deteccion de
-    motores y el de permisos del script desplegado no se pueden comprobar sin un
-    empaquetado completo.
+    motores y los dos bloques de permisos de la instalacion no se pueden comprobar
+    sin un empaquetado completo.
 
     Este script copia el .nsi real a un directorio temporal, genera ahi un Dist/
     de relleno (un icono y dos BMP validos, mas un fichero por cada ruta que el
@@ -61,6 +61,7 @@ try {
     New-Item -ItemType Directory -Path $dist -Force | Out-Null
     Copy-Item $nsi $workDir
     Copy-Item (Join-Path $scriptDir 'Install-NEVEN.ps1') $workDir
+    Copy-Item (Join-Path $scriptDir 'Set-InstallPermissions.ps1') $workDir
     Copy-Item (Join-Path $scriptDir 'license.rtf') $workDir
 
     foreach ($f in $distFiles) { Set-Content -Path (Join-Path $dist $f) -Value 'placeholder' }
