@@ -85,6 +85,13 @@ EXE_MAP: dict[str, str] = {
     "julia":  "ControlJulia.exe",
 }
 
+#: Mapping from language id → NEVEN.<Lang> section of neven-config.json
+_ENGINE_CONFIG_SECTIONS: dict[str, str] = {
+    "r":      "R",
+    "python": "Python",
+    "julia":  "Julia",
+}
+
 #: Default values for the Standalone config section  (Requirement 9.1)
 _STANDALONE_DEFAULTS: dict[str, object] = {
     "controlDir":   r"C:\NEVEN\\",
@@ -234,6 +241,44 @@ def load_config(path: str) -> dict:
 # Language resolution  (Requirements 1.2, 9.6)
 # ---------------------------------------------------------------------------
 
+def languages_from_engine_config(config: dict) -> list[str]:
+    """Return the engines the user decided to run, read from *config*.
+
+    ``preferences.auto_start_engines`` is what NEVEN Studio writes when the
+    user saves the engine settings, so it wins.  When it is absent, the
+    ``NEVEN.<Lang>.enabled`` flags written by the installer are used instead:
+    a section with ``"enabled": false`` is skipped and a section that is
+    absent altogether means the engine is not declared, so it is not started
+    (same rule the XLL applies in ``language_service.cc``).
+
+    Parameters
+    ----------
+    config:
+        Full config dict as returned by :func:`load_config`.
+
+    Returns
+    -------
+    list[str]
+        Language identifiers, possibly empty.  Not validated here.
+    """
+    preferences = config.get("preferences")
+    if isinstance(preferences, dict):
+        auto_start = preferences.get("auto_start_engines")
+        if isinstance(auto_start, list):
+            return [str(x).strip().lower() for x in auto_start if str(x).strip()]
+
+    neven = config.get("NEVEN")
+    if not isinstance(neven, dict):
+        return []
+
+    enabled: list[str] = []
+    for lang, section_name in _ENGINE_CONFIG_SECTIONS.items():
+        section = neven.get(section_name)
+        if isinstance(section, dict) and section.get("enabled", True) is not False:
+            enabled.append(lang)
+    return enabled
+
+
 def resolve_languages(config: dict, arg: Optional[str]) -> set[str]:
     """Return the set of enabled language identifiers.
 
@@ -243,7 +288,8 @@ def resolve_languages(config: dict, arg: Optional[str]) -> set[str]:
        parse the comma-separated list and use it — ignoring the config file.
     2. Otherwise, read the ``languages`` list from the ``Standalone`` section
        of *config*.
-    3. If neither source is available, default to all three languages.
+    3. If neither source is available, use the engines the user persisted —
+       see :func:`languages_from_engine_config`.
 
     Each resolved identifier is validated against ``VALID_LANGUAGES``
     (``{"r", "python", "julia"}``).  Invalid entries are silently dropped
@@ -260,8 +306,9 @@ def resolve_languages(config: dict, arg: Optional[str]) -> set[str]:
     Returns
     -------
     set[str]
-        Non-empty subset of ``{"r", "python", "julia"}``.  If after
-        validation no valid languages remain, returns all three as a fallback.
+        Subset of ``{"r", "python", "julia"}``, possibly empty.  The engines
+        are optional: when none is enabled the launcher starts the HTTP server
+        on its own instead of trying all three.
     """
     candidates: list[str]
 
@@ -275,8 +322,14 @@ def resolve_languages(config: dict, arg: Optional[str]) -> set[str]:
         if isinstance(raw_langs, list) and raw_langs:
             candidates = [str(x).strip().lower() for x in raw_langs if str(x).strip()]
         else:
-            # No languages section — enable all three
-            return set(VALID_LANGUAGES)
+            # No Standalone.languages — honour what the user enabled
+            candidates = languages_from_engine_config(config)
+            if not candidates:
+                _warn(
+                    "No engine is enabled in the configuration — starting the "
+                    "server without engines"
+                )
+                return set()
 
     # Validate
     valid: set[str] = set()
@@ -290,8 +343,10 @@ def resolve_languages(config: dict, arg: Optional[str]) -> set[str]:
             )
 
     if not valid:
-        _warn("No valid languages remained after validation — enabling all languages")
-        return set(VALID_LANGUAGES)
+        _warn(
+            "No valid languages remained after validation — starting the "
+            "server without engines"
+        )
 
     return valid
 

@@ -37,6 +37,7 @@ import os
 import sys
 import json
 import ssl
+import shutil
 import time
 import threading
 import logging
@@ -340,6 +341,131 @@ def _get_engine_status() -> dict:
         # This handles Excel restarts, PID changes, and stale pipes
         pipe_path = _discover_pipe(lang)
         result[lang] = pipe_path is not None
+    return result
+
+
+# ─── Engine availability (motores opcionales) ─────────────────────────────────
+# NEVEN nunca instala un motor: solo informa y enlaza al sitio oficial.
+# Las URLs son las del catalogo de Common/engine_availability.h y de
+# Get-EngineStatus en Install/Install-NEVEN.ps1; las tres son HTTPS y fijas.
+
+_ENGINE_DOWNLOAD_URLS = {
+    "r":      "https://cran.r-project.org/bin/windows/base/",
+    "julia":  "https://julialang.org/downloads/",
+    "python": "https://www.python.org/downloads/",
+}
+
+#: Seccion NEVEN.<Lang> de neven-config.json que corresponde a cada motor.
+_ENGINE_CONFIG_SECTIONS = {"r": "R", "julia": "Julia", "python": "Python"}
+
+#: Fichero que debe existir bajo <home> para considerar el motor instalado.
+_ENGINE_HOME_MARKERS = {
+    "r":      os.path.join("bin", "x64", "R.dll"),
+    "julia":  os.path.join("bin", "julia.exe"),
+    "python": "python.exe",
+}
+
+#: Ejecutable buscado en el PATH cuando el config no declara un home valido.
+_ENGINE_PATH_EXECUTABLES = {"r": "R", "julia": "julia", "python": "python"}
+
+#: Config que escribe el instalador y que lee el XLL.
+_CONFIG_JSON_PATH = r"C:\NEVEN\neven-config.json"
+
+
+def _engine_home_is_installed(lang: str, home: str) -> bool:
+    """Return True when *home* holds a real installation of *lang*."""
+    marker = _ENGINE_HOME_MARKERS.get(lang)
+    if not home or marker is None:
+        return False
+    return os.path.isfile(os.path.join(home, marker))
+
+
+def _engine_home_from_executable(lang: str, exe_path: str) -> str:
+    """Walk up from *exe_path* to the directory that holds the engine marker."""
+    exe_dir = os.path.dirname(os.path.abspath(exe_path))
+    candidate = exe_dir
+    for _ in range(3):
+        if _engine_home_is_installed(lang, candidate):
+            return candidate
+        parent = os.path.dirname(candidate)
+        if parent == candidate:
+            break
+        candidate = parent
+    return exe_dir
+
+
+def _detect_engine_installations(config_path=None) -> dict:
+    r"""Describe every language engine without installing or downloading anything.
+
+    Combines the user's decision (``NEVEN.<Lang>.enabled`` and ``home`` in
+    neven-config.json) with a check of that home on disk, ``shutil.which`` as a
+    fallback when no home is declared, and the live pipe probe of
+    :func:`_get_engine_status`.
+
+    Args:
+        config_path: neven-config.json to read.  Defaults to
+            ``C:\NEVEN\neven-config.json``.  A missing or malformed file is not
+            an error: every engine is reported as not enabled.
+
+    Returns:
+        Dict keyed by ``"r"``, ``"julia"`` and ``"python"``; each value is
+        ``{"enabled": bool, "installed": bool, "home": str, "running": bool,
+        "url": str}``.  ``enabled`` mirrors the config exactly as the XLL reads
+        it (``language_service.cc``): a section without the ``enabled`` key is
+        enabled, a section that is absent altogether is not declared and
+        therefore not enabled.  ``installed`` is True when an installation was
+        found on this machine, ``running`` when the engine pipe answers, and
+        ``url`` is the official download page — informational only, NEVEN does
+        not install engines.
+    """
+    if config_path is None:
+        config_path = _CONFIG_JSON_PATH
+
+    config = {}
+    try:
+        with open(config_path, 'r', encoding='utf-8-sig') as f:
+            config = json.load(f)
+    except (OSError, ValueError) as exc:
+        _log.warning(f"[Engines] No se pudo leer {config_path}: {exc}")
+    if not isinstance(config, dict):
+        config = {}
+
+    neven = config.get('NEVEN')
+    if not isinstance(neven, dict):
+        neven = {}
+
+    running = _get_engine_status()
+    result = {}
+
+    for lang, url in _ENGINE_DOWNLOAD_URLS.items():
+        section = neven.get(_ENGINE_CONFIG_SECTIONS[lang])
+        declared = isinstance(section, dict)
+        if not declared:
+            section = {}
+
+        enabled = declared and section.get('enabled', True) is not False
+
+        home = section.get('home')
+        home = home.strip() if isinstance(home, str) else ''
+
+        installed = _engine_home_is_installed(lang, home)
+        if not installed and not home:
+            # Sin home declarado, el PATH es el ultimo recurso. Con un home
+            # declarado se respeta la decision del usuario: si ese home no
+            # contiene el motor, se informa como no instalado.
+            found = shutil.which(_ENGINE_PATH_EXECUTABLES[lang])
+            if found:
+                installed = True
+                home = _engine_home_from_executable(lang, found)
+
+        result[lang] = {
+            "enabled": enabled,
+            "installed": installed,
+            "home": home,
+            "running": bool(running.get(lang)),
+            "url": url,
+        }
+
     return result
 
 
@@ -659,6 +785,10 @@ class NEVENHandler(BaseHTTPRequestHandler):
         # ── Script engine endpoints (implemented in tasks 7.1 and 7.2) ──────
         if path == 'api/engines':
             self._handle_engines()
+            return
+
+        if path == 'api/engines/config':
+            self._handle_engines_config_get()
             return
 
         if path == 'api/functions':
@@ -4620,6 +4750,17 @@ else:
         """
         self._send_json(_get_engine_status())
 
+    def _handle_engines_config_get(self):
+        """GET /api/engines/config — report every engine without installing anything.
+
+        Returns:
+            JSON keyed by ``"r"``, ``"julia"`` and ``"python"`` with
+            ``{enabled, installed, home, running, url}`` per engine, as built
+            by :func:`_detect_engine_installations`.  ``GET /api/engines`` keeps
+            its boolean shape for the TaskPane dots and the Ribbon ping.
+        """
+        self._send_json(_detect_engine_installations())
+
     def _handle_engines_config(self, body: dict):
         """POST /api/engines/config — save engine startup configuration.
 
@@ -4640,7 +4781,7 @@ else:
         """
         try:
             # Load current config
-            config_path = r"C:\NEVEN\neven-config.json"
+            config_path = _CONFIG_JSON_PATH
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
             
@@ -4666,23 +4807,43 @@ else:
             # Also update preferences.auto_start_engines for start_studio.py
             if 'preferences' not in config:
                 config['preferences'] = {}
-            
+
+            # auto_start sale del enabled YA persistido de cada motor. Los
+            # defaults asimetricos anteriores (r/python True, julia False)
+            # reactivaban motores que el usuario no habia pedido.
             auto_start = []
-            if body.get('r', config.get('NEVEN', {}).get('R', {}).get('enabled', True)):
-                auto_start.append('r')
-            if body.get('python', config.get('NEVEN', {}).get('Python', {}).get('enabled', True)):
-                auto_start.append('python')
-            if body.get('julia', config.get('NEVEN', {}).get('Julia', {}).get('enabled', False)):
-                auto_start.append('julia')
-            
+            for lang in ('r', 'python', 'julia'):
+                section = config['NEVEN'].get(_ENGINE_CONFIG_SECTIONS[lang])
+                if isinstance(section, dict) and section.get('enabled', True) is not False:
+                    auto_start.append(lang)
+
             config['preferences']['auto_start_engines'] = auto_start
-            
-            # Save config
+
+            # Save config (UTF-8 sin BOM, INV-INS-04)
             with open(config_path, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=4, ensure_ascii=False)
-            
+
+            # Informar, nunca instalar: un motor habilitado que no esta en
+            # este equipo se devuelve como warning con su enlace oficial.
+            # El guardado NO se bloquea.
+            warnings = []
+            for lang, info in _detect_engine_installations(config_path).items():
+                if info["enabled"] and not info["installed"]:
+                    name = _ENGINE_CONFIG_SECTIONS[lang]
+                    warnings.append(
+                        f"{name} quedo habilitado pero no se encontro una "
+                        f"instalacion en este equipo. NEVEN no instala motores: "
+                        f"descargue {name} de {info['url']} y reinicie Excel."
+                    )
+
             _log.info(f"[Engines Config] Saved: R={body.get('r')}, Julia={body.get('julia')}, Python={body.get('python')}")
-            self._send_json({"status": "ok", "auto_start_engines": auto_start})
+            for warning in warnings:
+                _log.warning(f"[Engines Config] {warning}")
+            self._send_json({
+                "status": "ok",
+                "auto_start_engines": auto_start,
+                "warnings": warnings,
+            })
             
         except Exception as e:
             _log.error(f"[Engines Config] Error saving: {e}")
