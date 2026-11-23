@@ -1147,7 +1147,28 @@ async function onRunScriptTabActivated() {
   ]);
 }
 
-// Stub — full implementation in task 10.2
+// Nombre visible de cada motor (igual que las secciones de neven-config.json)
+const ENGINE_LABELS = { r: 'R', python: 'Python', julia: 'Julia' };
+
+// Ultimo estado conocido de los motores, tal como lo devuelve
+// GET /api/engines/config: {enabled, installed, home, running, url} por motor.
+// Los motores son opcionales: lo que falta se informa, nunca se oculta.
+let ENGINE_INFO = {};
+
+// Anota las opciones del selector de lenguaje sin quitar ninguna: el usuario
+// tiene que poder ver que el motor existe y por que no esta disponible.
+function annotateScriptLangOptions() {
+  const select = document.getElementById('script-lang');
+  if (!select) return;
+  Array.prototype.forEach.call(select.options, opt => {
+    const label = ENGINE_LABELS[opt.value] || opt.value;
+    const info = ENGINE_INFO[opt.value];
+    opt.textContent = (info && info.installed === false)
+      ? label + ' (no instalado)'
+      : label;
+  });
+}
+
 async function refreshEngineStatus() {
   // Mark all dots as "checking" while the request is in flight
   ['r', 'python', 'julia'].forEach(lang => {
@@ -1155,27 +1176,37 @@ async function refreshEngineStatus() {
     if (dot) dot.className = 'engine-dot checking';
   });
   try {
-    const resp = await fetch(API_BASE + '/api/engines');
+    const resp = await fetch(API_BASE + '/api/engines/config');
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
+    ENGINE_INFO = await resp.json();
     ['r', 'python', 'julia'].forEach(lang => {
+      const info = ENGINE_INFO[lang] || {};
       const dot = document.getElementById(`engine-status-${lang}`);
       if (dot) {
-        dot.className = 'engine-dot ' + (data[lang] ? 'available' : 'unavailable');
-        dot.title = lang.toUpperCase() + ': ' + (data[lang] ? 'running' : 'stopped');
+        dot.className = 'engine-dot ' + (info.running ? 'available' : 'unavailable');
+        dot.title = ENGINE_LABELS[lang] + ': ' + engineStatusText(info);
       }
     });
+    annotateScriptLangOptions();
   } catch (err) {
     // Server unreachable — mark all as unavailable and log for debugging
     ['r', 'python', 'julia'].forEach(lang => {
       const dot = document.getElementById(`engine-status-${lang}`);
       if (dot) {
         dot.className = 'engine-dot unavailable';
-        dot.title = lang.toUpperCase() + ': server unreachable';
+        dot.title = ENGINE_LABELS[lang] + ': servidor no disponible';
       }
     });
     console.warn('[NEVEN] refreshEngineStatus failed:', err.message);
   }
+}
+
+// Motivo en una linea, con el mismo vocabulario que NEVEN.Status
+function engineStatusText(info) {
+  if (!info) return 'Sin informacion';
+  if (info.running) return 'Conectado';
+  if (!info.enabled) return 'Desactivado';
+  return info.installed ? 'Habilitado, sin conectar' : 'No instalado';
 }
 
 // ─── Run Script: Execute ────────────────────────────────────────────────────
@@ -1184,6 +1215,12 @@ async function runScript() {
   const lang = document.getElementById('script-lang').value;
   const code = document.getElementById('script-input').value.trim();
   if (!code) return;
+  const info = ENGINE_INFO[lang];
+  if (info && info.installed === false) {
+    // Informar el motivo antes de ejecutar: NEVEN no instala motores.
+    showToast(ENGINE_LABELS[lang] + ' no está instalado en este equipo. '
+      + 'Descárguelo de ' + info.url + ' y actívelo en Settings > Motores.');
+  }
   setScriptBusy(true);
   try {
     const res = await apiCall('/api/' + lang, { code });
@@ -4689,10 +4726,12 @@ async function loadEnginesStatus() {
   }
   
   try {
-    // Endpoint correcto es /api/engines (no /api/engines/status)
-    const resp = await fetch(API_BASE + '/api/engines');
+    // /api/engines/config trae la decisión del usuario y la detección;
+    // /api/engines solo dice si el pipe responde.
+    const resp = await fetch(API_BASE + '/api/engines/config');
     if (!resp.ok) throw new Error('Error ' + resp.status);
-    const data = await resp.json();
+    ENGINE_INFO = await resp.json();
+    annotateScriptLangOptions();
     
     for (const eng of engines) {
       const indicator = document.getElementById('engine-' + eng + '-indicator');
@@ -4702,24 +4741,38 @@ async function loadEnginesStatus() {
       
       if (!indicator) continue;
       
-      // El endpoint devuelve {r: true/false, python: true/false, julia: true/false}
-      const connected = data[eng] === true;
+      const info = ENGINE_INFO[eng] || {};
+      const text = engineStatusText(info);
       
-      if (connected) {
-        indicator.style.background = '#4ade80';
-        indicator.title = 'Conectado';
-        status.textContent = 'Conectado';
-        version.textContent = '—';  // Versión no disponible en este endpoint
+      // Verde: conectado. Ámbar: habilitado pero sin conectar.
+      // Rojo: habilitado y no instalado. Gris: desactivado por el usuario.
+      if (info.running) indicator.style.background = '#4ade80';
+      else if (!info.enabled) indicator.style.background = '#666';
+      else if (info.installed) indicator.style.background = '#fbbf24';
+      else indicator.style.background = '#f66';
+      
+      indicator.title = text;
+      status.textContent = text;
+      
+      // Ruta detectada o enlace al sitio oficial (sin innerHTML, INV-TF-03)
+      version.textContent = '';
+      if (info.installed && info.home) {
+        version.textContent = info.home;
+      } else if (info.url) {
+        const link = document.createElement('a');
+        link.href = info.url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = 'Descargar ' + (ENGINE_LABELS[eng] || eng);
+        version.appendChild(link);
       } else {
-        indicator.style.background = '#f66';
-        indicator.title = 'Desconectado';
-        status.textContent = 'Desconectado';
         version.textContent = '—';
       }
       
-      // Actualizar toggles según estado actual
+      // El toggle refleja la decisión guardada, no la conexión: un motor
+      // habilitado pero sin arrancar no debe desactivarse al guardar.
       if (toggle) {
-        toggle.checked = connected;
+        toggle.checked = info.enabled === true;
       }
     }
     
@@ -4741,14 +4794,23 @@ function onEngineToggleChange(e) {
   }
 }
 
+// Valor que se va a guardar para un motor. Sin toggle en el DOM se respeta
+// lo ya guardado, para no habilitar un motor que el usuario no pidió.
+function engineToggleValue(lang) {
+  const toggle = document.getElementById('toggle-engine-' + lang);
+  if (toggle) return toggle.checked;
+  const info = ENGINE_INFO[lang];
+  return info ? info.enabled === true : false;
+}
+
 async function saveEnginesConfig() {
   const resultDiv = document.getElementById('engines-save-result');
   const saveBtn = document.getElementById('btn-engines-save');
   
   const config = {
-    r: document.getElementById('toggle-engine-r')?.checked ?? true,
-    julia: document.getElementById('toggle-engine-julia')?.checked ?? true,
-    python: document.getElementById('toggle-engine-python')?.checked ?? true
+    r: engineToggleValue('r'),
+    julia: engineToggleValue('julia'),
+    python: engineToggleValue('python')
   };
   
   saveBtn.disabled = true;
@@ -4764,15 +4826,25 @@ async function saveEnginesConfig() {
     const data = await resp.json();
     
     if (resp.ok) {
+      // El servidor avisa de los motores habilitados que no están en este
+      // equipo, con su enlace oficial. El guardado no se bloquea.
+      const warnings = Array.isArray(data.warnings) ? data.warnings : [];
+      
       resultDiv.style.display = 'block';
       resultDiv.style.background = 'var(--success-bg, #1a3320)';
       resultDiv.style.color = 'var(--success-text, #4ade80)';
-      resultDiv.textContent = '✓ Configuración guardada. Los cambios se aplicarán al reiniciar Excel.';
+      resultDiv.textContent = '✓ Configuración guardada. Los cambios se aplicarán al reiniciar Excel.'
+        + (warnings.length ? ' ' + warnings.join(' ') : '');
       
       saveBtn.style.background = '';
       saveBtn.textContent = 'Guardar Configuración';
       
-      showToast('Configuración de motores guardada');
+      showToast(warnings.length
+        ? warnings.join(' ')
+        : 'Configuración de motores guardada');
+      
+      // Refrescar el panel: el estado guardado manda sobre los toggles.
+      await loadEnginesStatus();
     } else {
       throw new Error(data.error || 'Error guardando');
     }
