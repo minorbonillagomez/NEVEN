@@ -411,6 +411,79 @@ TEST_F(RepoHygieneTests, RealConfigIsNotInTheRepository) {
            "only Install/neven-config.template.json is versioned (INV-INS-01)";
 }
 
+// --- Install directory permission contract tests (INV-INS-05) ---
+
+TEST_F(RepoHygieneTests, InstallerChecksEveryPermissionOperationExitCode) {
+    // INV-INS-05: toda operacion de permisos comprueba su codigo de salida. El
+    // .nsi hacia Pop $0 de su icacls y solo lo mandaba a DetailPrint, asi que un
+    // endurecimiento fallido quedaba callado mientras la instalacion se anunciaba
+    // como correcta. El endurecimiento real no se puede ejercitar aqui (pide un
+    // Windows con el arbol instalado, e INV-TEST-03 mantiene la suite libre de
+    // eso), pero que cada resultado se comprueba es una propiedad de estos dos
+    // ficheros. La medicion de las ACL vive en tests/test_install_permissions.py.
+    std::string nsi = ReadProjectFile("Install/NEVEN-Setup.nsi");
+    ASSERT_FALSE(nsi.empty()) << "Could not read Install/NEVEN-Setup.nsi";
+
+    EXPECT_EQ(nsi.find("icacls.exe"), std::string::npos)
+        << "NEVEN-Setup.nsi must not run icacls inline: los permisos los aplica "
+           "Set-InstallPermissions.ps1, que comprueba cada operacion (INV-INS-05)";
+    EXPECT_NE(nsi.find("Set-InstallPermissions.ps1"), std::string::npos)
+        << "NEVEN-Setup.nsi must call Set-InstallPermissions.ps1 (INV-INS-05)";
+
+    // Cada Pop $0 tiene que acabar en un StrCmp $0: un DetailPrint solo deja el
+    // resultado en una ventana colapsada por defecto. La ventana es amplia porque
+    // entre las dos lineas vive el comentario que explica el caso de fallo.
+    const std::string pop = "Pop $0";
+    const std::string check = "StrCmp $0";
+    size_t pos = 0;
+    int pops = 0;
+    while ((pos = nsi.find(pop, pos)) != std::string::npos) {
+        pops++;
+        size_t window_end = std::min(nsi.size(), pos + 900);
+        EXPECT_NE(nsi.substr(pos, window_end - pos).find(check), std::string::npos)
+            << "el Pop $0 en el byte " << pos << " de NEVEN-Setup.nsi no comprueba "
+               "su codigo de salida con StrCmp $0 (INV-INS-05)";
+        pos += pop.size();
+    }
+    EXPECT_GE(pops, 3) << "NEVEN-Setup.nsi debe conservar el sondeo de permisos, la "
+                          "deteccion de motores y la aplicacion de permisos";
+
+    std::string installer = ReadProjectFile("Install/Install-NEVEN.ps1");
+    ASSERT_FALSE(installer.empty()) << "Could not read Install/Install-NEVEN.ps1";
+    EXPECT_NE(installer.find("Set-InstallPermissions.ps1"), std::string::npos)
+        << "Install-NEVEN.ps1 must harden the install directory through "
+           "Set-InstallPermissions.ps1 (INV-INS-05)";
+    EXPECT_NE(installer.find("-Probe"), std::string::npos)
+        << "Install-NEVEN.ps1 must probe whether the hardening is possible before "
+           "deploying anything (INV-INS-05)";
+}
+
+TEST_F(RepoHygieneTests, ConfigureOnlyDoesNotTouchPermissions) {
+    // -ConfigureOnly solo redetecta motores y parchea neven-config.json: tiene que
+    // seguir funcionando sin administrador, asi que su bloque no puede invocar el
+    // script de permisos, icacls, Set-Acl ni RunAs.
+    std::string installer = ReadProjectFile("Install/Install-NEVEN.ps1");
+    ASSERT_FALSE(installer.empty()) << "Could not read Install/Install-NEVEN.ps1";
+
+    size_t start = installer.find("if ($ConfigureOnly) {");
+    ASSERT_NE(start, std::string::npos)
+        << "Install-NEVEN.ps1 must keep the -ConfigureOnly block";
+    size_t end = installer.find("Exit-Installer 0", start);
+    ASSERT_NE(end, std::string::npos)
+        << "the -ConfigureOnly block must end in Exit-Installer 0, before any "
+           "permission work";
+    std::string block = installer.substr(start, end - start);
+
+    for (const std::string& forbidden : {std::string("Set-InstallPermissions"),
+                                         std::string("icacls"),
+                                         std::string("Set-Acl"),
+                                         std::string("RunAs")}) {
+        EXPECT_EQ(block.find(forbidden), std::string::npos)
+            << "-ConfigureOnly must not mention " << forbidden
+            << ": reconfigurar motores no pide elevacion";
+    }
+}
+
 TEST_F(RepoHygieneTests, AddinPackagesTheConfigTemplate) {
     std::string content = ReadProjectFile("Addin/CMakeLists.txt");
     ASSERT_FALSE(content.empty())

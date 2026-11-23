@@ -26,6 +26,21 @@ _POWERSHELL = shutil.which("powershell.exe")
 _ENGINES = (("R", "r"), ("Julia", "julia"), ("Python", "python"))
 
 
+def _sddl(path):
+    """Descriptor de seguridad de una ruta, tal como esta en el disco."""
+    command = "(Get-Acl -LiteralPath '{0}').GetSecurityDescriptorSddlForm('All')".format(
+        path.replace("'", "''")
+    )
+    proc = subprocess.run(
+        [_POWERSHELL, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    return proc.stdout.strip()
+
+
 @pytest.fixture(scope="module")
 def configured(tmp_path_factory):
     """Corre -ConfigureOnly sobre una copia de la plantilla y devuelve el resultado."""
@@ -47,6 +62,13 @@ def configured(tmp_path_factory):
     config["preferences"] = {"auto_start_engines": ["julia"]}
     config_path.write_text(json.dumps(config, indent=4), encoding="utf-8")
 
+    # Reconfigurar motores no reinstala nada, asi que no puede pedir elevacion ni
+    # tocar permisos: se mide el descriptor de seguridad antes y despues.
+    sddl_before = {
+        "dir": _sddl(str(work)),
+        "config": _sddl(str(config_path)),
+    }
+
     proc = subprocess.run(
         [
             _POWERSHELL, "-NoProfile", "-ExecutionPolicy", "Bypass",
@@ -65,6 +87,9 @@ def configured(tmp_path_factory):
         "config": json.loads(raw.decode("utf-8")),
         "manual_home": str(manual_home),
         "gone_home": str(gone_home),
+        "output": proc.stdout + proc.stderr,
+        "sddl_before": sddl_before,
+        "sddl_after": {"dir": _sddl(str(work)), "config": _sddl(str(config_path))},
     }
 
 
@@ -112,3 +137,18 @@ def test_auto_start_engines_is_derived_from_enabled(configured):
     auto_start = config["preferences"]["auto_start_engines"]
     assert isinstance(auto_start, list)
     assert set(auto_start) == expected
+
+
+def test_configure_only_leaves_the_permissions_untouched(configured):
+    # El endurecimiento de $INSTDIR (INV-INS-05) vive despues del Exit-Installer 0
+    # de -ConfigureOnly: si el modo tocase permisos, el SDDL cambiaria.
+    assert configured["sddl_after"]["dir"] == configured["sddl_before"]["dir"]
+    assert configured["sddl_after"]["config"] == configured["sddl_before"]["config"]
+
+
+def test_configure_only_never_asks_for_elevation(configured):
+    # Reconfigurar motores tiene que seguir funcionando sin administrador, asi que
+    # el modo no puede invocar el script de permisos, icacls ni RunAs.
+    output = configured["output"]
+    for forbidden in ("Set-InstallPermissions", "icacls", "RunAs", "Set-Acl"):
+        assert forbidden not in output, forbidden
