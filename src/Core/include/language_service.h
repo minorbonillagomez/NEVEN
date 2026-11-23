@@ -35,6 +35,7 @@
 #include "json11/json11.hpp"
 #include "language_desc.h"
 #include "Constants.h"
+#include "engine_availability.h"
 
 /** @brief Per-language process health status. */
 enum class HealthStatus {
@@ -109,6 +110,9 @@ protected:
   /** @brief Whether the language service has been configured. */
   bool configured_;
 
+  /** @brief Why the service did or did not end up configured. */
+  rj2xcl::LanguageConfigState config_state_ = rj2xcl::LanguageConfigState::NotInConfig;
+
   /** @brief Whether this language uses lazy loading (user activates on demand). */
   bool lazy_load_;
 
@@ -169,6 +173,12 @@ public:
    * @return true if configured.
    */
   bool configured() { return configured_; }
+
+  /**
+   * @brief Returns why the service did or did not end up configured.
+   * @return Configured, NotInConfig, DisabledByUser or NotFound.
+   */
+  rj2xcl::LanguageConfigState config_state() const { return config_state_; }
 
   /**
    * @brief Whether this language uses lazy loading.

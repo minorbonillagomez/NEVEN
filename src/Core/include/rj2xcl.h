@@ -142,6 +142,7 @@ public:
   void RegisterLanguageCalls();
   std::shared_ptr<LanguageService> GetLanguageService(uint32_t key);
   void CallLanguage(uint32_t language_key, RJ2XCLBuffers::CallResponse &response, RJ2XCLBuffers::CallResponse &call);
+  void CallLanguageByName(const std::string &language_name, RJ2XCLBuffers::CallResponse &response, RJ2XCLBuffers::CallResponse &call);
 
 public:
 

@@ -57,7 +57,10 @@ LanguageService::LanguageService(CallbackInfo &callback_info, COMObjectMap &obje
   // comment out language (or delete) to deactivate.
   
   configured_ = !(config["NEVEN"][language_descriptor_.name_].is_null());
-  if (!configured_) return;
+  if (!configured_) {
+      config_state_ = rj2xcl::LanguageConfigState::NotInConfig;
+      return;
+  }
 
   // Allow disabling a language via "enabled": false in neven-config.json
   // e.g. "Julia": { "home": "", "enabled": false }
@@ -65,6 +68,7 @@ LanguageService::LanguageService(CallbackInfo &callback_info, COMObjectMap &obje
   if (config["NEVEN"][language_descriptor_.name_]["enabled"].is_bool() &&
       !config["NEVEN"][language_descriptor_.name_]["enabled"].bool_value()) {
       configured_ = false;
+      config_state_ = rj2xcl::LanguageConfigState::DisabledByUser;
       RJ2XCL_LOG_INFO("Language '%s' disabled via configuration (enabled: false)",
           language_descriptor_.name_.c_str());
       return;
@@ -96,12 +100,14 @@ LanguageService::LanguageService(CallbackInfo &callback_info, COMObjectMap &obje
   if (!installation.home_path.empty()) {
       language_descriptor_.home_ = installation.home_path;
       configured_ = true;
+      config_state_ = rj2xcl::LanguageConfigState::Configured;
       RJ2XCL_LOG_INFO("Discovered %s version %s at %s", 
           language_descriptor_.name_.c_str(), 
           installation.version.c_str(), 
           installation.home_path.c_str());
   } else {
       configured_ = false;
+      config_state_ = rj2xcl::LanguageConfigState::NotFound;
       RJ2XCL_LOG_ERR("Failed to discover %s installation", language_descriptor_.name_.c_str());
       return;
   }

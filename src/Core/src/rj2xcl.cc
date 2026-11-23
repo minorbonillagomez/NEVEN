@@ -592,6 +592,10 @@ void RJ2XCL_Engine::CallLanguage(uint32_t language_key, RJ2XCLBuffers::CallRespo
   rj2xcl::LanguageManager::Instance().CallLanguage(language_key, response, call);
 }
 
+void RJ2XCL_Engine::CallLanguageByName(const std::string &language_name, RJ2XCLBuffers::CallResponse &response, RJ2XCLBuffers::CallResponse &call) {
+  rj2xcl::LanguageManager::Instance().CallLanguageByName(language_name, response, call);
+}
+
 void RJ2XCL_Engine::Close() {
 
   // Shutdown Pluto server first (if running)

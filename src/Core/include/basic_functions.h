@@ -172,8 +172,36 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_CallLanguage_ ## num ( \
 	, LPXLOPER12 input_15 = 0 \
 ){ return RJ_Call_Generic( num - 1000, func, input_0, input_1, input_2, input_3, input_4, input_5, input_6, input_7, input_8, input_9, input_10, input_11, input_12, input_13, input_14, input_15 ); }
 
-__inline LPXLOPER12 RJ_Call_Generic(
+// not __inline: the body is a thin forwarder to the shared dispatcher, so the
+// compiler would inline it away and leave no symbol for the test binary.
+LPXLOPER12 RJ_Call_Generic(
   uint32_t language_key,
+  LPXLOPER12 func,
+  LPXLOPER12 input_0 = 0
+  , LPXLOPER12 input_1 = 0
+  , LPXLOPER12 input_2 = 0
+  , LPXLOPER12 input_3 = 0
+  , LPXLOPER12 input_4 = 0
+  , LPXLOPER12 input_5 = 0
+  , LPXLOPER12 input_6 = 0
+  , LPXLOPER12 input_7 = 0
+  , LPXLOPER12 input_8 = 0
+  , LPXLOPER12 input_9 = 0
+  , LPXLOPER12 input_10 = 0
+  , LPXLOPER12 input_11 = 0
+  , LPXLOPER12 input_12 = 0
+  , LPXLOPER12 input_13 = 0
+  , LPXLOPER12 input_14 = 0
+  , LPXLOPER12 input_15 = 0
+);
+
+/**
+ * call dispatcher that resolves the engine by name instead of by position.
+ * used by the static worksheet functions, which are registered whether or not
+ * their engine is present (NevenX.R/J/P, NEVEN.Chart.R/P/J).
+ */
+LPXLOPER12 RJ_Call_ByName(
+  const char* language_name,
   LPXLOPER12 func,
   LPXLOPER12 input_0 = 0
   , LPXLOPER12 input_1 = 0

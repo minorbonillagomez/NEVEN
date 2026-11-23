@@ -4,6 +4,7 @@
 
 #include "LanguageManager.h"
 #include "ConfigService.h"
+#include "engine_availability.h"
 #include <iostream>
 
 namespace rj2xcl {
@@ -23,6 +24,9 @@ namespace rj2xcl {
                 auto service = std::make_shared<LanguageService>(callback_info, object_map, dev_flags, config, home_directory, item);
                 if (service->configured()) {
                     language_services_.push_back(service);
+                }
+                else {
+                    unavailable_languages_.push_back({ service->name(), service->config_state() });
                 }
             }
         }
@@ -49,6 +53,7 @@ namespace rj2xcl {
             service->Shutdown();
         }
         language_services_.clear();
+        unavailable_languages_.clear();
     }
 
     std::shared_ptr<LanguageService> LanguageManager::GetLanguageService(uint32_t key) {
@@ -79,6 +84,32 @@ namespace rj2xcl {
         } else {
             response.set_err("invalid language key");
         }
+    }
+
+    LanguageConfigState LanguageManager::GetLanguageState(const std::string &name) {
+        if (GetLanguageService(name)) {
+            return LanguageConfigState::Configured;
+        }
+        for (const auto& entry : unavailable_languages_) {
+            if (entry.name == name) {
+                return entry.state;
+            }
+        }
+        return LanguageConfigState::NotInConfig;
+    }
+
+    void LanguageManager::CallLanguageByName(const std::string &name, RJ2XCLBuffers::CallResponse &response, RJ2XCLBuffers::CallResponse &call) {
+        auto service = GetLanguageService(name);
+        if (!service) {
+            response.set_err(EngineUnavailableMessage(name, GetLanguageState(name)));
+            return;
+        }
+        // Health-aware dispatch — skip unavailable services (same rule as CallLanguage)
+        if (service->GetHealthStatus() == HealthStatus::Unavailable) {
+            response.set_err(service->name() + " is currently unavailable.");
+            return;
+        }
+        service->Call(response, call);
     }
 
     void LanguageManager::RegisterLanguageCalls() {

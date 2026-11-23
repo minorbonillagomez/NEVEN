@@ -5,6 +5,7 @@
  */
 
 #include "DiscoveryService.h"
+#include "LogService.h"
 #include <windows.h>
 #include <algorithm>
 #include <iostream>
@@ -236,15 +237,22 @@ namespace rj2xcl {
                                                          const std::string& preferred_tag,
                                                          const std::string& override_home) {
         
-        // 1. If override provided, use it
+        // 1. If a valid override is provided, use it. An override left over from
+        //    packaging, or pointing at an engine the user removed, must not make
+        //    an absent engine look present: fall back to automatic detection.
         if (!override_home.empty()) {
-            LanguageInstallation inst;
-            inst.name = language_name;
-            inst.version = "Override";
-            inst.home_path = override_home;
-            inst.is_64bit = true;
-            inst.priority = 1000;
-            return inst;
+            DWORD attributes = GetFileAttributesA(override_home.c_str());
+            if (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                LanguageInstallation inst;
+                inst.name = language_name;
+                inst.version = "Override";
+                inst.home_path = override_home;
+                inst.is_64bit = true;
+                inst.priority = 1000;
+                return inst;
+            }
+            RJ2XCL_LOG_WARN("%s home override '%s' is not an existing directory - falling back to automatic detection",
+                language_name.c_str(), override_home.c_str());
         }
 
         std::vector<LanguageInstallation> candidates;

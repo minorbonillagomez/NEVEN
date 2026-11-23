@@ -12,6 +12,7 @@ set(COMMON_SOURCES
     debug_functions.cc
     LogService.cc
     DiscoveryService.cc
+    engine_availability.cc
     EnvService.cc
     QuartoService.cc
     child_process_log.cc

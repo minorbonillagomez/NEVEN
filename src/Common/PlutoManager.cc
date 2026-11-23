@@ -10,6 +10,7 @@
 #include "LogService.h"
 #include "ConfigService.h"
 #include "DiscoveryService.h"
+#include "engine_availability.h"
 
 #include <sstream>
 #include <winhttp.h>
@@ -106,7 +107,7 @@ std::string PlutoManager::StartPluto() {
     }
 
     if (julia_path_.empty()) {
-        return "Pluto server failed to start — check Julia installation";
+        return EngineUnavailableMessage("Julia", LanguageConfigState::NotFound);
     }
 
     // Kill any zombie julia processes occupying the Pluto port from a previous session.
@@ -163,7 +164,7 @@ std::string PlutoManager::StartPluto() {
         DWORD err = GetLastError();
         state_ = State::STOPPED;
         RJ2XCL_LOG_ERR("Failed to launch Pluto process: error %d", err);
-        return "Pluto server failed to start — check Julia installation";
+        return "Pluto server failed to start - check the Julia installation";
     }
 
     pluto_process_handle_ = pi.hProcess;
@@ -181,7 +182,7 @@ std::string PlutoManager::StartPluto() {
         pluto_process_id_ = 0;
         state_ = State::STOPPED;
         RJ2XCL_LOG_ERR("Pluto server failed to start within 30 seconds");
-        return "Pluto server failed to start — check Julia installation";
+        return "Pluto server failed to start - check the Julia installation";
     }
 
     state_ = State::RUNNING;

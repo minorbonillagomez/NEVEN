@@ -21,6 +21,12 @@
 
 namespace rj2xcl {
 
+    /** @brief An engine declared in the catalog that did not end up configured. */
+    struct UnavailableLanguage {
+        std::string name;             ///< Engine display name
+        LanguageConfigState state;    ///< Why it is not available
+    };
+
     /**
      * @brief Dynamic registry for scripting language services.
      *
@@ -68,6 +74,34 @@ namespace rj2xcl {
          */
         void CallLanguage(uint32_t language_key, RJ2XCLBuffers::CallResponse &response, RJ2XCLBuffers::CallResponse &call);
 
+        /**
+         * @brief Dispatches a function call to an engine resolved by name.
+         *
+         * Static worksheet functions (NevenX.R/J/P, NEVEN.Chart.R/P/J,
+         * NEVEN.Pluto.Data) are registered whether or not their engine is
+         * present, so they cannot key on the position of the service inside
+         * language_services_ — that vector only holds configured engines.
+         * When the engine is missing the response carries the reason and the
+         * official download link, because INV-CORE-01 forbids re-registering
+         * functions outside xlAutoOpen.
+         *
+         * @param name Engine display name ("R", "Julia", "Python").
+         * @param response Protobuf response to populate with the result.
+         * @param call Protobuf call containing function name and arguments.
+         */
+        void CallLanguageByName(const std::string &name, RJ2XCLBuffers::CallResponse &response, RJ2XCLBuffers::CallResponse &call);
+
+        /** @brief Returns the engines that did not end up configured, with the reason. */
+        const std::vector<UnavailableLanguage>& GetUnavailableLanguages() const { return unavailable_languages_; }
+
+        /**
+         * @brief Returns the configuration state of an engine by name.
+         * @param name Engine display name.
+         * @return Configured if the engine is registered, otherwise the reason
+         *         recorded during ConfigureLanguages (NotInConfig if unknown).
+         */
+        LanguageConfigState GetLanguageState(const std::string &name);
+
         /** @brief Registers all language function descriptors with Excel's function wizard. */
         void RegisterLanguageCalls();
 
@@ -101,6 +135,16 @@ namespace rj2xcl {
         LanguageManager& operator=(const LanguageManager&) = delete;
 
         std::vector<std::shared_ptr<LanguageService>> language_services_;
+
+        /**
+         * @brief Engines that were declared but are not usable.
+         *
+         * Kept apart from language_services_ on purpose: GetServices() feeds the
+         * prefix registration in excel_api_functions.cc, where the position of a
+         * service is its numeric key. Padding the vector with unusable engines
+         * would register NEVEN.J without Julia and shift every key.
+         */
+        std::vector<UnavailableLanguage> unavailable_languages_;
     };
 
 } // namespace rj2xcl

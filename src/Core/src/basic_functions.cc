@@ -31,6 +31,7 @@
 #include "InputSanitizer.h"
 #include "ConfigService.h"
 #include "ViewerManager.h"
+#include "engine_availability.h"
 
 // WinHTTP — usado por RJ_IA_Contexto para POST a localhost:5555
 #include <winhttp.h>
@@ -191,7 +192,16 @@ LPXLOPER12 RJ_Exec_Generic(uint32_t language_key, LPXLOPER12 code) {
 
 }
 
-LPXLOPER12 RJ_Call_Generic(uint32_t language_key, LPXLOPER12 func,
+/**
+ * @brief Shared body of the generic call dispatchers.
+ *
+ * Dispatches by engine name when language_name is not null, by numeric key
+ * otherwise. The numeric path stays because the BCALL/BEXEC macros key on the
+ * position of the service inside LanguageManager::GetServices(), which is how
+ * excel_api_functions.cc builds RJ_ExecLanguage_<1000 + lang_index>.
+ */
+static LPXLOPER12 RJ_Call_Dispatch(const char* language_name, uint32_t language_key,
+  LPXLOPER12 func,
   LPXLOPER12 arg0, LPXLOPER12 arg1, LPXLOPER12 arg2, LPXLOPER12 arg3,
   LPXLOPER12 arg4, LPXLOPER12 arg5, LPXLOPER12 arg6, LPXLOPER12 arg7,
   LPXLOPER12 arg8, LPXLOPER12 arg9, LPXLOPER12 arg10, LPXLOPER12 arg11,
@@ -223,7 +233,12 @@ LPXLOPER12 RJ_Call_Generic(uint32_t language_key, LPXLOPER12 func,
     Convert::XLOPERToVariable(argument, arglist[i]);
   }
 
-  RJ2XCL_Engine::Instance()->CallLanguage(language_key, response, call);
+  if (language_name) {
+    RJ2XCL_Engine::Instance()->CallLanguageByName(language_name, response, call);
+  }
+  else {
+    RJ2XCL_Engine::Instance()->CallLanguage(language_key, response, call);
+  }
 
   if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kResult) {
     Convert::VariableToXLOPER(&rslt, response.result());
@@ -239,6 +254,30 @@ LPXLOPER12 RJ_Call_Generic(uint32_t language_key, LPXLOPER12 func,
   }
 
   return &rslt;
+
+}
+
+LPXLOPER12 RJ_Call_Generic(uint32_t language_key, LPXLOPER12 func,
+  LPXLOPER12 arg0, LPXLOPER12 arg1, LPXLOPER12 arg2, LPXLOPER12 arg3,
+  LPXLOPER12 arg4, LPXLOPER12 arg5, LPXLOPER12 arg6, LPXLOPER12 arg7,
+  LPXLOPER12 arg8, LPXLOPER12 arg9, LPXLOPER12 arg10, LPXLOPER12 arg11,
+  LPXLOPER12 arg12, LPXLOPER12 arg13, LPXLOPER12 arg14, LPXLOPER12 arg15) {
+
+  return RJ_Call_Dispatch(nullptr, language_key, func,
+    arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
+    arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
+
+}
+
+LPXLOPER12 RJ_Call_ByName(const char* language_name, LPXLOPER12 func,
+  LPXLOPER12 arg0, LPXLOPER12 arg1, LPXLOPER12 arg2, LPXLOPER12 arg3,
+  LPXLOPER12 arg4, LPXLOPER12 arg5, LPXLOPER12 arg6, LPXLOPER12 arg7,
+  LPXLOPER12 arg8, LPXLOPER12 arg9, LPXLOPER12 arg10, LPXLOPER12 arg11,
+  LPXLOPER12 arg12, LPXLOPER12 arg13, LPXLOPER12 arg14, LPXLOPER12 arg15) {
+
+  return RJ_Call_Dispatch(language_name, 0, func,
+    arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
+    arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
 
 }
 
@@ -833,13 +872,13 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_PlutoData(LPXLOPER12 data_
     }
     julia_code += "])";
 
-    // Send to Julia via pipe (language key 1 = Julia)
+    // Send to Julia via pipe (resolved by name: the vector only holds configured engines)
     RJ2XCLBuffers::CallResponse call, response;
     call.set_wait(true);
     auto message = call.mutable_code();
     message->add_line(julia_code);
 
-    RJ2XCL_Engine::Instance()->CallLanguage(1, response, call);
+    RJ2XCL_Engine::Instance()->CallLanguageByName("Julia", response, call);
 
     if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kResult) {
         Convert::VariableToXLOPER(&rslt, response.result());
@@ -1051,7 +1090,8 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_IniciarJulia() {
     }
 
     if (!julia_svc) {
-        Convert::StringToXLOPER(&rslt, "ERROR: Julia no configurada en neven-languages.json", false);
+        std::string msg = "ERROR: " + rj2xcl::EngineUnavailableMessage("Julia", lm.GetLanguageState("Julia"));
+        Convert::StringToXLOPER(&rslt, msg, false);
         rslt.xltype |= xlbitDLLFree;
         return &rslt;
     }
@@ -1071,7 +1111,9 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_IniciarJulia() {
 
     if (!julia_svc->connected()) {
 
-        Convert::StringToXLOPER(&rslt, "ERROR: No se pudo conectar a Julia. Verifique la instalacion.", false);
+        std::string msg = "ERROR: No se pudo conectar a Julia. "
+            + rj2xcl::EngineUnavailableMessage("Julia", rj2xcl::LanguageConfigState::Configured);
+        Convert::StringToXLOPER(&rslt, msg, false);
         rslt.xltype |= xlbitDLLFree;
         return &rslt;
     }
@@ -1132,7 +1174,7 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_Status() {
     thread_local XLOPER12 rslt;
 
     auto& lm = rj2xcl::LanguageManager::Instance();
-    auto services = lm.GetServices();
+    const auto& catalog = rj2xcl::EngineCatalog();
 
     std::string status = "NEVEN Status\n";
     status += "---------------------------\n";
@@ -1140,35 +1182,43 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_Status() {
     int connected_count = 0;
     int total_functions = static_cast<int>(RJ2XCL_Engine::Instance()->function_list_.size());
 
-    for (size_t i = 0; i < services.size(); i++) {
-        auto& svc = services[i];
-        status += "\n[" + svc->name() + "] ";
+    // Walk the catalog, not only the configured services: an engine that is
+    // missing has to be named, with the reason and its official page.
+    for (const auto& entry : catalog) {
+        std::string name = entry.name;
+        status += "\n[" + name + "] ";
 
-        // Check connectivity: connected_ flag OR pipe is valid (auto-reconnect capable)
-        bool is_connected = svc->connected() || svc->configured();
-        
-        if (is_connected && svc->configured()) {
-            auto health = svc->GetHealthStatus();
-            if (health == HealthStatus::Unavailable) {
-                status += "UNAVAILABLE";
+        auto svc = lm.GetLanguageService(name);
+        if (svc) {
+            if (svc->GetHealthStatus() == HealthStatus::Unavailable) {
+                status += "NO DISPONIBLE (el proceso del motor termino)";
             } else if (svc->connected()) {
                 status += "OK";
                 connected_count++;
             } else {
-                // Configured but not yet connected — try a quick reconnect test
-                // by checking if the pipe handle is valid or process is still alive
-                status += "OK (on-demand)";
-                connected_count++;
+                status += "activado, sin conectar";
             }
+            status += " | prefijo: " + svc->prefix() + ";";
         } else {
-            status += "NOT CONNECTED";
+            switch (lm.GetLanguageState(name)) {
+            case rj2xcl::LanguageConfigState::DisabledByUser:
+                status += "DESACTIVADO por el usuario";
+                break;
+            case rj2xcl::LanguageConfigState::NotInConfig:
+                status += "NO DECLARADO en neven-config.json";
+                break;
+            default:
+                status += "NO INSTALADO";
+                break;
+            }
+            status += " | sitio oficial: " + rj2xcl::EngineDownloadUrl(name) + ";";
         }
-
-        status += " | prefix: " + svc->prefix() + ";";
     }
 
-    status += "\n\n" + std::to_string(connected_count) + "/" + std::to_string(services.size()) + " engines connected";
-    status += " | " + std::to_string(total_functions) + " functions registered";
+    status += "\n\n" + std::to_string(connected_count) + "/" + std::to_string(catalog.size()) + " motores conectados";
+    status += " | " + std::to_string(total_functions) + " funciones registradas";
+    status += "\nNEVEN no instala motores. ";
+    status += rj2xcl::kEngineSettingsHint;
 
     Convert::StringToXLOPER(&rslt, status, false);
     rslt.xltype |= xlbitDLLFree;
@@ -2144,7 +2194,7 @@ NevenX_R(LPXLOPER12 proceso,
   LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
-    LPXLOPER12 result = RJ_Call_Generic(0, &g_nevenx_disp_R,
+    LPXLOPER12 result = RJ_Call_ByName("R", &g_nevenx_disp_R,
         proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
     LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
     return embed_result ? embed_result : result;
@@ -2157,7 +2207,7 @@ NevenX_J(LPXLOPER12 proceso,
   LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
-    LPXLOPER12 result = RJ_Call_Generic(1, &g_nevenx_disp_J,
+    LPXLOPER12 result = RJ_Call_ByName("Julia", &g_nevenx_disp_J,
         proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
     LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
     return embed_result ? embed_result : result;
@@ -2170,7 +2220,7 @@ NevenX_P(LPXLOPER12 proceso,
   LPXLOPER12 a8, LPXLOPER12 a9, LPXLOPER12 a10, LPXLOPER12 a11,
   LPXLOPER12 a12, LPXLOPER12 a13, LPXLOPER12 a14, LPXLOPER12 a15) {
     NevenX_InitGlobals();
-    LPXLOPER12 result = RJ_Call_Generic(2, &g_nevenx_disp_P,
+    LPXLOPER12 result = RJ_Call_ByName("Python", &g_nevenx_disp_P,
         proceso, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
     LPXLOPER12 embed_result = NevenX_HandleEmbedChart(result);
     return embed_result ? embed_result : result;
@@ -2254,14 +2304,14 @@ static bool ExtractRangeForChart(LPXLOPER12 data_range,
 
 /**
  * @brief Helper generico para NEVEN.Chart.*
- * @param language_key 0=R, 1=Julia, 2=Python
+ * @param language_name Motor destino: "R", "Julia" o "Python"
  * @param data_range Rango con datos
  * @param chart_type Tipo de grafico (1-7)
  * @param chart_name Nombre del Shape (opcional)
  * @param width Ancho en pixeles (opcional, default 400)
  * @param height Alto en pixeles (opcional, default 300)
  */
-static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
+static LPXLOPER12 RJ_Chart_Generic(const char* language_name,
     LPXLOPER12 data_range, LPXLOPER12 chart_type,
     LPXLOPER12 chart_name, LPXLOPER12 width, LPXLOPER12 height) {
     
@@ -2317,7 +2367,9 @@ static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
     
     const char* chart_types_r[] = {"bar", "line", "scatter", "area", "pie", "histogram", "boxplot"};
     
-    if (language_key == 0) {  // R
+    std::string language = language_name ? language_name : "";
+
+    if (language == "R") {
         // Build R code using ggplot2
         code = "library(ggplot2)\n";
         code += "library(tidyr)\n";
@@ -2387,7 +2439,7 @@ static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
         code += "ggsave('" + temp_file + "', p, width=" + std::to_string(w) + "/96, height=" + std::to_string(h) + "/96, dpi=96)\n";
         code += "'" + temp_file + "'";
         
-    } else if (language_key == 2) {  // Python
+    } else if (language == "Python") {
         // Build Python code using matplotlib
         code = "import matplotlib.pyplot as plt\n";
         code += "import numpy as np\n";
@@ -2464,7 +2516,7 @@ static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
         message->add_line(line);
     }
     
-    RJ2XCL_Engine::Instance()->CallLanguage(language_key, response, call);
+    RJ2XCL_Engine::Instance()->CallLanguageByName(language, response, call);
     
     if (response.operation_case() == RJ2XCLBuffers::CallResponse::OperationCase::kErr) {
         std::string err = "Error: " + response.err();
@@ -2501,19 +2553,19 @@ static LPXLOPER12 RJ_Chart_Generic(uint32_t language_key,
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
 RJ_Chart_R(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
            LPXLOPER12 width, LPXLOPER12 height) {
-    return RJ_Chart_Generic(0, data_range, chart_type, chart_name, width, height);
+    return RJ_Chart_Generic("R", data_range, chart_type, chart_name, width, height);
 }
 
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
 RJ_Chart_P(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
            LPXLOPER12 width, LPXLOPER12 height) {
-    return RJ_Chart_Generic(2, data_range, chart_type, chart_name, width, height);
+    return RJ_Chart_Generic("Python", data_range, chart_type, chart_name, width, height);
 }
 
 extern "C" __declspec(dllexport) LPXLOPER12 WINAPI
 RJ_Chart_J(LPXLOPER12 data_range, LPXLOPER12 chart_type, LPXLOPER12 chart_name,
            LPXLOPER12 width, LPXLOPER12 height) {
-    return RJ_Chart_Generic(1, data_range, chart_type, chart_name, width, height);
+    return RJ_Chart_Generic("Julia", data_range, chart_type, chart_name, width, height);
 }
 
 BCALL(1000);
