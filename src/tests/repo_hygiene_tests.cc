@@ -37,6 +37,30 @@ protected:
     }
 
     /**
+     * @brief Extracts the value of "enabled" inside an engine block of
+     *        neven-config.template.json.
+     * @param content Template contents.
+     * @param engine Engine name as written in the template ("R", "Julia", "Python").
+     * @return "true", "false", or an empty string if the key is absent.
+     *
+     * The engine blocks are flat objects, so the block ends at the first '}'.
+     */
+    std::string EngineEnabledValue(const std::string& content,
+                                   const std::string& engine) {
+        std::string key = "\"" + engine + "\": {";
+        size_t start = content.find(key);
+        if (start == std::string::npos) return "";
+        size_t end = content.find('}', start);
+        if (end == std::string::npos) return "";
+        std::string block = content.substr(start, end - start);
+        size_t enabled = block.find("\"enabled\"");
+        if (enabled == std::string::npos) return "";
+        if (block.find("true", enabled) != std::string::npos) return "true";
+        if (block.find("false", enabled) != std::string::npos) return "false";
+        return "";
+    }
+
+    /**
      * @brief Reads .gitignore and returns all lines.
      */
     std::vector<std::string> ReadGitignoreLines() {
@@ -226,4 +250,44 @@ TEST_F(RepoHygieneTests, DeadCode_NevenWebviewDir_DefinedOnce) {
         << ".neven_webview_dir() must be defined in exactly one .R file (Req 13.3). "
         << "Found " << definition_count << " definitions. "
         << (definition_count > 0 ? "Last found in: " + defining_file : "Not found in any file.");
+}
+
+// --- Config and packaging contract tests (INV-BLD-04, INV-INS-01) ---
+
+TEST_F(RepoHygieneTests, ConfigTemplateDeclaresEnabledForTheThreeEngines) {
+    std::string content = ReadProjectFile("Install/neven-config.template.json");
+    ASSERT_FALSE(content.empty())
+        << "Could not read Install/neven-config.template.json";
+
+    // The three engines must declare 'enabled' with the P4 motores_default values:
+    // R enabled, Julia and Python left to the user.
+    EXPECT_EQ(EngineEnabledValue(content, "R"), "true")
+        << "NEVEN.R must declare \"enabled\": true in the config template";
+    EXPECT_EQ(EngineEnabledValue(content, "Julia"), "false")
+        << "NEVEN.Julia must declare \"enabled\": false in the config template";
+    EXPECT_EQ(EngineEnabledValue(content, "Python"), "false")
+        << "NEVEN.Python must declare \"enabled\": false in the config template";
+}
+
+TEST_F(RepoHygieneTests, RealConfigIsNotInTheRepository) {
+    // INV-INS-01: only the template is versioned; a real neven-config.json may
+    // carry user credentials and must never reach the repository.
+    fs::path real_config = fs::path(CMAKE_SOURCE_DIR) / "Install" / "neven-config.json";
+    EXPECT_FALSE(fs::exists(real_config))
+        << "Install/neven-config.json must not exist in the repository; "
+           "only Install/neven-config.template.json is versioned (INV-INS-01)";
+}
+
+TEST_F(RepoHygieneTests, AddinPackagesTheConfigTemplate) {
+    std::string content = ReadProjectFile("Addin/CMakeLists.txt");
+    ASSERT_FALSE(content.empty())
+        << "Could not read Addin/CMakeLists.txt";
+
+    // INV-BLD-04: packaging must take the template, never the (absent) real config.
+    EXPECT_EQ(content.find("Install/neven-config.json"), std::string::npos)
+        << "Addin/CMakeLists.txt must not reference the inexistent "
+           "Install/neven-config.json (INV-BLD-04)";
+    EXPECT_NE(content.find("Install/neven-config.template.json"), std::string::npos)
+        << "Addin/CMakeLists.txt must copy Install/neven-config.template.json "
+           "to Dist/neven-config.json (INV-BLD-04)";
 }

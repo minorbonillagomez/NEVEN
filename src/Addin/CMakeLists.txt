@@ -53,7 +53,7 @@ endif()
 # Copy config templates to Dist/
 add_custom_command(TARGET NEVEN_XLL POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/Install/neven-config.json"
+        "${CMAKE_SOURCE_DIR}/Install/neven-config.template.json"
         "${NEVEN_DIST_DIR}/neven-config.json"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_SOURCE_DIR}/Install/neven-languages.json"
