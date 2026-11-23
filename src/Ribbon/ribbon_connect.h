@@ -866,20 +866,33 @@ public:
     case DispIds::OnEngineStatusCommand:
     {
       // Show engine connection status
+      CComVariant result;
       CComQIPtr<Excel::_Application> pApp(m_pApplication);
       if (pApp) {
           CComVariant cmd(L"NEVEN.Status");
-          CComVariant result;
           CComVariant missing(DISP_E_PARAMNOTFOUND, VT_ERROR);
           pApp->_Run2(cmd, missing, missing, missing, missing, missing, missing, missing,
                        missing, missing, missing, missing, missing, missing, missing, missing,
                        missing, missing, missing, missing, missing, missing, missing, missing,
                        missing, missing, missing, missing, missing, missing, missing, 1033, &result);
-          if (result.vt == VT_BSTR) {
-              char buf[2048];
-              WideCharToMultiByte(CP_UTF8, 0, result.bstrVal, -1, buf, sizeof(buf), NULL, NULL);
-              MessageBoxA(NULL, buf, "NEVEN - Estado de Motores", MB_OK | MB_ICONINFORMATION);
-          }
+      }
+      if (result.vt == VT_BSTR) {
+          char buf[2048];
+          WideCharToMultiByte(CP_UTF8, 0, result.bstrVal, -1, buf, sizeof(buf), NULL, NULL);
+          MessageBoxA(NULL, buf, "NEVEN - Estado de Motores", MB_OK | MB_ICONINFORMATION);
+      } else {
+          // Sin NEVEN.Status no hay estado que mostrar, pero el boton no se
+          // puede quedar mudo: se dice por que y se dan los tres sitios
+          // oficiales. NEVEN no instala motores.
+          MessageBoxA(NULL,
+                      "No se pudo leer el estado de los motores.\n"
+                      "Active el complemento NEVEN en Excel (Archivo > Opciones > Complementos > Complementos de Excel)\n"
+                      "y vuelva a pulsar Motores.\n\n"
+                      "NEVEN no instala motores. Sitios oficiales:\n"
+                      "R: https://cran.r-project.org/bin/windows/base/\n"
+                      "Julia: https://julialang.org/downloads/\n"
+                      "Python: https://www.python.org/downloads/",
+                      "NEVEN - Estado de Motores", MB_OK | MB_ICONWARNING);
       }
       return S_OK;
     }

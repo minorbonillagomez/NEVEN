@@ -98,7 +98,9 @@ Section "NEVEN Core" SecCore
     File "Dist\NEVEN_studio.ico"
     File "Dist\NEVEN Studio.vbs"
     
-    ; Engine detection script (used below in -ConfigureOnly mode)
+    ; Engine detection script, para que el usuario pueda volver a correr
+    ; -ConfigureOnly mas adelante. La deteccion de esta instalacion NO usa
+    ; esta copia: ver la seccion de deteccion al final.
     File "Install-NEVEN.ps1"
     
     ; Directories
@@ -171,10 +173,31 @@ Section "NEVEN Core" SecCore
     ; Detect the engines and write the result into neven-config.json.
     ; -ConfigureOnly only detects and patches: it deploys nothing, registers
     ; nothing and never runs a third-party installer.
+    ;
+    ; El script se ejecuta desde $PLUGINSDIR y con la ruta absoluta de
+    ; powershell.exe: este instalador corre elevado (RequestExecutionLevel
+    ; admin) y $INSTDIR puede ser un directorio que ya existia con una DACL
+    ; permisiva, donde la copia del script se podria sustituir entre el File y
+    ; el ExecToLog. $PLUGINSDIR solo es escribible por este proceso.
+    InitPluginsDir
+    File "/oname=$PLUGINSDIR\Install-NEVEN.ps1" "Install-NEVEN.ps1"
+
     DetailPrint "Detectando motores (R, Julia, Python)..."
-    nsExec::ExecToLog 'powershell -NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\Install-NEVEN.ps1" -ConfigureOnly -Silent -InstallDir "$INSTDIR"'
+    nsExec::ExecToLog '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\Install-NEVEN.ps1" -ConfigureOnly -Silent -InstallDir "$INSTDIR"'
     Pop $0
     DetailPrint "Deteccion de motores: codigo $0"
+    Delete "$PLUGINSDIR\Install-NEVEN.ps1"
+
+    ; Una deteccion fallida deja neven-config.json con los valores de la
+    ; plantilla, y entonces el producto informa como desactivado un motor que
+    ; el usuario quizas tiene instalado. No se puede anunciar la instalacion
+    ; como correcta sin decirlo: el DetailPrint de arriba vive en la ventana
+    ; de detalles, que esta colapsada por defecto.
+    StrCmp $0 "0" engine_detection_done 0
+    DetailPrint "La deteccion de motores no se completo: neven-config.json conserva los valores de la plantilla"
+    IfSilent engine_detection_done 0
+    MessageBox MB_OK|MB_ICONEXCLAMATION "No se pudo detectar R, Julia ni Python (codigo $0).$\r$\n$\r$\nNEVEN quedo instalado, pero neven-config.json conserva los valores de la plantilla: un motor que usted tenga instalado puede aparecer como desactivado.$\r$\n$\r$\nPara redetectar, ejecute en PowerShell:$\r$\n    $INSTDIR\Install-NEVEN.ps1 -ConfigureOnly$\r$\n$\r$\nTambien puede activarlos en NEVEN Studio > Settings > Motores. En ambos casos reinicie Excel."
+engine_detection_done:
 
 SectionEnd
 

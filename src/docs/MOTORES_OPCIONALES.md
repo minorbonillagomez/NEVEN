@@ -24,14 +24,27 @@ Sitios oficiales (las mismas tres URL en `Common/engine_availability.h`,
 |---|---|---|---|
 | `neven-languages.json` | Catalogo de conexiones que NEVEN sabe hablar (nombre, prefijo, ejecutable del puente). No lleva `enabled`: no es una decision, es la oferta. | Nadie en caliente; se despliega con el producto | `LanguageManager::ConfigureLanguages`, el instalador |
 | `neven-config.json`, `NEVEN.<Lang>.enabled` | Decision del usuario sobre cada motor | El servidor HTTP (unico escritor en caliente) y el instalador (`Install-NEVEN.ps1`, tambien con `-ConfigureOnly`) | `LanguageService` (C++), el servidor HTTP, `start_studio.py` |
-| `neven-config.json`, `NEVEN.<Lang>.home` | Instalacion concreta a usar; si el directorio no existe, se ignora y se vuelve a la deteccion automatica | El instalador, solo para los motores detectados | `DiscoveryService::GetBestVersion` |
+| `neven-config.json`, `NEVEN.<Lang>.home` | Instalacion concreta a usar; si el directorio no existe, se ignora y se vuelve a la deteccion automatica | El instalador: lo escribe para los motores detectados y lo vacia para los que no detecta, para que un `home` de una version vieja no tape la deteccion | `DiscoveryService::GetBestVersion` |
+| `neven-config.json`, `Standalone.languages` | Lista de motores que arranca NEVEN Studio en modo standalone. Tiene prioridad sobre `enabled`, asi que una lista heredada o editada a mano puede arrancar un motor que el XLL considera desactivado. El `neven-config.template.json` no la trae | Nadie en caliente; solo edicion manual | `start_studio.resolve_languages` |
 | `neven-config.template.json` | Plantilla publica en el repo (`R` habilitado, `Julia` y `Python` no). El build la copia a `Dist/neven-config.json`; el instalador la sobrescribe con la deteccion | El build (`Addin/CMakeLists.txt`) | El instalador |
 
 Semantica de `enabled`, igual en C++, en el servidor HTTP y en `start_studio.py`:
 
 - seccion `NEVEN.<Lang>` ausente: no declarado (`LanguageConfigState::NotInConfig`);
 - seccion presente sin la clave `enabled`: habilitado;
-- `"enabled": false`: desactivado por el usuario.
+- `"enabled": false`: desactivado en el config (`LanguageConfigState::DisabledInConfig`).
+
+Ese `false` no se atribuye al usuario en ningun texto: lo puede haber escrito el,
+`neven-config.template.json` (que trae `Julia` y `Python` en `false`) o una deteccion
+del instalador que no encontro el motor. Los mensajes dicen donde esta escrito el
+valor y como cambiarlo.
+
+`start_studio.py` resuelve los motores a arrancar en este orden: el argumento
+`--languages`, `Standalone.languages`, `preferences.auto_start_engines` y, por ultimo,
+`enabled`. Las tres primeras capas ganan sobre `enabled`, de modo que un
+`Standalone.languages` heredado puede dejar un motor corriendo en Studio que el XLL
+reporta como desactivado. Para que las dos vistas coincidan, basta no declarar
+`Standalone.languages` y dejar la decision en `enabled`.
 
 Cambiar motores no obliga a reinstalar. Hay dos caminos:
 
@@ -40,8 +53,20 @@ Cambiar motores no obliga a reinstalar. Hay dos caminos:
    redetecta los tres motores y reescribe `enabled` y `home`. Pisa un
    `enabled: false` previo a proposito: el usuario pidio reconfigurar.
 
+El primer camino necesita Python en el equipo, porque NEVEN Studio arranca con
+`python start_studio.py` y Python es tambien un motor opcional. Por eso el consejo que
+cierra cada mensaje de motor ausente (`kEngineSettingsHint`) nombra los dos caminos: sin
+Python, `-ConfigureOnly` es el que queda.
+
 En ambos casos el cambio surte efecto al reiniciar Excel (`INV-CMN-01`). El Ribbon no
-escribe `enabled`; su boton **Motores** solo muestra la salida de `NEVEN.Status`.
+escribe `enabled`; su boton **Motores** solo muestra la salida de `NEVEN.Status`, y
+cuando no puede leerla (complemento sin activar) dice eso y da los tres sitios
+oficiales en lugar de no hacer nada.
+
+El instalador NSIS corre esa deteccion con `-ConfigureOnly` desde `$PLUGINSDIR`, con la
+ruta absoluta de `powershell.exe`, y comprueba el codigo de salida: si la deteccion no
+se completa, avisa de forma visible que `neven-config.json` conserva los valores de la
+plantilla y como redetectar.
 
 ## Las 8 combinaciones
 
@@ -60,10 +85,16 @@ de los tests `EngineMatrix/EngineSubsetTest.*`.
 | 6 | no | si | si | Julia y Python responden; R devuelve su motivo | `[J] OK`, `[P] OK`; R ausente con su URL | **Motores** muestra Julia y Python; **Pluto** arranca | Julia y Python conectados; R con su estado | `Engines enabled: Julia, Python` |
 | 7 | si | si | si | Las tres familias responden: 100% de la herramienta | `3/3 motores conectados` | Todos los botones operativos | Los tres puntos en verde, sin anotaciones | `Engines enabled: R, Julia, Python` |
 
+La columna TaskPane describe lo que se ve cuando NEVEN Studio esta corriendo, y Studio
+necesita Python. En las filas 0 a 3 (sin Python) el estado de los motores se consulta
+con `NEVEN.Status` o con el boton **Motores** del Ribbon, y la configuracion se cambia
+con `Install-NEVEN.ps1 -ConfigureOnly`.
+
 Un motor declarado y habilitado pero sin conexion viva no se confunde con un motor
 ausente: la celda dice `not connected`, `NEVEN.Status` dice `activado, sin conectar` y
 el TaskPane dice `Habilitado, sin conectar`. Los otros dos estados tienen su propio
-texto: `DESACTIVADO por el usuario` / `Desactivado` y `NO INSTALADO` / `No instalado`.
+texto: `DESACTIVADO en neven-config.json` / `Desactivado` y `NO INSTALADO` /
+`No instalado`.
 
 ## Como se comprobo cada fila
 
@@ -74,6 +105,7 @@ texto: `DESACTIVADO por el usuario` / `Desactivado` y `NO INSTALADO` / `No insta
 | 0..7 | `EngineMatrix/EngineSubsetTest.ServicesContainExactlyTheSubset/N` (el subconjunto configurado es exactamente el esperado) | `test_detect_reports_the_documented_keys_for_every_engine` | `Install-NEVEN.ps1 -ConfigureOnly -Silent -InstallDir <dir>` sobre un `neven-config.json` de prueba: reescribe `enabled` y `home` desde la deteccion y sale 0 |
 | 0..7 | `EngineMatrix/EngineSubsetTest.AbsentEngineReportsItselfAndNeverAnotherEngine/N` (el motivo es del motor pedido, nunca de otro) | `test_disabled_engine_is_reported_as_not_enabled`, `test_engine_without_section_is_not_declared_and_does_not_crash` | idem |
 | 0..7 | `EngineMatrix/EngineSubsetTest.NevenXFunctionsReportTheirOwnAbsentEngine/N` (`NevenX.R` / `NevenX.J` / `NevenX.P`) | `test_engines_endpoint_keeps_its_boolean_shape`, `test_get_router_serves_the_engines_config_endpoint` | idem |
+| 0..7 | `EngineMatrix/EngineSubsetTest.ChartAndPlutoWrappersReportTheirOwnAbsentEngine/N` (`NEVEN.Chart.R` / `.J` / `.P` y `NEVEN.Pluto.Data`) | `test_both_config_readers_tolerate_a_bom` | idem |
 | 0..7 | `EngineMatrix/EngineSubsetTest.PresentButUnconnectedEngineReportsNotConnected/N` | `test_enabled_engine_with_empty_home_is_not_installed`, `test_home_with_the_expected_file_is_installed[r\|julia\|python]` | idem |
 | 0..7 | `EngineMatrix/EngineSubsetTest.StatusNamesTheThreeEnginesWithTheirUrls/N` | `test_download_urls_are_the_official_https_pages` | `Show-EngineSummary` imprime el enlace oficial de cada motor ausente |
 | 0 | `EngineMatrixTest.StatusWithoutAnyEngineNamesAllThreeAndTheirUrls` | `test_resolve_languages_without_any_enabled_engine_is_empty`, `test_resolve_languages_without_neven_section_is_empty` | `Engines enabled: none`, el instalador no aborta |
@@ -85,8 +117,13 @@ Las tres copias versionadas del servidor HTTP (`src/TaskPane`, `src/startup`,
 `src/ControlPython/startup`) exponen el mismo contrato de motores y
 `test_the_three_copies_expose_the_same_engine_contract` lo verifica (`G-TP-05`).
 
-Resultados de la ultima ejecucion: `ctest -C Release -R EngineMatrix` 45/45 passed;
-`python -m pytest src/tests/test_engine_availability.py -q` 44 passed.
+Resultados de la ultima ejecucion: `ctest -C Release -R EngineMatrix` 53/53 passed;
+la suite completa `ctest --test-dir src/Build -C Release --timeout 120` 425/425 passed;
+`python -m pytest src/tests/test_engine_availability.py -q` 47 passed;
+`node --check src/TaskPane/taskpane.js` sin errores y `Install-NEVEN.ps1` parsea sin
+errores. `makensis NEVEN-Setup.nsi` sigue abortando en la linea 62 porque `Dist/` no
+esta poblado (linea base, no un fallo de este cambio); el bloque de deteccion se
+comprobo compilandolo por separado.
 
 ## Invariantes relacionadas
 

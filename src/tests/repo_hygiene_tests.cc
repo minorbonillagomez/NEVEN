@@ -55,8 +55,16 @@ protected:
         std::string block = content.substr(start, end - start);
         size_t enabled = block.find("\"enabled\"");
         if (enabled == std::string::npos) return "";
-        if (block.find("true", enabled) != std::string::npos) return "true";
-        if (block.find("false", enabled) != std::string::npos) return "false";
+
+        // The value is read right after the colon of this key, not anywhere in
+        // the rest of the block: a later boolean key must not be able to make a
+        // "false" read as "true" and hide the regression this test watches.
+        size_t colon = block.find(':', enabled);
+        if (colon == std::string::npos) return "";
+        size_t value = block.find_first_not_of(" \t\r\n", colon + 1);
+        if (value == std::string::npos) return "";
+        if (block.compare(value, 4, "true") == 0) return "true";
+        if (block.compare(value, 5, "false") == 0) return "false";
         return "";
     }
 

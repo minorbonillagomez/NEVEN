@@ -24,10 +24,10 @@ namespace rj2xcl {
      * Common depending on Core.
      */
     enum class LanguageConfigState {
-        Configured,      ///< Declared, enabled and discovered on this machine
-        NotInConfig,     ///< No section for the language in neven-config.json
-        DisabledByUser,  ///< Section present with "enabled": false
-        NotFound         ///< Enabled, but no installation was discovered
+        Configured,        ///< Declared, enabled and discovered on this machine
+        NotInConfig,       ///< No section for the language in neven-config.json
+        DisabledInConfig,  ///< Section present with "enabled": false
+        NotFound           ///< Enabled, but no installation was discovered
     };
 
     /** @brief One entry of the catalog of engines NEVEN knows how to connect to. */

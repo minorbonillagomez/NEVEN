@@ -249,7 +249,7 @@ componentes:
         "/api/ai/chat":           "Proxea mensaje al LLM (LM Studio, Ollama, OpenAI, Azure)"
         "/api/ai/context":        "Recibe contexto de =NEVEN.IA.Contexto() desde Excel"
         "/api/functions/create":  "Guarda nueva funcion .R/.py/.jl en functions_dir"
-        "/api/engines/config":    "Escribe NEVEN.<Lang>.enabled en neven-config.json (UTF-8 sin BOM) y devuelve warnings por motor habilitado sin instalacion"
+        "/api/engines/config":    "Escribe NEVEN.<Lang>.enabled en neven-config.json (lee con utf-8-sig como _detect_engine_installations, escribe UTF-8 sin BOM) y devuelve warnings por motor habilitado sin instalacion"
 
     flujo_datalab_run:
       descripcion: "POST /api/datalab/run — flujo completo de ejecucion"

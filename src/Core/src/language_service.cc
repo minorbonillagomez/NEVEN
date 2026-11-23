@@ -68,7 +68,7 @@ LanguageService::LanguageService(CallbackInfo &callback_info, COMObjectMap &obje
   if (config["NEVEN"][language_descriptor_.name_]["enabled"].is_bool() &&
       !config["NEVEN"][language_descriptor_.name_]["enabled"].bool_value()) {
       configured_ = false;
-      config_state_ = rj2xcl::LanguageConfigState::DisabledByUser;
+      config_state_ = rj2xcl::LanguageConfigState::DisabledInConfig;
       RJ2XCL_LOG_INFO("Language '%s' disabled via configuration (enabled: false)",
           language_descriptor_.name_.c_str());
       return;

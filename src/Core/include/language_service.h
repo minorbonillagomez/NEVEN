@@ -176,7 +176,7 @@ public:
 
   /**
    * @brief Returns why the service did or did not end up configured.
-   * @return Configured, NotInConfig, DisabledByUser or NotFound.
+   * @return Configured, NotInConfig, DisabledInConfig or NotFound.
    */
   rj2xcl::LanguageConfigState config_state() const { return config_state_; }
 

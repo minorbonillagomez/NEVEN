@@ -1216,10 +1216,18 @@ async function runScript() {
   const code = document.getElementById('script-input').value.trim();
   if (!code) return;
   const info = ENGINE_INFO[lang];
-  if (info && info.installed === false) {
-    // Informar el motivo antes de ejecutar: NEVEN no instala motores.
-    showToast(ENGINE_LABELS[lang] + ' no está instalado en este equipo. '
-      + 'Descárguelo de ' + info.url + ' y actívelo en Settings > Motores.');
+  // Informar el motivo antes de ejecutar, con el mismo vocabulario que
+  // NEVEN.Status: no instalado, desactivado en el config, o sin informacion
+  // porque el estado todavia no se ha leido. NEVEN no instala motores.
+  if (!info || (!info.running && (info.installed === false || info.enabled === false))) {
+    const label = ENGINE_LABELS[lang] || lang;
+    let text = label + ': ' + engineStatusText(info) + '. NEVEN no instala motores.';
+    if (info && info.url) {
+      text += ' Descárguelo de ' + info.url + ' y actívelo en Settings > Motores.';
+    } else {
+      text += ' Actívelo en Settings > Motores.';
+    }
+    showToast(text);
   }
   setScriptBusy(true);
   try {
@@ -4745,7 +4753,7 @@ async function loadEnginesStatus() {
       const text = engineStatusText(info);
       
       // Verde: conectado. Ámbar: habilitado pero sin conectar.
-      // Rojo: habilitado y no instalado. Gris: desactivado por el usuario.
+      // Rojo: habilitado y no instalado. Gris: desactivado en el config.
       if (info.running) indicator.style.background = '#4ade80';
       else if (!info.enabled) indicator.style.background = '#666';
       else if (info.installed) indicator.style.background = '#fbbf24';

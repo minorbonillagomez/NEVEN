@@ -4547,9 +4547,12 @@ else:
             JSON {"status": "error", "error": "..."} on failure
         """
         try:
-            # Load current config
+            # Load current config. utf-8-sig, el mismo lector que
+            # _detect_engine_installations: un config con BOM escrito por
+            # cualquier editor no puede dejar el estado visible y el guardado
+            # fallando con 500.
             config_path = _CONFIG_JSON_PATH
-            with open(config_path, 'r', encoding='utf-8') as f:
+            with open(config_path, 'r', encoding='utf-8-sig') as f:
                 config = json.load(f)
             
             # Update NEVEN.R/Julia/Python.enabled

@@ -26,8 +26,10 @@
 #include "com_object_map.h"
 #include "json11/json11.hpp"
 
-// NEVEN.Status is exported from the DLL but not declared in basic_functions.h.
+// NEVEN.Status and NEVEN.Pluto.Data are exported from the DLL but not declared
+// in basic_functions.h.
 extern "C" LPXLOPER12 WINAPI NEVEN_Status();
+extern "C" LPXLOPER12 WINAPI RJ_PlutoData(LPXLOPER12 data_range, LPXLOPER12 dataset_name);
 
 namespace rj2xcl {
 namespace {
@@ -54,6 +56,32 @@ public:
 
 private:
     std::wstring buffer_;
+    XLOPER12 oper_ = {};
+};
+
+/**
+ * @brief Smallest range the chart and Pluto wrappers accept: one header row
+ *        plus one numeric row, as xltypeMulti.
+ */
+class XlRange {
+public:
+    XlRange() {
+        header_.push_back(1);
+        header_.append(L"y");
+        cells_[0].xltype = xltypeStr;
+        cells_[0].val.str = &header_[0];
+        cells_[1].xltype = xltypeNum;
+        cells_[1].val.num = 1.0;
+        oper_.xltype = xltypeMulti;
+        oper_.val.array.rows = 2;
+        oper_.val.array.columns = 1;
+        oper_.val.array.lparray = cells_;
+    }
+    LPXLOPER12 get() { return &oper_; }
+
+private:
+    std::wstring header_;
+    XLOPER12 cells_[2] = {};
     XLOPER12 oper_ = {};
 };
 
@@ -243,6 +271,51 @@ TEST_P(EngineSubsetTest, NevenXFunctionsReportTheirOwnAbsentEngine) {
     }
 }
 
+TEST_P(EngineSubsetTest, ChartAndPlutoWrappersReportTheirOwnAbsentEngine) {
+    const int subset_mask = GetParam();
+    ConfigureSubset(subset_mask);
+
+    XlRange data;
+    XLOPER12 type = {};
+    type.xltype = xltypeNum;
+    type.val.num = 1.0;  // 1 = bars, the only validated argument
+    XLOPER12 missing = {};
+    missing.xltype = xltypeMissing;
+
+    const auto& catalog = EngineCatalog();
+    for (size_t i = 0; i < catalog.size(); i++) {
+        if (subset_mask & (1 << i)) continue;
+
+        const std::string name = catalog[i].name;
+        LPXLOPER12 result = nullptr;
+        if (name == "R") {
+            result = RJ_Chart_R(data.get(), &type, &missing, &missing, &missing);
+        }
+        else if (name == "Julia") {
+            result = RJ_Chart_J(data.get(), &type, &missing, &missing, &missing);
+        }
+        else {
+            result = RJ_Chart_P(data.get(), &type, &missing, &missing, &missing);
+        }
+
+        const std::string text = XloperText(result);
+        EXPECT_NE(text.find(name), std::string::npos) << "chart for " << name << ": " << text;
+        EXPECT_NE(text.find(catalog[i].download_url), std::string::npos) << text;
+        for (size_t j = 0; j < catalog.size(); j++) {
+            if (j == i) continue;
+            EXPECT_EQ(text.find(catalog[j].download_url), std::string::npos) << text;
+        }
+    }
+
+    // NEVEN.Pluto.Data only talks to Julia.
+    if (!(subset_mask & (1 << 1))) {
+        const std::string text = XloperText(RJ_PlutoData(data.get(), &missing));
+        EXPECT_NE(text.find("Julia"), std::string::npos) << text;
+        EXPECT_NE(text.find(EngineDownloadUrl("Julia")), std::string::npos) << text;
+        EXPECT_EQ(text.find(EngineDownloadUrl("Python")), std::string::npos) << text;
+    }
+}
+
 TEST_P(EngineSubsetTest, PresentButUnconnectedEngineReportsNotConnected) {
     const int subset_mask = GetParam();
     ConfigureSubset(subset_mask);
@@ -278,6 +351,9 @@ TEST_P(EngineSubsetTest, StatusNamesTheThreeEnginesWithTheirUrls) {
         }
     }
     EXPECT_NE(status.find("NEVEN Studio > Settings > Motores"), std::string::npos) << status;
+    // NEVEN Studio necesita Python, que tambien es opcional: el consejo tiene
+    // que ofrecer un camino que no dependa de otro motor.
+    EXPECT_NE(status.find("-ConfigureOnly"), std::string::npos) << status;
 }
 
 INSTANTIATE_TEST_SUITE_P(EngineMatrix, EngineSubsetTest, ::testing::Range(0, 8));
@@ -298,6 +374,7 @@ TEST_F(EngineMatrixTest, StatusWithoutAnyEngineNamesAllThreeAndTheirUrls) {
     }
     EXPECT_NE(status.find("NEVEN no instala motores"), std::string::npos) << status;
     EXPECT_NE(status.find("NEVEN Studio > Settings > Motores"), std::string::npos) << status;
+    EXPECT_NE(status.find("-ConfigureOnly"), std::string::npos) << status;
 }
 
 TEST_F(EngineMatrixTest, ConfigStatesDistinguishDisabledFromMissing) {
@@ -312,7 +389,7 @@ TEST_F(EngineMatrixTest, ConfigStatesDistinguishDisabledFromMissing) {
 
     auto& manager = LanguageManager::Instance();
     EXPECT_EQ(manager.GetLanguageState("R"), LanguageConfigState::Configured);
-    EXPECT_EQ(manager.GetLanguageState("Julia"), LanguageConfigState::DisabledByUser);
+    EXPECT_EQ(manager.GetLanguageState("Julia"), LanguageConfigState::DisabledInConfig);
     EXPECT_EQ(manager.GetLanguageState("Python"), LanguageConfigState::NotInConfig);
 
     EXPECT_EQ(manager.GetUnavailableLanguages().size(), 2u);
@@ -321,7 +398,11 @@ TEST_F(EngineMatrixTest, ConfigStatesDistinguishDisabledFromMissing) {
     call.set_wait(true);
     call.mutable_code()->add_line("1");
     manager.CallLanguageByName("Julia", response, call);
-    EXPECT_NE(response.err().find("desactivado por el usuario"), std::string::npos)
+    // El motivo dice donde esta escrito el valor, no quien lo escribio: un
+    // enabled:false puede venir de la plantilla o de una deteccion fallida.
+    EXPECT_NE(response.err().find("desactivado en neven-config.json"), std::string::npos)
+        << response.err();
+    EXPECT_EQ(response.err().find("por el usuario"), std::string::npos)
         << response.err();
 }
 

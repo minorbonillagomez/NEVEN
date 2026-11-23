@@ -1201,8 +1201,8 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_Status() {
             status += " | prefijo: " + svc->prefix() + ";";
         } else {
             switch (lm.GetLanguageState(name)) {
-            case rj2xcl::LanguageConfigState::DisabledByUser:
-                status += "DESACTIVADO por el usuario";
+            case rj2xcl::LanguageConfigState::DisabledInConfig:
+                status += "DESACTIVADO en neven-config.json";
                 break;
             case rj2xcl::LanguageConfigState::NotInConfig:
                 status += "NO DECLARADO en neven-config.json";

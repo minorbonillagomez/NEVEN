@@ -404,8 +404,11 @@ componentes:
           nota: >
             Estos son los valores del template versionado, no el resultado de una
             instalacion. El instalador escribe los tres enabled a partir de la
-            deteccion de motores (Get-EngineStatus) y solo escribe home para los
-            motores detectados. En modo actualizacion se conserva un enabled: false
+            deteccion de motores (Get-EngineStatus), escribe home para los motores
+            detectados y vacia el home de los que no detecta: un home de una version
+            vieja que todavia exista gana como override con prioridad 1000 en
+            DiscoveryService::GetBestVersion y taparia la deteccion automatica.
+            En modo actualizacion se conserva un enabled: false
             puesto por el usuario. Install-NEVEN.ps1 -ConfigureOnly redetecta y
             reescribe los tres enabled sin reinstalar nada (pisa un enabled: false
             previo a proposito, porque el usuario pide reconfigurar). El otro camino

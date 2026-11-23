@@ -2163,6 +2163,13 @@ function Update-NEVENConfig {
             }
             if ($engine.Path) {
                 Set-ConfigValue -Node $node -Name 'home' -Value $engine.Path
+            } elseif ($node.home) {
+                # Un 'home' de una instalacion anterior sigue ganando como
+                # override con prioridad 1000 en DiscoveryService, asi que
+                # tapa la deteccion automatica mientras el directorio exista.
+                # Si este motor no se detecto, ese valor ya no describe nada.
+                Set-ConfigValue -Node $node -Name 'home' -Value ''
+                Write-Log "Config: $($engine.Name) home cleared (engine not detected)"
             }
             if ($IsUpdate -and ($node.enabled -eq $false)) {
                 Write-Log "Config: $($engine.Name) keeps enabled = false (user decision preserved on update)"

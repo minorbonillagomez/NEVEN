@@ -171,6 +171,19 @@ def test_missing_config_file_is_not_an_error(server, tmp_path):
     assert all(info["enabled"] is False for info in result.values())
 
 
+def test_both_config_readers_tolerate_a_bom(server, tmp_path):
+    # Los dos lectores del config leen con utf-8-sig: un BOM no puede dejar
+    # el estado visible y el guardado fallando con 500.
+    path = tmp_path / "neven-config.json"
+    path.write_text(json.dumps({"NEVEN": {"R": {"enabled": True}}}, indent=4),
+                    encoding="utf-8-sig")
+    result = server._detect_engine_installations(str(path))
+    assert result["r"]["enabled"] is True
+
+    source = inspect.getsource(server.NEVENHandler._handle_engines_config)
+    assert "utf-8-sig" in source
+
+
 def test_malformed_config_file_is_not_an_error(server, tmp_path):
     broken = tmp_path / "neven-config.json"
     broken.write_text("{ esto no es JSON }", encoding="utf-8")
