@@ -24,14 +24,24 @@
 .PARAMETER Silent
     Run without interactive prompts, using all defaults.
 
+.PARAMETER ConfigureOnly
+    Re-detect the engines (R, Julia, Python) and rewrite the 'enabled' and 'home'
+    entries of an existing <InstallDir>\neven-config.json, then exit. Nothing is
+    deployed and nothing is registered. This is the way to reconfigure engines
+    after installing one, without reinstalling NEVEN.
+    NEVEN never installs an engine: it only reports what it found and links to
+    the official download pages.
+
 .EXAMPLE
     .\Install-NEVEN.ps1
     .\Install-NEVEN.ps1 -InstallDir D:\NEVEN -Silent
+    .\Install-NEVEN.ps1 -ConfigureOnly -InstallDir C:\NEVEN
 #>
 param(
     [string]$InstallDir = 'C:\NEVEN',
     [string]$DistDir    = (Join-Path $PSScriptRoot 'Dist'),
-    [switch]$Silent
+    [switch]$Silent,
+    [switch]$ConfigureOnly
 )
 
 $ErrorActionPreference = 'Continue'
@@ -406,9 +416,10 @@ function Show-PreflightSummary {
         if ($RInfo.Found) {
             Write-Host "   [!!] R $($RInfo.Version) (need >= 4.4.1)  $($RInfo.Path)" -ForegroundColor Yellow
         } else {
-            Write-Host '   [XX] R not found (REQUIRED for R functions)' -ForegroundColor Red
+            Write-Host '   [!!] R not found (optional - R functions)' -ForegroundColor Yellow
         }
-        Write-Host '        Download: https://cran.r-project.org/bin/windows/base/' -ForegroundColor Yellow
+        Write-Host '        NEVEN does not install engines: you install R yourself.' -ForegroundColor Yellow
+        Write-Host '        Official download: https://cran.r-project.org/bin/windows/base/' -ForegroundColor Yellow
         if (-not $Silent) {
             $open = Read-Host '        Open download page? (y/n) [n]'
             if ($open -eq 'y') { Start-Process 'https://cran.r-project.org/bin/windows/base/' }
@@ -438,7 +449,8 @@ function Show-PreflightSummary {
         } else {
             Write-Host '   [!!] Julia not found (optional - math/ML functions)' -ForegroundColor Yellow
         }
-        Write-Host '        Download: https://julialang.org/downloads/' -ForegroundColor Yellow
+        Write-Host '        NEVEN does not install engines: you install Julia yourself.' -ForegroundColor Yellow
+        Write-Host '        Official download: https://julialang.org/downloads/' -ForegroundColor Yellow
         if (-not $Silent) {
             $open = Read-Host '        Open download page? (y/n) [n]'
             if ($open -eq 'y') { Start-Process 'https://julialang.org/downloads/' }
@@ -468,7 +480,8 @@ function Show-PreflightSummary {
         } else {
             Write-Host '   [!!] Python not found (optional - AI functions)' -ForegroundColor Yellow
         }
-        Write-Host '        Download: https://www.python.org/downloads/' -ForegroundColor Yellow
+        Write-Host '        NEVEN does not install engines: you install Python yourself.' -ForegroundColor Yellow
+        Write-Host '        Official download: https://www.python.org/downloads/' -ForegroundColor Yellow
         if (-not $Silent) {
             $open = Read-Host '        Open download page? (y/n) [n]'
             if ($open -eq 'y') { Start-Process 'https://www.python.org/downloads/' }
@@ -514,6 +527,7 @@ function Get-UserChoices {
     param(
         [PSCustomObject]$RInfo,
         [PSCustomObject]$JuliaInfo,
+        [PSCustomObject]$PythonInfo,
         [PSCustomObject]$ExistingInstall
     )
     $choices = [PSCustomObject]@{
@@ -525,7 +539,7 @@ function Get-UserChoices {
     }
 
     if ($Silent) {
-        if (-not $RInfo.Found) { $choices.ContinueWithoutR = $true }
+        if (-not ($RInfo.Found -or $JuliaInfo.Found -or $PythonInfo.Found)) { $choices.ContinueWithoutR = $true }
         if ($RInfo.Found -and $RInfo.Adequate) { $choices.InstallRPackages = $true }
         if ($ExistingInstall.Found) { $choices.IsUpdate = $true }
         return $choices
@@ -535,20 +549,22 @@ function Get-UserChoices {
     $dirInput = Read-Host "  Installation directory [$InstallDir]"
     if ($dirInput.Trim()) { $choices.InstallDir = $dirInput.Trim() }
 
-    # 2. R not found - continue?
-    if (-not $RInfo.Found -or -not $RInfo.Adequate) {
-        if (-not $RInfo.Found) {
-            Write-Host '  R was not found.' -ForegroundColor Yellow
-        } else {
-            Write-Host "  R $($RInfo.Version) is below the recommended 4.4.1." -ForegroundColor Yellow
-        }
-        $answer = Read-Host '  Continue without R? R-based functions will not work. (y/n) [y]'
+    # 2. No engine at all - continue? (the three engines are optional and
+    #    symmetric: NEVEN installs with none of them)
+    $anyEngine = ($RInfo.Found -and $RInfo.Adequate) -or
+                 ($JuliaInfo.Found -and $JuliaInfo.Adequate) -or
+                 ($PythonInfo.Found -and $PythonInfo.Adequate)
+    if (-not $anyEngine) {
+        Write-Host '  No engine was detected (R, Julia, Python).' -ForegroundColor Yellow
+        Write-Host '  NEVEN installs anyway; you can install an engine later and enable it' -ForegroundColor Yellow
+        Write-Host '  from NEVEN Studio > Settings > Motores or with -ConfigureOnly.' -ForegroundColor Yellow
+        $answer = Read-Host '  Continue without engines? (y/n) [y]'
         if ($answer -eq 'n') {
             Write-Host '  Installation aborted by user.' -ForegroundColor Red
             Exit-Installer 0
         }
         $choices.ContinueWithoutR = $true
-        Write-Log 'User chose to continue without R' -Level WARN
+        Write-Log 'User chose to continue without any engine' -Level WARN
     }
 
     # 3. R found - install packages?
@@ -1764,11 +1780,75 @@ function New-StudioShortcut {
 #  Phase 6: Verification & Uninstaller
 # ============================================================
 
+function Get-EngineStatus {
+    [OutputType([PSCustomObject[]])]
+    param(
+        [PSCustomObject]$RInfo,
+        [PSCustomObject]$JuliaInfo,
+        [PSCustomObject]$PythonInfo
+    )
+    $engines = @(
+        @{ Name = 'R';      Info = $RInfo;      Url = 'https://cran.r-project.org/bin/windows/base/' },
+        @{ Name = 'Julia';  Info = $JuliaInfo;  Url = 'https://julialang.org/downloads/' },
+        @{ Name = 'Python'; Info = $PythonInfo; Url = 'https://www.python.org/downloads/' }
+    )
+    $status = @()
+    foreach ($e in $engines) {
+        $info = $e.Info
+        $found = [bool]($info -and $info.Found)
+        $version = ''
+        $path    = ''
+        if ($found) {
+            $version = $info.Version
+            $path    = $info.Path
+        }
+        $status += [PSCustomObject]@{
+            Name      = $e.Name
+            Url       = $e.Url
+            Available = [bool]($found -and $info.Adequate)
+            Version   = $version
+            Path      = $path
+        }
+    }
+    return $status
+}
+
+function Show-EngineSummary {
+    [OutputType([void])]
+    param(
+        [PSCustomObject]$RInfo,
+        [PSCustomObject]$JuliaInfo,
+        [PSCustomObject]$PythonInfo
+    )
+    $status  = Get-EngineStatus -RInfo $RInfo -JuliaInfo $JuliaInfo -PythonInfo $PythonInfo
+    $enabled = @($status | Where-Object { $_.Available })
+    $missing = @($status | Where-Object { -not $_.Available })
+
+    Write-Host ''
+    if ($enabled.Count -gt 0) {
+        $names = ($enabled | ForEach-Object { "$($_.Name) $($_.Version)" }) -join ', '
+        Write-Host "  Engines enabled: $names" -ForegroundColor Green
+    } else {
+        Write-Host '  Engines enabled: none' -ForegroundColor Yellow
+    }
+    foreach ($m in $missing) {
+        Write-Host "  $($m.Name) not available - official download: $($m.Url)" -ForegroundColor Yellow
+    }
+    if ($missing.Count -gt 0) {
+        Write-Host '  NEVEN does not install engines. Install them yourself and enable them from' -ForegroundColor Yellow
+        Write-Host '  NEVEN Studio > Settings > Motores, or re-run this installer with -ConfigureOnly.' -ForegroundColor Yellow
+    }
+    Write-Host ''
+}
+
 function Test-Installation {
     [OutputType([PSCustomObject])]
     param(
         [Parameter(Mandatory)][string]$TargetDir,
-        [Parameter(Mandatory)][string[]]$ExcelVersions
+        [Parameter(Mandatory)][string[]]$ExcelVersions,
+        [PSCustomObject]$RInfo,
+        [PSCustomObject]$JuliaInfo,
+        [PSCustomObject]$PythonInfo
     )
     $results = @()
 
@@ -1776,9 +1856,12 @@ function Test-Installation {
     $xllOk = Test-Path (Join-Path $TargetDir 'NEVEN64.xll')
     $results += [PSCustomObject]@{ Check = 'NEVEN64.xll exists'; Passed = $xllOk }
 
-    # 2. ControlR.exe exists
-    $crOk = Test-Path (Join-Path $TargetDir 'ControlR.exe')
-    $results += [PSCustomObject]@{ Check = 'ControlR.exe exists'; Passed = $crOk }
+    # 2. The three engine bridges exist (NEVEN always deploys them, with or
+    #    without the engine installed)
+    foreach ($bridge in @('ControlR.exe', 'ControlJulia.exe', 'ControlPython.exe')) {
+        $bridgeOk = Test-Path (Join-Path $TargetDir $bridge)
+        $results += [PSCustomObject]@{ Check = "$bridge exists"; Passed = $bridgeOk }
+    }
 
     # 3. neven-config.json exists
     $cfgOk = Test-Path (Join-Path $TargetDir 'neven-config.json')
@@ -1809,6 +1892,16 @@ function Test-Installation {
         }
     }
 
+    # Engine status is informative, never a failure: the engines are optional
+    # and the user installs them.
+    foreach ($engine in (Get-EngineStatus -RInfo $RInfo -JuliaInfo $JuliaInfo -PythonInfo $PythonInfo)) {
+        if ($engine.Available) {
+            Write-Log "Engine: $($engine.Name) $($engine.Version) at $($engine.Path) - enabled"
+        } else {
+            Write-Log "Engine: $($engine.Name) not available - disabled, official download $($engine.Url)"
+        }
+    }
+
     $allPassed = @($results | Where-Object { -not $_.Passed }).Count -eq 0
     return [PSCustomObject]@{ AllPassed = $allPassed; Results = $results }
 }
@@ -1817,7 +1910,10 @@ function Show-InstallationResult {
     param(
         [PSCustomObject]$VerificationResult,
         [string]$TargetDir,
-        [string]$LogPath
+        [string]$LogPath,
+        [PSCustomObject]$RInfo,
+        [PSCustomObject]$JuliaInfo,
+        [PSCustomObject]$PythonInfo
     )
     Write-Host ''
     $passCount = @($VerificationResult.Results | Where-Object { $_.Passed }).Count
@@ -1829,8 +1925,7 @@ function Show-InstallationResult {
         Write-Host '  ============================================' -ForegroundColor Green
         Write-Host ''
         Write-Host "  Install directory: $TargetDir" -ForegroundColor White
-        Write-Host '  To test: open Excel and enter  =NEVEN.R("1+1")  - should return 2' -ForegroundColor Cyan
-        Write-Host ''
+        Show-EngineSummary -RInfo $RInfo -JuliaInfo $JuliaInfo -PythonInfo $PythonInfo
         Write-Log "Verification: $passCount/$total checks passed"
     } else {
         Write-Host '  ============================================' -ForegroundColor Yellow
@@ -2014,6 +2109,22 @@ function New-Uninstaller {
 #  Config Patching
 # ============================================================
 
+function Set-ConfigValue {
+    [OutputType([void])]
+    param(
+        [Parameter(Mandatory)][PSCustomObject]$Node,
+        [Parameter(Mandatory)][string]$Name,
+        $Value
+    )
+    # A config written by an older version may not carry the key yet, and
+    # PSCustomObject refuses assignment to a property that does not exist.
+    if ($Node.PSObject.Properties[$Name]) {
+        $Node.$Name = $Value
+    } else {
+        $Node | Add-Member -MemberType NoteProperty -Name $Name -Value $Value
+    }
+}
+
 function Update-NEVENConfig {
     param(
         [Parameter(Mandatory)][string]$ConfigPath,
@@ -2021,7 +2132,8 @@ function Update-NEVENConfig {
         [PSCustomObject]$RInfo,
         [PSCustomObject]$JuliaInfo,
         [PSCustomObject]$PythonInfo,
-        [PSCustomObject]$LMStudioInfo
+        [PSCustomObject]$LMStudioInfo,
+        [bool]$IsUpdate = $false
     )
     if (-not (Test-Path $ConfigPath)) {
         Write-Log "Config file not found for patching: $ConfigPath" -Level WARN
@@ -2038,18 +2150,26 @@ function Update-NEVENConfig {
             $config.AI.promptsDirectory  = Join-Path $InstallDir 'prompts'
         }
 
-        # Patch language runtime paths
-        if ($RInfo.Found -and $RInfo.Path) {
-            $config.NEVEN.R.home = $RInfo.Path
-            Write-Log "Config: R home = $($RInfo.Path)"
-        }
-        if ($JuliaInfo.Found -and $JuliaInfo.Path) {
-            $config.NEVEN.Julia.home = $JuliaInfo.Path
-            Write-Log "Config: Julia home = $($JuliaInfo.Path)"
-        }
-        if ($PythonInfo.Found -and $PythonInfo.Path) {
-            $config.NEVEN.Python.home = $PythonInfo.Path
-            Write-Log "Config: Python home = $($PythonInfo.Path)"
+        # Patch the engine decision: 'home' for what was detected and 'enabled'
+        # for whether it is usable. Writing only 'home' leaves the detection
+        # without effect, because the engine is read from 'enabled'.
+        # In update mode a previous enabled:false set by the user wins over the
+        # detection (the original config is kept in neven-config.json.bak).
+        foreach ($engine in (Get-EngineStatus -RInfo $RInfo -JuliaInfo $JuliaInfo -PythonInfo $PythonInfo)) {
+            $node = $config.NEVEN.($engine.Name)
+            if (-not $node) {
+                Write-Log "Config: section NEVEN.$($engine.Name) missing - skipped" -Level WARN
+                continue
+            }
+            if ($engine.Path) {
+                Set-ConfigValue -Node $node -Name 'home' -Value $engine.Path
+            }
+            if ($IsUpdate -and ($node.enabled -eq $false)) {
+                Write-Log "Config: $($engine.Name) keeps enabled = false (user decision preserved on update)"
+            } else {
+                Set-ConfigValue -Node $node -Name 'enabled' -Value $engine.Available
+            }
+            Write-Log "Config: $($engine.Name) enabled = $($node.enabled), home = '$($node.home)'"
         }
 
         # Patch AI / LM Studio configuration
@@ -2067,7 +2187,7 @@ function Update-NEVENConfig {
         }
 
         # Write back as properly formatted JSON (UTF8 without BOM for C++ json11 parser)
-        $jsonStr = $config | ConvertTo-Json -Depth 5
+        $jsonStr = $config | ConvertTo-Json -Depth 10
         [System.IO.File]::WriteAllText($ConfigPath, $jsonStr, (New-Object System.Text.UTF8Encoding $false))
         Write-Log 'Patched neven-config.json with install dir and runtime paths'
         Write-Host '   [OK] Configuration patched with detected paths' -ForegroundColor Green
@@ -2100,6 +2220,41 @@ if (-not (Test-PowerShellVersion)) {
     Exit-Installer 1
 }
 
+# --- Configure-only mode: re-detect engines and patch the config, nothing else ---
+if ($ConfigureOnly) {
+    Write-Host '  Mode: -ConfigureOnly (engine detection and config patching only)' -ForegroundColor White
+    $cfgOnlyPath = Join-Path $InstallDir 'neven-config.json'
+    if (-not (Test-Path $cfgOnlyPath)) {
+        Write-Host "  ERROR: config file not found: $cfgOnlyPath" -ForegroundColor Red
+        Write-Host '  Install NEVEN first; -ConfigureOnly only reconfigures an existing installation.' -ForegroundColor Red
+        Exit-Installer 1
+    }
+    # Append to the existing install log instead of starting a new one
+    $cfgOnlyLog = Join-Path $InstallDir 'install.log'
+    if (Test-Path $cfgOnlyLog) { $script:LogFile = $cfgOnlyLog }
+    Write-Log 'ConfigureOnly: re-detecting engines'
+
+    $rInfo        = Find-R
+    $juliaInfo    = Find-Julia
+    $pythonInfo   = Find-Python
+    $lmStudioInfo = Find-LMStudio
+    $excelVers    = Find-ExcelVersions
+    $existingInst = Find-ExistingInstall -TargetPath $InstallDir
+
+    Show-PreflightSummary -RInfoRef ([ref]$rInfo) -JuliaInfoRef ([ref]$juliaInfo) -PythonInfoRef ([ref]$pythonInfo) `
+                          -ExcelVersions $excelVers -ExistingInstall $existingInst
+
+    # The user asked for a reconfiguration, so the detection wins: this is not
+    # an update of an existing install and no previous enabled:false is kept.
+    Update-NEVENConfig -ConfigPath $cfgOnlyPath -InstallDir $InstallDir -RInfo $rInfo -JuliaInfo $juliaInfo `
+                       -PythonInfo $pythonInfo -LMStudioInfo $lmStudioInfo -IsUpdate $false
+
+    Show-EngineSummary -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo
+    Write-Log 'ConfigureOnly: configuration updated, nothing deployed or registered'
+    Write-Host '  Restart Excel for the new engine configuration to take effect.' -ForegroundColor Cyan
+    Exit-Installer 0
+}
+
 # Validate Dist directory
 if (-not (Test-Path $DistDir)) {
     Write-Host "  ERROR: Distribution directory not found: $DistDir" -ForegroundColor Red
@@ -2128,7 +2283,7 @@ Show-LMStudioSetup -LMStudioInfo $lmStudioInfo -Silent:$Silent
 
 # --- Phase 2: User Choices ---
 Write-Host '  Phase 2: Configuration...' -ForegroundColor White
-$choices = Get-UserChoices -RInfo $rInfo -JuliaInfo $juliaInfo -ExistingInstall $existingInst
+$choices = Get-UserChoices -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo -ExistingInstall $existingInst
 
 # Initialize log file now that install dir is confirmed
 $logPath = Join-Path $choices.InstallDir 'install.log'
@@ -2185,7 +2340,7 @@ if (-not $deployOk) {
 
 # Patch config with detected paths
 $configPath = Join-Path $choices.InstallDir 'neven-config.json'
-Update-NEVENConfig -ConfigPath $configPath -InstallDir $choices.InstallDir -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo -LMStudioInfo $lmStudioInfo
+Update-NEVENConfig -ConfigPath $configPath -InstallDir $choices.InstallDir -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo -LMStudioInfo $lmStudioInfo -IsUpdate $choices.IsUpdate
 
 # --- Phase 4: Registration ---
 Write-Host ''
@@ -2453,8 +2608,10 @@ if ($juliaInfo.Found -and $juliaInfo.Adequate) {
 # --- Phase 7: Verification ---
 Write-Host ''
 Write-Host '  Phase 7: Verification...' -ForegroundColor White
-$verification = Test-Installation -TargetDir $choices.InstallDir -ExcelVersions $excelVers
-Show-InstallationResult -VerificationResult $verification -TargetDir $choices.InstallDir -LogPath $logPath
+$verification = Test-Installation -TargetDir $choices.InstallDir -ExcelVersions $excelVers `
+                                 -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo
+Show-InstallationResult -VerificationResult $verification -TargetDir $choices.InstallDir -LogPath $logPath `
+                        -RInfo $rInfo -JuliaInfo $juliaInfo -PythonInfo $pythonInfo
 
 # Generate uninstaller
 New-Uninstaller -TargetDir $choices.InstallDir -ExcelVersions $excelVers
