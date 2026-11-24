@@ -1,0 +1,21 @@
+# Fallos y errores de Python presentes en la base db8dde1 (antes de B-02), medidos con scripts/run_python_tests.py.
+# Un id por linea. No estan ocultos: el runner los cuenta e imprime en cada ejecucion.
+# Su tratamiento (arreglar test, arreglar codigo o declarar xfail) esta pendiente de decision del usuario.
+Install/scripts/test_rag_queries.py::test_query
+TaskPane/tests/test_pipe_client_2_1.py::TestPipeClientConstructor::test_max_response_bytes_class_constant
+TaskPane/tests/test_start_studio_4_1.py::TestResolveLanguages::test_cli_arg_all_invalid_falls_back_to_all_languages
+TaskPane/tests/test_start_studio_4_1.py::TestResolveLanguages::test_config_empty_languages_falls_back_to_all
+TaskPane/tests/test_start_studio_4_1.py::TestResolveLanguages::test_config_no_languages_key_falls_back_to_all
+TaskPane/tests/test_start_studio_4_1.py::TestResolveLanguages::test_no_config_no_arg_returns_all
+TaskPane/tests/test_start_studio_4_2.py::TestLaunchControl::test_launches_with_correct_pipe_arg_julia
+TaskPane/tests/test_start_studio_4_2.py::TestLaunchControl::test_launches_with_correct_pipe_arg_python
+TaskPane/tests/test_start_studio_4_2.py::TestLaunchControl::test_launches_with_correct_pipe_arg_r
+TaskPane/tests/test_start_studio_4_4.py::TestEnabledLanguagesControlProcessLaunch::test_each_process_has_correct_pipe_name_arg
+TaskPane/tests/test_start_studio_4_4.py::TestLaunchControlArguments::test_julia_pipe_name_in_args
+TaskPane/tests/test_start_studio_4_4.py::TestLaunchControlArguments::test_pipe_flag_precedes_pipe_name
+TaskPane/tests/test_start_studio_4_4.py::TestLaunchControlArguments::test_python_pipe_name_in_args
+TaskPane/tests/test_start_studio_4_4.py::TestLaunchControlArguments::test_r_pipe_name_in_args
+scripts/ontology/test_wiley_search.py
+startup/test_rag_queries.py::test_query
+tests/test_datalab_handler.py::test_handle_run_no_columns_assigned
+tests/test_datalab_handler.py::test_handle_run_unsupported_language
