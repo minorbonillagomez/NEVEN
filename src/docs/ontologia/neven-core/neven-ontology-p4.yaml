@@ -422,9 +422,24 @@ componentes:
           -ConfigureOnly escriben ahi desde la sesion del usuario, sin elevar. Los
           ficheros reciben (RX,W) y no (M): se escriben en sitio y no necesitan
           DELETE, asi que tambien ahi el cambio restringe.
+        solo_donde_ya_existia: >
+          La clase datos conserva la escritura, no la crea. El destino lo elige el
+          usuario (Read-Host en Install-NEVEN.ps1, MUI_PAGE_DIRECTORY en el .nsi) y
+          una carpeta protegida como C:\Program Files\NEVEN no concede escritura a
+          ningun usuario sin privilegios: emitir ahi esta tabla abriria el mismo
+          vector que el script cierra, sobre functions\*.R que NEVEN carga en R y
+          sobre neven-config.json con el que se apaga el sandbox. Get-DataBaseline
+          mide el destino antes de tocarlo, ruta por ruta, contando solo los grupos
+          a los que pertenece cualquier usuario de la maquina (S-1-1-0, S-1-5-11,
+          S-1-5-32-545, S-1-5-4) y restando los Deny. Se emite (M) solo si todos sus
+          bits ya estaban, (RX,W) si solo estaban los de escribir en sitio, y nada si
+          no habia escritura; el (AD) de la raiz se gobierna igual. Donde no se
+          concede, la ruta queda en RX y el informe lo dice con su consecuencia:
+          guardar funciones o prompts y reconfigurar los motores en ese destino
+          exigira una consola elevada.
       exposicion_residual:
-        - 'functions\ y prompts\ siguen escribibles por cualquier usuario autenticado, y NEVEN carga functions\*.R en R dentro de Excel. Cerrarlo exige una decision de producto sobre /api/functions/create, /api/script/save y el FileWatchService.'
-        - 'neven-config.json sigue escribible: es el fichero por el que se puede apagar el sandbox, y el que reescriben Studio > Settings > Motores y -ConfigureOnly.'
+        - 'Bajo C:\, functions\ y prompts\ son escribibles por cualquier usuario autenticado, y NEVEN carga functions\*.R en R dentro de Excel. Cerrarlo exige una decision de producto sobre /api/functions/create, /api/script/save y el FileWatchService.'
+        - 'Bajo C:\, neven-config.json es escribible: es el fichero por el que se puede apagar el sandbox, y el que reescriben Studio > Settings > Motores y -ConfigureOnly.'
         - 'certs\localhost.key deja de ser escribible, pero sigue siendo legible por usuarios autenticados: el servidor HTTP lo lee sin elevar.'
         - 'studio.pid y neven_julia.version ya no se pueden crear en la raiz desde una sesion sin privilegios, asi que generar la sysimage de Julia despues de instalar necesita una consola elevada.'
         - 'Desinstalar sin elevacion ya no borra los ficheros endurecidos; los dos desinstaladores de PowerShell lo avisan antes de pedir confirmacion.'
@@ -608,6 +623,9 @@ componentes:
           Los ficheros que NEVEN ejecuta en $INSTDIR no son modificables por usuarios
           sin privilegios, y toda operacion de permisos comprueba su codigo de salida.
           El modelo de las dos clases esta en install_scripts.permisos_instalacion.
+          El endurecimiento solo restringe: ninguna de sus concesiones se emite si el
+          destino no la concedia ya a los usuarios antes de instalar, medido ruta por
+          ruta (clase_datos.solo_donde_ya_existia).
           Un endurecimiento que no se pudo aplicar es visible: se dice el motivo
           medido, se registra en install.log y solo se continua con una aceptacion
           explicita del usuario; en modo desatendido se aborta. Las clases se miden

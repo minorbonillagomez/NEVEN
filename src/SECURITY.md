@@ -118,6 +118,16 @@ grupo estan localizados:
 | Datos | `functions\`, `prompts\`, `logs\`, `temp\`, `graphics\`, `notebooks\`, `data\`, `workspace\`, `webview2-data\`, `crashes\`, `user-charts\`, `bridge\` | Modificar: ahi escriben el servidor HTTP y el FileWatchService sin elevar |
 | Datos | `neven-config.json`, `neven-config.json.bak`, `install.log`, `packages-status-cache.json`, `neven.log` | Leer, ejecutar y escribir; sin borrar |
 
+La clase datos conserva la escritura, pero no la crea. El destino lo elige el
+usuario, y una carpeta protegida como `C:\Program Files\NEVEN` no concede
+escritura a ningun usuario sin privilegios: conceder ahi la tabla abriria el mismo
+vector que el script cierra. Por eso el script mide el destino antes de tocarlo,
+por ruta y contando solo los grupos a los que pertenece cualquier usuario de la
+maquina, y emite cada concesion solo si todos sus permisos ya estaban ahi. Donde
+no estaban, la ruta queda en lectura y ejecucion, el informe lo dice y avisa de lo
+que implica: guardar funciones o prompts y reconfigurar los motores en ese destino
+exigira una consola elevada.
+
 Los dos instaladores llaman al script en dos puntos: un sondeo antes de copiar el
 primer fichero y la aplicacion cuando ya no queda nada por escribir. Cada
 operacion comprueba su codigo de salida, y un endurecimiento que no se pudo
@@ -131,11 +141,12 @@ powershell -NoProfile -File C:\NEVEN\Set-InstallPermissions.ps1 -InstallDir C:\N
 # exit 0 sin hallazgos, 1 con hallazgos de ACL, 2 si alguna operacion fallo
 ```
 
-Exposicion residual, que el propio script imprime: `functions\` y `prompts\`
-siguen escribibles y NEVEN carga `functions\*.R` en R dentro de Excel;
-`neven-config.json` sigue escribible, y es el fichero por el que se puede apagar
-el sandbox; `certs\localhost.key` deja de ser escribible pero sigue siendo
-legible; y desinstalar sin elevacion ya no borra los ficheros endurecidos.
+Exposicion residual, que el propio script imprime a partir de lo que mide: en una
+instalacion bajo `C:\`, `functions\` y `prompts\` son escribibles y NEVEN carga
+`functions\*.R` en R dentro de Excel, y `neven-config.json` es escribible y es el
+fichero por el que se puede apagar el sandbox; `certs\localhost.key` deja de ser
+escribible pero sigue siendo legible; y desinstalar sin elevacion ya no borra los
+ficheros endurecidos.
 
 ---
 
