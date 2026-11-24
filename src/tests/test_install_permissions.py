@@ -16,6 +16,8 @@ Tres direcciones, que son las que exige la verificacion de la tarea:
    directorios de datos siguen escribiendose sin elevar.
 3. Una operacion de permisos que falla se reporta con su codigo, en vez de pasar
    inadvertida.
+4. En un destino protegido, donde los usuarios no podian escribir antes de
+   instalar, la clase datos no les concede nada: el script solo restringe.
 
 No hace falta elevacion: el usuario es dueno del arbol que crea en TEMP, asi que
 puede cambiar su DACL. Tampoco hace falta R, Julia ni Python (``INV-TEST-03``).
@@ -87,7 +89,30 @@ def _is_writable_by_authenticated_users(path):
     return proc.stdout.strip() == "yes"
 
 
-def _make_tree(root):
+def _icacls(*arguments):
+    subprocess.run(
+        ["icacls.exe"] + list(arguments),
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    )
+
+
+def _current_user_sid():
+    proc = subprocess.run(
+        [
+            _POWERSHELL, "-NoProfile", "-Command",
+            "[System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    return proc.stdout.strip()
+
+
+def _make_tree(root, grant_authenticated_users=True):
     """Construye un arbol con la forma de una instalacion y la herencia de C:\\."""
     for relative in ("startup", "TaskPane", "functions", "certs", "libreria"):
         os.makedirs(os.path.join(root, relative), exist_ok=True)
@@ -96,14 +121,9 @@ def _make_tree(root):
             handle.write("placeholder\n")
     with open(os.path.join(root, "neven-config.json"), "w", encoding="utf-8") as handle:
         handle.write("{}")
-    # La misma concesion que un directorio bajo C:\ recibe por herencia.
-    subprocess.run(
-        ["icacls.exe", root, "/grant", "*S-1-5-11:(OI)(CI)(M)"],
-        capture_output=True,
-        text=True,
-        timeout=120,
-        check=True,
-    )
+    if grant_authenticated_users:
+        # La misma concesion que un directorio bajo C:\ recibe por herencia.
+        _icacls(root, "/grant", "*S-1-5-11:(OI)(CI)(M)")
 
 
 @pytest.fixture(scope="module")
@@ -191,6 +211,65 @@ def test_the_probe_measures_without_leaving_anything_behind(tmp_path):
     assert not os.path.exists(os.path.join(root, ".neven-acl-probe")), report
     # El sondeo no toca el resto del arbol: mide y se retira.
     assert os.path.isfile(os.path.join(root, "NEVEN64.xll"))
+
+
+@pytest.fixture(scope="module")
+def protected(tmp_path_factory):
+    """Instala en un destino que no concedia escritura a los usuarios.
+
+    Es la forma de ``C:\\Program Files``, donde la herencia solo da lectura y
+    ejecucion a los usuarios: ahi la clase datos no puede conceder escritura sin
+    crear el mismo vector de escalada que el script cierra.
+    """
+    if _POWERSHELL is None:
+        pytest.skip("powershell.exe no esta disponible")
+
+    parent = str(tmp_path_factory.mktemp("protected_parent"))
+    # Se corta la herencia del padre y se deja solo a los administradores y al
+    # usuario que corre el test, que es el dueno y puede cambiar la DACL sin elevar.
+    _icacls(
+        parent, "/inheritance:r",
+        "/grant", "*S-1-5-32-544:(OI)(CI)(F)",
+        "/grant", "*{0}:(OI)(CI)(F)".format(_current_user_sid()),
+    )
+
+    root = os.path.join(parent, "NEVEN")
+    os.makedirs(root)
+    _make_tree(root, grant_authenticated_users=False)
+
+    code, output = _run("-InstallDir", root, "-Json")
+    return {"root": root, "code": code, "report": json.loads(output)}
+
+
+def test_a_protected_destination_gets_no_new_write_grant(protected):
+    # Ninguna concesion de la clase datos: el destino no la tenia.
+    granted = [entry for entry in protected["report"]["DataClass"] if entry["Granted"]]
+    assert granted == [], granted
+    # Lo unico que se concede a los usuarios es leer y ejecutar. Ni (M), ni
+    # (RX,W), ni el (AD) que deja crear subdirectorios en la raiz.
+    write_grants = ("S-1-5-11:(OI)(CI)(M)", "S-1-5-11:(OI)(CI)(RX,W)", "S-1-5-11:(RX,W)", "S-1-5-11:(AD)")
+    assert not [
+        op for op in protected["report"]["Operations"]
+        if any(grant in op["Args"] for grant in write_grants)
+    ], protected["report"]["Operations"]
+
+
+def test_a_protected_destination_keeps_the_data_paths_read_only(protected):
+    for relative in _DATA_DIRS:
+        path = os.path.join(protected["root"], relative)
+        assert os.path.isdir(path), relative
+        assert not _is_writable_by_authenticated_users(path), relative
+    config = os.path.join(protected["root"], "neven-config.json")
+    assert not _is_writable_by_authenticated_users(config)
+
+
+def test_a_protected_destination_says_what_quedar_en_solo_lectura_implies(protected):
+    # La politica del producto: lo que no se pudo dejar escribible se dice con su
+    # motivo y su consecuencia, no se oculta.
+    residual = " ".join(protected["report"]["Residual"]).lower()
+    assert "solo lectura" in residual, residual
+    assert "elevada" in residual, residual
+    assert "functions" in residual, residual
 
 
 def test_the_report_is_parseable_json_and_names_the_residual_exposure(hardened):
