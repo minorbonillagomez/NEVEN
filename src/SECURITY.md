@@ -42,6 +42,7 @@ NEVEN es un add-in de Excel que permite ejecutar codigo R, Julia y Python direct
 | Archivos Excel maliciosos | Inherente al proposito de NEVEN | Solo abrir archivos de fuentes confiables |
 | Vulnerabilidades en R/Julia/Python | Dependencias externas | Mantener motores actualizados |
 | Codigo malicioso dentro de funciones permitidas | Imposible distinguir intent | Revisar codigo antes de ejecutar |
+| Otro usuario de la misma maquina escribe en `functions\` o `prompts\` | NEVEN asume una instalacion de un solo usuario por maquina. En un equipo compartido, un usuario autenticado podria dejar un `.R` en `functions\` que NEVEN carga dentro de R | No instalar en equipos compartidos. Si el producto llega a ellos, reabrir la decision con una carpeta de funciones por usuario |
 
 ---
 
