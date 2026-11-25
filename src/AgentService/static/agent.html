@@ -938,8 +938,15 @@ window._onRunSuggestion = function(btnEl) {
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(spec),
     })
-    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      if (r.status === 401 || r.status === 403) {
+        _showToast('Rechazado por NEVEN Studio (' + r.status + '): esta pagina no tiene el secreto de sesion. Ejecute el analisis desde NEVEN Studio.');
+        return null;
+      }
+      return r.json();
+    })
     .then(function(data) {
+      if (!data) return;
       if (data.status === 'ok') {
         _showToast('Análisis enviado a NEVEN Studio');
       } else {

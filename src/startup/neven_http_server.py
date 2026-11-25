@@ -851,7 +851,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
         """Reject requests whose Host or Origin is not local (DNS rebinding / web pages)."""
         host = self.headers.get('Host')
         origin = self.headers.get('Origin')
-        if (host and not _host_is_local(host)) or (origin and not _origin_is_local(origin)):
+        if (not host or not _host_is_local(host)) or (origin and not _origin_is_local(origin)):
             _log.warning(f"Rejected non-local request (Host={host!r}, Origin={origin!r})")
             self._send_json({"status": "error", "code": "forbidden_origin",
                              "message": "Peticion rechazada: Host u Origin no son locales."}, 403)
@@ -3055,14 +3055,15 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_error_json(f"Extensión '{ext}' no permitida. Use .r, .py o .jl")
             return
 
-        # Solo directorios permitidos (functions\\, workspace\\, Documents\\NEVEN);
+        # Solo directorios permitidos (functions\\, viewersDir, graphics\\);
         # rutas absolutas externas y '..' se rechazan.
         functions_dir = _config.get("functionsDir",
                         _config.get("Standalone", {}).get("functionsDir", r"C:\NEVEN\functions"))
         allowed_dirs = [
             _os.path.normpath(functions_dir),
-            _os.path.normpath(r"C:\NEVEN\workspace"),
-            _os.path.normpath(_os.path.expanduser("~/Documents/NEVEN")),
+            _os.path.normpath(_config.get("viewersDir", "C:\\NEVEN\\workspace")),
+            _os.path.normpath(_os.path.expanduser("~/Documents/NEVEN/graphics")),
+            _os.path.normpath(r"C:\NEVEN\graphics"),
         ]
         safe_path = _resolve_save_path(path, allowed_dirs)
         if safe_path is None:

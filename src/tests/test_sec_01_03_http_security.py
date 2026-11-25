@@ -168,6 +168,19 @@ def test_foreign_host_is_rejected(live):
     assert status == 403
 
 
+def test_missing_host_is_rejected(live):
+    status, _, _ = _req(live, "GET", "/health", token=False, host="")
+    assert status == 403
+
+
+def test_agent_html_run_suggestion_fails_visibly_without_token():
+    """agent.html (puerto 5556) no recibe el secreto: un 401/403 debe verse, no ocultarse."""
+    html = (pathlib.Path(__file__).resolve().parents[1] / "AgentService" / "static" / "agent.html").read_text(encoding="utf-8")
+    i = html.index("/api/ai/run_suggestion")
+    block = html[i:i + 1200]
+    assert "r.status === 401" in block and "_showToast(" in block
+    assert "neven-token" not in html
+
 # ── Entrega del secreto al TaskPane ───────────────────────────────────────────
 
 def test_taskpane_html_receives_token_meta(live):
@@ -213,5 +226,5 @@ def test_preflight_advertises_token_header(live):
 
 def test_auth_wrapper_is_limited_to_the_page_origin():
     js = (pathlib.Path(__file__).resolve().parents[1] / "TaskPane" / "neven-auth.js").read_text(encoding="utf-8")
-    assert "u.origin === window.location.origin" in js
+    assert "u.host === window.location.host" in js
     assert "localhost'" not in js
