@@ -359,12 +359,14 @@ class TestResolveLanguages(unittest.TestCase):
         self.assertIn("WARNING", output)
         self.assertIn("fortran", output)
 
-    def test_cli_arg_all_invalid_falls_back_to_all_languages(self):
-        """If all CLI languages are invalid, all three languages are enabled."""
+    def test_cli_arg_all_invalid_returns_empty_set_with_warning(self):
+        """If all CLI languages are invalid, no engine is enabled and it warns."""
         import io
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             result = resolve_languages({}, "cobol,fortran")
-        self.assertEqual(result, VALID_LANGUAGES)
+            output = mock_err.getvalue()
+        self.assertEqual(result, set())
+        self.assertIn("No valid languages", output)
 
     def test_cli_arg_overrides_config(self):
         """CLI --languages overrides what the config says (Req 9.6)."""
@@ -382,17 +384,17 @@ class TestResolveLanguages(unittest.TestCase):
         result = resolve_languages(config, None)
         self.assertEqual(result, {"r", "julia"})
 
-    def test_config_empty_languages_falls_back_to_all(self):
-        """Empty languages list in config enables all three."""
+    def test_config_empty_languages_without_enabled_engines_returns_empty_set(self):
+        """Empty languages list and no enabled engine in config: no engines."""
         config = _make_config_with_standalone(languages=[])
         result = resolve_languages(config, None)
-        self.assertEqual(result, VALID_LANGUAGES)
+        self.assertEqual(result, set())
 
-    def test_config_no_languages_key_falls_back_to_all(self):
-        """Absent languages key in config enables all three."""
+    def test_config_no_languages_key_without_enabled_engines_returns_empty_set(self):
+        """Absent languages key and no enabled engine in config: no engines."""
         config = {"Standalone": {}}
         result = resolve_languages(config, None)
-        self.assertEqual(result, VALID_LANGUAGES)
+        self.assertEqual(result, set())
 
     def test_config_invalid_language_entry_dropped(self):
         """Invalid entries in config languages are silently dropped."""
@@ -404,10 +406,10 @@ class TestResolveLanguages(unittest.TestCase):
         self.assertEqual(result, {"r"})
         self.assertIn("WARNING", output)
 
-    def test_no_config_no_arg_returns_all(self):
-        """No config and no CLI arg → all three languages enabled."""
+    def test_no_config_no_arg_returns_empty_set(self):
+        """No config and no CLI arg: no engine is enabled, the server starts alone."""
         result = resolve_languages({}, None)
-        self.assertEqual(result, VALID_LANGUAGES)
+        self.assertEqual(result, set())
 
     # ------------------------------------------------------------------
     # Return type
