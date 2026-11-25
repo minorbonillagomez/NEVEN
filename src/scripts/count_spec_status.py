@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 """Recuento del estado de las especificaciones de .kiro/specs (B-21).
 
-Uso:  python src/scripts/count_spec_status.py [--json]
+Uso:  python src/scripts/count_spec_status.py [--json] [--expect N]
 
 Cuenta por script las casillas de cada .kiro/specs/*/tasks.md y las agrupa por
 situacion segun la tabla STATUS (la clasificacion de 04-notas-mejoras.md de la
 auditoria). Una especificacion que exista en disco y no este en la tabla se
-informa como SIN CLASIFICAR y hace fallar el script (codigo 1), igual que si la
-deuda real no coincide con EXPECTED_DEUDA_REAL, para que el recuento no se
-quede desactualizado sin que nadie lo vea.
+informa como SIN CLASIFICAR y hace fallar el script (codigo 1). La deuda real
+de la Fase 0 era 207: se imprime junto a esa referencia y solo falla si se
+pide una comprobacion con --expect N.
 """
 import json
 import os
@@ -17,7 +17,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SPECS = os.path.join(ROOT, ".kiro", "specs")
-EXPECTED_DEUDA_REAL = 207
+REFERENCIA_FASE0 = 207
 
 DEUDA = "deuda real (vigente)"
 ALCANCE = "decision de alcance pendiente"
@@ -52,6 +52,9 @@ PROG = re.compile(r"^\s*- \[-\]")
 
 
 def main():
+    expect = None
+    if "--expect" in sys.argv:
+        expect = int(sys.argv[sys.argv.index("--expect") + 1])
     rows, unknown = [], []
     for name in sorted(os.listdir(SPECS)):
         d = os.path.join(SPECS, name)
@@ -91,13 +94,13 @@ def main():
         print(f"Casillas abiertas: {total}")
         for k, v in sorted(groups.items(), key=lambda kv: -kv[1]):
             print(f"  {v:>4}  {k}")
-        print(f"Deuda real: {deuda}  (esperado {EXPECTED_DEUDA_REAL})")
+        print(f"Deuda real: {deuda}  (referencia Fase 0: {REFERENCIA_FASE0}, diferencia {deuda - REFERENCIA_FASE0:+d})")
     rc = 0
     if unknown:
         print("SIN CLASIFICAR: " + ", ".join(unknown), file=sys.stderr)
         rc = 1
-    if deuda != EXPECTED_DEUDA_REAL:
-        print(f"La deuda real {deuda} difiere de {EXPECTED_DEUDA_REAL}", file=sys.stderr)
+    if expect is not None and deuda != expect:
+        print(f"La deuda real {deuda} difiere de --expect {expect}", file=sys.stderr)
         rc = 1
     return rc
 

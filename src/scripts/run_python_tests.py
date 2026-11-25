@@ -40,6 +40,9 @@ class Collector:
         if report.when == "call":
             if wasxfail is not None:
                 self._set(nid, "xfailed" if report.skipped else "xpassed", wasxfail)
+            elif report.skipped:
+                reason = report.longrepr[2] if isinstance(report.longrepr, tuple) else str(report.longrepr)
+                self._set(nid, "skipped", reason)
             elif report.passed:
                 self.outcomes.setdefault(nid, ("passed", ""))
             elif report.failed:

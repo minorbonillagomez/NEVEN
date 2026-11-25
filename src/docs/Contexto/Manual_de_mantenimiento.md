@@ -1,4 +1,4 @@
-﻿# Manual de Mantenimiento — NEVEN 2.0
+# Manual de Mantenimiento — NEVEN 2.0
 
 ## Para desarrolladores y administradores del sistema
 
@@ -77,6 +77,19 @@ powershell -ExecutionPolicy Bypass -File build.ps1 -Clean -Config Release
 cd Build
 cmake .. -A x64 -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build . --config Release
+```
+
+### Tests de Python y estado de especificaciones
+
+```cmd
+:: Tests de Python: recuento de pasados, fallados, errores, saltados y xfail,
+:: con los fallos de la base (src/tests/python_baseline_failures.txt) separados de los nuevos
+:: Requiere: pip install pytest
+:: Salida 1 si hay fallos nuevos; --strict la da ante cualquier fallo.
+:: Ejecutado directamente con pytest no se separan los fallos de la base.
+python src\scripts\run_python_tests.py
+:: Recuento de casillas de .kiro/specs (la deuda real de la Fase 0 fue 207)
+python src\scripts\count_spec_status.py [--json] [--expect N]
 ```
 
 ### Compilación individual de componentes
