@@ -25,6 +25,7 @@
 #include <Gdiplus.h>
 
 #include "../Common/user_button.h"
+#include "../Common/SessionToken.h"
 #include <vector>
 
 typedef IDispatchImpl<IRibbonExtensibility, &__uuidof(IRibbonExtensibility), &LIBID_Office, /* wMajor = */ 2, /* wMinor = */ 4> RIBBON_INTERFACE;
@@ -974,8 +975,9 @@ public:
                                                      nullptr, WINHTTP_NO_REFERER,
                                                      WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
                   if (hR) {
-                      WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                                         nullptr, 0, 0, 0);
+                      const std::wstring tokHdr = neven::SessionTokenHeader();
+                      WinHttpSendRequest(hR, tokHdr.empty() ? WINHTTP_NO_ADDITIONAL_HEADERS : tokHdr.c_str(),
+                                         tokHdr.empty() ? 0 : (DWORD)-1, nullptr, 0, 0, 0);
                       WinHttpReceiveResponse(hR, nullptr);
                       WinHttpCloseHandle(hR);
                   }
@@ -1424,8 +1426,9 @@ public:
                                                  nullptr, WINHTTP_NO_REFERER,
                                                  WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
               if (hR) {
-                  shutdown_sent = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                                                      nullptr, 0, 0, 0) != 0;
+                  const std::wstring tokHdr = neven::SessionTokenHeader();
+                  shutdown_sent = WinHttpSendRequest(hR, tokHdr.empty() ? WINHTTP_NO_ADDITIONAL_HEADERS : tokHdr.c_str(),
+                                     tokHdr.empty() ? 0 : (DWORD)-1, nullptr, 0, 0, 0) != 0;
                   WinHttpCloseHandle(hR);
               }
               WinHttpCloseHandle(hC);

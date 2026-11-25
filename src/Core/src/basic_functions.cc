@@ -32,6 +32,7 @@
 #include "ConfigService.h"
 #include "ViewerManager.h"
 #include "engine_availability.h"
+#include "SessionToken.h"
 
 // WinHTTP — usado por RJ_IA_Contexto para POST a localhost:5555
 #include <winhttp.h>
@@ -1972,12 +1973,13 @@ RJ_IA_Contexto(LPXLOPER12 data_range, LPXLOPER12 results_range) {
         hConn = WinHttpConnect(hSess, L"localhost",
                                static_cast<INTERNET_PORT>(post_port), 0);
     }
+    const std::wstring hdrs = L"Content-Type: application/json\r\n" + neven::SessionTokenHeader();
     if (hConn) hReq  = WinHttpOpenRequest(hConn, L"POST", L"/api/ai/context",
                                           nullptr, WINHTTP_NO_REFERER,
                                           WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
     if (hReq) {
         BOOL sent = WinHttpSendRequest(hReq,
-                                       L"Content-Type: application/json\r\n", (DWORD)-1,
+                                       hdrs.c_str(), (DWORD)-1,
                                        (LPVOID)json_body.c_str(),
                                        (DWORD)json_body.size(),
                                        (DWORD)json_body.size(), 0);

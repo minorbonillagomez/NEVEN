@@ -475,6 +475,87 @@ _server_instance = None
 _server_port = None
 _config = {}
 
+# ─── Session security (SEC-01 / SEC-03) ───────────────────────────────────────
+# A random secret is generated each time the server starts. Clients (TaskPane,
+# Ribbon, Core) send it in the X-NEVEN-Token header on every POST. The TaskPane
+# receives it as a <meta> tag injected into the HTML it is served; native
+# clients read it from the per-user token file.
+import hmac as _hmac
+import secrets as _secrets
+
+TOKEN_HEADER = "X-NEVEN-Token"
+_session_token = None
+_LOCAL_HOSTNAMES = ("localhost", "127.0.0.1", "::1")
+
+
+def _token_file_path():
+    """Per-user file where native clients read the session secret."""
+    custom = _config.get("tokenFile")
+    if custom:
+        return custom
+    base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    return os.path.join(base, "NEVEN", "session.token")
+
+
+def _init_session_token():
+    """Generate a new secret and publish it to the per-user token file."""
+    global _session_token
+    _session_token = _secrets.token_urlsafe(32)
+    path = _token_file_path()
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
+            f.write(_session_token)
+    except OSError as e:
+        _log.error(f"Cannot write session token file {path}: {e}. "
+                   "Ribbon and native clients will be rejected (HTTP 401).")
+    return _session_token
+
+
+def _host_is_local(host_header):
+    """True if a Host header value names this machine (any port)."""
+    h = (host_header or "").strip().lower()
+    if h.startswith("["):
+        h = h[1:].split("]")[0]
+    else:
+        h = h.split(":")[0]
+    return h in _LOCAL_HOSTNAMES
+
+
+def _origin_is_local(origin):
+    """True if an Origin header is http(s) on localhost / 127.0.0.1 / ::1."""
+    try:
+        u = urlparse(origin)
+        return u.scheme in ("http", "https") and (u.hostname or "").lower() in _LOCAL_HOSTNAMES
+    except ValueError:
+        return False
+
+
+def _token_matches(supplied):
+    """Constant-time comparison against the session secret."""
+    if not _session_token or not supplied:
+        return False
+    return _hmac.compare_digest(supplied.encode("utf-8"), _session_token.encode("utf-8"))
+
+
+def _resolve_save_path(path, allowed_dirs):
+    """Resolve *path* (relative paths are taken inside allowed_dirs[0]).
+
+    Returns the real absolute path if it lies inside one of *allowed_dirs*
+    (after resolving '..' and symlinks), otherwise None.
+    """
+    candidate = path if os.path.isabs(path) else os.path.join(allowed_dirs[0], path)
+    real = os.path.realpath(candidate)
+    for d in allowed_dirs:
+        base = os.path.realpath(d)
+        try:
+            if os.path.commonpath([real, base]) == base and real != base:
+                return real
+        except ValueError:
+            continue
+    return None
+
 # ── Estado global del contexto Excel → Tab IA ─────────────────────────────
 # Almacena el último contexto publicado por =NEVEN.IA.Contexto()
 # Se consume al ser leído por GET /api/ai/context/pending
@@ -757,13 +838,40 @@ class NEVENHandler(BaseHTTPRequestHandler):
         self._send_json({"status": "error", "message": message}, status)
 
     def _add_cors_headers(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.send_header('Access-Control-Max-Age', '86400')
+        # No wildcard: only a local Origin is echoed back.
+        origin = self.headers.get('Origin')
+        if origin and _origin_is_local(origin):
+            self.send_header('Access-Control-Allow-Origin', origin)
+            self.send_header('Vary', 'Origin')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, ' + TOKEN_HEADER)
+            self.send_header('Access-Control-Max-Age', '600')
+
+    def _guard_local(self):
+        """Reject requests whose Host or Origin is not local (DNS rebinding / web pages)."""
+        host = self.headers.get('Host')
+        origin = self.headers.get('Origin')
+        if (host and not _host_is_local(host)) or (origin and not _origin_is_local(origin)):
+            _log.warning(f"Rejected non-local request (Host={host!r}, Origin={origin!r})")
+            self._send_json({"status": "error", "code": "forbidden_origin",
+                             "message": "Peticion rechazada: Host u Origin no son locales."}, 403)
+            return False
+        return True
+
+    def _guard_token(self):
+        """Require the per-session secret on state-changing (POST) requests."""
+        if _token_matches(self.headers.get(TOKEN_HEADER)):
+            return True
+        _log.warning("Rejected POST without a valid session token")
+        self._send_json({"status": "error", "code": "auth_required",
+                         "message": "Peticion rechazada: falta o es invalido el secreto de sesion "
+                                    "(X-NEVEN-Token). Recargue NEVEN Studio o reinicie el servidor."}, 401)
+        return False
 
     def do_OPTIONS(self):
         """Handle CORS preflight."""
+        if not self._guard_local():
+            return
         self.send_response(204)
         self._add_cors_headers()
         self.end_headers()
@@ -772,6 +880,8 @@ class NEVENHandler(BaseHTTPRequestHandler):
         """Serve static files and health endpoint."""
         if not _rate_limiter.allow():
             self._send_error_json("Rate limit exceeded (300 req/min)", 429)
+            return
+        if not self._guard_local():
             return
 
         parsed = urlparse(self.path)
@@ -1175,7 +1285,15 @@ class NEVENHandler(BaseHTTPRequestHandler):
         with open(file_path, 'rb') as f:
             content = f.read()
 
-        self.send_response(200)
+        if ext == '.html' and _session_token and self.headers.get('Sec-Fetch-Site') != 'cross-site':
+            # Hand the session secret to pages served by this server (TaskPane).
+            meta = ('<meta name="neven-token" content="%s">' % _session_token).encode('ascii')
+            idx = content.lower().find(b'<head>')
+            content = (meta + content) if idx < 0 else (content[:idx + 6] + meta + content[idx + 6:])
+            self.send_response(200)
+            self.send_header('Cache-Control', 'no-store')
+        else:
+            self.send_response(200)
         self._add_cors_headers()
         self.send_header('Content-Type', ctype)
         self.send_header('Content-Length', str(len(content)))
@@ -1195,11 +1313,19 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_error_json(f"Payload exceeds {_config.get('maxPayloadMB', 50)} MB limit", 413)
             return
 
+        # Read the body first so a rejected request does not reset the connection.
+        raw_body = self.rfile.read(content_length) if content_length > 0 else b''
+
+        # Every POST can execute code, write files or change state: it needs a
+        # local Host/Origin and the per-session secret.
+        if not self._guard_local() or not self._guard_token():
+            return
+
         parsed = urlparse(self.path)
         path = parsed.path.lstrip('/')
 
         try:
-            body = json.loads(self.rfile.read(content_length)) if content_length > 0 else {}
+            body = json.loads(raw_body) if raw_body else {}
         except json.JSONDecodeError:
             self._send_error_json("Invalid JSON body")
             return
@@ -2849,6 +2975,23 @@ class NEVENHandler(BaseHTTPRequestHandler):
         if ext not in (".r", ".py", ".jl", ".R", ".python"):
             self._send_error_json(f"Extensión '{ext}' no permitida. Use .r, .py o .jl")
             return
+
+        # Solo directorios permitidos (functions\\, workspace\\, Documents\\NEVEN);
+        # rutas absolutas externas y '..' se rechazan.
+        functions_dir = _config.get("functionsDir",
+                        _config.get("Standalone", {}).get("functionsDir", r"C:\NEVEN\functions"))
+        allowed_dirs = [
+            _os.path.normpath(functions_dir),
+            _os.path.normpath(r"C:\NEVEN\workspace"),
+            _os.path.normpath(_os.path.expanduser("~/Documents/NEVEN")),
+        ]
+        safe_path = _resolve_save_path(path, allowed_dirs)
+        if safe_path is None:
+            _log.warning(f"save_script denied (security): {path}")
+            self._send_error_json(
+                "Ruta no permitida: solo se puede guardar dentro de " + ", ".join(allowed_dirs), 403)
+            return
+        path = safe_path
 
         try:
             # Crear directorio si no existe
@@ -4917,6 +5060,7 @@ def start_server(config=None):
         _log.info("No cert configured — running HTTP (Task Pane may require HTTPS)")
 
     _server_instance = server
+    _init_session_token()
 
     # Inicializar Package Manager Service
     global _pkg_service, _PKG_SERVICE_AVAILABLE

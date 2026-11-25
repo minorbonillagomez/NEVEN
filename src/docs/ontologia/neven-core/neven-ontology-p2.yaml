@@ -320,6 +320,15 @@ componentes:
           Es intencional: el contexto se consume una sola vez.
         como_verificar: "Ver do_GET path='api/ai/context/pending': _excel_context_pending = None"
 
+      - id: INV-SB-06
+        descripcion: >
+          Todo POST exige el secreto de sesion en la cabecera X-NEVEN-Token (HTTP 401 si falta)
+          y Host/Origin locales (HTTP 403). El secreto se genera al arrancar el servidor y se publica
+          en %LOCALAPPDATA%\NEVEN\session.token (clientes nativos) y como meta neven-token en el HTML
+          servido (TaskPane, via neven-auth.js). Sin CORS comodin. /api/save_script solo escribe dentro de
+          functions\, workspace\ y Documents\NEVEN. Todo cliente nuevo de POST debe enviar el secreto.
+        como_verificar: "Ver _guard_local, _guard_token, _resolve_save_path y src/tests/test_sec_01_03_http_security.py"
+
     deploy:
       metodo: >
         [System.IO.File]::Copy() para copiar sin recodificar.
