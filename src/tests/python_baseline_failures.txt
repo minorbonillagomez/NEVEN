@@ -1,12 +1,8 @@
 # Fallos y errores de Python presentes en la base db8dde1 (antes de B-02), medidos con scripts/run_python_tests.py.
+# Esperado-fallo (deuda de la base): 14 tests que ya fallaban en 7b207f4 y en db8dde1. Se arreglan en B-03, no en B-02.
 # Un id por linea. No estan ocultos: el runner los cuenta e imprime en cada ejecucion.
-# Su tratamiento (arreglar test, arreglar codigo o declarar xfail) esta pendiente de decision del usuario.
 Install/scripts/test_rag_queries.py::test_query
 TaskPane/tests/test_pipe_client_2_1.py::TestPipeClientConstructor::test_max_response_bytes_class_constant
-TaskPane/tests/test_start_studio_4_1.py::TestResolveLanguages::test_cli_arg_all_invalid_falls_back_to_all_languages
-TaskPane/tests/test_start_studio_4_1.py::TestResolveLanguages::test_config_empty_languages_falls_back_to_all
-TaskPane/tests/test_start_studio_4_1.py::TestResolveLanguages::test_config_no_languages_key_falls_back_to_all
-TaskPane/tests/test_start_studio_4_1.py::TestResolveLanguages::test_no_config_no_arg_returns_all
 TaskPane/tests/test_start_studio_4_2.py::TestLaunchControl::test_launches_with_correct_pipe_arg_julia
 TaskPane/tests/test_start_studio_4_2.py::TestLaunchControl::test_launches_with_correct_pipe_arg_python
 TaskPane/tests/test_start_studio_4_2.py::TestLaunchControl::test_launches_with_correct_pipe_arg_r

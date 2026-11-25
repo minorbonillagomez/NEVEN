@@ -108,18 +108,20 @@ def main():
     print("=" * 70)
     print(f"Tests de Python: {total} recogidos")
     print(f"  pasados : {n('passed')}")
-    print(f"  fallados: {n('failed')}")
+    print(f"  fallados: {n('failed')}  (incluye los esperado-fallo)")
     print(f"  errores : {n('error')}")
     print(f"  saltados: {n('skipped')}")
     print(f"  xfail   : {n('xfailed')}   xpass: {n('xpassed')}")
-    print(f"Fallos+errores: {len(bad)}  =  {len(known)} conocidos en la base  +  {len(new)} nuevos")
+    print(f"  esperado-fallo (deuda de la base): {len(known)}")
+    print(f"  fallos nuevos: {len(new)}")
+    print(f"Fallos+errores: {len(bad)}  =  {len(known)} esperado-fallo + {len(new)} nuevos")
     for c in ("skipped", "xfailed", "xpassed"):
         for nid, det in sorted(cats.get(c, [])):
             print(f"  [{c}] {nid}  {det}")
     if known:
-        print("Conocidos en la base:")
+        print("Esperado-fallo (deuda de la base, lista en tests/python_baseline_failures.txt):")
         for b in known:
-            print(f"  [base] {b}")
+            print(f"  [esperado-fallo] {b}")
     if new:
         print("NUEVOS:")
         for b in new:
