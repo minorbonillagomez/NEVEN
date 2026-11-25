@@ -58,6 +58,17 @@ except ImportError:
 
 
 BASE_URL = "http://localhost:5555"
+
+
+def _auth_headers() -> dict:
+    """Session secret (SEC-01) that the server publishes in %LOCALAPPDATA%/NEVEN/session.token."""
+    base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    try:
+        with open(os.path.join(base, "NEVEN", "session.token"), encoding="utf-8") as f:
+            return {"X-NEVEN-Token": f.read().strip()}
+    except OSError as e:
+        print(f"Aviso: no se pudo leer el secreto de sesion ({e}); el servidor rechazara la peticion (401).")
+        return {}
 CHECKPOINT_DIR = r"C:\NEVEN\docs\ontologia\checkpoints"
 
 
@@ -88,6 +99,7 @@ def index_to_rag(pdf_path: str, domain: str) -> dict:
         resp = requests.post(
             f"{BASE_URL}/api/rag/upload",
             json={"file_path": pdf_path, "domain": domain},
+            headers=_auth_headers(),
             timeout=600  # 10 minutos para libros grandes
         )
         return resp.json()
@@ -107,6 +119,7 @@ def process_ontology(pdf_path: str, domain: str, max_pages: int) -> dict:
                 "domain": domain,
                 "max_pages": max_pages
             },
+            headers=_auth_headers(),
             timeout=3600  # 1 hora para procesamiento LLM
         )
         return resp.json()

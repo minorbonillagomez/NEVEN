@@ -326,7 +326,7 @@ componentes:
           y Host/Origin locales (HTTP 403). El secreto se genera al arrancar el servidor y se publica
           en %LOCALAPPDATA%\NEVEN\session.token (clientes nativos) y como meta neven-token en el HTML
           servido (TaskPane, via neven-auth.js). Sin CORS comodin. /api/save_script solo escribe dentro de
-          functions\, workspace\ y Documents\NEVEN. Todo cliente nuevo de POST debe enviar el secreto.
+          functions\, workspace\ y Documents\NEVEN. Todo cliente nuevo de POST debe enviar el secreto. Riesgo residual (SEC-04): el secreto se inyecta en el HTML servido desde el origen 5555, asi que cualquier HTML de ese origen (viewers, graficos generados) puede leerlo.
         como_verificar: "Ver _guard_local, _guard_token, _resolve_save_path y src/tests/test_sec_01_03_http_security.py"
 
     deploy:

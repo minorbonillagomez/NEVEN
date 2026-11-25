@@ -5,6 +5,7 @@ import http.client
 import importlib.util
 import json
 import os
+import pathlib
 import socket
 import tempfile
 
@@ -201,3 +202,16 @@ def test_save_script_rejects_traversal(live):
         status, _, _ = _req(live, "POST", "/api/save_script", {"path": p, "content": "x"})
         assert status == 403
     assert os.listdir(live["outside"]) == []
+
+
+def test_preflight_advertises_token_header(live):
+    status, hdrs, _ = _req(live, "OPTIONS", "/api/python",
+                           headers={"Origin": "http://localhost:5555"}, token=False)
+    assert status in (200, 204)
+    assert "x-neven-token" in hdrs.get("access-control-allow-headers", "").lower()
+
+
+def test_auth_wrapper_is_limited_to_the_page_origin():
+    js = (pathlib.Path(__file__).resolve().parents[1] / "TaskPane" / "neven-auth.js").read_text(encoding="utf-8")
+    assert "u.origin === window.location.origin" in js
+    assert "localhost'" not in js

@@ -28,7 +28,7 @@ def main():
     config.setdefault("maxPayloadMB", 50)
 
     # Run server on MAIN thread (not daemon)
-    from neven_http_server import _config, NEVENHandler, _rate_limiter
+    from neven_http_server import _config, NEVENHandler, _rate_limiter, _init_session_token
     from http.server import HTTPServer
     import ssl as ssl_mod
 
@@ -36,6 +36,7 @@ def main():
     _config.update(config)
 
     ports = [config.get("port", 5555), config.get("fallbackPort", 5556)]
+    _init_session_token()
     server = None
     for port in ports:
         try:

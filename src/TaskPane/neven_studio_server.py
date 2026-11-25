@@ -42,6 +42,7 @@ def main():
     # Importar _server_port y setearlo
     import neven_http_server as srv
     srv._server_port = port
+    srv._init_session_token()
 
     server = HTTPServer(("127.0.0.1", port), NEVENHandler)
     print(f"[NEVEN Studio] HTTP server en http://localhost:{port}/taskpane.html")

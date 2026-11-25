@@ -1524,11 +1524,10 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_TaskPaneOpen() {
         return &rslt;
     }
 
-    // Path to taskpane.html
-    std::string taskpane_path = "C:/NEVEN/taskpane/taskpane.html";
-
-    // Create or reuse viewer
-    std::string viewer_id = viewer.CreateViewerFromFile(taskpane_path, "TaskPane", taskpane_path);
+    // SEC-01: load over http so the page receives the session secret
+    // (file:// sends Origin null and is rejected by the server).
+    viewer.SetAdvancedMode(true, 5555);
+    std::string viewer_id = viewer.CreateViewerFromUrl("http://localhost:5555/taskpane.html", "TaskPane");
     Convert::StringToXLOPER(&rslt, viewer_id, false);
     rslt.xltype |= xlbitDLLFree;
     return &rslt;

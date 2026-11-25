@@ -17,8 +17,7 @@
   function isLocalApi(url) {
     try {
       var u = new URL(url, window.location.href);
-      var h = u.hostname;
-      return h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+      return u.origin === window.location.origin;
     } catch (e) { return false; }
   }
 
