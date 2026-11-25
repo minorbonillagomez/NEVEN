@@ -513,21 +513,26 @@ def _init_session_token():
     return _session_token
 
 
+def _port_is_ours(port):
+    """True only if port is the port this server listens on (None = not started: reject)."""
+    return _server_port is not None and port == _server_port
 def _host_is_local(host_header):
-    """True if a Host header value names this machine (any port)."""
+    """True if a Host header names this machine on this server's exact port."""
     h = (host_header or "").strip().lower()
     if h.startswith("["):
-        h = h[1:].split("]")[0]
+        h, _, rest = h[1:].partition("]")
+        port_s = rest[1:] if rest.startswith(":") else ""
     else:
-        h = h.split(":")[0]
-    return h in _LOCAL_HOSTNAMES
+        h, _, port_s = h.partition(":")
+    return h in _LOCAL_HOSTNAMES and port_s.isascii() and port_s.isdigit() and _port_is_ours(int(port_s))
 
 
 def _origin_is_local(origin):
-    """True if an Origin header is http(s) on localhost / 127.0.0.1 / ::1."""
+    """True if an Origin is http(s) on a local hostname AND this server's exact port."""
     try:
         u = urlparse(origin)
-        return u.scheme in ("http", "https") and (u.hostname or "").lower() in _LOCAL_HOSTNAMES
+        return (u.scheme in ("http", "https") and (u.hostname or "").lower() in _LOCAL_HOSTNAMES
+                and u.port is not None and _port_is_ours(u.port))
     except ValueError:
         return False
 

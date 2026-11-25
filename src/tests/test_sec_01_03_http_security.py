@@ -148,8 +148,8 @@ def test_no_wildcard_cors(live):
     status, hdrs, _ = _req(live, "GET", "/health", token=False)
     assert status == 200
     assert hdrs.get("access-control-allow-origin") != "*"
-    status, hdrs, _ = _req(live, "GET", "/health", headers={"Origin": "http://localhost:5555"}, token=False)
-    assert hdrs.get("access-control-allow-origin") == "http://localhost:5555"
+    status, hdrs, _ = _req(live, "GET", "/health", headers={"Origin": "http://localhost:%d" % live["port"]}, token=False)
+    assert hdrs.get("access-control-allow-origin") == "http://localhost:%d" % live["port"]
 
 
 def test_foreign_origin_is_rejected(live):
@@ -219,7 +219,7 @@ def test_save_script_rejects_traversal(live):
 
 def test_preflight_advertises_token_header(live):
     status, hdrs, _ = _req(live, "OPTIONS", "/api/python",
-                           headers={"Origin": "http://localhost:5555"}, token=False)
+                           headers={"Origin": "http://localhost:%d" % live["port"]}, token=False)
     assert status in (200, 204)
     assert "x-neven-token" in hdrs.get("access-control-allow-headers", "").lower()
 
@@ -228,3 +228,64 @@ def test_auth_wrapper_is_limited_to_the_page_origin():
     js = (pathlib.Path(__file__).resolve().parents[1] / "TaskPane" / "neven-auth.js").read_text(encoding="utf-8")
     assert "u.host === window.location.host" in js
     assert "localhost'" not in js
+
+# -- Puerto exacto (Origin y Host) ---------------------------------------------
+def _other_port(live):
+    return live["port"] + 1
+
+
+def test_post_with_valid_token_but_other_local_port_origin_is_rejected(live):
+    _FakePipe.calls.clear()
+    target = live["functions"] / "evil_port.R"
+    before = sorted(live["functions"].rglob("*"))
+    for origin in ("http://localhost:%d" % _other_port(live), "http://localhost:5556",
+                   "http://127.0.0.1:%d" % _other_port(live), "http://[::1]:%d" % _other_port(live),
+                   "http://localhost", "https://localhost"):
+        status, hdrs, _ = _req(live, "POST", "/api/python", {"code": "1+1"}, headers={"Origin": origin})
+        assert status == 403, origin
+        assert "access-control-allow-origin" not in hdrs
+        status, _, _ = _req(live, "POST", "/api/save_script",
+                            {"name": "evil_port.R", "code": "x"}, headers={"Origin": origin})
+        assert status == 403, origin
+    assert _FakePipe.calls == []
+    assert not target.exists()
+    assert sorted(live["functions"].rglob("*")) == before
+
+
+def test_host_with_other_or_missing_port_is_rejected(live):
+    p = live["port"]
+    for host in ("localhost:%d" % (p + 1), "127.0.0.1:5556", "[::1]:%d" % (p + 1),
+                 "localhost", "127.0.0.1", "[::1]", "localhost:", "localhost:abc"):
+        status, _, _ = _req(live, "GET", "/health", token=False, host=host)
+        assert status == 403, host
+
+
+def test_origin_and_host_with_correct_port_work(live):
+    p = live["port"]
+    for host in ("localhost:%d" % p, "127.0.0.1:%d" % p, "[::1]:%d" % p):
+        status, _, _ = _req(live, "GET", "/health", token=False, host=host)
+        assert status == 200, host
+    for origin in ("http://localhost:%d" % p, "http://127.0.0.1:%d" % p, "https://localhost:%d" % p):
+        status, _, _ = _req(live, "POST", "/api/python", {"code": "1+1"}, headers={"Origin": origin})
+        assert status != 403 and status != 401, origin
+
+
+def test_cors_does_not_reflect_other_local_port(live):
+    for origin in ("http://localhost:%d" % _other_port(live), "http://localhost:5556", "http://localhost"):
+        status, hdrs, _ = _req(live, "GET", "/health", headers={"Origin": origin}, token=False)
+        assert status == 403
+        assert "access-control-allow-origin" not in hdrs
+    ok = "http://localhost:%d" % live["port"]
+    _, hdrs, _ = _req(live, "GET", "/health", headers={"Origin": ok}, token=False)
+    assert hdrs.get("access-control-allow-origin") == ok
+
+
+def test_port_check_rejects_everything_when_server_port_unset(live):
+    srv = live["srv"]
+    saved = srv._server_port
+    srv._server_port = None
+    try:
+        assert not srv._origin_is_local("http://localhost:5555")
+        assert not srv._host_is_local("localhost:5555")
+    finally:
+        srv._server_port = saved
