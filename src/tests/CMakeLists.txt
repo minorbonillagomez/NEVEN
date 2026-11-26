@@ -32,6 +32,7 @@ add_executable(rj2xcl_tests
     env_lookup_pbt.cc
     python_reactivation_exploration_pbt.cc
     python_reactivation_preservation_pbt.cc
+    studio_endpoint_tests.cc
 )
 
 target_link_libraries(rj2xcl_tests 

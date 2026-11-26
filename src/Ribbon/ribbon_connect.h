@@ -26,6 +26,7 @@
 
 #include "../Common/user_button.h"
 #include "../Common/SessionToken.h"
+#include "../Common/StudioEndpoint.h"
 #include <vector>
 
 typedef IDispatchImpl<IRibbonExtensibility, &__uuidof(IRibbonExtensibility), &LIBID_Office, /* wMajor = */ 2, /* wMinor = */ 4> RIBBON_INTERFACE;
@@ -903,31 +904,8 @@ public:
       // NEVEN Studio - Start server and open Add-in TaskPane
       // Step 1: Check if server is running (quick HTTP ping)
       auto _studio_alive = []() -> bool {
-          HINTERNET hT = WinHttpOpen(L"NEVEN-Ribbon/3.0",
-                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
-                                      WINHTTP_NO_PROXY_NAME,
-                                      WINHTTP_NO_PROXY_BYPASS, 0);
-          if (!hT) return false;
-          DWORD t = 300;
-          WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
-          WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
-          WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
-          bool alive = false;
-          HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
-          if (hC) {
-              HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
-                                                 nullptr, WINHTTP_NO_REFERER,
-                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
-              if (hR) {
-                  alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                                             nullptr, 0, 0, 0) &&
-                          WinHttpReceiveResponse(hR, nullptr);
-                  WinHttpCloseHandle(hR);
-              }
-              WinHttpCloseHandle(hC);
-          }
-          WinHttpCloseHandle(hT);
-          return alive;
+          // HTTPS si el servidor tiene certificado, HTTP si no (StudioEndpoint.h)
+          return neven::StudioIsAlive(5555);
       };
 
       // Step 2: Start server if not running
@@ -969,11 +947,12 @@ public:
                                       WINHTTP_NO_PROXY_NAME,
                                       WINHTTP_NO_PROXY_BYPASS, 0);
           if (hT) {
+              const bool _studio_https = neven::StudioResolveHttps(5555);
               HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
               if (hC) {
                   HINTERNET hR = WinHttpOpenRequest(hC, L"POST", L"/api/show-taskpane",
                                                      nullptr, WINHTTP_NO_REFERER,
-                                                     WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+                                                     WINHTTP_DEFAULT_ACCEPT_TYPES, neven::StudioOpenFlags(_studio_https));
                   if (hR) {
                       const std::wstring tokHdr = neven::SessionTokenHeader();
                       WinHttpSendRequest(hR, tokHdr.empty() ? WINHTTP_NO_ADDITIONAL_HEADERS : tokHdr.c_str(),
@@ -1282,31 +1261,8 @@ public:
       // Iniciar servidor HTTP de NEVEN Studio (puerto 5555)
       // Step 1: Check if server is running (quick HTTP ping)
       auto _studio_alive = []() -> bool {
-          HINTERNET hT = WinHttpOpen(L"NEVEN-Ribbon/3.0",
-                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
-                                      WINHTTP_NO_PROXY_NAME,
-                                      WINHTTP_NO_PROXY_BYPASS, 0);
-          if (!hT) return false;
-          DWORD t = 300;
-          WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
-          WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
-          WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
-          bool alive = false;
-          HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
-          if (hC) {
-              HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
-                                                 nullptr, WINHTTP_NO_REFERER,
-                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
-              if (hR) {
-                  alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                                             nullptr, 0, 0, 0) &&
-                          WinHttpReceiveResponse(hR, nullptr);
-                  WinHttpCloseHandle(hR);
-              }
-              WinHttpCloseHandle(hC);
-          }
-          WinHttpCloseHandle(hT);
-          return alive;
+          // HTTPS si el servidor tiene certificado, HTTP si no (StudioEndpoint.h)
+          return neven::StudioIsAlive(5555);
       };
 
       // Si ya está corriendo, notificar al usuario
@@ -1372,31 +1328,8 @@ public:
       // Detener servidor HTTP de NEVEN Studio (puerto 5555)
       // Step 1: Check if server is running
       auto _studio_alive = []() -> bool {
-          HINTERNET hT = WinHttpOpen(L"NEVEN-Ribbon/3.0",
-                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
-                                      WINHTTP_NO_PROXY_NAME,
-                                      WINHTTP_NO_PROXY_BYPASS, 0);
-          if (!hT) return false;
-          DWORD t = 300;
-          WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
-          WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
-          WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
-          bool alive = false;
-          HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
-          if (hC) {
-              HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
-                                                 nullptr, WINHTTP_NO_REFERER,
-                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
-              if (hR) {
-                  alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                                             nullptr, 0, 0, 0) &&
-                          WinHttpReceiveResponse(hR, nullptr);
-                  WinHttpCloseHandle(hR);
-              }
-              WinHttpCloseHandle(hC);
-          }
-          WinHttpCloseHandle(hT);
-          return alive;
+          // HTTPS si el servidor tiene certificado, HTTP si no (StudioEndpoint.h)
+          return neven::StudioIsAlive(5555);
       };
 
       // Si no está corriendo, notificar al usuario
@@ -1420,11 +1353,13 @@ public:
           WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &timeout, sizeof(timeout));
           WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof(timeout));
 
+          const bool _studio_https = neven::StudioResolveHttps(5555);
+
           HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
           if (hC) {
               HINTERNET hR = WinHttpOpenRequest(hC, L"POST", L"/api/shutdown",
                                                  nullptr, WINHTTP_NO_REFERER,
-                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+                                                 WINHTTP_DEFAULT_ACCEPT_TYPES, neven::StudioOpenFlags(_studio_https));
               if (hR) {
                   const std::wstring tokHdr = neven::SessionTokenHeader();
                   shutdown_sent = WinHttpSendRequest(hR, tokHdr.empty() ? WINHTTP_NO_ADDITIONAL_HEADERS : tokHdr.c_str(),

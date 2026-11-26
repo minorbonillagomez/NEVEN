@@ -8,6 +8,7 @@
 #include "ViewerWindow.h"
 #include "PostMessageBridge.h"
 #include "LogService.h"
+#include "StudioEndpoint.h"
 #include "json11/json11.hpp"
 
 #include <WebView2.h>
@@ -612,9 +613,8 @@ void ViewerWindow::SetupNavigationFilter(const std::string& user_data_folder,
 
                 // Allow localhost:port when Advanced Mode is active
                 if (advanced_mode) {
-                    std::wstring localhost_prefix = L"http://localhost:" + std::to_wstring(pluto_port);
-                    std::wstring localhost_prefix2 = L"http://127.0.0.1:" + std::to_wstring(pluto_port);
-                    if (uri_str.find(localhost_prefix) == 0 || uri_str.find(localhost_prefix2) == 0) {
+                    // http or https: NEVEN Studio serves HTTPS when it has a certificate
+                    if (neven::StudioIsLocalUrl(uri_str, pluto_port)) {
                         return S_OK;
                     }
                 }

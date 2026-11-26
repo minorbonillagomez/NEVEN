@@ -33,6 +33,7 @@
 #include "ViewerManager.h"
 #include "engine_availability.h"
 #include "SessionToken.h"
+#include "StudioEndpoint.h"
 
 // WinHTTP — usado por RJ_IA_Contexto para POST a localhost:5555
 #include <winhttp.h>
@@ -1122,29 +1123,6 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_IniciarJulia() {
     // Initialize (send startup script)
     julia_svc->Initialize();
 
-    // Load user function files
-    auto& config_service = rj2xcl::ConfigService::Instance();
-    auto config = config_service.GetConfig();
-    std::string functions_directory = config["NEVEN"]["functionsDirectory"].string_value();
-    if (functions_directory.length()) {
-        char expanded[MAX_PATH];
-        ExpandEnvironmentStringsA(functions_directory.c_str(), expanded, MAX_PATH);
-        functions_directory = expanded;
-
-        WIN32_FIND_DATAA find_data;
-        std::string search_pattern = functions_directory + "\\*.*";
-        HANDLE hFind = FindFirstFileA(search_pattern.c_str(), &find_data);
-        if (hFind != INVALID_HANDLE_VALUE) {
-            do {
-                if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
-                std::string file_path = functions_directory + "\\" + find_data.cFileName;
-                if (julia_svc->ValidFile(file_path)) {
-                    julia_svc->ReadSourceFile(file_path);
-                }
-            } while (FindNextFileA(hFind, &find_data));
-            FindClose(hFind);
-        }
-    }
 
     // Re-register all functions (adds J.* functions)
     engine->UpdateFunctions();
@@ -1524,10 +1502,10 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_TaskPaneOpen() {
         return &rslt;
     }
 
-    // SEC-01: load over http so the page receives the session secret
+    // SEC-01: load over http(s) (scheme follows the server) so the page receives the session secret
     // (file:// sends Origin null and is rejected by the server).
     viewer.SetAdvancedMode(true, 5555);
-    std::string viewer_id = viewer.CreateViewerFromUrl("http://localhost:5555/taskpane.html", "TaskPane");
+    std::string viewer_id = viewer.CreateViewerFromUrl(neven::StudioUrl(neven::StudioResolveHttps(5555), 5555, "/taskpane.html"), "TaskPane");
     Convert::StringToXLOPER(&rslt, viewer_id, false);
     rslt.xltype |= xlbitDLLFree;
     return &rslt;
@@ -1563,31 +1541,8 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_AgenteIA() {
 
     // ── Verificar si NEVEN Studio está activo en localhost:5555 ──────────────
     auto _studio_alive = []() -> bool {
-        HINTERNET hT = WinHttpOpen(L"NEVEN-XLL/3.0",
-                                    WINHTTP_ACCESS_TYPE_NO_PROXY,
-                                    WINHTTP_NO_PROXY_NAME,
-                                    WINHTTP_NO_PROXY_BYPASS, 0);
-        if (!hT) return false;
-        DWORD t = 500;
-        WinHttpSetOption(hT, WINHTTP_OPTION_CONNECT_TIMEOUT, &t, sizeof(t));
-        WinHttpSetOption(hT, WINHTTP_OPTION_SEND_TIMEOUT,    &t, sizeof(t));
-        WinHttpSetOption(hT, WINHTTP_OPTION_RECEIVE_TIMEOUT, &t, sizeof(t));
-        bool alive = false;
-        HINTERNET hC = WinHttpConnect(hT, L"localhost", 5555, 0);
-        if (hC) {
-            HINTERNET hR = WinHttpOpenRequest(hC, L"GET", L"/api/engines",
-                                               nullptr, WINHTTP_NO_REFERER,
-                                               WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
-            if (hR) {
-                alive = WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                                           nullptr, 0, 0, 0) &&
-                        WinHttpReceiveResponse(hR, nullptr);
-                WinHttpCloseHandle(hR);
-            }
-            WinHttpCloseHandle(hC);
-        }
-        WinHttpCloseHandle(hT);
-        return alive;
+        // HTTPS si el servidor tiene certificado, HTTP si no (StudioEndpoint.h)
+        return neven::StudioIsAlive(5555);
     };
 
     // ── Arrancar NEVEN Studio si no está activo ───────────────────────────────
@@ -1626,7 +1581,7 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI RJ_AgenteIA() {
     // ── Abrir el viewer ───────────────────────────────────────────────────────
     viewer.SetAdvancedMode(true, 5555);
     agente_viewer_id = viewer.CreateViewerFromUrl(
-        "http://localhost:5555/taskpane.html",
+        neven::StudioUrl(neven::StudioResolveHttps(5555), 5555, "/taskpane.html"),
         "NEVEN Studio AI");
 
     Convert::StringToXLOPER(&rslt, agente_viewer_id.c_str(), false);
@@ -1677,7 +1632,7 @@ RJ_IA_Contexto(LPXLOPER12 data_range, LPXLOPER12 results_range) {
             int   ai_port = 5555;
             bool  ai_service_enabled = false;
             std::wstring ai_host = L"localhost";
-            std::wstring ai_url  = L"http://localhost:5555/taskpane.html";
+            std::wstring ai_url  = neven::StudioUrlW(neven::StudioResolveHttps(5555), 5555, L"/taskpane.html");
             std::wstring health_path = L"/api/engines";
 
             // Leer AIService de neven-config.json
@@ -1727,7 +1682,7 @@ RJ_IA_Contexto(LPXLOPER12 data_range, LPXLOPER12 results_range) {
 
             if (!ai_service_enabled) {
                 viewer.SetAdvancedMode(true, 5555);
-                ai_url = L"http://localhost:5555/taskpane.html";
+                ai_url = neven::StudioUrlW(neven::StudioResolveHttps(5555), 5555, L"/taskpane.html");
                 ai_port = 5555;
             }
 
@@ -1778,6 +1733,11 @@ RJ_IA_Contexto(LPXLOPER12 data_range, LPXLOPER12 results_range) {
         bool servidor_listo = false;
         for (int i = 0; i < 16 && !servidor_listo; i++) {
             Sleep(500);
+            if (check_port == 5555) {
+                // Studio local: HTTPS si tiene certificado, HTTP si no
+                servidor_listo = neven::StudioIsAlive(5555, nullptr, check_path.c_str());
+                continue;
+            }
             HINTERNET hT = WinHttpOpen(L"NEVEN-XLL/3.0",
                                         WINHTTP_ACCESS_TYPE_NO_PROXY,
                                         WINHTTP_NO_PROXY_NAME,
@@ -1973,9 +1933,11 @@ RJ_IA_Contexto(LPXLOPER12 data_range, LPXLOPER12 results_range) {
                                static_cast<INTERNET_PORT>(post_port), 0);
     }
     const std::wstring hdrs = L"Content-Type: application/json\r\n" + neven::SessionTokenHeader();
+    // El servidor local de Studio (5555) usa HTTPS si tiene certificado; un servicio IA externo sigue en HTTP
+    const DWORD post_flags = (post_port == 5555) ? neven::StudioOpenFlags(neven::StudioResolveHttps(5555)) : 0;
     if (hConn) hReq  = WinHttpOpenRequest(hConn, L"POST", L"/api/ai/context",
                                           nullptr, WINHTTP_NO_REFERER,
-                                          WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+                                          WINHTTP_DEFAULT_ACCEPT_TYPES, post_flags);
     if (hReq) {
         BOOL sent = WinHttpSendRequest(hReq,
                                        hdrs.c_str(), (DWORD)-1,
