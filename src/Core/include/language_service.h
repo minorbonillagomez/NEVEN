@@ -116,6 +116,9 @@ protected:
   /** @brief Whether this language uses lazy loading (user activates on demand). */
   bool lazy_load_;
 
+  /** @brief True while LoadFunctionFiles runs; nested Call()s must not reconnect again. */
+  bool reloading_ = false;
+
   /** @brief Override timeout for file loading operations (0 = use config default). */
   DWORD loading_timeout_ms_ = 0;
 
@@ -247,6 +250,21 @@ public:
    * @param file Path to the source file to load.
    */
   virtual void ReadSourceFile(const std::string &file);
+
+  /**
+   * @brief Loads every valid user function file of a directory into the runtime.
+   *
+   * Used after Initialize() when the child process was (re)started outside of
+   * RJ2XCL_Engine::Init, so the restarted process defines the same functions as
+   * the ones registered in Excel during xlAutoOpen. Does not register anything
+   * in Excel. Calls made while it runs never trigger another reconnect.
+   * @param functions_directory Directory with the user function files.
+   * @return Number of files passed to ReadSourceFile.
+   */
+  int LoadFunctionFiles(const std::string &functions_directory);
+
+  /** @brief Same as above, using NEVEN.functionsDirectory from neven-config.json. */
+  int LoadConfiguredFunctionFiles();
 
   /**
    * @brief Checks whether this language service can process a file based on its extension.

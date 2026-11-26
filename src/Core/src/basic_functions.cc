@@ -1123,6 +1123,8 @@ extern "C" __declspec(dllexport) LPXLOPER12 WINAPI NEVEN_IniciarJulia() {
     // Initialize (send startup script)
     julia_svc->Initialize();
 
+    // Load user function files (same helper as the automatic reconnect in LanguageService::Call)
+    julia_svc->LoadConfiguredFunctionFiles();
 
     // Re-register all functions (adds J.* functions)
     engine->UpdateFunctions();

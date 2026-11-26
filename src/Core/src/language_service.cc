@@ -468,6 +468,36 @@ void LanguageService::ReadSourceFile(const std::string &file) {
 
 }
 
+int LanguageService::LoadFunctionFiles(const std::string &functions_directory) {
+  if (functions_directory.empty() || reloading_) return 0;
+  reloading_ = true;
+  int loaded = 0;
+  WIN32_FIND_DATAA find_data;
+  HANDLE hFind = FindFirstFileA((functions_directory + "\\*.*").c_str(), &find_data);
+  if (hFind != INVALID_HANDLE_VALUE) {
+    do {
+      if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
+      std::string file_path = functions_directory + "\\" + find_data.cFileName;
+      if (ValidFile(file_path)) {
+        ReadSourceFile(file_path);
+        ++loaded;
+      }
+    } while (FindNextFileA(hFind, &find_data));
+    FindClose(hFind);
+  }
+  reloading_ = false;
+  return loaded;
+}
+
+int LanguageService::LoadConfiguredFunctionFiles() {
+  std::string dir = rj2xcl::ConfigService::Instance().GetConfig()["NEVEN"]["functionsDirectory"].string_value();
+  if (dir.empty()) return 0;
+  char expanded[MAX_PATH] = {0};
+  DWORD n = ExpandEnvironmentStringsA(dir.c_str(), expanded, MAX_PATH);
+  if (n > 0 && n <= MAX_PATH) dir = expanded;
+  return LoadFunctionFiles(dir);
+}
+
 void LanguageService::InterpolateString(std::string &str, const std::vector<std::pair<std::string, std::string>> &additional_replacements){
 
   auto replace_function = [](std::string &haystack, std::string needle, std::string replacement) {
@@ -568,7 +598,7 @@ void LanguageService::Shutdown() {
  */
 void LanguageService::Call(RJ2XCLBuffers::CallResponse &response, RJ2XCLBuffers::CallResponse &call) {
 
-  bool reconnected = false;
+  bool reconnected = reloading_;  // a call made while reloading never reconnects again
   int retry_count = 0;
   const int MAX_RETRIES = rj2xcl::ConfigService::Instance().GetMaxRetries();
 
@@ -588,6 +618,7 @@ retry:
       if (!reconnected && job_handle_) {
           Connect(job_handle_);
           Initialize();
+          if (connected_) LoadConfiguredFunctionFiles();
           reconnected = true; goto retry;
       }
       response.set_err("not connected");
@@ -603,6 +634,7 @@ retry:
               pipe_handle_.reset();
               Connect(job_handle_.get());
               Initialize();
+              if (connected_) LoadConfiguredFunctionFiles();
               reconnected = true; goto retry;
           }
           response.set_err("write error");
@@ -617,6 +649,7 @@ retry:
           pipe_handle_.reset();
           Connect(job_handle_.get());
           Initialize();
+          if (connected_) LoadConfiguredFunctionFiles();
           reconnected = true; goto retry;
       }
   }
@@ -678,6 +711,7 @@ retry:
                 pipe_handle_.reset();
                 Connect(job_handle_.get());
                 Initialize();
+                if (connected_) LoadConfiguredFunctionFiles();
                 reconnected = true; goto retry;
             }
             response.set_err("read error");
