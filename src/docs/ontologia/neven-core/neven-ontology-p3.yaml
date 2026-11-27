@@ -265,6 +265,14 @@ componentes:
           running, starting, port_in_use, failed o not_running con el motivo. El arranque no da por
           vivo un puerto que no conteste /api/health con service neven-audiobook.
         como_verificar: 'src/tests/test_audiobook_server_prod01.py (test_start_*)'
+      - id: INV-AB-05
+        descripcion: >
+          GET /api/download/<nombre> sirve el archivo de nombre EXACTO dentro de la carpeta de salida:
+          404 si no existe (sin fallback por prefijo), sin doble decodificacion de la URL, contencion con
+          os.path.commonpath sobre rutas reales (403 fuera de la carpeta, tambien para un directorio
+          hermano con el mismo prefijo). El TaskPane descarga con fetch + Blob (X-NEVEN-Token) y nunca
+          navega la pagina al origen del puerto 5557, que recargaria el panel de Office.
+        como_verificar: 'src/tests/test_audiobook_download_a03.py y src/tests/js/audiobook_download_check.js'
     errores:
       - sintoma: "La pestana Audiolibros dice que el puerto esta ocupado"
         causa: "Otro programa usa Audiobook.port (por defecto 5557)"
