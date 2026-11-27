@@ -105,3 +105,9 @@ def test_el_modulo_no_lee_el_token_ni_hace_peticiones():
     assert "neven-token" not in js and "X-NEVEN-Token" not in js
     bridge = js[js.index("var BRIDGE"):js.index("function report")]
     assert "fetch" not in bridge and "XMLHttpRequest" not in bridge and "localStorage" not in bridge
+
+def test_los_scripts_modificados_invalidan_la_cache():
+    """Los .js se sirven sin cabecera de cache: el ?v= debe cambiar para no mantener allow-same-origin."""
+    html = _read("taskpane.html")
+    for name in ("datalab.js", "chart-gallery.js", "taskpane.js"):
+        assert f'{name}?v=20260927a08' in html, name
