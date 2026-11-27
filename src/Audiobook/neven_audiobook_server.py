@@ -489,9 +489,11 @@ def main():
 
     try:
         server = _ExclusiveThreadedServer(host, port, app)
-    except OSError as e:
+    except (OSError, SystemExit) as e:
+        # werkzeug convierte "direccion en uso" en SystemExit(1) tras imprimir su aviso.
+        reason = e if isinstance(e, OSError) else "ver el aviso anterior"
         _fatal(EXIT_PORT_BUSY,
-               f"el puerto {port} esta ocupado o no se puede abrir en {host} ({e}). "
+               f"el puerto {port} esta ocupado o no se puede abrir en {host} ({reason}). "
                "Cierre el programa que lo usa o cambie Audiobook.port en neven-config.json")
 
     print_banner(port, lan)
