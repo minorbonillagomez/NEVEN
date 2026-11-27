@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEVEN Studio</title>
   <script src="neven-auth.js"></script>
+  <script src="html-sandbox.js?v=20260926"></script>
   <link rel="stylesheet" href="taskpane.css?v=20260925113746">
   <!-- Office.js para integracion con Excel -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
@@ -639,7 +640,7 @@
                 style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px"
                 title="Cerrar">x</button>
       </div>
-      <iframe id="script-iframe"  style="width:100%;height:400px;display:none;border:0"></iframe>
+      <iframe id="script-iframe" sandbox="allow-scripts allow-downloads" style="width:100%;height:400px;display:none;border:0"></iframe>
       <div    id="script-table"   style="display:none"></div>
       <pre    id="script-scalar"  style="display:none;background:#111;padding:8px;color:#a8e600;
               white-space:pre;font-size:11px;border-radius:4px;overflow:auto;max-height:400px"></pre>
@@ -6073,12 +6074,7 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
   var history = document.getElementById('ai-chat-history');
   
   //  -  -  AUTO-EXPANDIR: Abrir el grafico en ventana nueva inmediatamente  -  - 
-  var win = window.open('', '_blank', 'width=1000,height=700');
-  if (win) {
-    win.document.write(htmlContent);
-    win.document.title = 'Grafico NEVEN  -  ' + (chartType || 'IA');
-    win.document.close();
-  }
+  NEVENHtmlSandbox.openInWindow(htmlContent, 'Grafico NEVEN  -  ' + (chartType || 'IA'));
   
   //  -  -  Tambien mostrar miniatura en el chat como referencia  -  - 
   var container = document.createElement('div');
@@ -6097,7 +6093,7 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
   // Iframe para miniatura del grafico
   var iframe = document.createElement('iframe');
   iframe.style.cssText = 'width:100%;height:200px;border:none;background:white;';
-  iframe.sandbox = 'allow-scripts allow-same-origin';
+  // A-08: sandbox y srcdoc los aplica NEVENHtmlSandbox.applyTo
 
   // Botones de accion
   var actions = document.createElement('div');
@@ -6131,12 +6127,7 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
   btnExpand.style.cssText = 'font-size:11px;padding:4px 10px;';
   btnExpand.textContent = 'Expandir';
   btnExpand.onclick = function() {
-    var win = window.open('', '_blank', 'width=1000,height=700');
-    if (win) {
-      win.document.write(htmlContent);
-      win.document.title = 'Grafico NEVEN';
-      win.document.close();
-    }
+    NEVENHtmlSandbox.openInWindow(htmlContent, 'Grafico NEVEN');
   };
 
   actions.appendChild(btnSlide);
@@ -6150,10 +6141,7 @@ function _aiRenderChartInChat(htmlContent, chartType, library) {
   history.appendChild(container);
 
   // Escribir HTML en el iframe (miniatura)
-  var doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open();
-  doc.write(htmlContent);
-  doc.close();
+  NEVENHtmlSandbox.applyTo(iframe, htmlContent);
 
   // Scroll al grafico
   history.scrollTop = history.scrollHeight;

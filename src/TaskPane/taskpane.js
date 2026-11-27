@@ -1296,7 +1296,7 @@ function renderScriptResult(res) {
     errEl.textContent = res.message || 'Unknown error';
     errEl.style.display = '';
   } else if (res.type === 'html') {
-    iframe.srcdoc = res.html;
+    NEVENHtmlSandbox.applyTo(iframe, res.html);
     iframe.style.display = '';
   } else if (res.type === 'array') {
     renderSQLResults(res);   // reuse existing function
@@ -3239,7 +3239,7 @@ function renderChartInPreview(htmlContent, title = 'Gráfico generado', library 
     border: none;
     background: white;
   `;
-  iframe.sandbox = 'allow-scripts allow-same-origin';
+  // A-08: sandbox y srcdoc los aplica NEVENHtmlSandbox.applyTo
 
   // Botones de acción
   const actions = document.createElement('div');
@@ -3286,10 +3286,7 @@ function renderChartInPreview(htmlContent, title = 'Gráfico generado', library 
   previewContainer.appendChild(actions);
 
   // Escribir HTML en el iframe
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open();
-  doc.write(htmlContent);
-  doc.close();
+  NEVENHtmlSandbox.applyTo(iframe, htmlContent);
 
   // Guardar referencia para uso posterior
   previewContainer._chartHtml = htmlContent;
@@ -3331,35 +3328,16 @@ function _createChartActionButton(text, onClick) {
  * Exporta el gráfico como PNG usando html2canvas (si disponible)
  */
 async function _exportChartAsPng(iframe, title) {
-  try {
-    // Intentar usar html2canvas si está disponible
-    if (typeof html2canvas === 'function') {
-      const canvas = await html2canvas(iframe.contentDocument.body);
-      const link = document.createElement('a');
-      link.download = `${title.replace(/[^a-z0-9]/gi, '_')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } else {
-      // Fallback: abrir en nueva ventana para captura manual
-      showToast('Abre el gráfico y usa captura de pantalla');
-      _openChartInNewWindow(iframe.srcdoc || iframe.contentDocument.documentElement.outerHTML, title);
-    }
-  } catch (e) {
-    console.error('[NEVEN] Error exportando PNG:', e);
-    showToast('Error al exportar PNG');
-  }
+  // A-08: el iframe es de origen opaco; la exportacion se hace dentro de el por postMessage
+  // y los fallos se informan con su motivo (NEVENHtmlSandbox.exportImage).
+  return NEVENHtmlSandbox.exportImage(iframe, title, 'png');
 }
 
 /**
  * Abre el gráfico en una nueva ventana
  */
 function _openChartInNewWindow(htmlContent, title) {
-  const win = window.open('', '_blank', 'width=1000,height=700');
-  if (win) {
-    win.document.write(htmlContent);
-    win.document.title = title;
-    win.document.close();
-  }
+  NEVENHtmlSandbox.openInWindow(htmlContent, title);
 }
 
 /**

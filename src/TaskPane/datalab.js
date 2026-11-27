@@ -1590,12 +1590,8 @@ function buildSlotElement(slot) {
       if (typeof slot.value === 'string' && slot.value.indexOf('<neven-plotly>') !== -1) {
         content = _renderPlotlyJSON(slot.value, slot.name);
       } else {
-        content = document.createElement('iframe');
-        content.setAttribute('srcdoc', typeof slot.value === 'string' ? slot.value : '');
-        content.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-        content.style.width  = '100%';
-        content.style.height = '420px';
-        content.style.border = 'none';
+        // A-08: politica unica de srcdoc (html-sandbox.js), sin allow-same-origin
+        content = NEVENHtmlSandbox.createFrame(slot.value);
       }
       break;
 

@@ -1766,14 +1766,8 @@ end
   // Renderizar HTML en un iframe sandboxed
   function _renderHtmlInIframe(container, html) {
     container.innerHTML = '';
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('srcdoc', html);
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    iframe.style.width = '100%';
-    iframe.style.height = '420px';
-    iframe.style.border = 'none';
-    iframe.style.background = '#1e1e1e';
-    container.appendChild(iframe);
+    // A-08: politica unica de srcdoc (html-sandbox.js), sin allow-same-origin
+    container.appendChild(NEVENHtmlSandbox.createFrame(html, { background: '#1e1e1e' }));
   }
   
   // Mostrar imagen desde path del filesystem
