@@ -418,6 +418,17 @@ componentes:
           Verificar con: node --check datalab.js
         como_verificar: >
           node --check TaskPane/datalab.js  # debe retornar exit 0 sin output
+      - id: INV-TF-05
+        descripcion: >
+          El HTML que producen los motores (R, Julia, Python, IA) solo se inserta con
+          NEVENHtmlSandbox (TaskPane/html-sandbox.js): iframe con
+          sandbox="allow-scripts allow-downloads", NUNCA con allow-same-origin. Con origen
+          opaco el HTML no lee el meta neven-token ni el DOM de la pagina padre, y sus
+          peticiones al 5555 no llevan X-NEVEN-Token. Prohibido srcdoc, doc.write o
+          win.document.write con HTML de motor fuera de ese modulo. Los fallos se informan
+          al usuario con su motivo (A-08, SEC-07).
+        como_verificar: >
+          python -m pytest tests/test_html_sandbox_a08.py  # y node tests/js/html_sandbox_check.js
 
     deploy:
       metodo: "[System.IO.File]::Copy() — preserva encoding UTF-8"
