@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from pipeline import NevemPipeline, PipelineConfig, PipelineResult
+from muxer.ffmpeg_muxer import DEFAULT_AUDIOBOOK_EXTENSION, AUDIOBOOK_EXTENSIONS
 from tts.edge_tts_engine import EdgeTTS, SPANISH_VOICES
 from tts.piper_tts import PiperTTS, PIPER_VOICES
 from tts.windows_tts import WindowsTTS
@@ -1011,14 +1012,14 @@ def create_api_blueprint(upload_folder: str, output_folder: str) -> Blueprint:
                 author = author_match.group(1).strip() if author_match else 'Autor desconocido'
                 
                 safe_title = "".join(c for c in title if c.isalnum() or c in ' -_').strip()
-                output_filename = f"{safe_title}.m4b"
+                output_filename = f"{safe_title}{DEFAULT_AUDIOBOOK_EXTENSION}"
                 output_path = os.path.join(output_folder, output_filename)
                 
                 # Si el archivo ya existe, agregar timestamp para evitar conflicto
                 if os.path.exists(output_path):
                     from datetime import datetime
                     timestamp = datetime.now().strftime("%H%M%S")
-                    output_filename = f"{safe_title}_{timestamp}.m4b"
+                    output_filename = f"{safe_title}_{timestamp}{DEFAULT_AUDIOBOOK_EXTENSION}"
                     output_path = os.path.join(output_folder, output_filename)
                 
                 from muxer.ffmpeg_muxer import FFmpegMuxer
@@ -1109,13 +1110,13 @@ def create_api_blueprint(upload_folder: str, output_folder: str) -> Blueprint:
         books = []
         
         for filename in os.listdir(output_folder):
-            if filename.endswith('.m4b'):
+            if filename.lower().endswith(AUDIOBOOK_EXTENSIONS):
                 path = os.path.join(output_folder, filename)
                 books.append({
                     'filename': filename,
                     'path': path,
                     'size': os.path.getsize(path),
-                    'title': filename.replace('.m4b', '')
+                    'title': os.path.splitext(filename)[0]
                 })
         
         return jsonify(books)
@@ -1274,7 +1275,7 @@ def create_api_blueprint(upload_folder: str, output_folder: str) -> Blueprint:
     def start_serve():
         """Prepara el último archivo generado para descarga"""
         # Buscar el archivo más reciente en output
-        m4b_files = [f for f in os.listdir(output_folder) if f.endswith('.m4b')]
+        m4b_files = [f for f in os.listdir(output_folder) if f.lower().endswith(AUDIOBOOK_EXTENSIONS)]
         
         if not m4b_files:
             return jsonify({'error': 'No hay archivos para servir'}), 404
@@ -1304,7 +1305,7 @@ def create_download_route(app, output_folder: str):
     def download_latest():
         """Descarga el último archivo generado - accesible desde QR"""
         # Buscar el archivo más reciente
-        m4b_files = [f for f in os.listdir(output_folder) if f.endswith('.m4b')]
+        m4b_files = [f for f in os.listdir(output_folder) if f.lower().endswith(AUDIOBOOK_EXTENSIONS)]
         
         if not m4b_files:
             return render_template_string('''
@@ -1449,7 +1450,7 @@ def create_download_route(app, output_folder: str):
     @app.route('/download/file')
     def download_file():
         """Descarga directa del archivo M4B"""
-        m4b_files = [f for f in os.listdir(output_folder) if f.endswith('.m4b')]
+        m4b_files = [f for f in os.listdir(output_folder) if f.lower().endswith(AUDIOBOOK_EXTENSIONS)]
         
         if not m4b_files:
             return "No hay archivos", 404

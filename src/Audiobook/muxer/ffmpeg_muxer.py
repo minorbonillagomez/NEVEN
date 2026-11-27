@@ -1,10 +1,12 @@
 """
-NEVEN Studio - FFmpeg M4A Muxer
-Crea archivos .m4a con capítulos y portada (compatible con estéreos de carro)
+NEVEN Studio - FFmpeg M4B Muxer
+Crea archivos .m4b con capítulos y portada
 
-Nota: M4A y M4B son el mismo formato (AAC en contenedor MP4).
-Usamos .m4a porque tiene mejor compatibilidad con reproductores de auto,
-mientras que .m4b a veces es ignorado por ser extensión "audiobook" de Apple.
+Nota: M4A y M4B son el mismo formato (AAC en contenedor MP4); solo cambia la
+extensión. La salida nueva es .m4b, la que listan y sirven el servidor de
+audiolibros y la interfaz. Los .m4a que ya existan se siguen listando
+(AUDIOBOOK_EXTENSIONS). Se dijo que algunos autos ignoran .m4b; no está medido
+en este repositorio.
 """
 
 import os
@@ -23,8 +25,10 @@ class ChapterMarker:
 
 
 # Extensión predeterminada para audiolibros
-# Usamos .m4a en lugar de .m4b para mejor compatibilidad con reproductores de auto
-DEFAULT_AUDIOBOOK_EXTENSION = ".m4a"
+# Extensión de los audiolibros nuevos (la misma que escribe /generate-from-markdown)
+DEFAULT_AUDIOBOOK_EXTENSION = ".m4b"
+# Extensiones que listan y sirven /api/books, /api/serve y /api/download
+AUDIOBOOK_EXTENSIONS = (".m4b", ".m4a")
 
 
 class FFmpegMuxer:
@@ -308,7 +312,7 @@ class FFmpegMuxer:
     
     # Alias para compatibilidad hacia atrás
     def create_m4b(self, *args, **kwargs) -> bool:
-        """Alias de create_m4a para compatibilidad con código existente"""
+        """Misma función que create_m4a; la extensión la decide output_path"""
         return self.create_m4a(*args, **kwargs)
 
 
