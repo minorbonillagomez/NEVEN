@@ -5,7 +5,9 @@
  * Paso 1: Extraer documento a Markdown (para revision humana)
  * Paso 2: Generar audiolibro M4B desde Markdown revisado
  * 
- * Puerto del servidor: 5556 (separado del servidor principal en 5555)
+ * Puerto del servidor: el que informa /api/audiobook/status (por defecto 5557;
+ * Audiobook.port en neven-config.json). Escucha solo en 127.0.0.1 y exige el
+ * secreto de sesion (X-NEVEN-Token) en los endpoints /api.
  * @version 2.0.0
  * @date 2026-08-19
  */
@@ -17,8 +19,8 @@
   // CONFIGURACION
   // ═══════════════════════════════════════════════════════════════════════════
   
-  const AUDIOBOOK_PORT = 5556;
-  const AUDIOBOOK_API_BASE = `http://localhost:${AUDIOBOOK_PORT}`;
+  let AUDIOBOOK_PORT = 5557;
+  let AUDIOBOOK_API_BASE = `http://localhost:${AUDIOBOOK_PORT}`;
   
   // Estado global del modulo
   const state = {
@@ -64,6 +66,85 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // ACCESO AL SERVIDOR DE AUDIOLIBROS (puerto propio + secreto de sesion)
+  // ═══════════════════════════════════════════════════════════════════════════
+  const MSG_NO_TOKEN = 'Falta el secreto de sesion: recargue NEVEN Studio.';
+
+  function getSessionToken() {
+    const m = document.querySelector('meta[name="neven-token"]');
+    return m ? (m.getAttribute('content') || '') : '';
+  }
+
+  function setServerText(message, color) {
+    const text = document.getElementById('audiobook-server-text');
+    if (text) {
+      text.textContent = message;
+      if (color) text.style.color = color;
+    }
+  }
+
+  // fetch hacia el servidor de audiolibros. neven-auth.js solo anade el secreto a
+  // peticiones del mismo host, y este servidor tiene otro puerto: se anade aqui.
+  async function abFetch(url, init, opts) {
+    const auth = !(opts && opts.auth === false);
+    const headers = new Headers((init && init.headers) || {});
+    if (auth) {
+      const token = getSessionToken();
+      if (!token) {
+        setServerText(MSG_NO_TOKEN, '#e74c3c');
+        showToast(MSG_NO_TOKEN, 6000);
+        throw new Error(MSG_NO_TOKEN);
+      }
+      headers.set('X-NEVEN-Token', token);
+    }
+    const response = await fetch(url, Object.assign({}, init || {}, { headers: headers }));
+    if (response.status === 401 || response.status === 403) {
+      const msg = response.status === 401
+        ? 'El servidor de audiolibros rechazo el secreto de sesion: recargue NEVEN Studio.'
+        : 'El servidor de audiolibros rechazo la peticion (origen no permitido).';
+      setServerText(msg, '#e74c3c');
+      showToast(msg, 6000);
+    }
+    return response;
+  }
+
+  // Estado del servidor segun el servidor principal: puerto real y motivo de un fallo.
+  async function fetchServerStatus() {
+    try {
+      const response = await fetch('/api/audiobook/status');
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (data && Number.isInteger(data.port) && data.port !== AUDIOBOOK_PORT) {
+        AUDIOBOOK_PORT = data.port;
+        AUDIOBOOK_API_BASE = `http://localhost:${AUDIOBOOK_PORT}`;
+      }
+      return data;
+    } catch (e) {
+      console.warn('[Audiobook] /api/audiobook/status no disponible:', e.message || e);
+      return null;
+    }
+  }
+
+  function showLanBanner(show) {
+    let banner = document.getElementById('audiobook-lan-banner');
+    if (!show) {
+      if (banner) banner.style.display = 'none';
+      return;
+    }
+    if (!banner) {
+      const text = document.getElementById('audiobook-server-text');
+      if (!text || !text.parentElement) return;
+      banner = document.createElement('div');
+      banner.id = 'audiobook-lan-banner';
+      banner.style.cssText = 'font-size:10px;color:#e67e22;padding:4px 0';
+      banner.textContent = 'Aviso: el servidor de audiolibros esta expuesto a la red local ' +
+        '(Audiobook.lan=true). Las descargas no exigen secreto.';
+      text.parentElement.insertAdjacentElement('afterend', banner);
+    }
+    banner.style.display = 'block';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // VERIFICACION DEL SERVIDOR
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -71,22 +152,20 @@
     const dot = document.getElementById('audiobook-server-dot');
     const text = document.getElementById('audiobook-server-text');
     const startBtn = document.getElementById('btn-audiobook-start-server');
-
+    const status = await fetchServerStatus();
     try {
-      const response = await fetch(`${AUDIOBOOK_API_BASE}/api/health`, {
+      const response = await abFetch(`${AUDIOBOOK_API_BASE}/api/health`, {
         method: 'GET',
         mode: 'cors'
-      });
-      
+      }, { auth: false });
       if (response.ok) {
         const data = await response.json();
         state.serverOnline = true;
-        
         dot.style.background = '#27ae60';
         text.textContent = `Servidor activo v${data.version || '1.0.0'}`;
         text.style.color = '#27ae60';
         startBtn.style.display = 'none';
-        
+        showLanBanner(data.lan === true);
         updateButtonStates();
         return true;
       } else {
@@ -96,13 +175,18 @@
       // Servidor no disponible - log para debug
       console.warn('[Audiobook] checkServerStatus error:', e.message || e);
     }
-    
     state.serverOnline = false;
     dot.style.background = '#e74c3c';
-    text.textContent = 'Servidor no disponible';
+    // Si el servidor principal conoce el motivo (puerto ocupado, fallo al arrancar), se muestra.
+    if (status && status.detail && (status.state === 'port_in_use' || status.state === 'failed')) {
+      text.textContent = status.detail.split('\n')[0];
+      text.title = status.detail;
+    } else {
+      text.textContent = 'Servidor no disponible';
+      text.title = '';
+    }
     text.style.color = '#e74c3c';
     startBtn.style.display = 'inline-block';
-    
     updateButtonStates();
     return false;
   }
@@ -110,40 +194,44 @@
   async function startServer() {
     const startBtn = document.getElementById('btn-audiobook-start-server');
     const text = document.getElementById('audiobook-server-text');
-    
     startBtn.disabled = true;
     text.textContent = 'Iniciando servidor...';
-    
     try {
-      console.log('[Audiobook] Attempting to start server via 5555...');
-      const response = await fetch('http://localhost:5555/api/audiobook/start', {
-        method: 'POST'
-      });
-      
-      console.log('[Audiobook] Start response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[Audiobook] Start response:', data);
-        showToast('Iniciando servidor de audiobook...');
-        // Esperar más tiempo y verificar varias veces
-        setTimeout(checkServerStatus, 2000);
-        setTimeout(checkServerStatus, 4000);
-        setTimeout(checkServerStatus, 6000);
+      // Ruta relativa: el servidor principal sirve esta pagina (https en 5555) y
+      // neven-auth.js le anade el secreto de sesion.
+      const response = await fetch('/api/audiobook/start', { method: 'POST' });
+      let data = {};
+      try { data = await response.json(); } catch (e) { /* cuerpo no JSON */ }
+      if (!response.ok) {
+        const msg = data.message || ('Error al iniciar el servidor: HTTP ' + response.status);
+        setServerText(msg, '#e74c3c');
+        showToast(msg, 6000);
+        startBtn.disabled = false;
         return;
-      } else {
-        const errorText = await response.text();
-        console.error('[Audiobook] Start failed:', response.status, errorText);
-        showToast('Error al iniciar: ' + response.status);
       }
+      showToast('Iniciando servidor de audiobook...');
+      // Esperar hasta 20 s a que el estado pase a running o falle con motivo.
+      for (let i = 0; i < 20; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        const status = await fetchServerStatus();
+        if (status && (status.state === 'failed' || status.state === 'port_in_use')) {
+          const msg = status.detail || 'El servidor de audiolibros no pudo iniciar.';
+          setServerText(msg.split('\n')[0], '#e74c3c');
+          text.title = msg;
+          showToast(msg.split('\n')[0], 8000);
+          startBtn.disabled = false;
+          return;
+        }
+        if (status && status.state === 'running') break;
+      }
+      startBtn.disabled = false;
+      await checkServerStatus();
     } catch (e) {
       console.error('[Audiobook] No se pudo iniciar via servidor principal:', e.message || e);
+      setServerText('No se pudo contactar con el servidor principal de NEVEN Studio', '#e74c3c');
       showToast('Error de conexion con servidor principal');
+      startBtn.disabled = false;
     }
-    
-    showToast('Ejecuta: python neven_audiobook_server.py en C:\\NEVEN\\Audiobook');
-    text.textContent = 'Ejecutar servidor manualmente';
-    startBtn.disabled = false;
   }
 
   function updateButtonStates() {
@@ -194,7 +282,7 @@
     previewText.textContent = 'Cargando...';
 
     try {
-      const response = await fetch(`${AUDIOBOOK_API_BASE}/api/preview-voice`, {
+      const response = await abFetch(`${AUDIOBOOK_API_BASE}/api/preview-voice`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -284,7 +372,7 @@
       const formData = new FormData();
       formData.append('file', state.selectedPdfFile);
       
-      const uploadResponse = await fetch(`${AUDIOBOOK_API_BASE}/api/upload`, {
+      const uploadResponse = await abFetch(`${AUDIOBOOK_API_BASE}/api/upload`, {
         method: 'POST',
         body: formData
       });
@@ -301,7 +389,7 @@
       const startPage = parseInt(document.getElementById('audiobook-start-page').value) || 1;
       const excludePages = document.getElementById('audiobook-exclude-pages').value;
       
-      const extractResponse = await fetch(`${AUDIOBOOK_API_BASE}/api/extract`, {
+      const extractResponse = await abFetch(`${AUDIOBOOK_API_BASE}/api/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -354,7 +442,7 @@
     }
     
     try {
-      const response = await fetch(`${AUDIOBOOK_API_BASE}/api/markdown/${encodeURIComponent(state.extractedMdFilename)}`);
+      const response = await abFetch(`${AUDIOBOOK_API_BASE}/api/markdown/${encodeURIComponent(state.extractedMdFilename)}`);
       if (!response.ok) throw new Error('Error al obtener archivo');
       
       const data = await response.json();
@@ -389,7 +477,7 @@
     modal.style.display = 'block';
     
     try {
-      const response = await fetch(`${AUDIOBOOK_API_BASE}/api/markdown/${encodeURIComponent(state.extractedMdFilename)}`);
+      const response = await abFetch(`${AUDIOBOOK_API_BASE}/api/markdown/${encodeURIComponent(state.extractedMdFilename)}`);
       if (!response.ok) throw new Error('Error al obtener archivo');
       
       const data = await response.json();
@@ -484,7 +572,7 @@
         const formData = new FormData();
         formData.append('file', state.selectedMdFile);
         
-        const uploadResponse = await fetch(`${AUDIOBOOK_API_BASE}/api/markdown/upload`, {
+        const uploadResponse = await abFetch(`${AUDIOBOOK_API_BASE}/api/markdown/upload`, {
           method: 'POST',
           body: formData
         });
@@ -501,7 +589,7 @@
       updateProgress(10, 'Iniciando generacion de audio...');
       
       // Llamar a generar desde Markdown
-      const generateResponse = await fetch(`${AUDIOBOOK_API_BASE}/api/generate-from-markdown`, {
+      const generateResponse = await abFetch(`${AUDIOBOOK_API_BASE}/api/generate-from-markdown`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -538,7 +626,7 @@
     
     state.pollInterval = setInterval(async () => {
       try {
-        const response = await fetch(`${AUDIOBOOK_API_BASE}/api/job/${jobId}`);
+        const response = await abFetch(`${AUDIOBOOK_API_BASE}/api/job/${jobId}`);
         if (!response.ok) throw new Error('Error al obtener estado');
         
         const data = await response.json();
@@ -673,18 +761,26 @@
     
     try {
       // Preparar archivo para servir
-      await fetch(`${AUDIOBOOK_API_BASE}/api/serve`, {
+      await abFetch(`${AUDIOBOOK_API_BASE}/api/serve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           filename: state.lastResult.filename
         })
       });
-      
-      // Obtener imagen QR
-      const qrUrl = `${AUDIOBOOK_API_BASE}/api/qr`;
+      // Obtener imagen QR (lleva el secreto, por eso no va como <img src>)
+      const qrResponse = await abFetch(`${AUDIOBOOK_API_BASE}/api/qr`);
+      if (!qrResponse.ok) {
+        let reason = 'No se pudo generar el QR (HTTP ' + qrResponse.status + ')';
+        try { reason = (await qrResponse.json()).message || reason; } catch (e) { /* cuerpo no JSON */ }
+        const span = document.createElement('span');
+        span.style.color = '#e74c3c';
+        span.textContent = reason;
+        qrContainer.replaceChildren(span);
+        return;
+      }
+      const qrUrl = URL.createObjectURL(await qrResponse.blob());
       qrContainer.innerHTML = `<img src="${qrUrl}" alt="QR Code" style="width:200px;height:200px">`;
-      
     } catch (error) {
       console.error('[Audiobook] Error generando QR:', error);
       qrContainer.innerHTML = '<span style="color:#e74c3c">Error al generar QR</span>';
