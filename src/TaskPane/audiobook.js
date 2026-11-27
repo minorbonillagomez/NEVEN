@@ -733,18 +733,46 @@
   // DESCARGA Y QR
   // ═══════════════════════════════════════════════════════════════════════════
 
-  function downloadM4B() {
+  // Descarga el M4B con fetch + Blob. Un <a href download> hacia http://localhost:5557
+  // es una navegacion a otro origen (la pagina es https://localhost:5555): el atributo
+  // download se ignora y el panel de Office se recarga. Con un blob: no se navega.
+  async function downloadM4B() {
     if (!state.lastResult || !state.lastResult.download_url) {
       showToast('No hay archivo para descargar');
       return;
     }
-    
-    const a = document.createElement('a');
-    a.href = state.lastResult.download_url;
-    a.download = state.lastResult.filename || 'audiolibro.m4b';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const filename = state.lastResult.filename || 'audiolibro.m4b';
+    const btn = document.getElementById('btn-audiobook-download-m4b');
+    if (btn) btn.disabled = true;
+    showToast('Preparando descarga de ' + filename);
+    try {
+      const response = await abFetch(state.lastResult.download_url);
+      if (!response.ok) {
+        let reason = '';
+        try {
+          const data = await response.json();
+          reason = (data && (data.error || data.message)) || '';
+        } catch (e) { /* cuerpo sin JSON: se informa solo el codigo */ }
+        showToast('No se pudo descargar: ' + (reason || 'error del servidor') +
+                  ' (HTTP ' + response.status + ')', 6000);
+        return;
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // Diferido para no cortar la descarga en curso
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      showToast('Descargando ' + filename);
+    } catch (error) {
+      showToast('No se pudo descargar: ' + (error && error.message ? error.message : error), 6000);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   }
 
   async function showQR() {
@@ -939,6 +967,8 @@
     generateAudiobook: generateAudiobook,
     cancelGeneration: cancelGeneration,
     showQR: showQR,
+    showResult: showResult,
+    downloadM4B: downloadM4B,
     getState: () => ({ ...state })
   };
 
