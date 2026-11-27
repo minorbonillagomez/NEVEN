@@ -223,6 +223,52 @@ componentes:
         causa: "Puerto 5556 ocupado por otra instancia o proceso"
         fix: "netstat -ano | findstr ':5556'  luego taskkill /PID XXX /F"
 
+  - id: audiobook_server
+    nombre: "Servidor de audiolibros (neven_audiobook_server.py)"
+    prioridad: 12
+    descripcion: >
+      Servidor Flask independiente de la pestana Audiolibros de NEVEN Studio (conversion de
+      PDF/EPUB a audiolibro, voces, traduccion). Lo inicia el servidor Studio con
+      POST /api/audiobook/start y su estado se consulta con GET /api/audiobook/status.
+      Puerto por defecto 5557 (clave opcional Audiobook.port en neven-config.json).
+    fuentes:
+      repo:
+        - 'src\Audiobook\neven_audiobook_server.py'
+        - 'src\Audiobook\neven_local_auth.py'
+        - 'src\TaskPane\audiobook.js'
+      produccion:
+        - 'C:\NEVEN\Audiobook\'
+    invariantes:
+      - id: INV-AB-01
+        descripcion: >
+          El puerto sale de Audiobook.port en neven-config.json (por defecto 5557) y es distinto
+          de TaskPane.port, TaskPane.fallbackPort, 5555 y 5556 (AgentService). Un valor reservado
+          o fuera de 1024-65535 hace que el servidor termine con codigo 2 y un mensaje que nombra
+          la clave y el valor.
+        como_verificar: 'src/tests/test_audiobook_server_prod01.py (test_reserved_ports_are_rejected_with_the_key_named)'
+      - id: INV-AB-02
+        descripcion: >
+          Escucha solo en 127.0.0.1. Solo Audiobook.lan=true (booleano explicito) lo pone en 0.0.0.0,
+          con aviso en el log y banner en la pestana. La autenticacion de INV-AB-03 aplica en los dos modos.
+        como_verificar: 'netstat -ano | findstr ":5557"  # debe mostrar 127.0.0.1:5557'
+      - id: INV-AB-03
+        descripcion: >
+          Todo endpoint /api/* salvo la lista de exencion (GET /api/health, GET /api/download/*, y las
+          paginas / y /download) exige la cabecera X-NEVEN-Token (secreto de sesion del servidor Studio,
+          leido del fichero NEVEN_TOKEN_FILE o %LOCALAPPDATA%/NEVEN/session.token) y Host/Origin locales
+          con el puerto exacto. Sin secreto disponible, rechaza (401). No existe CORS comodin.
+        como_verificar: 'src/tests/test_audiobook_server_prod01.py (cobertura por construccion de url_map)'
+      - id: INV-AB-04
+        descripcion: >
+          Un fallo de arranque es visible: un puerto ocupado termina con codigo 3, la salida del hijo
+          va a audiobook-server.log (nunca a DEVNULL) y GET /api/audiobook/status informa
+          running, starting, port_in_use, failed o not_running con el motivo. El arranque no da por
+          vivo un puerto que no conteste /api/health con service neven-audiobook.
+        como_verificar: 'src/tests/test_audiobook_server_prod01.py (test_start_*)'
+    errores:
+      - sintoma: "La pestana Audiolibros dice que el puerto esta ocupado"
+        causa: "Otro programa usa Audiobook.port (por defecto 5557)"
+        fix: 'netstat -ano | findstr ":5557"  o cambiar Audiobook.port en neven-config.json'
   # ---------------------------------------------------------------------------
   - id: taskpane_frontend
     nombre: "TaskPane Frontend (taskpane.html + datalab.js + taskpane.js)"
