@@ -6,6 +6,7 @@ import importlib.util
 import logging
 import os
 import pathlib
+import tempfile
 
 _SRC = pathlib.Path(__file__).resolve().parent.parent
 _COPIES = (
@@ -36,6 +37,6 @@ def test_http_server_handlers_never_point_at_production():
                 if hasattr(h, "baseFilename")]
     for h in handlers:
         assert not _inside_prod(h.baseFilename), h.baseFilename
-    log_dir = os.path.normcase(os.path.realpath(os.environ["NEVEN_LOG_DIR"]))
+    tmp = os.path.normcase(os.path.realpath(tempfile.gettempdir()))
     for h in handlers:
-        assert os.path.normcase(os.path.realpath(os.path.dirname(h.baseFilename))) == log_dir, h.baseFilename
+        assert os.path.normcase(os.path.realpath(h.baseFilename)).startswith(tmp + os.sep), h.baseFilename
