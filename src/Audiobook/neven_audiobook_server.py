@@ -28,6 +28,8 @@ if SCRIPT_DIR not in sys.path:
 from flask import Flask, jsonify
 from werkzeug.serving import ThreadedWSGIServer
 import neven_local_auth as _auth
+from urllib.parse import quote
+from muxer.ffmpeg_muxer import AUDIOBOOK_EXTENSIONS
 
 # Configuración por defecto
 DEFAULT_PORT = 5557
@@ -183,44 +185,34 @@ def create_app(upload_folder: str = None, output_folder: str = None,
     
     @app.route('/api/download/<path:filename>')
     def download_file(filename):
-        """Descarga un archivo M4B generado.
-        
-        Nota: Usamos <path:filename> para permitir nombres con espacios y caracteres especiales.
-        La validacion de seguridad se hace verificando que el archivo existe en output_folder
-        y que la ruta resuelta no escapa del directorio (path traversal protection).
+        """Descarga un audiolibro por nombre EXACTO (M4B, o M4A heredado).
+
+        Flask ya decodifica la URL en <path:filename>: no se decodifica otra vez
+        (%2520 debe buscar un archivo llamado '%20', no 'a b'). Si el nombre no es
+        un archivo de output_folder, 404; no se sirve otro archivo parecido.
+        La contencion se comprueba con commonpath sobre rutas reales (startswith
+        aceptaria un directorio hermano 'output_x').
         """
         from flask import send_file
-        from urllib.parse import unquote
-        
-        # Decodificar nombre URL-encoded
-        decoded_filename = unquote(filename)
-        
-        # Construir ruta y verificar que no escape del directorio
-        file_path = os.path.normpath(os.path.join(output_folder, decoded_filename))
-        
-        # Proteccion contra path traversal
-        if not file_path.startswith(os.path.normpath(output_folder)):
+        base = os.path.realpath(output_folder)
+        file_path = os.path.realpath(os.path.join(base, filename))
+        try:
+            inside = os.path.commonpath([base, file_path]) == base
+        except ValueError:  # otra unidad
+            inside = False
+        if not inside:
+            _log.warning("Descarga rechazada (fuera de la carpeta de salida): %r", filename)
             return jsonify({'error': 'Acceso no permitido'}), 403
-        
-        if not os.path.exists(file_path):
-            # Intentar buscar por nombre parcial (sin extension o con variaciones)
-            base_name = os.path.splitext(decoded_filename)[0]
-            matches = [f for f in os.listdir(output_folder) if f.startswith(base_name)]
-            if matches:
-                file_path = os.path.join(output_folder, matches[0])
-                decoded_filename = matches[0]
-            else:
-                print(f"[DOWNLOAD] Archivo no encontrado: {decoded_filename}")
-                print(f"[DOWNLOAD] Buscado en: {file_path}")
-                return jsonify({'error': 'Archivo no encontrado', 'requested': decoded_filename}), 404
-        
+        if not os.path.isfile(file_path):
+            _log.info("Descarga: archivo no encontrado: %r", filename)
+            return jsonify({'error': 'Archivo no encontrado', 'requested': filename}), 404
         return send_file(
             file_path,
             as_attachment=True,
-            download_name=decoded_filename,
+            download_name=os.path.basename(file_path),
             mimetype='audio/mp4'
         )
-    
+
     @app.route('/api/qr')
     def generate_qr():
         """Genera un código QR para transferencia móvil"""
@@ -267,8 +259,8 @@ def create_app(upload_folder: str = None, output_folder: str = None,
         """Página de descarga amigable para móvil"""
         from flask import render_template_string
         
-        # Buscar archivo M4B más reciente
-        m4b_files = [f for f in os.listdir(output_folder) if f.endswith('.m4b')]
+        # Buscar el audiolibro más reciente (.m4b, o .m4a heredado)
+        m4b_files = [f for f in os.listdir(output_folder) if f.lower().endswith(AUDIOBOOK_EXTENSIONS)]
         
         if not m4b_files:
             return render_template_string('''
@@ -365,7 +357,7 @@ def create_app(upload_folder: str = None, output_folder: str = None,
                     <div class="subtitle">NEVEN Audiobook</div>
                     <div class="filename">{{ filename }}</div>
                     <div class="filesize">{{ "%.1f"|format(size_mb) }} MB</div>
-                    <a href="/api/download/{{ filename }}" class="download-btn">
+                    <a href="{{ download_href }}" class="download-btn">
                         Descargar Audiolibro
                     </a>
                     <p class="note">
@@ -375,7 +367,8 @@ def create_app(upload_folder: str = None, output_folder: str = None,
                 </div>
             </body>
             </html>
-        ''', filename=latest_file, size_mb=file_size_mb)
+        ''', filename=latest_file, size_mb=file_size_mb,
+            download_href='/api/download/' + quote(latest_file, safe=''))
     
     # ═══════════════════════════════════════════════════════════════
     # REGISTRAR API BLUEPRINT
