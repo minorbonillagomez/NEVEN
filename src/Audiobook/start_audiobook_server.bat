@@ -1,7 +1,7 @@
 @echo off
 REM ═══════════════════════════════════════════════════════════════════════════
 REM NEVEN Audiobook Server - Script de inicio
-REM Puerto: 5556
+REM Puerto: Audiobook.port de neven-config.json (por defecto 5557)
 REM ═══════════════════════════════════════════════════════════════════════════
 
 title NEVEN Audiobook Server
@@ -9,7 +9,7 @@ title NEVEN Audiobook Server
 echo.
 echo ========================================
 echo   NEVEN Audiobook Server
-echo   Puerto: 5556
+echo   Puerto: Audiobook.port (por defecto 5557)
 echo ========================================
 echo.
 
@@ -31,10 +31,10 @@ if %errorlevel% neq 0 (
 )
 
 REM Iniciar servidor
-echo [INFO] Iniciando servidor en puerto 5556...
+echo [INFO] Iniciando servidor en el puerto configurado (por defecto 5557)...
 echo [INFO] Presiona Ctrl+C para detener
 echo.
 
-python neven_audiobook_server.py --port 5556
+python neven_audiobook_server.py
 
 pause

@@ -3,7 +3,8 @@
 NEVEN Audiobook Server
 Servidor HTTP dedicado para el módulo de Audiolibros de NEVEN Studio
 
-Puerto: 5556 (separado del servidor principal en 5555)
+Puerto: 5557 por defecto (configurable en neven-config.json, Audiobook.port);
+escucha solo en 127.0.0.1 salvo Audiobook.lan=true
 Versión: 1.0.0
 
 Este servidor maneja:
@@ -14,8 +15,10 @@ Este servidor maneja:
 
 import os
 import sys
+import json
 import socket
 import argparse
+import logging
 
 # Asegurar que el directorio actual está en el path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,27 +26,113 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
 from flask import Flask, jsonify
-from flask_cors import CORS
+from werkzeug.serving import ThreadedWSGIServer
+import neven_local_auth as _auth
 
 # Configuración por defecto
-DEFAULT_PORT = 5556
+DEFAULT_PORT = 5557
 VERSION = "1.0.0"
+LOOPBACK_HOST = "127.0.0.1"
+LAN_HOST = "0.0.0.0"
+# Puertos que usan otros servicios de NEVEN (Studio, su fallback y el AgentService).
+RESERVED_PORTS = frozenset({5555, 5556})
+EXIT_CONFIG = 2
+EXIT_PORT_BUSY = 3
+_log = logging.getLogger("NEVEN.Audiobook")
 
 
-def create_app(upload_folder: str = None, output_folder: str = None) -> Flask:
-    """Crea y configura la aplicación Flask"""
+class ConfigError(Exception):
+    """Configuracion invalida; el mensaje nombra la clave y el valor."""
+
+
+def default_config_path():
+    """neven-config.json junto a la carpeta Audiobook (p. ej. NEVEN/neven-config.json)."""
+    return os.path.join(os.path.dirname(SCRIPT_DIR), "neven-config.json")
+
+
+def load_config(config_path=None):
+    path = config_path or default_config_path()
+    if not os.path.isfile(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8-sig") as f:
+            data = json.load(f)
+    except (OSError, ValueError) as e:
+        raise ConfigError(f"no se pudo leer {path}: {e}")
+    if not isinstance(data, dict):
+        raise ConfigError(f"{path} no contiene un objeto JSON")
+    return data
+
+
+def _studio_config_ports(config):
+    tp = config.get("TaskPane") or {}
+    ports = set()
+    for key, default in (("port", 5555), ("fallbackPort", 5556)):
+        v = tp.get(key, default)
+        if isinstance(v, int) and not isinstance(v, bool):
+            ports.add(v)
+    return ports
+
+
+def resolve_port(args_port, config_path=None):
+    """Precedencia: --port > Audiobook.port > DEFAULT_PORT. Valida rango y reservados."""
+    config = load_config(config_path)
+    audiobook = config.get("Audiobook") or {}
+    if args_port is not None:
+        value, source = args_port, "--port"
+    elif "port" in audiobook:
+        value, source = audiobook["port"], "Audiobook.port"
+    else:
+        value, source = DEFAULT_PORT, "DEFAULT_PORT"
+    if isinstance(value, bool) or not isinstance(value, int) or not 1024 <= value <= 65535:
+        raise ConfigError(f"{source}={value!r} no es un puerto entero entre 1024 y 65535")
+    reserved = RESERVED_PORTS | _studio_config_ports(config)
+    if value in reserved:
+        raise ConfigError(
+            f"{source}={value} esta reservado por otro servicio de NEVEN "
+            f"(Studio, su fallbackPort o el AgentService: {sorted(reserved)}). "
+            "Elija otro valor en Audiobook.port de neven-config.json")
+    return value
+
+
+def resolve_lan(config_path=None):
+    """Audiobook.lan: ausente = False; si existe debe ser booleano."""
+    audiobook = load_config(config_path).get("Audiobook") or {}
+    if "lan" not in audiobook:
+        return False
+    lan = audiobook["lan"]
+    if not isinstance(lan, bool):
+        raise ConfigError(f"Audiobook.lan={lan!r} debe ser true o false")
+    return lan
+
+
+def resolve_studio_ports(config_path=None):
+    """Puerto real del servidor principal (NEVEN_STUDIO_PORT) o, si no, los de la config."""
+    env = os.environ.get("NEVEN_STUDIO_PORT")
+    if env:
+        if env.isascii() and env.isdigit():
+            return {int(env)}
+        raise ConfigError(f"NEVEN_STUDIO_PORT={env!r} no es un puerto")
+    return _studio_config_ports(load_config(config_path)) or {5555, 5556}
+
+
+def create_app(upload_folder: str = None, output_folder: str = None,
+               port: int = None, studio_ports=None, lan: bool = False,
+               token_file: str = None) -> Flask:
+    """Crea y configura la aplicacion Flask"""
     
     app = Flask(__name__)
     
-    # Habilitar CORS para el TaskPane
-    CORS(app, resources={
-        r"/api/*": {
-            "origins": ["*"],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type"]
-        }
-    })
-    
+    # Autenticacion local (SEC-16): secreto de sesion, Host y Origin locales
+    own_port = port or DEFAULT_PORT
+    if studio_ports is None:
+        studio_ports = {5555, 5556}
+    token_reader = _auth.TokenReader(token_file or _auth.resolve_token_file())
+    _auth.install_guard(app, own_port, studio_ports, token_reader, lan=lan, log=_log)
+    app.config['PORT'] = own_port
+    app.config['LAN'] = bool(lan)
+    app.config['STUDIO_PORT'] = next(iter(studio_ports)) if len(studio_ports) == 1 else None
+
     # Carpetas por defecto
     base_dir = os.path.dirname(SCRIPT_DIR)
     upload_folder = upload_folder or os.path.join(base_dir, "uploads")
@@ -74,7 +163,11 @@ def create_app(upload_folder: str = None, output_folder: str = None) -> Flask:
         return jsonify({
             'status': 'ok',
             'version': VERSION,
-            'service': 'neven-audiobook'
+            'service': 'neven-audiobook',
+            'port': own_port,
+            'studio_port': app.config['STUDIO_PORT'],
+            'pid': os.getpid(),
+            'lan': bool(lan)
         })
     
     @app.route('/api/system')
@@ -82,7 +175,7 @@ def create_app(upload_folder: str = None, output_folder: str = None) -> Flask:
         """Información del sistema"""
         return jsonify({
             'local_ip': get_local_ip(),
-            'port': DEFAULT_PORT,
+            'port': own_port,
             'upload_folder': upload_folder,
             'output_folder': output_folder,
             'version': VERSION
@@ -139,8 +232,16 @@ def create_app(upload_folder: str = None, output_folder: str = None) -> Flask:
         except ImportError:
             return jsonify({'error': 'qrcode no instalado'}), 500
         
+        if not lan:
+            return jsonify({
+                'status': 'error',
+                'code': 'lan_disabled',
+                'message': 'El servidor de audiolibros escucha solo en 127.0.0.1; '
+                           'un movil no puede alcanzarlo. Para habilitar la red local '
+                           'ponga Audiobook.lan=true en neven-config.json y reinicie el servidor.'
+            }), 409
         # URL destino (la página de descarga)
-        url = request.args.get('url', f'http://{get_local_ip()}:{DEFAULT_PORT}/download')
+        url = request.args.get('url', f'http://{get_local_ip()}:{own_port}/download')
         
         # Generar QR
         qr = qrcode.QRCode(
@@ -304,16 +405,19 @@ def get_local_ip() -> str:
         return "127.0.0.1"
 
 
-def print_banner(port: int):
+def print_banner(port: int, lan: bool = False):
     """Imprime el banner de inicio"""
     ip = get_local_ip()
     print()
     print("=" * 60)
     print("  NEVEN Audiobook Server")
     print("=" * 60)
-    print(f"  Versión:     {VERSION}")
+    print(f"  Version:     {VERSION}")
     print(f"  Puerto:      {port}")
-    print(f"  IP local:    {ip}")
+    if lan:
+        print(f"  Escucha en:  0.0.0.0 (red local, IP {ip}) - AVISO: expuesto a la red local")
+    else:
+        print("  Escucha en:  127.0.0.1 (solo este equipo)")
     print(f"  URL:         http://localhost:{port}")
     print(f"  Health:      http://localhost:{port}/api/health")
     print("=" * 60)
@@ -322,68 +426,81 @@ def print_banner(port: int):
     print("  - GET  /api/health          - Estado del servidor")
     print("  - GET  /api/voices          - Listar voces disponibles")
     print("  - POST /api/upload          - Subir archivo PDF/EPUB")
-    print("  - POST /api/generate        - Iniciar conversión")
+    print("  - POST /api/generate        - Iniciar conversion")
     print("  - GET  /api/job/<id>        - Estado del job")
-    print("  - GET  /api/qr              - Generar código QR")
+    print("  - GET  /api/qr              - Generar codigo QR")
     print()
     print("  Presiona Ctrl+C para detener el servidor")
     print("=" * 60)
     print()
+    sys.stdout.flush()
+
+
+def _fatal(code: int, message: str):
+    print(f"[NEVEN Audiobook] ERROR: {message}", file=sys.stderr)
+    sys.stderr.flush()
+    sys.exit(code)
+
+
+class _ExclusiveThreadedServer(ThreadedWSGIServer):
+    """No comparte puerto: en Windows SO_REUSEADDR permitiria un bind doble silencioso."""
+    allow_reuse_address = False
 
 
 def main():
     """Punto de entrada principal"""
     parser = argparse.ArgumentParser(
-        description='NEVEN Audiobook Server - Servidor para generación de audiolibros'
+        description='NEVEN Audiobook Server - Servidor para generacion de audiolibros'
     )
     parser.add_argument(
         '-p', '--port',
         type=int,
-        default=DEFAULT_PORT,
-        help=f'Puerto del servidor (default: {DEFAULT_PORT})'
+        default=None,
+        help=f'Puerto del servidor (default: Audiobook.port de neven-config.json, o {DEFAULT_PORT})'
     )
     parser.add_argument(
-        '--upload-folder',
+        '--config',
         type=str,
         default=None,
-        help='Carpeta para archivos subidos'
+        help='Ruta de neven-config.json (default: junto a la carpeta Audiobook)'
     )
-    parser.add_argument(
-        '--output-folder',
-        type=str,
-        default=None,
-        help='Carpeta para archivos generados'
-    )
-    parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='Habilitar modo debug'
-    )
-    
+    parser.add_argument('--upload-folder', type=str, default=None, help='Carpeta para archivos subidos')
+    parser.add_argument('--output-folder', type=str, default=None, help='Carpeta para archivos generados')
     args = parser.parse_args()
-    
-    # Crear aplicación
+
+    try:
+        port = resolve_port(args.port, args.config)
+        lan = resolve_lan(args.config)
+        studio_ports = resolve_studio_ports(args.config)
+        token_file = _auth.resolve_token_file(load_config(args.config))
+    except ConfigError as e:
+        _fatal(EXIT_CONFIG, f"configuracion invalida: {e}")
+
+    host = LAN_HOST if lan else LOOPBACK_HOST
     app = create_app(
         upload_folder=args.upload_folder,
-        output_folder=args.output_folder
+        output_folder=args.output_folder,
+        port=port, studio_ports=studio_ports, lan=lan, token_file=token_file
     )
-    
-    # Imprimir banner
-    print_banner(args.port)
-    
-    # Iniciar servidor
+    if lan:
+        print("[NEVEN Audiobook] WARNING: Audiobook.lan=true: el servidor esta expuesto a la red "
+              "local; los endpoints /api exigen secreto, las descargas no.", file=sys.stderr)
+        sys.stderr.flush()
+
     try:
-        app.run(
-            host='0.0.0.0',
-            port=args.port,
-            debug=args.debug,
-            threaded=True,
-            use_reloader=False
-        )
+        server = _ExclusiveThreadedServer(host, port, app)
+    except OSError as e:
+        _fatal(EXIT_PORT_BUSY,
+               f"el puerto {port} esta ocupado o no se puede abrir en {host} ({e}). "
+               "Cierre el programa que lo usa o cambie Audiobook.port en neven-config.json")
+
+    print_banner(port, lan)
+    try:
+        server.serve_forever()
     except KeyboardInterrupt:
         print("\n[NEVEN Audiobook] Servidor detenido")
     except Exception as e:
-        print(f"\n[NEVEN Audiobook] Error: {e}")
+        print(f"\n[NEVEN Audiobook] Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
