@@ -1,0 +1,64 @@
+{
+    "commit":  "3747890",
+    "baseline":  "12aa43d",
+    "generated":  "2026-11-27 13:17:33",
+    "prodRoot":  "C:\\NEVEN",
+    "backupDir":  "C:\\NEVEN_backup_20261127-1317",
+    "neverenConfigModified":  false,
+    "cleanPycache":  [
+                         "C:\\NEVEN\\Audiobook\\__pycache__",
+                         "C:\\NEVEN\\Audiobook\\api\\__pycache__",
+                         "C:\\NEVEN\\Audiobook\\muxer\\__pycache__",
+                         "C:\\NEVEN\\taskpane\\__pycache__"
+                     ],
+    "files":  [
+                  {
+                      "source":  "F:\\ANTIGRAVITY\\2026\\NEVEN\\.worktrees\\a03-descarga\\src\\Audiobook\\neven_audiobook_server.py",
+                      "destination":  "C:\\NEVEN\\Audiobook\\neven_audiobook_server.py",
+                      "sourceSha256":  "8DB32F7EC9BB88B35311C11353486670261D8CF45949EEC05EAAAA53343BF7B8",
+                      "destSha256Current":  "35FFD6D7A3B0ACAB76E1CEBC4A0B37950ABA7543AE1203DF9B49B3D00A1C3B62",
+                      "baseSha256":  "F2CB6A2B18E8FB453771DBC802134EB5F6EA38452120FA605EE9FD2D50B67186",
+                      "destMatchesBase":  false
+                  },
+                  {
+                      "source":  "F:\\ANTIGRAVITY\\2026\\NEVEN\\.worktrees\\a03-descarga\\src\\Audiobook\\api\\routes.py",
+                      "destination":  "C:\\NEVEN\\Audiobook\\api\\routes.py",
+                      "sourceSha256":  "7247FE21C9C5F9BD2556076295FD6C9ABDB92C03D12396850331BFE2ABEB1DEA",
+                      "destSha256Current":  "25BDFE4EF97A75650EA18D4FA4756DA9BAABEF9502A15FC4B85006284DAFD6ED",
+                      "baseSha256":  "25BDFE4EF97A75650EA18D4FA4756DA9BAABEF9502A15FC4B85006284DAFD6ED",
+                      "destMatchesBase":  true
+                  },
+                  {
+                      "source":  "F:\\ANTIGRAVITY\\2026\\NEVEN\\.worktrees\\a03-descarga\\src\\Audiobook\\pipeline.py",
+                      "destination":  "C:\\NEVEN\\Audiobook\\pipeline.py",
+                      "sourceSha256":  "0F50BA6D761B98696B0F4824B40534B2A5DB66041B155608F6B85746E4B2ABFD",
+                      "destSha256Current":  "223DE5760570C94C61A22CF338D743236A5ADDEE820DC8BA067A381A8B1F1F5D",
+                      "baseSha256":  "223DE5760570C94C61A22CF338D743236A5ADDEE820DC8BA067A381A8B1F1F5D",
+                      "destMatchesBase":  true
+                  },
+                  {
+                      "source":  "F:\\ANTIGRAVITY\\2026\\NEVEN\\.worktrees\\a03-descarga\\src\\Audiobook\\muxer\\ffmpeg_muxer.py",
+                      "destination":  "C:\\NEVEN\\Audiobook\\muxer\\ffmpeg_muxer.py",
+                      "sourceSha256":  "F4B1C55C4DA9BE49A78D893E414865DAA05347A77C227B18477FB763754D4F28",
+                      "destSha256Current":  "1CC9AC0C93782E9CAA924238C01F4CC47162221248187051CB0A9A61CA13AC36",
+                      "baseSha256":  "1CC9AC0C93782E9CAA924238C01F4CC47162221248187051CB0A9A61CA13AC36",
+                      "destMatchesBase":  true
+                  },
+                  {
+                      "source":  "F:\\ANTIGRAVITY\\2026\\NEVEN\\.worktrees\\a03-descarga\\src\\TaskPane\\audiobook.js",
+                      "destination":  "C:\\NEVEN\\taskpane\\audiobook.js",
+                      "sourceSha256":  "942D20FBE3DAB2D62D29501A501BB0B2732B09FF0C93E92F746923B2762BEA40",
+                      "destSha256Current":  "5B99D44FA3B2A87BF191C9A42C579E32E99DF434C813C6E773E5AFB8F95CE3E2",
+                      "baseSha256":  "B6E37027804004474BFF407B1B6659BDD6008B19CA0155EEEE1CCF2E1AC0AEA0",
+                      "destMatchesBase":  false
+                  },
+                  {
+                      "source":  "F:\\ANTIGRAVITY\\2026\\NEVEN\\.worktrees\\a03-descarga\\src\\docs\\ontologia\\neven-core\\neven-ontology-p3.yaml",
+                      "destination":  "C:\\NEVEN\\docs\\ontologia\\neven-core\\neven-ontology-p3.yaml",
+                      "sourceSha256":  "C7BCD94AA30A421C13899995DEF38DF5660ED482AAC3AEE3B0D9780DD7E8FB8C",
+                      "destSha256Current":  "4D31E3EB9B4EBFFD15A1E66AC81499AB8E4038EA7AC05820F80D2F901B4C2B29",
+                      "baseSha256":  "DD64FBB246AECC439DC404C863B4BD422A33A85DB1FB512DFB8B7561C80D5B95",
+                      "destMatchesBase":  false
+                  }
+              ]
+}
