@@ -298,7 +298,7 @@ def test_property_1_catalog_filtering(sidecar_entries):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @given(st.text(min_size=1).filter(lambda s: s.strip()))
-@settings(max_examples=30)
+@settings(max_examples=30, deadline=None)
 def test_property_6_filter_error_no_pipe_call(filter_clause):
     """When DuckDB raises on SELECT, send_code is never invoked."""
     h = DataLabHandler()

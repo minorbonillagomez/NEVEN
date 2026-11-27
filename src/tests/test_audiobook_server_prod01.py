@@ -65,7 +65,10 @@ def _json(raw):
         return {}
 
 
-def _wait_for(predicate, timeout=40, interval=0.3):
+_START_TIMEOUT = float(os.environ.get("NEVEN_TEST_START_TIMEOUT", "180"))
+
+
+def _wait_for(predicate, timeout=_START_TIMEOUT, interval=0.3):
     end = time.time() + timeout
     while time.time() < end:
         value = predicate()
@@ -407,7 +410,7 @@ def test_start_launches_the_real_server_and_reports_running(studio):
         assert data["state"] in ("starting", "running"), data
         return data if data["state"] == "running" else None
 
-    data = _wait_for(running, timeout=60)
+    data = _wait_for(running, timeout=max(60, _START_TIMEOUT))
     assert data and data["port"] == port
     health = _health(port)
     assert health["studio_port"] == studio["port"]

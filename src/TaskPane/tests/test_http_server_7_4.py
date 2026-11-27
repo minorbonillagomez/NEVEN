@@ -168,7 +168,14 @@ class TestEngineStatusReflectsPipeAvailability(unittest.TestCase):
             call_count["n"] += 1
             return False
 
-        with patch.object(srv, "_probe_pipe", side_effect=counting_probe):
+        # Aislar de las pipes dinamicas RJ2XCL2-PIPE-* reales (Excel abierto).
+        real_listdir = os.listdir
+
+        def no_pipes(path="."):
+            return [] if str(path).lower() == r"\\.\pipe" else real_listdir(path)
+
+        with patch.object(srv, "_probe_pipe", side_effect=counting_probe), \
+                patch("os.listdir", side_effect=no_pipes):
             _capture_engines(handler)
 
         self.assertEqual(call_count["n"], 3)

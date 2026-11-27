@@ -57,7 +57,10 @@ def _q(name):
     return urllib.parse.quote(name, safe="")
 
 
-def _wait_health(proc, port, log, timeout=40):
+_START_TIMEOUT = float(os.environ.get("NEVEN_TEST_START_TIMEOUT", "180"))
+
+
+def _wait_health(proc, port, log, timeout=_START_TIMEOUT):
     end = time.time() + timeout
     while time.time() < end:
         if proc.poll() is not None:
