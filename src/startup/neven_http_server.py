@@ -544,6 +544,116 @@ def _token_matches(supplied):
     return _hmac.compare_digest(supplied.encode("utf-8"), _session_token.encode("utf-8"))
 
 
+# ─── Audiobook server (PROD-01 / A-02) ───────────────────────────────────────
+AUDIOBOOK_DEFAULT_PORT = 5557
+AUDIOBOOK_SERVICE_NAME = "neven-audiobook"
+_audiobook_proc = None
+_audiobook_log_path = None
+
+
+def _full_config_path():
+    """neven-config.json completo (el _config del servidor es solo la seccion TaskPane)."""
+    static_dir = _config.get("staticDir", r"C:\NEVEN\taskpane").rstrip('/\\')
+    return os.path.join(os.path.dirname(static_dir), "neven-config.json")
+
+
+def _audiobook_config():
+    """Seccion Audiobook de neven-config.json ({} si falta o no se puede leer)."""
+    path = _full_config_path()
+    try:
+        with open(path, "r", encoding="utf-8-sig") as fh:
+            section = json.load(fh).get("Audiobook")
+        return section if isinstance(section, dict) else {}
+    except (OSError, ValueError, AttributeError):
+        return {}
+
+
+def _audiobook_port():
+    """Puerto del servidor de audiolibros: Audiobook.port o 5557 (el hijo valida el valor)."""
+    port = _audiobook_config().get("port", AUDIOBOOK_DEFAULT_PORT)
+    if isinstance(port, int) and not isinstance(port, bool) and 1 <= port <= 65535:
+        return port
+    return AUDIOBOOK_DEFAULT_PORT
+
+
+def _audiobook_probe(port):
+    """Que hay en 127.0.0.1:<port>. Devuelve (kind, health) con kind en
+    'free' (nadie escucha), 'ours' (servidor de audiolibros de NEVEN) o 'foreign'."""
+    import http.client
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
+    try:
+        conn.request("GET", "/api/health")
+        resp = conn.getresponse()
+        raw = resp.read(65536)
+    except ConnectionRefusedError:
+        return "free", None
+    except OSError:
+        # Conecto o hubo timeout sin respuesta HTTP valida: algo ocupa el puerto.
+        return _audiobook_port_listening(port), None
+    except http.client.HTTPException:
+        return "foreign", None
+    finally:
+        conn.close()
+    try:
+        health = json.loads(raw.decode("utf-8", errors="replace"))
+    except ValueError:
+        return "foreign", None
+    if isinstance(health, dict) and health.get("service") == AUDIOBOOK_SERVICE_NAME:
+        return "ours", health
+    return "foreign", None
+
+
+def _audiobook_port_listening(port):
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(1)
+    try:
+        return "foreign" if s.connect_ex(("127.0.0.1", port)) == 0 else "free"
+    finally:
+        s.close()
+
+
+def _audiobook_log_tail(max_lines=10):
+    path = _audiobook_log_path
+    if not path:
+        return ""
+    try:
+        with open(path, "rb") as fh:
+            fh.seek(0, os.SEEK_END)
+            fh.seek(max(0, fh.tell() - 4096))
+            data = fh.read()
+    except OSError:
+        return ""
+    lines = [ln for ln in data.decode("utf-8", errors="replace").splitlines() if ln.strip()]
+    return "\n".join(lines[-max_lines:])
+
+
+def _audiobook_state():
+    """Estado en vivo del servidor de audiolibros: (state, port, detail)."""
+    port = _audiobook_port()
+    kind, health = _audiobook_probe(port)
+    if kind == "ours":
+        studio = health.get("studio_port")
+        if studio is not None and studio != _server_port:
+            return "port_in_use", port, (
+                f"El servidor de audiolibros del puerto {port} fue iniciado para NEVEN Studio "
+                f"en el puerto {studio}, no en el {_server_port}. Cierrelo y pulse Iniciar.")
+        return "running", port, ""
+    if kind == "foreign":
+        return "port_in_use", port, (
+            f"El puerto {port} esta ocupado por otro programa. Cierrelo o cambie "
+            "Audiobook.port en neven-config.json.")
+    proc = _audiobook_proc
+    if proc is None:
+        return "not_running", port, ""
+    rc = proc.poll()
+    if rc is None:
+        return "starting", port, ""
+    tail = _audiobook_log_tail()
+    return "failed", port, (f"El servidor de audiolibros termino con codigo {rc}."
+                            + (f" Ultimas lineas del registro:\n{tail}" if tail else ""))
+
+
 def _resolve_save_path(path, allowed_dirs):
     """Resolve *path* (relative paths are taken inside allowed_dirs[0]).
 
@@ -897,6 +1007,9 @@ class NEVENHandler(BaseHTTPRequestHandler):
             self._send_json({"status": "ok", "version": "3.0.0", "port": _server_port})
             return
 
+        if path == 'api/audiobook/status':
+            self._handle_audiobook_status()
+            return
         # ── Script engine endpoints (implemented in tasks 7.1 and 7.2) ──────
         if path == 'api/engines':
             self._handle_engines()
@@ -1474,7 +1587,7 @@ class NEVENHandler(BaseHTTPRequestHandler):
         elif path == 'api/ontology/delete-book':
             self._handle_ontology_delete_book(body)
         # ══════════════════════════════════════════════════════════════════════
-        # Audiobook Server — Start external server on port 5556
+        # Audiobook Server — start the external server (port: Audiobook.port, default 5557)
         # ══════════════════════════════════════════════════════════════════════
         elif path == 'api/audiobook/start':
             self._handle_audiobook_start()
@@ -2572,58 +2685,75 @@ class NEVENHandler(BaseHTTPRequestHandler):
         self._send_json({"status": "ok", "message": "Shutdown initiated"})
         threading.Thread(target=_shutdown_server, daemon=True).start()
 
+    def _handle_audiobook_status(self):
+        """GET /api/audiobook/status — estado en vivo del servidor de audiolibros."""
+        state, port, detail = _audiobook_state()
+        self._send_json({"state": state, "port": port, "detail": detail})
+
     def _handle_audiobook_start(self):
-        """POST /api/audiobook/start — Inicia el servidor de audiobook en puerto 5556.
+        """POST /api/audiobook/start — inicia el servidor de audiolibros.
 
-        Ejecuta neven_audiobook_server.py como proceso separado (detached).
-        El cliente debe verificar /api/health en puerto 5556 para confirmar que inició.
+        No da por vivo cualquier cosa que conteste en el puerto: sondea /api/health y
+        comprueba la identidad. Un puerto ocupado por otro programa devuelve 409 y no
+        lanza nada. La salida del hijo va a audiobook-server.log (nunca a DEVNULL).
         """
+        global _audiobook_proc, _audiobook_log_path
         import subprocess
-        import os
-
-        audiobook_server = r"C:\NEVEN\Audiobook\neven_audiobook_server.py"
-        print(f"[AUDIOBOOK] Checking server at: {audiobook_server}")
-        
+        audiobook_dir = _config.get("audiobookDir", r"C:\NEVEN\Audiobook")
+        audiobook_server = os.path.join(audiobook_dir, "neven_audiobook_server.py")
         if not os.path.exists(audiobook_server):
-            print(f"[AUDIOBOOK] Server not found!")
+            _log.error(f"Audiobook server not found: {audiobook_server}")
             self._send_error_json(f"Servidor no encontrado: {audiobook_server}", 404)
             return
-
-        try:
-            # Verificar si ya está corriendo
-            import socket
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(('127.0.0.1', 5556))
-            sock.close()
-            
-            if result == 0:
-                # Ya está corriendo
-                print("[AUDIOBOOK] Server already running")
-                self._send_json({"status": "ok", "message": "Server already running", "port": 5556})
+        port = _audiobook_port()
+        kind, health = _audiobook_probe(port)
+        if kind == "ours":
+            studio = health.get("studio_port")
+            if studio is not None and studio != _server_port:
+                self._send_json({
+                    "status": "error", "code": "studio_port_mismatch", "port": port,
+                    "message": f"El servidor de audiolibros del puerto {port} fue iniciado para NEVEN "
+                               f"Studio en el puerto {studio}, y este Studio usa el {_server_port}. "
+                               "Cierre ese servidor y vuelva a pulsar Iniciar."}, 409)
                 return
-
-            # Iniciar como proceso separado (no bloquea, no se cierra con el padre)
-            # CREATE_NEW_PROCESS_GROUP + DETACHED_PROCESS en Windows
+            self._send_json({"status": "ok", "state": "already_running", "port": port})
+            return
+        if kind == "foreign":
+            _log.warning(f"Audiobook port {port} is in use by another program")
+            self._send_json({
+                "status": "error", "code": "port_in_use", "port": port,
+                "message": f"El puerto {port} esta ocupado por otro programa y no es el servidor de "
+                           "audiolibros de NEVEN. Cierre ese programa o cambie Audiobook.port en "
+                           "neven-config.json."}, 409)
+            return
+        if _audiobook_proc is not None and _audiobook_proc.poll() is None:
+            self._send_json({"status": "ok", "state": "starting", "port": port})
+            return
+        try:
+            log_dir = os.environ.get("NEVEN_LOG_DIR", r"C:\NEVEN")
+            os.makedirs(log_dir, exist_ok=True)
+            _audiobook_log_path = os.path.join(log_dir, "audiobook-server.log")
+            env = dict(os.environ)
+            env["NEVEN_STUDIO_PORT"] = str(_server_port)
+            env["NEVEN_TOKEN_FILE"] = _token_file_path()
+            env["PYTHONUTF8"] = "1"
+            cmd = [sys.executable, audiobook_server]
+            config_path = _full_config_path()
+            if os.path.isfile(config_path):
+                cmd += ["--config", config_path]
             DETACHED_PROCESS = 0x00000008
             CREATE_NEW_PROCESS_GROUP = 0x00000200
-            
-            print("[AUDIOBOOK] Starting server...")
-            subprocess.Popen(
-                ["python", audiobook_server],
-                cwd=r"C:\NEVEN\Audiobook",
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                stdin=subprocess.DEVNULL,
-                creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
-            )
-
-            print("[AUDIOBOOK] Server started on port 5556")
-            self._send_json({"status": "ok", "message": "Server starting", "port": 5556})
-
+            flags = (DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP) if os.name == "nt" else 0
+            with open(_audiobook_log_path, "wb") as log_fh:
+                _audiobook_proc = subprocess.Popen(
+                    cmd, cwd=audiobook_dir, env=env,
+                    stdout=log_fh, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                    creationflags=flags)
+            _log.info(f"Audiobook server launched (pid {_audiobook_proc.pid}), port {port}, "
+                      f"log {_audiobook_log_path}")
+            self._send_json({"status": "ok", "state": "starting", "port": port})
         except Exception as e:
-            print(f"[AUDIOBOOK] Error: {str(e)}")
-            import traceback
-            traceback.print_exc()
+            _log.exception("Cannot launch the audiobook server")
             self._send_error_json(f"Error al iniciar servidor: {str(e)}", 500)
 
     def _handle_ai_context(self, body: dict):
