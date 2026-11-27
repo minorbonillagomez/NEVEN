@@ -637,3 +637,30 @@ def test_auth_rules_match_the_main_server():
         assert auth.origin_is_local(o, {5555}) == srv._origin_is_local(o), o
     for t in ["s" * 43, "s" * 42, "", None, "S" * 43, "é" * 10]:
         assert auth.token_matches(t, "s" * 43) == srv._token_matches(t), t
+
+
+def test_probe_timeout_with_own_live_child_is_starting_not_foreign(monkeypatch):
+    srv = _load_main_server("neven_http_server_slow_probe")
+    lst = socket.socket()
+    lst.bind(("127.0.0.1", 0))
+    lst.listen(64)  # acepta en el kernel sin responder nunca
+    port = lst.getsockname()[1]
+    try:
+        monkeypatch.setattr(srv, "_audiobook_port", lambda: port)
+
+        class _Alive:
+            def poll(self):
+                return None
+
+        # Puerto aceptando sin responder y nuestro hijo vivo: arranque lento.
+        monkeypatch.setattr(srv, "_audiobook_proc", _Alive())
+        kind, _ = srv._audiobook_probe(port)
+        assert kind == "starting"
+        state, got_port, _ = srv._audiobook_state()
+        assert state == "starting" and got_port == port
+        # Sin hijo propio, el mismo puerto si es "otro programa".
+        monkeypatch.setattr(srv, "_audiobook_proc", None)
+        assert srv._audiobook_probe(port)[0] == "foreign"
+        assert srv._audiobook_state()[0] == "port_in_use"
+    finally:
+        lst.close()

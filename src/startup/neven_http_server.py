@@ -580,13 +580,19 @@ def _audiobook_probe(port):
     """Que hay en 127.0.0.1:<port>. Devuelve (kind, health) con kind en
     'free' (nadie escucha), 'ours' (servidor de audiolibros de NEVEN) o 'foreign'."""
     import http.client
-    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
     try:
         conn.request("GET", "/api/health")
         resp = conn.getresponse()
         raw = resp.read(65536)
     except ConnectionRefusedError:
         return "free", None
+    except TimeoutError:
+        # Sin respuesta a tiempo: si nuestro hijo sigue vivo, esta arrancando lento.
+        proc = _audiobook_proc
+        if proc is not None and proc.poll() is None:
+            return "starting", None
+        return _audiobook_port_listening(port), None
     except OSError:
         # Conecto o hubo timeout sin respuesta HTTP valida: algo ocupa el puerto.
         return _audiobook_port_listening(port), None
@@ -639,6 +645,8 @@ def _audiobook_state():
                 f"El servidor de audiolibros del puerto {port} fue iniciado para NEVEN Studio "
                 f"en el puerto {studio}, no en el {_server_port}. Cierrelo y pulse Iniciar.")
         return "running", port, ""
+    if kind == "starting":
+        return "starting", port, ""
     if kind == "foreign":
         return "port_in_use", port, (
             f"El puerto {port} esta ocupado por otro programa. Cierrelo o cambie "
