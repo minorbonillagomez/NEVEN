@@ -61,6 +61,9 @@
     "queryTimeoutSec": 30,
     "maxPayloadMB": 50
   },
+  "Audiobook": {
+    "port": 5557
+  },
   "Standalone": {
     "controlDir": "C:\\NEVEN\\",
     "startupDir": "C:\\NEVEN\\startup\\",
